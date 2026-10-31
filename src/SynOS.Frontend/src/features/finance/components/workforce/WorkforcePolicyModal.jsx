@@ -97,7 +97,7 @@ export function WorkforcePolicyModal({ isOpen, onClose, onSuccess }) {
 
                     <div className="space-y-6">
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-zinc-500 uppercase tracking-widest ml-1">Monthly Paid Leave Quota (Per Staff)</label>
+                            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest ml-1">Monthly Paid Leave Quota (Per Staff)</label>
                             <div className="relative group">
                                 <input 
                                     type="number"
@@ -111,7 +111,7 @@ export function WorkforcePolicyModal({ isOpen, onClose, onSuccess }) {
                             </div>
                             <div className="flex items-start gap-2 mt-2 px-1">
                                 <Info className="w-3.5 h-3.5 text-synos-primary mt-0.5" />
-                                <p className="text-xs text-zinc-500 leading-relaxed">
+                                <p className="text-[10px] text-zinc-500 leading-relaxed">
                                     This value defines the standard paid leave entitlement for all active staff members. 
                                     Exceeding this limit within a payroll cycle will automatically trigger Loss of Pay (LOP) calculations.
                                 </p>
@@ -127,7 +127,7 @@ export function WorkforcePolicyModal({ isOpen, onClose, onSuccess }) {
                                     </div>
                                     <div>
                                         <p className="text-xs font-bold dark:text-amber-500">Mass Sync Quota</p>
-                                        <p className="text-xs text-amber-700/60 dark:text-amber-500/60">Update all existing staff records</p>
+                                        <p className="text-[10px] text-amber-700/60 dark:text-amber-500/60">Update all existing staff records</p>
                                     </div>
                                 </div>
                                 <button 
@@ -140,7 +140,7 @@ export function WorkforcePolicyModal({ isOpen, onClose, onSuccess }) {
                             
                             {syncAll && (
                                 <div className="pt-2 border-t border-amber-500/10 animate-in fade-in slide-in-from-top-1">
-                                    <p className="text-xs text-amber-700 dark:text-amber-500 font-medium italic">
+                                    <p className="text-[10px] text-amber-700 dark:text-amber-500 font-medium italic">
                                         Warning: This will overwrite individual overrides in the employee master records.
                                     </p>
                                 </div>

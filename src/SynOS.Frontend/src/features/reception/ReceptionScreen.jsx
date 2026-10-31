@@ -229,7 +229,7 @@ export function ReceptionScreen() {
         {
             header: "Payment",
             accessor: "paymentDisplay",
-            className: "w-44",
+            className: "w-40",
             render: (row) => {
                 const totalBilled = Number(row.totalAmount || 0);
                 const totalPaid = Number(row.totalPaid || 0);
@@ -239,7 +239,7 @@ export function ReceptionScreen() {
                 const isPartial = row.paymentMethod === "Partial Due" || (row.paymentDisplay && row.paymentDisplay.includes("Partial")) || (totalPaid > 0 && remainingDue > 0);
                 const isPaid = !isPrepaid && !isPartial && (row.paymentMethod === "Paid" || row.paymentMethod === "Cash" || row.paymentMethod === "UPI" || row.paymentMethod === "Card" || (remainingDue === 0 && totalBilled > 0));
 
-                const badgeBase = "text-xs px-2 py-0.5 rounded-md font-mono border uppercase tracking-wider shrink-0 font-bold";
+                const badgeBase = "text-[10px] px-1.5 py-0.5 rounded font-mono leading-none border uppercase tracking-wide shrink-0 font-bold";
                 let badgeColor = "bg-zinc-500/10 dark:text-zinc-400 text-zinc-600 border-zinc-500/20";
                 let badgeText = row.paymentMethod || "DUE";
 
@@ -260,20 +260,20 @@ export function ReceptionScreen() {
                     : (totalBilled ? `₹${totalBilled.toLocaleString()}` : "₹0");
 
                 return (
-                    <div className="flex flex-col gap-1.5 items-start justify-center min-h-[3rem] py-1">
+                    <div className="flex flex-col gap-1 items-start justify-center min-h-[3rem]">
                         <div className="flex items-center gap-2">
-                            <span className="font-bold text-base sm:text-[17px] dark:text-white text-slate-900 leading-tight tabular-nums">{displayAmount}</span>
+                            <span className="font-bold text-sm dark:text-zinc-200 text-zinc-900 leading-none pt-0.5">{displayAmount}</span>
                             <span className={`${badgeBase} ${badgeColor}`}>
                                 {badgeText}
                             </span>
                         </div>
                         {isPartial && totalPaid > 0 && (
-                            <span className="text-emerald-600 dark:text-emerald-400 text-xs font-mono font-semibold">
+                            <span className="type-meta text-emerald-600 dark:text-emerald-400 text-[10px] font-mono font-medium">
                                 Paid: ₹{totalPaid.toLocaleString()}
                             </span>
                         )}
                         {isPrepaid && row.referrerName && (
-                            <span className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-zinc-400 truncate max-w-[170px]" title={row.referrerName}>
+                            <span className="type-meta text-zinc-500 truncate max-w-[140px]" title={row.referrerName}>
                                 {row.referrerName}
                             </span>
                         )}
@@ -312,13 +312,13 @@ export function ReceptionScreen() {
                                 className="mb-4 shrink-0"
                             >
                                 <div className="flex items-center justify-between mb-2 px-3 sticky top-0 dark:bg-synos-background bg-transparent z-10 py-1">
-                                    <h2 className="text-xl sm:text-2xl font-extrabold dark:text-white text-slate-900 tracking-tight">Reality Summary</h2>
+                                    <h2 className="text-lg font-bold dark:text-zinc-200 text-zinc-800">Reality Summary</h2>
                                     <button
                                         onClick={() => setIsSummaryCollapsed(!isSummaryCollapsed)}
-                                        className="text-zinc-500 hover:text-zinc-300 transition-colors p-1 rounded-md hover:bg-white/5 cursor-pointer"
+                                        className="text-zinc-500 hover:text-zinc-300 transition-colors p-1 rounded-md hover:bg-white/5"
                                         title={isSummaryCollapsed ? "Expand View" : "Collapse View"}
                                     >
-                                        <ChevronDown className={cn("w-5 h-5 transition-transform duration-300", isSummaryCollapsed && "-rotate-90")} />
+                                        <ChevronDown className={cn("w-4 h-4 transition-transform duration-300", isSummaryCollapsed && "-rotate-90")} />
                                     </button>
                                 </div>
                                 <RealitySummary tiles={realityTiles} isCollapsed={isSummaryCollapsed} />
@@ -331,12 +331,12 @@ export function ReceptionScreen() {
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-4">
                                         <ActionQueueHeader title="Action Queues" count={actionQueue.length} />
-                                        <div className="flex items-center gap-1.5 dark:bg-zinc-900/50 bg-white rounded-xl p-1 border dark:border-white/5 border-zinc-200 shadow-sm">
+                                        <div className="flex items-center gap-2 dark:bg-zinc-900/50 bg-white rounded-lg p-1 border dark:border-white/5 border-zinc-200 shadow-sm">
                                             <button
                                                 onClick={() => setShowHistory(false)}
                                                 className={cn(
-                                                    "text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-lg transition-colors cursor-pointer",
-                                                    !showHistory ? "bg-slate-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-xs" : (theme === 'dark' ? "text-zinc-400 hover:text-white" : "text-slate-600 hover:text-slate-900")
+                                                    "text-[10px] uppercase font-bold px-2 py-0.5 rounded transition-colors",
+                                                    !showHistory ? "bg-zinc-800 text-white shadow-sm" : (theme === 'dark' ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")
                                                 )}
                                             >
                                                 Live
@@ -344,8 +344,8 @@ export function ReceptionScreen() {
                                             <button
                                                 onClick={() => setShowHistory(true)}
                                                 className={cn(
-                                                    "text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-lg transition-colors cursor-pointer",
-                                                    showHistory ? "bg-slate-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-xs" : (theme === 'dark' ? "text-zinc-400 hover:text-white" : "text-slate-600 hover:text-slate-900")
+                                                    "text-[10px] uppercase font-bold px-2 py-0.5 rounded transition-colors",
+                                                    showHistory ? "bg-zinc-800 text-white shadow-sm" : (theme === 'dark' ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")
                                                 )}
                                             >
                                                 History (7d)

@@ -32,24 +32,24 @@ export default defineConfig({
         secure: false,
       },
       '/dashboardHub': {
-        target: 'https://synos.tbzlabs.in',
+        target: 'ws://127.0.0.1:59999',
         ws: true,
         changeOrigin: true,
         secure: false,
         configure: (proxy, _options) => {
           proxy.on('error', (err, _req, _res) => {
-            // silent retry
+            console.log('proxy error', err);
           });
         }
       },
       '/branchOperationsHub': {
-        target: 'https://synos.tbzlabs.in',
+        target: 'ws://127.0.0.1:59999',
         ws: true,
         changeOrigin: true,
         secure: false,
         configure: (proxy, _options) => {
           proxy.on('error', (err, _req, _res) => {
-            // silent retry
+            console.log('proxy error', err);
           });
         }
       },

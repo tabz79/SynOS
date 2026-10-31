@@ -31,7 +31,6 @@
     "date-fns": "^4.1.0",
     "dicom-parser": "^1.8.21",
     "framer-motion": "^12.36.0",
-    "geist": "^1.8.2",
     "jwt-decode": "^4.0.0",
     "lucide-react": "^0.562.0",
     "qrcode": "^1.5.4",

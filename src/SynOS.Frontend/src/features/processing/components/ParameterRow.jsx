@@ -75,7 +75,7 @@ export function ParameterRow({ parameter, value, onChange, onKeyDown, isActive }
                             onClick={() => onChange(value === 'Positive' ? 'Negative' : 'Positive')}
                             onKeyDown={onKeyDown}
                             className={cn(
-                                "w-24 px-3 py-1 rounded-md font-black text-xs uppercase border-2 transition-all flex items-center justify-center gap-2",
+                                "w-24 px-3 py-1 rounded-md font-black text-[10px] uppercase border-2 transition-all flex items-center justify-center gap-2",
                                 value === 'Positive' 
                                     ? "bg-red-500/20 text-red-500 border-red-500/40" 
                                     : value === 'Negative'
@@ -102,7 +102,7 @@ export function ParameterRow({ parameter, value, onChange, onKeyDown, isActive }
                         rows={1}
                         disabled={isTextDisabled}
                         className={cn(
-                            "w-24 text-xs font-medium py-1 px-2 rounded-md border-2 transition-all outline-none resize-none overflow-hidden",
+                            "w-24 text-[10px] font-medium py-1 px-2 rounded-md border-2 transition-all outline-none resize-none overflow-hidden",
                             isTextDisabled
                                 ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 cursor-not-allowed border-zinc-200 dark:border-zinc-700"
                                 : isActive 

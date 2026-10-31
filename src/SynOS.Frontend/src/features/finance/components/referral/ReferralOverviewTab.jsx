@@ -90,9 +90,9 @@ export const ReferralOverviewTab = ({ summary, loading: summaryLoading }) => {
                                 <stat.icon size={20} />
                             </div>
                         </div>
-                        <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{stat.label}</h3>
+                        <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{stat.label}</h3>
                         <p className="text-2xl font-black dark:text-white text-zinc-900 mt-1">{stat.value}</p>
-                        <p className="text-xs text-zinc-400 mt-2 font-medium">{stat.description}</p>
+                        <p className="text-[10px] text-zinc-400 mt-2 font-medium">{stat.description}</p>
                     </div>
                 ))}
             </div>
@@ -118,7 +118,7 @@ export const ReferralOverviewTab = ({ summary, loading: summaryLoading }) => {
                         <div className="overflow-x-auto">
                             <table className="w-full text-left text-xs border-collapse">
                                 <thead>
-                                    <tr className="border-b dark:border-zinc-900 border-zinc-100 pb-2 text-xs uppercase font-bold text-zinc-400">
+                                    <tr className="border-b dark:border-zinc-900 border-zinc-100 pb-2 text-[10px] uppercase font-bold text-zinc-400">
                                         <th className="pb-3">Doctor</th>
                                         <th className="pb-3">Patient</th>
                                         <th className="pb-3 text-right">Commission Due</th>
@@ -132,7 +132,7 @@ export const ReferralOverviewTab = ({ summary, loading: summaryLoading }) => {
                                             <td className="py-3 text-zinc-500">{p.patientName || 'Walk-In Visit'}</td>
                                             <td className="py-3 text-right font-black text-rose-500">₹{(p.amount ?? 0).toLocaleString()}</td>
                                             <td className="py-3 text-center">
-                                                <span className="px-2 py-0.5 rounded-full text-xs uppercase tracking-wider bg-rose-500/10 text-rose-500 border border-rose-500/20 font-bold">
+                                                <span className="px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider bg-rose-500/10 text-rose-500 border border-rose-500/20 font-bold">
                                                     Pending
                                                 </span>
                                             </td>
@@ -158,7 +158,7 @@ export const ReferralOverviewTab = ({ summary, loading: summaryLoading }) => {
                                 <div key={idx} className="p-4 bg-zinc-50 dark:bg-zinc-900/40 rounded-2xl border dark:border-zinc-800/50 border-zinc-200/50 flex items-center justify-between">
                                     <div>
                                         <p className="text-xs font-bold dark:text-zinc-200">{h.notes?.split('|')[0] || 'Partner Payout'}</p>
-                                        <p className="text-xs text-zinc-400 uppercase tracking-normal mt-1">{new Date(h.occurredAt).toLocaleDateString()} • {h.paymentMode || 'UPI'}</p>
+                                        <p className="text-[9px] text-zinc-400 uppercase tracking-tighter mt-1">{new Date(h.occurredAt).toLocaleDateString()} • {h.paymentMode || 'UPI'}</p>
                                     </div>
                                     <div className="text-right">
                                         <p className="text-xs font-black text-emerald-500">₹{h.amount?.toLocaleString()}</p>

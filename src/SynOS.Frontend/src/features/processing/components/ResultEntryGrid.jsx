@@ -57,7 +57,7 @@ export function ResultEntryGrid({ test, results, onValueChange, onSaveDraft, isS
     return (
         <div className="flex flex-col">
             {/* Grid Header */}
-            <div className="grid grid-cols-[1fr_120px_80px_140px] px-4 py-2 text-xs uppercase font-black tracking-tighter dark:text-zinc-400 text-slate-500 border-b dark:border-zinc-800 border-slate-300 bg-slate-50/80 dark:bg-zinc-900/50">
+            <div className="grid grid-cols-[1fr_120px_80px_140px] px-4 py-2 text-[10px] uppercase font-black tracking-tighter dark:text-zinc-400 text-slate-500 border-b dark:border-zinc-800 border-slate-300 bg-slate-50/80 dark:bg-zinc-900/50">
                 <div>Parameter</div>
                 <div className="text-center">Result</div>
                 <div className="text-center">Unit</div>
@@ -80,7 +80,7 @@ export function ResultEntryGrid({ test, results, onValueChange, onSaveDraft, isS
                             <span className="text-sm font-bold dark:text-zinc-200 text-zinc-900 leading-tight">
                                 {param.parameterName}
                             </span>
-                            <span className="text-xs font-mono text-zinc-500">
+                            <span className="text-[10px] font-mono text-zinc-500">
                                 {param.parameterCode}
                             </span>
                         </div>
@@ -99,7 +99,7 @@ export function ResultEntryGrid({ test, results, onValueChange, onSaveDraft, isS
                             {param.unit || '—'}
                         </div>
 
-                        <div className="text-right text-xs font-mono dark:text-zinc-400 text-zinc-500 flex items-center justify-end leading-tight">
+                        <div className="text-right text-[11px] font-mono dark:text-zinc-400 text-zinc-500 flex items-center justify-end leading-tight">
                             {param.referenceRange || '—'}
                         </div>
                     </div>

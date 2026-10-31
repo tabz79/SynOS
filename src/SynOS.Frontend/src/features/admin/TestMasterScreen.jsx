@@ -736,10 +736,10 @@ const renderPreviewInterpretation = (content) => {
             case 'bulletList': return <ul className="list-disc pl-3 space-y-0.5" key={idx}>{children}</ul>;
             case 'orderedList': return <ol className="list-decimal pl-3 space-y-0.5" key={idx}>{children}</ol>;
             case 'listItem': return <li className="leading-tight" key={idx}>{children}</li>;
-            case 'table': return <table className="w-full border-collapse border-2 border-zinc-200 my-1 text-xs" key={idx}><tbody>{children}</tbody></table>;
+            case 'table': return <table className="w-full border-collapse border-2 border-zinc-200 my-1 text-[11px]" key={idx}><tbody>{children}</tbody></table>;
             case 'tableRow': return <tr className="border-b border-zinc-150" key={idx}>{children}</tr>;
-            case 'tableHeader': return <th className="border border-zinc-200 p-1 bg-zinc-50 font-bold text-left text-xs" key={idx}>{children}</th>;
-            case 'tableCell': return <td className="border border-zinc-200 p-1 text-xs" key={idx}>{children}</td>;
+            case 'tableHeader': return <th className="border border-zinc-200 p-1 bg-zinc-50 font-bold text-left text-[11px]" key={idx}>{children}</th>;
+            case 'tableCell': return <td className="border border-zinc-200 p-1 text-[11px]" key={idx}>{children}</td>;
             default: return <React.Fragment key={idx}>{children}</React.Fragment>;
           }
         };
@@ -1456,7 +1456,7 @@ function TestInventoryTab({ selectedTest }) {
         <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
           {/* Select Item */}
           <div className="sm:col-span-5 space-y-1">
-            <label className="text-xs font-bold uppercase text-zinc-400">Select Consumable / Reagent:</label>
+            <label className="text-[10px] font-bold uppercase text-zinc-400">Select Consumable / Reagent:</label>
             <select
               value={selectedCatalogItemId}
               onChange={(e) => { setSelectedCatalogItemId(e.target.value); setSelectedTubeId(""); }}
@@ -1473,7 +1473,7 @@ function TestInventoryTab({ selectedTest }) {
 
           {/* Select Tube */}
           <div className="sm:col-span-3 space-y-1">
-            <label className="text-xs font-bold uppercase text-zinc-400">Or Specimen Tube:</label>
+            <label className="text-[10px] font-bold uppercase text-zinc-400">Or Specimen Tube:</label>
             <select
               value={selectedTubeId}
               onChange={(e) => { setSelectedTubeId(e.target.value); setSelectedCatalogItemId(""); }}
@@ -1492,7 +1492,7 @@ function TestInventoryTab({ selectedTest }) {
           <div className="sm:col-span-4 flex items-center gap-2">
             {selectedCatalogItemId ? (
               <div className="flex-1 space-y-1">
-                <label className="text-xs font-bold uppercase text-zinc-400">Consumption per Test:</label>
+                <label className="text-[10px] font-bold uppercase text-zinc-400">Consumption per Test:</label>
                 <div className="flex items-center gap-1">
                   <input
                     type="number"
@@ -1515,7 +1515,7 @@ function TestInventoryTab({ selectedTest }) {
               </div>
             ) : (
               <div className="w-20 space-y-1">
-                <label className="text-xs font-bold uppercase text-zinc-400">Qty (PCS):</label>
+                <label className="text-[10px] font-bold uppercase text-zinc-400">Qty (PCS):</label>
                 <input
                   type="number"
                   step="1"
@@ -1539,7 +1539,7 @@ function TestInventoryTab({ selectedTest }) {
 
         {/* Live Equivalency Calculation Helper */}
         {selectedConsumable && (
-          <div className="mt-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl flex items-center gap-2">
+          <div className="mt-2 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl flex items-center gap-2">
             <Sparkles className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
             <span>
               <strong>{addQty} {addUnit}</strong> per test  ➜  Equiv. <strong>{calculateBaseQuantity(addQty, addUnit, selectedConsumable.unitOfMeasure)} {selectedConsumable.unitOfMeasure}</strong> deducted from inventory stock per test run
@@ -1555,7 +1555,7 @@ function TestInventoryTab({ selectedTest }) {
             <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
               <Package className="w-4 h-4 text-emerald-500" /> 1. Required Inventory Items & Tubes
             </h4>
-            <span className="text-xs font-bold uppercase px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500">{totalMapped} Mapped</span>
+            <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-500">{totalMapped} Mapped</span>
           </div>
 
           {totalMapped === 0 ? (
@@ -1575,11 +1575,11 @@ function TestInventoryTab({ selectedTest }) {
                     <div>
                       <div className="flex items-center gap-2">
                         <p className="text-xs font-bold text-zinc-800 dark:text-zinc-200">{m.consumable?.name || "Consumable Item"}</p>
-                        <span className="text-xs font-bold uppercase px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                        <span className="text-[9px] font-bold uppercase px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400">
                           {m.usageType === 1 ? 'Waste / QC' : 'Consumption'}
                         </span>
                       </div>
-                      <p className="text-xs font-mono text-zinc-400 mt-1 flex items-center gap-2">
+                      <p className="text-[10px] font-mono text-zinc-400 mt-1 flex items-center gap-2">
                         <span>Code: {m.consumable?.code || "N/A"}</span>
                         <span>•</span>
                         <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Stock Unit: {baseUom}</span>
@@ -1626,7 +1626,7 @@ function TestInventoryTab({ selectedTest }) {
                             <span>{dispQty} {dispUnit} / test</span>
                             <Pencil className="w-3 h-3 opacity-60 group-hover:opacity-100" />
                           </div>
-                          <span className="text-xs font-mono text-zinc-400 font-medium mt-0.5">
+                          <span className="text-[9px] font-mono text-zinc-400 font-medium mt-0.5">
                             (Deducts {m.quantityPerTest} {baseUom} stock)
                           </span>
                         </button>
@@ -1648,7 +1648,7 @@ function TestInventoryTab({ selectedTest }) {
                 <div key={m.mapId} className="p-3 rounded-xl border border-purple-500/20 bg-purple-50/30 dark:bg-purple-950/20 flex justify-between items-center shadow-xs">
                   <div>
                     <p className="text-xs font-bold text-zinc-800 dark:text-zinc-200">{m.tube?.name || "Collection Tube"}</p>
-                    <p className="text-xs font-mono text-purple-500 font-semibold mt-0.5">{m.tube?.code || "N/A"} • Specimen Tube</p>
+                    <p className="text-[10px] font-mono text-purple-500 font-semibold mt-0.5">{m.tube?.code || "N/A"} • Specimen Tube</p>
                   </div>
                   <div className="flex items-center gap-2">
                     {editingMapId === m.mapId ? (
@@ -1663,7 +1663,7 @@ function TestInventoryTab({ selectedTest }) {
                           className="w-16 px-2 py-0.5 text-xs font-bold border border-purple-500 rounded-lg outline-none bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200"
                           autoFocus
                         />
-                        <span className="text-xs font-semibold text-purple-400">{m.tube?.unitOfMeasure || 'PCS'}</span>
+                        <span className="text-[10px] font-semibold text-purple-400">{m.tube?.unitOfMeasure || 'PCS'}</span>
                         <button
                           onClick={() => handleSaveTubeQty(m.mapId)}
                           className="p-1 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-all"
@@ -1701,17 +1701,17 @@ function TestInventoryTab({ selectedTest }) {
             <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
               <Shield className="w-4 h-4 text-blue-500" /> 2. Automatically Accessible Roles
             </h4>
-            <span className="text-xs font-bold uppercase px-2 py-0.5 rounded bg-blue-500/10 text-blue-500">{derivedRoles.length} Derived Roles</span>
+            <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-blue-500/10 text-blue-500">{derivedRoles.length} Derived Roles</span>
           </div>
 
           <div className="space-y-2 max-h-72 overflow-y-auto custom-scrollbar">
             {derivedRoles.map(role => (
               <div key={role.roleId || role.name} className="p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex justify-between items-center shadow-xs">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-extrabold uppercase px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500">{isRadiology ? "RAD" : "LAB"}</span>
+                  <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-500">{isRadiology ? "RAD" : "LAB"}</span>
                   <p className="text-xs font-bold text-zinc-800 dark:text-zinc-200">{role.name}</p>
                 </div>
-                <span className="text-xs font-extrabold uppercase px-2 py-0.5 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20">⚡ Auto-Derived</span>
+                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-amber-500/10 text-amber-500 border border-amber-500/20">⚡ Auto-Derived</span>
               </div>
             ))}
           </div>
@@ -1725,14 +1725,14 @@ function TestInventoryTab({ selectedTest }) {
         </h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
           <div className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-1">
-            <span className="text-xs font-extrabold uppercase text-purple-500 block">Stage 1: Sample Collection</span>
+            <span className="text-[10px] font-extrabold uppercase text-purple-500 block">Stage 1: Sample Collection</span>
             <p className="font-bold text-zinc-800 dark:text-zinc-200">Specimen Collection Tubes</p>
-            <p className="text-xs text-zinc-400">Deducted immediately when phlebotomist prints barcode label or confirms collection.</p>
+            <p className="text-[11px] text-zinc-400">Deducted immediately when phlebotomist prints barcode label or confirms collection.</p>
           </div>
           <div className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 space-y-1">
-            <span className="text-xs font-extrabold uppercase text-emerald-500 block">Stage 2: Test Processing</span>
+            <span className="text-[10px] font-extrabold uppercase text-emerald-500 block">Stage 2: Test Processing</span>
             <p className="font-bold text-zinc-800 dark:text-zinc-200">Reagents & Test Consumables</p>
-            <p className="text-xs text-zinc-400">Deducted automatically when lab technician or analyzer records test results.</p>
+            <p className="text-[11px] text-zinc-400">Deducted automatically when lab technician or analyzer records test results.</p>
           </div>
         </div>
       </div>
@@ -2902,12 +2902,12 @@ function TestInventoryTab({ selectedTest }) {
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-zinc-650 dark:text-zinc-400">Live Renderer Layout Preview</span>
-            <span className="bg-emerald-500/10 text-emerald-500 border border-emerald-500/25 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-widest flex items-center gap-0.5">
+            <span className="bg-emerald-500/10 text-emerald-500 border border-emerald-500/25 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest flex items-center gap-0.5">
               <Sparkles className="w-2.5 h-2.5" /> PDF WYSIWYG
             </span>
           </div>
           
-          <div className="flex bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-0.5 rounded-xl text-xs font-bold">
+          <div className="flex bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 p-0.5 rounded-xl text-[10px] font-bold">
             <button
               onClick={() => setPreviewMode("digital")}
               className={cn(
@@ -3105,7 +3105,7 @@ function TestInventoryTab({ selectedTest }) {
 
                   {!activeTemplate.enableAbsolutePositioning && previewMode === "physical" && activeTemplate.usePreprinted && (
                     <div className="h-[90px] border border-dashed border-zinc-200 bg-zinc-50/50 rounded-lg flex flex-col justify-center items-center mb-6 relative z-10">
-                      <span className="text-xs font-semibold tracking-wider text-zinc-650">Physical pre-printed sheet header region</span>
+                      <span className="text-[8px] font-semibold tracking-wider text-zinc-650">Physical pre-printed sheet header region</span>
                       <span className="text-[7px] text-zinc-400 font-mono mt-0.5">Top Safe Margins: {activeTemplate.topMargin}mm (~90px gap)</span>
                     </div>
                   )}
@@ -3127,7 +3127,7 @@ function TestInventoryTab({ selectedTest }) {
                           zIndex: 20
                         }}
                         onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'patientNameX', 'patientNameY', coords.patientNameX, coords.patientNameY)}
-                        className="bg-transparent border-0 shadow-none p-1 text-xs text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
+                        className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
                       >
                         <span className="font-bold text-zinc-800 dark:text-zinc-100">Rajesh Kumar</span>
                       </div>
@@ -3141,7 +3141,7 @@ function TestInventoryTab({ selectedTest }) {
                           zIndex: 20
                         }}
                         onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'patientAgeSexX', 'patientAgeSexY', coords.patientAgeSexX, coords.patientAgeSexY)}
-                        className="bg-transparent border-0 shadow-none p-1 text-xs text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
+                        className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
                       >
                         <span className="font-semibold text-zinc-700 dark:text-zinc-300">32Y / Male</span>
                       </div>
@@ -3155,7 +3155,7 @@ function TestInventoryTab({ selectedTest }) {
                           zIndex: 20
                         }}
                         onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'refDoctorX', 'refDoctorY', coords.refDoctorX, coords.refDoctorY)}
-                        className="bg-transparent border-0 shadow-none p-1 text-xs text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
+                        className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
                       >
                         <span className="font-bold text-zinc-850 dark:text-zinc-100">Dr. S. Sharma, MD</span>
                       </div>
@@ -3169,7 +3169,7 @@ function TestInventoryTab({ selectedTest }) {
                           zIndex: 20
                         }}
                         onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'patientIdX', 'patientIdY', coords.patientIdX, coords.patientIdY)}
-                        className="bg-transparent border-0 shadow-none p-1 text-xs text-zinc-855 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
+                        className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-855 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
                       >
                         <span className="font-semibold font-mono text-zinc-700 dark:text-zinc-300">PID-2026-8940</span>
                       </div>
@@ -3183,7 +3183,7 @@ function TestInventoryTab({ selectedTest }) {
                           zIndex: 20
                         }}
                         onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'billingDateX', 'billingDateY', coords.billingDateX, coords.billingDateY)}
-                        className="bg-transparent border-0 shadow-none p-1 text-xs text-zinc-855 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
+                        className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-855 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
                       >
                         <span className="font-semibold text-zinc-700 dark:text-zinc-300">20-May-2026</span>
                       </div>
@@ -3197,7 +3197,7 @@ function TestInventoryTab({ selectedTest }) {
                           zIndex: 20
                         }}
                         onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'reportDateX', 'reportDateY', coords.reportDateX, coords.reportDateY)}
-                        className="bg-transparent border-0 shadow-none p-1 text-xs text-zinc-855 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
+                        className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-855 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
                       >
                         <span className="font-bold text-zinc-800 dark:text-zinc-100">22-May-2026</span>
                       </div>
@@ -3210,7 +3210,7 @@ function TestInventoryTab({ selectedTest }) {
                       }}
                       className="transition-all"
                     >
-                      <div className="flex justify-between items-center text-xs border-b border-zinc-150 pb-1.5 font-semibold text-zinc-655 dark:text-zinc-400">
+                      <div className="flex justify-between items-center text-[9px] border-b border-zinc-150 pb-1.5 font-semibold text-zinc-655 dark:text-zinc-400">
                         <div>
                           <span className="font-bold text-zinc-800">Patient:</span> Rajesh Kumar, M / 32Y
                         </div>
@@ -3236,7 +3236,7 @@ function TestInventoryTab({ selectedTest }) {
                       onPointerDown={(e) => handleStartDrag(e, activeTemplate.id, 'testTitleX', 'testTitleY', coords.testTitleX, coords.testTitleY)}
                       className="bg-transparent border-0 shadow-none p-1 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded animate-in fade-in duration-200"
                     >
-                      <div className="font-extrabold text-xs text-zinc-900 uppercase">
+                      <div className="font-extrabold text-[10px] text-zinc-900 uppercase">
                         {selectedTest.name} ({selectedTest.code})
                       </div>
                     </div>
@@ -3261,25 +3261,25 @@ function TestInventoryTab({ selectedTest }) {
                     )}
                   >
                     {!activeTemplate.enableAbsolutePositioning && (
-                      <div className="font-extrabold text-xs text-zinc-900 uppercase mb-1">{selectedTest.name} ({selectedTest.code})</div>
+                      <div className="font-extrabold text-[10px] text-zinc-900 uppercase mb-1">{selectedTest.name} ({selectedTest.code})</div>
                     )}
                     {selectedTest.reportStyle === "Two Column Grid" ? (
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs mt-2">
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[8px] mt-2">
                         {displayParams && displayParams.map((p, i) => (
                           <div key={i} className="border-b border-zinc-200 pb-1 flex justify-between items-center">
                             <div>
-                              <span className="font-semibold block text-xs">{p.name}</span>
+                              <span className="font-semibold block text-[8px]">{p.name}</span>
                               {selectedTest.showMethod && p.method && <span className="text-[6px] text-zinc-655 italic">{p.method}</span>}
                             </div>
                             <div className="text-right">
-                              <span className="font-mono font-bold text-xs">{getParamMidpoint(p)} {p.unit}</span>
+                              <span className="font-mono font-bold text-[8px]">{getParamMidpoint(p)} {p.unit}</span>
                               {selectedTest.showRange && <span className="text-[6px] text-zinc-550 block">Ref: {formatReferenceRange(p)}</span>}
                             </div>
                           </div>
                         ))}
                       </div>
                     ) : selectedTest.reportStyle === "Descriptive Narrative" ? (
-                      <div className="space-y-2 text-xs text-zinc-700 mt-2">
+                      <div className="space-y-2 text-[8px] text-zinc-700 mt-2">
                         {displayParams && displayParams.map((p, i) => (
                           <div 
                             key={i} 
@@ -3289,7 +3289,7 @@ function TestInventoryTab({ selectedTest }) {
                                 : "bg-zinc-50 p-2 rounded-lg border border-zinc-200"
                             )}
                           >
-                            <span className="font-bold text-zinc-900 block text-xs">{p.name} ({p.code})</span>
+                            <span className="font-bold text-zinc-900 block text-[8px]">{p.name} ({p.code})</span>
                             <p className="mt-1 leading-normal text-[7.5px]">
                               The analyte value is measured at <strong className="font-mono text-zinc-900">{getParamMidpoint(p)} {p.unit}</strong>.
                               {selectedTest.showRange && ` The physiological biological reference interval is ${formatReferenceRange(p)} ${p.unit}.`}
@@ -3300,7 +3300,7 @@ function TestInventoryTab({ selectedTest }) {
                       </div>
                     ) : hasTemplateColumns ? (
                       <table className={cn(
-                        "w-full text-left text-xs border-collapse mt-2",
+                        "w-full text-left text-[8px] border-collapse mt-2",
                         selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border border-zinc-200"
                       )}>
                         <thead>
@@ -3372,7 +3372,7 @@ function TestInventoryTab({ selectedTest }) {
                       </table>
                     ) : (
                       <table className={cn(
-                        "w-full text-left text-xs border-collapse mt-2",
+                        "w-full text-left text-[8px] border-collapse mt-2",
                         selectedTest.reportStyle === "Standard A4" && !activeTemplate.enableAbsolutePositioning && "border border-zinc-200"
                       )}>
                         <thead>
@@ -3470,7 +3470,7 @@ function TestInventoryTab({ selectedTest }) {
                           {((previewMode === "digital") || (previewMode === "physical" && !activeTemplate.usePreprinted)) && activeTemplate.includeBranding && (
                             <span className="font-mono text-[7px] text-zinc-500 italic block mb-0.5">/Signed digitally/</span>
                           )}
-                          <div className="border-t border-zinc-300 pt-1 text-xs font-semibold text-zinc-650">
+                          <div className="border-t border-zinc-300 pt-1 text-[8px] font-semibold text-zinc-650">
                             {sig}
                           </div>
                         </div>
@@ -3480,7 +3480,7 @@ function TestInventoryTab({ selectedTest }) {
 
                   {!activeTemplate.enableAbsolutePositioning && previewMode === "physical" && activeTemplate.usePreprinted && (
                     <div className="h-[70px] border border-dashed border-zinc-200 bg-zinc-50/50 rounded-lg flex flex-col justify-center items-center mt-4 relative z-10">
-                      <span className="text-xs font-semibold tracking-wider text-zinc-650">Physical pre-printed sheet region</span>
+                      <span className="text-[8px] font-semibold tracking-wider text-zinc-650">Physical pre-printed sheet region</span>
                       <span className="text-[7px] text-zinc-400 font-mono mt-0.5">Bottom Safe Margins: {activeTemplate.bottomMargin}mm (~70px gap)</span>
                     </div>
                   )}
@@ -3655,7 +3655,7 @@ function TestInventoryTab({ selectedTest }) {
                       key={dept}
                       onClick={() => setSelectedDept(dept)}
                       className={cn(
-                        "px-2.5 py-1 rounded-full text-xs font-medium transition-all shrink-0 border whitespace-nowrap flex items-center gap-1",
+                        "px-2.5 py-1 rounded-full text-[10px] font-medium transition-all shrink-0 border whitespace-nowrap flex items-center gap-1",
                         isSelected
                           ? "bg-synos-primary/10 border-synos-primary/20 text-synos-primary font-semibold"
                           : "bg-zinc-50 dark:bg-zinc-900/40 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
@@ -3663,7 +3663,7 @@ function TestInventoryTab({ selectedTest }) {
                     >
                       <span>{dept}</span>
                       <span className={cn(
-                        "text-xs font-mono px-1 rounded-md",
+                        "text-[9px] font-mono px-1 rounded-md",
                         isSelected ? "bg-synos-primary/20" : "bg-zinc-200/50 dark:bg-zinc-850"
                       )}>
                         {count}
@@ -3704,8 +3704,8 @@ function TestInventoryTab({ selectedTest }) {
                 )}
               >
                 <div className="flex-1 min-w-0 pr-2">
-                  <span className="font-semibold text-xs tracking-normal text-zinc-800 dark:text-zinc-200 block whitespace-normal break-words leading-tight">{test.name}</span>
-                  <div className="flex flex-wrap items-center gap-1 mt-1 text-xs font-medium">
+                  <span className="font-semibold text-xs tracking-tight text-zinc-800 dark:text-zinc-200 block whitespace-normal break-words leading-tight">{test.name}</span>
+                  <div className="flex flex-wrap items-center gap-1 mt-1 text-[9px] font-medium">
                     <span className="bg-synos-primary/10 text-synos-primary border border-synos-primary/20 px-1 py-0.25 rounded uppercase tracking-wider font-mono shrink-0">{test.code}</span>
                     <span className="bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 px-1 py-0.25 rounded uppercase tracking-wider truncate max-w-[120px]" title={test.department}>{test.department}</span>
                     {test.isProfile && (
@@ -3716,7 +3716,7 @@ function TestInventoryTab({ selectedTest }) {
                   </div>
                 </div>
                 <div className="flex items-center gap-1 shrink-0 pt-0.5">
-                  <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">₹{test.basePrice}</span>
+                  <span className="text-[11px] font-semibold text-zinc-600 dark:text-zinc-400">₹{test.basePrice}</span>
                   <button 
                     onClick={(e) => handleDeleteTest(test.id, e)}
                     className="p-0.5 hover:bg-rose-500/10 text-zinc-400 dark:text-zinc-500 hover:text-rose-500 rounded transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-center"
@@ -3899,16 +3899,16 @@ function TestInventoryTab({ selectedTest }) {
                 <div>
                   <div className="flex items-center gap-2">
                     <h2 className="text-lg font-semibold text-zinc-900 dark:text-white tracking-tight leading-tight">{selectedTest.name}</h2>
-                    <span className="bg-synos-primary/10 text-synos-primary border border-synos-primary/20 px-1.5 py-0.5 rounded text-xs font-medium uppercase tracking-wider font-mono">
+                    <span className="bg-synos-primary/10 text-synos-primary border border-synos-primary/20 px-1.5 py-0.5 rounded text-[10px] font-medium uppercase tracking-wider font-mono">
                       {selectedTest.code}
                     </span>
                     {selectedTest.isProfile && (
-                      <span className="bg-amber-500/10 text-amber-500 border border-amber-500/20 px-1.5 py-0.5 rounded text-xs font-medium uppercase tracking-wider flex items-center gap-0.5">
+                      <span className="bg-amber-500/10 text-amber-500 border border-amber-500/20 px-1.5 py-0.5 rounded text-[10px] font-medium uppercase tracking-wider flex items-center gap-0.5">
                         <Layers className="w-2.5 h-2.5" /> Profile/Panel
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider mt-1.5">
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider mt-1.5">
                     Department: {selectedTest.department} &bull; Base Price: ₹{selectedTest.basePrice} 
                     {(() => {
                       const displayDeptObj = dbDeptsList.find(d => d.name === selectedTest.department);
@@ -4092,7 +4092,7 @@ function TestInventoryTab({ selectedTest }) {
                     <div className="flex items-start gap-4 p-4 rounded-xl bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/30">
                       <Cpu className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5 shrink-0" />
                       <div>
-                        <h4 className="text-sm font-black text-indigo-950 dark:text-indigo-200 tracking-normal">Radiology Dictation & Narrative Mode</h4>
+                        <h4 className="text-sm font-black text-indigo-950 dark:text-indigo-200 tracking-tight">Radiology Dictation & Narrative Mode</h4>
                         <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1 leading-relaxed">
                           Radiology examinations are narrative-based and do not contain individual numerical parameters, units, or reference ranges. 
                           The editor below configures the **default findings template** loaded on the radiologist's terminal during dictation.
@@ -4139,7 +4139,7 @@ function TestInventoryTab({ selectedTest }) {
                               const templateText = "NORMAL STUDY:\n\nFINDINGS:\n- Lungs and airways are clear.\n- Heart size is normal.\n- Pleural spaces are free.\n\nIMPRESSION:\nNormal chest study.";
                               handleRadiologyParamChange("narrativeTemplate", templateText);
                             }}
-                            className="text-xs text-synos-primary font-bold hover:underline flex items-center gap-1"
+                            className="text-[10px] text-synos-primary font-bold hover:underline flex items-center gap-1"
                           >
                             <Sparkles className="w-3 h-3" /> Pre-fill Normal Template
                           </button>
@@ -4153,7 +4153,7 @@ function TestInventoryTab({ selectedTest }) {
                             handleRadiologyParamChange("narrativeTemplate", e.target.value);
                           }}
                         />
-                        <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium ml-1">
+                        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium ml-1">
                           This template serves as the initial layout when the radiologist begins a new dictation session for this study.
                         </p>
                       </div>
@@ -4174,7 +4174,7 @@ function TestInventoryTab({ selectedTest }) {
                       <Sliders className="w-5 h-5 text-amber-600 dark:text-amber-500 shrink-0 mt-0.5 animate-pulse" />
                       <div>
                         <h4 className="text-xs font-extrabold text-amber-800 dark:text-amber-400">Profile Parameter Integration Mode</h4>
-                        <p className="text-xs text-amber-600 dark:text-amber-500 mt-1 font-medium leading-relaxed">
+                        <p className="text-[10px] text-amber-600 dark:text-amber-500 mt-1 font-medium leading-relaxed">
                           This is a composite Profile/Panel test. The parameters highlighted with source badges (e.g. <span className="bg-zinc-100 dark:bg-zinc-850 px-1 py-0.5 rounded font-bold font-mono">Child Test</span>) are dynamically compiled from child tests selected in the **Profile Builder** tab.
                           You can click **Add Parameter Row** to define native profile-level custom or calculated parameters (which can use the child parameter codes in formulas!).
                         </p>
@@ -4193,15 +4193,15 @@ function TestInventoryTab({ selectedTest }) {
                     <table className="w-full text-left border-collapse text-xs">
                       <thead>
                         <tr className="bg-zinc-50 dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
-                          <th className="py-2.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[60px] text-center">S.No.</th>
-                          {selectedTest.isProfile && <th className="py-2.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[120px]">Source</th>}
-                          <th className="py-2.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[90px]">Code</th>
-                          <th className="py-2.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-xs uppercase min-w-[150px]">Parameter Name</th>
-                          <th className="py-2.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[70px]">Unit</th>
-                          <th className="py-2.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[180px]">Default Reference Range</th>
-                          <th className="py-2.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[110px]">Methodology</th>
-                          <th className="py-2.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[100px] text-center">Settings</th>
-                          <th className="py-2.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-xs uppercase w-[40px] text-center"></th>
+                          <th className="py-2.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-[10px] uppercase w-[60px] text-center">S.No.</th>
+                          {selectedTest.isProfile && <th className="py-2.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-[10px] uppercase w-[120px]">Source</th>}
+                          <th className="py-2.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-[10px] uppercase w-[90px]">Code</th>
+                          <th className="py-2.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-[10px] uppercase min-w-[150px]">Parameter Name</th>
+                          <th className="py-2.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-[10px] uppercase w-[70px]">Unit</th>
+                          <th className="py-2.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-[10px] uppercase w-[180px]">Default Reference Range</th>
+                          <th className="py-2.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-[10px] uppercase w-[110px]">Methodology</th>
+                          <th className="py-2.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-[10px] uppercase w-[100px] text-center">Settings</th>
+                          <th className="py-2.5 px-2 font-semibold text-zinc-500 dark:text-zinc-400 text-[10px] uppercase w-[40px] text-center"></th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800 bg-white/50 dark:bg-zinc-900/10">
@@ -4261,11 +4261,11 @@ function TestInventoryTab({ selectedTest }) {
                               {selectedTest.isProfile && (
                                 <td className="py-1 px-2">
                                   {isFromChild ? (
-                                    <span className="bg-amber-500/10 border border-amber-500/25 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded text-xs font-semibold uppercase tracking-wide inline-block max-w-[100px] truncate" title={p.childTestName}>
+                                    <span className="bg-amber-500/10 border border-amber-500/25 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded text-[8px] font-semibold uppercase tracking-wide inline-block max-w-[100px] truncate" title={p.childTestName}>
                                       {p.childTestName}
                                     </span>
                                   ) : (
-                                    <span className="bg-synos-primary/10 border border-synos-primary/25 text-synos-primary px-1.5 py-0.5 rounded text-xs font-semibold uppercase tracking-wide inline-block">
+                                    <span className="bg-synos-primary/10 border border-synos-primary/25 text-synos-primary px-1.5 py-0.5 rounded text-[8px] font-semibold uppercase tracking-wide inline-block">
                                       Profile Native
                                     </span>
                                   )}
@@ -4769,9 +4769,9 @@ function TestInventoryTab({ selectedTest }) {
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Compose Panel / Profiles</h3>
-                    <p className="text-xs text-zinc-500 mt-0.5">Select and sequence the individual tests that compile into this comprehensive panel package.</p>
+                    <p className="text-[10px] text-zinc-500 mt-0.5">Select and sequence the individual tests that compile into this comprehensive panel package.</p>
                   </div>
-                  <span className="bg-amber-500/10 text-amber-500 border border-amber-500/25 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider">
+                  <span className="bg-amber-500/10 text-amber-500 border border-amber-500/25 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider">
                     {(selectedTest.includedTestIds || []).length} Tests Selected
                   </span>
                 </div>
@@ -4780,7 +4780,7 @@ function TestInventoryTab({ selectedTest }) {
                   {/* Left Column: Available Tests Selection */}
                   <div className="lg:col-span-7 flex flex-col space-y-3 h-full border-r border-zinc-150 dark:border-zinc-850 pr-5">
                     <div className="flex items-center justify-between">
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-450 dark:text-zinc-500">Available Tests</h4>
+                      <h4 className="text-[11px] font-bold uppercase tracking-wider text-zinc-450 dark:text-zinc-500">Available Tests</h4>
                       <input 
                         type="text"
                         placeholder="Search tests..."
@@ -4807,10 +4807,10 @@ function TestInventoryTab({ selectedTest }) {
                             >
                               <div className="min-w-0 flex-1 pr-2">
                                 <span className="font-bold text-xs block text-zinc-800 dark:text-zinc-200 truncate" title={test.name}>{test.name}</span>
-                                <span className="text-xs font-bold text-zinc-450 mt-1 uppercase tracking-wider bg-zinc-200/50 dark:bg-zinc-800 px-1.5 py-0.5 rounded inline-block">{test.code}</span>
+                                <span className="text-[9px] font-bold text-zinc-450 mt-1 uppercase tracking-wider bg-zinc-200/50 dark:bg-zinc-800 px-1.5 py-0.5 rounded inline-block">{test.code}</span>
                               </div>
                               <div className="flex items-center gap-2 shrink-0">
-                                <span className="text-xs text-zinc-400 font-semibold">{test.parameters?.length || 0} Param</span>
+                                <span className="text-[10px] text-zinc-400 font-semibold">{test.parameters?.length || 0} Param</span>
                                 <div className={cn(
                                   "w-4 h-4 rounded-md border flex items-center justify-center transition-all",
                                   isIncluded ? "bg-amber-500 border-amber-500 text-white" : "border-zinc-300 dark:border-zinc-700"
@@ -4826,7 +4826,7 @@ function TestInventoryTab({ selectedTest }) {
 
                   {/* Right Column: Ordered Sequence of Selected Tests */}
                   <div className="lg:col-span-5 flex flex-col space-y-3 h-full">
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-450 dark:text-zinc-500">Selected Sequence (Drag or edit S.No)</h4>
+                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-zinc-450 dark:text-zinc-500">Selected Sequence (Drag or edit S.No)</h4>
                     <div className="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden flex-1 flex flex-col min-h-[300px] max-h-[420px] overflow-y-auto custom-scrollbar">
                       <table className="w-full text-left border-collapse text-sm">
                         <thead>
@@ -4940,7 +4940,7 @@ function TestInventoryTab({ selectedTest }) {
           {/* Drawer Header */}
           <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/20">
             <div>
-              <span className="bg-synos-primary/10 text-synos-primary border border-synos-primary/20 px-2 py-0.5 rounded text-xs font-mono font-semibold">
+              <span className="bg-synos-primary/10 text-synos-primary border border-synos-primary/20 px-2 py-0.5 rounded text-[9px] font-mono font-semibold">
                 {drawerParamCode}
               </span>
               <h3 className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mt-1">Advanced Parameter settings</h3>
@@ -4958,7 +4958,7 @@ function TestInventoryTab({ selectedTest }) {
             <button
               onClick={() => setDrawerMode("formula")}
               className={cn(
-                "flex-1 py-2 text-xs font-semibold tracking-wide border-b-2 text-center transition-all",
+                "flex-1 py-2 text-[10px] font-semibold tracking-wide border-b-2 text-center transition-all",
                 drawerMode === "formula" ? "border-synos-primary text-synos-primary" : "border-transparent text-zinc-400 dark:text-zinc-500"
               )}
             >
@@ -4967,7 +4967,7 @@ function TestInventoryTab({ selectedTest }) {
             <button
               onClick={() => setDrawerMode("ranges")}
               className={cn(
-                "flex-1 py-2 text-xs font-semibold tracking-wide border-b-2 text-center transition-all",
+                "flex-1 py-2 text-[10px] font-semibold tracking-wide border-b-2 text-center transition-all",
                 drawerMode === "ranges" ? "border-synos-primary text-synos-primary" : "border-transparent text-zinc-400 dark:text-zinc-500"
               )}
             >
@@ -4976,7 +4976,7 @@ function TestInventoryTab({ selectedTest }) {
             <button
               onClick={() => setDrawerMode("analyzer")}
               className={cn(
-                "flex-1 py-2 text-xs font-semibold tracking-wide border-b-2 text-center transition-all",
+                "flex-1 py-2 text-[10px] font-semibold tracking-wide border-b-2 text-center transition-all",
                 drawerMode === "analyzer" ? "border-synos-primary text-synos-primary" : "border-transparent text-zinc-400 dark:text-zinc-500"
               )}
             >
@@ -4985,7 +4985,7 @@ function TestInventoryTab({ selectedTest }) {
             <button
               onClick={() => setDrawerMode("narrative")}
               className={cn(
-                "flex-1 py-2 text-xs font-semibold tracking-wide border-b-2 text-center transition-all",
+                "flex-1 py-2 text-[10px] font-semibold tracking-wide border-b-2 text-center transition-all",
                 drawerMode === "narrative" ? "border-synos-primary text-synos-primary" : "border-transparent text-zinc-400 dark:text-zinc-500"
               )}
             >
@@ -5000,8 +5000,8 @@ function TestInventoryTab({ selectedTest }) {
             {drawerMode === "formula" && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block">Calculation expression</label>
-                  <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">
+                  <label className="text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 block">Calculation expression</label>
+                  <label className="flex items-center gap-1.5 cursor-pointer text-[10px] font-bold text-zinc-600 dark:text-zinc-400 dark:text-zinc-400">
                     <input
                       type="checkbox"
                       checked={editHasFormula}
@@ -5022,11 +5022,11 @@ function TestInventoryTab({ selectedTest }) {
                         value={editFormula}
                         onChange={(e) => setEditFormula(e.target.value)}
                       />
-                      <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-tight">Write mathematical expressions using the precise parameter codes listed below.</p>
+                      <p className="text-[9px] text-zinc-600 dark:text-zinc-400 leading-tight">Write mathematical expressions using the precise parameter codes listed below.</p>
                     </div>
 
                     <div className="space-y-2">
-                      <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 block">Parameter Variables Chips</span>
+                      <span className="text-[9px] font-semibold text-zinc-600 dark:text-zinc-400 block">Parameter Variables Chips</span>
                       <div className="flex flex-wrap gap-1">
                         {(() => {
                           const childParams = getCompiledProfileParameters(selectedTest, catalog);
@@ -5050,30 +5050,30 @@ function TestInventoryTab({ selectedTest }) {
                               <button
                                 key={p.code}
                                 onClick={() => setEditFormula(prev => prev + (prev === "" ? "" : " ") + p.code)}
-                                className="px-2 py-1 bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 rounded-lg text-xs font-bold font-mono text-zinc-600 dark:text-zinc-400 hover:text-synos-primary hover:border-synos-primary/30 transition-all flex items-center gap-1"
+                                className="px-2 py-1 bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 rounded-lg text-[9px] font-bold font-mono text-zinc-600 dark:text-zinc-400 hover:text-synos-primary hover:border-synos-primary/30 transition-all flex items-center gap-1"
                               >
                                 <Plus className="w-2 h-2" /> {p.code}
                               </button>
                             ));
                         })()}
                       </div>
-                      <p className="text-xs text-zinc-400 mt-1">Tip: Click variable chips to insert them into the formula input box automatically.</p>
+                      <p className="text-[8px] text-zinc-400 mt-1">Tip: Click variable chips to insert them into the formula input box automatically.</p>
                     </div>
 
                     <div className="space-y-2 pt-1">
-                      <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 block">Math Operators Chips</span>
+                      <span className="text-[9px] font-semibold text-zinc-600 dark:text-zinc-400 block">Math Operators Chips</span>
                       <div className="flex flex-wrap gap-1">
                         {["+", "-", "*", "/", "(", ")", "%"].map(op => (
                           <button
                             key={op}
                             onClick={() => setEditFormula(prev => prev + (prev === "" ? "" : " ") + op)}
-                            className="px-2.5 py-1 bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 rounded-lg text-xs font-extrabold font-mono text-synos-primary hover:text-synos-primary/80 transition-all flex items-center justify-center min-w-[24px]"
+                            className="px-2.5 py-1 bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 rounded-lg text-[10px] font-extrabold font-mono text-synos-primary hover:text-synos-primary/80 transition-all flex items-center justify-center min-w-[24px]"
                           >
                             {op}
                           </button>
                         ))}
                       </div>
-                      <p className="text-xs text-zinc-400 mt-1">Tip: Click operator chips to insert basic math functions into the expression.</p>
+                      <p className="text-[8px] text-zinc-400 mt-1">Tip: Click operator chips to insert basic math functions into the expression.</p>
                     </div>
                   </div>
                 ) : (
@@ -5089,7 +5089,7 @@ function TestInventoryTab({ selectedTest }) {
               <div className="space-y-4 animate-in fade-in duration-200">
                 {/* Default Range */}
                 <div className="bg-zinc-50 dark:bg-zinc-900/30 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-2">
-                  <span className="text-xs font-bold text-zinc-500 uppercase block">Default Reference Range (Mandatory)</span>
+                  <span className="text-[9px] font-bold text-zinc-500 uppercase block">Default Reference Range (Mandatory)</span>
                   <input
                     type="text"
                     className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none focus:ring-1 focus:ring-synos-primary"
@@ -5097,10 +5097,10 @@ function TestInventoryTab({ selectedTest }) {
                     value={editDefaultRange}
                     onChange={(e) => setEditDefaultRange(e.target.value)}
                   />
-                  <p className="text-xs text-zinc-400">This range is used if no gender/age overrides are configured or if they do not match the patient.</p>
+                  <p className="text-[8px] text-zinc-400">This range is used if no gender/age overrides are configured or if they do not match the patient.</p>
                 </div>
 
-                <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block">Biological Category Overrides (Optional)</span>
+                <span className="text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 block">Biological Category Overrides (Optional)</span>
 
                 {/* Newborn */}
                 <CategoryOverrideSection
@@ -5195,11 +5195,11 @@ function TestInventoryTab({ selectedTest }) {
             {/* Drawer context: analyzer mapping */}
             {drawerMode === "analyzer" && (
               <div className="space-y-4">
-                <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block text-left">Analyzer Hardware Interface Mapping</span>
+                <span className="text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 block text-left">Analyzer Hardware Interface Mapping</span>
                 
                 <div className="space-y-3">
                   <div className="space-y-1">
-                    <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase ml-1">Analyzer Device Model</label>
+                    <label className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase ml-1">Analyzer Device Model</label>
                     <select
                       className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs w-full text-zinc-900 dark:text-zinc-100 outline-none"
                       value={editAnalyzerModel}
@@ -5214,7 +5214,7 @@ function TestInventoryTab({ selectedTest }) {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase ml-1">Instrument Channel / ID</label>
+                    <label className="text-[9px] font-bold text-zinc-500 dark:text-zinc-400 uppercase ml-1">Instrument Channel / ID</label>
                     <input
                       type="text"
                       className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
@@ -5225,7 +5225,7 @@ function TestInventoryTab({ selectedTest }) {
                   </div>
                 </div>
 
-                <div className="bg-zinc-50 dark:bg-zinc-900/30 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 flex gap-2 items-start text-xs text-zinc-500">
+                <div className="bg-zinc-50 dark:bg-zinc-900/30 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 flex gap-2 items-start text-[9px] text-zinc-500">
                   <Cpu className="w-5 h-5 text-synos-primary shrink-0" />
                   <p>When configured, values generated by laboratory diagnostic instruments will automatically map directly into patient reports via this interface code.</p>
                 </div>
@@ -5248,7 +5248,7 @@ function TestInventoryTab({ selectedTest }) {
                   </label>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block">Default narrative / interpretation template</label>
+                  <label className="text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 block">Default narrative / interpretation template</label>
                   <div className="h-96 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden bg-white dark:bg-zinc-950">
                     <RichMedicalEditor
                       value={editNarrative}
@@ -5257,7 +5257,7 @@ function TestInventoryTab({ selectedTest }) {
                       className="h-full border-0 bg-transparent dark:bg-transparent shadow-none rounded-none"
                     />
                   </div>
-                  <p className="text-xs text-zinc-400 leading-tight">When enabled, this comment will render directly under the parameter row spanning all columns of the report table.</p>
+                  <p className="text-[9px] text-zinc-400 leading-tight">When enabled, this comment will render directly under the parameter row spanning all columns of the report table.</p>
                 </div>
               </div>
             )}
@@ -5572,19 +5572,19 @@ function TestInventoryTab({ selectedTest }) {
 
                   <div className="grid grid-cols-2 gap-3 text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                     <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 p-3 rounded-lg flex flex-col gap-1">
-                      <span className="text-zinc-400 text-xs uppercase">Tests Affected</span>
+                      <span className="text-zinc-400 text-[10px] uppercase">Tests Affected</span>
                       <span className="text-lg font-bold">{importSummary.testsAffected}</span>
                     </div>
                     <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 p-3 rounded-lg flex flex-col gap-1">
-                      <span className="text-zinc-400 text-xs uppercase">Parameters Affected</span>
+                      <span className="text-zinc-400 text-[10px] uppercase">Parameters Affected</span>
                       <span className="text-lg font-bold">{importSummary.parametersAffected}</span>
                     </div>
                     <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 p-3 rounded-lg flex flex-col gap-1">
-                      <span className="text-zinc-400 text-xs uppercase">Mappings Configured</span>
+                      <span className="text-zinc-400 text-[10px] uppercase">Mappings Configured</span>
                       <span className="text-lg font-bold">{importSummary.mappingsAffected}</span>
                     </div>
                     <div className="bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 p-3 rounded-lg flex flex-col gap-1">
-                      <span className="text-zinc-400 text-xs uppercase">Pricing Records Updated</span>
+                      <span className="text-zinc-400 text-[10px] uppercase">Pricing Records Updated</span>
                       <span className="text-lg font-bold">{importSummary.pricingChanges}</span>
                     </div>
                   </div>
@@ -5650,7 +5650,7 @@ function CategoryOverrideSection({
 }) {
   return (
     <div className="bg-zinc-50 dark:bg-zinc-900/30 p-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
-      <span className={cn("text-xs font-bold block", colorClass)}>{title}</span>
+      <span className={cn("text-[9px] font-bold block", colorClass)}>{title}</span>
       
       {/* Male Specific */}
       <div className="space-y-2">
@@ -5669,7 +5669,7 @@ function CategoryOverrideSection({
           <div className="pl-5 space-y-2 animate-in slide-in-from-top-1 duration-100">
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-xs font-bold text-zinc-400 uppercase">Male Min</label>
+                <label className="text-[8px] font-bold text-zinc-400 uppercase">Male Min</label>
                 <input
                   type="number"
                   className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
@@ -5679,7 +5679,7 @@ function CategoryOverrideSection({
                 />
               </div>
               <div>
-                <label className="text-xs font-bold text-zinc-400 uppercase">Male Max</label>
+                <label className="text-[8px] font-bold text-zinc-400 uppercase">Male Max</label>
                 <input
                   type="number"
                   className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
@@ -5690,7 +5690,7 @@ function CategoryOverrideSection({
               </div>
             </div>
             <div>
-              <label className="text-xs font-bold text-zinc-400 uppercase">Male Text Range (Fallback)</label>
+              <label className="text-[8px] font-bold text-zinc-400 uppercase">Male Text Range (Fallback)</label>
               <input
                 type="text"
                 className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
@@ -5720,7 +5720,7 @@ function CategoryOverrideSection({
           <div className="pl-5 space-y-2 animate-in slide-in-from-top-1 duration-100">
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-xs font-bold text-zinc-400 uppercase">Female Min</label>
+                <label className="text-[8px] font-bold text-zinc-400 uppercase">Female Min</label>
                 <input
                   type="number"
                   className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
@@ -5730,7 +5730,7 @@ function CategoryOverrideSection({
                 />
               </div>
               <div>
-                <label className="text-xs font-bold text-zinc-400 uppercase">Female Max</label>
+                <label className="text-[8px] font-bold text-zinc-400 uppercase">Female Max</label>
                 <input
                   type="number"
                   className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"
@@ -5741,7 +5741,7 @@ function CategoryOverrideSection({
               </div>
             </div>
             <div>
-              <label className="text-xs font-bold text-zinc-400 uppercase">Female Text Range (Fallback)</label>
+              <label className="text-[8px] font-bold text-zinc-400 uppercase">Female Text Range (Fallback)</label>
               <input
                 type="text"
                 className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono outline-none"

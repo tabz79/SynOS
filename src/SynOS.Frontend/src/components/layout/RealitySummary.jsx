@@ -57,7 +57,7 @@ export function RealityTile({ value, label, shortLabel, qualifier, icon: Icon, c
             <div className="flex justify-between items-start w-full">
                 {/* VALUE (Top Left) */}
                 <span className={cn(
-                    "font-extrabold font-sans tracking-normal tabular-nums group-hover:scale-[1.02] transition-transform duration-300 origin-left block",
+                    "font-bold font-sans tracking-tight group-hover:scale-[1.02] transition-transform duration-300 origin-left block",
                     ui.text,
                     isCollapsed
                         ? "text-3xl leading-tight pb-0.5"
@@ -73,8 +73,8 @@ export function RealityTile({ value, label, shortLabel, qualifier, icon: Icon, c
                     {Icon ? (
                         <Icon className={cn(
                             "transition-colors duration-300",
-                            isCollapsed ? "w-4.5 h-4.5" : "w-6 h-6",
-                            "text-slate-500 group-hover:text-slate-700 dark:text-zinc-400"
+                            isCollapsed ? "w-4 h-4" : "w-6 h-6",
+                            "text-zinc-500 group-hover:text-zinc-700"
                         )} />
                     ) : null}
                 </div>
@@ -86,15 +86,15 @@ export function RealityTile({ value, label, shortLabel, qualifier, icon: Icon, c
             {/* SLOT 2: FOOTER (Label) */}
             <div className="w-full shrink-0">
                 <div className={cn(
-                    "text-slate-700 dark:text-zinc-300 transition-colors group-hover:text-slate-900 dark:group-hover:text-white flex items-baseline gap-1.5 whitespace-nowrap overflow-hidden",
+                    "text-zinc-600 transition-colors group-hover:text-zinc-800 flex items-baseline gap-1.5 whitespace-nowrap overflow-hidden",
                     // Reset margins here
                     isCollapsed
-                        ? "text-xs sm:text-sm font-semibold mb-0"
-                        : "text-sm sm:text-base font-semibold mb-0 normal-case"
+                        ? "text-xs font-medium mb-0"
+                        : "text-sm font-medium mb-0 normal-case"
                 )}>
                     <span className="truncate">{displayLabel}</span>
                     {qualifier && !isCollapsed && (
-                        <span className="opacity-70 font-medium truncate text-xs sm:text-sm text-slate-500 dark:text-zinc-400">
+                        <span className="opacity-60 font-normal truncate text-xs">
                             {qualifier}
                         </span>
                     )}

@@ -29,7 +29,7 @@ export function WorklistMatrixTabs({
                     type="button"
                     onClick={() => onAssignmentTabChange && onAssignmentTabChange('available')}
                     className={cn(
-                        "flex-1 text-center text-xs uppercase font-bold px-2 py-1 rounded transition-all whitespace-nowrap flex items-center justify-center gap-1",
+                        "flex-1 text-center text-[10px] uppercase font-bold px-2 py-1 rounded transition-all whitespace-nowrap flex items-center justify-center gap-1",
                         activeAssignmentTab === 'available'
                             ? "bg-zinc-800 text-white shadow-sm"
                             : (theme === 'dark' ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")
@@ -38,7 +38,7 @@ export function WorklistMatrixTabs({
                     <span>Available</span>
                     {availableCount > 0 && (
                         <span className={cn(
-                            "px-1.5 py-0.5 rounded-full text-xs font-black leading-none inline-flex items-center justify-center transition-all",
+                            "px-1.5 py-0.5 rounded-full text-[9px] font-black leading-none inline-flex items-center justify-center transition-all",
                             activeAssignmentTab === 'available'
                                 ? "bg-indigo-500 text-white shadow-xs"
                                 : "bg-indigo-500/20 text-indigo-500 dark:text-indigo-400 border border-indigo-500/30"
@@ -51,7 +51,7 @@ export function WorklistMatrixTabs({
                     type="button"
                     onClick={() => onAssignmentTabChange && onAssignmentTabChange('assigned')}
                     className={cn(
-                        "flex-1 text-center text-xs uppercase font-bold px-2 py-1 rounded transition-all whitespace-nowrap",
+                        "flex-1 text-center text-[10px] uppercase font-bold px-2 py-1 rounded transition-all whitespace-nowrap",
                         activeAssignmentTab === 'assigned'
                             ? "bg-zinc-800 text-white shadow-sm"
                             : (theme === 'dark' ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")
@@ -70,7 +70,7 @@ export function WorklistMatrixTabs({
                     type="button"
                     onClick={() => onTimeTabChange && onTimeTabChange(false)}
                     className={cn(
-                        "flex-1 text-center text-xs uppercase font-bold px-2 py-1 rounded transition-all whitespace-nowrap",
+                        "flex-1 text-center text-[10px] uppercase font-bold px-2 py-1 rounded transition-all whitespace-nowrap",
                         !showHistory
                             ? "bg-zinc-800 text-white shadow-sm"
                             : (theme === 'dark' ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")
@@ -82,7 +82,7 @@ export function WorklistMatrixTabs({
                     type="button"
                     onClick={() => onTimeTabChange && onTimeTabChange(true)}
                     className={cn(
-                        "flex-1 text-center text-xs uppercase font-bold px-2 py-1 rounded transition-all whitespace-nowrap",
+                        "flex-1 text-center text-[10px] uppercase font-bold px-2 py-1 rounded transition-all whitespace-nowrap",
                         showHistory
                             ? "bg-zinc-800 text-white shadow-sm"
                             : (theme === 'dark' ? "text-zinc-500 hover:text-zinc-300" : "text-zinc-500 hover:text-zinc-900")

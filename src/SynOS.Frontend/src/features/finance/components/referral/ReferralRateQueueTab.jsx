@@ -256,7 +256,7 @@ export const ReferralRateQueueTab = ({ onUpdateCount }) => {
                         <Zap size={15} />
                         <span>Unmapped Rate Queue</span>
                         {totalUnmappedInQueue > 0 && (
-                            <span className="ml-1.5 px-2 py-0.5 rounded-full text-xs font-extrabold bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                            <span className="ml-1.5 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/10 text-amber-600 border border-amber-500/20">
                                 {totalUnmappedInQueue}
                             </span>
                         )}
@@ -302,7 +302,7 @@ export const ReferralRateQueueTab = ({ onUpdateCount }) => {
                             <p className="text-xs font-bold text-emerald-900 dark:text-emerald-200">
                                 {lastCommitResult.message || "Rates successfully locked and stored!"}
                             </p>
-                            <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-0.5">
+                            <p className="text-[11px] text-emerald-700 dark:text-emerald-400 mt-0.5">
                                 Recalculated {lastCommitResult.recalculatedVisitsCount} pending patient visit(s) · Recognized ₹{Number(lastCommitResult.totalCommissionRecognized || 0).toLocaleString()} commission.
                             </p>
                         </div>
@@ -322,7 +322,7 @@ export const ReferralRateQueueTab = ({ onUpdateCount }) => {
                     {/* INFO BANNER */}
                     <div className="p-4 bg-synos-primary/5 border border-synos-primary/10 rounded-2xl flex items-start gap-3">
                         <Sparkles size={18} className="text-synos-primary shrink-0 mt-0.5" />
-                        <div className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                        <div className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed">
                             <span className="font-bold text-synos-primary uppercase tracking-widest mr-2">Self-Learning Test Rate Engine:</span>
                             When doctors prescribe tests for the first time, they appear in this queue. Configure their agreed rate once (% or ₹ Flat). SynOS permanently locks the rule and recalculates all pending patient visits automatically.
                         </div>
@@ -404,16 +404,16 @@ export const ReferralRateQueueTab = ({ onUpdateCount }) => {
                                                         <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
                                                             {group.doctorName}
                                                         </h4>
-                                                        <span className="px-2 py-0.5 text-xs font-extrabold rounded-md bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                                                        <span className="px-2 py-0.5 text-[10px] font-extrabold rounded-md bg-amber-500/10 text-amber-600 border border-amber-500/20">
                                                             {unmappedCount} Test{unmappedCount > 1 ? 's' : ''} to Map
                                                         </span>
                                                         {group.totalPendingVisits > 0 && (
-                                                            <span className="px-2 py-0.5 text-xs font-bold rounded-md bg-blue-500/10 text-blue-600 border border-blue-500/20">
+                                                            <span className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-blue-500/10 text-blue-600 border border-blue-500/20">
                                                                 {group.totalPendingVisits} Pending Visit{group.totalPendingVisits > 1 ? 's' : ''}
                                                             </span>
                                                         )}
                                                     </div>
-                                                    <div className="flex items-center gap-3 text-xs text-zinc-500 mt-0.5">
+                                                    <div className="flex items-center gap-3 text-[11px] text-zinc-500 mt-0.5">
                                                         {group.clinicName && (
                                                             <span className="flex items-center gap-1">
                                                                 <Building2 size={12} />
@@ -449,7 +449,7 @@ export const ReferralRateQueueTab = ({ onUpdateCount }) => {
                                             <div className="p-0 overflow-x-auto">
                                                 <table className="w-full text-left border-collapse">
                                                     <thead>
-                                                        <tr className="border-b border-zinc-100 dark:border-zinc-900 bg-zinc-50/20 dark:bg-zinc-900/10 text-xs uppercase font-bold text-zinc-400 tracking-wider">
+                                                        <tr className="border-b border-zinc-100 dark:border-zinc-900 bg-zinc-50/20 dark:bg-zinc-900/10 text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
                                                             <th className="py-3 px-5">Investigation / Test</th>
                                                             <th className="py-3 px-4">Department</th>
                                                             <th className="py-3 px-4 text-right">MRP (₹)</th>
@@ -482,7 +482,7 @@ export const ReferralRateQueueTab = ({ onUpdateCount }) => {
                                                                         <div className="font-bold text-zinc-900 dark:text-zinc-100">
                                                                             {test.testName}
                                                                         </div>
-                                                                        <div className="text-xs text-zinc-400 font-mono">
+                                                                        <div className="text-[10px] text-zinc-400 font-mono">
                                                                             {test.testCode}
                                                                         </div>
                                                                     </td>
@@ -493,7 +493,7 @@ export const ReferralRateQueueTab = ({ onUpdateCount }) => {
                                                                         ₹{Number(test.price).toLocaleString()}
                                                                     </td>
                                                                     <td className="py-3.5 px-4 text-center">
-                                                                        <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                                                                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
                                                                             {test.prescribedCount}x
                                                                         </span>
                                                                     </td>
@@ -503,7 +503,7 @@ export const ReferralRateQueueTab = ({ onUpdateCount }) => {
                                                                                 type="button"
                                                                                 onClick={() => handleRateChange(group.referralPartnerId, test.testId, 'type', 'Percentage')}
                                                                                 className={cn(
-                                                                                    "flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold transition-all",
+                                                                                    "flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all",
                                                                                     staged.type === 'Percentage'
                                                                                         ? "bg-white dark:bg-zinc-800 text-synos-primary shadow-xs"
                                                                                         : "text-zinc-500 hover:text-zinc-800"
@@ -516,7 +516,7 @@ export const ReferralRateQueueTab = ({ onUpdateCount }) => {
                                                                                 type="button"
                                                                                 onClick={() => handleRateChange(group.referralPartnerId, test.testId, 'type', 'Flat')}
                                                                                 className={cn(
-                                                                                    "flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold transition-all",
+                                                                                    "flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all",
                                                                                     staged.type === 'Flat'
                                                                                         ? "bg-white dark:bg-zinc-800 text-synos-primary shadow-xs"
                                                                                         : "text-zinc-500 hover:text-zinc-800"
@@ -555,7 +555,7 @@ export const ReferralRateQueueTab = ({ onUpdateCount }) => {
                                                                             type="button"
                                                                             onClick={() => commitSingleRule(group.referralPartnerId, test)}
                                                                             disabled={isRowSaving || !staged.value}
-                                                                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-zinc-900 hover:bg-black dark:bg-zinc-800 dark:hover:bg-zinc-700 text-white rounded-lg text-xs font-bold transition-all disabled:opacity-30 disabled:pointer-events-none active:scale-95"
+                                                                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-zinc-900 hover:bg-black dark:bg-zinc-800 dark:hover:bg-zinc-700 text-white rounded-lg text-[11px] font-bold transition-all disabled:opacity-30 disabled:pointer-events-none active:scale-95"
                                                                             title="Lock Rate for this test"
                                                                         >
                                                                             {isRowSaving ? (
@@ -626,7 +626,7 @@ export const ReferralRateQueueTab = ({ onUpdateCount }) => {
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
-                                        <tr className="border-b border-zinc-100 dark:border-zinc-900 bg-zinc-50/50 dark:bg-zinc-900/20 text-xs uppercase font-bold text-zinc-400 tracking-wider">
+                                        <tr className="border-b border-zinc-100 dark:border-zinc-900 bg-zinc-50/50 dark:bg-zinc-900/20 text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
                                             <th className="py-3 px-5">Doctor / Referral Partner</th>
                                             <th className="py-3 px-4">Test Name & Code</th>
                                             <th className="py-3 px-4">Department</th>
@@ -654,7 +654,7 @@ export const ReferralRateQueueTab = ({ onUpdateCount }) => {
                                                         <div className="font-semibold text-zinc-800 dark:text-zinc-200">
                                                             {rule.testName}
                                                         </div>
-                                                        <div className="text-xs text-zinc-400 font-mono">
+                                                        <div className="text-[10px] text-zinc-400 font-mono">
                                                             {rule.testCode}
                                                         </div>
                                                     </td>
@@ -666,7 +666,7 @@ export const ReferralRateQueueTab = ({ onUpdateCount }) => {
                                                     </td>
                                                     <td className="py-3.5 px-4 text-center">
                                                         <span className={cn(
-                                                            "px-2 py-0.5 rounded-md text-xs font-bold uppercase",
+                                                            "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase",
                                                             isPercentage 
                                                                 ? "bg-blue-500/10 text-blue-600 border border-blue-500/20" 
                                                                 : "bg-purple-500/10 text-purple-600 border border-purple-500/20"
@@ -681,7 +681,7 @@ export const ReferralRateQueueTab = ({ onUpdateCount }) => {
                                                         ₹{payout.toFixed(2)}
                                                     </td>
                                                     <td className="py-3.5 px-4 text-center">
-                                                        <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600">
+                                                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600">
                                                             Active
                                                         </span>
                                                     </td>

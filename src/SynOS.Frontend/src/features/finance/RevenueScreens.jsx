@@ -113,7 +113,7 @@ export const RevenueOverviewTab = ({ stats, onRefresh, presetRange, setPresetRan
   ];
 
   return (
-    <div className="px-6 py-5 space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+    <div className="p-8 space-y-8 animate-in slide-in-from-bottom-4 duration-500">
       {/* 4 TOP ELEVATED KPI CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {cards.map((card, idx) => (
@@ -123,7 +123,7 @@ export const RevenueOverviewTab = ({ stats, onRefresh, presetRange, setPresetRan
           >
             <div className="flex justify-between items-start">
               <div className="space-y-1">
-                <span className="text-xs font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">{card.title}</span>
+                <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">{card.title}</span>
                 <p className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">{card.value}</p>
               </div>
               <div className={cn(
@@ -135,7 +135,7 @@ export const RevenueOverviewTab = ({ stats, onRefresh, presetRange, setPresetRan
                 <card.icon size={17} />
               </div>
             </div>
-            <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+            <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
               {card.subtitle}
             </p>
           </div>
@@ -150,8 +150,8 @@ export const RevenueOverviewTab = ({ stats, onRefresh, presetRange, setPresetRan
           <div>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className="text-sm font-extrabold text-zinc-900 dark:text-white tracking-normal">Recent Collections & Inflows</h2>
-                <p className="text-xs text-zinc-500 mt-0.5">Live payments posted across reception, phlebotomy, and billing desks.</p>
+                <h2 className="text-sm font-extrabold text-zinc-900 dark:text-white tracking-tight">Recent Collections & Inflows</h2>
+                <p className="text-[11px] text-zinc-500 mt-0.5">Live payments posted across reception, phlebotomy, and billing desks.</p>
               </div>
               <button
                 onClick={() => navigate('/finance/revenue/bills')}
@@ -171,7 +171,7 @@ export const RevenueOverviewTab = ({ stats, onRefresh, presetRange, setPresetRan
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="border-b border-slate-200 dark:border-zinc-800 pb-2 text-xs uppercase font-bold text-zinc-500">
+                    <tr className="border-b border-slate-200 dark:border-zinc-800 pb-2 text-[10px] uppercase font-bold text-zinc-500">
                       <th className="pb-3 font-extrabold">Date</th>
                       <th className="pb-3 font-extrabold">Account / Category</th>
                       <th className="pb-3 text-right font-extrabold">Amount</th>
@@ -184,14 +184,14 @@ export const RevenueOverviewTab = ({ stats, onRefresh, presetRange, setPresetRan
                         <td className="py-3 text-zinc-500 font-medium">{new Date(t.occurredAt).toLocaleDateString()}</td>
                         <td className="py-3">
                           <span className="font-semibold text-zinc-800 dark:text-zinc-200 block">{t.sourceType || 'Patient Bill'}</span>
-                          {t.reference && <span className="text-xs text-zinc-400 font-mono">{t.reference}</span>}
+                          {t.reference && <span className="text-[10px] text-zinc-400 font-mono">{t.reference}</span>}
                         </td>
                         <td className="py-3 text-right font-black text-emerald-600 dark:text-emerald-400">
                           ₹{Number(t.amount || 0).toLocaleString('en-IN')}
                         </td>
                         <td className="py-3 text-center">
                           <span className={cn(
-                            "px-2.5 py-0.5 rounded-full text-xs font-extrabold uppercase tracking-wider",
+                            "px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider",
                             (t.paymentMode || '').toLowerCase().includes('cash')
                               ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
                               : "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20"
@@ -208,10 +208,10 @@ export const RevenueOverviewTab = ({ stats, onRefresh, presetRange, setPresetRan
           </div>
 
           <div className="pt-3 border-t border-zinc-100 dark:border-zinc-900 flex items-center justify-between text-xs">
-            <span className="text-zinc-400 text-xs">Showing latest {recentTransactions.length} receipts</span>
+            <span className="text-zinc-400 text-[11px]">Showing latest {recentTransactions.length} receipts</span>
             <button
               onClick={() => navigate('/finance/revenue/history')}
-              className="font-bold text-synos-primary hover:underline text-xs cursor-pointer"
+              className="font-bold text-synos-primary hover:underline text-[11px] cursor-pointer"
             >
               View Full History →
             </button>
@@ -224,8 +224,8 @@ export const RevenueOverviewTab = ({ stats, onRefresh, presetRange, setPresetRan
           {/* Drawer Reconciliation Card */}
           <div className="synos-dept-card rounded-2xl p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-extrabold text-zinc-900 dark:text-white tracking-normal">Active Drawer Balance</h2>
-              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
+              <h2 className="text-sm font-extrabold text-zinc-900 dark:text-white tracking-tight">Active Drawer Balance</h2>
+              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
                 Live Reconciled
               </span>
             </div>
@@ -234,9 +234,9 @@ export const RevenueOverviewTab = ({ stats, onRefresh, presetRange, setPresetRan
               {/* Physical Cash Drawer Box */}
               <div className="p-4 bg-zinc-50/80 dark:bg-zinc-900/40 rounded-xl border border-zinc-200/60 dark:border-zinc-800/60 flex justify-between items-center hover:border-emerald-500/40 transition-colors">
                 <div>
-                  <p className="text-xs font-extrabold text-zinc-400 uppercase tracking-widest">Physical Cash Drawer</p>
+                  <p className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest">Physical Cash Drawer</p>
                   <p className="text-xl font-black text-zinc-900 dark:text-white mt-0.5">{formatINR(cashCollected)}</p>
-                  <span className="text-xs text-zinc-400 font-medium">Available in front register</span>
+                  <span className="text-[10px] text-zinc-400 font-medium">Available in front register</span>
                 </div>
                 <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
                   <Wallet size={20} />
@@ -246,9 +246,9 @@ export const RevenueOverviewTab = ({ stats, onRefresh, presetRange, setPresetRan
               {/* Digital Inflow Box */}
               <div className="p-4 bg-zinc-50/80 dark:bg-zinc-900/40 rounded-xl border border-zinc-200/60 dark:border-zinc-800/60 flex justify-between items-center hover:border-indigo-500/40 transition-colors">
                 <div>
-                  <p className="text-xs font-extrabold text-zinc-400 uppercase tracking-widest">Digital Online Inflow</p>
+                  <p className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest">Digital Online Inflow</p>
                   <p className="text-xl font-black text-zinc-900 dark:text-white mt-0.5">{formatINR(onlineCollected)}</p>
-                  <span className="text-xs text-zinc-400 font-medium">UPI, QR, POS & Net Banking</span>
+                  <span className="text-[10px] text-zinc-400 font-medium">UPI, QR, POS & Net Banking</span>
                 </div>
                 <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center shrink-0">
                   <TrendingUp size={20} />
@@ -258,7 +258,7 @@ export const RevenueOverviewTab = ({ stats, onRefresh, presetRange, setPresetRan
 
             {/* Inflow Share Progress Bar */}
             <div className="space-y-1.5 pt-1">
-              <div className="flex justify-between text-xs font-bold">
+              <div className="flex justify-between text-[11px] font-bold">
                 <span className="text-emerald-600 dark:text-emerald-400">
                   Cash: {cashInflow > 0 ? Math.round((cashCollected / cashInflow) * 100) : 0}%
                 </span>
@@ -362,7 +362,7 @@ export const RevenueTerminal = () => {
         </div>
         <p className="text-sm font-bold text-rose-500 uppercase tracking-widest">Economic Position Unavailable</p>
         <p className="text-xs text-zinc-500 max-w-xs mx-auto">The system could not retrieve the revenue summary. Please try reconnecting.</p>
-        <button onClick={() => loadStats(presetRange)} className="text-xs font-bold text-synos-primary hover:underline uppercase tracking-widest cursor-pointer">Retry Synchronization</button>
+        <button onClick={() => loadStats(presetRange)} className="text-[10px] font-bold text-synos-primary hover:underline uppercase tracking-widest cursor-pointer">Retry Synchronization</button>
     </div>
   );
 
@@ -455,7 +455,7 @@ const StatusBadge = ({ status }) => {
     };
 
     return (
-        <span className={`px-2 py-0.5 rounded-full text-xs uppercase tracking-wider border ${styles[status] || "bg-zinc-500/10 text-zinc-500 border-zinc-500/20"}`}>
+        <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider border ${styles[status] || "bg-zinc-500/10 text-zinc-500 border-zinc-500/20"}`}>
             {status}
         </span>
     );
@@ -788,12 +788,12 @@ export const BillsCollectionsScreen = ({ presetRange = 'month', setPresetRange }
     const partnerBillsWithPending = filteredBills.filter(b => b.partnerCategory === 'Partner' && b.pendingAmount > 0);
 
     return (
-        <div className="px-6 py-5 w-full space-y-6 animate-in fade-in duration-500">
+        <div className="p-8 w-full space-y-6 animate-in fade-in duration-500">
             {/* Header & Download Bar */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex flex-col gap-1">
-                    <h1 className="text-2xl sm:text-3xl font-extrabold dark:text-white text-slate-900 tracking-normal leading-tight">Bills & Collections</h1>
-                    <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 font-medium">
+                    <h1 className="text-2xl font-bold dark:text-white text-zinc-900">Bills & Collections</h1>
+                    <p className="text-xs text-zinc-500 font-medium">
                         Real-time operational ledger with branch, department, and modality transaction breakdowns.
                     </p>
                 </div>
@@ -836,34 +836,34 @@ export const BillsCollectionsScreen = ({ presetRange = 'month', setPresetRange }
             {/* KPI METRIC STRIP (Cash vs Online vs Prepaid vs Referral Cut) */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                 <div className="p-4 rounded-xl synos-kpi-card">
-                    <p className="text-xs font-bold uppercase tracking-wider text-zinc-400">Total Billed</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Total Billed</p>
                     <p className="text-lg font-black text-zinc-900 dark:text-white mt-1">₹{totalBilled.toLocaleString()}</p>
-                    <span className="text-xs text-zinc-400 font-medium">{filteredBills.length} Invoices</span>
+                    <span className="text-[10px] text-zinc-400 font-medium">{filteredBills.length} Invoices</span>
                 </div>
                 <div className="p-4 rounded-xl synos-kpi-card">
-                    <p className="text-xs font-bold uppercase tracking-wider text-emerald-500">Cash Collected</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-500">Cash Collected</p>
                     <p className="text-lg font-black text-emerald-600 dark:text-emerald-400 mt-1">₹{totalCash.toLocaleString()}</p>
-                    <span className="text-xs text-zinc-400 font-medium">Physical Drawer</span>
+                    <span className="text-[10px] text-zinc-400 font-medium">Physical Drawer</span>
                 </div>
                 <div className="p-4 rounded-xl synos-kpi-card">
-                    <p className="text-xs font-bold uppercase tracking-wider text-indigo-500">Digital / Online</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-500">Digital / Online</p>
                     <p className="text-lg font-black text-indigo-600 dark:text-indigo-400 mt-1">₹{totalOnline.toLocaleString()}</p>
-                    <span className="text-xs text-zinc-400 font-medium">UPI / POS / Cards</span>
+                    <span className="text-[10px] text-zinc-400 font-medium">UPI / POS / Cards</span>
                 </div>
                 <div className="p-4 rounded-xl synos-kpi-card">
-                    <p className="text-xs font-bold uppercase tracking-wider text-purple-500">Prepaid Wallet</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-purple-500">Prepaid Wallet</p>
                     <p className="text-lg font-black text-purple-600 dark:text-purple-400 mt-1">₹{totalPrepaid.toLocaleString()}</p>
-                    <span className="text-xs text-zinc-400 font-medium">Token Redemptions</span>
+                    <span className="text-[10px] text-zinc-400 font-medium">Token Redemptions</span>
                 </div>
                 <div className="p-4 rounded-xl synos-kpi-card">
-                    <p className="text-xs font-bold uppercase tracking-wider text-amber-500">Referral Cut</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-amber-500">Referral Cut</p>
                     <p className="text-lg font-black text-amber-600 dark:text-amber-400 mt-1">₹{totalReferralCut.toLocaleString()}</p>
-                    <span className="text-xs text-zinc-400 font-medium">Partner Commissions</span>
+                    <span className="text-[10px] text-zinc-400 font-medium">Partner Commissions</span>
                 </div>
                 <div className="p-4 rounded-xl synos-kpi-card">
-                    <p className="text-xs font-bold uppercase tracking-wider text-rose-500">Pending Dues</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-rose-500">Pending Dues</p>
                     <p className="text-lg font-black text-rose-600 dark:text-rose-400 mt-1">₹{totalPending.toLocaleString()}</p>
-                    <span className="text-xs text-zinc-400 font-medium">Receivables Balance</span>
+                    <span className="text-[10px] text-zinc-400 font-medium">Receivables Balance</span>
                 </div>
             </div>
 
@@ -964,14 +964,14 @@ export const BillsCollectionsScreen = ({ presetRange = 'month', setPresetRange }
                                     type="date" 
                                     value={customDates.start}
                                     onChange={(e) => setCustomDates({...customDates, start: e.target.value})}
-                                    className="bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-lg px-2 py-1 text-xs font-bold text-synos-primary"
+                                    className="bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-lg px-2 py-1 text-[10px] font-bold text-synos-primary"
                                 />
-                                <span className="text-zinc-400 text-xs">to</span>
+                                <span className="text-zinc-400 text-[10px]">to</span>
                                 <input 
                                     type="date" 
                                     value={customDates.end}
                                     onChange={(e) => setCustomDates({...customDates, end: e.target.value})}
-                                    className="bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-lg px-2 py-1 text-xs font-bold text-synos-primary"
+                                    className="bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-lg px-2 py-1 text-[10px] font-bold text-synos-primary"
                                 />
                             </div>
                         )}
@@ -1003,23 +1003,23 @@ export const BillsCollectionsScreen = ({ presetRange = 'month', setPresetRange }
                     <div className="p-16 text-center space-y-2">
                         <AlertCircle className="w-8 h-8 text-zinc-400 mx-auto opacity-40" />
                         <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">No matching bills found</p>
-                        <p className="text-xs text-zinc-400">Try adjusting the department, modality, branch, or date range filter.</p>
+                        <p className="text-[11px] text-zinc-400">Try adjusting the department, modality, branch, or date range filter.</p>
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse synos-table">
                             <thead>
                                 <tr className="bg-slate-50/80 dark:bg-zinc-900/80 border-b border-slate-200 dark:border-zinc-800">
-                                    <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500">Bill No</th>
-                                    <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500">Patient</th>
-                                    <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500">Dept / Modality</th>
-                                    <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500">Partner / Account</th>
-                                    <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500 text-right">Total</th>
-                                    <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500 text-right">Payment Breakup</th>
-                                    <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500 text-right">Pending</th>
-                                    <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500 text-center">Status</th>
-                                    <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500">Date</th>
-                                    <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500 text-right">Actions</th>
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Bill No</th>
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Patient</th>
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Dept / Modality</th>
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Partner / Account</th>
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Total</th>
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Payment Breakup</th>
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Pending</th>
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-center">Status</th>
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Date</th>
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80">
@@ -1028,17 +1028,17 @@ export const BillsCollectionsScreen = ({ presetRange = 'month', setPresetRange }
                                         <td className="p-4 text-xs font-bold dark:text-zinc-200">
                                             {bill.billNumber}
                                             {bill.branchName && (
-                                                <p className="text-xs font-normal text-zinc-400 mt-0.5">{bill.branchName}</p>
+                                                <p className="text-[10px] font-normal text-zinc-400 mt-0.5">{bill.branchName}</p>
                                             )}
                                         </td>
                                         <td className="p-4">
                                             <div className="flex items-center gap-2.5">
-                                                <div className="w-7 h-7 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-xs font-bold text-zinc-400">
+                                                <div className="w-7 h-7 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-bold text-zinc-400">
                                                     {(bill.patientName || 'PA').substring(0, 2).toUpperCase()}
                                                 </div>
                                                 <div>
                                                     <span className="text-xs font-semibold dark:text-zinc-200 block">{bill.patientName}</span>
-                                                    {bill.token && <span className="text-xs text-zinc-400 font-mono">Token: {bill.token}</span>}
+                                                    {bill.token && <span className="text-[9px] text-zinc-400 font-mono">Token: {bill.token}</span>}
                                                 </div>
                                             </div>
                                         </td>
@@ -1048,7 +1048,7 @@ export const BillsCollectionsScreen = ({ presetRange = 'month', setPresetRange }
                                                     {bill.department || 'Pathology'}
                                                 </span>
                                                 {bill.modality && bill.modality !== 'General' && bill.modality !== bill.department && (
-                                                    <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400">
+                                                    <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
                                                         {bill.modality}
                                                     </span>
                                                 )}
@@ -1057,7 +1057,7 @@ export const BillsCollectionsScreen = ({ presetRange = 'month', setPresetRange }
                                         <td className="p-4 text-xs text-zinc-500">
                                             <span>{bill.partnerName}</span>
                                             {bill.referralCommissionCut > 0 && (
-                                                <p className="text-xs text-amber-500 font-medium mt-0.5">
+                                                <p className="text-[10px] text-amber-500 font-medium mt-0.5">
                                                     Cut: ₹{bill.referralCommissionCut.toLocaleString()}
                                                 </p>
                                             )}
@@ -1069,7 +1069,7 @@ export const BillsCollectionsScreen = ({ presetRange = 'month', setPresetRange }
                                             <p className="text-xs font-bold text-emerald-500">
                                                 ₹{bill.collectedAmount.toLocaleString()}
                                             </p>
-                                            <div className="flex items-center justify-end gap-1.5 text-xs font-medium text-zinc-400 mt-0.5">
+                                            <div className="flex items-center justify-end gap-1.5 text-[9px] font-medium text-zinc-400 mt-0.5">
                                                 {bill.cashAmount > 0 && <span>Cash: ₹{bill.cashAmount.toLocaleString()}</span>}
                                                 {bill.onlineAmount > 0 && <span>Online: ₹{bill.onlineAmount.toLocaleString()}</span>}
                                                 {bill.prepaidAmount > 0 && <span>Prepaid: ₹{bill.prepaidAmount.toLocaleString()}</span>}
@@ -1078,7 +1078,7 @@ export const BillsCollectionsScreen = ({ presetRange = 'month', setPresetRange }
                                         <td className="p-4 text-xs font-black text-right text-rose-500">
                                             <p className="font-mono">₹{bill.pendingAmount.toLocaleString()}</p>
                                             {bill.pendingAmount > 0 && (
-                                                <span className="text-xs font-bold block mt-0.5 tracking-normal text-zinc-400">
+                                                <span className="text-[9px] font-bold block mt-0.5 tracking-tight text-zinc-400">
                                                     {bill.partnerCategory === 'Partner' 
                                                         ? `Due: ${bill.partnerName}` 
                                                         : (bill.partnerCategory === 'Direct' ? 'Due at Counter' : bill.partnerCategory)}
@@ -1098,7 +1098,7 @@ export const BillsCollectionsScreen = ({ presetRange = 'month', setPresetRange }
                                                 <button
                                                     onClick={() => handleOpenInvoiceDoc(bill.billId)}
                                                     title="View & Print A4 Patient Tax Invoice"
-                                                    className="px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold flex items-center gap-1 cursor-pointer transition-all shadow-2xs"
+                                                    className="px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-all shadow-2xs"
                                                 >
                                                     <FileText size={12} className="text-synos-primary" />
                                                     <span className="hidden sm:inline">A4 Bill</span>
@@ -1109,7 +1109,7 @@ export const BillsCollectionsScreen = ({ presetRange = 'month', setPresetRange }
                                                     <button
                                                         onClick={() => handleOpenPartnerClaim(bill.partnerId || bill.referralPartnerId, [bill.visitId])}
                                                         title="Generate B2B Diagnostic Invoice for this visit"
-                                                        className="px-2.5 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-xs font-bold flex items-center gap-1 cursor-pointer transition-all"
+                                                        className="px-2.5 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-all"
                                                     >
                                                         <Receipt size={12} />
                                                         <span>Invoice</span>
@@ -1119,14 +1119,14 @@ export const BillsCollectionsScreen = ({ presetRange = 'month', setPresetRange }
                                                 {bill.pendingAmount > 0 ? (
                                                     <button 
                                                         onClick={() => handleRecordCollection(bill)}
-                                                        className="px-3 py-1.5 rounded-lg bg-synos-primary text-white text-xs font-bold uppercase tracking-wider hover:bg-synos-primary/90 transition-all shadow-sm cursor-pointer"
+                                                        className="px-3 py-1.5 rounded-lg bg-synos-primary text-white text-[10px] font-bold uppercase tracking-wider hover:bg-synos-primary/90 transition-all shadow-sm cursor-pointer"
                                                     >
                                                         {bill.partnerCategory === 'Partner' ? 'Settle' : 'Collect'}
                                                     </button>
                                                 ) : (
                                                     <button
                                                         onClick={() => handleRecordCollection(bill)}
-                                                        className="px-2.5 py-1 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold hover:bg-emerald-500/20 transition-all cursor-pointer"
+                                                        className="px-2.5 py-1 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold hover:bg-emerald-500/20 transition-all cursor-pointer"
                                                     >
                                                         Details
                                                     </button>
@@ -1416,24 +1416,24 @@ export const DueBillsScreen = ({ presetRange = 'month', setPresetRange }) => {
             {/* KPI Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="p-4 rounded-xl synos-kpi-card border border-rose-500/20 bg-rose-500/5">
-                    <p className="text-xs font-bold uppercase tracking-wider text-rose-500">Total Patient Dues</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-rose-500">Total Patient Dues</p>
                     <p className="text-2xl font-black text-rose-600 dark:text-rose-400 mt-1">₹{totalDue.toLocaleString()}</p>
-                    <span className="text-xs text-zinc-400 font-medium">{filteredBills.length} Active Due Bills</span>
+                    <span className="text-[10px] text-zinc-400 font-medium">{filteredBills.length} Active Due Bills</span>
                 </div>
                 <div className="p-4 rounded-xl synos-kpi-card">
-                    <p className="text-xs font-bold uppercase tracking-wider text-emerald-500">Collected So Far</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-500">Collected So Far</p>
                     <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">₹{totalPaid.toLocaleString()}</p>
-                    <span className="text-xs text-zinc-400 font-medium">Partially Paid at Counter</span>
+                    <span className="text-[10px] text-zinc-400 font-medium">Partially Paid at Counter</span>
                 </div>
                 <div className="p-4 rounded-xl synos-kpi-card">
-                    <p className="text-xs font-bold uppercase tracking-wider text-zinc-400">Total Billed Volume</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Total Billed Volume</p>
                     <p className="text-2xl font-black text-zinc-900 dark:text-white mt-1">₹{totalInvoiced.toLocaleString()}</p>
-                    <span className="text-xs text-zinc-400 font-medium">Original Invoiced Value</span>
+                    <span className="text-[10px] text-zinc-400 font-medium">Original Invoiced Value</span>
                 </div>
                 <div className="p-4 rounded-xl synos-kpi-card">
-                    <p className="text-xs font-bold uppercase tracking-wider text-indigo-500">Recovery Rate</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-indigo-500">Recovery Rate</p>
                     <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-1">{recoveryRate}%</p>
-                    <span className="text-xs text-zinc-400 font-medium">Realized Settlement Ratio</span>
+                    <span className="text-[10px] text-zinc-400 font-medium">Realized Settlement Ratio</span>
                 </div>
             </div>
 
@@ -1495,7 +1495,7 @@ export const DueBillsScreen = ({ presetRange = 'month', setPresetRange }) => {
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-xs border-collapse">
                             <thead>
-                                <tr className="border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-500 font-bold uppercase tracking-wider text-xs">
+                                <tr className="border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-500 font-bold uppercase tracking-wider text-[10px]">
                                     <th className="py-3 px-4">Date & Time</th>
                                     <th className="py-3 px-4">Token & Patient</th>
                                     <th className="py-3 px-4">Facility</th>
@@ -1510,7 +1510,7 @@ export const DueBillsScreen = ({ presetRange = 'month', setPresetRange }) => {
                             <tbody className="divide-y dark:divide-zinc-800 divide-zinc-200">
                                 {filteredBills.map((b) => (
                                     <tr key={b.invoiceId} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
-                                        <td className="py-3.5 px-4 whitespace-nowrap text-zinc-500 font-mono text-xs">
+                                        <td className="py-3.5 px-4 whitespace-nowrap text-zinc-500 font-mono text-[11px]">
                                             {b.createdAt ? new Date(b.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '—'}
                                         </td>
                                         <td className="py-3.5 px-4">
@@ -1520,7 +1520,7 @@ export const DueBillsScreen = ({ presetRange = 'month', setPresetRange }) => {
                                                 </span>
                                                 <div>
                                                     <p className="font-bold text-zinc-900 dark:text-white leading-tight">{b.patientName}</p>
-                                                    <p className="text-xs text-zinc-400 font-medium">
+                                                    <p className="text-[11px] text-zinc-400 font-medium">
                                                         {b.patientGender || ''} {b.patientAge ? `• ${b.patientAge}y` : ''} {b.patientMobile ? `• ${b.patientMobile}` : ''}
                                                     </p>
                                                 </div>
@@ -1532,7 +1532,7 @@ export const DueBillsScreen = ({ presetRange = 'month', setPresetRange }) => {
                                         <td className="py-3.5 px-4 text-zinc-600 dark:text-zinc-400">
                                             {b.referralDoctor || 'Direct Patient'}
                                         </td>
-                                        <td className="py-3.5 px-4 max-w-[200px] truncate text-zinc-500 text-xs">
+                                        <td className="py-3.5 px-4 max-w-[200px] truncate text-zinc-500 text-[11px]">
                                             {b.tests?.join(', ') || 'Diagnostic Tests'}
                                         </td>
                                         <td className="py-3.5 px-4 text-right font-mono font-bold text-zinc-900 dark:text-white">
@@ -1583,7 +1583,7 @@ export const DueBillsScreen = ({ presetRange = 'month', setPresetRange }) => {
                                 </div>
                                 <div>
                                     <h3 className="text-sm font-bold text-zinc-900 dark:text-white">Collect Patient Due</h3>
-                                    <p className="text-xs text-zinc-400">Token: {selectedDueBill.token} • {selectedDueBill.patientName}</p>
+                                    <p className="text-[11px] text-zinc-400">Token: {selectedDueBill.token} • {selectedDueBill.patientName}</p>
                                 </div>
                             </div>
                             <button
@@ -1603,15 +1603,15 @@ export const DueBillsScreen = ({ presetRange = 'month', setPresetRange }) => {
                         {/* Balance Overview */}
                         <div className="grid grid-cols-3 gap-2 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 text-center">
                             <div>
-                                <span className="text-xs text-zinc-400 uppercase font-bold block">Total Invoiced</span>
+                                <span className="text-[10px] text-zinc-400 uppercase font-bold block">Total Invoiced</span>
                                 <span className="font-mono text-xs font-bold text-zinc-900 dark:text-white">₹{selectedDueBill.totalAmount?.toLocaleString()}</span>
                             </div>
                             <div>
-                                <span className="text-xs text-emerald-500 uppercase font-bold block">Paid So Far</span>
+                                <span className="text-[10px] text-emerald-500 uppercase font-bold block">Paid So Far</span>
                                 <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">₹{selectedDueBill.totalPaid?.toLocaleString()}</span>
                             </div>
                             <div>
-                                <span className="text-xs text-rose-500 uppercase font-bold block">Current Due</span>
+                                <span className="text-[10px] text-rose-500 uppercase font-bold block">Current Due</span>
                                 <span className="font-mono text-xs font-black text-rose-600 dark:text-rose-400">₹{selectedDueBill.balanceDue?.toLocaleString()}</span>
                             </div>
                         </div>
@@ -1631,7 +1631,7 @@ export const DueBillsScreen = ({ presetRange = 'month', setPresetRange }) => {
                                 />
                             </div>
                             {Number(collectAmount) < selectedDueBill.balanceDue && Number(collectAmount) > 0 && (
-                                <p className="text-xs text-amber-500 font-medium">
+                                <p className="text-[11px] text-amber-500 font-medium">
                                     * Remaining due after this payment: ₹{(selectedDueBill.balanceDue - Number(collectAmount)).toLocaleString()}
                                 </p>
                             )}
@@ -1972,12 +1972,12 @@ export const PendingReceivablesScreen = ({ presetRange = 'month', setPresetRange
     };
 
     return (
-        <div className="px-6 py-5 w-full space-y-6 animate-in fade-in duration-500">
+        <div className="p-8 w-full space-y-6 animate-in fade-in duration-500">
             {/* Header & Actions Bar */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div className="space-y-1">
-                    <h1 className="text-2xl sm:text-3xl font-extrabold dark:text-white text-slate-900 tracking-normal leading-tight">Partner Receivables</h1>
-                    <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 font-medium">Operational inbox for institutional recovery and B2B settlements.</p>
+                    <h1 className="text-2xl font-bold dark:text-white text-zinc-900">Partner Receivables</h1>
+                    <p className="text-xs text-zinc-500 font-medium">Operational inbox for institutional recovery and B2B settlements.</p>
                 </div>
                 
                 <div className="flex items-center flex-wrap gap-2.5">
@@ -2004,19 +2004,19 @@ export const PendingReceivablesScreen = ({ presetRange = 'month', setPresetRange
             {/* KPI Metric Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="p-5 rounded-2xl synos-kpi-card">
-                    <p className="text-xs font-bold uppercase tracking-wider text-zinc-400">Total Outstanding</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Total Outstanding</p>
                     <p className="text-2xl font-black text-zinc-900 dark:text-white mt-1">{FinanceUtils.formatCurrency(totals.outstanding)}</p>
-                    <span className="text-xs text-zinc-400 font-medium">{totals.count} Open Investigation Invoices</span>
+                    <span className="text-[10px] text-zinc-400 font-medium">{totals.count} Open Investigation Invoices</span>
                 </div>
                 <div className="p-5 rounded-2xl synos-kpi-card border-rose-300 dark:border-rose-900/50">
-                    <p className="text-xs font-bold uppercase tracking-wider text-rose-500">Critical Overdue (&gt;30d)</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-rose-500">Critical Overdue (&gt;30d)</p>
                     <p className="text-2xl font-black text-rose-600 dark:text-rose-400 mt-1">{FinanceUtils.formatCurrency(totals.overdue)}</p>
-                    <span className="text-xs text-rose-500/70 font-medium">Overdue Recovery Liabilities</span>
+                    <span className="text-[10px] text-rose-500/70 font-medium">Overdue Recovery Liabilities</span>
                 </div>
                 <div className="p-5 rounded-2xl synos-kpi-card">
-                    <p className="text-xs font-bold uppercase tracking-wider text-zinc-400">Active Debtors</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Active Debtors</p>
                     <p className="text-2xl font-black text-zinc-900 dark:text-white mt-1">{filteredPartnerSummaries.length}</p>
-                    <span className="text-xs text-zinc-400 font-medium">Contracted Clinical Partners</span>
+                    <span className="text-[10px] text-zinc-400 font-medium">Contracted Clinical Partners</span>
                 </div>
             </div>
 
@@ -2047,12 +2047,12 @@ export const PendingReceivablesScreen = ({ presetRange = 'month', setPresetRange
                     <table className="w-full text-left border-collapse synos-table">
                         <thead>
                             <tr className="bg-slate-50/80 dark:bg-zinc-900/80 border-b border-slate-200 dark:border-zinc-800">
-                                <th className="p-6 text-xs font-bold uppercase tracking-widest text-zinc-500">Partner / Account</th>
-                                <th className="p-6 text-xs font-bold uppercase tracking-widest text-zinc-500 text-center">Open Bills</th>
-                                <th className="p-6 text-xs font-bold uppercase tracking-widest text-zinc-500 text-right">Total Outstanding</th>
-                                <th className="p-6 text-xs font-bold uppercase tracking-widest text-zinc-500">Oldest Dues</th>
-                                <th className="p-6 text-xs font-bold uppercase tracking-widest text-zinc-500">Aging Profile</th>
-                                <th className="p-6 text-xs font-bold uppercase tracking-widest text-zinc-500 text-right">Actions</th>
+                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Partner / Account</th>
+                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-center">Open Bills</th>
+                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Total Outstanding</th>
+                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Oldest Dues</th>
+                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Aging Profile</th>
+                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80">
@@ -2069,7 +2069,7 @@ export const PendingReceivablesScreen = ({ presetRange = 'month', setPresetRange
                                                 </button>
                                                 <div className="flex flex-col">
                                                     <span className="text-sm font-bold dark:text-zinc-200">{partner.partnerName}</span>
-                                                    <span className="text-xs text-zinc-400 uppercase tracking-normal">ID: {partner.partnerId.toString().substring(0, 8)}</span>
+                                                    <span className="text-[10px] text-zinc-400 uppercase tracking-tighter">ID: {partner.partnerId.toString().substring(0, 8)}</span>
                                                 </div>
                                             </div>
                                         </td>
@@ -2096,14 +2096,14 @@ export const PendingReceivablesScreen = ({ presetRange = 'month', setPresetRange
                                                     onClick={() => handleOpenPartnerClaim(partner)}
                                                     disabled={generatingClaim}
                                                     title="Generate B2B Diagnostic Tax Invoice for Referral Partner"
-                                                    className="px-3 py-2 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 text-xs font-black uppercase tracking-wider hover:bg-indigo-100 dark:hover:bg-indigo-900/60 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs disabled:opacity-50"
+                                                    className="px-3 py-2 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-wider hover:bg-indigo-100 dark:hover:bg-indigo-900/60 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs disabled:opacity-50"
                                                 >
                                                     <Receipt size={12} />
                                                     <span>B2B Invoice</span>
                                                 </button>
                                                 <button 
                                                     onClick={() => handleBulkSettle(partner)}
-                                                    className="px-4 py-2 rounded-xl bg-synos-primary text-white text-xs font-bold uppercase tracking-wider hover:shadow-lg hover:shadow-synos-primary/30 transition-all cursor-pointer"
+                                                    className="px-4 py-2 rounded-xl bg-synos-primary text-white text-[10px] font-bold uppercase tracking-wider hover:shadow-lg hover:shadow-synos-primary/30 transition-all cursor-pointer"
                                                 >
                                                     Bulk Settle
                                                 </button>
@@ -2134,7 +2134,7 @@ export const PendingReceivablesScreen = ({ presetRange = 'month', setPresetRange
                                                                         <p className="text-xs font-bold text-indigo-950 dark:text-indigo-200">
                                                                             {selectedCount} of {partnerBills.length} Bills Selected
                                                                         </p>
-                                                                        <p className="text-xs text-zinc-500 font-medium">
+                                                                        <p className="text-[10px] text-zinc-500 font-medium">
                                                                             Total Selected Due: <strong className="text-indigo-600 dark:text-indigo-400 font-mono">₹{selectedSum.toLocaleString()}</strong>
                                                                         </p>
                                                                     </div>
@@ -2146,14 +2146,14 @@ export const PendingReceivablesScreen = ({ presetRange = 'month', setPresetRange
                                                                             partnerItemIds.forEach(id => next.delete(id));
                                                                             setSelectedFactIds(next);
                                                                         }}
-                                                                        className="px-3 py-1.5 rounded-xl text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 text-xs font-bold cursor-pointer transition-all"
+                                                                        className="px-3 py-1.5 rounded-xl text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 text-[10px] font-bold cursor-pointer transition-all"
                                                                     >
                                                                         Clear Selection
                                                                     </button>
                                                                     <button
                                                                         onClick={() => handleOpenPartnerClaim(partner, selectedInPartner.map(b => b.receivableFactId))}
                                                                         disabled={generatingClaim}
-                                                                        className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-indigo-500/20 active:scale-95 cursor-pointer transition-all disabled:opacity-50"
+                                                                        className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-indigo-500/20 active:scale-95 cursor-pointer transition-all disabled:opacity-50"
                                                                     >
                                                                         <Receipt size={13} />
                                                                         <span>Generate B2B Invoice ({selectedCount})</span>
@@ -2164,7 +2164,7 @@ export const PendingReceivablesScreen = ({ presetRange = 'month', setPresetRange
 
                                                         <table className="w-full text-left">
                                                             <thead>
-                                                                <tr className="text-xs font-bold uppercase tracking-widest text-zinc-400 border-b dark:border-zinc-900 pb-2">
+                                                                <tr className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 border-b dark:border-zinc-900 pb-2">
                                                                     <th className="pb-2 w-8 text-center">
                                                                         <input
                                                                             type="checkbox"
@@ -2212,15 +2212,15 @@ export const PendingReceivablesScreen = ({ presetRange = 'month', setPresetRange
                                                                                     className="rounded border-zinc-300 dark:border-zinc-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                                                                                 />
                                                                             </td>
-                                                                            <td className="py-3 text-xs font-mono text-zinc-500 font-bold">{bill.token || bill.visitToken || bill.receivableFactId?.toString().substring(0, 13)}</td>
-                                                                            <td className="py-3 text-xs font-bold dark:text-zinc-300">{bill.patientName || 'Unknown Patient'}</td>
-                                                                            <td className="py-3 text-xs text-zinc-600 dark:text-zinc-400 max-w-[220px] truncate" title={bill.testsSummary || (bill.testNames?.join(', ')) || (bill.tests?.join(', ')) || '-'}>
+                                                                            <td className="py-3 text-[10px] font-mono text-zinc-500 font-bold">{bill.token || bill.visitToken || bill.receivableFactId?.toString().substring(0, 13)}</td>
+                                                                            <td className="py-3 text-[10px] font-bold dark:text-zinc-300">{bill.patientName || 'Unknown Patient'}</td>
+                                                                            <td className="py-3 text-[10px] text-zinc-600 dark:text-zinc-400 max-w-[220px] truncate" title={bill.testsSummary || (bill.testNames?.join(', ')) || (bill.tests?.join(', ')) || '-'}>
                                                                                 {bill.testsSummary || (bill.testNames?.join(', ')) || (bill.tests?.join(', ')) || '-'}
                                                                             </td>
-                                                                            <td className="py-3 text-xs text-zinc-400">{new Date(bill.occurredAt || bill.date).toLocaleDateString()}</td>
-                                                                            <td className="py-3 text-xs font-bold text-right dark:text-zinc-300">₹{(bill.totalAmount || bill.amount || 0).toLocaleString()}</td>
-                                                                            <td className="py-3 text-xs font-bold text-right text-emerald-500">₹{(bill.paidAmount || bill.amountReceived || 0).toLocaleString()}</td>
-                                                                            <td className="py-3 text-xs font-bold text-right text-rose-500">₹{(bill.balanceDue !== undefined && !isNaN(bill.balanceDue) ? bill.balanceDue : (bill.amount || 0) - (bill.amountReceived || 0)).toLocaleString()}</td>
+                                                                            <td className="py-3 text-[10px] text-zinc-400">{new Date(bill.occurredAt || bill.date).toLocaleDateString()}</td>
+                                                                            <td className="py-3 text-[10px] font-bold text-right dark:text-zinc-300">₹{(bill.totalAmount || bill.amount || 0).toLocaleString()}</td>
+                                                                            <td className="py-3 text-[10px] font-bold text-right text-emerald-500">₹{(bill.paidAmount || bill.amountReceived || 0).toLocaleString()}</td>
+                                                                            <td className="py-3 text-[10px] font-bold text-right text-rose-500">₹{(bill.balanceDue !== undefined && !isNaN(bill.balanceDue) ? bill.balanceDue : (bill.amount || 0) - (bill.amountReceived || 0)).toLocaleString()}</td>
                                                                         </tr>
                                                                     );
                                                                 })}
@@ -2490,26 +2490,26 @@ export const VisitCorrectionsScreen = ({ presetRange = 'month', setPresetRange }
             {/* KPI Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="p-4 rounded-xl synos-kpi-card">
-                    <p className="text-xs font-bold uppercase tracking-wider text-zinc-400">Total Amendments</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Total Amendments</p>
                     <p className="text-2xl font-black text-zinc-900 dark:text-white mt-1">{totalAmendments}</p>
-                    <span className="text-xs text-zinc-400 font-medium">Recorded Revision Events</span>
+                    <span className="text-[10px] text-zinc-400 font-medium">Recorded Revision Events</span>
                 </div>
                 <div className="p-4 rounded-xl synos-kpi-card">
-                    <p className="text-xs font-bold uppercase tracking-wider text-synos-primary">Net Revenue Shift</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-synos-primary">Net Revenue Shift</p>
                     <p className={cn("text-2xl font-black mt-1", netShift >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400")}>
                         {netShift >= 0 ? `+₹${netShift.toLocaleString()}` : `-₹${Math.abs(netShift).toLocaleString()}`}
                     </p>
-                    <span className="text-xs text-zinc-400 font-medium">Cumulative Balance Impact</span>
+                    <span className="text-[10px] text-zinc-400 font-medium">Cumulative Balance Impact</span>
                 </div>
                 <div className="p-4 rounded-xl synos-kpi-card">
-                    <p className="text-xs font-bold uppercase tracking-wider text-emerald-500">Upward Revisions</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-500">Upward Revisions</p>
                     <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{upwardCount}</p>
-                    <span className="text-xs text-zinc-400 font-medium">Tests Added / Rates Raised</span>
+                    <span className="text-[10px] text-zinc-400 font-medium">Tests Added / Rates Raised</span>
                 </div>
                 <div className="p-4 rounded-xl synos-kpi-card">
-                    <p className="text-xs font-bold uppercase tracking-wider text-amber-500">Downward / Refunds</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-amber-500">Downward / Refunds</p>
                     <p className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">{downwardCount}</p>
-                    <span className="text-xs text-zinc-400 font-medium">Tests Cancelled / Rates Lowered</span>
+                    <span className="text-[10px] text-zinc-400 font-medium">Tests Cancelled / Rates Lowered</span>
                 </div>
             </div>
 
@@ -2576,7 +2576,7 @@ export const VisitCorrectionsScreen = ({ presetRange = 'month', setPresetRange }
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-xs border-collapse">
                             <thead>
-                                <tr className="border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-500 font-bold uppercase tracking-wider text-xs">
+                                <tr className="border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-500 font-bold uppercase tracking-wider text-[10px]">
                                     <th className="py-3 px-4">Date & Time</th>
                                     <th className="py-3 px-4">Token & Patient</th>
                                     <th className="py-3 px-4">Facility</th>
@@ -2592,7 +2592,7 @@ export const VisitCorrectionsScreen = ({ presetRange = 'month', setPresetRange }
                                     const diff = Number(c.differenceAmount || 0);
                                     return (
                                         <tr key={c.correctionId} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
-                                            <td className="py-3.5 px-4 whitespace-nowrap text-zinc-500 font-mono text-xs">
+                                            <td className="py-3.5 px-4 whitespace-nowrap text-zinc-500 font-mono text-[11px]">
                                                 {c.createdAt ? new Date(c.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '—'}
                                             </td>
                                             <td className="py-3.5 px-4">
@@ -2602,7 +2602,7 @@ export const VisitCorrectionsScreen = ({ presetRange = 'month', setPresetRange }
                                                     </span>
                                                     <div>
                                                         <p className="font-bold text-zinc-900 dark:text-white leading-tight">{c.patientName}</p>
-                                                        <p className="text-xs text-zinc-400 font-medium">
+                                                        <p className="text-[11px] text-zinc-400 font-medium">
                                                             {c.patientPhone || c.patientMrn || ''}
                                                         </p>
                                                     </div>
@@ -2626,13 +2626,13 @@ export const VisitCorrectionsScreen = ({ presetRange = 'month', setPresetRange }
                                                         c.changeSummary.map((pill, idx) => (
                                                             <span 
                                                                 key={idx}
-                                                                className="px-1.5 py-0.5 rounded text-xs font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 leading-none"
+                                                                className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700 leading-none"
                                                             >
                                                                 {pill}
                                                             </span>
                                                         ))
                                                     ) : c.referralPartnerName ? (
-                                                        <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 leading-none">
+                                                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 leading-none">
                                                             Doctor: {c.referralPartnerName}
                                                         </span>
                                                     ) : null}
@@ -2697,7 +2697,7 @@ export const VisitCorrectionsScreen = ({ presetRange = 'month', setPresetRange }
                                 </div>
                                 <div>
                                     <h3 className="text-sm font-bold text-zinc-900 dark:text-white">Correction Audit Record</h3>
-                                    <p className="text-xs text-zinc-400">Token: {selectedCorrection.visitToken} • {selectedCorrection.patientName}</p>
+                                    <p className="text-[11px] text-zinc-400">Token: {selectedCorrection.visitToken} • {selectedCorrection.patientName}</p>
                                 </div>
                             </div>
                             <button
@@ -2711,26 +2711,26 @@ export const VisitCorrectionsScreen = ({ presetRange = 'month', setPresetRange }
                         {/* Top Meta Grid */}
                         <div className="grid grid-cols-2 gap-3 p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 text-xs">
                             <div>
-                                <span className="text-xs text-zinc-400 uppercase font-bold block">Amended By</span>
+                                <span className="text-[10px] text-zinc-400 uppercase font-bold block">Amended By</span>
                                 <span className="font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1 mt-0.5">
                                     <User className="w-3.5 h-3.5 text-zinc-400" />
                                     {selectedCorrection.createdByName || 'Front Desk Staff'}
                                 </span>
                             </div>
                             <div>
-                                <span className="text-xs text-zinc-400 uppercase font-bold block">Timestamp</span>
+                                <span className="text-[10px] text-zinc-400 uppercase font-bold block">Timestamp</span>
                                 <span className="font-mono text-zinc-800 dark:text-zinc-200 mt-0.5 block">
                                     {new Date(selectedCorrection.createdAt).toLocaleString()}
                                 </span>
                             </div>
                             <div>
-                                <span className="text-xs text-zinc-400 uppercase font-bold block">Previous Bill</span>
+                                <span className="text-[10px] text-zinc-400 uppercase font-bold block">Previous Bill</span>
                                 <span className="font-mono font-bold text-zinc-600 dark:text-zinc-400 mt-0.5 block">
                                     ₹{Number(selectedCorrection.previousAmount || 0).toLocaleString()}
                                 </span>
                             </div>
                             <div>
-                                <span className="text-xs text-zinc-400 uppercase font-bold block">New Bill (After Correction)</span>
+                                <span className="text-[10px] text-zinc-400 uppercase font-bold block">New Bill (After Correction)</span>
                                 <span className="font-mono font-bold text-zinc-900 dark:text-white mt-0.5 block">
                                     ₹{Number(selectedCorrection.newAmount || 0).toLocaleString()}
                                 </span>
@@ -2739,7 +2739,7 @@ export const VisitCorrectionsScreen = ({ presetRange = 'month', setPresetRange }
 
                         {/* Reason / Justification */}
                         <div className="space-y-1">
-                            <label className="text-xs text-zinc-400 uppercase font-bold tracking-wider">Mandatory Audit Reason</label>
+                            <label className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">Mandatory Audit Reason</label>
                             <div className="p-3 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs font-medium text-zinc-800 dark:text-zinc-200">
                                 {selectedCorrection.reason || 'No justification entered.'}
                             </div>
@@ -2753,7 +2753,7 @@ export const VisitCorrectionsScreen = ({ presetRange = 'month', setPresetRange }
 
                             return (
                                 <div className="space-y-3 pt-1 border-t dark:border-zinc-800 border-zinc-200">
-                                    <label className="text-xs text-zinc-400 uppercase font-bold tracking-wider">Forensic Audit Diff & System Context</label>
+                                    <label className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">Forensic Audit Diff & System Context</label>
                                     
                                     {summaryList && summaryList.length > 0 && (
                                         <div className="flex flex-wrap gap-1.5">
@@ -2767,7 +2767,7 @@ export const VisitCorrectionsScreen = ({ presetRange = 'month', setPresetRange }
                                                     <span 
                                                         key={idx}
                                                         className={cn(
-                                                            "px-2 py-1 rounded-md text-xs font-bold border",
+                                                            "px-2 py-1 rounded-md text-[11px] font-bold border",
                                                             isDoc ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30" :
                                                             isRec ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30" :
                                                             isAdd ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" :
@@ -2802,7 +2802,7 @@ export const VisitCorrectionsScreen = ({ presetRange = 'month', setPresetRange }
                                                     <span className="font-mono font-bold">
                                                         <span className="text-zinc-400 line-through mr-1">₹{Number(detailedDiff.receivableChange.previous || 0).toLocaleString()}</span>
                                                         <span className="text-zinc-900 dark:text-white">→ ₹{Number(detailedDiff.receivableChange.current || 0).toLocaleString()}</span>
-                                                        <span className={cn("ml-2 text-xs px-1.5 py-0.5 rounded", Number(detailedDiff.receivableChange.shift || 0) >= 0 ? "bg-emerald-500/20 text-emerald-600" : "bg-rose-500/20 text-rose-600")}>
+                                                        <span className={cn("ml-2 text-[10px] px-1.5 py-0.5 rounded", Number(detailedDiff.receivableChange.shift || 0) >= 0 ? "bg-emerald-500/20 text-emerald-600" : "bg-rose-500/20 text-rose-600")}>
                                                             {Number(detailedDiff.receivableChange.shift || 0) >= 0 ? `+₹${detailedDiff.receivableChange.shift}` : `-₹${Math.abs(detailedDiff.receivableChange.shift)}`}
                                                         </span>
                                                     </span>
@@ -2824,7 +2824,7 @@ export const VisitCorrectionsScreen = ({ presetRange = 'month', setPresetRange }
                                                     <span className="font-bold text-emerald-700 dark:text-emerald-300 block">Tests Added:</span>
                                                     <div className="space-y-0.5">
                                                         {detailedDiff.addedTests.map((t, idx) => (
-                                                            <div key={idx} className="flex justify-between text-xs text-zinc-800 dark:text-zinc-200">
+                                                            <div key={idx} className="flex justify-between text-[11px] text-zinc-800 dark:text-zinc-200">
                                                                 <span>+{t.name}</span>
                                                                 <span className="font-mono font-bold text-emerald-600">+₹{Number(t.price || 0).toLocaleString()}</span>
                                                             </div>
@@ -2838,7 +2838,7 @@ export const VisitCorrectionsScreen = ({ presetRange = 'month', setPresetRange }
                                                     <span className="font-bold text-rose-700 dark:text-rose-300 block">Tests Cancelled / Removed:</span>
                                                     <div className="space-y-0.5">
                                                         {detailedDiff.cancelledTests.map((t, idx) => (
-                                                            <div key={idx} className="flex justify-between text-xs text-zinc-800 dark:text-zinc-200">
+                                                            <div key={idx} className="flex justify-between text-[11px] text-zinc-800 dark:text-zinc-200">
                                                                 <span className="line-through text-zinc-400">-{t.name}</span>
                                                                 <span className="font-mono font-bold text-rose-600">-₹{Number(t.price || 0).toLocaleString()}</span>
                                                             </div>
@@ -2851,7 +2851,7 @@ export const VisitCorrectionsScreen = ({ presetRange = 'month', setPresetRange }
                                                 <div className="p-2.5 rounded-lg bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 space-y-0.5">
                                                     <span className="font-bold text-zinc-700 dark:text-zinc-300 block">Demographics Updated:</span>
                                                     {detailedDiff.demographicsChange.map((d, idx) => (
-                                                        <div key={idx} className="text-xs text-zinc-600 dark:text-zinc-400">
+                                                        <div key={idx} className="text-[11px] text-zinc-600 dark:text-zinc-400">
                                                             • {d}
                                                         </div>
                                                     ))}
@@ -2864,10 +2864,10 @@ export const VisitCorrectionsScreen = ({ presetRange = 'month', setPresetRange }
                                             <div className="space-y-2">
                                                 {p.AddTestCodes && p.AddTestCodes.length > 0 && (
                                                     <div className="space-y-1">
-                                                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">Tests Added:</span>
+                                                        <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">Tests Added:</span>
                                                         <div className="flex flex-wrap gap-1.5">
                                                             {p.AddTestCodes.map((code, idx) => (
-                                                                <span key={idx} className="font-mono text-xs font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                                                                <span key={idx} className="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                                                                     +{code}
                                                                 </span>
                                                             ))}
@@ -2877,10 +2877,10 @@ export const VisitCorrectionsScreen = ({ presetRange = 'month', setPresetRange }
 
                                                 {p.RemoveOrderIds && p.RemoveOrderIds.length > 0 && (
                                                     <div className="space-y-1">
-                                                        <span className="text-xs font-bold text-rose-600 dark:text-rose-400">Orders Cancelled / Removed:</span>
+                                                        <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400">Orders Cancelled / Removed:</span>
                                                         <div className="flex flex-wrap gap-1.5">
                                                             {p.RemoveOrderIds.map((id, idx) => (
-                                                                <span key={idx} className="font-mono text-xs font-bold px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 line-through">
+                                                                <span key={idx} className="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 line-through">
                                                                     Order #{idx + 1}
                                                                 </span>
                                                             ))}
@@ -3114,12 +3114,12 @@ export const CollectionHistoryScreen = ({ presetRange = 'month', setPresetRange 
     };
 
     return (
-        <div className="px-6 py-5 w-full space-y-6 animate-in fade-in duration-500">
+        <div className="p-8 w-full space-y-6 animate-in fade-in duration-500">
             {/* Header & Actions Bar */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div className="flex flex-col gap-1">
-                    <h1 className="text-2xl sm:text-3xl font-extrabold dark:text-white text-slate-900 tracking-normal leading-tight">Collection History</h1>
-                    <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 font-medium">Review completed collections and settlement activity.</p>
+                    <h1 className="text-2xl font-bold dark:text-white text-zinc-900">Collection History</h1>
+                    <p className="text-xs text-zinc-500 font-medium">Review completed collections and settlement activity.</p>
                 </div>
 
                 <div className="flex items-center flex-wrap gap-2.5">
@@ -3146,24 +3146,24 @@ export const CollectionHistoryScreen = ({ presetRange = 'month', setPresetRange 
             {/* KPI Metric Strip */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="p-4 rounded-xl synos-kpi-card">
-                    <p className="text-xs font-bold uppercase tracking-wider text-zinc-400">Total Collections</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Total Collections</p>
                     <p className="text-xl font-black text-zinc-900 dark:text-white mt-1">₹{totalCollected.toLocaleString()}</p>
-                    <span className="text-xs text-zinc-400 font-medium">{filteredHistory.length} Receipts Reconciled</span>
+                    <span className="text-[10px] text-zinc-400 font-medium">{filteredHistory.length} Receipts Reconciled</span>
                 </div>
                 <div className="p-4 rounded-xl synos-kpi-card">
-                    <p className="text-xs font-bold uppercase tracking-wider text-emerald-500">Cash Collections</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-500">Cash Collections</p>
                     <p className="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-1">₹{cashTotal.toLocaleString()}</p>
-                    <span className="text-xs text-zinc-400 font-medium">Physical Intake</span>
+                    <span className="text-[10px] text-zinc-400 font-medium">Physical Intake</span>
                 </div>
                 <div className="p-4 rounded-xl synos-kpi-card">
-                    <p className="text-xs font-bold uppercase tracking-wider text-sky-500">Digital / UPI</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-sky-500">Digital / UPI</p>
                     <p className="text-xl font-black text-sky-600 dark:text-sky-400 mt-1">₹{digitalTotal.toLocaleString()}</p>
-                    <span className="text-xs text-zinc-400 font-medium">Instant Settlements</span>
+                    <span className="text-[10px] text-zinc-400 font-medium">Instant Settlements</span>
                 </div>
                 <div className="p-4 rounded-xl synos-kpi-card">
-                    <p className="text-xs font-bold uppercase tracking-wider text-purple-500">Bank / Card</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-purple-500">Bank / Card</p>
                     <p className="text-xl font-black text-purple-600 dark:text-purple-400 mt-1">₹{bankTotal.toLocaleString()}</p>
-                    <span className="text-xs text-zinc-400 font-medium">POS & Direct Transfers</span>
+                    <span className="text-[10px] text-zinc-400 font-medium">POS & Direct Transfers</span>
                 </div>
             </div>
 
@@ -3192,26 +3192,26 @@ export const CollectionHistoryScreen = ({ presetRange = 'month', setPresetRange 
                     <table className="w-full text-left synos-table">
                         <thead>
                             <tr className="bg-slate-50/80 dark:bg-zinc-900/50 border-b dark:border-zinc-800 border-slate-300">
-                                <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500">Date & Time</th>
-                                <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500">Source Category</th>
-                                <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500 text-right">Amount</th>
-                                <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500 text-center">Payment Mode</th>
-                                <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500">Reference</th>
-                                <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500">Notes</th>
+                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Date & Time</th>
+                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Source Category</th>
+                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Amount</th>
+                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-center">Payment Mode</th>
+                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Reference</th>
+                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Notes</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80">
                             {filteredHistory.map((row) => (
                                 <tr key={row.revenueFactId} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors">
                                     <td className="p-4 text-xs text-zinc-500 font-mono whitespace-nowrap">{formatDateCompact(row.occurredAt)}</td>
-                                    <td className="p-4 text-xs font-bold dark:text-zinc-200 uppercase tracking-normal text-synos-primary">
+                                    <td className="p-4 text-xs font-bold dark:text-zinc-200 uppercase tracking-tighter text-synos-primary">
                                         {row.sourceType === 'Partner' && row.notes?.includes('Partner:') 
                                             ? row.notes.split('|')[0].replace('Partner:', '').trim()
                                             : FinanceUtils.mapRevenueSource(row.sourceType)}
                                     </td>
                                     <td className="p-4 text-xs font-bold text-right dark:text-zinc-300">₹{row.amount.toLocaleString()}</td>
                                     <td className="p-4 text-center">
-                                        <span className="px-2 py-1 rounded-md bg-zinc-100 dark:bg-zinc-800 text-xs font-medium text-zinc-500 uppercase tracking-wider">
+                                        <span className="px-2 py-1 rounded-md bg-zinc-100 dark:bg-zinc-800 text-[10px] font-medium text-zinc-500 uppercase tracking-wider">
                                             {FinanceUtils.mapPaymentMode(row.paymentMode)}
                                         </span>
                                     </td>
@@ -3406,24 +3406,24 @@ export const CancellationsRefundsScreen = ({ presetRange = 'month', setPresetRan
             {/* KPI Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="p-4 rounded-xl synos-kpi-card">
-                    <p className="text-xs font-bold uppercase tracking-wider text-zinc-400">Total Cancellations</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Total Cancellations</p>
                     <p className="text-2xl font-black text-zinc-900 dark:text-white mt-1">{totalCancelled}</p>
-                    <span className="text-xs text-zinc-400 font-medium">Voided Patient Registrations</span>
+                    <span className="text-[10px] text-zinc-400 font-medium">Voided Patient Registrations</span>
                 </div>
                 <div className="p-4 rounded-xl synos-kpi-card">
-                    <p className="text-xs font-bold uppercase tracking-wider text-rose-500">Total Refunds Issued</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-rose-500">Total Refunds Issued</p>
                     <p className="text-2xl font-black text-rose-600 dark:text-rose-400 mt-1">₹{totalRefunded.toLocaleString()}</p>
-                    <span className="text-xs text-zinc-400 font-medium">Outbound Customer Settlements</span>
+                    <span className="text-[10px] text-zinc-400 font-medium">Outbound Customer Settlements</span>
                 </div>
                 <div className="p-4 rounded-xl synos-kpi-card">
-                    <p className="text-xs font-bold uppercase tracking-wider text-amber-500">Visits with Refund</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-amber-500">Visits with Refund</p>
                     <p className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">{withRefundCount}</p>
-                    <span className="text-xs text-zinc-400 font-medium">Paid Prior to Cancellation</span>
+                    <span className="text-[10px] text-zinc-400 font-medium">Paid Prior to Cancellation</span>
                 </div>
                 <div className="p-4 rounded-xl synos-kpi-card">
-                    <p className="text-xs font-bold uppercase tracking-wider text-zinc-400">Total Gross Billed Voided</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Total Gross Billed Voided</p>
                     <p className="text-2xl font-black text-zinc-600 dark:text-zinc-300 mt-1">₹{totalBilled.toLocaleString()}</p>
-                    <span className="text-xs text-zinc-400 font-medium">Gross Reversed Volume</span>
+                    <span className="text-[10px] text-zinc-400 font-medium">Gross Reversed Volume</span>
                 </div>
             </div>
 
@@ -3492,7 +3492,7 @@ export const CancellationsRefundsScreen = ({ presetRange = 'month', setPresetRan
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-xs border-collapse">
                             <thead>
-                                <tr className="border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-500 font-bold uppercase tracking-wider text-xs">
+                                <tr className="border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-500 font-bold uppercase tracking-wider text-[10px]">
                                     <th className="py-3 px-4">Date & Time</th>
                                     <th className="py-3 px-4">Token & Patient</th>
                                     <th className="py-3 px-4">Facility</th>
@@ -3509,7 +3509,7 @@ export const CancellationsRefundsScreen = ({ presetRange = 'month', setPresetRan
                                     const hasRefund = Number(c.refundedAmount || 0) > 0;
                                     return (
                                         <tr key={c.cancelId} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
-                                            <td className="py-3.5 px-4 whitespace-nowrap text-zinc-500 font-mono text-xs">
+                                            <td className="py-3.5 px-4 whitespace-nowrap text-zinc-500 font-mono text-[11px]">
                                                 {c.cancelledAt ? new Date(c.cancelledAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '—'}
                                             </td>
                                             <td className="py-3.5 px-4">
@@ -3519,7 +3519,7 @@ export const CancellationsRefundsScreen = ({ presetRange = 'month', setPresetRan
                                                     </span>
                                                     <div>
                                                         <p className="font-bold text-zinc-900 dark:text-white leading-tight">{c.patientName}</p>
-                                                        <p className="text-xs text-zinc-400 font-medium">
+                                                        <p className="text-[11px] text-zinc-400 font-medium">
                                                             {c.patientPhone || c.patientMrn || ''}
                                                         </p>
                                                     </div>
@@ -3539,7 +3539,7 @@ export const CancellationsRefundsScreen = ({ presetRange = 'month', setPresetRan
                                                     {c.reason || 'Patient cancelled visit'}
                                                 </p>
                                                 {c.notes && (
-                                                    <p className="text-xs text-zinc-400 italic mt-0.5 truncate" title={c.notes}>
+                                                    <p className="text-[11px] text-zinc-400 italic mt-0.5 truncate" title={c.notes}>
                                                         Note: {c.notes}
                                                     </p>
                                                 )}
@@ -3558,7 +3558,7 @@ export const CancellationsRefundsScreen = ({ presetRange = 'month', setPresetRan
                                             </td>
                                             <td className="py-3.5 px-4 text-center">
                                                 <span className={cn(
-                                                    "text-xs font-bold px-2 py-0.5 rounded-full border uppercase tracking-wider",
+                                                    "text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase tracking-wider",
                                                     hasRefund
                                                         ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
                                                         : "bg-zinc-500/10 text-zinc-500 border-zinc-500/20"
@@ -3598,7 +3598,7 @@ export const CancellationsRefundsScreen = ({ presetRange = 'month', setPresetRan
                                 </div>
                                 <div>
                                     <h3 className="text-sm font-bold text-zinc-900 dark:text-white">Cancellation Audit Particulars</h3>
-                                    <p className="text-xs text-zinc-400">Token: {selectedCancellation.visitToken} • {selectedCancellation.patientName}</p>
+                                    <p className="text-[11px] text-zinc-400">Token: {selectedCancellation.visitToken} • {selectedCancellation.patientName}</p>
                                 </div>
                             </div>
                             <button
@@ -3612,26 +3612,26 @@ export const CancellationsRefundsScreen = ({ presetRange = 'month', setPresetRan
                         {/* Top Meta Grid */}
                         <div className="grid grid-cols-2 gap-3 p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 text-xs">
                             <div>
-                                <span className="text-xs text-zinc-400 uppercase font-bold block">Cancelled By</span>
+                                <span className="text-[10px] text-zinc-400 uppercase font-bold block">Cancelled By</span>
                                 <span className="font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1 mt-0.5">
                                     <User className="w-3.5 h-3.5 text-zinc-400" />
                                     {selectedCancellation.cancelledByName || 'Staff Desk'}
                                 </span>
                             </div>
                             <div>
-                                <span className="text-xs text-zinc-400 uppercase font-bold block">Timestamp</span>
+                                <span className="text-[10px] text-zinc-400 uppercase font-bold block">Timestamp</span>
                                 <span className="font-mono text-zinc-800 dark:text-zinc-200 mt-0.5 block">
                                     {new Date(selectedCancellation.cancelledAt).toLocaleString()}
                                 </span>
                             </div>
                             <div>
-                                <span className="text-xs text-zinc-400 uppercase font-bold block">Original Billed</span>
+                                <span className="text-[10px] text-zinc-400 uppercase font-bold block">Original Billed</span>
                                 <span className="font-mono font-bold text-zinc-500 line-through mt-0.5 block">
                                     ₹{Number(selectedCancellation.totalBilled || 0).toLocaleString()}
                                 </span>
                             </div>
                             <div>
-                                <span className="text-xs text-rose-500 uppercase font-bold block">Refund Settled</span>
+                                <span className="text-[10px] text-rose-500 uppercase font-bold block">Refund Settled</span>
                                 <span className="font-mono font-black text-rose-600 dark:text-rose-400 mt-0.5 block">
                                     ₹{Number(selectedCancellation.refundedAmount || 0).toLocaleString()} ({selectedCancellation.refundMethod || 'Cash'})
                                 </span>
@@ -3640,7 +3640,7 @@ export const CancellationsRefundsScreen = ({ presetRange = 'month', setPresetRan
 
                         {/* Reason / Justification */}
                         <div className="space-y-1">
-                            <label className="text-xs text-zinc-400 uppercase font-bold tracking-wider">Cancellation Reason</label>
+                            <label className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">Cancellation Reason</label>
                             <div className="p-3 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs font-bold text-zinc-800 dark:text-zinc-200">
                                 {selectedCancellation.reason || 'Patient cancelled visit.'}
                             </div>
@@ -3648,7 +3648,7 @@ export const CancellationsRefundsScreen = ({ presetRange = 'month', setPresetRan
 
                         {selectedCancellation.notes && (
                             <div className="space-y-1">
-                                <label className="text-xs text-zinc-400 uppercase font-bold tracking-wider">Administrative Notes</label>
+                                <label className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">Administrative Notes</label>
                                 <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-800 text-xs text-zinc-600 dark:text-zinc-400">
                                     {selectedCancellation.notes}
                                 </div>

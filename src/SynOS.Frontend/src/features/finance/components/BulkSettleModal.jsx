@@ -37,7 +37,7 @@ export const BulkSettleModal = ({ isOpen, onClose, onConfirm, partnerName, selec
 
                     <div className="space-y-4">
                         <div className="space-y-1.5">
-                            <label className="text-xs font-bold uppercase tracking-widest text-zinc-400 px-1">Settlement Amount (₹)</label>
+                            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 px-1">Settlement Amount (₹)</label>
                             <input 
                                 type="number" 
                                 value={amount}
@@ -50,7 +50,7 @@ export const BulkSettleModal = ({ isOpen, onClose, onConfirm, partnerName, selec
                                     <button 
                                         key={pct}
                                         onClick={() => setAmount((totalDue * pct).toFixed(2))}
-                                        className="flex-1 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-xs font-bold text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                                        className="flex-1 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-[10px] font-bold text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
                                     >
                                         {pct * 100}% Dues
                                     </button>
@@ -59,13 +59,13 @@ export const BulkSettleModal = ({ isOpen, onClose, onConfirm, partnerName, selec
                         </div>
 
                         <div className="space-y-1.5">
-                            <label className="text-xs font-bold uppercase tracking-widest text-zinc-400 px-1">Payment Mode</label>
+                            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 px-1">Payment Mode</label>
                             <div className="grid grid-cols-2 gap-2">
                                 {modes.map(m => (
                                     <button 
                                         key={m.id}
                                         onClick={() => setPaymentMode(m.id)}
-                                        className={`px-3 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider border-2 transition-all ${paymentMode === m.id ? 'border-synos-primary bg-synos-primary/5 text-synos-primary' : 'border-zinc-100 dark:border-zinc-800 text-zinc-500'}`}
+                                        className={`px-3 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider border-2 transition-all ${paymentMode === m.id ? 'border-synos-primary bg-synos-primary/5 text-synos-primary' : 'border-zinc-100 dark:border-zinc-800 text-zinc-500'}`}
                                     >
                                         {m.label}
                                     </button>
@@ -74,7 +74,7 @@ export const BulkSettleModal = ({ isOpen, onClose, onConfirm, partnerName, selec
                         </div>
 
                         <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20">
-                            <p className="text-xs text-amber-500 leading-relaxed font-medium">
+                            <p className="text-[10px] text-amber-500 leading-relaxed font-medium">
                                 <span className="font-bold uppercase mr-1">Distribution:</span>
                                 Funds will be applied to the oldest bills first (FIFO) until the amount is exhausted.
                             </p>

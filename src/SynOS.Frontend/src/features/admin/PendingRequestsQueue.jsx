@@ -78,20 +78,20 @@ export function PendingRequestsQueue() {
                 <div className="grid grid-cols-4 border-b border-white/5 divide-x divide-white/5">
                     <div className="p-4 text-center">
                         <div className="text-2xl font-bold text-amber-500">{requests.length}</div>
-                        <div className="text-xs uppercase font-bold text-zinc-600 tracking-wider">Pending Requests</div>
+                        <div className="text-[10px] uppercase font-bold text-zinc-600 tracking-wider">Pending Requests</div>
                     </div>
                     <div className="p-4 text-center">
                         <div className="text-2xl font-bold text-white">0</div>
-                        <div className="text-xs uppercase font-bold text-zinc-600 tracking-wider">Low Stock Alerts</div>
+                        <div className="text-[10px] uppercase font-bold text-zinc-600 tracking-wider">Low Stock Alerts</div>
                     </div>
                     {/* Placeholder stats */}
                     <div className="p-4 text-center opacity-20">
                         <div className="text-2xl font-bold text-white">-</div>
-                        <div className="text-xs uppercase font-bold text-zinc-600 tracking-wider">Turnaround Time</div>
+                        <div className="text-[10px] uppercase font-bold text-zinc-600 tracking-wider">Turnaround Time</div>
                     </div>
                     <div className="p-4 text-center opacity-20">
                         <div className="text-2xl font-bold text-white">-</div>
-                        <div className="text-xs uppercase font-bold text-zinc-600 tracking-wider">Waste Optimization</div>
+                        <div className="text-[10px] uppercase font-bold text-zinc-600 tracking-wider">Waste Optimization</div>
                     </div>
                 </div>
 
@@ -125,16 +125,16 @@ export function PendingRequestsQueue() {
                                         <div className="space-y-1">
                                             <div className="flex items-center gap-2">
                                                 <h3 className="text-lg font-bold text-white">{req.consumableName}</h3>
-                                                <span className="px-2 py-0.5 rounded text-xs font-bold bg-zinc-800 text-zinc-500 border border-white/5">{req.consumableCode}</span>
+                                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-zinc-800 text-zinc-500 border border-white/5">{req.consumableCode}</span>
                                             </div>
                                             <div className="flex items-center gap-4 text-xs text-zinc-500">
                                                 <div className="flex items-center gap-1.5">
                                                     <User className="h-3 w-3 text-emerald-400" />
                                                     <span className="text-zinc-200 font-semibold">{req.requestedByUserName || req.requestedByName}</span>
-                                                    <span className="text-xs text-zinc-400">({req.requestedByUserRole || 'Admin'})</span>
+                                                    <span className="text-[10px] text-zinc-400">({req.requestedByUserRole || 'Admin'})</span>
                                                 </div>
                                                 <div className="flex items-center gap-1.5">
-                                                    <span className="text-xs font-bold uppercase text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">
+                                                    <span className="text-[10px] font-bold uppercase text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">
                                                         Screen: {req.requestedFromScreen || 'Reception'}
                                                     </span>
                                                 </div>
@@ -151,13 +151,13 @@ export function PendingRequestsQueue() {
                                     </div>
                                     <div className="text-right space-y-1">
                                         <div className="text-3xl font-black text-white tracking-tight">{req.quantity}</div>
-                                        <div className="text-xs uppercase font-black text-emerald-500 tracking-widest">{req.unitOfMeasure} requested</div>
+                                        <div className="text-[10px] uppercase font-black text-emerald-500 tracking-widest">{req.unitOfMeasure} requested</div>
                                     </div>
                                 </div>
 
                                 {/* Action Bar (Reveals on Hover) */}
                                 <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between opacity-60 group-hover:opacity-100 transition-all">
-                                    <div className="flex items-center gap-2 text-xs font-bold text-zinc-500">
+                                    <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-500">
                                         <AlertCircle className="h-3 w-3" />
                                         FIFO DEDUCTION WILL BE APPLIED
                                     </div>

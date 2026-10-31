@@ -126,7 +126,7 @@ export const PendingPayoutsTab = () => {
     const filtered = payables.filter(p => p.partnerName.toLowerCase().includes(search.toLowerCase()));
 
     return (
-        <div className="px-6 py-5 space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+        <div className="p-8 space-y-8 animate-in slide-in-from-bottom-4 duration-500">
             {/* SEARCH & FILTERS */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="relative group flex-1 max-w-md">
@@ -157,11 +157,11 @@ export const PendingPayoutsTab = () => {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-zinc-50 dark:bg-zinc-900/50 border-b dark:border-zinc-900 border-zinc-100">
-                                <th className="p-6 text-xs font-bold uppercase tracking-widest text-zinc-400">Partner / Account</th>
-                                <th className="p-6 text-xs font-bold uppercase tracking-widest text-zinc-400 text-center">Pending Items</th>
-                                <th className="p-6 text-xs font-bold uppercase tracking-widest text-zinc-400 text-right">Total Payout</th>
-                                <th className="p-6 text-xs font-bold uppercase tracking-widest text-zinc-400">Oldest Dues</th>
-                                <th className="p-6 text-xs font-bold uppercase tracking-widest text-zinc-400 text-right">Actions</th>
+                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Partner / Account</th>
+                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-center">Pending Items</th>
+                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right">Total Payout</th>
+                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Oldest Dues</th>
+                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80">
@@ -178,7 +178,7 @@ export const PendingPayoutsTab = () => {
                                                 </button>
                                                 <div className="flex flex-col">
                                                     <span className="text-sm font-bold dark:text-white text-zinc-900">{partner.partnerName}</span>
-                                                    <span className="text-xs text-zinc-400 font-bold uppercase tracking-normal">PARTNER ID: {partner.partnerId.toString().substring(0, 8)}</span>
+                                                    <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-tighter">PARTNER ID: {partner.partnerId.toString().substring(0, 8)}</span>
                                                 </div>
                                             </div>
                                         </td>
@@ -193,14 +193,14 @@ export const PendingPayoutsTab = () => {
                                                     onClick={() => handleGeneratePayoutVoucher(partner)}
                                                     disabled={generatingVoucher}
                                                     title="Generate Official Referral Commission Payout Voucher (A4)"
-                                                    className="px-3 py-2 rounded-xl border border-synos-primary/30 dark:border-synos-primary/40 bg-synos-primary/5 dark:bg-synos-primary/10 text-synos-primary text-xs font-black uppercase tracking-wider hover:bg-synos-primary/15 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs disabled:opacity-50"
+                                                    className="px-3 py-2 rounded-xl border border-synos-primary/30 dark:border-synos-primary/40 bg-synos-primary/5 dark:bg-synos-primary/10 text-synos-primary text-[10px] font-black uppercase tracking-wider hover:bg-synos-primary/15 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs disabled:opacity-50"
                                                 >
                                                     <Receipt size={12} />
                                                     <span>Payout Voucher</span>
                                                 </button>
                                                 <button 
                                                     onClick={() => setSelectedPartner(partner)}
-                                                    className="px-4 py-2 rounded-xl bg-synos-primary text-white text-xs font-black uppercase tracking-wider hover:shadow-lg hover:shadow-synos-primary/30 active:scale-95 transition-all cursor-pointer"
+                                                    className="px-4 py-2 rounded-xl bg-synos-primary text-white text-[10px] font-black uppercase tracking-wider hover:shadow-lg hover:shadow-synos-primary/30 active:scale-95 transition-all cursor-pointer"
                                                 >
                                                     Settle Dues
                                                 </button>
@@ -230,7 +230,7 @@ export const PendingPayoutsTab = () => {
                                                                         <p className="text-xs font-bold text-indigo-950 dark:text-indigo-200">
                                                                             {selectedCount} of {partner.items.length} Commissions Selected
                                                                         </p>
-                                                                        <p className="text-xs text-zinc-500 font-medium">
+                                                                        <p className="text-[10px] text-zinc-500 font-medium">
                                                                             Total Selected Payout: <strong className="text-synos-primary font-mono">₹{selectedSum.toLocaleString()}</strong>
                                                                         </p>
                                                                     </div>
@@ -242,14 +242,14 @@ export const PendingPayoutsTab = () => {
                                                                             partnerFactIds.forEach(id => next.delete(id));
                                                                             setSelectedFactIds(next);
                                                                         }}
-                                                                        className="px-3 py-1.5 rounded-xl text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 text-xs font-bold cursor-pointer transition-all"
+                                                                        className="px-3 py-1.5 rounded-xl text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 text-[10px] font-bold cursor-pointer transition-all"
                                                                     >
                                                                         Clear Selection
                                                                     </button>
                                                                     <button
                                                                         onClick={() => handleGeneratePayoutVoucher(partner, selectedInPartner.map(i => i.factId))}
                                                                         disabled={generatingVoucher}
-                                                                        className="px-4 py-2 rounded-xl bg-synos-primary hover:bg-synos-primary/90 text-white text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-synos-primary/20 active:scale-95 cursor-pointer transition-all disabled:opacity-50"
+                                                                        className="px-4 py-2 rounded-xl bg-synos-primary hover:bg-synos-primary/90 text-white text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-synos-primary/20 active:scale-95 cursor-pointer transition-all disabled:opacity-50"
                                                                     >
                                                                         <Receipt size={13} />
                                                                         <span>Generate Payout Voucher ({selectedCount})</span>
@@ -260,7 +260,7 @@ export const PendingPayoutsTab = () => {
 
                                                         <table className="w-full text-left">
                                                             <thead>
-                                                                <tr className="text-xs font-bold uppercase tracking-widest text-zinc-400 border-b dark:border-zinc-900 pb-2">
+                                                                <tr className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 border-b dark:border-zinc-900 pb-2">
                                                                     <th className="pb-2 w-8 text-center">
                                                                         <input
                                                                             type="checkbox"
@@ -308,21 +308,21 @@ export const PendingPayoutsTab = () => {
                                                                                     className="rounded border-zinc-300 dark:border-zinc-700 text-synos-primary focus:ring-synos-primary cursor-pointer"
                                                                                 />
                                                                             </td>
-                                                                            <td className="py-3 text-xs font-mono font-bold text-zinc-600 dark:text-zinc-400">{fact.token || 'N/A'}</td>
-                                                                            <td className="py-3 text-xs font-bold dark:text-zinc-300">{fact.patientName || 'Unknown Patient'}</td>
-                                                                            <td className="py-3 text-xs">
+                                                                            <td className="py-3 text-[10px] font-mono font-bold text-zinc-600 dark:text-zinc-400">{fact.token || 'N/A'}</td>
+                                                                            <td className="py-3 text-[10px] font-bold dark:text-zinc-300">{fact.patientName || 'Unknown Patient'}</td>
+                                                                            <td className="py-3 text-[10px]">
                                                                                 {fact.primaryDoctorName ? (
-                                                                                    <span className="font-semibold text-zinc-700 dark:text-zinc-300 text-xs truncate max-w-[160px] inline-block" title={fact.primaryDoctorName}>
+                                                                                    <span className="font-semibold text-zinc-700 dark:text-zinc-300 text-[10px] truncate max-w-[160px] inline-block" title={fact.primaryDoctorName}>
                                                                                         {fact.primaryDoctorName}
                                                                                     </span>
                                                                                 ) : (
-                                                                                    <span className="text-zinc-400 text-xs">—</span>
+                                                                                    <span className="text-zinc-400 text-[10px]">—</span>
                                                                                 )}
                                                                             </td>
-                                                                            <td className="py-3 text-xs text-zinc-400">{new Date(fact.createdAt).toLocaleDateString()}</td>
-                                                                            <td className="py-3 text-xs font-black text-right dark:text-zinc-300">₹{fact.originalAmount?.toLocaleString()}</td>
-                                                                            <td className="py-3 text-xs font-black text-right text-emerald-500">₹{fact.amountPaid?.toLocaleString()}</td>
-                                                                            <td className="py-3 text-xs font-black text-right text-synos-primary">₹{fact.amount?.toLocaleString()}</td>
+                                                                            <td className="py-3 text-[10px] text-zinc-400">{new Date(fact.createdAt).toLocaleDateString()}</td>
+                                                                            <td className="py-3 text-[10px] font-black text-right dark:text-zinc-300">₹{fact.originalAmount?.toLocaleString()}</td>
+                                                                            <td className="py-3 text-[10px] font-black text-right text-emerald-500">₹{fact.amountPaid?.toLocaleString()}</td>
+                                                                            <td className="py-3 text-[10px] font-black text-right text-synos-primary">₹{fact.amount?.toLocaleString()}</td>
                                                                         </tr>
                                                                     );
                                                                 })}
@@ -383,7 +383,7 @@ const BulkSettleModal = ({ partner, onClose, onConfirm, settling }) => {
                         </div>
                         <div>
                             <h2 className="text-lg font-bold dark:text-white text-zinc-900">Commission Payout</h2>
-                            <p className="text-xs text-zinc-500 font-medium uppercase tracking-widest">Settle dues for {partner.partnerName}</p>
+                            <p className="text-[11px] text-zinc-500 font-medium uppercase tracking-widest">Settle dues for {partner.partnerName}</p>
                         </div>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-xl transition-all">
@@ -393,7 +393,7 @@ const BulkSettleModal = ({ partner, onClose, onConfirm, settling }) => {
 
                 <div className="p-8 space-y-6">
                     <div className="p-6 bg-zinc-50 dark:bg-zinc-900/50 rounded-3xl text-center space-y-3">
-                        <div className="flex justify-between items-center text-xs font-bold text-zinc-400 uppercase tracking-widest px-2">
+                        <div className="flex justify-between items-center text-[10px] font-bold text-zinc-400 uppercase tracking-widest px-2">
                             <span>Total Dues</span>
                             <span>Bills: {partner.billCount}</span>
                         </div>
@@ -402,7 +402,7 @@ const BulkSettleModal = ({ partner, onClose, onConfirm, settling }) => {
 
                     <div className="space-y-4">
                         <div className="space-y-1.5">
-                            <label className="text-xs font-bold uppercase tracking-widest text-zinc-400 px-1">Settlement Amount (₹)</label>
+                            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 px-1">Settlement Amount (₹)</label>
                             <input 
                                 type="number" 
                                 value={amount}
@@ -415,7 +415,7 @@ const BulkSettleModal = ({ partner, onClose, onConfirm, settling }) => {
                                     <button 
                                         key={pct}
                                         onClick={() => setAmount((partner.totalAmount * pct).toFixed(2))}
-                                        className="flex-1 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-xs font-black text-zinc-500 hover:bg-synos-primary/10 hover:text-synos-primary transition-all"
+                                        className="flex-1 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-[10px] font-black text-zinc-500 hover:bg-synos-primary/10 hover:text-synos-primary transition-all"
                                     >
                                         {pct * 100}% Dues
                                     </button>
@@ -424,7 +424,7 @@ const BulkSettleModal = ({ partner, onClose, onConfirm, settling }) => {
                         </div>
 
                         <div className="space-y-2">
-                            <p className="text-xs text-zinc-400 uppercase font-black tracking-widest ml-1">Payment Method</p>
+                            <p className="text-[10px] text-zinc-400 uppercase font-black tracking-widest ml-1">Payment Method</p>
                             <div className="grid grid-cols-2 gap-4">
                                 {[
                                     { id: 'BankTransfer', label: 'Bank Transfer', icon: CreditCard },
@@ -441,14 +441,14 @@ const BulkSettleModal = ({ partner, onClose, onConfirm, settling }) => {
                                         }`}
                                     >
                                         <m.icon size={18} />
-                                        <span className="text-xs font-bold">{m.label}</span>
+                                        <span className="text-[11px] font-bold">{m.label}</span>
                                     </button>
                                 ))}
                             </div>
                         </div>
 
                         <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20">
-                            <p className="text-xs text-amber-600 leading-relaxed font-bold">
+                            <p className="text-[10px] text-amber-600 leading-relaxed font-bold">
                                 <span className="uppercase mr-1">FIFO Distribution:</span>
                                 Payout will be applied to the oldest referral commissions first.
                             </p>

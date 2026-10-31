@@ -56,7 +56,7 @@ const ReferralDraftForm = ({ visitId, onSuccess, onCancel, isDark, uiStyles }) =
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1.5">
+                    <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">
                         Doctor / Provider Name <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -72,7 +72,7 @@ const ReferralDraftForm = ({ visitId, onSuccess, onCancel, isDark, uiStyles }) =
 
                 <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1.5">
+                        <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">
                             Clinic / Hospital
                         </label>
                         <input
@@ -85,7 +85,7 @@ const ReferralDraftForm = ({ visitId, onSuccess, onCancel, isDark, uiStyles }) =
                         />
                     </div>
                     <div>
-                        <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1.5">
+                        <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-1.5">
                             Location / Area
                         </label>
                         <input

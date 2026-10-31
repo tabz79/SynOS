@@ -7,11 +7,7 @@ export function MultiPayerSelector({
     billingMode,
     onChangeMode,
     disabled = false,
-    isDark = false,
-    layout = 'grid',
-    showHeader = true,
-    isCollapsed = false,
-    onToggleCollapse
+    isDark = false
 }) {
     const modes = [
         {
@@ -37,23 +33,16 @@ export function MultiPayerSelector({
         }
     ];
 
-    const isCol = layout === 'column';
-    const visibleModes = isCollapsed ? modes.filter(m => m.id === billingMode) : modes;
-
     return (
-        <div className={cn("w-full", isCol ? "space-y-2.5" : "space-y-3")}>
-            {showHeader && (
-                <div className="flex items-center justify-between">
-                    <label className="text-base font-bold text-slate-800 dark:text-zinc-200 tracking-normal">
-                        Billing & Payer Mode
-                    </label>
-                    <span className="text-sm text-slate-500 dark:text-zinc-400 font-medium">Select context to configure pricing & settlement</span>
-                </div>
-            )}
-            <div className={cn(
-                isCol ? "flex flex-col gap-2 sm:gap-2.5" : "grid grid-cols-1 sm:grid-cols-3 gap-3.5"
-            )}>
-                {visibleModes.map((m) => {
+        <div className="space-y-1.5 w-full">
+            <div className="flex items-center justify-between">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                    Billing & Payer Mode
+                </label>
+                <span className="text-[10px] text-zinc-400 font-medium">Select context to configure pricing & settlement</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 xl:gap-3">
+                {modes.map((m) => {
                     const Icon = m.icon;
                     const isSelected = billingMode === m.id;
                     return (
@@ -62,72 +51,45 @@ export function MultiPayerSelector({
                             type="button"
                             disabled={disabled}
                             onClick={() => {
-                                if (isCollapsed && onToggleCollapse) {
-                                    onToggleCollapse();
-                                } else if (!disabled) {
-                                    if (billingMode !== m.id) {
-                                        onChangeMode(m.id);
-                                    } else if (onToggleCollapse) {
-                                        onToggleCollapse();
-                                    }
-                                }
+                                if (!disabled && billingMode !== m.id) onChangeMode(m.id);
                             }}
                             className={cn(
-                                "relative flex items-center justify-between border text-left transition-all active:scale-[0.99] cursor-pointer",
-                                isCol ? "p-2.5 sm:p-3 rounded-2xl" : "p-4 rounded-2xl",
+                                "relative flex items-start gap-2.5 p-2.5 rounded-xl border text-left transition-all active:scale-[0.98] cursor-pointer",
                                 isSelected
                                     ? isDark
-                                        ? "bg-blue-950/30 border-blue-500 text-white shadow-xs ring-2 ring-blue-500/20"
-                                        : "bg-gradient-to-b from-[#E2F0FD] to-[#D3E8FA] border-2 border-[#3B82F6] text-[#1E3A8A] shadow-[0_6px_20px_rgba(37,99,235,0.18),inset_0_1px_0_#FFFFFF]"
+                                        ? "bg-synos-primary/15 border-synos-primary text-white shadow-[0_0_15px_rgba(59,130,246,0.15)] ring-1 ring-synos-primary"
+                                        : "bg-blue-50/80 border-blue-500 text-blue-950 shadow-sm ring-1 ring-blue-500"
                                     : isDark
-                                        ? "bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"
-                                        : "bg-gradient-to-b from-[#FFFFFF] to-[#F1F6FA] border border-[#D5E2EC] text-slate-700 hover:border-slate-300 hover:shadow-[0_6px_20px_rgba(15,35,60,0.08)] shadow-[0_4px_14px_rgba(15,35,60,0.05),0_1px_2px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]",
+                                        ? "bg-zinc-900/60 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"
+                                        : "bg-white border-zinc-200 text-zinc-600 hover:border-zinc-300 hover:bg-zinc-50/60",
                                 disabled && "opacity-50 cursor-not-allowed"
                             )}
                         >
-                            <div className="flex items-center gap-3 min-w-0">
-                                <div className={cn(
-                                    "rounded-xl flex items-center justify-center shrink-0 transition-colors shadow-xs",
-                                    isCol ? "w-9 h-9 sm:w-10 sm:h-10" : "w-12 h-12",
-                                    isSelected
-                                        ? "bg-gradient-to-b from-[#3B82F6] to-[#2563EB] text-white shadow-[0_4px_12px_rgba(37,99,235,0.35)]"
-                                        : isDark
-                                            ? "bg-zinc-800 text-zinc-400 border border-zinc-700/60"
-                                            : "bg-slate-100 text-slate-500 border border-slate-200/60 shadow-2xs"
-                                )}>
-                                    <Icon className={isCol ? "w-4 h-4 sm:w-5 sm:h-5" : "w-6 h-6"} />
-                                </div>
-
-                                <div className="min-w-0">
-                                    <span className={cn(
-                                        "truncate leading-tight block text-slate-900 dark:text-white",
-                                        isCol ? "text-sm sm:text-base font-bold" : "text-base font-bold"
-                                    )}>
-                                        {m.title}
-                                    </span>
-                                    <p className="text-xs text-slate-500 dark:text-zinc-400 leading-normal mt-0.5 truncate">
-                                        {m.subtitle}
-                                    </p>
-                                </div>
+                            <div className={cn(
+                                "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border transition-colors",
+                                isSelected
+                                    ? isDark
+                                        ? "bg-synos-primary text-white border-synos-primary"
+                                        : "bg-blue-600 text-white border-blue-600"
+                                    : isDark
+                                        ? "bg-zinc-800 text-zinc-400 border-zinc-700"
+                                        : "bg-zinc-100 text-zinc-500 border-zinc-200"
+                            )}>
+                                <Icon className="w-3.5 h-3.5" />
                             </div>
 
-                            {/* iOS Tactile Radio Circle & Expand Arrow */}
-                            <div className="shrink-0 ml-2.5 flex items-center gap-2">
-                                {isCollapsed && onToggleCollapse && (
-                                    <div 
-                                        className="w-6 h-6 rounded-full flex items-center justify-center bg-blue-500/10 dark:bg-blue-400/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 transition-colors"
-                                        title="Click to reveal other payer modes"
-                                    >
-                                        <ChevronDown className="w-3.5 h-3.5" />
-                                    </div>
-                                )}
-                                {isSelected ? (
-                                    <div className="w-5 h-5 rounded-full border-[2.5px] border-[#2563EB] flex items-center justify-center bg-white dark:bg-zinc-900 shadow-xs">
-                                        <span className="w-2.5 h-2.5 rounded-full bg-[#2563EB]" />
-                                    </div>
-                                ) : (
-                                    <div className="w-5 h-5 rounded-full border-2 border-slate-300 dark:border-zinc-700 flex items-center justify-center bg-white dark:bg-zinc-900 shadow-2xs" />
-                                )}
+                            <div className="min-w-0 flex-1">
+                                <div className="flex items-center justify-between gap-1">
+                                    <span className="text-xs font-bold truncate leading-tight">
+                                        {m.title}
+                                    </span>
+                                    {isSelected && (
+                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                                    )}
+                                </div>
+                                <p className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-tight mt-0.5 truncate">
+                                    {m.subtitle}
+                                </p>
                             </div>
                         </button>
                     );

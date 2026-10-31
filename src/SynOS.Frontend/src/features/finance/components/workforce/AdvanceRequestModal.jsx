@@ -58,7 +58,7 @@ export function AdvanceRequestModal({ isOpen, onClose, staffList, onAdvanceAdded
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
                     <div className="space-y-1.5">
-                        <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Select Employee</label>
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Select Employee</label>
                         <div className="relative">
                             <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                             <select 
@@ -79,7 +79,7 @@ export function AdvanceRequestModal({ isOpen, onClose, staffList, onAdvanceAdded
 
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-1.5">
-                            <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Amount (₹)</label>
+                            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Amount (₹)</label>
                             <div className="relative">
                                 <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                                 <input 
@@ -93,7 +93,7 @@ export function AdvanceRequestModal({ isOpen, onClose, staffList, onAdvanceAdded
                             </div>
                         </div>
                         <div className="space-y-1.5">
-                            <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Request Date</label>
+                            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Request Date</label>
                             <div className="relative">
                                 <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
                                 <input 
@@ -108,7 +108,7 @@ export function AdvanceRequestModal({ isOpen, onClose, staffList, onAdvanceAdded
                     </div>
 
                     <div className="space-y-1.5">
-                        <label className="text-xs font-bold uppercase tracking-widest text-zinc-500 ml-1">Reason / Notes</label>
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-500 ml-1">Reason / Notes</label>
                         <textarea 
                             value={formData.reason}
                             onChange={e => setFormData({...formData, reason: e.target.value})}

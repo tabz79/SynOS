@@ -254,14 +254,14 @@ export function PatientDetailScreen() {
         {patient && (
           <div>
             <div className="flex items-center gap-3">
-              <span className="font-mono text-xs font-semibold text-synos-primary bg-synos-primary/10 px-2 py-0.5 rounded border border-synos-primary/20 uppercase tracking-wider">
+              <span className="font-mono text-[10px] font-semibold text-synos-primary bg-synos-primary/10 px-2 py-0.5 rounded border border-synos-primary/20 uppercase tracking-wider">
                 {patient.mrn}
               </span>
               <h1 className="text-xl font-semibold tracking-tight text-zinc-850 dark:text-zinc-100">
                 {patient.firstName} {patient.lastName}
               </h1>
             </div>
-            <p className="text-zinc-400 dark:text-zinc-500 text-xs font-medium mt-1 uppercase tracking-wider">
+            <p className="text-zinc-400 dark:text-zinc-500 text-[10px] font-medium mt-1 uppercase tracking-wider">
               Active Patient Demographics File
             </p>
           </div>
@@ -322,7 +322,7 @@ export function PatientDetailScreen() {
                       setEditForm(patient);
                       setIsEditing(true);
                     }}
-                    className="px-4 py-2 border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-synos-primary hover:text-synos-primary/80 text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5 active:scale-95"
+                    className="px-4 py-2 border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-synos-primary hover:text-synos-primary/80 text-[11px] font-semibold rounded-xl transition-all flex items-center gap-1.5 active:scale-95"
                   >
                     <Edit2 className="w-3 h-3" />
                     Edit Demographics
@@ -331,7 +331,7 @@ export function PatientDetailScreen() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => setIsEditing(false)}
-                      className="px-4 py-2 border border-red-500/20 hover:bg-red-500/15 text-red-400 text-xs font-semibold rounded-xl transition-all flex items-center gap-1.5"
+                      className="px-4 py-2 border border-red-500/20 hover:bg-red-500/15 text-red-400 text-[11px] font-semibold rounded-xl transition-all flex items-center gap-1.5"
                     >
                       <X className="w-3 h-3" />
                       Cancel
@@ -343,30 +343,30 @@ export function PatientDetailScreen() {
               {!isEditing ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 rounded-xl border border-zinc-150 dark:border-zinc-900/50" style={{ backgroundColor: theme === 'dark' ? '#18181b' : '#fafafa' }}>
                   <div>
-                    <label className="block text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">First Name</label>
+                    <label className="block text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">First Name</label>
                     <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{patient.firstName}</p>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">Last Name</label>
+                    <label className="block text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">Last Name</label>
                     <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{patient.lastName || '—'}</p>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">Phone Number</label>
+                    <label className="block text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">Phone Number</label>
                     <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{patient.currentPhoneNumber || '—'}</p>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">Gender</label>
+                    <label className="block text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">Gender</label>
                     <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 capitalize">{patient.gender || '—'}</p>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">Date of Birth</label>
+                    <label className="block text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">Date of Birth</label>
                     <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
                       {formatDate(patient.dateOfBirth)}
                       <span className="text-zinc-400 dark:text-zinc-500 ml-2 font-normal">({calculateAge(patient.dateOfBirth)})</span>
                     </p>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">Registration Date</label>
+                    <label className="block text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">Registration Date</label>
                     <p className="text-sm font-mono font-medium text-zinc-700 dark:text-zinc-300">{formatDate(patient.createdAt || patient.dateOfBirth)}</p>
                   </div>
                 </div>
@@ -449,7 +449,7 @@ export function PatientDetailScreen() {
                       <Phone className="w-3.5 h-3.5 text-zinc-400 dark:text-zinc-500 shrink-0" />
                       <span className="font-semibold text-zinc-700 dark:text-zinc-300">{h.phoneNumber}</span>
                     </div>
-                    <p className="text-xs text-zinc-400 font-medium font-mono">
+                    <p className="text-[10px] text-zinc-400 font-medium font-mono">
                       Active: {formatDate(h.startDate)} – {h.endDate ? formatDate(h.endDate) : 'Current'}
                     </p>
                   </div>
@@ -475,9 +475,9 @@ export function PatientDetailScreen() {
                   <div className="bg-zinc-50/30 dark:bg-zinc-900/10 p-4 flex flex-wrap justify-between items-center border-b border-zinc-150 dark:border-zinc-900 gap-3">
                     <div className="flex items-center gap-3">
                       <span className="font-mono font-medium text-zinc-650 dark:text-zinc-300">#{v.tokenNumber}</span>
-                      <span className="text-zinc-400 dark:text-zinc-500 font-mono text-xs">({formatDateTime(v.tokenDate)})</span>
+                      <span className="text-zinc-400 dark:text-zinc-500 font-mono text-[11px]">({formatDateTime(v.tokenDate)})</span>
                       <span className={cn(
-                        "text-xs px-2 py-0.5 rounded font-mono font-semibold border uppercase tracking-wider leading-none",
+                        "text-[9px] px-2 py-0.5 rounded font-mono font-semibold border uppercase tracking-wider leading-none",
                         v.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' :
                         v.status === 'Draft' ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700' :
                         'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
@@ -486,7 +486,7 @@ export function PatientDetailScreen() {
                       </span>
                     </div>
 
-                    <div className="flex gap-4 font-mono text-xs font-semibold text-zinc-550 dark:text-zinc-400">
+                    <div className="flex gap-4 font-mono text-[11px] font-semibold text-zinc-550 dark:text-zinc-400">
                       <p>Total: <strong className="text-zinc-800 dark:text-zinc-200">₹{v.totalAmount.toLocaleString()}</strong></p>
                       <p>Paid: <strong className="text-emerald-600 dark:text-emerald-400">₹{v.amountPaid.toLocaleString()}</strong></p>
                       <p>Due: <strong className={v.outstandingBalance > 0 ? 'text-red-500 dark:text-red-400' : 'text-zinc-400 dark:text-zinc-500'}>₹{v.outstandingBalance.toLocaleString()}</strong></p>
@@ -502,7 +502,7 @@ export function PatientDetailScreen() {
                           <span className="text-zinc-750 dark:text-zinc-200 text-xs font-semibold leading-tight block">{t.testName}</span>
                         </div>
                         <span className={cn(
-                          "text-xs px-1.5 py-0.5 rounded font-semibold border uppercase tracking-wider leading-none",
+                          "text-[9px] px-1.5 py-0.5 rounded font-semibold border uppercase tracking-wider leading-none",
                           t.status === 'Completed' || t.status === 'Finalized' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' :
                           t.status === 'SampleCollected' ? 'bg-synos-primary/10 text-synos-primary border-synos-primary/20' :
                           'bg-zinc-100 dark:bg-zinc-800 text-zinc-550 dark:text-zinc-450 border-zinc-200 dark:border-zinc-700'
@@ -561,7 +561,7 @@ export function PatientDetailScreen() {
                         </td>
                         <td className="p-4 text-center">
                           <span className={cn(
-                            "text-xs px-2 py-0.5 rounded font-mono font-semibold border uppercase tracking-wider leading-none",
+                            "text-[8px] px-2 py-0.5 rounded font-mono font-semibold border uppercase tracking-wider leading-none",
                             inv.status === 'Paid' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' :
                             inv.status === 'Partial' ? 'bg-amber-500/10 text-amber-650 dark:text-amber-450 border-amber-500/20' :
                             'bg-red-500/10 text-red-500 dark:text-red-400 border-red-500/20'
@@ -650,7 +650,7 @@ export function PatientDetailScreen() {
                         <span className="font-mono font-semibold text-zinc-800 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-900 px-2 py-0.5 rounded border border-zinc-200 dark:border-zinc-850">
                           {dup.mrn}
                         </span>
-                        <span className="text-xs font-bold text-synos-primary font-mono">
+                        <span className="text-[10px] font-bold text-synos-primary font-mono">
                           {dup.matchPercentage}% match
                         </span>
                       </div>
@@ -674,7 +674,7 @@ export function PatientDetailScreen() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Target/Survivor (This Profile) */}
                       <div className="border border-emerald-500/25 bg-emerald-500/5 p-5 rounded-xl text-xxs space-y-3 shadow-inner">
-                        <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-450 border border-emerald-500/20 text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded leading-none">
+                        <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-450 border border-emerald-500/20 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded leading-none">
                           Survivor Profile (Keep)
                         </span>
                         <div>
@@ -697,7 +697,7 @@ export function PatientDetailScreen() {
 
                       {/* Source/Duplicate (Merge & Delete) */}
                       <div className="border border-red-500/25 bg-red-500/5 p-5 rounded-xl text-xxs space-y-3 animate-slideIn shadow-inner">
-                        <span className="bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded leading-none">
+                        <span className="bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded leading-none">
                           Duplicate Profile (Delete)
                         </span>
                         <div>
@@ -740,7 +740,7 @@ export function PatientDetailScreen() {
                           <p className="text-synos-primary font-bold text-lg">{mergePreview.referrerLinksToMove}</p>
                         </div>
                       </div>
-                      <p className="text-zinc-500 text-xs leading-tight pt-2">
+                      <p className="text-zinc-500 text-[10px] leading-tight pt-2">
                         All records, transactions, samples, and phone history links belonging to the duplicate profile will be transactionally moved to the survivor profile. The duplicate profile will be permanently deleted.
                       </p>
                     </div>
@@ -776,7 +776,7 @@ export function PatientDetailScreen() {
                     <div className="text-center">
                       <Info className="w-10 h-10 text-zinc-400 dark:text-zinc-500 mx-auto mb-2" />
                       <p className="text-zinc-500 dark:text-zinc-400 font-semibold text-xxs uppercase tracking-wider">No duplicate candidate selected</p>
-                      <p className="text-zinc-400 dark:text-zinc-500 text-xs mt-1 max-w-xs leading-normal">
+                      <p className="text-zinc-400 dark:text-zinc-500 text-[10px] mt-1 max-w-xs leading-normal">
                         Select a potential matching patient from the duplicate candidates list on the left to verify details and configure profile merge settings.
                       </p>
                     </div>

@@ -56,7 +56,7 @@ export const CommissionRulesTab = () => {
             {/* ALERT BOX */}
             <div className="p-4 bg-synos-primary/5 border border-synos-primary/10 rounded-2xl flex gap-3">
                 <Info size={18} className="text-synos-primary shrink-0" />
-                <p className="text-xs text-synos-primary font-medium leading-relaxed">
+                <p className="text-[11px] text-synos-primary font-medium leading-relaxed">
                     <span className="font-bold uppercase tracking-widest mr-2">Advanced Config:</span>
                     Test-specific rules always override partner default percentages. The hierarchy follows: 
                     <span className="font-bold mx-1">Test Override &gt; Package Override &gt; Partner Default.</span>
@@ -117,21 +117,21 @@ const RuleCard = ({ rule, onDelete }) => {
                     {rule.isPackage ? <Package size={24} /> : <Beaker size={24} />}
                 </div>
                 <div>
-                    <h3 className="text-sm font-bold dark:text-white text-zinc-900 tracking-normal">{rule.testName || 'Global Rule'}</h3>
-                    <p className="text-xs text-zinc-400 font-bold uppercase tracking-widest mt-1">Applies to: {rule.partnerName || 'All Partners'}</p>
+                    <h3 className="text-sm font-bold dark:text-white text-zinc-900 tracking-tight">{rule.testName || 'Global Rule'}</h3>
+                    <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-1">Applies to: {rule.partnerName || 'All Partners'}</p>
                 </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="p-3 bg-zinc-50 dark:bg-zinc-900/50 rounded-2xl">
-                    <p className="text-xs text-zinc-400 uppercase font-bold tracking-normal">Calculation Base</p>
-                    <p className="text-xs font-bold dark:text-zinc-300 text-zinc-700 mt-1">
+                    <p className="text-[9px] text-zinc-400 uppercase font-bold tracking-tighter">Calculation Base</p>
+                    <p className="text-[11px] font-bold dark:text-zinc-300 text-zinc-700 mt-1">
                         {rule.calculationBase === 0 ? 'Before Discounts' : 'After Discounts'}
                     </p>
                 </div>
                 <div className="p-3 bg-zinc-50 dark:bg-zinc-900/50 rounded-2xl">
-                    <p className="text-xs text-zinc-400 uppercase font-bold tracking-normal">Commission</p>
-                    <p className="text-xs font-bold text-synos-primary mt-1">
+                    <p className="text-[9px] text-zinc-400 uppercase font-bold tracking-tighter">Commission</p>
+                    <p className="text-[11px] font-bold text-synos-primary mt-1">
                         {rule.commissionType === 0 ? `${rule.commissionValue}%` : `₹${rule.commissionValue}`}
                     </p>
                 </div>
@@ -140,11 +140,11 @@ const RuleCard = ({ rule, onDelete }) => {
             <div className="flex items-center justify-between pt-4 border-t dark:border-zinc-900 border-zinc-100">
                 <div className="flex items-center gap-1.5">
                     {rule.isActive ? (
-                        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/10 text-emerald-500 rounded-full text-xs font-black uppercase tracking-widest border border-emerald-500/20">
+                        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/10 text-emerald-500 rounded-full text-[9px] font-black uppercase tracking-widest border border-emerald-500/20">
                             <ShieldCheck size={10} /> Active
                         </div>
                     ) : (
-                        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-zinc-500/10 text-zinc-500 rounded-full text-xs font-black uppercase tracking-widest border border-zinc-500/20">
+                        <div className="flex items-center gap-1.5 px-2 py-0.5 bg-zinc-500/10 text-zinc-500 rounded-full text-[9px] font-black uppercase tracking-widest border border-zinc-500/20">
                             <AlertCircle size={10} /> Suspended
                         </div>
                     )}
@@ -212,7 +212,7 @@ const AddRuleModal = ({ onClose, onSave }) => {
                         </div>
                         <div>
                             <h2 className="text-lg font-bold dark:text-white text-zinc-900">Commission Override</h2>
-                            <p className="text-xs text-zinc-500 font-medium uppercase tracking-widest">Define test-specific partner agreements</p>
+                            <p className="text-[11px] text-zinc-500 font-medium uppercase tracking-widest">Define test-specific partner agreements</p>
                         </div>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-xl transition-all">
@@ -223,7 +223,7 @@ const AddRuleModal = ({ onClose, onSave }) => {
                 <form onSubmit={handleSubmit} className="p-8 space-y-6">
                     <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-zinc-400 uppercase tracking-widest ml-1">Referral Partner</label>
+                            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Referral Partner</label>
                             <select 
                                 required
                                 value={formData.partnerId}
@@ -236,7 +236,7 @@ const AddRuleModal = ({ onClose, onSave }) => {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-zinc-400 uppercase tracking-widest ml-1">Target Test / Profile</label>
+                            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Target Test / Profile</label>
                             <select 
                                 required
                                 value={formData.testId}
@@ -249,7 +249,7 @@ const AddRuleModal = ({ onClose, onSave }) => {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-zinc-400 uppercase tracking-widest ml-1">Commission Type</label>
+                            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Commission Type</label>
                             <select 
                                 value={formData.commissionType}
                                 onChange={(e) => setFormData({...formData, commissionType: parseInt(e.target.value)})}
@@ -261,7 +261,7 @@ const AddRuleModal = ({ onClose, onSave }) => {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-zinc-400 uppercase tracking-widest ml-1">Commission Value</label>
+                            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Commission Value</label>
                             <input 
                                 required
                                 type="number"
@@ -272,7 +272,7 @@ const AddRuleModal = ({ onClose, onSave }) => {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-zinc-400 uppercase tracking-widest ml-1">Calculation Base</label>
+                            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Calculation Base</label>
                             <select 
                                 value={formData.calculationBase}
                                 onChange={(e) => setFormData({...formData, calculationBase: parseInt(e.target.value)})}
@@ -290,7 +290,7 @@ const AddRuleModal = ({ onClose, onSave }) => {
                                 onChange={(e) => setFormData({...formData, allowCommissionOnOutsourcedTests: e.target.checked})}
                                 className="w-4 h-4 accent-synos-primary"
                             />
-                            <label className="text-xs font-bold text-zinc-500 uppercase tracking-normal">Allow on Outsourced</label>
+                            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-tight">Allow on Outsourced</label>
                         </div>
                     </div>
 

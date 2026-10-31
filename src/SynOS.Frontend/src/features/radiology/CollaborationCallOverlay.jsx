@@ -576,9 +576,9 @@ export function CollaborationCallOverlay({ hubConnection, selectedStudy, onSelec
                 <div className="animate-in zoom-in-95 duration-200 border border-synos-primary/30 dark:bg-zinc-900 bg-white shadow-[0_20px_50px_rgba(0,0,0,0.15)] rounded-2xl p-5 w-80 flex flex-col gap-4 border-l-4 border-l-synos-primary">
                     <div className="flex items-start justify-between">
                         <div>
-                            <span className="text-xs uppercase font-black tracking-widest text-synos-primary dark:text-cyan-400">Incoming Audio Call</span>
+                            <span className="text-[10px] uppercase font-black tracking-widest text-synos-primary dark:text-cyan-400">Incoming Audio Call</span>
                             <h4 className="font-bold text-sm dark:text-zinc-100 text-zinc-800 mt-1">{callDetails.peerName}</h4>
-                            <p className="text-xs text-zinc-500 dark:text-zinc-400 uppercase mt-0.5">{callDetails.peerRole}</p>
+                            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 uppercase mt-0.5">{callDetails.peerRole}</p>
                         </div>
                         <div className="w-8 h-8 rounded-full bg-synos-primary/10 flex items-center justify-center text-synos-primary animate-pulse">
                             <Phone className="w-4 h-4" />
@@ -586,7 +586,7 @@ export function CollaborationCallOverlay({ hubConnection, selectedStudy, onSelec
                     </div>
                     
                     <div className="dark:bg-zinc-950/50 bg-zinc-50 rounded-xl p-3 border dark:border-zinc-800 border-zinc-200 flex flex-col gap-0.5">
-                        <span className="text-xs uppercase font-bold text-zinc-500 tracking-wider">Contextual File</span>
+                        <span className="text-[9px] uppercase font-bold text-zinc-500 tracking-wider">Contextual File</span>
                         <span className="text-xs font-semibold dark:text-zinc-300 text-zinc-700 truncate">{callDetails.patientName}</span>
                     </div>
 
@@ -618,13 +618,13 @@ export function CollaborationCallOverlay({ hubConnection, selectedStudy, onSelec
                             <Phone className="w-4 h-4" />
                         </div>
                         <div>
-                            <span className="text-xs uppercase font-black text-zinc-400 tracking-widest">Dialing colleague...</span>
+                            <span className="text-[9px] uppercase font-black text-zinc-400 tracking-widest">Dialing colleague...</span>
                             <h4 className="font-bold text-sm dark:text-zinc-100 text-zinc-800">{callDetails.peerName}</h4>
                         </div>
                     </div>
 
                     <div className="dark:bg-zinc-950/50 bg-zinc-50 rounded-xl p-3 border dark:border-zinc-800 border-zinc-200 text-xs">
-                        <div className="text-xs uppercase font-bold text-zinc-500">Patient File</div>
+                        <div className="text-[9px] uppercase font-bold text-zinc-500">Patient File</div>
                         <div className="font-semibold dark:text-zinc-300 text-zinc-700 truncate mt-0.5">{callDetails.patientName}</div>
                     </div>
 
@@ -668,12 +668,12 @@ export function CollaborationCallOverlay({ hubConnection, selectedStudy, onSelec
                     <div className="animate-in zoom-in-95 duration-200 border dark:border-zinc-800 border-zinc-200 dark:bg-zinc-900 bg-white shadow-2xl rounded-2xl p-5 w-80 flex flex-col gap-4 border-t-4 border-t-emerald-500">
                         <div className="flex justify-between items-start">
                             <div>
-                                <span className="text-xs uppercase font-black text-emerald-500 tracking-wider flex items-center gap-1.5">
+                                <span className="text-[9px] uppercase font-black text-emerald-500 tracking-wider flex items-center gap-1.5">
                                     <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
                                     Call Connected
                                 </span>
                                 <h4 className="font-bold text-sm dark:text-zinc-100 text-zinc-800 mt-1">{callDetails.peerName}</h4>
-                                <p className="text-xs text-zinc-500 dark:text-zinc-400 uppercase mt-0.5">{callDetails.peerRole}</p>
+                                <p className="text-[10px] text-zinc-500 dark:text-zinc-400 uppercase mt-0.5">{callDetails.peerRole}</p>
                             </div>
                             <div className="flex items-center gap-2">
                                 <button
@@ -690,7 +690,7 @@ export function CollaborationCallOverlay({ hubConnection, selectedStudy, onSelec
                         </div>
 
                         <div className="dark:bg-zinc-950/50 bg-zinc-50 rounded-xl p-3 border dark:border-zinc-850 border-zinc-200 text-xs">
-                            <div className="text-xs uppercase font-bold text-zinc-500">Active Discussion</div>
+                            <div className="text-[9px] uppercase font-bold text-zinc-500">Active Discussion</div>
                             <div className="font-semibold dark:text-zinc-300 text-zinc-700 truncate mt-0.5">{callDetails.patientName}</div>
                         </div>
 
@@ -747,7 +747,7 @@ export function CollaborationCallOverlay({ hubConnection, selectedStudy, onSelec
                     {showCallPanel && (
                         <div className="animate-in fade-in slide-in-from-bottom-3 duration-300 border dark:border-zinc-800 border-zinc-200 dark:bg-zinc-900 bg-white shadow-2xl rounded-2xl p-4 w-72 flex flex-col gap-3">
                             <div className="flex items-center gap-1.5 justify-between border-b dark:border-zinc-800 border-zinc-150 pb-2">
-                                <span className="text-xs font-black uppercase text-zinc-550 dark:text-zinc-400 tracking-wider flex items-center gap-1.5">
+                                <span className="text-[10px] font-black uppercase text-zinc-550 dark:text-zinc-400 tracking-wider flex items-center gap-1.5">
                                     <Users className="w-3.5 h-3.5" />
                                     Operator Calling
                                 </span>
@@ -761,9 +761,9 @@ export function CollaborationCallOverlay({ hubConnection, selectedStudy, onSelec
 
                             {/* Dropdown list of online colleagues */}
                             <div className="space-y-1.5">
-                                <label className="text-xs uppercase font-bold text-zinc-500 block">Available Online {resolvedTargetRole}s</label>
+                                <label className="text-[9px] uppercase font-bold text-zinc-500 block">Available Online {resolvedTargetRole}s</label>
                                 {availableColleagues.length === 0 ? (
-                                    <div className="text-xs italic text-zinc-400 py-3 text-center border border-dashed dark:border-zinc-800 border-zinc-200 rounded-xl">
+                                    <div className="text-[11px] italic text-zinc-400 py-3 text-center border border-dashed dark:border-zinc-800 border-zinc-200 rounded-xl">
                                         No {resolvedTargetRole}s online.
                                     </div>
                                 ) : (
@@ -783,13 +783,13 @@ export function CollaborationCallOverlay({ hubConnection, selectedStudy, onSelec
                             </div>
 
                             {/* Display active selection context details */}
-                            <div className="dark:bg-zinc-950/50 bg-zinc-50 rounded-xl p-3 border dark:border-zinc-850 border-zinc-200 text-xs flex flex-col gap-0.5">
-                                <span className="text-xs uppercase font-bold text-zinc-500">Contextual Patient</span>
+                            <div className="dark:bg-zinc-950/50 bg-zinc-50 rounded-xl p-3 border dark:border-zinc-850 border-zinc-200 text-[11px] flex flex-col gap-0.5">
+                                <span className="text-[9px] uppercase font-bold text-zinc-500">Contextual Patient</span>
                                 <span className="font-bold dark:text-zinc-300 text-zinc-700 truncate">
                                     {selectedStudy ? selectedStudy.patientName : "No context selected"}
                                 </span>
                                 {!selectedStudy && (
-                                    <span className="text-xs text-red-500 font-medium mt-0.5">
+                                    <span className="text-[9px] text-red-500 font-medium mt-0.5">
                                         Select a patient before placing a call.
                                     </span>
                                 )}

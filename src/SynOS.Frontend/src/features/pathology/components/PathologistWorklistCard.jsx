@@ -64,7 +64,7 @@ export function PathologistWorklistCard({ report, isSelected, onClick }) {
                 )}>
                     {report.patientName}
                 </h3>
-                <div className={cn("shrink-0 text-xs font-medium transition-opacity", ui.time)}>
+                <div className={cn("shrink-0 text-[10px] font-medium transition-opacity", ui.time)}>
                     {new Date(report.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </div>
             </div>
@@ -72,20 +72,20 @@ export function PathologistWorklistCard({ report, isSelected, onClick }) {
             {/* LINE 2: CLINICAL GOAL (Age/Sex Container + Test Name) */}
             <div className="flex items-center gap-2 min-w-0">
                 <span className={cn(
-                    "shrink-0 px-1.5 py-0.5 rounded-md border text-xs font-bold uppercase tracking-tight transition-colors",
+                    "shrink-0 px-1.5 py-0.5 rounded-md border text-[9px] font-bold uppercase tracking-tight transition-colors",
                     ui.ageSex
                 )}>
                     {report.patientAgeGender || "N/A"}
                 </span>
                 <p className={cn(
-                    "text-xs font-medium tracking-tight line-clamp-1 flex-1 transition-colors",
+                    "text-[11px] font-medium tracking-tight line-clamp-1 flex-1 transition-colors",
                     ui.test
                 )}>
                     {report.testName}
                 </p>
                 {report.isStat && (
                     <span className={cn(
-                        "shrink-0 text-xs font-black uppercase px-1 py-0.5 rounded-sm border tracking-widest",
+                        "shrink-0 text-[8px] font-black uppercase px-1 py-0.5 rounded-sm border tracking-widest",
                         ui.stat
                     )}>
                         STAT
@@ -96,11 +96,11 @@ export function PathologistWorklistCard({ report, isSelected, onClick }) {
             {/* LINE 3: SYSTEM SPINE (Calm Token ID + Status) */}
             <div className="flex items-center justify-between pt-1 mt-0.5 border-t dark:border-white/5 border-black/5">
                 <div className="flex items-center gap-2">
-                    <span className={cn("text-xs tracking-wider transition-colors", ui.token)}>
+                    <span className={cn("text-[11px] tracking-wider transition-colors", ui.token)}>
                         {report.token || "---"}
                     </span>
                     <span className={cn(
-                        "text-xs font-black uppercase px-1.5 py-0.5 rounded-sm border tracking-tighter",
+                        "text-[8px] font-black uppercase px-1.5 py-0.5 rounded-sm border tracking-tighter",
                         ui.status?.[report.status] || ui.status?.Draft
                     )}>
                         {statusLabels[report.status] || report.status || "Draft"}
@@ -110,7 +110,7 @@ export function PathologistWorklistCard({ report, isSelected, onClick }) {
                 {report.abnormalCount > 0 && (
                     <div className="flex items-center gap-1 text-amber-500 transition-all">
                         <AlertCircle className="w-2.5 h-2.5" />
-                        <span className="text-xs font-black">{report.abnormalCount}</span>
+                        <span className="text-[10px] font-black">{report.abnormalCount}</span>
                     </div>
                 )}
             </div>
@@ -119,7 +119,7 @@ export function PathologistWorklistCard({ report, isSelected, onClick }) {
             {(report.typedByUserName || report.verifiedByUserName) && (
                 <div className="flex items-center gap-1.5 pt-1.5 opacity-60">
                     <div className="w-1.5 h-1.5 rounded-full bg-synos-primary" />
-                    <span className="text-xs font-bold uppercase tracking-widest truncate">
+                    <span className="text-[9px] font-bold uppercase tracking-widest truncate">
                         {report.typedByUserName || report.verifiedByUserName}
                     </span>
                 </div>

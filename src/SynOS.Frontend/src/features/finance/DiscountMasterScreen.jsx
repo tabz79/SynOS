@@ -36,20 +36,7 @@ import {
     FlaskConical,
     HeartPulse,
     Stethoscope,
-    Hospital,
-    Scale,
-    FileText,
-    ChevronRight,
-    ChevronDown,
-    Briefcase,
-    Shield,
-    FileCheck,
-    PieChart,
-    BarChart3,
-    Ticket,
-    Settings,
-    Share2,
-    TrendingUp
+    Hospital
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
 import { cn, formatDateCompact } from '@/lib/utils';
@@ -86,7 +73,7 @@ function CircularProgressGauge({ percentage = 0, color = "#14B8A6" }) {
                     fill="none"
                 />
             </svg>
-            <span className="absolute text-[10px] font-bold text-slate-800 dark:text-zinc-200 tabular-nums select-none tracking-tight">
+            <span className="absolute text-[8px] font-bold text-slate-800 dark:text-zinc-200 tabular-nums select-none tracking-tight">
                 {validPct.toFixed(1)}%
             </span>
         </div>
@@ -94,24 +81,23 @@ function CircularProgressGauge({ percentage = 0, color = "#14B8A6" }) {
 }
 
 const PRESET_ICONS = [
-    { icon: <Shield size={22} strokeWidth={2.2} />, bg: "bg-[#EFF6FF] text-[#38BDF8] border border-sky-100/80 shadow-2xs" },
-    { icon: <Droplets size={22} strokeWidth={2.2} />, bg: "bg-[#FFF1F2] text-[#FB7185] border border-rose-100/80 shadow-2xs" },
-    { icon: <Briefcase size={22} strokeWidth={2.2} />, bg: "bg-[#F0FDFA] text-[#2DD4BF] border border-teal-100/80 shadow-2xs" },
-    { icon: <FlaskConical size={22} strokeWidth={2.2} />, bg: "bg-[#FAF5FF] text-[#C084FC] border border-purple-100/80 shadow-2xs" },
-    { icon: <HeartPulse size={22} strokeWidth={2.2} />, bg: "bg-[#FFFBEB] text-[#FBBF24] border border-amber-100/80 shadow-2xs" },
+    { icon: <Activity size={15} />, bg: "bg-[#EBF1F6] text-[#557896] dark:bg-zinc-800 dark:text-zinc-300" },
+    { icon: <Droplets size={15} />, bg: "bg-[#EBF1F6] text-[#557896] dark:bg-zinc-800 dark:text-zinc-300" },
+    { icon: <FlaskConical size={15} />, bg: "bg-[#EBF1F6] text-[#557896] dark:bg-zinc-800 dark:text-zinc-300" },
+    { icon: <HeartPulse size={15} />, bg: "bg-[#EBF1F6] text-[#557896] dark:bg-zinc-800 dark:text-zinc-300" },
+    { icon: <ShieldCheck size={15} />, bg: "bg-[#EBF1F6] text-[#557896] dark:bg-zinc-800 dark:text-zinc-300" },
 ];
 
 const PARTNER_ICONS = [
-    { icon: <Building2 size={22} strokeWidth={2.2} />, bg: "bg-[#FFF1F2] text-[#FB7185] border border-rose-100/80 shadow-2xs" },
-    { icon: <Building2 size={22} strokeWidth={2.2} />, bg: "bg-[#EFF6FF] text-[#38BDF8] border border-sky-100/80 shadow-2xs" },
-    { icon: <Stethoscope size={22} strokeWidth={2.2} />, bg: "bg-[#FAF5FF] text-[#C084FC] border border-purple-100/80 shadow-2xs" },
-    { icon: <User size={22} strokeWidth={2.2} />, bg: "bg-[#FFFBEB] text-[#FBBF24] border border-amber-100/80 shadow-2xs" },
-    { icon: <Building2 size={22} strokeWidth={2.2} />, bg: "bg-[#F0FDFA] text-[#2DD4BF] border border-teal-100/80 shadow-2xs" },
+    { icon: <Building2 size={15} />, bg: "bg-[#EBF1F6] text-[#557896] dark:bg-zinc-800 dark:text-zinc-300" },
+    { icon: <Hospital size={15} />, bg: "bg-[#EBF1F6] text-[#557896] dark:bg-zinc-800 dark:text-zinc-300" },
+    { icon: <Stethoscope size={15} />, bg: "bg-[#EBF1F6] text-[#557896] dark:bg-zinc-800 dark:text-zinc-300" },
+    { icon: <Activity size={15} />, bg: "bg-[#EBF1F6] text-[#557896] dark:bg-zinc-800 dark:text-zinc-300" },
+    { icon: <Building2 size={15} />, bg: "bg-[#EBF1F6] text-[#557896] dark:bg-zinc-800 dark:text-zinc-300" },
 ];
 
 const DEFAULT_CONCESSION_INTELLIGENCE = {
     totalDiscountAmount: 11862,
-    totalBillsDiscounted: 27,
     totalGrossBilled: 38230,
     overallDiscountPercentage: 31.0,
     patientDiscountAmount: 6381,
@@ -130,558 +116,18 @@ const DEFAULT_CONCESSION_INTELLIGENCE = {
     topB2BPartners: [
         { partnerName: "ANJUM HOSPITAL", totalAmount: 1650, percentageOfPartnerDiscounts: 30.1 },
         { partnerName: "SRI HARSHA HOSPITAL", totalAmount: 1250, percentageOfPartnerDiscounts: 22.8 },
-        { partnerName: "DR. K.CH.NARASIMHA RAO", totalAmount: 1200, percentageOfPartnerDiscounts: 21.9 },
+        { partnerName: "DR.K.CH.NARASIMHA", totalAmount: 1200, percentageOfPartnerDiscounts: 21.9 },
         { partnerName: "SELF", totalAmount: 800, percentageOfPartnerDiscounts: 14.6 },
         { partnerName: "Dr. Khaleeq", totalAmount: 531, percentageOfPartnerDiscounts: 9.7 }
     ],
     staffContributions: [
-        { staffName: "Dr. Vasudeva Rao", role: "Administrator", billsCount: 23, totalAmount: 8620, avgAmount: 374.78, percentage: 72.7 },
-        { staffName: "Admin Desk", role: "Supervisor", billsCount: 14, totalAmount: 3242, avgAmount: 231.57, percentage: 27.3 },
-        { staffName: "Shakeel Khan", role: "Staff", billsCount: 5, totalAmount: 550, avgAmount: 110.00, percentage: 4.6 },
-        { staffName: "Lok Prasad", role: "Staff", billsCount: 3, totalAmount: 320, avgAmount: 106.67, percentage: 2.7 }
+        { staffName: "Dr. Vasudeva Rao", role: "ADMINISTRATOR", totalAmount: 6381, percentage: 53.8 },
+        { staffName: "Admin Desk", role: "SUPERVISOR", totalAmount: 5481, percentage: 46.2 }
     ],
     totalPresetsCount: 175,
-    activePresetsCount: 7,
     usedPresetsCount: 7,
-    dormantPresetsCount: 168,
-    topDiscountCodes: [
-        { code: "INS-TIEUP", name: "Insurance Pre-Auth Tie-up", totalAmount: 2850, percentageOfTotalDiscounts: 24.0, usageCount: 8, color: "#7DD3FC" },
-        { code: "REF-DOCTOR", name: "Referral Doctor Concession", totalAmount: 1920, percentageOfTotalDiscounts: 16.2, usageCount: 5, color: "#FDA4AF" },
-        { code: "REPEAT-CUST", name: "Repeat Customer Privilege", totalAmount: 1450, percentageOfTotalDiscounts: 12.2, usageCount: 4, color: "#FCD34D" },
-        { code: "CORP-CONTRACT", name: "Corporate Health Contract", totalAmount: 1350, percentageOfTotalDiscounts: 11.4, usageCount: 4, color: "#FDE047" },
-        { code: "FIN-ASSIST", name: "Financial Concession Program", totalAmount: 850, percentageOfTotalDiscounts: 7.2, usageCount: 2, color: "#C4B5FD" }
-    ],
-    monthlyTrends: [
-        { month: "May", patientDiscountAmount: 5400, partnerDiscountAmount: 4100 },
-        { month: "Jun", patientDiscountAmount: 6200, partnerDiscountAmount: 4800 },
-        { month: "Jul", patientDiscountAmount: 7100, partnerDiscountAmount: 5200 },
-        { month: "Aug", patientDiscountAmount: 8500, partnerDiscountAmount: 6100 },
-        { month: "Sep", patientDiscountAmount: 7800, partnerDiscountAmount: 5900 },
-        { month: "Oct", patientDiscountAmount: 6381, partnerDiscountAmount: 5481 }
-    ],
-    dailyTrends: [
-        { dayOfWeek: "Fri", formattedDate: "23 Oct", totalAmount: 6240, billsCount: 18, isToday: false },
-        { dayOfWeek: "Sat", formattedDate: "24 Oct", totalAmount: 8125, billsCount: 22, isToday: false },
-        { dayOfWeek: "Sun", formattedDate: "25 Oct", totalAmount: 7430, billsCount: 20, isToday: false },
-        { dayOfWeek: "Mon", formattedDate: "26 Oct", totalAmount: 9862, billsCount: 26, isToday: false },
-        { dayOfWeek: "Tue", formattedDate: "27 Oct", totalAmount: 8560, billsCount: 23, isToday: false },
-        { dayOfWeek: "Wed", formattedDate: "28 Oct", totalAmount: 10012, billsCount: 27, isToday: false },
-        { dayOfWeek: "Thu", formattedDate: "29 Oct", totalAmount: 11862, billsCount: 30, isToday: true }
-    ],
-    mechanismMix: [
-        { mechanism: "Flat Rupee (₹)", totalAmount: 8240, percentage: 69.5, count: 18, color: "#75B6E5", patientAmount: 4430, partnerAmount: 3810 },
-        { mechanism: "Percentage (%)", totalAmount: 3622, percentage: 30.5, count: 9, color: "#BD98FC", patientAmount: 1951, partnerAmount: 1671 }
-    ],
-    departmentSplit: {
-        pathologyAmount: 7430,
-        pathologyPercentage: 62.7,
-        pathologyBillsCount: 21,
-        pathologyInvestigationsCount: 142,
-        radiologyAmount: 4432,
-        radiologyPercentage: 37.3,
-        radiologyBillsCount: 13,
-        radiologyInvestigationsCount: 48
-    },
-    unitEconomics: {
-        avgPatientConcession: 375.35,
-        avgPartnerConcession: 548.10,
-        overallRecoveryRate: 69.0,
-        avgGrossTicketSize: 1415.93,
-        avgNetTicketSize: 976.59
-    }
+    dormantPresetsCount: 168
 };
-
-function AdaptiveBreakdownCard({
-    title,
-    icon: CardIcon,
-    iconBg,
-    totalAmount = 0,
-    totalBills = 0,
-    items = [],
-    type = 'patient',
-    icons = PRESET_ICONS,
-    barGradient
-}) {
-    const itemCount = items.length;
-
-    return (
-        <div className="flex-1 min-w-0 p-6 md:p-7 rounded-[24px] bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-[0_4px_20px_rgba(15,35,60,0.06)] flex flex-col justify-between space-y-4">
-            {/* Unified Single-Row Header */}
-            <div className="flex items-center justify-between pb-3.5 border-b border-slate-200/80 dark:border-zinc-800">
-                <div className="flex items-center gap-3">
-                    <div className={cn("w-[44px] h-[44px] rounded-[15px] flex items-center justify-center shrink-0 shadow-2xs", iconBg)}>
-                        <CardIcon size={22} strokeWidth={2.3} />
-                    </div>
-                    <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-normal">
-                        {title}
-                    </h3>
-                </div>
-                <div className="flex items-baseline gap-1.5 shrink-0">
-                    <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-normal">
-                        ₹{Number(totalAmount).toLocaleString()}
-                    </span>
-                    <span className="text-sm font-semibold text-slate-500 dark:text-zinc-400 tabular-nums">
-                        ({totalBills} Bills)
-                    </span>
-                </div>
-            </div>
-
-            {/* CASE 0: EMPTY STATE */}
-            {itemCount === 0 && (
-                <div className="flex-1 flex flex-col items-center justify-center p-6 text-center my-auto min-h-[220px]">
-                    <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-zinc-800/60 text-slate-400 flex items-center justify-center mb-2.5">
-                        <CardIcon size={22} />
-                    </div>
-                    <p className="text-sm font-bold text-slate-700 dark:text-zinc-300">No concessions recorded</p>
-                    <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">No concessions active for the selected horizon.</p>
-                </div>
-            )}
-
-            {/* CASE 1: 1 ROW -> DEDICATED HERO SHOWCASE POD */}
-            {itemCount === 1 && (() => {
-                const item = items[0];
-                const name = item.reasonText || item.partnerName || "Direct Concession";
-                const iconObj = icons[0];
-                const amt = Number(item.totalAmount) || totalAmount;
-                const bills = item.usageCount || item.billsCount || totalBills;
-
-                return (
-                    <div className="flex-1 flex flex-col justify-center my-auto min-h-[220px] p-5 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 border border-slate-200/90 dark:border-zinc-700/80 space-y-4 shadow-xs">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3.5 min-w-0">
-                                <div className={cn("w-12 h-12 rounded-[16px] flex items-center justify-center shrink-0 shadow-2xs", iconObj.bg)}>
-                                    {iconObj.icon}
-                                </div>
-                                <div className="min-w-0">
-                                    <h5 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white truncate" title={name}>
-                                        {name}
-                                    </h5>
-                                    <span className="text-sm font-medium text-slate-600 dark:text-zinc-400">
-                                        {type === 'patient' ? "Sole Walk-In Reason Today" : "Exclusive Partner Concession Today"}
-                                    </span>
-                                </div>
-                            </div>
-                            <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-400 shrink-0">
-                                100% Share
-                            </span>
-                        </div>
-
-                        <div className="flex items-baseline justify-between pt-1 border-t border-slate-100 dark:border-zinc-800/80">
-                            <div>
-                                <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400 block">Total Concession</span>
-                                <span className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-normal">
-                                    ₹{amt.toLocaleString()}
-                                </span>
-                            </div>
-                            <div className="text-right">
-                                <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400 block">Bills Recorded</span>
-                                <span className="text-base sm:text-lg font-bold text-slate-800 dark:text-zinc-200 tabular-nums">
-                                    {bills} {bills === 1 ? 'Bill' : 'Bills'}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="space-y-1.5">
-                            <div className="flex justify-between text-xs font-semibold text-slate-500 dark:text-zinc-400">
-                                <span>Volume Saturation</span>
-                                <span>100.0%</span>
-                            </div>
-                            <div className="w-full h-[22px] bg-[#EAF1F8] dark:bg-zinc-800 rounded-full overflow-hidden flex">
-                                <div className={cn("h-full rounded-full transition-all duration-500 w-full", barGradient)} />
-                            </div>
-                        </div>
-                    </div>
-                );
-            })()}
-
-            {/* CASE 2: 2 ROWS -> DUAL COMPARATIVE PODS (ELIMINATES DEAD SPACE) */}
-            {itemCount === 2 && (
-                <div className="flex-1 flex flex-col justify-between space-y-3.5 my-auto min-h-[220px]">
-                    {items.map((item, idx) => {
-                        const name = item.reasonText || item.partnerName || `Preset ${idx + 1}`;
-                        const pct = Number(item.percentageOfPatientDiscounts || item.percentageOfPartnerDiscounts) || (idx === 0 ? 58.8 : 41.2);
-                        const bills = item.usageCount || item.billsCount || (idx === 0 ? Math.ceil(totalBills * 0.6) : Math.floor(totalBills * 0.4));
-                        const iconObj = icons[idx % icons.length];
-                        const isLead = idx === 0;
-
-                        return (
-                            <div 
-                                key={idx} 
-                                className="p-4 sm:p-5 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 border border-slate-200/90 dark:border-zinc-700/80 shadow-xs flex flex-col justify-between space-y-3"
-                            >
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3 min-w-0">
-                                        <div className={cn("w-11 h-11 rounded-[14px] flex items-center justify-center shrink-0 shadow-2xs", iconObj.bg)}>
-                                            {iconObj.icon}
-                                        </div>
-                                        <div className="min-w-0">
-                                            <h5 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white truncate" title={name}>
-                                                {name}
-                                            </h5>
-                                            <span className="text-xs sm:text-sm font-medium text-slate-600 dark:text-zinc-400">
-                                                {isLead ? (type === 'patient' ? "Primary Walk-In Preset" : "Primary B2B Partner") : (type === 'patient' ? "Secondary Walk-In Preset" : "Secondary B2B Partner")}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div className="text-right shrink-0">
-                                        <div className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tabular-nums tracking-normal">
-                                            ₹{Number(item.totalAmount).toLocaleString()}
-                                        </div>
-                                        <span className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-zinc-400">
-                                            {bills} {bills === 1 ? 'Bill' : 'Bills'}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center gap-3">
-                                    <div className="flex-1 h-[24px] bg-[#EAF1F8] dark:bg-zinc-800 rounded-full overflow-hidden flex">
-                                        <div 
-                                            className={cn("h-full rounded-full transition-all duration-500", barGradient)}
-                                            style={{ width: `${Math.min(100, Math.max(10, pct))}%` }}
-                                        />
-                                    </div>
-                                    <span className="text-sm sm:text-base font-bold text-slate-800 dark:text-zinc-200 tabular-nums w-14 text-right shrink-0">
-                                        {pct.toFixed(1)}%
-                                    </span>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
-
-            {/* CASE 3: 3 ROWS -> TRIO RANKED CARDS */}
-            {itemCount === 3 && (
-                <div className="flex-1 flex flex-col justify-between space-y-2.5 my-auto min-h-[220px]">
-                    {items.map((item, idx) => {
-                        const name = item.reasonText || item.partnerName || `Item ${idx + 1}`;
-                        const pct = Number(item.percentageOfPatientDiscounts || item.percentageOfPartnerDiscounts) || (idx === 0 ? 50 : 25);
-                        const iconObj = icons[idx % icons.length];
-
-                        return (
-                            <div 
-                                key={idx}
-                                className={cn(
-                                    "p-3 rounded-xl border flex items-center justify-between gap-3 transition-colors",
-                                    idx === 0 
-                                        ? "bg-white dark:bg-zinc-800 border-blue-200/80 dark:border-blue-900/40 shadow-xs" 
-                                        : "bg-white/60 dark:bg-zinc-800/40 border-slate-200/70 dark:border-zinc-800"
-                                )}
-                            >
-                                <div className="flex items-center gap-2.5 min-w-0 w-[42%]">
-                                    <div className={cn("w-8 h-8 rounded-[10px] flex items-center justify-center shrink-0 shadow-2xs", iconObj.bg)}>
-                                        {iconObj.icon}
-                                    </div>
-                                    <div className="min-w-0 truncate">
-                                        <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate block" title={name}>
-                                            {name}
-                                        </span>
-                                        <span className="text-xs font-medium text-slate-500 dark:text-zinc-400">
-                                            #{idx + 1} Rank
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div className="text-right tabular-nums text-xs sm:text-sm font-bold text-slate-900 dark:text-white shrink-0 pr-1">
-                                    ₹{Number(item.totalAmount).toLocaleString()}
-                                </div>
-
-                                <div className="flex items-center gap-2 w-[38%]">
-                                    <div className="flex-1 h-[20px] bg-[#EAF1F8] dark:bg-zinc-800 rounded-full overflow-hidden flex">
-                                        <div 
-                                            className={cn("h-full rounded-full transition-all duration-500", barGradient)}
-                                            style={{ width: `${Math.min(100, Math.max(10, pct))}%` }}
-                                        />
-                                    </div>
-                                    <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 tabular-nums w-10 text-right shrink-0">
-                                        {pct.toFixed(1)}%
-                                    </span>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
-
-            {/* CASE 4 & 5: >= 4 ROWS -> NATURAL STRUCTURED TABLE */}
-            {itemCount >= 4 && (
-                <div className="overflow-x-auto flex-1 min-h-[220px]">
-                    <table className="w-full table-fixed text-left border-collapse">
-                        <thead>
-                            <tr className="text-xs font-semibold text-slate-400 dark:text-zinc-500 border-b border-slate-200/80 dark:border-zinc-800">
-                                <th className="pb-2.5 pl-0.5 font-bold w-[34%]">{type === 'patient' ? "Preset Reason" : "Partner Organization"}</th>
-                                <th className="pb-2.5 text-right font-bold w-[20%] pr-2">Concession</th>
-                                <th className="pb-2.5 text-left font-bold pl-4 w-[46%]">Share</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80">
-                            {items.slice(0, 5).map((r, i) => {
-                                const name = r.reasonText || r.partnerName;
-                                const pct = Number(r.percentageOfPatientDiscounts || r.percentageOfPartnerDiscounts) || 20;
-                                const iconObj = icons[i % icons.length];
-                                return (
-                                    <tr key={i} className="h-[48px] hover:bg-white/50 dark:hover:bg-zinc-800/50 transition-colors border-b border-slate-200/80 dark:border-zinc-800/80 last:border-b-0">
-                                        <td className="py-2 pl-0.5 w-[34%]">
-                                            <div className="flex items-center gap-2.5 min-w-0">
-                                                <div className={cn("w-8 h-8 rounded-[11px] flex items-center justify-center shrink-0 shadow-2xs", iconObj.bg)}>
-                                                    {iconObj.icon}
-                                                </div>
-                                                <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate pr-1" title={name}>
-                                                    {name}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td className="py-2 text-right tabular-nums text-xs sm:text-sm font-bold text-slate-900 dark:text-white w-[20%] pr-2">
-                                            ₹{Number(r.totalAmount).toLocaleString()}
-                                        </td>
-                                        <td className="py-2 pl-4 w-[46%]">
-                                            <div className="flex items-center gap-2.5 w-full">
-                                                <div className="flex-1 h-[22px] bg-[#EAF1F8] dark:bg-zinc-800 rounded-full overflow-hidden flex">
-                                                    <div 
-                                                        className={cn("h-full rounded-full transition-all duration-500", barGradient)}
-                                                        style={{ width: `${Math.min(100, Math.max(8, pct))}%` }}
-                                                    />
-                                                </div>
-                                                <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white tabular-nums w-12 text-right shrink-0">
-                                                    {pct.toFixed(1)}%
-                                                </span>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </div>
-            )}
-        </div>
-    );
-}
-
-function AdaptiveStaffLeaderboard({
-    staff = [],
-    totalStaffAmount = 0
-}) {
-    const resolveStaffDetails = (s) => {
-        let rawName = (s.staffName || '').trim();
-        let role = s.role;
-        
-        const isGuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawName);
-        if (!rawName || isGuid) {
-            rawName = "Admin Desk";
-            if (!role || role === 'Staff') role = "Supervisor";
-        }
-        
-        if (!role) {
-            role = rawName.toLowerCase().includes('dr') ? 'Administrator' : 'Staff';
-        }
-
-        let initials = "AD";
-        if (rawName.toLowerCase().includes('dr')) {
-            initials = "VR";
-            if (!role) role = "Administrator";
-        } else if (rawName.toLowerCase().includes('admin')) {
-            initials = "AD";
-            if (!role) role = "Supervisor";
-        } else if (rawName.toLowerCase().includes('shakeel')) {
-            initials = "SK";
-            if (!role) role = "Staff";
-        } else if (rawName.toLowerCase().includes('lok')) {
-            initials = "LP";
-            if (!role) role = "Staff";
-        } else {
-            const cleanName = rawName.replace(/^Dr\.\s*/i, '').trim();
-            const nameParts = cleanName.split(/\s+/);
-            initials = nameParts.length >= 2 
-                ? `${nameParts[0][0]}${nameParts[1][0]}`.toUpperCase()
-                : cleanName.slice(0, 2).toUpperCase();
-        }
-
-        return { displayName: rawName, resolvedRole: role, initials };
-    };
-
-    // Clean and deduplicate staff
-    const staffMap = new Map();
-    for (const s of staff) {
-        if (!s || (Number(s.totalAmount) === 0 && Number(s.billsCount) === 0)) continue;
-        const { displayName, resolvedRole, initials } = resolveStaffDetails(s);
-        if (staffMap.has(displayName)) {
-            const prev = staffMap.get(displayName);
-            staffMap.set(displayName, {
-                ...prev,
-                totalAmount: (prev.totalAmount || 0) + (Number(s.totalAmount) || 0),
-                billsCount: (prev.billsCount || 0) + (Number(s.billsCount) || 0)
-            });
-        } else {
-            staffMap.set(displayName, { ...s, displayName, resolvedRole, initials });
-        }
-    }
-
-    const finalStaff = Array.from(staffMap.values());
-    const totalSum = finalStaff.reduce((acc, curr) => acc + (Number(curr.totalAmount) || 0), 0) || totalStaffAmount;
-    const count = finalStaff.length;
-
-    const avatarStyles = [
-        { bg: "bg-[#D1FAE5]", text: "text-[#065F46]", border: "border-[#A7F3D0]/80" },
-        { bg: "bg-[#EDE9FE]", text: "text-[#6D28D9]", border: "border-[#DDD6FE]/80" },
-        { bg: "bg-[#FCE7F3]", text: "text-[#9D174D]", border: "border-[#FBCFE8]/80" },
-        { bg: "bg-[#FFEDD5]", text: "text-[#C2410C]", border: "border-[#FED7AA]/80" }
-    ];
-
-    // CASE 0: EMPTY STATE
-    if (count === 0) {
-        return (
-            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center my-auto min-h-[160px]">
-                <div className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-400 flex items-center justify-center mb-2">
-                    <Users size={20} />
-                </div>
-                <p className="text-sm font-bold text-slate-700 dark:text-zinc-300">No authorizers active</p>
-                <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">No staff discounts recorded for this period.</p>
-            </div>
-        );
-    }
-
-    // CASE 1: 1 STAFF MEMBER (SHOWCASE HERO POD - FILLS THE CARD!)
-    if (count === 1) {
-        const s = finalStaff[0];
-        const style = avatarStyles[0];
-        const bills = s.billsCount || 1;
-        const avgTicket = bills > 0 ? Math.round(Number(s.totalAmount) / bills) : Number(s.totalAmount);
-
-        return (
-            <div className="flex-1 flex flex-col justify-center my-auto p-4 rounded-2xl bg-slate-50/80 dark:bg-zinc-800/80 border border-slate-200/90 dark:border-zinc-700/80 shadow-xs space-y-3.5">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3 min-w-0">
-                        <div className={cn("w-12 h-12 rounded-full flex items-center justify-center font-bold text-base shrink-0 shadow-2xs border", style.bg, style.text, style.border)}>
-                            {s.initials}
-                        </div>
-                        <div className="min-w-0">
-                            <h5 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white truncate">
-                                {s.displayName}
-                            </h5>
-                            <span className="px-2.5 py-0.5 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]/70 text-xs font-semibold shadow-2xs inline-block mt-0.5">
-                                {s.resolvedRole}
-                            </span>
-                        </div>
-                    </div>
-                    <span className="px-3 py-1 rounded-full text-xs sm:text-sm font-bold bg-blue-50 text-blue-700 border border-blue-200/80 dark:bg-blue-950/40 dark:text-blue-400">
-                        100.0% Authority
-                    </span>
-                </div>
-
-                <div className="flex items-baseline justify-between pt-1 border-t border-slate-200/80 dark:border-zinc-800">
-                    <div>
-                        <span className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-zinc-400 block">Total Authorized</span>
-                        <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-normal">
-                            ₹{Number(s.totalAmount).toLocaleString()}
-                        </span>
-                    </div>
-                    <div className="text-right">
-                        <span className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-zinc-400 block">Activity</span>
-                        <span className="text-sm sm:text-base font-semibold text-slate-700 dark:text-zinc-300">
-                            {bills} {bills === 1 ? 'Bill' : 'Bills'} • ₹{avgTicket} avg
-                        </span>
-                    </div>
-                </div>
-
-                <div className="w-full h-[22px] bg-[#EAF1F8] dark:bg-zinc-800 rounded-full overflow-hidden flex">
-                    <div className="h-full rounded-full bg-gradient-to-r from-[#60A5FA] to-[#38BDF8] shadow-[0_2px_8px_rgba(56,189,248,0.35)] w-full transition-all duration-500" />
-                </div>
-            </div>
-        );
-    }
-
-    // CASE 2: 2 STAFF MEMBERS (DUAL COMPARISON PODS)
-    if (count === 2) {
-        return (
-            <div className="flex-1 flex flex-col justify-between space-y-3 my-auto">
-                {finalStaff.map((s, idx) => {
-                    const style = avatarStyles[idx % avatarStyles.length];
-                    const pct = totalSum > 0 ? ((Number(s.totalAmount) || 0) / totalSum) * 100 : (idx === 0 ? 60 : 40);
-                    return (
-                        <div key={idx} className="p-3 rounded-xl bg-slate-50/80 dark:bg-zinc-800/80 border border-slate-200/90 dark:border-zinc-700/80 shadow-xs space-y-2">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2.5 min-w-0">
-                                    <div className={cn("w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shrink-0 shadow-2xs border", style.bg, style.text, style.border)}>
-                                        {s.initials}
-                                    </div>
-                                    <div className="min-w-0">
-                                        <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate block">
-                                            {s.displayName}
-                                        </span>
-                                        <span className="text-xs sm:text-sm font-medium text-slate-600 dark:text-zinc-400">
-                                            {s.resolvedRole} • {s.billsCount || 1} Bills
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className="text-right shrink-0">
-                                    <span className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tabular-nums tracking-normal">
-                                        ₹{Number(s.totalAmount).toLocaleString()}
-                                    </span>
-                                    <span className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-zinc-400 block">
-                                        {pct.toFixed(1)}%
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="w-full h-[18px] bg-[#EAF1F8] dark:bg-zinc-800 rounded-full overflow-hidden flex">
-                                <div 
-                                    className={cn("h-full rounded-full transition-all duration-500", idx === 0 ? "bg-gradient-to-r from-[#60A5FA] to-[#38BDF8]" : "bg-gradient-to-r from-[#C084FC] to-[#A855F7]")}
-                                    style={{ width: `${Math.min(100, Math.max(8, pct))}%` }}
-                                />
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-        );
-    }
-
-    // CASE 3 or 4: 3-4 STAFF MEMBERS (STACKED LIST)
-    return (
-        <div className="flex-1 space-y-3 pt-1">
-            {finalStaff.slice(0, 4).map((s, idx) => {
-                const style = avatarStyles[idx % avatarStyles.length];
-                const pct = totalSum > 0 ? ((Number(s.totalAmount) || 0) / totalSum) * 100 : 0;
-                return (
-                    <div key={idx} className="flex items-center gap-3">
-                        <div className={cn("w-[40px] h-[40px] rounded-full flex items-center justify-center font-bold text-sm shrink-0 shadow-2xs border", style.bg, style.text, style.border)}>
-                            {s.initials}
-                        </div>
-                        <div className="flex-1 min-w-0 space-y-1">
-                            <div className="flex items-baseline justify-between gap-2">
-                                <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">
-                                    {s.displayName}
-                                </span>
-                                <div className="flex items-baseline gap-2 shrink-0">
-                                    <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tabular-nums tracking-normal">
-                                        ₹{Number(s.totalAmount).toLocaleString()}
-                                    </span>
-                                    <span className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-zinc-400 tabular-nums w-12 text-right">
-                                        {pct.toFixed(1)}%
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="flex items-center justify-between gap-2">
-                                <span className="px-2 py-0.5 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]/70 text-xs font-semibold shadow-2xs">
-                                    {s.resolvedRole}
-                                </span>
-                                <span className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-zinc-400 tabular-nums">
-                                    {s.billsCount || 1} Bills
-                                </span>
-                            </div>
-                            <div className="w-full h-[20px] bg-[#EAF1F8] dark:bg-zinc-800 rounded-full overflow-hidden flex">
-                                <div 
-                                    className={cn("h-full rounded-full transition-all duration-500", idx === 0 ? "bg-gradient-to-r from-[#60A5FA] to-[#38BDF8]" : "bg-[#C084FC]")}
-                                    style={{ width: `${Math.min(100, Math.max(5, pct))}%` }}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                );
-            })}
-        </div>
-    );
-}
 
 export function DiscountMasterScreen() {
     const { tab: paramTab = 'intelligence' } = useParams();
@@ -690,10 +136,8 @@ export function DiscountMasterScreen() {
     const isDark = theme === 'dark';
     const { user, activeOversightBranchId } = useAuth();
     const isAdmin = user?.role === 'Admin' || user?.role === 'SystemAdmin';
-
-    // Strategy A Filter State (Time Horizon & Branch)
     const [isConsolidated, setIsConsolidated] = useState(true);
-    const [presetRange, setPresetRange] = useState('month');
+    const [presetRange, setPresetRange] = useState('today'); // 'today' | 'month' | 'quarter' | 'year'
 
     // Normalize tab
     const tab = paramTab === 'reasons' || paramTab === 'history' || paramTab === 'staff' || paramTab === 'codes' 
@@ -744,11 +188,10 @@ export function DiscountMasterScreen() {
         try {
             setLoadingIntelligence(true);
             const bId = isConsolidated && isAdmin ? null : (activeOversightBranchId || user?.branchId);
-            const isCons = isConsolidated && isAdmin;
             const data = await FinanceApi.getConcessionIntelligence({
                 preset: presetRange,
                 branchId: bId,
-                isConsolidated: isCons
+                isConsolidated: isConsolidated && isAdmin
             });
             setIntelligence(data || DEFAULT_CONCESSION_INTELLIGENCE);
         } catch (err) {
@@ -800,13 +243,12 @@ export function DiscountMasterScreen() {
         try {
             setLoadingHistory(true);
             const bId = isConsolidated && isAdmin ? null : (activeOversightBranchId || user?.branchId);
-            const isCons = isConsolidated && isAdmin;
             const data = await FinanceApi.getDiscountHistory({
                 source: historySource,
                 search: historySearch.trim() || undefined,
                 preset: presetRange,
                 branchId: bId,
-                isConsolidated: isCons
+                isConsolidated: isConsolidated && isAdmin
             });
             setHistory(Array.isArray(data) ? data : []);
         } catch (err) {
@@ -1010,75 +452,24 @@ export function DiscountMasterScreen() {
     };
 
     return (
-        <div className="w-full min-h-full bg-[radial-gradient(ellipse_at_top,_#EAF2F9_0%,_#DCE7F2_50%,_#CEDCE8_100%)] dark:bg-zinc-950 px-6 py-5 space-y-6 animate-in fade-in duration-500">
+        <div className="w-full min-h-full bg-[#EDF3F7] dark:bg-zinc-950 p-8 space-y-6 animate-in fade-in duration-500">
             {/* TERMINAL HEADER MATCHING REFERENCE A */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl md:text-4xl font-extrabold dark:text-white text-slate-900 tracking-normal leading-tight">
+                    <h1 className="text-2xl font-bold dark:text-white text-slate-900 tracking-tight">
                         Discount Master
                     </h1>
-                    <p className="text-sm md:text-base text-slate-600 dark:text-zinc-400 font-medium mt-1.5 leading-normal">
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">
                         Manage discount codes, view discounts given, and track staff discounts
                     </p>
                 </div>
 
                 <div className="flex items-center gap-2.5 flex-wrap">
-                    {/* Time Horizon Selector */}
-                    <div className="flex items-center gap-1 bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
-                        {[
-                            { id: 'today', label: 'Today' },
-                            { id: 'month', label: 'This Month' },
-                            { id: 'quarter', label: 'This Quarter' },
-                            { id: 'year', label: 'This Year' }
-                        ].map(t => (
-                            <button
-                                key={t.id}
-                                onClick={() => setPresetRange(t.id)}
-                                className={cn(
-                                    "px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer",
-                                    presetRange === t.id 
-                                        ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs font-bold" 
-                                        : "text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
-                                )}
-                            >
-                                {t.label}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Consolidated Switcher */}
-                    {isAdmin && (
-                        <div className="flex items-center gap-1 bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
-                            <button
-                                onClick={() => setIsConsolidated(true)}
-                                className={cn(
-                                    "px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer",
-                                    isConsolidated 
-                                        ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs font-bold"
-                                        : "text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
-                                )}
-                            >
-                                All Branches
-                            </button>
-                            <button
-                                onClick={() => setIsConsolidated(false)}
-                                className={cn(
-                                    "px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer",
-                                    !isConsolidated 
-                                        ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs font-bold"
-                                        : "text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
-                                )}
-                            >
-                                Branch View
-                            </button>
-                        </div>
-                    )}
-
                     {tab === 'codes' && (
                         <button
                             type="button"
                             onClick={handleOpenCreate}
-                            className="px-4 py-2 bg-synos-primary text-white rounded-xl text-xs sm:text-sm font-bold hover:brightness-105 active:scale-95 shadow-md shadow-synos-primary/20 flex items-center gap-2 cursor-pointer transition-all"
+                            className="px-4 py-2 bg-synos-primary text-white rounded-xl text-xs font-bold hover:brightness-105 active:scale-95 shadow-md shadow-synos-primary/20 flex items-center gap-2 cursor-pointer transition-all"
                         >
                             <Plus className="w-4 h-4" /> Add Discount Code
                         </button>
@@ -1091,18 +482,72 @@ export function DiscountMasterScreen() {
                                 setEditingReason(null);
                                 setIsReasonModalOpen(true);
                             }}
-                            className="px-4 py-2 bg-synos-primary text-white rounded-xl text-xs sm:text-sm font-bold hover:brightness-105 active:scale-95 shadow-md shadow-synos-primary/20 flex items-center gap-2 cursor-pointer transition-all"
+                            className="px-4 py-2 bg-synos-primary text-white rounded-xl text-xs font-bold hover:brightness-105 active:scale-95 shadow-md shadow-synos-primary/20 flex items-center gap-2 cursor-pointer transition-all"
                         >
                             <Plus className="w-4 h-4" /> Add Preset Reason
                         </button>
                     )}
 
+                    {/* Time Horizon Selector */}
+                    <div className="flex items-center gap-1 bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
+                        {[
+                            { id: 'today', label: 'Today' },
+                            { id: 'month', label: 'This Month' },
+                            { id: 'quarter', label: 'This Quarter' },
+                            { id: 'year', label: 'This Year' }
+                        ].map(t => (
+                            <button
+                                key={t.id}
+                                type="button"
+                                onClick={() => setPresetRange(t.id)}
+                                className={cn(
+                                    "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                                    presetRange === t.id 
+                                        ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs" 
+                                        : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                                )}
+                            >
+                                {t.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Consolidated Switcher */}
+                    {isAdmin && (
+                        <div className="flex items-center gap-1 bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
+                            <button
+                                type="button"
+                                onClick={() => setIsConsolidated(true)}
+                                className={cn(
+                                    "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                                    isConsolidated 
+                                        ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs"
+                                        : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                                )}
+                            >
+                                All Branches
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setIsConsolidated(false)}
+                                className={cn(
+                                    "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                                    !isConsolidated 
+                                        ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs"
+                                        : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                                )}
+                            >
+                                Branch
+                            </button>
+                        </div>
+                    )}
+
                     {tab !== 'codes' && (
                         <button
                             onClick={handleDownloadCSV}
-                            className="flex items-center gap-1.5 px-3.5 py-2 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 rounded-xl text-xs sm:text-sm font-semibold transition-all border border-slate-200/80 dark:border-zinc-700 shadow-xs cursor-pointer"
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 rounded-xl text-xs font-semibold transition-all border border-slate-200/80 dark:border-zinc-700 shadow-xs cursor-pointer"
                         >
-                            <Download size={15} className="text-slate-500" />
+                            <Download size={14} className="text-slate-500" />
                             <span>Download CSV</span>
                         </button>
                     )}
@@ -1110,9 +555,9 @@ export function DiscountMasterScreen() {
                     {tab !== 'codes' && tab !== 'reasons' && (
                         <button
                             onClick={() => setIsPrintModalOpen(true)}
-                            className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-900 hover:bg-slate-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-xs cursor-pointer"
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 rounded-xl text-xs font-semibold transition-all shadow-xs cursor-pointer"
                         >
-                            <Printer size={15} />
+                            <Printer size={14} />
                             <span>Print Report</span>
                         </button>
                     )}
@@ -1121,19 +566,19 @@ export function DiscountMasterScreen() {
 
             {/* TAB NAVIGATION (SEGMENTED PILL MATCHING REFERENCE A) */}
             <div className="flex items-center gap-1 overflow-x-auto scrollbar-thin">
-                <div className="flex items-center bg-[#D6E3EF] dark:bg-zinc-800/80 p-1.5 rounded-[14px] shadow-[inset_0_1px_2px_rgba(15,35,60,0.12)] border border-white/60 dark:border-zinc-700">
+                <div className="flex items-center bg-slate-200/70 dark:bg-zinc-800/80 p-1 rounded-xl">
                     {tabs.map(t => (
                         <button
                             key={t.id}
                             onClick={() => navigate(`/finance/discounts/${t.id}`)}
                             className={cn(
-                                "flex items-center gap-2 px-4 py-2 rounded-[10px] text-xs sm:text-sm font-semibold transition-all cursor-pointer whitespace-nowrap",
+                                "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap",
                                 tab === t.id
-                                    ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-[0_2px_8px_rgba(15,35,60,0.12),inset_0_1px_0_#FFFFFF] font-bold"
-                                    : "text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
+                                    ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-xs"
+                                    : "text-slate-500 hover:text-slate-900 dark:hover:text-white"
                             )}
                         >
-                            <t.icon size={16} className={tab === t.id ? "text-synos-primary" : "text-slate-500"} />
+                            <t.icon size={14} />
                             <span>{t.label}</span>
                         </button>
                     ))}
@@ -1142,7 +587,7 @@ export function DiscountMasterScreen() {
 
             {/* 0. CONCESSION CONTROL DECK (INTELLIGENCE) */}
             {tab === 'intelligence' && (
-                    <div className="space-y-5 animate-in fade-in duration-300">
+                    <div className="space-y-6 animate-in fade-in duration-300">
                         {loadingIntelligence ? (
                             <div className="flex flex-col items-center justify-center p-20 gap-2.5 text-zinc-400">
                                 <Loader2 className="w-6 h-6 animate-spin text-synos-primary" />
@@ -1150,636 +595,464 @@ export function DiscountMasterScreen() {
                             </div>
                         ) : intelligence ? (
                             <>
-                                {/* SECTION 1: HERO CONTROL DECK (CARD 1) */}
-                                <div className="p-6 md:p-7 lg:p-8 rounded-[24px] bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-[0_4px_20px_rgba(15,35,60,0.06)] grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-                                    {/* Left Column: Total Concessions Granted */}
-                                    <div className="lg:col-span-5 flex items-center gap-5">
-                                        {/* 3D Tactile Coupon Tag Icon Squircle */}
-                                        <div className="w-[84px] h-[84px] rounded-[24px] bg-gradient-to-b from-[#EBF5FF] to-[#D6EBFE] border border-white/90 dark:border-white/10 shadow-[0_10px_25px_rgba(37,99,235,0.18),inset_0_2px_2px_#FFFFFF] flex items-center justify-center text-[#1C6CF2] dark:text-sky-400 shrink-0">
-                                            <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                                                <path d="M2.5 12.5l9-9a2.12 2.12 0 0 1 3 0l7 7a2.12 2.12 0 0 1 0 3l-9 9a2.12 2.12 0 0 1-3 0l-7-7a2.12 2.12 0 0 1 0-3z"/>
-                                                <circle cx="8" cy="8" r="1.5" fill="currentColor"/>
-                                                <line x1="12" y1="16" x2="16" y2="12"/>
-                                                <circle cx="13" cy="13" r="0.75" fill="currentColor"/>
-                                                <circle cx="15" cy="15" r="0.75" fill="currentColor"/>
-                                            </svg>
+                                {/* SECTION 1: HERO CONTROL DECK MATCHING REFERENCE A */}
+                                <div className="p-6 lg:p-7 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-[0_4px_24px_rgba(30,50,80,0.04),0_1px_2px_rgba(0,0,0,0.02)] flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-8">
+                                    {/* Left: Total Concessions Position */}
+                                    <div className="space-y-1 lg:min-w-[260px]">
+                                        <div className="flex items-center gap-2.5">
+                                            <span className="text-sm font-medium text-slate-700 dark:text-zinc-300">
+                                                Total Concessions Granted
+                                            </span>
+                                            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-[#D1F2EB] text-[#0E6251] border border-[#A2D9CE]/60 dark:bg-emerald-950/40 dark:text-emerald-400">
+                                                +{intelligence.overallDiscountPercentage}% Concession Rate
+                                            </span>
                                         </div>
-                                        <div className="space-y-1.5 min-w-0">
-                                            <div className="flex items-center gap-2.5 flex-wrap">
-                                                <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-normal">
-                                                    Total Concessions Granted
-                                                </h3>
-                                                <span className="text-xs sm:text-sm font-semibold px-3 py-1 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]/70 dark:bg-emerald-950/50 dark:text-emerald-400 dark:border-emerald-800/60 shadow-2xs">
-                                                    {intelligence.overallDiscountPercentage}% Discount Rate
+                                        <p className="text-4xl lg:text-[42px] font-bold text-slate-900 dark:text-white tracking-tight leading-none my-2 font-sans">
+                                            ₹{intelligence.totalDiscountAmount.toLocaleString()}
+                                        </p>
+                                        <p className="text-xs font-medium text-slate-600 dark:text-zinc-400 mt-1.5">
+                                            Total Lab Tariff Billed: ₹{intelligence.totalGrossBilled.toLocaleString()}
+                                        </p>
+                                    </div>
+
+                                    {/* Right: iOS Control Center Sliders & Split */}
+                                    <div className="flex-1 max-w-2xl space-y-4">
+                                        {/* Top 2 Sliders */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            {/* Slider 1: Direct Patient Walk-Ins */}
+                                            <div className="space-y-1.5">
+                                                <div className="flex items-baseline justify-between text-sm sm:text-base">
+                                                    <span className="font-bold text-slate-900 dark:text-white">
+                                                        Patient Walk-In: <span className="text-lg">₹{intelligence.patientDiscountAmount.toLocaleString()}</span>
+                                                    </span>
+                                                    <span className="text-xs text-slate-400 font-medium">
+                                                        ({intelligence.patientBillsCount} bills)
+                                                    </span>
+                                                </div>
+                                                {/* Capsule Slider with Knob & Right % */}
+                                                <div className="flex items-center gap-2.5">
+                                                    <div className="flex-1 h-[22px] bg-[#E2EAF0] dark:bg-zinc-800 rounded-full relative p-[2px] shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] border border-[#D5E1E9]/80 dark:border-zinc-700/60 flex items-center">
+                                                        <div 
+                                                            className="h-full rounded-full bg-gradient-to-r from-[#4E7893] to-[#618CA7] transition-all duration-500"
+                                                            style={{ width: `${Math.max(8, Math.min(100, intelligence.patientSharePercentage))}%` }}
+                                                        />
+                                                        <div 
+                                                            className="w-[18px] h-[18px] rounded-full bg-[#EBF3F8] border-[1.5px] border-[#A5C3D6] shadow-[0_2px_4px_rgba(20,40,60,0.28)] absolute top-1/2 -translate-y-1/2 pointer-events-none transition-all duration-500"
+                                                            style={{ left: `calc(${Math.max(5, Math.min(95, intelligence.patientSharePercentage))}% - 9px)` }}
+                                                        />
+                                                    </div>
+                                                    <span className="text-xs font-bold text-slate-700 dark:text-zinc-200 w-12 text-right tabular-nums">
+                                                        {intelligence.patientSharePercentage}%
+                                                    </span>
+                                                </div>
+                                                <p className="text-[11px] text-slate-400 dark:text-zinc-500 font-normal">
+                                                    Direct patient concessions from total volume (₹{intelligence.patientDiscountAmount.toLocaleString()} / ₹{intelligence.totalDiscountAmount.toLocaleString()})
+                                                </p>
+                                            </div>
+
+                                            {/* Slider 2: Corporate B2B Wholesale */}
+                                            <div className="space-y-1.5">
+                                                <div className="flex items-baseline justify-between text-sm sm:text-base">
+                                                    <span className="font-bold text-slate-900 dark:text-white">
+                                                        B2B Wholesale: <span className="text-lg">₹{intelligence.partnerDiscountAmount.toLocaleString()}</span>
+                                                    </span>
+                                                    <span className="text-xs text-slate-400 font-medium">
+                                                        ({intelligence.partnerBillsCount} bills)
+                                                    </span>
+                                                </div>
+                                                {/* Capsule Slider with Knob & Right % */}
+                                                <div className="flex items-center gap-2.5">
+                                                    <div className="flex-1 h-[22px] bg-[#E2EAF0] dark:bg-zinc-800 rounded-full relative p-[2px] shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] border border-[#D5E1E9]/80 dark:border-zinc-700/60 flex items-center">
+                                                        <div 
+                                                            className="h-full rounded-full bg-gradient-to-r from-[#7D9FB4] to-[#99B9CC] transition-all duration-500"
+                                                            style={{ width: `${Math.max(8, Math.min(100, intelligence.partnerSharePercentage))}%` }}
+                                                        />
+                                                        <div 
+                                                            className="w-[18px] h-[18px] rounded-full bg-[#EBF3F8] border-[1.5px] border-[#B5CBD9] shadow-[0_2px_4px_rgba(20,40,60,0.22)] absolute top-1/2 -translate-y-1/2 pointer-events-none transition-all duration-500"
+                                                            style={{ left: `calc(${Math.max(5, Math.min(95, intelligence.partnerSharePercentage))}% - 9px)` }}
+                                                        />
+                                                    </div>
+                                                    <span className="text-xs font-bold text-slate-700 dark:text-zinc-200 w-12 text-right tabular-nums">
+                                                        {intelligence.partnerSharePercentage}%
+                                                    </span>
+                                                </div>
+                                                <p className="text-[11px] text-slate-400 dark:text-zinc-500 font-normal">
+                                                    B2B partner concessions from total volume (₹{intelligence.partnerDiscountAmount.toLocaleString()} / ₹{intelligence.totalDiscountAmount.toLocaleString()})
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* Bottom Full-Width Bar: Channel Volume Split */}
+                                        <div className="space-y-1.5 pt-1 border-t border-slate-100 dark:border-zinc-800">
+                                            <div className="flex items-baseline justify-between text-sm sm:text-base">
+                                                <span className="font-bold text-slate-900 dark:text-white">
+                                                    Channel Concession Split (Patient vs B2B Wholesale)
+                                                </span>
+                                                <span className="text-xl font-bold text-slate-900 dark:text-white">
+                                                    ₹{intelligence.partnerDiscountAmount.toLocaleString()}
                                                 </span>
                                             </div>
-                                            <p className="text-4xl sm:text-5xl lg:text-[54px] font-extrabold text-slate-900 dark:text-white tracking-normal leading-none my-2.5 tabular-nums">
-                                                ₹{intelligence.totalDiscountAmount.toLocaleString()}
-                                            </p>
-                                            <p className="text-sm sm:text-base font-medium text-slate-600 dark:text-zinc-300">
-                                                Total Lab Tariff Billed: ₹{intelligence.totalGrossBilled.toLocaleString()}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    {/* Right Column: Channel Concession Split */}
-                                    <div className="lg:col-span-7 lg:border-l lg:border-slate-200/90 dark:lg:border-zinc-800 lg:pl-9 flex flex-col justify-center space-y-4">
-                                        <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-normal">
-                                            Channel Concession Split (Patient vs B2B Wholesale)
-                                        </h3>
-
-                                        {/* Fat iOS Split Slider with Floating Knob */}
-                                        <div className="relative h-[24px] sm:h-[26px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 flex items-center overflow-visible shadow-inner">
-                                            <div 
-                                                className="h-full bg-gradient-to-r from-[#60A5FA] via-[#7BB3F0] to-[#93C5FD] rounded-l-full transition-all duration-500"
-                                                style={{ width: `${intelligence.patientSharePercentage}%` }}
-                                            />
-                                            <div 
-                                                className="h-full bg-gradient-to-r from-[#FCA5A5] via-[#FDA4AF] to-[#FECDD3] rounded-r-full transition-all duration-500"
-                                                style={{ width: `${intelligence.partnerSharePercentage}%` }}
-                                            />
-                                            {/* Prominent White Elevated Knob */}
-                                            <div 
-                                                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-7 h-7 sm:w-[32px] sm:h-[32px] rounded-full bg-white shadow-[0_3px_12px_rgba(15,35,60,0.25),0_0_0_2px_#FFFFFF] border border-white/80 pointer-events-none transition-all duration-500 z-10"
-                                                style={{ left: `${intelligence.patientSharePercentage}%` }}
-                                            />
-                                        </div>
-
-                                        {/* Two Channel Stat Pods Below */}
-                                        <div className="flex items-center justify-between pt-1">
-                                            <div className="flex items-center gap-3.5">
-                                                <div className="w-[52px] h-[52px] rounded-[18px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                                                    <User size={28} strokeWidth={2.2} />
+                                            <div className="flex items-center gap-2.5">
+                                                <div className="flex-1 h-[22px] bg-[#E2EAF0] dark:bg-zinc-800 rounded-full relative p-[2px] shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] border border-[#D5E1E9]/80 dark:border-zinc-700/60 flex items-center">
+                                                    <div 
+                                                        className="h-full rounded-full bg-gradient-to-r from-[#F2857D] to-[#F69992] transition-all duration-500"
+                                                        style={{ width: `${Math.max(8, Math.min(100, intelligence.partnerSharePercentage))}%` }}
+                                                    />
+                                                    <div 
+                                                        className="w-[18px] h-[18px] rounded-full bg-[#FDEBE9] border-[1.5px] border-[#F4A8A2] shadow-[0_2px_4px_rgba(80,20,20,0.25)] absolute top-1/2 -translate-y-1/2 pointer-events-none transition-all duration-500"
+                                                        style={{ left: `calc(${Math.max(5, Math.min(95, intelligence.partnerSharePercentage))}% - 9px)` }}
+                                                    />
                                                 </div>
-                                                <div>
-                                                    <div className="flex items-baseline gap-1.5">
-                                                        <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-normal">
-                                                            ₹{intelligence.patientDiscountAmount.toLocaleString()}
-                                                        </span>
-                                                        <span className="text-sm sm:text-base font-semibold text-slate-500 dark:text-zinc-400 tabular-nums">
-                                                            ({intelligence.patientSharePercentage}%)
-                                                        </span>
-                                                    </div>
-                                                    <span className="text-sm sm:text-base text-slate-600 dark:text-zinc-300 font-semibold">
-                                                        Patient Walk-In
-                                                    </span>
-                                                </div>
+                                                <span className="text-xs font-bold text-slate-700 dark:text-zinc-200 w-12 text-right tabular-nums">
+                                                    {intelligence.partnerSharePercentage}%
+                                                </span>
                                             </div>
-
-                                            <div className="flex items-center gap-3.5 text-right">
-                                                <div>
-                                                    <div className="flex items-baseline gap-1.5 justify-end">
-                                                        <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-normal">
-                                                            ₹{intelligence.partnerDiscountAmount.toLocaleString()}
-                                                        </span>
-                                                        <span className="text-sm sm:text-base font-semibold text-slate-500 dark:text-zinc-400 tabular-nums">
-                                                            ({intelligence.partnerSharePercentage}%)
-                                                        </span>
-                                                    </div>
-                                                    <span className="text-sm sm:text-base text-slate-600 dark:text-zinc-300 font-semibold">
-                                                        B2B Wholesale
-                                                    </span>
-                                                </div>
-                                                <div className="w-[52px] h-[52px] rounded-[18px] bg-[#FFF1F2] text-[#FB7185] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                                                    <Building2 size={28} strokeWidth={2.2} />
-                                                </div>
-                                            </div>
+                                            <p className="text-[11px] text-slate-400 dark:text-zinc-500 font-normal">
+                                                Wholesale concession share of overall concession volume ({intelligence.partnerSharePercentage}% B2B · {intelligence.patientSharePercentage}% Patient)
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* SECTION 2: 3-CARD MIDDLE ROW (CARDS 2, 3, 4) */}
-                                <div className="flex flex-col lg:flex-row gap-5">
-                                    {/* CARD 2: PATIENT WALK-IN PRESETS */}
-                                    <AdaptiveBreakdownCard
-                                        title="Patient Walk-In Presets"
-                                        icon={User}
-                                        iconBg="bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/80 dark:border-sky-800/40"
-                                        totalAmount={intelligence.patientDiscountAmount}
-                                        totalBills={intelligence.patientBillsCount}
-                                        items={intelligence.topPresetReasons || []}
-                                        type="patient"
-                                        icons={PRESET_ICONS}
-                                        barGradient="bg-gradient-to-r from-[#60A5FA] via-[#7BB3F0] to-[#93C5FD] shadow-[0_2px_8px_rgba(59,130,246,0.35)]"
-                                    />
-
-                                    {/* CARD 3: CORPORATE B2B WHOLESALE PARTNERS */}
-                                    <AdaptiveBreakdownCard
-                                        title="Corporate B2B Wholesale Partners"
-                                        icon={Building2}
-                                        iconBg="bg-[#FFF1F2] text-[#FB7185] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/80 dark:border-rose-800/40"
-                                        totalAmount={intelligence.partnerDiscountAmount}
-                                        totalBills={intelligence.partnerBillsCount}
-                                        items={intelligence.topB2BPartners || []}
-                                        type="partner"
-                                        icons={PARTNER_ICONS}
-                                        barGradient="bg-gradient-to-r from-[#FCA5A5] via-[#FDA4AF] to-[#FECDD3] shadow-[0_2px_8px_rgba(251,113,133,0.35)]"
-                                    />
-
-                                    {/* CARD 4: CONCESSION MECHANISM MIX */}
-                                    <div className="w-full lg:w-[350px] xl:w-[370px] shrink-0 p-6 md:p-7 rounded-[24px] bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-[0_4px_20px_rgba(15,35,60,0.06)] flex flex-col justify-between space-y-4">
-                                        {/* Clean Single-Row Header (Exact Target Design Sheet) */}
-                                        <div className="flex items-center gap-3 pb-3.5 border-b border-slate-200/80 dark:border-zinc-800">
-                                            <div className="w-[44px] h-[44px] rounded-[15px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/80 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                                                <Percent size={22} strokeWidth={2.4} />
-                                            </div>
-                                            <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-normal truncate">
-                                                Concession Mechanism Mix
-                                            </h3>
-                                        </div>
-
-                                        {/* 2-Arc Donut & Side-by-Side Legend Stack - Mathematical Fit with Zero Dead Space */}
-                                        {(() => {
-                                            const mechanisms = intelligence.mechanismMix && intelligence.mechanismMix.length > 0 
-                                                ? intelligence.mechanismMix 
-                                                : [
-                                                    { mechanism: "Flat Rupee (₹)", totalAmount: 8240, percentage: 69.5, count: 18, color: "#75B6E5", patientAmount: 4430, partnerAmount: 3810 },
-                                                    { mechanism: "Percentage (%)", totalAmount: 3622, percentage: 30.5, count: 9, color: "#BD98FC", patientAmount: 1951, partnerAmount: 1671 }
-                                                ];
-
-                                            const flatItem = mechanisms.find(m => m.mechanism?.includes("Flat")) || mechanisms[0] || { totalAmount: 8240, percentage: 69.5, count: 18, patientAmount: 4430, partnerAmount: 3810 };
-                                            const pctItem = mechanisms.find(m => m.mechanism?.includes("Percentage")) || mechanisms[1] || { totalAmount: 3622, percentage: 30.5, count: 9, patientAmount: 1951, partnerAmount: 1671 };
-
-                                            const totalAmount = (flatItem.totalAmount || 0) + (pctItem.totalAmount || 0);
-                                            const share1 = totalAmount > 0 
-                                                ? Number(flatItem.percentage) || Math.round((flatItem.totalAmount / totalAmount) * 1000) / 10 
-                                                : 50;
-                                            const share2 = totalAmount > 0 
-                                                ? Math.round((100 - share1) * 10) / 10 
-                                                : 50;
-
-                                            // 2-Arc Donut Geometry: r=74, strokeWidth=22 => outer diameter 170px, inner hole 126px
-                                            const r = 74;
-                                            const strokeWidth = 22;
-                                            const C = 2 * Math.PI * r;
-                                            const capExtension = strokeWidth / 2;
-                                            const dashGap = (2 * capExtension) + 6;
-                                            const usable = C - (2 * dashGap);
-
-                                            const len1 = Math.max((usable * share1) / 100, 2);
-                                            const len2 = Math.max((usable * share2) / 100, 2);
-
-                                            const offset1 = -(dashGap / 2);
-                                            const offset2 = -(dashGap / 2 + len1 + dashGap);
-
-                                            return (
-                                                <div className="space-y-4 my-auto">
-                                                    <div className="flex items-center justify-between gap-3 sm:gap-4 py-1">
-                                                        {/* Donut Ring with Inset Center Symbol Only */}
-                                                        <div className="relative w-[150px] h-[150px] sm:w-[160px] sm:h-[160px] shrink-0 flex items-center justify-center">
-                                                            <svg 
-                                                                className="w-full h-full -rotate-90 shrink-0" 
-                                                                viewBox="0 0 200 200"
-                                                                style={{
-                                                                    filter: 'drop-shadow(0px 8px 16px rgba(117, 182, 229, 0.28)) drop-shadow(0px 8px 16px rgba(189, 152, 252, 0.24))'
-                                                                }}
-                                                            >
-                                                                <defs>
-                                                                    <linearGradient id="mechanismBlue" x1="0%" y1="0%" x2="100%" y2="100%">
-                                                                        <stop offset="0%" stopColor="#A4D0F4" />
-                                                                        <stop offset="100%" stopColor="#75B6E5" />
-                                                                    </linearGradient>
-                                                                    <linearGradient id="mechanismPurple" x1="0%" y1="0%" x2="100%" y2="100%">
-                                                                        <stop offset="0%" stopColor="#C9AEFC" />
-                                                                        <stop offset="100%" stopColor="#BD98FC" />
-                                                                    </linearGradient>
-                                                                </defs>
-
-                                                                {/* Faint Background Circle Track */}
-                                                                <circle
-                                                                    cx="100"
-                                                                    cy="100"
-                                                                    r={r}
-                                                                    stroke="#F1F6FA"
-                                                                    className="dark:stroke-zinc-800"
-                                                                    strokeWidth={strokeWidth}
-                                                                    fill="none"
-                                                                />
-
-                                                                {/* Arc 1: Flat Rupee (Sky Blue) */}
-                                                                {share1 > 0 && (
-                                                                    <circle
-                                                                        cx="100"
-                                                                        cy="100"
-                                                                        r={r}
-                                                                        stroke="url(#mechanismBlue)"
-                                                                        strokeWidth={strokeWidth}
-                                                                        strokeDasharray={`${len1} ${C}`}
-                                                                        strokeDashoffset={offset1}
-                                                                        strokeLinecap="round"
-                                                                        fill="none"
-                                                                        className="transition-all duration-1000"
-                                                                    />
-                                                                )}
-
-                                                                {/* Arc 2: Percentage (Pastel Violet) */}
-                                                                {share2 > 0 && (
-                                                                    <circle
-                                                                        cx="100"
-                                                                        cy="100"
-                                                                        r={r}
-                                                                        stroke="url(#mechanismPurple)"
-                                                                        strokeWidth={strokeWidth}
-                                                                        strokeDasharray={`${len2} ${C}`}
-                                                                        strokeDashoffset={offset2}
-                                                                        strokeLinecap="round"
-                                                                        fill="none"
-                                                                        className="transition-all duration-1000"
-                                                                    />
-                                                                )}
-                                                            </svg>
-
-                                                            {/* Center Symbol Only in Donut */}
-                                                            <div className="absolute inset-0 flex flex-col items-center justify-center select-none pointer-events-none text-center">
-                                                                <div className="w-10 h-10 rounded-full bg-slate-100/90 dark:bg-zinc-800/90 flex items-center justify-center shadow-inner text-[#1C6CF2] dark:text-sky-400">
-                                                                    <Percent size={18} strokeWidth={2.4} />
-                                                                </div>
-                                                                <span className="text-xs font-bold text-slate-500 dark:text-zinc-400 mt-1 uppercase tracking-wider">
-                                                                    Mix
-                                                                </span>
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Right Side: Clean Unboxed Legend matching Target Image */}
-                                                        <div className="flex flex-col justify-center space-y-4 flex-1 min-w-0">
-                                                            {/* Item 1: Flat Rupee */}
-                                                            <div className="space-y-0.5">
-                                                                <div className="flex items-center gap-2">
-                                                                    <span className="w-3.5 h-3.5 rounded-full bg-[#75B6E5] shrink-0 shadow-2xs" />
-                                                                    <span className="text-base font-bold text-slate-900 dark:text-white">
-                                                                        Flat Rupee (₹)
-                                                                    </span>
-                                                                </div>
-                                                                <div className="pl-5.5">
-                                                                    <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-normal">
-                                                                        ₹{flatItem.totalAmount?.toLocaleString()}
-                                                                    </div>
-                                                                    <div className="text-sm sm:text-base font-semibold text-slate-600 dark:text-zinc-300 tabular-nums">
-                                                                        {share1.toFixed(1)}% <span className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-zinc-400">({flatItem.count ?? 0} Bills)</span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-
-                                                            {/* Item 2: Percentage */}
-                                                            <div className="space-y-0.5">
-                                                                <div className="flex items-center gap-2">
-                                                                    <span className="w-3.5 h-3.5 rounded-full bg-[#BD98FC] shrink-0 shadow-2xs" />
-                                                                    <span className="text-base font-bold text-slate-900 dark:text-white">
-                                                                        Percentage (%)
-                                                                    </span>
-                                                                </div>
-                                                                <div className="pl-5.5">
-                                                                    <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-normal">
-                                                                        ₹{pctItem.totalAmount?.toLocaleString()}
-                                                                    </div>
-                                                                    <div className="text-sm sm:text-base font-semibold text-slate-600 dark:text-zinc-300 tabular-nums">
-                                                                        {share2.toFixed(1)}% <span className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-zinc-400">({pctItem.count ?? 0} Bills)</span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Bottom Anchor: Dual-Segment Mechanism Progress Bar (24px Exact Hero Match) */}
-                                                    <div className="pt-3 border-t border-slate-200/70 dark:border-zinc-800 space-y-2">
-                                                        <div className="flex items-center justify-between text-sm font-semibold text-slate-700 dark:text-zinc-300">
-                                                            <span>Mechanism Allocation</span>
-                                                            <span className="tabular-nums font-bold text-slate-900 dark:text-white">
-                                                                Flat {share1.toFixed(1)}% • Pct {share2.toFixed(1)}%
-                                                            </span>
-                                                        </div>
-                                                        <div className="h-[24px] rounded-full bg-[#EAF1F8] dark:bg-zinc-800 overflow-hidden flex">
-                                                            <div 
-                                                                className="h-full rounded-l-full bg-gradient-to-r from-[#60A5FA] to-[#38BDF8] shadow-[0_2px_8px_rgba(56,189,248,0.35)] transition-all duration-500" 
-                                                                style={{ width: `${share1}%` }} 
-                                                            />
-                                                            <div 
-                                                                className="h-full rounded-r-full bg-gradient-to-r from-[#C084FC] to-[#A855F7] shadow-[0_2px_8px_rgba(168,85,247,0.35)] transition-all duration-500" 
-                                                                style={{ width: `${share2}%` }} 
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })()}
-                                    </div>
-                                </div>
-
-                                {/* SECTION 3: BOTTOM ROW (CARDS 5, 6 & 7) */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-5 items-stretch">
-                                    {/* CARD 5: DEPARTMENT CONCESSION SPLIT */}
-                                    <div className="col-span-1 md:col-span-1 lg:col-span-3 p-5 md:p-6 rounded-[24px] bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-[0_4px_20px_rgba(15,35,60,0.06)] flex flex-col justify-between space-y-6">
-                                        <div className="flex items-center gap-3 pb-3.5 border-b border-slate-200/80 dark:border-zinc-800">
-                                            <div className="w-[44px] h-[44px] rounded-[15px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/80 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                                                <Share2 size={22} strokeWidth={2.4} />
-                                            </div>
-                                            <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-normal">
-                                                Department Concession Split
-                                            </h3>
-                                        </div>
-
-                                        <div className="space-y-6 my-auto">
-                                            {/* Department 1: Pathology Diagnostics */}
-                                            {(() => {
-                                                const d = intelligence.departmentSplit || DEFAULT_CONCESSION_INTELLIGENCE.departmentSplit;
-                                                const pathAmount = d.pathologyAmount ?? 7430;
-                                                const pathPct = Number(d.pathologyPercentage) || 62.7;
-                                                const pathBills = d.pathologyBillsCount ?? 21;
-                                                const pathInvs = d.pathologyInvestigationsCount ?? 142;
-
-                                                return (
-                                                    <div className="flex items-center gap-3.5">
-                                                        <div className="w-[44px] h-[44px] rounded-[15px] bg-[#EFF6FF] text-[#2563EB] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                                                            <FlaskConical size={22} strokeWidth={2.2} />
-                                                        </div>
-                                                        <div className="flex-1 min-w-0 space-y-1.5">
-                                                            <div className="flex items-baseline justify-between gap-1">
-                                                                <span className="text-base sm:text-lg font-bold text-slate-900 dark:text-white truncate">
-                                                                    Pathology Diagnostics
-                                                                </span>
-                                                                <div className="flex items-baseline gap-1.5 shrink-0">
-                                                                    <span className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tabular-nums tracking-normal">
-                                                                        ₹{pathAmount.toLocaleString()}
-                                                                    </span>
-                                                                    <span className="text-sm sm:text-base font-semibold text-slate-600 dark:text-zinc-400 tabular-nums">
-                                                                        ({pathPct.toFixed(1)}%)
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-
-                                                            {/* 24px Universal Metric Diameter Progress Bar (Exact Hero Match) */}
-                                                            <div className="h-[24px] rounded-full bg-[#EAF1F8] dark:bg-zinc-800 overflow-hidden flex">
-                                                                <div 
-                                                                    className="h-full rounded-full bg-gradient-to-r from-[#60A5FA] to-[#38BDF8] shadow-[0_2px_8px_rgba(56,189,248,0.35)] transition-all duration-700" 
-                                                                    style={{ width: `${Math.min(100, Math.max(6, pathPct))}%` }} 
-                                                                />
-                                                            </div>
-
-                                                            <div className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-zinc-400 tabular-nums">
-                                                                {pathBills} Bills • {pathInvs} Investigations
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })()}
-
-                                            {/* Department 2: Radiology & Imaging */}
-                                            {(() => {
-                                                const d = intelligence.departmentSplit || DEFAULT_CONCESSION_INTELLIGENCE.departmentSplit;
-                                                const radAmount = d.radiologyAmount ?? 4432;
-                                                const radPct = Number(d.radiologyPercentage) || 37.3;
-                                                const radBills = d.radiologyBillsCount ?? 13;
-                                                const radInvs = d.radiologyInvestigationsCount ?? 48;
-
-                                                return (
-                                                    <div className="flex items-center gap-3.5">
-                                                        <div className="w-[44px] h-[44px] rounded-[15px] bg-[#FAF5FF] text-[#9333EA] dark:bg-purple-950/40 dark:text-purple-400 border border-purple-100/90 dark:border-purple-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                                                            <Activity size={22} strokeWidth={2.2} />
-                                                        </div>
-                                                        <div className="flex-1 min-w-0 space-y-1.5">
-                                                            <div className="flex items-baseline justify-between gap-1">
-                                                                <span className="text-base sm:text-lg font-bold text-slate-900 dark:text-white truncate">
-                                                                    Radiology & Imaging
-                                                                </span>
-                                                                <div className="flex items-baseline gap-1.5 shrink-0">
-                                                                    <span className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tabular-nums tracking-normal">
-                                                                        ₹{radAmount.toLocaleString()}
-                                                                    </span>
-                                                                    <span className="text-sm sm:text-base font-semibold text-slate-600 dark:text-zinc-400 tabular-nums">
-                                                                        ({radPct.toFixed(1)}%)
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-
-                                                            {/* 24px Universal Metric Diameter Progress Bar (Exact Hero Match) */}
-                                                            <div className="h-[24px] rounded-full bg-[#EAF1F8] dark:bg-zinc-800 overflow-hidden flex">
-                                                                <div 
-                                                                    className="h-full rounded-full bg-gradient-to-r from-[#C084FC] to-[#A855F7] shadow-[0_2px_8px_rgba(168,85,247,0.35)] transition-all duration-700" 
-                                                                    style={{ width: `${Math.min(100, Math.max(6, radPct))}%` }} 
-                                                                />
-                                                            </div>
-
-                                                            <div className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-zinc-400 tabular-nums">
-                                                                {radBills} Bills • {radInvs} Investigations
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                );
-                                            })()}
-                                        </div>
-                                    </div>
-
-                                    {/* CARD 6: STAFF AUTHORIZATION LEADERBOARD */}
-                                    <div className="col-span-1 md:col-span-1 lg:col-span-3 p-5 md:p-6 rounded-[24px] bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-[0_4px_20px_rgba(15,35,60,0.06)] flex flex-col justify-between space-y-4">
-                                        <div className="flex items-center gap-3 pb-3.5 border-b border-slate-200/80 dark:border-zinc-800">
-                                            <div className="w-[44px] h-[44px] rounded-[15px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/80 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                                                <Users size={22} strokeWidth={2.4} />
-                                            </div>
-                                            <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-normal">
-                                                Staff Authorization Leaderboard
-                                            </h3>
-                                        </div>
-
-                                        <AdaptiveStaffLeaderboard 
-                                            staff={intelligence.staffContributions || []} 
-                                            totalStaffAmount={intelligence.totalDiscountAmount}
-                                        />
-                                    </div>
-
-                                    {/* CARD 7: 7-DAY CONCESSION TREND */}
-                                    <div className="col-span-1 md:col-span-2 lg:col-span-6 p-5 md:p-6 rounded-[24px] bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-[0_4px_20px_rgba(15,35,60,0.06)] flex flex-col justify-between space-y-4">
-                                        {/* Header */}
-                                        <div className="flex flex-wrap items-center justify-between gap-3 pb-3.5 border-b border-slate-200/80 dark:border-zinc-800">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-[44px] h-[44px] rounded-[15px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/80 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                                                    <TrendingUp size={22} strokeWidth={2.4} />
-                                                </div>
-                                                <div>
-                                                    <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-normal">
-                                                        7-Day Concession Trend
-                                                    </h3>
-                                                    <p className="text-xs sm:text-sm font-medium text-slate-600 dark:text-zinc-400">
-                                                        Daily concessions granted • Last 7 days
-                                                    </p>
+                                {/* SECTION 2: CHANNEL BREAKDOWN (Channel Concession Drivers) */}
+                                <div className="space-y-4">
+                                    <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight px-0.5">
+                                        Channel Concession Drivers
+                                    </h3>
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        {/* CARD 1: PATIENT WALK-IN PRESETS */}
+                                        <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-[0_4px_24px_rgba(30,50,80,0.04),0_1px_2px_rgba(0,0,0,0.02)] space-y-4">
+                                            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-zinc-800">
+                                                <h4 className="text-base font-bold text-slate-900 dark:text-white">
+                                                    Patient Walk-In Presets
+                                                </h4>
+                                                <div className="flex items-baseline gap-2">
+                                                    <span className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+                                                        ₹{intelligence.patientDiscountAmount.toLocaleString()}
+                                                    </span>
+                                                    <span className="text-xs font-semibold text-slate-400">
+                                                        ({intelligence.patientBillsCount} Bills)
+                                                    </span>
                                                 </div>
                                             </div>
 
-                                            {/* Date Range Badge */}
-                                            {(() => {
-                                                const trends = (intelligence.dailyTrends && intelligence.dailyTrends.length === 7)
-                                                    ? intelligence.dailyTrends
-                                                    : DEFAULT_CONCESSION_INTELLIGENCE.dailyTrends;
-                                                const startDay = trends[0];
-                                                const endDay = trends[trends.length - 1];
-                                                const dateRangeStr = `${startDay.dayOfWeek} ${startDay.formattedDate} – ${endDay.dayOfWeek} ${endDay.formattedDate}`;
-
-                                                return (
-                                                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-[12px] bg-slate-50 dark:bg-zinc-800 border border-slate-200/90 dark:border-zinc-700 shadow-2xs text-xs sm:text-sm font-semibold text-slate-700 dark:text-zinc-300">
-                                                        <Calendar size={15} className="text-slate-600 dark:text-zinc-400" />
-                                                        <span>{dateRangeStr}</span>
-                                                    </div>
-                                                );
-                                            })()}
-                                        </div>
-
-                                        {/* Chart Container */}
-                                        {(() => {
-                                            const rawTrends = (intelligence.dailyTrends && intelligence.dailyTrends.length === 7)
-                                                ? intelligence.dailyTrends
-                                                : DEFAULT_CONCESSION_INTELLIGENCE.dailyTrends;
-                                            
-                                            // If all past days (indices 0..5) are 0 because the backend filtered the query with preset=today,
-                                            // preserve the historical baseline for past days so yesterday is NEVER zero!
-                                            const pastAllZero = rawTrends.slice(0, 6).every(t => (Number(t.totalAmount) || 0) === 0);
-                                            const baselinePast = [6240, 8125, 7430, 9862, 8560, 10012];
-
-                                            const trends = rawTrends.map((t, idx) => {
-                                                let amt = Number(t.totalAmount) || 0;
-                                                if (idx === 6 || t.isToday) {
-                                                    amt = Number(intelligence.totalDiscountAmount) > 0 ? Number(intelligence.totalDiscountAmount) : (amt > 0 ? amt : 1540);
-                                                    return { ...t, totalAmount: amt, isToday: true };
-                                                }
-                                                if (pastAllZero && amt === 0 && idx < baselinePast.length) {
-                                                    amt = baselinePast[idx];
-                                                }
-                                                return { ...t, totalAmount: amt };
-                                            });
-
-                                            const maxScale = 15000;
-                                            const yTicks = [
-                                                { label: "₹15K", value: 15000 },
-                                                { label: "₹10K", value: 10000 },
-                                                { label: "₹5K", value: 5000 },
-                                                { label: "₹0", value: 0 }
-                                            ];
-
-                                            const points = trends.map((t, idx) => {
-                                                const x = 50 + idx * 100; // 50, 150, 250, 350, 450, 550, 650
-                                                return { x, ...t };
-                                            });
-
-                                            return (
-                                                <div className="flex-1 flex flex-col justify-end pt-2">
-                                                    <div className="flex items-stretch gap-2.5 sm:gap-3.5">
-                                                        {/* Y-Axis Column */}
-                                                        <div className="flex flex-col justify-between items-end text-xs font-semibold text-slate-500 dark:text-zinc-400 tabular-nums w-10 shrink-0 pb-12 select-none">
-                                                            {yTicks.map((tick, i) => (
-                                                                <span key={i} className="leading-none">{tick.label}</span>
-                                                            ))}
-                                                        </div>
-
-                                                        {/* Plotting Canvas */}
-                                                        <div className="flex-1 min-w-0 flex flex-col">
-                                                            {/* Relative Grid & Bars Area */}
-                                                            <div className="relative h-[155px] w-full flex items-end">
-                                                                {/* Horizontal Dashed Guidelines */}
-                                                                <div className="absolute inset-0 flex flex-col justify-between pointer-events-none pb-[10px]">
-                                                                    <div className="border-b border-dashed border-slate-200/90 dark:border-zinc-800 w-full" />
-                                                                    <div className="border-b border-dashed border-slate-200/90 dark:border-zinc-800 w-full" />
-                                                                    <div className="border-b border-dashed border-slate-200/90 dark:border-zinc-800 w-full" />
-                                                                    <div className="border-b border-slate-200 dark:border-zinc-800 w-full" />
-                                                                </div>
-
-                                                                {/* 7 Daily Capsule Bars */}
-                                                                <div className="relative z-0 grid grid-cols-7 w-full h-full items-end pb-[10px]">
-                                                                    {points.map((pt, idx) => {
-                                                                        const heightPct = Math.min(100, Math.max(12, (pt.totalAmount / maxScale) * 100));
-
-                                                                        return (
-                                                                            <div key={idx} className="relative flex flex-col items-center justify-end h-full">
-                                                                                {/* Floating Value Badge */}
-                                                                                {pt.isToday ? (
-                                                                                    <div 
-                                                                                        className="absolute -translate-x-1/2 left-1/2 z-20 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-xl bg-white dark:bg-zinc-800 border-2 border-blue-500 dark:border-blue-500 shadow-md text-xs sm:text-sm font-bold text-slate-900 dark:text-white tabular-nums tracking-normal whitespace-nowrap"
-                                                                                        style={{ bottom: `calc(${heightPct}% + 12px)` }}
-                                                                                    >
-                                                                                        ₹{pt.totalAmount.toLocaleString()}
-                                                                                    </div>
-                                                                                ) : (
-                                                                                    <div 
-                                                                                        className="absolute -translate-x-1/2 left-1/2 z-10 px-1.5 sm:px-2 py-0.5 rounded-lg bg-white/95 dark:bg-zinc-800/95 border border-slate-200/90 dark:border-zinc-700 shadow-2xs text-xs font-semibold text-slate-800 dark:text-zinc-200 tabular-nums whitespace-nowrap"
-                                                                                        style={{ bottom: `calc(${heightPct}% + 10px)` }}
-                                                                                    >
-                                                                                        ₹{pt.totalAmount.toLocaleString()}
-                                                                                    </div>
-                                                                                )}
-
-                                                                                {/* Capsule Bar */}
-                                                                                {pt.isToday ? (
-                                                                                    <div 
-                                                                                        className="w-8 sm:w-9 md:w-10 rounded-full bg-gradient-to-t from-[#2563EB] to-[#60A5FA] shadow-[0_8px_20px_rgba(37,99,235,0.35)] border border-blue-400/50 transition-all duration-700"
-                                                                                        style={{ height: `${heightPct}%` }}
-                                                                                    />
-                                                                                ) : (
-                                                                                    <div 
-                                                                                        className="w-8 sm:w-9 md:w-10 rounded-full bg-gradient-to-t from-[#CFE2FE]/85 via-[#DCEBFC]/65 to-[#EBF3FE]/40 border border-sky-200/40 backdrop-blur-xs transition-all duration-700"
-                                                                                        style={{ height: `${heightPct}%` }}
-                                                                                    />
-                                                                                )}
+                                            <div className="overflow-x-auto">
+                                                <table className="w-full text-left border-collapse">
+                                                    <thead>
+                                                        <tr className="text-[11px] font-semibold text-slate-400 dark:text-zinc-500 border-b border-slate-100 dark:border-zinc-800">
+                                                            <th className="pb-2.5 pl-1 font-medium">Preset Reason</th>
+                                                            <th className="pb-2.5 text-right font-medium w-24 sm:w-28">Concession</th>
+                                                            <th className="pb-2.5 text-left font-medium pl-6 sm:pl-8 w-52 sm:w-56">Concession Share</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-slate-50 dark:divide-zinc-800/40">
+                                                        {intelligence.topPresetReasons.slice(0, 5).map((r, i) => {
+                                                            const pct = Number(r.percentageOfPatientDiscounts) || 20;
+                                                            const iconObj = PRESET_ICONS[i % PRESET_ICONS.length];
+                                                            return (
+                                                                <tr key={i} className="h-12 hover:bg-slate-50/70 dark:hover:bg-zinc-800/40 transition-colors">
+                                                                    <td className="py-2.5 pl-1">
+                                                                        <div className="flex items-center gap-3">
+                                                                            <div className="w-9 h-9 rounded-full bg-[#EBF1F6] dark:bg-zinc-800 flex items-center justify-center text-[#557896] dark:text-zinc-400 shrink-0">
+                                                                                {iconObj.icon}
                                                                             </div>
-                                                                        );
-                                                                    })}
-                                                                </div>
-
-                                                                {/* SVG Connecting Line & Circular Markers */}
-                                                                <svg 
-                                                                    className="absolute inset-0 w-full h-[155px] pointer-events-none z-10" 
-                                                                    viewBox="0 0 700 155" 
-                                                                    preserveAspectRatio="none"
-                                                                >
-                                                                    <polyline
-                                                                        fill="none"
-                                                                        stroke="#3B82F6"
-                                                                        strokeWidth="2.5"
-                                                                        strokeLinecap="round"
-                                                                        strokeLinejoin="round"
-                                                                        points={points.map(p => {
-                                                                            const yPos = 145 - ((Math.min(maxScale, p.totalAmount) / maxScale) * 115);
-                                                                            return `${p.x},${yPos.toFixed(1)}`;
-                                                                        }).join(' ')}
-                                                                    />
-                                                                    {points.map((p, idx) => {
-                                                                        const yPos = 145 - ((Math.min(maxScale, p.totalAmount) / maxScale) * 115);
-                                                                        return (
-                                                                            <circle
-                                                                                key={idx}
-                                                                                cx={p.x}
-                                                                                cy={yPos}
-                                                                                r={p.isToday ? 5.5 : 4.5}
-                                                                                fill="#2563EB"
-                                                                                stroke="#FFFFFF"
-                                                                                strokeWidth={2.5}
-                                                                                className="drop-shadow-xs"
-                                                                            />
-                                                                        );
-                                                                    })}
-                                                                </svg>
-                                                            </div>
-
-                                                            {/* X-Axis Date & Day Labels */}
-                                                            <div className="grid grid-cols-7 w-full pt-2.5">
-                                                                {trends.map((day, idx) => (
-                                                                    <div key={idx} className="text-center space-y-0.5">
-                                                                        <div className={cn(
-                                                                            "text-xs sm:text-sm font-bold leading-tight",
-                                                                            day.isToday ? "text-[#1C6CF2] dark:text-sky-400 font-extrabold" : "text-slate-800 dark:text-zinc-200"
-                                                                        )}>
-                                                                            {day.dayOfWeek}
+                                                                            <span className="text-xs font-semibold text-slate-800 dark:text-zinc-200 truncate max-w-[170px] sm:max-w-[210px]" title={r.reasonText}>
+                                                                                {r.reasonText}
+                                                                            </span>
                                                                         </div>
-                                                                        <div className={cn(
-                                                                            "text-xs font-medium leading-tight",
-                                                                            day.isToday ? "text-[#1C6CF2] dark:text-sky-400 font-bold" : "text-slate-500 dark:text-zinc-400"
-                                                                        )}>
-                                                                            {day.formattedDate}
+                                                                    </td>
+                                                                    <td className="py-2.5 text-right tabular-nums text-sm font-bold text-slate-900 dark:text-zinc-100">
+                                                                        ₹{r.totalAmount.toLocaleString()}
+                                                                    </td>
+                                                                    <td className="py-2.5 pl-6 sm:pl-8">
+                                                                        <div className="flex items-center gap-3">
+                                                                            <div className="relative w-36 h-[22px] bg-[#E2EAF0] dark:bg-zinc-800 rounded-full p-[2px] shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] border border-[#D5E1E9]/80 dark:border-zinc-700/60 flex items-center">
+                                                                                <div 
+                                                                                    className="h-full rounded-full bg-gradient-to-r from-[#4C8FA3] via-[#5BA4B6] to-[#70BFCF]"
+                                                                                    style={{ width: `${Math.min(100, Math.max(10, pct))}%` }}
+                                                                                />
+                                                                                <div 
+                                                                                    className="w-[18px] h-[18px] rounded-full bg-[#C2EBF2] border-[1.5px] border-[#81C8D5] shadow-[0_2px_4px_rgba(30,60,85,0.28)] absolute top-1/2 -translate-y-1/2 pointer-events-none transition-all"
+                                                                                    style={{ left: `calc(${Math.min(94, Math.max(5, pct))}% - 9px)` }}
+                                                                                />
+                                                                            </div>
+                                                                            <span className="text-xs font-bold text-slate-700 dark:text-zinc-200 tabular-nums w-11 text-right">
+                                                                                {pct.toFixed(1)}%
+                                                                            </span>
                                                                         </div>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            );
+                                                        })}
+                                                        {intelligence.topPresetReasons.length === 0 && (
+                                                            <tr>
+                                                                <td colSpan={3} className="text-center py-6 text-xs text-slate-400">
+                                                                    No patient presets used yet.
+                                                                </td>
+                                                            </tr>
+                                                        )}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+
+                                        {/* CARD 2: CORPORATE B2B WHOLESALE PARTNERS */}
+                                        <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-[0_4px_24px_rgba(30,50,80,0.04),0_1px_2px_rgba(0,0,0,0.02)] space-y-4">
+                                            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-zinc-800">
+                                                <h4 className="text-base font-bold text-slate-900 dark:text-white">
+                                                    Corporate B2B Wholesale Partners
+                                                </h4>
+                                                <div className="flex items-baseline gap-2">
+                                                    <span className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+                                                        ₹{intelligence.partnerDiscountAmount.toLocaleString()}
+                                                    </span>
+                                                    <span className="text-xs font-semibold text-slate-400">
+                                                        ({intelligence.partnerBillsCount} Bills)
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div className="overflow-x-auto">
+                                                <table className="w-full text-left border-collapse">
+                                                    <thead>
+                                                        <tr className="text-[11px] font-semibold text-slate-400 dark:text-zinc-500 border-b border-slate-100 dark:border-zinc-800">
+                                                            <th className="pb-2.5 pl-1 font-medium">Partner Organization</th>
+                                                            <th className="pb-2.5 text-right font-medium w-24 sm:w-28">Concession</th>
+                                                            <th className="pb-2.5 text-left font-medium pl-6 sm:pl-8 w-52 sm:w-56">Concession Share</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody className="divide-y divide-slate-50 dark:divide-zinc-800/40">
+                                                        {intelligence.topB2BPartners.slice(0, 5).map((p, i) => {
+                                                            const pct = Number(p.percentageOfPartnerDiscounts) || 25;
+                                                            const iconObj = PARTNER_ICONS[i % PARTNER_ICONS.length];
+                                                            return (
+                                                                <tr key={i} className="h-12 hover:bg-slate-50/70 dark:hover:bg-zinc-800/40 transition-colors">
+                                                                    <td className="py-2.5 pl-1">
+                                                                        <div className="flex items-center gap-3">
+                                                                            <div className="w-9 h-9 rounded-full bg-[#EBF1F6] dark:bg-zinc-800 flex items-center justify-center text-[#557896] dark:text-zinc-400 shrink-0">
+                                                                                {iconObj.icon}
+                                                                            </div>
+                                                                            <span className="text-xs font-semibold text-slate-800 dark:text-zinc-200 truncate max-w-[170px] sm:max-w-[210px]" title={p.partnerName}>
+                                                                                {p.partnerName}
+                                                                            </span>
+                                                                        </div>
+                                                                    </td>
+                                                                    <td className="py-2.5 text-right tabular-nums text-sm font-bold text-slate-900 dark:text-zinc-100">
+                                                                        ₹{p.totalAmount.toLocaleString()}
+                                                                    </td>
+                                                                    <td className="py-2.5 pl-6 sm:pl-8">
+                                                                        <div className="flex items-center gap-3">
+                                                                            <div className="relative w-36 h-[22px] bg-[#E2EAF0] dark:bg-zinc-800 rounded-full p-[2px] shadow-[inset_0_1px_2px_rgba(0,0,0,0.06)] border border-[#D5E1E9]/80 dark:border-zinc-700/60 flex items-center">
+                                                                                <div 
+                                                                                    className="h-full rounded-full bg-gradient-to-r from-[#4C8FA3] via-[#5BA4B6] to-[#70BFCF]"
+                                                                                    style={{ width: `${Math.min(100, Math.max(10, pct))}%` }}
+                                                                                />
+                                                                                <div 
+                                                                                    className="w-[18px] h-[18px] rounded-full bg-[#C2EBF2] border-[1.5px] border-[#81C8D5] shadow-[0_2px_4px_rgba(30,60,85,0.28)] absolute top-1/2 -translate-y-1/2 pointer-events-none transition-all"
+                                                                                    style={{ left: `calc(${Math.min(94, Math.max(5, pct))}% - 9px)` }}
+                                                                                />
+                                                                            </div>
+                                                                            <span className="text-xs font-bold text-slate-700 dark:text-zinc-200 tabular-nums w-11 text-right">
+                                                                                {pct.toFixed(1)}%
+                                                                            </span>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            );
+                                                        })}
+                                                        {intelligence.topB2BPartners.length === 0 && (
+                                                            <tr>
+                                                                <td colSpan={3} className="text-center py-6 text-xs text-slate-400">
+                                                                    No B2B partner concessions recorded yet.
+                                                                </td>
+                                                            </tr>
+                                                        )}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* SECTION 3: CONCESSION GOVERNANCE & CONTROLS (Bottom 4 Pods) */}
+                                <div className="space-y-4">
+                                    <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight px-0.5">
+                                        Channel Concession Governance & Operations
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                        {/* POD 1: CHANNEL CONCESSION BALANCE */}
+                                        <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-[0_4px_24px_rgba(30,50,80,0.04),0_1px_2px_rgba(0,0,0,0.02)] flex flex-col justify-between space-y-4">
+                                            <div>
+                                                <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                                                    Channel Concession Balance
+                                                </h4>
+                                                <p className="text-[11px] text-slate-400 text-center font-medium mt-1">Balance</p>
+                                            </div>
+
+                                            {/* Dual Slider Indicator with swap circle */}
+                                            <div className="relative py-1 flex items-center justify-center my-1">
+                                                <div className="h-2.5 w-full bg-[#D6E2EC] dark:bg-zinc-800 rounded-full flex overflow-hidden">
+                                                    <div style={{ width: `${intelligence.patientSharePercentage}%` }} className="bg-[#F2857D] h-full" />
+                                                    <div style={{ width: `${intelligence.partnerSharePercentage}%` }} className="bg-[#5FBFA0] h-full" />
+                                                </div>
+                                                <div className="absolute w-6 h-6 rounded-full bg-slate-500 text-white flex items-center justify-center shadow-md border-2 border-white dark:border-zinc-900 text-[10px]">
+                                                    <ArrowLeftRight size={11} />
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center justify-between text-xs px-0.5">
+                                                <span className="text-xs font-bold text-rose-500">{intelligence.patientSharePercentage}%</span>
+                                                <span className="text-xs font-bold text-emerald-600">{intelligence.partnerSharePercentage}%</span>
+                                            </div>
+
+                                            <div className="flex items-center justify-between text-xs pt-3 border-t border-slate-100 dark:border-zinc-800">
+                                                <div>
+                                                    <span className="text-[11px] text-slate-400 block font-normal">Patient Walk-In</span>
+                                                    <span className="font-bold text-slate-900 dark:text-white text-sm">₹{intelligence.patientDiscountAmount.toLocaleString()}</span>
+                                                </div>
+                                                <div className="text-right">
+                                                    <span className="text-[11px] text-slate-400 block font-normal">B2B Wholesale</span>
+                                                    <div className="flex items-baseline justify-end gap-1.5">
+                                                        <span className="font-bold text-slate-900 dark:text-white text-sm">₹{intelligence.partnerDiscountAmount.toLocaleString()}</span>
+                                                        <span className="text-[10px] font-bold text-teal-600 dark:text-teal-400">Net Split +₹{(Math.abs(intelligence.patientDiscountAmount - intelligence.partnerDiscountAmount)).toLocaleString()}</span>
                                                     </div>
                                                 </div>
-                                            );
-                                        })()}
+                                            </div>
+                                        </div>
+
+                                        {/* POD 2: CHANNEL AUDIT QUEUES */}
+                                        <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-[0_4px_24px_rgba(30,50,80,0.04),0_1px_2px_rgba(0,0,0,0.02)] flex flex-col justify-between space-y-3">
+                                            <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                                                Channel Concession Queues
+                                            </h4>
+
+                                            <div className="space-y-2.5">
+                                                {/* Pill 1: Corporate B2B */}
+                                                <div 
+                                                    onClick={() => {
+                                                        setHistorySource('Partner');
+                                                        navigate('/finance/discounts/history');
+                                                    }}
+                                                    className="p-3 rounded-xl bg-[#DDE7EE] dark:bg-slate-800/60 border border-transparent hover:border-slate-300 dark:hover:border-slate-700 transition-all flex items-center gap-3 cursor-pointer"
+                                                >
+                                                    <div className="w-8 h-8 rounded-lg bg-[#BACFE0] dark:bg-slate-700 text-[#36688D] dark:text-sky-300 flex items-center justify-center shrink-0">
+                                                        <Building2 size={16} />
+                                                    </div>
+                                                    <div className="min-w-0 flex-1">
+                                                        <span className="text-xs font-bold text-slate-900 dark:text-white block truncate">Corporate B2B Ledger</span>
+                                                        <span className="text-[11px] text-slate-600 dark:text-slate-400 font-medium">₹{intelligence.partnerDiscountAmount.toLocaleString()} ({intelligence.partnerBillsCount} Clients)</span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Pill 2: Patient Walk-Ins */}
+                                                <div 
+                                                    onClick={() => {
+                                                        setHistorySource('Patient');
+                                                        navigate('/finance/discounts/history');
+                                                    }}
+                                                    className="p-3 rounded-xl bg-[#EAF1F7] dark:bg-slate-800/40 border border-transparent hover:border-slate-300 dark:hover:border-slate-700 transition-all flex items-center gap-3 cursor-pointer"
+                                                >
+                                                    <div className="w-8 h-8 rounded-lg bg-[#CBE0F0] dark:bg-slate-700 text-[#3B7BA8] dark:text-sky-300 flex items-center justify-center shrink-0">
+                                                        <Users size={16} />
+                                                    </div>
+                                                    <div className="min-w-0 flex-1">
+                                                        <span className="text-xs font-bold text-slate-900 dark:text-white block truncate">Patient Walk-In Ledger</span>
+                                                        <span className="text-[11px] text-slate-600 dark:text-slate-400 font-medium">₹{intelligence.patientDiscountAmount.toLocaleString()} ({intelligence.patientBillsCount} Payers)</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* POD 3: STAFF CONCESSION AUTHORITY */}
+                                        <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-[0_4px_24px_rgba(30,50,80,0.04),0_1px_2px_rgba(0,0,0,0.02)] flex flex-col justify-between space-y-3">
+                                            <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                                                Staff Concession Authority
+                                            </h4>
+
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <p className="text-3xl font-bold text-slate-900 dark:text-white leading-none">
+                                                        {intelligence.staffContributions.length || 2}
+                                                    </p>
+                                                    <p className="text-[11px] text-slate-400 font-medium mt-1">Active Staff</p>
+                                                </div>
+
+                                                {/* Overlapping Avatar Stack */}
+                                                <div className="flex -space-x-2">
+                                                    <div className="w-8 h-8 rounded-full bg-[#D1F2EB] text-[#0E6251] border-2 border-white dark:border-zinc-900 flex items-center justify-center text-xs font-bold shadow-xs">
+                                                        VR
+                                                    </div>
+                                                    <div className="w-8 h-8 rounded-full bg-[#D4E6F1] text-[#2980B9] border-2 border-white dark:border-zinc-900 flex items-center justify-center text-xs font-bold shadow-xs">
+                                                        AD
+                                                    </div>
+                                                    <div className="w-8 h-8 rounded-full bg-[#E8DAEF] text-[#6C3483] border-2 border-white dark:border-zinc-900 flex items-center justify-center text-xs font-bold shadow-xs">
+                                                        SK
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Pipeline flow */}
+                                            <div className="flex items-center justify-between text-[11px] text-slate-400 font-medium pt-3 border-t border-slate-100 dark:border-zinc-800">
+                                                <span>Attendance</span>
+                                                <span>&rarr;</span>
+                                                <span>Draft</span>
+                                                <span>&rarr;</span>
+                                                <span>Paid</span>
+                                            </div>
+                                        </div>
+
+                                        {/* POD 4: PRESET CATALOG HEALTH */}
+                                        <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-[0_4px_24px_rgba(30,50,80,0.04),0_1px_2px_rgba(0,0,0,0.02)] flex flex-col justify-between space-y-3">
+                                            <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                                                Preset Catalog Health
+                                            </h4>
+
+                                            <div className="space-y-2.5">
+                                                {/* Toggle Row 1: Active Presets */}
+                                                <div 
+                                                    onClick={() => {
+                                                        setReasonUsageFilter('USED');
+                                                        navigate('/finance/discounts/reasons');
+                                                    }}
+                                                    className="p-3 rounded-xl bg-[#E3F2EC] dark:bg-emerald-950/20 border border-transparent hover:border-emerald-200 dark:hover:border-emerald-800 flex items-center justify-between cursor-pointer transition-all"
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-xl font-bold text-slate-900 dark:text-white">
+                                                            {intelligence.usedPresetsCount}
+                                                        </span>
+                                                        <span className="text-xs font-bold text-slate-800 dark:text-zinc-200">
+                                                            Active Policy Presets
+                                                        </span>
+                                                    </div>
+                                                    {/* iOS Toggle Switch (ON) */}
+                                                    <div className="w-11 h-6 rounded-full bg-[#10B981] p-0.5 flex items-center justify-end shadow-inner">
+                                                        <div className="w-5 h-5 rounded-full bg-white shadow-sm" />
+                                                    </div>
+                                                </div>
+
+                                                {/* Toggle Row 2: Dormant Presets */}
+                                                <div 
+                                                    onClick={() => {
+                                                        setReasonUsageFilter('DORMANT');
+                                                        navigate('/finance/discounts/reasons');
+                                                    }}
+                                                    className="p-3 rounded-xl bg-[#EBF0F5] dark:bg-zinc-800/40 border border-transparent hover:border-slate-300 dark:hover:border-zinc-700 flex items-center justify-between cursor-pointer transition-all"
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-xl font-bold text-slate-900 dark:text-white">
+                                                            {intelligence.dormantPresetsCount}
+                                                        </span>
+                                                        <span className="text-xs font-bold text-slate-800 dark:text-zinc-200">
+                                                            Dormant Presets
+                                                        </span>
+                                                    </div>
+                                                    {/* iOS Toggle Switch (OFF) */}
+                                                    <div className="w-11 h-6 rounded-full bg-[#D5D8DC] dark:bg-zinc-600 p-0.5 flex items-center justify-start shadow-inner">
+                                                        <div className="w-5 h-5 rounded-full bg-white shadow-sm" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </>
@@ -1795,14 +1068,14 @@ export function DiscountMasterScreen() {
                             <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
                                 <div className="flex justify-between items-start">
                                     <div className="space-y-1">
-                                        <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Total Codes</span>
-                                        <p className="text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight tabular-nums">{totalCount}</p>
+                                        <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Total Codes</span>
+                                        <p className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">{totalCount}</p>
                                     </div>
                                     <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
                                         <Tag size={17} />
                                     </div>
                                 </div>
-                                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                                <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
                                     All discount codes in system
                                 </p>
                             </div>
@@ -1810,14 +1083,14 @@ export function DiscountMasterScreen() {
                             <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
                                 <div className="flex justify-between items-start">
                                     <div className="space-y-1">
-                                        <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Active Codes</span>
-                                        <p className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 tracking-tight tabular-nums">{activeCount}</p>
+                                        <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Active Codes</span>
+                                        <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">{activeCount}</p>
                                     </div>
                                     <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                                         <CheckCircle2 size={17} />
                                     </div>
                                 </div>
-                                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                                <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
                                     Ready to use at reception
                                 </p>
                             </div>
@@ -1825,14 +1098,14 @@ export function DiscountMasterScreen() {
                             <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
                                 <div className="flex justify-between items-start">
                                     <div className="space-y-1">
-                                        <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Percentage Rules</span>
-                                        <p className="text-3xl font-extrabold text-blue-600 dark:text-blue-400 tracking-tight tabular-nums">{percentageCount}</p>
+                                        <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Percentage Rules</span>
+                                        <p className="text-2xl font-black text-blue-600 dark:text-blue-400 tracking-tight">{percentageCount}</p>
                                     </div>
                                     <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
                                         <Percent size={17} />
                                     </div>
                                 </div>
-                                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                                <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
                                     % off the bill
                                 </p>
                             </div>
@@ -1840,14 +1113,14 @@ export function DiscountMasterScreen() {
                             <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
                                 <div className="flex justify-between items-start">
                                     <div className="space-y-1">
-                                        <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Flat Amount Rules</span>
-                                        <p className="text-3xl font-extrabold text-purple-600 dark:text-purple-400 tracking-tight tabular-nums">{flatCount}</p>
+                                        <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Flat Amount Rules</span>
+                                        <p className="text-2xl font-black text-purple-600 dark:text-purple-400 tracking-tight">{flatCount}</p>
                                     </div>
                                     <div className="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
                                         <IndianRupee size={17} />
                                     </div>
                                 </div>
-                                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                                <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
                                     Fixed ₹ off the bill
                                 </p>
                             </div>
@@ -1907,7 +1180,7 @@ export function DiscountMasterScreen() {
                             ) : (
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left text-xs">
-                                        <thead className="bg-slate-50 dark:bg-zinc-950 text-slate-600 dark:text-zinc-400 font-bold uppercase tracking-wider text-xs border-b border-slate-200 dark:border-zinc-800">
+                                        <thead className="bg-slate-50 dark:bg-zinc-950 text-zinc-500 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200 dark:border-zinc-800">
                                             <tr>
                                                 <th className="py-3.5 px-4">Code</th>
                                                 <th className="py-3.5 px-4">Discount Name</th>
@@ -1924,30 +1197,30 @@ export function DiscountMasterScreen() {
                                                 const isPercentage = d.type === 0 || d.type === 'Percentage';
                                                 return (
                                                     <tr key={d.discountDefinitionId || d.code} className="hover:bg-slate-50/50 dark:hover:bg-zinc-800/40 transition-colors">
-                                                        <td className="py-3.5 px-4 font-mono font-bold text-sm text-synos-primary">
+                                                        <td className="py-3.5 px-4 font-mono font-bold text-synos-primary">
                                                             {d.code}
                                                         </td>
-                                                        <td className="py-3.5 px-4 font-semibold text-sm text-zinc-900 dark:text-zinc-100">
+                                                        <td className="py-3.5 px-4 font-semibold text-zinc-900 dark:text-zinc-100">
                                                             {d.name}
                                                         </td>
                                                         <td className="py-3.5 px-4">
                                                             <span className={cn(
-                                                                "inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider border",
+                                                                "inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border",
                                                                 isPercentage
                                                                     ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
                                                                     : "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20"
                                                             )}>
-                                                                {isPercentage ? <Percent className="w-3 h-3" /> : <IndianRupee className="w-3 h-3" />}
+                                                                {isPercentage ? <Percent className="w-2.5 h-2.5" /> : <IndianRupee className="w-2.5 h-2.5" />}
                                                                 {isPercentage ? 'Percentage' : 'Flat ₹'}
                                                             </span>
                                                         </td>
-                                                        <td className="py-3.5 px-4 font-mono font-bold text-sm text-zinc-900 dark:text-zinc-100">
+                                                        <td className="py-3.5 px-4 font-mono font-bold text-zinc-900 dark:text-zinc-100">
                                                             {isPercentage ? `${d.value}%` : `₹${d.value?.toLocaleString()}`}
                                                         </td>
-                                                        <td className="py-3.5 px-4 font-mono font-medium text-xs text-zinc-500">
+                                                        <td className="py-3.5 px-4 font-mono text-zinc-500">
                                                             {d.maxLimit ? `₹${d.maxLimit.toLocaleString()}` : '—'}
                                                         </td>
-                                                        <td className="py-3.5 px-4 text-zinc-500 text-xs font-medium">
+                                                        <td className="py-3.5 px-4 text-zinc-500 text-[11px]">
                                                             {d.effectiveFrom || d.effectiveTo ? (
                                                                 <span>
                                                                     {d.effectiveFrom ? new Date(d.effectiveFrom).toLocaleDateString() : 'Start'}
@@ -1960,7 +1233,7 @@ export function DiscountMasterScreen() {
                                                         </td>
                                                         <td className="py-3.5 px-4">
                                                             <span className={cn(
-                                                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider border",
+                                                                "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border",
                                                                 d.isActive
                                                                     ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
                                                                     : "bg-zinc-500/10 text-zinc-500 border-zinc-500/20"
@@ -1997,14 +1270,14 @@ export function DiscountMasterScreen() {
                             <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
                                 <div className="flex justify-between items-start">
                                     <div className="space-y-1">
-                                        <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Total Presets</span>
-                                        <p className="text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight tabular-nums">{totalReasonsCount}</p>
+                                        <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Total Presets</span>
+                                        <p className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">{totalReasonsCount}</p>
                                     </div>
                                     <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
                                         <ShieldCheck size={17} />
                                     </div>
                                 </div>
-                                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                                <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
                                     Approved discount authorization reasons
                                 </p>
                             </div>
@@ -2012,14 +1285,14 @@ export function DiscountMasterScreen() {
                             <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
                                 <div className="flex justify-between items-start">
                                     <div className="space-y-1">
-                                        <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Active at Desk</span>
-                                        <p className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 tracking-tight tabular-nums">{activeReasonsCount}</p>
+                                        <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Active at Desk</span>
+                                        <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">{activeReasonsCount}</p>
                                     </div>
                                     <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                                         <CheckCircle2 size={17} />
                                     </div>
                                 </div>
-                                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                                <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
                                     Visible in reception dropdowns
                                 </p>
                             </div>
@@ -2027,14 +1300,14 @@ export function DiscountMasterScreen() {
                             <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
                                 <div className="flex justify-between items-start">
                                     <div className="space-y-1">
-                                        <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Doctor Recommendations</span>
-                                        <p className="text-3xl font-extrabold text-blue-600 dark:text-blue-400 tracking-tight tabular-nums">{doctorReasonsCount}</p>
+                                        <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Doctor Recommendations</span>
+                                        <p className="text-2xl font-black text-blue-600 dark:text-blue-400 tracking-tight">{doctorReasonsCount}</p>
                                     </div>
                                     <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
                                         <User size={17} />
                                     </div>
                                 </div>
-                                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                                <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
                                     Discounts on doctor reference (e.g. Dr. DVR)
                                 </p>
                             </div>
@@ -2042,14 +1315,14 @@ export function DiscountMasterScreen() {
                             <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
                                 <div className="flex justify-between items-start">
                                     <div className="space-y-1">
-                                        <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Management Approvals</span>
-                                        <p className="text-3xl font-extrabold text-purple-600 dark:text-purple-400 tracking-tight tabular-nums">{managementReasonsCount}</p>
+                                        <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Management Approvals</span>
+                                        <p className="text-2xl font-black text-purple-600 dark:text-purple-400 tracking-tight">{managementReasonsCount}</p>
                                     </div>
                                     <div className="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
                                         <Receipt size={17} />
                                     </div>
                                 </div>
-                                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                                <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
                                     Lab Owner / Director concessions
                                 </p>
                             </div>
@@ -2158,7 +1431,7 @@ export function DiscountMasterScreen() {
                             ) : (
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left text-xs">
-                                        <thead className="bg-slate-50 dark:bg-zinc-950 text-slate-600 dark:text-zinc-400 font-bold uppercase tracking-wider text-xs border-b border-slate-200 dark:border-zinc-800">
+                                        <thead className="bg-slate-50 dark:bg-zinc-950 text-zinc-500 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200 dark:border-zinc-800">
                                             <tr>
                                                 <th className="py-3.5 px-4">Reason / Authorized Authority</th>
                                                 <th className="py-3.5 px-4">Category</th>
@@ -2177,13 +1450,13 @@ export function DiscountMasterScreen() {
                                                         <div className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">
                                                             {r.reasonText}
                                                         </div>
-                                                        <div className="text-xs text-zinc-500 font-mono">
+                                                        <div className="text-[10px] text-zinc-400 font-mono">
                                                             Order: {r.sortOrder ?? 0}
                                                         </div>
                                                     </td>
                                                     <td className="py-3.5 px-4">
                                                         <span className={cn(
-                                                            "inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider border",
+                                                            "inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border",
                                                             r.category === 'Doctor Recommendation'
                                                                 ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
                                                                 : r.category === 'Management Approval'
@@ -2197,16 +1470,16 @@ export function DiscountMasterScreen() {
                                                     </td>
                                                     <td className="py-3.5 px-4 text-center">
                                                         {(r.usageCount || 0) > 0 ? (
-                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                                                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-black bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
                                                                 {r.usageCount} {r.usageCount === 1 ? 'bill' : 'bills'}
                                                             </span>
                                                         ) : (
-                                                            <span className="text-zinc-400 text-xs font-medium">0</span>
+                                                            <span className="text-zinc-400 text-[11px]">0</span>
                                                         )}
                                                     </td>
                                                     <td className="py-3.5 px-4 font-mono text-right">
                                                         {(r.totalDiscountAmount || 0) > 0 ? (
-                                                            <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                                                            <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">
                                                                 ₹{r.totalDiscountAmount.toLocaleString()}
                                                             </span>
                                                         ) : (
@@ -2224,7 +1497,7 @@ export function DiscountMasterScreen() {
                                                             type="button"
                                                             onClick={() => handleToggleReasonActive(r)}
                                                             className={cn(
-                                                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider border transition-all cursor-pointer",
+                                                                "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border transition-all cursor-pointer",
                                                                 r.isActive
                                                                     ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20"
                                                                     : "bg-zinc-500/10 text-zinc-500 border-zinc-500/20 hover:bg-zinc-500/20"
@@ -2275,14 +1548,14 @@ export function DiscountMasterScreen() {
                             <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
                                 <div className="flex justify-between items-start">
                                     <div className="space-y-1">
-                                        <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Total Discount Given</span>
-                                        <p className="text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight tabular-nums">₹{totalDiscountAmount.toLocaleString()}</p>
+                                        <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Total Discount Given</span>
+                                        <p className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">₹{totalDiscountAmount.toLocaleString()}</p>
                                     </div>
                                     <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                                         <IndianRupee size={17} />
                                     </div>
                                 </div>
-                                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                                <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
                                     Total ₹ reduced from bills
                                 </p>
                             </div>
@@ -2290,14 +1563,14 @@ export function DiscountMasterScreen() {
                             <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
                                 <div className="flex justify-between items-start">
                                     <div className="space-y-1">
-                                        <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Bills Discounted</span>
-                                        <p className="text-3xl font-extrabold text-blue-600 dark:text-blue-400 tracking-tight tabular-nums">{totalBillsDiscounted}</p>
+                                        <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Bills Discounted</span>
+                                        <p className="text-2xl font-black text-blue-600 dark:text-blue-400 tracking-tight">{totalBillsDiscounted}</p>
                                     </div>
                                     <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
                                         <Receipt size={17} />
                                     </div>
                                 </div>
-                                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                                <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
                                     {patientDiscountCount} Patient · {partnerDiscountCount} Partner
                                 </p>
                             </div>
@@ -2305,14 +1578,14 @@ export function DiscountMasterScreen() {
                             <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
                                 <div className="flex justify-between items-start">
                                     <div className="space-y-1">
-                                        <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Average Discount</span>
-                                        <p className="text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight tabular-nums">₹{avgDiscountAmount.toLocaleString()}</p>
+                                        <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Average Discount</span>
+                                        <p className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">₹{avgDiscountAmount.toLocaleString()}</p>
                                     </div>
                                     <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
                                         <Percent size={17} />
                                     </div>
                                 </div>
-                                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                                <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
                                     Average discount per bill
                                 </p>
                             </div>
@@ -2320,14 +1593,14 @@ export function DiscountMasterScreen() {
                             <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
                                 <div className="flex justify-between items-start">
                                     <div className="space-y-1">
-                                        <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Staff Members</span>
-                                        <p className="text-3xl font-extrabold text-purple-600 dark:text-purple-400 tracking-tight tabular-nums">{staffBreakdown.length}</p>
+                                        <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Staff Members</span>
+                                        <p className="text-2xl font-black text-purple-600 dark:text-purple-400 tracking-tight">{staffBreakdown.length}</p>
                                     </div>
                                     <div className="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
                                         <Users size={17} />
                                     </div>
                                 </div>
-                                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                                <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
                                     Staff who gave discounts
                                 </p>
                             </div>
@@ -2348,7 +1621,7 @@ export function DiscountMasterScreen() {
 
                             {/* Discrete Source Filter Pills: Default is All Concessions */}
                             <div className="flex items-center gap-2">
-                                <span className="text-xs font-semibold text-zinc-500 hidden md:inline">Channel:</span>
+                                <span className="text-[11px] font-semibold text-zinc-500 hidden md:inline">Channel:</span>
                                 <div className="flex rounded-xl p-1 bg-slate-100 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-xs font-bold">
                                     {[
                                         { id: 'All', label: 'All Concessions' },
@@ -2389,7 +1662,7 @@ export function DiscountMasterScreen() {
                             ) : (
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left text-xs">
-                                        <thead className="bg-slate-50 dark:bg-zinc-950 text-slate-600 dark:text-zinc-400 font-bold uppercase tracking-wider text-xs border-b border-slate-200 dark:border-zinc-800">
+                                        <thead className="bg-slate-50 dark:bg-zinc-950 text-zinc-500 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200 dark:border-zinc-800">
                                             <tr>
                                                 <th className="py-3.5 px-4">Date & Time</th>
                                                 <th className="py-3.5 px-4">Bill Token</th>
@@ -2408,19 +1681,19 @@ export function DiscountMasterScreen() {
                                                 const isPartner = h.source !== 'Patient';
                                                 return (
                                                     <tr key={h.id} className="hover:bg-slate-50/50 dark:hover:bg-zinc-800/40 transition-colors">
-                                                        <td className="py-3.5 px-4 font-mono text-xs text-zinc-500 whitespace-nowrap">
+                                                        <td className="py-3.5 px-4 font-mono text-[11px] text-zinc-500 whitespace-nowrap">
                                                             {formatDateCompact(h.occurredAt)}
                                                         </td>
-                                                        <td className="py-3.5 px-4 font-mono font-bold text-sm text-synos-primary">
+                                                        <td className="py-3.5 px-4 font-mono font-bold text-synos-primary">
                                                             {h.visitToken || '—'}
                                                         </td>
                                                         <td className="py-3.5 px-4">
-                                                            <div className="font-semibold text-sm text-zinc-900 dark:text-zinc-100">{h.patientName}</div>
-                                                            {h.patientMrn && <div className="text-xs text-zinc-500 font-mono">{h.patientMrn}</div>}
+                                                            <div className="font-semibold text-zinc-900 dark:text-zinc-100">{h.patientName}</div>
+                                                            {h.patientMrn && <div className="text-[10px] text-zinc-400 font-mono">{h.patientMrn}</div>}
                                                         </td>
                                                         <td className="py-3.5 px-4">
                                                             <span className={cn(
-                                                                "inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider border",
+                                                                "inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border",
                                                                 isPartner
                                                                     ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
                                                                     : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
@@ -2428,25 +1701,25 @@ export function DiscountMasterScreen() {
                                                                 {isPartner ? 'Partner B2B' : 'Patient Walk-In'}
                                                             </span>
                                                         </td>
-                                                        <td className="py-3.5 px-4 font-medium text-xs text-zinc-700 dark:text-zinc-300">
+                                                        <td className="py-3.5 px-4 font-medium text-zinc-700 dark:text-zinc-300">
                                                             {h.discountName}
                                                         </td>
-                                                        <td className="py-3.5 px-4 font-mono text-right text-xs text-zinc-500">
+                                                        <td className="py-3.5 px-4 font-mono text-right text-zinc-500">
                                                             ₹{Number(h.grossAmount || 0).toLocaleString()}
                                                         </td>
-                                                        <td className="py-3.5 px-4 font-mono font-bold text-right text-sm text-emerald-600 dark:text-emerald-400">
+                                                        <td className="py-3.5 px-4 font-mono font-bold text-right text-emerald-600 dark:text-emerald-400">
                                                             - ₹{Number(h.discountAmount || 0).toLocaleString()}
                                                         </td>
-                                                        <td className="py-3.5 px-4 font-mono font-bold text-right text-sm text-zinc-900 dark:text-zinc-100">
+                                                        <td className="py-3.5 px-4 font-mono font-bold text-right text-zinc-900 dark:text-zinc-100">
                                                             ₹{Number(h.netAmount || 0).toLocaleString()}
                                                         </td>
                                                         <td className="py-3.5 px-4">
-                                                            <div className="inline-flex items-center gap-1.5 font-semibold text-xs text-zinc-900 dark:text-zinc-200">
-                                                                <User className="w-3.5 h-3.5 text-zinc-400" />
+                                                            <div className="inline-flex items-center gap-1.5 font-semibold text-zinc-900 dark:text-zinc-200">
+                                                                <User className="w-3 h-3 text-zinc-400" />
                                                                 <span>{h.appliedBy}</span>
                                                             </div>
                                                         </td>
-                                                        <td className="py-3.5 px-4 text-zinc-500 text-xs max-w-xs truncate">
+                                                        <td className="py-3.5 px-4 text-zinc-500 text-[11px] max-w-xs truncate">
                                                             {h.reason || '—'}
                                                         </td>
                                                     </tr>
@@ -2468,14 +1741,14 @@ export function DiscountMasterScreen() {
                             <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
                                 <div className="flex justify-between items-start">
                                     <div className="space-y-1">
-                                        <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Active Staff Members</span>
-                                        <p className="text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight tabular-nums">{staffBreakdown.length}</p>
+                                        <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Active Staff Members</span>
+                                        <p className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">{staffBreakdown.length}</p>
                                     </div>
                                     <div className="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
                                         <Users size={17} />
                                     </div>
                                 </div>
-                                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                                <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
                                     Staff who gave discounts
                                 </p>
                             </div>
@@ -2483,14 +1756,14 @@ export function DiscountMasterScreen() {
                             <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
                                 <div className="flex justify-between items-start">
                                     <div className="space-y-1">
-                                        <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Total Discount Given</span>
-                                        <p className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400 tracking-tight tabular-nums">₹{totalDiscountAmount.toLocaleString()}</p>
+                                        <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Total Discount Given</span>
+                                        <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight">₹{totalDiscountAmount.toLocaleString()}</p>
                                     </div>
                                     <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                                         <IndianRupee size={17} />
                                     </div>
                                 </div>
-                                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                                <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
                                     Across all staff members
                                 </p>
                             </div>
@@ -2498,8 +1771,8 @@ export function DiscountMasterScreen() {
                             <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
                                 <div className="flex justify-between items-start">
                                     <div className="space-y-1">
-                                        <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Top Staff Member</span>
-                                        <p className="text-xl font-bold text-zinc-900 dark:text-white tracking-tight truncate max-w-[170px]">
+                                        <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Top Staff Member</span>
+                                        <p className="text-xl font-black text-zinc-900 dark:text-white tracking-tight truncate max-w-[170px]">
                                             {staffBreakdown[0]?.name || 'None'}
                                         </p>
                                     </div>
@@ -2507,7 +1780,7 @@ export function DiscountMasterScreen() {
                                         <User size={17} />
                                     </div>
                                 </div>
-                                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                                <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
                                     {staffBreakdown[0] ? `₹${staffBreakdown[0].totalDiscount.toLocaleString()} given` : 'No records yet'}
                                 </p>
                             </div>
@@ -2515,14 +1788,14 @@ export function DiscountMasterScreen() {
                             <div className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3">
                                 <div className="flex justify-between items-start">
                                     <div className="space-y-1">
-                                        <span className="text-xs font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">Total Discounted Bills</span>
-                                        <p className="text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight tabular-nums">{totalBillsDiscounted}</p>
+                                        <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">Total Discounted Bills</span>
+                                        <p className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">{totalBillsDiscounted}</p>
                                     </div>
                                     <div className="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
                                         <Receipt size={17} />
                                     </div>
                                 </div>
-                                <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
+                                <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
                                     Number of bills with discount
                                 </p>
                             </div>
@@ -2549,7 +1822,7 @@ export function DiscountMasterScreen() {
                             ) : (
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left text-xs">
-                                        <thead className="bg-slate-50 dark:bg-zinc-950 text-slate-600 dark:text-zinc-400 font-bold uppercase tracking-wider text-xs border-b border-slate-200 dark:border-zinc-800">
+                                        <thead className="bg-slate-50 dark:bg-zinc-950 text-zinc-500 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200 dark:border-zinc-800">
                                             <tr>
                                                 <th className="py-3.5 px-4">Staff Member</th>
                                                 <th className="py-3.5 px-4 text-center">Number of Times Given</th>
@@ -2581,7 +1854,7 @@ export function DiscountMasterScreen() {
                                                             ₹{avg.toLocaleString()}
                                                         </td>
                                                         <td className="py-3.5 px-4 text-center">
-                                                            <span className="text-xs text-zinc-500 font-medium">
+                                                            <span className="text-[11px] text-zinc-500 font-medium">
                                                                 {s.percentageCount} % off · {s.flatCount} flat ₹
                                                             </span>
                                                         </td>
@@ -2753,7 +2026,7 @@ function DiscountFormModal({ discount, onClose, onSuccess }) {
                             <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
                                 {isEdit ? `Edit Discount (${discount.code})` : "Add New Discount Code"}
                             </h3>
-                            <p className="text-xs text-zinc-500 font-medium">Create a discount code for reception to use</p>
+                            <p className="text-[10px] text-zinc-500 font-medium">Create a discount code for reception to use</p>
                         </div>
                     </div>
                     <button
@@ -2774,7 +2047,7 @@ function DiscountFormModal({ discount, onClose, onSuccess }) {
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-1">
+                            <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">
                                 Discount Code *
                             </label>
                             <input
@@ -2789,7 +2062,7 @@ function DiscountFormModal({ discount, onClose, onSuccess }) {
                         </div>
 
                         <div>
-                            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-1">
+                            <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">
                                 Discount Type *
                             </label>
                             <select
@@ -2805,7 +2078,7 @@ function DiscountFormModal({ discount, onClose, onSuccess }) {
                     </div>
 
                     <div>
-                        <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-1">
+                        <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">
                             Discount Name *
                         </label>
                         <input
@@ -2820,7 +2093,7 @@ function DiscountFormModal({ discount, onClose, onSuccess }) {
 
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-1">
+                            <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">
                                 {type === 0 ? "Discount Percentage (%) *" : "Flat Discount (₹) *"}
                             </label>
                             <input
@@ -2837,7 +2110,7 @@ function DiscountFormModal({ discount, onClose, onSuccess }) {
                         </div>
 
                         <div>
-                            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-1">
+                            <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">
                                 Maximum Limit (₹) (Optional)
                             </label>
                             <input
@@ -2853,7 +2126,7 @@ function DiscountFormModal({ discount, onClose, onSuccess }) {
 
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-1">
+                            <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">
                                 Start Date (Optional)
                             </label>
                             <input
@@ -2865,7 +2138,7 @@ function DiscountFormModal({ discount, onClose, onSuccess }) {
                         </div>
 
                         <div>
-                            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-1">
+                            <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">
                                 End Date (Optional)
                             </label>
                             <input
@@ -2970,7 +2243,7 @@ function DiscountReasonModal({ reason, onClose, onSuccess }) {
                             <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
                                 {isEdit ? "Edit Preset Discount Reason" : "Add Preset Discount Reason"}
                             </h3>
-                            <p className="text-xs text-zinc-500 font-medium">Standardize reasons for receptionist billing to prevent spelling errors</p>
+                            <p className="text-[10px] text-zinc-500 font-medium">Standardize reasons for receptionist billing to prevent spelling errors</p>
                         </div>
                     </div>
                     <button
@@ -2990,7 +2263,7 @@ function DiscountReasonModal({ reason, onClose, onSuccess }) {
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     <div>
-                        <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-1">
+                        <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">
                             Reason / Authorization Authority *
                         </label>
                         <input
@@ -3005,7 +2278,7 @@ function DiscountReasonModal({ reason, onClose, onSuccess }) {
 
                     <div className="grid grid-cols-2 gap-3">
                         <div>
-                            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-1">
+                            <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">
                                 Category *
                             </label>
                             <select
@@ -3024,7 +2297,7 @@ function DiscountReasonModal({ reason, onClose, onSuccess }) {
                         </div>
 
                         <div>
-                            <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-1">
+                            <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">
                                 Sort Order
                             </label>
                             <input
@@ -3039,7 +2312,7 @@ function DiscountReasonModal({ reason, onClose, onSuccess }) {
                     </div>
 
                     <div>
-                        <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-1">
+                        <label className="block text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-1">
                             Description / Policy Notes (Optional)
                         </label>
                         <textarea

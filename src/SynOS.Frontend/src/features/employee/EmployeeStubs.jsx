@@ -56,19 +56,19 @@ export function MyAttendance() {
       {/* KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="synos-dept-card p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
-          <p className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Days Present</p>
+          <p className="text-[10px] font-extrabold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">Days Present</p>
           <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{summary.totalPresentDays || 0}</p>
         </div>
         <div className="synos-dept-card p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20">
-          <p className="text-xs font-extrabold text-amber-600 dark:text-amber-400 uppercase tracking-wider">Approved Leaves</p>
+          <p className="text-[10px] font-extrabold text-amber-600 dark:text-amber-400 uppercase tracking-wider">Approved Leaves</p>
           <p className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">{summary.totalLeaveDays || 0}</p>
         </div>
         <div className="synos-dept-card p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/20">
-          <p className="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">Planned Leaves</p>
+          <p className="text-[10px] font-extrabold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">Planned Leaves</p>
           <p className="text-2xl font-black text-indigo-600 dark:text-indigo-400 mt-1">{summary.totalPlannedLeaves || 0}</p>
         </div>
         <div className="synos-dept-card p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20">
-          <p className="text-xs font-extrabold text-rose-600 dark:text-rose-400 uppercase tracking-wider">Total Absences / LOP</p>
+          <p className="text-[10px] font-extrabold text-rose-600 dark:text-rose-400 uppercase tracking-wider">Total Absences / LOP</p>
           <p className="text-2xl font-black text-rose-600 dark:text-rose-400 mt-1">{summary.totalAbsentDays || 0}</p>
         </div>
       </div>
@@ -168,7 +168,7 @@ export function RequestStatus() {
                 <div className="flex justify-between items-start">
                   <div>
                     <span className="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">{req.leaveType} Leave</span>
-                    <p className="text-xs font-mono text-zinc-400 mt-0.5">Applied on {new Date(req.appliedAt).toLocaleDateString()}</p>
+                    <p className="text-[10px] font-mono text-zinc-400 mt-0.5">Applied on {new Date(req.appliedAt).toLocaleDateString()}</p>
                   </div>
                   {statusBadge}
                 </div>

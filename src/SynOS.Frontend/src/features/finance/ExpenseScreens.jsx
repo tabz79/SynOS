@@ -59,7 +59,7 @@ const StatusBadge = ({ status }) => {
     };
 
     return (
-        <span className={`px-2 py-0.5 rounded-full text-xs uppercase tracking-wider border ${styles[status] || "bg-zinc-500/10 text-zinc-500 border-zinc-500/20"}`}>
+        <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider border ${styles[status] || "bg-zinc-500/10 text-zinc-500 border-zinc-500/20"}`}>
             {labelMap[status] || status}
         </span>
     );
@@ -67,7 +67,7 @@ const StatusBadge = ({ status }) => {
 
 const SummaryCard = ({ title, value, type = 'neutral', subtitle }) => (
     <div className="p-4 rounded-xl synos-kpi-card flex flex-col gap-1 justify-between">
-        <p className="text-xs font-bold uppercase tracking-widest text-zinc-500">{title}</p>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">{title}</p>
         <div className="flex items-center justify-between">
             <p className="text-xl font-bold dark:text-zinc-100 text-zinc-900">
                 <span className="text-xs font-normal text-zinc-400 mr-1">₹</span>{value}
@@ -76,7 +76,7 @@ const SummaryCard = ({ title, value, type = 'neutral', subtitle }) => (
             {type === 'negative' && <ArrowDownRight className="w-4 h-4 text-rose-500" />}
             {type === 'warning' && <AlertCircle className="w-4 h-4 text-amber-500" />}
         </div>
-        {subtitle && <p className="text-xs text-zinc-400 mt-1">{subtitle}</p>}
+        {subtitle && <p className="text-[10px] text-zinc-400 mt-1">{subtitle}</p>}
     </div>
 );
 
@@ -111,7 +111,7 @@ const BulkSettleVendorModal = ({ isOpen, onClose, vendor, onSettled }) => {
                 <div className="p-8 border-b dark:border-zinc-800 border-zinc-200 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/40">
                     <div>
                         <h3 className="text-xl font-black dark:text-white tracking-tight">Bulk Settlement</h3>
-                        <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest mt-0.5">{vendor.vendorName}</p>
+                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-0.5">{vendor.vendorName}</p>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-xl transition-colors">
                         <X className="w-5 h-5 text-zinc-500" />
@@ -120,7 +120,7 @@ const BulkSettleVendorModal = ({ isOpen, onClose, vendor, onSettled }) => {
 
                 <form onSubmit={handleSubmit} className="p-8 space-y-6">
                     <div className="space-y-2">
-                        <label className="text-xs font-black uppercase text-zinc-500 ml-4 tracking-widest">Settlement Amount (₹)</label>
+                        <label className="text-[10px] font-black uppercase text-zinc-500 ml-4 tracking-widest">Settlement Amount (₹)</label>
                         <div className="relative">
                             <span className="absolute left-6 top-1/2 -translate-y-1/2 text-xl font-bold text-zinc-400">₹</span>
                             <input 
@@ -133,18 +133,18 @@ const BulkSettleVendorModal = ({ isOpen, onClose, vendor, onSettled }) => {
                                 min={1}
                             />
                         </div>
-                        <p className="text-xs text-zinc-400 ml-4">Total Outstanding: ₹{vendor.totalOutstanding.toLocaleString()}</p>
+                        <p className="text-[10px] text-zinc-400 ml-4">Total Outstanding: ₹{vendor.totalOutstanding.toLocaleString()}</p>
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-xs font-black uppercase text-zinc-500 ml-4 tracking-widest">Payment Mode</label>
+                        <label className="text-[10px] font-black uppercase text-zinc-500 ml-4 tracking-widest">Payment Mode</label>
                         <div className="grid grid-cols-3 gap-2">
                             {['Cash', 'UPI', 'BankTransfer'].map(mode => (
                                 <button 
                                     key={mode}
                                     type="button"
                                     onClick={() => setPaymentMethod(mode)}
-                                    className={`py-3 text-xs font-bold uppercase tracking-widest rounded-xl border transition-all ${paymentMethod === mode ? 'bg-zinc-900 text-white border-zinc-900 dark:bg-white dark:text-zinc-900 shadow-lg' : 'bg-transparent text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100'}`}
+                                    className={`py-3 text-[10px] font-bold uppercase tracking-widest rounded-xl border transition-all ${paymentMethod === mode ? 'bg-zinc-900 text-white border-zinc-900 dark:bg-white dark:text-zinc-900 shadow-lg' : 'bg-transparent text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100'}`}
                                 >
                                     {mode}
                                 </button>
@@ -241,7 +241,7 @@ export const ExpenseFeedScreen = () => {
                     <TrendingDown className="w-5 h-5 text-rose-500" />
                     Expense Feed
                 </h1>
-                <p className="text-xs text-zinc-500 tracking-normal">Timeline of confirmed money-out events (SpendFacts).</p>
+                <p className="text-xs text-zinc-500 tracking-tight">Timeline of confirmed money-out events (SpendFacts).</p>
             </div>
 
             {/* Statistics */}
@@ -278,7 +278,7 @@ export const ExpenseFeedScreen = () => {
                             <button 
                                 key={range}
                                 onClick={() => setFilterRange(range)}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${filterRange === range ? 'bg-synos-primary text-white' : 'text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-800'}`}
+                                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${filterRange === range ? 'bg-synos-primary text-white' : 'text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-800'}`}
                             >
                                 {range}
                             </button>
@@ -304,12 +304,12 @@ export const ExpenseFeedScreen = () => {
                     <table className="w-full text-left border-collapse synos-table">
                         <thead>
                             <tr className="border-b dark:border-zinc-800 border-slate-300 bg-slate-50/80 dark:bg-zinc-900/50">
-                                <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500">Date & Time</th>
-                                <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500">Payee</th>
-                                <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500">Category</th>
-                                <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500 text-right">Amount</th>
-                                <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500">Mode</th>
-                                <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500">Reference</th>
+                                <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Date & Time</th>
+                                <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Payee</th>
+                                <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Category</th>
+                                <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Amount</th>
+                                <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Mode</th>
+                                <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Reference</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800">
@@ -329,14 +329,14 @@ export const ExpenseFeedScreen = () => {
                                                 <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-200">
                                                     {new Date(fact.occurredAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                                                 </span>
-                                                <span className="text-xs text-zinc-400">
+                                                <span className="text-[10px] text-zinc-400">
                                                     {new Date(fact.occurredAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                                                 </span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-3">
                                             <div className="flex items-center gap-2">
-                                                <div className="w-6 h-6 rounded-full bg-rose-500/10 flex items-center justify-center text-xs font-bold text-rose-600">
+                                                <div className="w-6 h-6 rounded-full bg-rose-500/10 flex items-center justify-center text-[10px] font-bold text-rose-600">
                                                     {fact.payeeName?.substring(0, 1)}
                                                 </div>
                                                 <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">{fact.payeeName}</span>
@@ -352,12 +352,12 @@ export const ExpenseFeedScreen = () => {
                                             <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100">₹{fact.amount.toLocaleString()}</span>
                                         </td>
                                         <td className="px-6 py-3">
-                                            <span className={`text-xs font-bold uppercase tracking-tight px-2 py-0.5 rounded border ${fact.paymentMode === 'Cash' ? 'bg-orange-500/10 text-orange-600 border-orange-500/20' : 'bg-blue-500/10 text-blue-600 border-blue-500/20'}`}>
+                                            <span className={`text-[10px] font-bold uppercase tracking-tight px-2 py-0.5 rounded border ${fact.paymentMode === 'Cash' ? 'bg-orange-500/10 text-orange-600 border-orange-500/20' : 'bg-blue-500/10 text-blue-600 border-blue-500/20'}`}>
                                                 {fact.paymentMode}
                                             </span>
                                         </td>
                                         <td className="px-6 py-3">
-                                            <span className="text-xs font-mono text-zinc-400">{fact.reference}</span>
+                                            <span className="text-[10px] font-mono text-zinc-400">{fact.reference}</span>
                                         </td>
                                     </tr>
                                 ))
@@ -423,7 +423,7 @@ export const VendorPayablesScreen = () => {
                     <Truck className="w-5 h-5 text-synos-primary" />
                     Vendor Payables
                 </h1>
-                <p className="text-xs text-zinc-500 tracking-normal">Active liabilities and outstanding obligations to suppliers.</p>
+                <p className="text-xs text-zinc-500 tracking-tight">Active liabilities and outstanding obligations to suppliers.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -438,11 +438,11 @@ export const VendorPayablesScreen = () => {
                     <table className="w-full text-left border-collapse synos-table">
                         <thead>
                             <tr className="border-b dark:border-zinc-800 border-slate-300 bg-slate-50/80 dark:bg-zinc-900/50">
-                                <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500">Vendor Name</th>
-                                <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500 text-center">Bills</th>
-                                <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500">Oldest Bill</th>
-                                <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500 text-right">Total Outstanding</th>
-                                <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500 text-right">Actions</th>
+                                <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Vendor Name</th>
+                                <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-center">Bills</th>
+                                <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Oldest Bill</th>
+                                <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Total Outstanding</th>
+                                <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800">
@@ -468,7 +468,7 @@ export const VendorPayablesScreen = () => {
                                                     </div>
                                                     <div>
                                                         <p className="text-sm font-bold text-zinc-900 dark:text-zinc-100">{vendor.vendorName}</p>
-                                                        <p className="text-xs text-zinc-500 uppercase tracking-normal">Verified Supplier</p>
+                                                        <p className="text-[10px] text-zinc-500 uppercase tracking-tighter">Verified Supplier</p>
                                                     </div>
                                                 </div>
                                             </td>
@@ -486,12 +486,12 @@ export const VendorPayablesScreen = () => {
                                             <td className="px-6 py-4 text-right">
                                                 <p className="text-sm font-black text-zinc-900 dark:text-zinc-100">₹{vendor.totalOutstanding.toLocaleString()}</p>
                                                 {vendor.aging_30_Plus > 0 && (
-                                                    <p className="text-xs text-rose-500 font-bold uppercase tracking-normal">₹{vendor.aging_30_Plus.toLocaleString()} Overdue</p>
+                                                    <p className="text-[10px] text-rose-500 font-bold uppercase tracking-tighter">₹{vendor.aging_30_Plus.toLocaleString()} Overdue</p>
                                                 )}
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <button 
-                                                    className="px-3 py-1.5 bg-synos-primary text-white text-xs font-bold uppercase tracking-widest rounded shadow-sm hover:bg-synos-primary/90 transition-colors"
+                                                    className="px-3 py-1.5 bg-synos-primary text-white text-[10px] font-bold uppercase tracking-widest rounded shadow-sm hover:bg-synos-primary/90 transition-colors"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         setSettlementModal({ isOpen: true, vendor });
@@ -508,19 +508,19 @@ export const VendorPayablesScreen = () => {
                                                     <div className="flex flex-col gap-4">
                                                         <div className="grid grid-cols-3 gap-4">
                                                             <div className="p-3 rounded-lg border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-900">
-                                                                <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Current (0-7d)</p>
+                                                                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Current (0-7d)</p>
                                                                 <p className="text-sm font-bold text-zinc-700 dark:text-zinc-300">₹{vendor.aging_0_7.toLocaleString()}</p>
                                                             </div>
                                                             <div className="p-3 rounded-lg border dark:border-zinc-800 border-zinc-200 bg-white dark:bg-zinc-900">
-                                                                <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Recent (7-30d)</p>
+                                                                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Recent (7-30d)</p>
                                                                 <p className="text-sm font-bold text-zinc-700 dark:text-zinc-300">₹{vendor.aging_7_30.toLocaleString()}</p>
                                                             </div>
                                                             <div className="p-3 rounded-lg border dark:border-zinc-800 border-zinc-200 bg-rose-500/5 dark:bg-rose-500/10 border-rose-500/20">
-                                                                <p className="text-xs font-bold text-rose-400 uppercase tracking-widest">Critical (30d+)</p>
+                                                                <p className="text-[10px] font-bold text-rose-400 uppercase tracking-widest">Critical (30d+)</p>
                                                                 <p className="text-sm font-bold text-rose-600">₹{vendor.aging_30_Plus.toLocaleString()}</p>
                                                             </div>
                                                         </div>
-                                                        <div className="text-xs text-zinc-500 italic">
+                                                        <div className="text-[10px] text-zinc-500 italic">
                                                             * Expanding specific bill drill-down requires additional server-side projection.
                                                         </div>
                                                     </div>
@@ -634,18 +634,18 @@ export const DailyExpensesScreen = () => {
                     <IndianRupee className="w-5 h-5 text-emerald-500" />
                     Daily Expenses
                 </h1>
-                <p className="text-xs text-zinc-500 tracking-normal">Rapid operational logging for overheads and petty cash outflows.</p>
+                <p className="text-xs text-zinc-500 tracking-tight">Rapid operational logging for overheads and petty cash outflows.</p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 flex-1 overflow-hidden">
                 {/* Entry Form */}
                 <div className="bg-white dark:bg-zinc-900/20 border dark:border-zinc-800 border-zinc-200 rounded-2xl p-8 flex flex-col shadow-sm">
-                    <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-6">Record New Payout</h3>
+                    <h3 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-6">Record New Payout</h3>
                     
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Amount Entry (Giant/Fast) */}
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-zinc-500 uppercase tracking-normal">Amount (₹)</label>
+                            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-tighter">Amount (₹)</label>
                             <div className="relative group">
                                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl font-bold text-zinc-400 group-focus-within:text-emerald-500 transition-colors">₹</span>
                                 <input 
@@ -662,7 +662,7 @@ export const DailyExpensesScreen = () => {
 
                         {/* Category Selector */}
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-zinc-500 uppercase tracking-normal">Category</label>
+                            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-tighter">Category</label>
                             <div className="grid grid-cols-3 gap-2">
                                 {categories.map(cat => (
                                     <button 
@@ -672,7 +672,7 @@ export const DailyExpensesScreen = () => {
                                         className={`flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl border transition-all ${formData.category === cat.id ? 'bg-synos-primary/10 border-synos-primary text-synos-primary' : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:border-zinc-400'}`}
                                     >
                                         <cat.icon className="w-4 h-4" />
-                                        <span className="text-xs font-bold">{cat.label}</span>
+                                        <span className="text-[10px] font-bold">{cat.label}</span>
                                     </button>
                                 ))}
                             </div>
@@ -680,7 +680,7 @@ export const DailyExpensesScreen = () => {
 
                         {/* Description */}
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-zinc-500 uppercase tracking-normal">Description / Notes</label>
+                            <label className="text-[10px] font-bold text-zinc-500 uppercase tracking-tighter">Description / Notes</label>
                             <input 
                                 type="text"
                                 required
@@ -699,7 +699,7 @@ export const DailyExpensesScreen = () => {
                                         key={mode}
                                         type="button"
                                         onClick={() => setFormData({...formData, paymentMethod: mode})}
-                                        className={`flex-1 py-2 text-xs font-bold uppercase tracking-widest rounded-lg border transition-all ${formData.paymentMethod === mode ? 'bg-zinc-900 text-white border-zinc-900 dark:bg-white dark:text-zinc-900' : 'bg-transparent text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100'}`}
+                                        className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-lg border transition-all ${formData.paymentMethod === mode ? 'bg-zinc-900 text-white border-zinc-900 dark:bg-white dark:text-zinc-900' : 'bg-transparent text-zinc-400 border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100'}`}
                                     >
                                         {mode}
                                     </button>
@@ -719,7 +719,7 @@ export const DailyExpensesScreen = () => {
 
                 {/* Local History (Just logged) */}
                 <div className="flex flex-col">
-                    <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-4">Just Logged</h3>
+                    <h3 className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-4">Just Logged</h3>
                     <div className="space-y-3">
                         {recentLogs.length === 0 ? (
                             <div className="p-8 border-2 border-dashed dark:border-zinc-800 border-zinc-200 rounded-2xl flex flex-col items-center justify-center text-zinc-400">
@@ -735,12 +735,12 @@ export const DailyExpensesScreen = () => {
                                         </div>
                                         <div>
                                             <p className="text-sm font-bold text-zinc-700 dark:text-zinc-200">{log.description}</p>
-                                            <p className="text-xs text-zinc-500 uppercase font-medium">{log.category} • {log.time}</p>
+                                            <p className="text-[10px] text-zinc-500 uppercase font-medium">{log.category} • {log.time}</p>
                                         </div>
                                     </div>
                                     <div className="text-right">
                                         <p className="text-sm font-black text-zinc-900 dark:text-zinc-100">₹{log.amount.toLocaleString()}</p>
-                                        <p className="text-xs font-bold text-synos-primary uppercase">{log.paymentMethod}</p>
+                                        <p className="text-[10px] font-bold text-synos-primary uppercase">{log.paymentMethod}</p>
                                     </div>
                                 </div>
                             ))
@@ -749,7 +749,7 @@ export const DailyExpensesScreen = () => {
 
                     <div className="mt-auto p-6 rounded-2xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-between">
                         <div>
-                            <p className="text-xs font-bold uppercase tracking-widest opacity-60">Session Total</p>
+                            <p className="text-[10px] font-bold uppercase tracking-widest opacity-60">Session Total</p>
                             <p className="text-2xl font-black">₹{recentLogs.reduce((acc, l) => acc + l.amount, 0).toLocaleString()}</p>
                         </div>
                         <CheckCircle2 className="w-8 h-8 opacity-20" />
@@ -792,7 +792,7 @@ const SettleOutsourcedModal = ({ isOpen, onClose, payable, onSettled }) => {
                 <div className="p-8 border-b dark:border-zinc-800 border-zinc-200 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/40">
                     <div>
                         <h3 className="text-xl font-black dark:text-white tracking-tight">Lab Settlement</h3>
-                        <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest mt-0.5">{payable.referenceLabName}</p>
+                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-0.5">{payable.referenceLabName}</p>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-xl transition-colors">
                         <X className="w-5 h-5 text-zinc-500" />
@@ -801,7 +801,7 @@ const SettleOutsourcedModal = ({ isOpen, onClose, payable, onSettled }) => {
 
                 <form onSubmit={handleSubmit} className="p-8 space-y-6">
                     <div className="space-y-1">
-                        <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest ml-1">Patient & Test</p>
+                        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Patient & Test</p>
                         <div className="p-4 rounded-2xl bg-zinc-100 dark:bg-white/5 border dark:border-zinc-800 border-zinc-200">
                             <p className="text-sm font-bold dark:text-zinc-200">{payable.patientName}</p>
                             <p className="text-xs text-zinc-500">{payable.testName}</p>
@@ -809,7 +809,7 @@ const SettleOutsourcedModal = ({ isOpen, onClose, payable, onSettled }) => {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-xs font-black uppercase text-zinc-500 ml-4 tracking-widest">Payment Amount (₹)</label>
+                        <label className="text-[10px] font-black uppercase text-zinc-500 ml-4 tracking-widest">Payment Amount (₹)</label>
                         <div className="relative">
                             <span className="absolute left-6 top-1/2 -translate-y-1/2 text-xl font-bold text-zinc-400">₹</span>
                             <input 
@@ -822,7 +822,7 @@ const SettleOutsourcedModal = ({ isOpen, onClose, payable, onSettled }) => {
                                 min={1}
                             />
                         </div>
-                        <p className="text-xs text-zinc-400 ml-4">Balance: ₹{(payable.amountDue - payable.amountPaid).toLocaleString()}</p>
+                        <p className="text-[10px] text-zinc-400 ml-4">Balance: ₹{(payable.amountDue - payable.amountPaid).toLocaleString()}</p>
                     </div>
 
                     <button 
@@ -872,7 +872,7 @@ const ResolvePricingModal = ({ isOpen, onClose, payable, onResolved }) => {
                 <div className="p-8 border-b dark:border-zinc-800 border-zinc-200 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/40">
                     <div>
                         <h3 className="text-xl font-black dark:text-white tracking-tight">Resolve Vendor Cost</h3>
-                        <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest mt-0.5">{payable.referenceLabName}</p>
+                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-0.5">{payable.referenceLabName}</p>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-xl transition-colors">
                         <X className="w-5 h-5 text-zinc-500" />
@@ -881,14 +881,14 @@ const ResolvePricingModal = ({ isOpen, onClose, payable, onResolved }) => {
 
                 <form onSubmit={handleSubmit} className="p-8 space-y-6">
                     <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20">
-                        <p className="text-xs font-bold text-amber-600 uppercase tracking-widest mb-1 flex items-center gap-1">
+                        <p className="text-[10px] font-bold text-amber-600 uppercase tracking-widest mb-1 flex items-center gap-1">
                             <AlertCircle className="w-3 h-3" /> Organic Discovery
                         </p>
                         <p className="text-xs text-amber-700 leading-tight">Setting this cost will create a permanent pricing rule for <b>{payable.testName}</b> at this lab.</p>
                     </div>
 
                     <div className="space-y-1">
-                        <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest ml-1">Test & Sample</p>
+                        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Test & Sample</p>
                         <div className="p-4 rounded-2xl bg-zinc-100 dark:bg-white/5 border dark:border-zinc-800 border-zinc-200">
                             <p className="text-sm font-bold dark:text-zinc-200">{payable.testName}</p>
                             <p className="text-xs text-zinc-500">Patient: {payable.patientName}</p>
@@ -896,7 +896,7 @@ const ResolvePricingModal = ({ isOpen, onClose, payable, onResolved }) => {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="text-xs font-black uppercase text-zinc-500 ml-4 tracking-widest">Actual Vendor Cost (₹)</label>
+                        <label className="text-[10px] font-black uppercase text-zinc-500 ml-4 tracking-widest">Actual Vendor Cost (₹)</label>
                         <div className="relative">
                             <span className="absolute left-6 top-1/2 -translate-y-1/2 text-xl font-bold text-zinc-400">₹</span>
                             <input 
@@ -989,7 +989,7 @@ export const OutsourcedPayablesScreen = ({ isTerminal = false }) => {
                                     <button
                                         key={t}
                                         onClick={() => navigate(`/finance/outsourcing/${t}`)}
-                                        className={`px-4 py-1.5 text-xs font-black uppercase tracking-widest rounded-lg transition-all relative ${
+                                        className={`px-4 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all relative ${
                                             tab === t 
                                                 ? 'bg-white dark:bg-zinc-800 text-synos-primary shadow-sm shadow-black/5' 
                                                 : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
@@ -997,7 +997,7 @@ export const OutsourcedPayablesScreen = ({ isTerminal = false }) => {
                                     >
                                         {t.replace('-', ' ')}
                                         {t === 'pricing' && stats.pendingPricing > 0 && (
-                                            <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-xs flex items-center justify-center rounded-full border-2 border-white dark:border-zinc-950 animate-pulse">
+                                            <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[8px] flex items-center justify-center rounded-full border-2 border-white dark:border-zinc-950 animate-pulse">
                                                 {stats.pendingPricing}
                                             </span>
                                         )}
@@ -1005,7 +1005,7 @@ export const OutsourcedPayablesScreen = ({ isTerminal = false }) => {
                                 ))}
                             </div>
                         </div>
-                        <p className="text-xs text-zinc-500 tracking-normal">Reference lab reconciliation and external test settlement management.</p>
+                        <p className="text-xs text-zinc-500 tracking-tight">Reference lab reconciliation and external test settlement management.</p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -1038,12 +1038,12 @@ export const OutsourcedPayablesScreen = ({ isTerminal = false }) => {
                         <table className="w-full text-left border-collapse synos-table">
                             <thead>
                                 <tr className="border-b dark:border-zinc-800 border-slate-300 bg-slate-50/80 dark:bg-zinc-900/50">
-                                    <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500">Date</th>
-                                    <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500">Patient & Test</th>
-                                    <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500">Reference Lab</th>
-                                    <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500 text-right">Amount</th>
-                                    <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500 text-center">Status</th>
-                                    <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500 text-right">Actions</th>
+                                    <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Date</th>
+                                    <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Patient & Test</th>
+                                    <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Reference Lab</th>
+                                    <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Amount</th>
+                                    <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-center">Status</th>
+                                    <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800">
@@ -1064,7 +1064,7 @@ export const OutsourcedPayablesScreen = ({ isTerminal = false }) => {
                                             <td className="px-6 py-4">
                                                 <div className="flex flex-col">
                                                     <span className="text-xs font-bold text-zinc-900 dark:text-zinc-200">{payable.patientName}</span>
-                                                    <span className="text-xs text-zinc-500 uppercase tracking-normal">{payable.testName}</span>
+                                                    <span className="text-[10px] text-zinc-500 uppercase tracking-tight">{payable.testName}</span>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
@@ -1073,7 +1073,7 @@ export const OutsourcedPayablesScreen = ({ isTerminal = false }) => {
                                             <td className="px-6 py-4 text-right">
                                                 <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100">₹{payable.amountDue.toLocaleString()}</p>
                                                 {payable.amountPaid > 0 && (
-                                                    <p className="text-xs text-emerald-500 font-bold uppercase tracking-normal">₹{payable.amountPaid.toLocaleString()} Paid</p>
+                                                    <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-tighter">₹{payable.amountPaid.toLocaleString()} Paid</p>
                                                 )}
                                             </td>
                                             <td className="px-6 py-4 text-center">
@@ -1092,14 +1092,14 @@ export const OutsourcedPayablesScreen = ({ isTerminal = false }) => {
                                                     {payable.status === 'PendingPricing' ? (
                                                         <button 
                                                             onClick={() => setPricingModal({ isOpen: true, payable })}
-                                                            className="px-3 py-1.5 bg-amber-500 text-white text-xs font-bold uppercase tracking-widest rounded shadow-lg shadow-amber-500/20 hover:bg-amber-600 transition-all flex items-center gap-1.5 cursor-pointer"
+                                                            className="px-3 py-1.5 bg-amber-500 text-white text-[10px] font-bold uppercase tracking-widest rounded shadow-lg shadow-amber-500/20 hover:bg-amber-600 transition-all flex items-center gap-1.5 cursor-pointer"
                                                         >
                                                             <AlertCircle className="w-3 h-3" /> Resolve
                                                         </button>
                                                     ) : payable.status !== 'Settled' && tab !== 'history' && (
                                                         <button 
                                                             onClick={() => setSettleModal({ isOpen: true, payable })}
-                                                            className="px-3 py-1.5 bg-synos-primary text-white text-xs font-bold uppercase tracking-widest rounded shadow-sm hover:bg-synos-primary/90 transition-colors cursor-pointer"
+                                                            className="px-3 py-1.5 bg-synos-primary text-white text-[10px] font-bold uppercase tracking-widest rounded shadow-sm hover:bg-synos-primary/90 transition-colors cursor-pointer"
                                                         >
                                                             Settle
                                                         </button>
@@ -1218,8 +1218,8 @@ const ReferenceLabsView = () => {
                                         <Building2 className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <h4 className="text-sm font-black dark:text-white uppercase tracking-normal">{lab.name}</h4>
-                                        <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest">
+                                        <h4 className="text-sm font-black dark:text-white uppercase tracking-tight">{lab.name}</h4>
+                                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">
                                             {lab.status === 1 || lab.status === 'Provisional' ? (
                                                 <span className="text-amber-500">Provisional Partner</span>
                                             ) : (
@@ -1241,12 +1241,12 @@ const ReferenceLabsView = () => {
                                     {lab.status === 1 || lab.status === 'Provisional' ? (
                                         <button 
                                             onClick={() => handleActivateRequest(lab)}
-                                            className="px-4 py-2 bg-amber-500 text-white rounded-xl text-xs font-bold hover:bg-amber-600 transition-all uppercase tracking-widest shadow-lg shadow-amber-500/20"
+                                            className="px-4 py-2 bg-amber-500 text-white rounded-xl text-[10px] font-bold hover:bg-amber-600 transition-all uppercase tracking-widest shadow-lg shadow-amber-500/20"
                                         >
                                             Approve
                                         </button>
                                     ) : (
-                                        <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-full text-xs font-black uppercase tracking-widest border border-emerald-500/20">
+                                        <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-full text-[9px] font-black uppercase tracking-widest border border-emerald-500/20">
                                             <ShieldCheck size={10} /> Active
                                         </div>
                                     )}
@@ -1283,7 +1283,7 @@ const ReferenceLabsView = () => {
                                     setSelectedLab(lab);
                                     setIsRateModalOpen(true);
                                 }}
-                                className="w-full mt-6 py-3 bg-zinc-100 dark:bg-white/5 rounded-2xl text-xs font-black uppercase tracking-widest text-zinc-500 hover:text-synos-primary hover:bg-synos-primary/5 transition-all"
+                                className="w-full mt-6 py-3 bg-zinc-100 dark:bg-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-synos-primary hover:bg-synos-primary/5 transition-all"
                             >
                                 View Rate List
                             </button>
@@ -1389,7 +1389,7 @@ const ReferenceLabActivationModal = ({ lab, onClose, onSave }) => {
                         </div>
                         <div>
                             <h3 className="text-xl font-black dark:text-white tracking-tight uppercase">Partner Activation</h3>
-                            <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest">{lab.name}</p>
+                            <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest">{lab.name}</p>
                         </div>
                     </div>
                     <p className="text-xs text-zinc-500 font-medium leading-relaxed">
@@ -1407,19 +1407,19 @@ const ReferenceLabActivationModal = ({ lab, onClose, onSave }) => {
                                 <CheckCircle2 className="w-8 h-8" />
                             </div>
                             <p className="text-sm font-bold dark:text-white">No pending pricing resolutions found.</p>
-                            <p className="text-xs text-zinc-500 uppercase tracking-widest">You can proceed with activation immediately.</p>
+                            <p className="text-[10px] text-zinc-500 uppercase tracking-widest">You can proceed with activation immediately.</p>
                         </div>
                     ) : (
                         <div className="space-y-4">
                             {pendingTests.map(test => (
                                 <div key={test.testId} className="flex items-center justify-between p-4 bg-zinc-50 dark:bg-zinc-900/50 rounded-2xl border dark:border-zinc-800 border-zinc-100">
                                     <div className="flex flex-col">
-                                        <span className="text-xs font-black dark:text-white uppercase tracking-normal">{test.testName}</span>
-                                        <span className="text-xs text-zinc-500 font-bold tracking-widest">{test.testCode}</span>
+                                        <span className="text-xs font-black dark:text-white uppercase tracking-tight">{test.testName}</span>
+                                        <span className="text-[9px] text-zinc-500 font-bold tracking-widest">{test.testCode}</span>
                                     </div>
                                     <div className="flex items-center gap-4">
                                         <div className="text-right">
-                                            <p className="text-xs text-zinc-400 font-bold uppercase tracking-widest mb-1">Suggested (Max)</p>
+                                            <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest mb-1">Suggested (Max)</p>
                                             <p className="text-xs font-bold text-zinc-500 italic">₹{test.suggestedPrice || 0}</p>
                                         </div>
                                         <div className="relative">
@@ -1550,7 +1550,7 @@ const ReferenceLabRateListModal = ({ isOpen, onClose, lab }) => {
                 <div className="p-8 border-b dark:border-zinc-800 border-zinc-200 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/40">
                     <div>
                         <h3 className="text-xl font-black dark:text-white tracking-tight uppercase">Rate Intelligence</h3>
-                        <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest mt-0.5">{lab.name}</p>
+                        <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mt-0.5">{lab.name}</p>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-xl transition-colors">
                         <X className="w-5 h-5 text-zinc-500" />
@@ -1561,9 +1561,9 @@ const ReferenceLabRateListModal = ({ isOpen, onClose, lab }) => {
                     <table className="w-full text-left border-collapse">
                         <thead className="sticky top-0 bg-white dark:bg-zinc-950 z-10">
                             <tr className="border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50/30 dark:bg-zinc-900/20">
-                                <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500">Test Detail</th>
-                                <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500 text-center">Status</th>
-                                <th className="px-6 py-3 text-xs font-bold uppercase tracking-widest text-zinc-500 text-right">Vendor Price (₹)</th>
+                                <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Test Detail</th>
+                                <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-center">Status</th>
+                                <th className="px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Vendor Price (₹)</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y dark:divide-zinc-800 divide-zinc-200">
@@ -1574,13 +1574,13 @@ const ReferenceLabRateListModal = ({ isOpen, onClose, lab }) => {
                                         <div className="flex items-center gap-4 mb-2">
                                             <button 
                                                 onClick={() => setIsNewTest(false)}
-                                                className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest transition-all ${!isNewTest ? 'bg-synos-primary text-white shadow-md' : 'bg-zinc-200 text-zinc-500'}`}
+                                                className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest transition-all ${!isNewTest ? 'bg-synos-primary text-white shadow-md' : 'bg-zinc-200 text-zinc-500'}`}
                                             >
                                                 Existing Catalog
                                             </button>
                                             <button 
                                                 onClick={() => setIsNewTest(true)}
-                                                className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-widest transition-all ${isNewTest ? 'bg-synos-primary text-white shadow-md' : 'bg-zinc-200 text-zinc-500'}`}
+                                                className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest transition-all ${isNewTest ? 'bg-synos-primary text-white shadow-md' : 'bg-zinc-200 text-zinc-500'}`}
                                             >
                                                 + New Definition
                                             </button>
@@ -1591,7 +1591,7 @@ const ReferenceLabRateListModal = ({ isOpen, onClose, lab }) => {
                                                 <select 
                                                     value={newRate.testId}
                                                     onChange={(e) => setNewRate({...newRate, testId: e.target.value})}
-                                                    className="w-full bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl px-3 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-synos-primary/20"
+                                                    className="w-full bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl px-3 py-2 text-[10px] font-bold outline-none focus:ring-2 focus:ring-synos-primary/20"
                                                 >
                                                     <option value="">Select Test to Add...</option>
                                                     {allTests.filter(t => !rates.find(r => r.testId === t.testId)).map(t => (
@@ -1602,8 +1602,8 @@ const ReferenceLabRateListModal = ({ isOpen, onClose, lab }) => {
                                                 </select>
                                                 {newRate.testId && (
                                                     <div className="flex items-center gap-2 px-2 bg-emerald-500/10 py-1 rounded-lg border border-emerald-500/20">
-                                                        <span className="text-xs font-black text-emerald-700 uppercase tracking-widest">Patient Price (X):</span>
-                                                        <span className="text-xs font-bold text-emerald-600">₹{allTests.find(t => t.testId === newRate.testId)?.basePrice?.toLocaleString()}</span>
+                                                        <span className="text-[8px] font-black text-emerald-700 uppercase tracking-widest">Patient Price (X):</span>
+                                                        <span className="text-[10px] font-bold text-emerald-600">₹{allTests.find(t => t.testId === newRate.testId)?.basePrice?.toLocaleString()}</span>
                                                     </div>
                                                 )}
                                             </div>
@@ -1613,18 +1613,18 @@ const ReferenceLabRateListModal = ({ isOpen, onClose, lab }) => {
                                                     placeholder="Test Name"
                                                     value={testForm.name}
                                                     onChange={(e) => setTestForm({...testForm, name: e.target.value})}
-                                                    className="w-full px-3 py-2 bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl text-xs font-bold outline-none"
+                                                    className="w-full px-3 py-2 bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl text-[10px] font-bold outline-none"
                                                 />
                                                 <input 
                                                     placeholder="Code"
                                                     value={testForm.code}
                                                     onChange={(e) => setTestForm({...testForm, code: e.target.value})}
-                                                    className="w-full px-3 py-2 bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl text-xs font-bold outline-none"
+                                                    className="w-full px-3 py-2 bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl text-[10px] font-bold outline-none"
                                                 />
                                                 <select 
                                                     value={testForm.department}
                                                     onChange={(e) => setTestForm({...testForm, department: e.target.value})}
-                                                    className="w-full px-3 py-2 bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl text-xs font-bold outline-none"
+                                                    className="w-full px-3 py-2 bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl text-[10px] font-bold outline-none"
                                                 >
                                                     <option value="">Select Workbench...</option>
                                                     {departments.map(d => (
@@ -1632,12 +1632,12 @@ const ReferenceLabRateListModal = ({ isOpen, onClose, lab }) => {
                                                     ))}
                                                 </select>
                                                 <div className="relative">
-                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-black text-emerald-500">X: ₹</span>
+                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[9px] font-black text-emerald-500">X: ₹</span>
                                                     <input 
                                                         type="number"
                                                         value={testForm.basePrice}
                                                         onChange={(e) => setTestForm({...testForm, basePrice: e.target.value})}
-                                                        className="w-full pl-10 pr-3 py-2 bg-emerald-500/5 border border-emerald-500/20 rounded-xl text-xs font-black text-emerald-600 outline-none"
+                                                        className="w-full pl-10 pr-3 py-2 bg-emerald-500/5 border border-emerald-500/20 rounded-xl text-[10px] font-black text-emerald-600 outline-none"
                                                         placeholder="0.00"
                                                     />
                                                 </div>
@@ -1653,19 +1653,19 @@ const ReferenceLabRateListModal = ({ isOpen, onClose, lab }) => {
                                 <td className="px-6 py-4 text-right">
                                     <div className="space-y-3">
                                         <div className="relative inline-block w-full">
-                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-black text-amber-500">VENDOR COST (Y): ₹</span>
+                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[9px] font-black text-amber-500">VENDOR COST (Y): ₹</span>
                                             <input 
                                                 type="number"
                                                 placeholder="0.00"
                                                 value={newRate.cost}
                                                 onChange={(e) => setNewRate({...newRate, cost: e.target.value})}
-                                                className="w-full pl-32 pr-3 py-2 bg-amber-500/5 border border-amber-500/20 rounded-xl text-xs font-black text-amber-600 outline-none focus:ring-2 focus:ring-amber-500/20"
+                                                className="w-full pl-32 pr-3 py-2 bg-amber-500/5 border border-amber-500/20 rounded-xl text-[10px] font-black text-amber-600 outline-none focus:ring-2 focus:ring-amber-500/20"
                                             />
                                         </div>
                                         <button 
                                             disabled={submitting || (!isNewTest && !testForm.name && isNewTest) || (!isNewTest && !newRate.testId) || !newRate.cost}
                                             onClick={handleAddRate}
-                                            className="w-full py-2.5 bg-zinc-900 dark:bg-white dark:text-zinc-900 text-white rounded-xl text-xs font-black uppercase tracking-widest disabled:opacity-30 hover:scale-105 active:scale-95 transition-all shadow-xl"
+                                            className="w-full py-2.5 bg-zinc-900 dark:bg-white dark:text-zinc-900 text-white rounded-xl text-[9px] font-black uppercase tracking-widest disabled:opacity-30 hover:scale-105 active:scale-95 transition-all shadow-xl"
                                         >
                                             {submitting ? 'SYNCING...' : 'COMMIT RULE'}
                                         </button>
@@ -1687,12 +1687,12 @@ const ReferenceLabRateListModal = ({ isOpen, onClose, lab }) => {
                                         <tr key={rate.id} className="group hover:bg-zinc-50 dark:hover:bg-zinc-800/30 transition-colors">
                                             <td className="px-6 py-4">
                                                 <div className="flex flex-col">
-                                                    <span className="text-xs font-bold text-zinc-900 dark:text-zinc-200 uppercase tracking-normal">{rate.testName}</span>
-                                                    <span className="text-xs text-zinc-500 font-medium uppercase tracking-widest">{rate.testCode}</span>
+                                                    <span className="text-xs font-bold text-zinc-900 dark:text-zinc-200 uppercase tracking-tight">{rate.testName}</span>
+                                                    <span className="text-[10px] text-zinc-500 font-medium uppercase tracking-widest">{rate.testCode}</span>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 text-center">
-                                                <span className="px-2 py-1 bg-emerald-500/10 text-emerald-500 rounded-full text-xs font-black uppercase tracking-widest border border-emerald-500/20">Contracted</span>
+                                                <span className="px-2 py-1 bg-emerald-500/10 text-emerald-500 rounded-full text-[8px] font-black uppercase tracking-widest border border-emerald-500/20">Contracted</span>
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <span className="text-sm font-black text-synos-primary">₹{rate.cost.toLocaleString()}</span>
@@ -1703,12 +1703,12 @@ const ReferenceLabRateListModal = ({ isOpen, onClose, lab }) => {
                                         <tr key={test.testId} className="group hover:bg-amber-500/5 transition-colors border-l-4 border-l-amber-500/20">
                                             <td className="px-6 py-4">
                                                 <div className="flex flex-col opacity-70">
-                                                    <span className="text-xs font-bold text-zinc-900 dark:text-zinc-200 uppercase tracking-normal">{test.testName}</span>
-                                                    <span className="text-xs text-zinc-500 font-medium uppercase tracking-widest">{test.testCode}</span>
+                                                    <span className="text-xs font-bold text-zinc-900 dark:text-zinc-200 uppercase tracking-tight">{test.testName}</span>
+                                                    <span className="text-[10px] text-zinc-500 font-medium uppercase tracking-widest">{test.testCode}</span>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 text-center">
-                                                <span className="px-2 py-1 bg-amber-500/10 text-amber-500 rounded-full text-xs font-black uppercase tracking-widest border border-amber-500/20">Proposed</span>
+                                                <span className="px-2 py-1 bg-amber-500/10 text-amber-500 rounded-full text-[8px] font-black uppercase tracking-widest border border-amber-500/20">Proposed</span>
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <span className="text-sm font-black text-amber-600">₹{test.suggestedPrice.toLocaleString()}</span>
@@ -1722,12 +1722,12 @@ const ReferenceLabRateListModal = ({ isOpen, onClose, lab }) => {
                 </div>
 
                 <div className="p-6 border-t dark:border-zinc-800 border-zinc-200 bg-zinc-50/30 dark:bg-zinc-900/20 flex justify-between items-center">
-                    <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest">
+                    <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest">
                         {pendingTests.length > 0 && <span className="text-amber-500 italic">Contains unconfirmed reception intelligence</span>}
                     </p>
                     <button 
                         onClick={onClose}
-                        className="px-6 py-2.5 bg-zinc-900 dark:bg-white dark:text-zinc-900 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:scale-105 active:scale-95 transition-all"
+                        className="px-6 py-2.5 bg-zinc-900 dark:bg-white dark:text-zinc-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:scale-105 active:scale-95 transition-all"
                     >
                         CLOSE LIST
                     </button>
@@ -1776,7 +1776,7 @@ const ReferenceLabPartnerModal = ({ onClose, onSave, lab }) => {
                         </div>
                         <div>
                             <h2 className="text-lg font-bold dark:text-white text-zinc-900">{isEdit ? 'Update Details' : 'Partner Onboarding'}</h2>
-                            <p className="text-xs text-zinc-500 font-medium uppercase tracking-widest">{isEdit ? 'Modify reference partner metadata' : 'Register a new reference laboratory'}</p>
+                            <p className="text-[11px] text-zinc-500 font-medium uppercase tracking-widest">{isEdit ? 'Modify reference partner metadata' : 'Register a new reference laboratory'}</p>
                         </div>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-xl transition-all">
@@ -1787,7 +1787,7 @@ const ReferenceLabPartnerModal = ({ onClose, onSave, lab }) => {
                 <form onSubmit={handleSubmit} className="p-8 space-y-6">
                     <div className="space-y-4">
                         <div className="space-y-1">
-                            <label className="text-xs font-bold text-zinc-400 uppercase tracking-widest ml-1">Laboratory Name</label>
+                            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Laboratory Name</label>
                             <input 
                                 required
                                 type="text"
@@ -1800,7 +1800,7 @@ const ReferenceLabPartnerModal = ({ onClose, onSave, lab }) => {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-1">
-                                <label className="text-xs font-bold text-zinc-400 uppercase tracking-widest ml-1">Email Address</label>
+                                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Email Address</label>
                                 <input 
                                     type="email"
                                     value={formData.email}
@@ -1810,7 +1810,7 @@ const ReferenceLabPartnerModal = ({ onClose, onSave, lab }) => {
                                 />
                             </div>
                             <div className="space-y-1">
-                                <label className="text-xs font-bold text-zinc-400 uppercase tracking-widest ml-1">Phone Number</label>
+                                <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Phone Number</label>
                                 <input 
                                     type="tel"
                                     value={formData.phone}
@@ -1822,7 +1822,7 @@ const ReferenceLabPartnerModal = ({ onClose, onSave, lab }) => {
                         </div>
 
                         <div className="space-y-1">
-                            <label className="text-xs font-bold text-zinc-400 uppercase tracking-widest ml-1">Address / Location</label>
+                            <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest ml-1">Address / Location</label>
                             <textarea 
                                 value={formData.location}
                                 onChange={(e) => setFormData({...formData, location: e.target.value})}
@@ -1834,8 +1834,8 @@ const ReferenceLabPartnerModal = ({ onClose, onSave, lab }) => {
                         {!isEdit && (
                             <div className="flex items-center justify-between p-4 bg-emerald-500/5 rounded-2xl border border-emerald-500/10">
                                 <div>
-                                    <p className="text-xs font-black uppercase text-emerald-600 tracking-widest">Immediate Activation</p>
-                                    <p className="text-xs text-emerald-700 opacity-60">Bypass provisional status and activate now.</p>
+                                    <p className="text-[10px] font-black uppercase text-emerald-600 tracking-widest">Immediate Activation</p>
+                                    <p className="text-[9px] text-emerald-700 opacity-60">Bypass provisional status and activate now.</p>
                                 </div>
                                 <button 
                                     type="button"
@@ -1906,7 +1906,7 @@ export const ExpenseOverviewTab = () => {
         load();
     }, []);
 
-    if (loading || !stats) return <div className="py-20 text-center animate-pulse text-zinc-500 font-bold uppercase tracking-widest text-xs">Syncing expense ledger...</div>;
+    if (loading || !stats) return <div className="py-20 text-center animate-pulse text-zinc-500 font-bold uppercase tracking-widest text-[10px]">Syncing expense ledger...</div>;
 
     const cards = [
         { title: "Total Paid Out", value: `₹${stats.totalPaid.toLocaleString()}`, description: "Cash outflow (30 days)" },
@@ -1921,12 +1921,12 @@ export const ExpenseOverviewTab = () => {
                 {cards.map((card, idx) => (
                     <div key={idx} className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between">
                         <div className="flex justify-between items-start mb-4">
-                            <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{card.title}</h3>
+                            <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{card.title}</h3>
                             {card.type === 'negative' && <ArrowDownRight className="w-4 h-4 text-rose-500 animate-none" />}
                             {card.type === 'warning' && <Clock className="w-4 h-4 text-amber-500 animate-none" />}
                         </div>
                         <p className="text-2xl font-black dark:text-white text-zinc-900 mt-1">{card.value}</p>
-                        <p className="text-xs text-zinc-400 mt-2 font-medium">{card.description}</p>
+                        <p className="text-[10px] text-zinc-400 mt-2 font-medium">{card.description}</p>
                     </div>
                 ))}
             </div>
@@ -1942,7 +1942,7 @@ export const ExpenseOverviewTab = () => {
                         <div className="overflow-x-auto">
                             <table className="w-full text-left text-xs border-collapse synos-table">
                                 <thead>
-                                    <tr className="border-b dark:border-zinc-800 border-slate-300 pb-2 text-xs uppercase font-bold text-zinc-500 bg-slate-50/80 dark:bg-zinc-900/50">
+                                    <tr className="border-b dark:border-zinc-800 border-slate-300 pb-2 text-[10px] uppercase font-bold text-zinc-500 bg-slate-50/80 dark:bg-zinc-900/50">
                                         <th className="p-3">Date</th>
                                         <th className="p-3">Description</th>
                                         <th className="p-3 text-right">Amount</th>
@@ -1956,7 +1956,7 @@ export const ExpenseOverviewTab = () => {
                                             <td className="py-3 font-semibold dark:text-zinc-200">{t.description || t.notes || 'Operational Payout'}</td>
                                             <td className="py-3 text-right font-black text-rose-500">₹{t.amount?.toLocaleString()}</td>
                                             <td className="py-3 text-center">
-                                                <span className="px-2 py-0.5 rounded-full text-xs uppercase tracking-wider bg-zinc-100 dark:bg-zinc-800 text-zinc-500 font-bold">
+                                                <span className="px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider bg-zinc-100 dark:bg-zinc-800 text-zinc-500 font-bold">
                                                     {t.sourceType}
                                                 </span>
                                             </td>
@@ -2083,7 +2083,7 @@ export const CorrectedExpensesScreen = () => {
                                 key={range}
                                 onClick={() => setFilterRange(range)}
                                 className={cn(
-                                    "px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer",
+                                    "px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer",
                                     filterRange === range ? "bg-synos-primary text-white" : "text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-800"
                                 )}
                             >
@@ -2099,7 +2099,7 @@ export const CorrectedExpensesScreen = () => {
                                     key={s}
                                     onClick={() => setShiftFilter(s)}
                                     className={cn(
-                                        "px-2.5 py-1 rounded-md text-xs font-bold uppercase transition-all cursor-pointer",
+                                        "px-2.5 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer",
                                         shiftFilter === s ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs" : "text-zinc-500"
                                     )}
                                 >
@@ -2123,7 +2123,7 @@ export const CorrectedExpensesScreen = () => {
 
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs">
-                        <thead className="bg-zinc-100/60 dark:bg-zinc-800/40 border-b dark:border-zinc-800 border-zinc-200 text-zinc-500 uppercase text-xs font-bold">
+                        <thead className="bg-zinc-100/60 dark:bg-zinc-800/40 border-b dark:border-zinc-800 border-zinc-200 text-zinc-500 uppercase text-[10px] font-bold">
                             <tr>
                                 <th className="p-3.5">Timestamp</th>
                                 <th className="p-3.5">Expense / Category</th>
@@ -2153,14 +2153,14 @@ export const CorrectedExpensesScreen = () => {
                                     const diff = Number(item.newAmount) - Number(item.previousAmount);
                                     return (
                                         <tr key={item.id} className="hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors">
-                                            <td className="p-3.5 whitespace-nowrap text-zinc-500 font-mono text-xs">
+                                            <td className="p-3.5 whitespace-nowrap text-zinc-500 font-mono text-[11px]">
                                                 {new Date(item.correctedAt).toLocaleString()}
                                             </td>
                                             <td className="p-3.5">
                                                 <div className="font-bold dark:text-zinc-200 text-zinc-800">
                                                     {item.newCategory || item.previousCategory || 'Daily Expense'}
                                                 </div>
-                                                <span className="text-xs text-zinc-400 font-mono">
+                                                <span className="text-[10px] text-zinc-400 font-mono">
                                                     ID: {item.expenseId ? String(item.expenseId).substring(0, 8) : 'N/A'}
                                                 </span>
                                             </td>
@@ -2170,7 +2170,7 @@ export const CorrectedExpensesScreen = () => {
                                             </td>
                                             <td className="p-3.5 whitespace-nowrap">
                                                 <span className={cn(
-                                                    "px-2 py-0.5 rounded-full text-xs font-black uppercase tracking-wider border",
+                                                    "px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border",
                                                     diff > 0 ? "bg-rose-500/10 text-rose-500 border-rose-500/20" :
                                                     diff < 0 ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" :
                                                     "bg-zinc-500/10 text-zinc-500 border-zinc-500/20"
@@ -2180,7 +2180,7 @@ export const CorrectedExpensesScreen = () => {
                                             </td>
                                             <td className="p-3.5 max-w-xs truncate text-zinc-700 dark:text-zinc-300">
                                                 <div className="font-semibold">{item.reason}</div>
-                                                {item.notes && <div className="text-xs text-zinc-400 truncate">{item.notes}</div>}
+                                                {item.notes && <div className="text-[10px] text-zinc-400 truncate">{item.notes}</div>}
                                             </td>
                                             <td className="p-3.5 whitespace-nowrap font-medium text-zinc-600 dark:text-zinc-400">
                                                 {item.correctedByName || 'Staff'}
@@ -2188,7 +2188,7 @@ export const CorrectedExpensesScreen = () => {
                                             <td className="p-3.5 text-right whitespace-nowrap">
                                                 <button
                                                     onClick={() => setSelectedAudit(item)}
-                                                    className="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-white/5 border dark:border-white/10 border-zinc-200 text-synos-primary hover:bg-synos-primary hover:text-white transition-all text-xs font-bold cursor-pointer"
+                                                    className="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-white/5 border dark:border-white/10 border-zinc-200 text-synos-primary hover:bg-synos-primary hover:text-white transition-all text-[11px] font-bold cursor-pointer"
                                                 >
                                                     Audit Diff
                                                 </button>
@@ -2215,30 +2215,30 @@ export const CorrectedExpensesScreen = () => {
                         <div className="p-6 space-y-4 text-xs">
                             <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-zinc-100 dark:bg-white/5">
                                 <div>
-                                    <span className="text-xs font-black uppercase text-zinc-400">Previous Amount</span>
+                                    <span className="text-[10px] font-black uppercase text-zinc-400">Previous Amount</span>
                                     <p className="text-base font-black text-zinc-500">₹{Number(selectedAudit.previousAmount).toFixed(2)}</p>
-                                    <span className="text-xs text-zinc-400">{selectedAudit.previousCategory}</span>
+                                    <span className="text-[10px] text-zinc-400">{selectedAudit.previousCategory}</span>
                                 </div>
                                 <div>
-                                    <span className="text-xs font-black uppercase text-synos-primary">Amended Amount</span>
+                                    <span className="text-[10px] font-black uppercase text-synos-primary">Amended Amount</span>
                                     <p className="text-base font-black text-synos-primary">₹{Number(selectedAudit.newAmount).toFixed(2)}</p>
-                                    <span className="text-xs text-zinc-400">{selectedAudit.newCategory}</span>
+                                    <span className="text-[10px] text-zinc-400">{selectedAudit.newCategory}</span>
                                 </div>
                             </div>
 
                             <div className="space-y-1">
-                                <span className="text-xs font-black uppercase text-zinc-400">Reason</span>
+                                <span className="text-[10px] font-black uppercase text-zinc-400">Reason</span>
                                 <p className="font-semibold dark:text-white">{selectedAudit.reason}</p>
                             </div>
 
                             {selectedAudit.notes && (
                                 <div className="space-y-1">
-                                    <span className="text-xs font-black uppercase text-zinc-400">Operator Notes</span>
+                                    <span className="text-[10px] font-black uppercase text-zinc-400">Operator Notes</span>
                                     <p className="text-zinc-600 dark:text-zinc-300">{selectedAudit.notes}</p>
                                 </div>
                             )}
 
-                            <div className="pt-2 border-t dark:border-zinc-800 border-zinc-200 flex justify-between text-xs text-zinc-400">
+                            <div className="pt-2 border-t dark:border-zinc-800 border-zinc-200 flex justify-between text-[11px] text-zinc-400">
                                 <span>Authorized By: <b className="text-zinc-700 dark:text-zinc-200">{selectedAudit.correctedByName}</b></span>
                                 <span>{new Date(selectedAudit.correctedAt).toLocaleString()}</span>
                             </div>
@@ -2324,7 +2324,7 @@ export const DeletedExpensesScreen = () => {
                                 key={range}
                                 onClick={() => setFilterRange(range)}
                                 className={cn(
-                                    "px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all cursor-pointer",
+                                    "px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer",
                                     filterRange === range ? "bg-synos-primary text-white" : "text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-800"
                                 )}
                             >
@@ -2347,7 +2347,7 @@ export const DeletedExpensesScreen = () => {
 
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs">
-                        <thead className="bg-zinc-100/60 dark:bg-zinc-800/40 border-b dark:border-zinc-800 border-zinc-200 text-zinc-500 uppercase text-xs font-bold">
+                        <thead className="bg-zinc-100/60 dark:bg-zinc-800/40 border-b dark:border-zinc-800 border-zinc-200 text-zinc-500 uppercase text-[10px] font-bold">
                             <tr>
                                 <th className="p-3.5">Cancelled At</th>
                                 <th className="p-3.5">Expense / Description</th>
@@ -2375,14 +2375,14 @@ export const DeletedExpensesScreen = () => {
                             ) : (
                                 filtered.map(item => (
                                     <tr key={item.id} className="hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors">
-                                        <td className="p-3.5 whitespace-nowrap text-zinc-500 font-mono text-xs">
+                                        <td className="p-3.5 whitespace-nowrap text-zinc-500 font-mono text-[11px]">
                                             {new Date(item.cancelledAt).toLocaleString()}
                                         </td>
                                         <td className="p-3.5 max-w-xs">
                                             <div className="font-bold line-through text-zinc-400 truncate">
                                                 {item.description || 'Expense Entry'}
                                             </div>
-                                            <span className="text-xs text-zinc-400 font-mono">
+                                            <span className="text-[10px] text-zinc-400 font-mono">
                                                 ID: {item.expenseId ? String(item.expenseId).substring(0, 8) : 'N/A'}
                                             </span>
                                         </td>
@@ -2394,7 +2394,7 @@ export const DeletedExpensesScreen = () => {
                                         </td>
                                         <td className="p-3.5 whitespace-nowrap">
                                             <span className={cn(
-                                                "px-2 py-0.5 rounded-full text-xs font-black uppercase tracking-wider border",
+                                                "px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border",
                                                 item.isDrawerRefunded 
                                                     ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" 
                                                     : "bg-zinc-500/10 text-zinc-500 border-zinc-500/20"
@@ -2404,7 +2404,7 @@ export const DeletedExpensesScreen = () => {
                                         </td>
                                         <td className="p-3.5 max-w-xs truncate text-zinc-700 dark:text-zinc-300">
                                             <div className="font-semibold text-rose-600 dark:text-rose-400">{item.reason}</div>
-                                            {item.notes && <div className="text-xs text-zinc-400 truncate">{item.notes}</div>}
+                                            {item.notes && <div className="text-[10px] text-zinc-400 truncate">{item.notes}</div>}
                                         </td>
                                         <td className="p-3.5 whitespace-nowrap font-medium text-zinc-600 dark:text-zinc-400">
                                             {item.cancelledByName || 'Staff'}
@@ -2524,7 +2524,7 @@ export const OutsourcingOverviewTab = () => {
         load();
     }, []);
 
-    if (loading || !stats) return <div className="py-20 text-center animate-pulse text-zinc-500 font-bold uppercase tracking-widest text-xs">Syncing reference lab ledger...</div>;
+    if (loading || !stats) return <div className="py-20 text-center animate-pulse text-zinc-500 font-bold uppercase tracking-widest text-[10px]">Syncing reference lab ledger...</div>;
 
     const cards = [
         { title: "Total Lab Liability", value: `₹${stats.totalDue.toLocaleString()}`, description: "Aggregate balance due" },
@@ -2539,13 +2539,13 @@ export const OutsourcingOverviewTab = () => {
                 {cards.map((card, idx) => (
                     <div key={idx} className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between">
                         <div className="flex justify-between items-start mb-4">
-                            <h3 className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{card.title}</h3>
+                            <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{card.title}</h3>
                             {card.type === 'negative' && <ArrowDownRight className="w-4 h-4 text-rose-500 animate-none" />}
                             {card.type === 'warning' && <Clock className="w-4 h-4 text-amber-500 animate-none" />}
                             {card.type === 'positive' && <ArrowUpRight className="w-4 h-4 text-emerald-500 animate-none" />}
                         </div>
                         <p className="text-2xl font-black dark:text-white text-zinc-900 mt-1">{card.value}</p>
-                        <p className="text-xs text-zinc-400 mt-2 font-medium">{card.description}</p>
+                        <p className="text-[10px] text-zinc-400 mt-2 font-medium">{card.description}</p>
                     </div>
                 ))}
             </div>
@@ -2560,7 +2560,7 @@ export const OutsourcingOverviewTab = () => {
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-xs border-collapse synos-table">
                             <thead>
-                                <tr className="border-b dark:border-zinc-800 border-slate-300 pb-2 text-xs uppercase font-bold text-zinc-500 bg-slate-50/80 dark:bg-zinc-900/50">
+                                <tr className="border-b dark:border-zinc-800 border-slate-300 pb-2 text-[10px] uppercase font-bold text-zinc-500 bg-slate-50/80 dark:bg-zinc-900/50">
                                     <th className="p-3">Reference Lab</th>
                                     <th className="p-3">Patient</th>
                                     <th className="p-3">Test</th>

@@ -187,7 +187,7 @@ export function MedicalMacrosWorkspace({ onClose }) {
                     <div className="flex-1 overflow-y-auto space-y-2 pr-1 pb-12 custom-scrollbar">
                         {filteredSnippets.length === 0 ? (
                             <div className="text-center py-12 dark:bg-zinc-900/50 bg-white/50 border border-dashed dark:border-white/10 border-zinc-300 rounded-xl">
-                                <span className="text-xs text-zinc-500 font-mono tracking-normal italic">No macros found</span>
+                                <span className="text-xs text-zinc-500 font-mono tracking-tighter italic">No macros found</span>
                             </div>
                         ) : filteredSnippets.map(snip => (
                             <div 
@@ -197,7 +197,7 @@ export function MedicalMacrosWorkspace({ onClose }) {
                                 )}
                             >
                                 <div className="flex items-center justify-between">
-                                    <span className="text-xs font-black dark:text-zinc-300 text-zinc-700 font-mono bg-zinc-200/50 dark:bg-white/5 px-1.5 py-0.5 rounded uppercase tracking-normal">
+                                    <span className="text-xs font-black dark:text-zinc-300 text-zinc-700 font-mono bg-zinc-200/50 dark:bg-white/5 px-1.5 py-0.5 rounded uppercase tracking-tight">
                                         {snip.shortcut}
                                     </span>
                                     <div className="flex items-center gap-1.5">
@@ -335,13 +335,13 @@ export function MedicalMacrosWorkspace({ onClose }) {
                     <div className="flex gap-2.5 pt-4 border-t dark:border-white/5 border-zinc-100 shrink-0">
                         <button
                             onClick={() => setEditingSnippet(null)}
-                            className="flex-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 hover:dark:bg-zinc-700 font-bold text-xs py-2.5 rounded-xl transition-all active:scale-95 uppercase tracking-normal"
+                            className="flex-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 hover:dark:bg-zinc-700 font-bold text-xs py-2.5 rounded-xl transition-all active:scale-95 uppercase tracking-tight"
                         >
                             Cancel
                         </button>
                         <button
                             onClick={handleSave}
-                            className="flex-1 bg-indigo-500 text-white hover:opacity-90 font-bold text-xs py-2.5 rounded-xl shadow shadow-indigo-500/20 transition-all active:scale-95 uppercase tracking-normal"
+                            className="flex-1 bg-indigo-500 text-white hover:opacity-90 font-bold text-xs py-2.5 rounded-xl shadow shadow-indigo-500/20 transition-all active:scale-95 uppercase tracking-tight"
                         >
                             Save Macro
                         </button>

@@ -377,7 +377,7 @@ export function MachineIntegrationTab({ isDark }) {
               <button onClick={() => setSimResult(null)} className="text-zinc-500 hover:text-white">✕</button>
             </div>
             {simResult.rawPacket && (
-              <div className="p-2 rounded bg-black/60 text-amber-300 overflow-x-auto text-xs">
+              <div className="p-2 rounded bg-black/60 text-amber-300 overflow-x-auto text-[10px]">
                 {simResult.rawPacket}
               </div>
             )}
@@ -430,7 +430,7 @@ export function MachineIntegrationTab({ isDark }) {
               >
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" /> Active Listening
                     </span>
                     <span className="font-mono text-xxs font-bold text-zinc-400">
@@ -445,7 +445,7 @@ export function MachineIntegrationTab({ isDark }) {
                     {analyzer.manufacturer} {analyzer.model}
                   </div>
 
-                  <div className="mt-4 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 space-y-1.5 font-mono text-xs">
+                  <div className="mt-4 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 space-y-1.5 font-mono text-[11px]">
                     <div className="flex justify-between text-zinc-600 dark:text-zinc-400">
                       <span>Connection Mode:</span>
                       <span className="font-bold text-zinc-800 dark:text-zinc-200">
@@ -549,7 +549,7 @@ export function MachineIntegrationTab({ isDark }) {
                 <div>
                   <h4 className="text-sm font-bold text-zinc-800 dark:text-zinc-100 flex items-center gap-2">
                     Scanner Integration Field Guide & Setup Tip Cards
-                    <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/30">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/30">
                       On-Site Pairing
                     </span>
                   </h4>
@@ -621,7 +621,7 @@ export function MachineIntegrationTab({ isDark }) {
                       <Monitor className="w-4 h-4" />
                       <span>Step 1: On the Siemens Scanner Screen</span>
                     </div>
-                    <span className="text-xs text-zinc-500 font-sans">SOMATOM CT / MAGNETOM MRI</span>
+                    <span className="text-[10px] text-zinc-500 font-sans">SOMATOM CT / MAGNETOM MRI</span>
                   </div>
 
                   <div className="text-zinc-400 font-sans text-xxs leading-relaxed">
@@ -655,7 +655,7 @@ export function MachineIntegrationTab({ isDark }) {
                     </div>
                   </div>
 
-                  <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-sans flex items-start gap-2">
+                  <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-300 text-[11px] font-sans flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-amber-400" />
                     <div>
                       <strong>Verification Test:</strong> Click the <span className="font-mono bg-zinc-900 px-1 py-0.5 rounded text-amber-300">Test(ping)</span> button on the top-right of the Siemens screen. It will show <strong>"Echo Successful"</strong>!
@@ -670,7 +670,7 @@ export function MachineIntegrationTab({ isDark }) {
                       <Server className="w-4 h-4" />
                       <span>Step 2: Inside SynOS Settings</span>
                     </div>
-                    <span className="text-xs text-zinc-500 font-sans">Settings → Machine Interfacing</span>
+                    <span className="text-[10px] text-zinc-500 font-sans">Settings → Machine Interfacing</span>
                   </div>
 
                   <div className="text-zinc-400 font-sans text-xxs leading-relaxed">
@@ -704,7 +704,7 @@ export function MachineIntegrationTab({ isDark }) {
                     </div>
                   </div>
 
-                  <div className="p-2.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-sans flex items-start gap-2">
+                  <div className="p-2.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[11px] font-sans flex items-start gap-2">
                     <Sparkles className="w-4 h-4 shrink-0 mt-0.5 text-indigo-400" />
                     <div>
                       <strong>Zero-Typing Workflow:</strong> When Modality Worklist (MWL) is enabled, the technician clicks <em>"Get Worklist"</em> on the Siemens console to pull scheduled patients directly from SynOS with zero manual typing!
@@ -825,7 +825,7 @@ export function MachineIntegrationTab({ isDark }) {
                 <div className="text-xs font-bold text-zinc-800 dark:text-zinc-200">
                   Live Scanner Reachability & Socket Ping Tester
                 </div>
-                <div className="text-xs text-zinc-400">
+                <div className="text-[10px] text-zinc-400">
                   Perform a real ICMP & TCP socket connection test to verify console connectivity before scanning.
                 </div>
               </div>
@@ -866,11 +866,11 @@ export function MachineIntegrationTab({ isDark }) {
               <div>
                 <div className="text-xs font-bold text-zinc-100 flex items-center gap-2">
                   Full Pipeline Verification: Simulate Real Scanner Push
-                  <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold">
+                  <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold">
                     Zero-Risk Test
                   </span>
                 </div>
-                <div className="text-xs text-zinc-400 mt-0.5">
+                <div className="text-[11px] text-zinc-400 mt-0.5">
                   Generates real multi-slice DICOM images, transfers them into SynOS PACS, and registers them directly onto the Radiologist's desk.
                 </div>
               </div>
@@ -918,7 +918,7 @@ export function MachineIntegrationTab({ isDark }) {
                   <div className="font-bold text-white flex items-center gap-2">
                     {simResult.message || simResult.Message || "Test scan ingested successfully!"}
                   </div>
-                  <div className="text-xs text-zinc-400 mt-0.5 font-mono">
+                  <div className="text-[11px] text-zinc-400 mt-0.5 font-mono">
                     Patient: Vasudeva Rao | Modality: MRI | Slices: 5 | Status: Acquired (Live on Radiologist Desk)
                   </div>
                 </div>
@@ -968,7 +968,7 @@ export function MachineIntegrationTab({ isDark }) {
               >
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 font-mono">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 font-mono">
                       {modality.modalityType}
                     </span>
                     <span className="font-mono text-xxs font-bold text-zinc-400">
@@ -983,7 +983,7 @@ export function MachineIntegrationTab({ isDark }) {
                     IP: {modality.hostIpAddress}:{modality.port}
                   </div>
 
-                  <div className="mt-4 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 space-y-1 font-mono text-xs">
+                  <div className="mt-4 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800/80 space-y-1 font-mono text-[11px]">
                     <div className="flex justify-between">
                       <span className="text-zinc-500">C-STORE Push:</span>
                       <span className={modality.allowCStore ? 'text-emerald-500 font-bold' : 'text-zinc-400'}>
@@ -1071,7 +1071,7 @@ export function MachineIntegrationTab({ isDark }) {
                 <div key={log.id} className="flex items-start gap-3 hover:bg-white/5 p-1 rounded transition-colors">
                   <span className="text-zinc-500 shrink-0">[{log.time}]</span>
                   <span className={cn(
-                    "px-1.5 py-0.5 rounded text-xs font-bold shrink-0",
+                    "px-1.5 py-0.5 rounded text-[9px] font-bold shrink-0",
                     log.type === 'ASTM' ? "bg-amber-500/20 text-amber-400 border border-amber-500/30" :
                     log.type === 'PACS' ? "bg-blue-500/20 text-blue-400 border border-blue-500/30" :
                     "bg-zinc-800 text-zinc-300"
@@ -1226,7 +1226,7 @@ export function MachineIntegrationTab({ isDark }) {
 
             {/* Quick Prefill Templates */}
             <div className="space-y-1.5 bg-zinc-100 dark:bg-zinc-950/80 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800/80">
-              <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider block">
+              <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
                 ⚡ Quick Templates:
               </span>
               <div className="flex flex-wrap gap-1.5">
@@ -1282,7 +1282,7 @@ export function MachineIntegrationTab({ isDark }) {
             </div>
 
             {/* In-line Guidance Note */}
-            <div className="p-2.5 rounded-xl bg-indigo-500/5 border border-indigo-500/20 text-xs text-zinc-400 flex items-start gap-2">
+            <div className="p-2.5 rounded-xl bg-indigo-500/5 border border-indigo-500/20 text-[11px] text-zinc-400 flex items-start gap-2">
               <Info className="w-4 h-4 shrink-0 text-indigo-400 mt-0.5" />
               <span>
                 <strong>Remote AE Title</strong> is the scanner's identifier. On Siemens consoles, this is shown on the top-left corner of the monitor (e.g. <span className="font-mono text-zinc-200 font-bold">CT137760</span>).
@@ -1361,7 +1361,7 @@ export function MachineIntegrationTab({ isDark }) {
                   />
                   <div className="text-xxs">
                     <span className="font-bold block text-zinc-800 dark:text-zinc-200">Allow C-STORE</span>
-                    <span className="text-zinc-400 text-xs">Ingest scanner images</span>
+                    <span className="text-zinc-400 text-[10px]">Ingest scanner images</span>
                   </div>
                 </label>
 
@@ -1374,7 +1374,7 @@ export function MachineIntegrationTab({ isDark }) {
                   />
                   <div className="text-xxs">
                     <span className="font-bold block text-zinc-800 dark:text-zinc-200">Allow Worklist (MWL)</span>
-                    <span className="text-zinc-400 text-xs">Auto-query patient list</span>
+                    <span className="text-zinc-400 text-[10px]">Auto-query patient list</span>
                   </div>
                 </label>
               </div>
@@ -1421,7 +1421,7 @@ export function MachineIntegrationTab({ isDark }) {
                     Hardware Ping & DICOM Echo Test
                     {pingResult && (
                       <span className={cn(
-                        "text-xs font-mono px-2 py-0.5 rounded-full font-bold",
+                        "text-[10px] font-mono px-2 py-0.5 rounded-full font-bold",
                         pingResult.success
                           ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
                           : "bg-red-500/15 text-red-400 border border-red-500/30"
@@ -1490,7 +1490,7 @@ export function MachineIntegrationTab({ isDark }) {
 
                   {pingResult.success && pingResult.latencyMs > 0 && (
                     <div className="text-right shrink-0 pl-3">
-                      <div className="text-xs font-mono opacity-75">Roundtrip</div>
+                      <div className="text-[10px] font-mono opacity-75">Roundtrip</div>
                       <div className="text-base font-bold font-mono text-emerald-400">
                         {pingResult.latencyMs} <span className="text-xs">ms</span>
                       </div>
@@ -1500,14 +1500,14 @@ export function MachineIntegrationTab({ isDark }) {
 
                 {/* Step-by-Step Diagnostic Breakdown */}
                 <div className="space-y-2">
-                  <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider block">
+                  <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
                     Diagnostic Trace:
                   </span>
                   <div className="space-y-1.5 bg-zinc-950 p-3 rounded-xl border border-zinc-800 font-mono text-xxs">
                     {pingResult.steps?.map((st, idx) => (
                       <div key={idx} className="flex items-start gap-2 py-1 border-b border-zinc-900 last:border-0">
                         <span className={cn(
-                          "px-1.5 py-0.5 rounded text-xs font-bold shrink-0",
+                          "px-1.5 py-0.5 rounded text-[9px] font-bold shrink-0",
                           st.status === 'PASS' ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" :
                           st.status === 'WARN' ? "bg-amber-500/20 text-amber-400 border border-amber-500/30" :
                           st.status === 'FAIL' ? "bg-red-500/20 text-red-400 border border-red-500/30" :
@@ -1540,7 +1540,7 @@ export function MachineIntegrationTab({ isDark }) {
 
             {/* Footer Actions */}
             <div className="flex items-center justify-between pt-3 border-t border-zinc-200 dark:border-zinc-800">
-              <span className="text-xs text-zinc-500 font-mono">
+              <span className="text-[10px] text-zinc-500 font-mono">
                 Live Socket Ping • Real Hardware Verification
               </span>
               <div className="flex items-center gap-2">

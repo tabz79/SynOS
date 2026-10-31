@@ -387,7 +387,7 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
 
                     <div className="flex items-center gap-3">
                         {/* Status chip */}
-                        <span className="px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-synos-primary/10 text-synos-primary border border-synos-primary/20">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-synos-primary/10 text-synos-primary border border-synos-primary/20">
                             Station: Reception Desk
                         </span>
 
@@ -433,7 +433,7 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                             <History className="w-3.5 h-3.5" />
                             <span>2 Live & 7D History</span>
                             {metrics.totalCount > 0 && (
-                                <span className="ml-1 px-2 py-0.5 rounded-full text-xs bg-synos-primary/10 text-synos-primary font-mono font-bold">
+                                <span className="ml-1 px-1.5 py-0.2 rounded-full text-[9px] bg-synos-primary/10 text-synos-primary font-mono font-bold">
                                     {metrics.totalCount}
                                 </span>
                             )}
@@ -456,13 +456,13 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                     {/* In-progress draft indicator */}
                     {hasDraftLoaded && (
                         <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-amber-500 flex items-center gap-1.5">
+                            <span className="text-[11px] font-bold text-amber-500 flex items-center gap-1.5">
                                 <BookmarkCheck className="w-3.5 h-3.5" />
                                 Draft Auto-Saved
                             </span>
                             <button
                                 onClick={discardDraft}
-                                className="text-xs font-bold uppercase text-zinc-400 hover:text-rose-500 underline transition-colors cursor-pointer"
+                                className="text-[10px] font-black uppercase text-zinc-400 hover:text-rose-500 underline transition-colors cursor-pointer"
                             >
                                 Discard
                             </button>
@@ -477,10 +477,10 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                             {/* BLOCK 1: EXPENSE CLASSIFICATION (3 WIDE CARDS MATCHING BILLING & PAYER MODE) */}
                             <div className="p-3.5 rounded-2xl border transition-all shadow-xs bg-white dark:bg-zinc-900/70 border-slate-200 dark:border-zinc-800">
                                 <div className="flex items-center justify-between mb-2">
-                                    <span className="text-xs font-bold uppercase tracking-wider text-zinc-500">
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
                                         1 Expense Classification & Stream
                                     </span>
-                                    <span className="text-xs text-zinc-500">
+                                    <span className="text-[10px] text-zinc-400">
                                         Select context to configure vendor & ledger attribution
                                     </span>
                                 </div>
@@ -508,7 +508,7 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                                                 <span className="text-xs font-black dark:text-white">Petty Operational Cash</span>
                                                 {outflowMode === 'petty' && <div className="w-2 h-2 rounded-full bg-emerald-500" />}
                                             </div>
-                                            <p className="text-xs text-zinc-500 mt-0.5">Tea, logistics, housekeeping, quick repairs, stationery</p>
+                                            <p className="text-[11px] text-zinc-400 mt-0.5">Tea, logistics, housekeeping, quick repairs, stationery</p>
                                         </div>
                                     </button>
 
@@ -534,7 +534,7 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                                                 <span className="text-xs font-black dark:text-white">Inward Vendor Bill</span>
                                                 {outflowMode === 'vendor' && <div className="w-2 h-2 rounded-full bg-blue-500" />}
                                             </div>
-                                            <p className="text-xs text-zinc-500 mt-0.5">Diagnostic reagents, lab consumables, kits & supplies</p>
+                                            <p className="text-[11px] text-zinc-400 mt-0.5">Diagnostic reagents, lab consumables, kits & supplies</p>
                                         </div>
                                     </button>
 
@@ -560,7 +560,7 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                                                 <span className="text-xs font-black dark:text-white">Facility Overheads</span>
                                                 {outflowMode === 'overhead' && <div className="w-2 h-2 rounded-full bg-amber-500" />}
                                             </div>
-                                            <p className="text-xs text-zinc-500 mt-0.5">Electricity grid, broadband fiber, waste disposal, rent</p>
+                                            <p className="text-[11px] text-zinc-400 mt-0.5">Electricity grid, broadband fiber, waste disposal, rent</p>
                                         </div>
                                     </button>
                                 </div>
@@ -572,10 +572,10 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                                 <div className="lg:col-span-7 space-y-4">
                                     <div className="p-5 rounded-2xl border bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 space-y-4 shadow-xs">
                                         <div className="flex items-center justify-between border-b dark:border-zinc-800 border-slate-200 pb-3">
-                                            <span className="text-xs font-bold uppercase tracking-wider text-zinc-500">
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
                                                 2 Outflow Particulars
                                             </span>
-                                            <span className="px-2.5 py-0.5 rounded-md text-xs font-bold uppercase bg-slate-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">
+                                            <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 dark:bg-zinc-800 text-zinc-500">
                                                 {outflowMode === 'petty' ? 'Operational' : outflowMode === 'vendor' ? 'Inventory Supplier' : 'Utility'}
                                             </span>
                                         </div>
@@ -583,7 +583,7 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                                         {/* Petty Cash Presets */}
                                         {outflowMode === 'petty' && (
                                             <div className="space-y-1.5">
-                                                <label className="text-xs font-semibold uppercase text-zinc-500 tracking-wider">Operational Presets</label>
+                                                <label className="text-[10px] font-black uppercase text-zinc-400 tracking-wider">Operational Presets</label>
                                                 <div className="grid grid-cols-2 gap-2">
                                                     {pettyPresets.map(preset => {
                                                         const Icon = preset.icon;
@@ -618,7 +618,7 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                                         {/* Facility Overhead Presets */}
                                         {outflowMode === 'overhead' && (
                                             <div className="space-y-1.5">
-                                                <label className="text-xs font-semibold uppercase text-zinc-500 tracking-wider">Facility Utilities</label>
+                                                <label className="text-[10px] font-black uppercase text-zinc-400 tracking-wider">Facility Utilities</label>
                                                 <div className="grid grid-cols-2 gap-2">
                                                     {overheadPresets.map(preset => (
                                                         <button
@@ -651,10 +651,10 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                                             <div className="space-y-3">
                                                 <div className="space-y-1">
                                                     <div className="flex items-center justify-between">
-                                                        <label className="text-xs font-semibold uppercase text-zinc-500 tracking-wider">
+                                                        <label className="text-[10px] font-black uppercase text-zinc-400 tracking-wider">
                                                             Select Vendor / Supplier (Live ERP Database)
                                                         </label>
-                                                        <span className="text-xs text-synos-primary font-bold">
+                                                        <span className="text-[10px] text-synos-primary font-bold">
                                                             {vendors.length} Verified Suppliers Loaded
                                                         </span>
                                                     </div>
@@ -681,7 +681,7 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                                                 </div>
 
                                                 <div className="space-y-1">
-                                                    <label className="text-xs font-semibold uppercase text-zinc-500 tracking-wider">
+                                                    <label className="text-[10px] font-black uppercase text-zinc-400 tracking-wider">
                                                         Inward Invoice / Challan Reference #
                                                     </label>
                                                     <input
@@ -697,7 +697,7 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
 
                                         {/* Amount Field */}
                                         <div className="space-y-1">
-                                            <label className="text-xs font-semibold uppercase text-zinc-500 tracking-wider">
+                                            <label className="text-[10px] font-black uppercase text-zinc-400 tracking-wider">
                                                 Disbursement / Bill Amount (₹) *
                                             </label>
                                             <div className="relative">
@@ -716,7 +716,7 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
 
                                         {/* Description */}
                                         <div className="space-y-1">
-                                            <label className="text-xs font-semibold uppercase text-zinc-500 tracking-wider">
+                                            <label className="text-[10px] font-black uppercase text-zinc-400 tracking-wider">
                                                 Description & Operational Purpose
                                             </label>
                                             <input
@@ -735,10 +735,10 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                                 <div className="lg:col-span-5 space-y-4">
                                     <div className="p-5 rounded-2xl border bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 space-y-4 shadow-xs sticky top-2">
                                         <div className="flex items-center justify-between border-b dark:border-zinc-800 border-slate-200 pb-3">
-                                            <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">
                                                 3 Settlement & Financials
                                             </span>
-                                            <span className="px-2.5 py-0.5 rounded text-xs font-bold uppercase bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                                            <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-amber-500/10 text-amber-600 border border-amber-500/20">
                                                 {form.isSettledNow ? 'Immediate Disburse' : 'Accrue Obligation'}
                                             </span>
                                         </div>
@@ -746,7 +746,7 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                                         {/* Large Net Bill Total */}
                                         <div className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border dark:border-white/5 border-slate-200 flex items-center justify-between">
                                             <div>
-                                                <span className="text-xs font-semibold uppercase text-zinc-500 tracking-wider">Net Amount</span>
+                                                <span className="text-[10px] font-black uppercase text-zinc-400 tracking-wider">Net Amount</span>
                                                 <p className="text-xs text-zinc-400">Ledger Impact</p>
                                             </div>
                                             <div className="text-right">
@@ -761,7 +761,7 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                                             <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5 border dark:border-white/5 border-slate-200 flex items-center justify-between">
                                                 <div>
                                                     <p className="text-xs font-bold dark:text-white">Settle Invoice Now?</p>
-                                                    <p className="text-xs text-zinc-400">Uncheck to log as unpaid accounts payable</p>
+                                                    <p className="text-[10px] text-zinc-400">Uncheck to log as unpaid accounts payable</p>
                                                 </div>
                                                 <input
                                                     type="checkbox"
@@ -775,7 +775,7 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                                         {/* Payment Modes */}
                                         {form.isSettledNow && (
                                             <div className="space-y-2">
-                                                <label className="text-xs font-semibold uppercase text-zinc-500 tracking-wider">Disbursement Channel</label>
+                                                <label className="text-[10px] font-black uppercase text-zinc-400 tracking-wider">Disbursement Channel</label>
                                                 <div className="grid grid-cols-3 gap-2">
                                                     {[
                                                         { id: 'Cash', label: 'Cash Drawer', icon: Wallet },
@@ -796,8 +796,8 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                                                                         : "bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/5 text-zinc-500 hover:bg-slate-100 dark:hover:bg-zinc-800"
                                                                 )}
                                                             >
-                                                                <Icon className="w-4 h-4" />
-                                                                <span className="text-xs font-semibold">{mode.label}</span>
+                                                                <Icon className="w-3.5 h-3.5" />
+                                                                <span className="text-[10px] font-bold">{mode.label}</span>
                                                             </button>
                                                         );
                                                     })}
@@ -906,7 +906,7 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                         {/* Feed Table */}
                         <div className="flex-1 overflow-y-auto rounded-2xl border dark:border-zinc-800 border-slate-200 bg-white dark:bg-zinc-900 shadow-xs">
                             <table className="w-full text-left text-xs">
-                                <thead className="bg-slate-50 dark:bg-zinc-800/80 border-b dark:border-zinc-800 border-slate-200 text-slate-600 dark:text-zinc-400 uppercase text-xs font-bold sticky top-0 backdrop-blur-md">
+                                <thead className="bg-slate-50 dark:bg-zinc-800/40 border-b dark:border-zinc-800 border-slate-200 text-zinc-500 uppercase text-[10px] font-bold sticky top-0 backdrop-blur-md">
                                     <tr>
                                         <th className="p-3.5">Time</th>
                                         <th className="p-3.5">Stream / Category</th>
@@ -922,12 +922,12 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                                         <tr>
                                             <td colSpan="7" className="p-12 text-center text-zinc-400">
                                                 <Loader2 className="w-6 h-6 animate-spin mx-auto text-synos-primary mb-2" />
-                                                <span className="text-xs">Loading recorded outflows from ERP ledger...</span>
+                                                <span>Loading recorded outflows from ERP ledger...</span>
                                             </td>
                                         </tr>
                                     ) : filteredFeed.length === 0 ? (
                                         <tr>
-                                            <td colSpan="7" className="p-12 text-center text-zinc-400 text-xs">
+                                            <td colSpan="7" className="p-12 text-center text-zinc-400">
                                                 No expenses recorded for this period. Use the "1 Record Expense" tab to log disbursements.
                                             </td>
                                         </tr>
@@ -939,26 +939,26 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
 
                                             return (
                                                 <tr key={item.id} className={cn("hover:bg-slate-50 dark:hover:bg-white/5 transition-colors", isCancelled && "opacity-50 line-through")}>
-                                                    <td className="p-3.5 whitespace-nowrap text-zinc-500 font-mono text-xs font-medium">
+                                                    <td className="p-3.5 whitespace-nowrap text-zinc-500 font-mono text-[11px]">
                                                         {new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                     </td>
                                                     <td className="p-3.5 whitespace-nowrap">
-                                                        <span className="font-bold dark:text-zinc-200 text-zinc-800 text-xs sm:text-sm">
+                                                        <span className="font-bold dark:text-zinc-200 text-zinc-800">
                                                             {item.category}
                                                         </span>
                                                     </td>
-                                                    <td className="p-3.5 max-w-xs truncate font-medium dark:text-zinc-300 text-zinc-700 text-xs sm:text-sm">
+                                                    <td className="p-3.5 max-w-xs truncate font-medium dark:text-zinc-300 text-zinc-700">
                                                         {item.description}
                                                     </td>
-                                                    <td className="p-3.5 whitespace-nowrap font-black text-sm">
+                                                    <td className="p-3.5 whitespace-nowrap font-black">
                                                         ₹{amountDisplay.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                                                     </td>
-                                                    <td className="p-3.5 whitespace-nowrap text-zinc-500 font-bold text-xs">
+                                                    <td className="p-3.5 whitespace-nowrap text-zinc-500 font-bold">
                                                         {item.paymentMethod || 'Cash'}
                                                     </td>
                                                     <td className="p-3.5 whitespace-nowrap">
                                                         <span className={cn(
-                                                            "px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider border",
+                                                            "px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border",
                                                             isCancelled ? "bg-rose-500/10 text-rose-500 border-rose-500/20" :
                                                             isSettled ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" :
                                                             "bg-amber-500/10 text-amber-500 border-amber-500/20"
@@ -971,13 +971,13 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                                                             <div className="flex items-center justify-end gap-1.5">
                                                                 <button
                                                                     onClick={() => handleOpenCorrection(item)}
-                                                                    className="px-2.5 py-1 rounded-lg border dark:border-white/10 border-slate-200 text-zinc-600 hover:text-synos-primary hover:bg-synos-primary/10 transition-colors text-xs font-bold cursor-pointer"
+                                                                    className="px-2 py-1 rounded-lg border dark:border-white/10 border-slate-200 text-zinc-500 hover:text-synos-primary hover:bg-synos-primary/10 transition-colors text-[11px] font-bold cursor-pointer"
                                                                 >
                                                                     Correct
                                                                 </button>
                                                                 <button
                                                                     onClick={() => handleOpenCancellation(item)}
-                                                                    className="px-2.5 py-1 rounded-lg border dark:border-white/10 border-slate-200 text-zinc-600 hover:text-rose-500 hover:bg-rose-500/10 transition-colors text-xs font-bold cursor-pointer"
+                                                                    className="px-2 py-1 rounded-lg border dark:border-white/10 border-slate-200 text-zinc-500 hover:text-rose-500 hover:bg-rose-500/10 transition-colors text-[11px] font-bold cursor-pointer"
                                                                 >
                                                                     Cancel
                                                                 </button>
@@ -1034,7 +1034,7 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                             {/* Card 1: Total Confirmed Outflow */}
                             <div className="p-5 rounded-2xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-sm flex flex-col justify-between">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Total Confirmed Outflow</span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Total Confirmed Outflow</span>
                                     <div className="p-2.5 rounded-xl bg-rose-500/10 text-rose-500 border border-rose-500/20">
                                         <TrendingDown className="w-4 h-4" />
                                     </div>
@@ -1046,7 +1046,7 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                                             {metrics.netOutflow.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                                         </span>
                                     </div>
-                                    <p className="text-xs text-zinc-400 mt-1">
+                                    <p className="text-[11px] text-zinc-400 mt-1">
                                         <b className="text-zinc-600 dark:text-zinc-200">{metrics.totalCount}</b> confirmed transactions logged
                                     </p>
                                 </div>
@@ -1055,7 +1055,7 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                             {/* Card 2: Cash Drawer Liquidity Outflow */}
                             <div className="p-5 rounded-2xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-sm flex flex-col justify-between">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Cash Drawer Share</span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Cash Drawer Share</span>
                                     <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
                                         <Wallet className="w-4 h-4" />
                                     </div>
@@ -1068,7 +1068,7 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                                         </span>
                                     </div>
                                     <div className="mt-2 space-y-1">
-                                        <div className="flex justify-between text-xs font-semibold text-zinc-500">
+                                        <div className="flex justify-between text-[10px] font-bold text-zinc-400">
                                             <span>Physical Currency</span>
                                             <span>{cashPercent}%</span>
                                         </div>
@@ -1085,7 +1085,7 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                             {/* Card 3: Digital & UPI Payouts */}
                             <div className="p-5 rounded-2xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-sm flex flex-col justify-between">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Digital / UPI Share</span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Digital / UPI Share</span>
                                     <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-500 border border-blue-500/20">
                                         <QrCode className="w-4 h-4" />
                                     </div>
@@ -1098,7 +1098,7 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                                         </span>
                                     </div>
                                     <div className="mt-2 space-y-1">
-                                        <div className="flex justify-between text-xs font-semibold text-zinc-500">
+                                        <div className="flex justify-between text-[10px] font-bold text-zinc-400">
                                             <span>Bank / QR Transfers</span>
                                             <span>{digitalPercent}%</span>
                                         </div>
@@ -1115,7 +1115,7 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                             {/* Card 4: Accrued Unpaid Dues */}
                             <div className="p-5 rounded-2xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-sm flex flex-col justify-between">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Unsettled Inward Dues</span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Unsettled Inward Dues</span>
                                     <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-500 border border-amber-500/20">
                                         <Clock className="w-4 h-4" />
                                     </div>
@@ -1127,7 +1127,7 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                                             {metrics.pendingDues.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                                         </span>
                                     </div>
-                                    <p className="text-xs text-zinc-400 mt-1">
+                                    <p className="text-[11px] text-zinc-400 mt-1">
                                         Accounts payable pending batch settlement
                                     </p>
                                 </div>
@@ -1139,11 +1139,11 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                             {/* 7-Day Velocity Bars (7 cols) */}
                             <div className="lg:col-span-7 p-6 rounded-2xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-sm space-y-4">
                                 <div className="flex items-center justify-between border-b dark:border-white/10 border-slate-200 pb-3">
-                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 flex items-center gap-2">
+                                    <span className="text-xs font-black uppercase tracking-wider text-zinc-400 flex items-center gap-2">
                                         <Calendar className="w-4 h-4 text-synos-primary" />
                                         7-Day Spend Trajectory
                                     </span>
-                                    <span className="text-xs font-semibold text-zinc-500">
+                                    <span className="text-[11px] font-bold text-zinc-400">
                                         Daily Disbursed Volatility
                                     </span>
                                 </div>
@@ -1169,12 +1169,12 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                                                         style={{ height: `${Math.max(barHeightPercent, 6)}%` }}
                                                     />
                                                     {/* Tooltip on hover */}
-                                                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded bg-zinc-900 text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded bg-zinc-900 text-white text-[9px] font-bold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
                                                         ₹{day.outflow.toLocaleString()}
                                                     </div>
                                                 </div>
-                                                <span className="text-xs font-bold text-zinc-500 uppercase">{day.dayLabel}</span>
-                                                <span className="text-xs font-bold dark:text-white text-zinc-900">₹{day.outflow.toLocaleString()}</span>
+                                                <span className="text-[10px] font-bold text-zinc-400 uppercase">{day.dayLabel}</span>
+                                                <span className="text-[11px] font-black dark:text-white text-zinc-900">₹{day.outflow.toLocaleString()}</span>
                                             </div>
                                         );
                                     })}
@@ -1184,11 +1184,11 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                             {/* Category Distribution Breakdown (5 cols) */}
                             <div className="lg:col-span-5 p-6 rounded-2xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md border border-white/60 dark:border-white/10 shadow-sm space-y-4">
                                 <div className="flex items-center justify-between border-b dark:border-white/10 border-slate-200 pb-3">
-                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 flex items-center gap-2">
+                                    <span className="text-xs font-black uppercase tracking-wider text-zinc-400 flex items-center gap-2">
                                         <PieChart className="w-4 h-4 text-synos-primary" />
                                         Category Allocation
                                     </span>
-                                    <span className="text-xs font-semibold text-zinc-500">
+                                    <span className="text-[11px] font-bold text-zinc-400">
                                         Outflow Breakdown
                                     </span>
                                 </div>
@@ -1232,10 +1232,10 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                                     </div>
                                     <div>
                                         <h3 className="text-sm font-black dark:text-white">Correct Recorded Expense</h3>
-                                        <p className="text-xs text-zinc-400">Edits create an immutable audit record and adjust ledger facts.</p>
+                                        <p className="text-[10px] text-zinc-400">Edits create an immutable audit record and adjust ledger facts.</p>
                                     </div>
                                 </div>
-                                <button onClick={() => setCorrectionTarget(null)} className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-zinc-800 cursor-pointer">
+                                <button onClick={() => setCorrectionTarget(null)} className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-zinc-800">
                                     <X className="w-4 h-4 text-zinc-400" />
                                 </button>
                             </div>
@@ -1243,13 +1243,13 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                             <form onSubmit={handleSubmitCorrection} className="p-6 space-y-4">
                                 <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-slate-100 dark:bg-white/5 border dark:border-white/5 border-slate-200">
                                     <div>
-                                        <span className="text-xs uppercase font-bold text-zinc-500">Current Amount</span>
+                                        <span className="text-[10px] uppercase font-bold text-zinc-400">Current Amount</span>
                                         <p className="text-base font-black text-zinc-600 dark:text-zinc-300">
                                             ₹{(correctionTarget.amountPaid > 0 ? correctionTarget.amountPaid : correctionTarget.amountDue).toLocaleString()}
                                         </p>
                                     </div>
                                     <div>
-                                        <span className="text-xs uppercase font-bold text-synos-primary">Corrected Amount</span>
+                                        <span className="text-[10px] uppercase font-bold text-synos-primary">Corrected Amount</span>
                                         <div className="relative mt-0.5">
                                             <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-zinc-400">₹</span>
                                             <input
@@ -1265,7 +1265,7 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                                 </div>
 
                                 <div className="space-y-1">
-                                    <label className="text-xs font-semibold uppercase text-zinc-500 tracking-wider">Corrected Description</label>
+                                    <label className="text-[10px] font-black uppercase text-zinc-400 tracking-wider">Corrected Description</label>
                                     <input
                                         type="text"
                                         value={correctionForm.newDescription}
@@ -1275,7 +1275,7 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                                 </div>
 
                                 <div className="space-y-1">
-                                    <label className="text-xs font-semibold uppercase text-rose-500 tracking-wider">Mandatory Reason for Correction *</label>
+                                    <label className="text-[10px] font-black uppercase text-rose-500 tracking-wider">Mandatory Reason for Correction *</label>
                                     <input
                                         type="text"
                                         required
@@ -1318,10 +1318,10 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                                     </div>
                                     <div>
                                         <h3 className="text-sm font-black dark:text-white">Cancel & Revert Expense</h3>
-                                        <p className="text-xs text-zinc-400">Restores cash drawer and records audit fact.</p>
+                                        <p className="text-[10px] text-zinc-400">Restores cash drawer and records audit fact.</p>
                                     </div>
                                 </div>
-                                <button onClick={() => setCancellationTarget(null)} className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-zinc-800 cursor-pointer">
+                                <button onClick={() => setCancellationTarget(null)} className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-zinc-800">
                                     <X className="w-4 h-4 text-zinc-400" />
                                 </button>
                             </div>
@@ -1335,7 +1335,7 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                                 </div>
 
                                 <div className="space-y-1">
-                                    <label className="text-xs font-semibold uppercase text-rose-500 tracking-wider">Mandatory Reason for Cancellation *</label>
+                                    <label className="text-[10px] font-black uppercase text-rose-500 tracking-wider">Mandatory Reason for Cancellation *</label>
                                     <input
                                         type="text"
                                         required

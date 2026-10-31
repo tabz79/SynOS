@@ -24,16 +24,16 @@ const MetricCard = ({ title, value, subtext, icon: Icon, trend, isPositive }) =>
                 <Icon size={18} />
             </div>
             {trend && (
-                <span className={`flex items-center gap-1 text-xs font-bold ${trend > 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                <span className={`flex items-center gap-1 text-[10px] font-bold ${trend > 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                     {trend > 0 ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
                     {Math.abs(trend)}%
                 </span>
             )}
         </div>
         <div>
-            <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-400 mb-1">{title}</h3>
+            <h3 className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1">{title}</h3>
             <p className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">₹{Math.round(Number(value) || 0).toLocaleString('en-IN')}</p>
-            {subtext && <p className="text-xs text-zinc-500 mt-1 font-medium">{subtext}</p>}
+            {subtext && <p className="text-[10px] text-zinc-500 mt-1 font-medium">{subtext}</p>}
         </div>
     </div>
 );
@@ -172,23 +172,23 @@ export const IntelligenceDashboard = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 text-center">
                     <div className="p-4 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800">
-                        <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider">1. Money Collected</p>
+                        <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">1. Money Collected</p>
                         <p className="text-base font-black text-zinc-900 dark:text-white mt-1">₹{cashCollected.toLocaleString('en-IN')}</p>
                     </div>
                     <div className="p-4 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800">
-                        <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider">− Reagents & Materials</p>
+                        <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">− Reagents & Materials</p>
                         <p className="text-base font-black text-zinc-900 dark:text-white mt-1">₹{materialCosts.toLocaleString('en-IN')}</p>
                     </div>
                     <div className="p-4 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800">
-                        <p className="text-xs font-bold text-synos-primary uppercase tracking-wider">− Doctor Payouts</p>
+                        <p className="text-[10px] font-bold text-synos-primary uppercase tracking-wider">− Doctor Payouts</p>
                         <p className="text-base font-black text-synos-primary mt-1">₹{doctorPayouts.toLocaleString('en-IN')}</p>
                     </div>
                     <div className="p-4 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800">
-                        <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider">− Salaries & Rent</p>
+                        <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">− Salaries & Rent</p>
                         <p className="text-base font-black text-zinc-900 dark:text-white mt-1">₹{(payrollCosts + overheadCosts).toLocaleString('en-IN')}</p>
                     </div>
                     <div className="p-4 rounded-xl bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800">
-                        <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">= Actual Cash Profit</p>
+                        <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">= Actual Cash Profit</p>
                         <p className="text-base font-black text-emerald-600 dark:text-emerald-400 mt-1">₹{actualProfit.toLocaleString('en-IN')}</p>
                     </div>
                 </div>
@@ -204,7 +204,7 @@ export const IntelligenceDashboard = () => {
                                 <div key={p.partnerId || idx} className="flex justify-between items-center group py-2 border-b border-zinc-100 dark:border-zinc-900 last:border-0">
                                     <div className="flex flex-col gap-0.5">
                                         <span className="text-xs font-bold dark:text-zinc-300">{p.partnerName}</span>
-                                        <span className="text-xs text-zinc-500 font-medium">
+                                        <span className="text-[10px] text-zinc-500 font-medium">
                                             {p.patientCount} Patients • ₹{Math.round(Number(p.totalRevenueGenerated || 0)).toLocaleString('en-IN')} Billed • ₹{Math.round(Number(p.totalCommissionEarned || 0)).toLocaleString('en-IN')} Payout
                                         </span>
                                     </div>
@@ -229,7 +229,7 @@ export const IntelligenceDashboard = () => {
                             <div>
                                 <p className="text-xs font-bold dark:text-zinc-200 mb-2">Liquidity Ratio</p>
                                 <p className="text-3xl font-black text-synos-primary">1.84</p>
-                                <p className="text-xs text-zinc-500 mt-1 uppercase font-bold tracking-normal">OPTIMAL STRENGTH</p>
+                                <p className="text-[10px] text-zinc-500 mt-1 uppercase font-bold tracking-tighter">OPTIMAL STRENGTH</p>
                             </div>
 
                             <div className="pt-6 border-t border-slate-200 dark:border-zinc-800">
@@ -256,8 +256,8 @@ export const IntelligenceDashboard = () => {
 
 const Indicator = ({ label, status }) => (
     <div className="flex justify-between items-center">
-        <span className="text-xs uppercase font-bold text-zinc-500">{label}</span>
-        <span className="text-xs uppercase font-black text-synos-primary">{status}</span>
+        <span className="text-[10px] uppercase font-bold text-zinc-500">{label}</span>
+        <span className="text-[10px] uppercase font-black text-synos-primary">{status}</span>
     </div>
 );
 

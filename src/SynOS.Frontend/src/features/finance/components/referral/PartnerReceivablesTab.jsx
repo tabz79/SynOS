@@ -235,7 +235,7 @@ export const PartnerReceivablesTab = () => {
     const filtered = receivables.filter(p => p.partnerName.toLowerCase().includes(search.toLowerCase()));
 
     return (
-        <div className="px-6 py-5 space-y-6 animate-in slide-in-from-bottom-4 duration-500">
+        <div className="p-8 space-y-6 animate-in slide-in-from-bottom-4 duration-500">
             {/* MULTI-PAYER TOP SUB-NAV TABS */}
             <div className="flex flex-wrap items-center gap-2 border-b dark:border-zinc-800 border-zinc-200 pb-4">
                 <button
@@ -249,7 +249,7 @@ export const PartnerReceivablesTab = () => {
                 >
                     <Building2 size={15} />
                     <span>Referral Partners</span>
-                    <span className="px-2 py-0.5 rounded-full text-xs font-mono bg-white/20">₹{partnerTotal.toLocaleString()}</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-white/20">₹{partnerTotal.toLocaleString()}</span>
                 </button>
 
                 <button
@@ -263,7 +263,7 @@ export const PartnerReceivablesTab = () => {
                 >
                     <ShieldCheck size={15} />
                     <span>Insurance Claims & TPAs</span>
-                    <span className="px-2 py-0.5 rounded-full text-xs font-mono bg-white/20">₹{insuranceTotal.toLocaleString()}</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-white/20">₹{insuranceTotal.toLocaleString()}</span>
                 </button>
 
                 <button
@@ -277,7 +277,7 @@ export const PartnerReceivablesTab = () => {
                 >
                     <Briefcase size={15} />
                     <span>Corporate B2B Receivables</span>
-                    <span className="px-2 py-0.5 rounded-full text-xs font-mono bg-white/20">₹{corporateTotal.toLocaleString()}</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-white/20">₹{corporateTotal.toLocaleString()}</span>
                 </button>
             </div>
 
@@ -319,7 +319,7 @@ export const PartnerReceivablesTab = () => {
                         ) : (
                             <Building2 size={48} className="text-zinc-200 mx-auto mb-4" />
                         )}
-                        <p className="text-sm font-bold dark:text-zinc-500 text-zinc-400 tracking-normal">
+                        <p className="text-sm font-bold dark:text-zinc-500 text-zinc-400 tracking-tight">
                             {activePayerTab === 'insurance' 
                                 ? "No outstanding claims from insurance companies." 
                                 : activePayerTab === 'corporate'
@@ -331,11 +331,11 @@ export const PartnerReceivablesTab = () => {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-zinc-50 dark:bg-zinc-900/50 border-b dark:border-zinc-900 border-zinc-100">
-                                <th className="p-6 text-xs font-bold uppercase tracking-widest text-zinc-400">Partner / Account</th>
-                                <th className="p-6 text-xs font-bold uppercase tracking-widest text-zinc-400 text-center">Open Bills</th>
-                                <th className="p-6 text-xs font-bold uppercase tracking-widest text-zinc-400 text-right">Total Outstanding</th>
-                                <th className="p-6 text-xs font-bold uppercase tracking-widest text-zinc-400">Oldest Dues</th>
-                                <th className="p-6 text-xs font-bold uppercase tracking-widest text-zinc-400 text-right">Actions</th>
+                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Partner / Account</th>
+                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-center">Open Bills</th>
+                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right">Total Outstanding</th>
+                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400">Oldest Dues</th>
+                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80">
@@ -352,7 +352,7 @@ export const PartnerReceivablesTab = () => {
                                                 </button>
                                                 <div className="flex flex-col">
                                                     <span className="text-sm font-bold dark:text-white text-zinc-900">{partner.partnerName}</span>
-                                                    <span className="text-xs text-zinc-400 font-bold uppercase tracking-normal">PARTNER ID: {partner.partnerId?.toString()?.substring(0, 8) || 'N/A'}</span>
+                                                    <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-tighter">PARTNER ID: {partner.partnerId?.toString()?.substring(0, 8) || 'N/A'}</span>
                                                 </div>
                                             </div>
                                         </td>
@@ -367,14 +367,14 @@ export const PartnerReceivablesTab = () => {
                                                     onClick={() => handleGenerateClaimStatement(partner)}
                                                     disabled={generatingClaim}
                                                     title="Generate B2B Diagnostic Tax Invoice for partner collections"
-                                                    className="px-3 py-2 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 text-xs font-black uppercase tracking-wider hover:bg-indigo-100 dark:hover:bg-indigo-900/60 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs disabled:opacity-50"
+                                                    className="px-3 py-2 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-wider hover:bg-indigo-100 dark:hover:bg-indigo-900/60 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs disabled:opacity-50"
                                                 >
                                                     <Receipt size={12} />
                                                     <span>B2B Invoice</span>
                                                 </button>
                                                 <button 
                                                     onClick={() => setSelectedPartner(partner)}
-                                                    className="px-4 py-2 rounded-xl bg-emerald-500 text-white text-xs font-black uppercase tracking-wider hover:shadow-lg hover:shadow-emerald-500/30 active:scale-95 transition-all cursor-pointer"
+                                                    className="px-4 py-2 rounded-xl bg-emerald-500 text-white text-[10px] font-black uppercase tracking-wider hover:shadow-lg hover:shadow-emerald-500/30 active:scale-95 transition-all cursor-pointer"
                                                 >
                                                     Record Receipt
                                                 </button>
@@ -404,7 +404,7 @@ export const PartnerReceivablesTab = () => {
                                                                         <p className="text-xs font-bold text-indigo-950 dark:text-indigo-200">
                                                                             {selectedCount} of {partner.items.length} Invoices Selected
                                                                         </p>
-                                                                        <p className="text-xs text-zinc-500 font-medium">
+                                                                        <p className="text-[10px] text-zinc-500 font-medium">
                                                                             Total Selected Due: <strong className="text-indigo-600 dark:text-indigo-400 font-mono">₹{selectedSum.toLocaleString()}</strong>
                                                                         </p>
                                                                     </div>
@@ -416,14 +416,14 @@ export const PartnerReceivablesTab = () => {
                                                                             partnerItemIds.forEach(id => next.delete(id));
                                                                             setSelectedFactIds(next);
                                                                         }}
-                                                                        className="px-3 py-1.5 rounded-xl text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 text-xs font-bold cursor-pointer transition-all"
+                                                                        className="px-3 py-1.5 rounded-xl text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 text-[10px] font-bold cursor-pointer transition-all"
                                                                     >
                                                                         Clear Selection
                                                                     </button>
                                                                     <button
                                                                         onClick={() => handleGenerateClaimStatement(partner, selectedInPartner.map(i => i.receivableFactId))}
                                                                         disabled={generatingClaim}
-                                                                        className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-indigo-500/20 active:scale-95 cursor-pointer transition-all disabled:opacity-50"
+                                                                        className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-indigo-500/20 active:scale-95 cursor-pointer transition-all disabled:opacity-50"
                                                                     >
                                                                         <Receipt size={13} />
                                                                         <span>Generate B2B Invoice ({selectedCount})</span>
@@ -434,7 +434,7 @@ export const PartnerReceivablesTab = () => {
 
                                                         <table className="w-full text-left">
                                                             <thead>
-                                                                <tr className="text-xs font-bold uppercase tracking-widest text-zinc-400 border-b dark:border-zinc-900 pb-2">
+                                                                <tr className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 border-b dark:border-zinc-900 pb-2">
                                                                     <th className="pb-2 w-8 text-center">
                                                                         <input
                                                                             type="checkbox"
@@ -482,30 +482,30 @@ export const PartnerReceivablesTab = () => {
                                                                                     className="rounded border-zinc-300 dark:border-zinc-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                                                                                 />
                                                                             </td>
-                                                                            <td className="py-3 text-xs font-mono font-bold text-zinc-600 dark:text-zinc-400">
+                                                                            <td className="py-3 text-[10px] font-mono font-bold text-zinc-600 dark:text-zinc-400">
                                                                                 <div>{fact.token || fact.visitToken || fact.receivableFactId.toString().substring(0, 13)}</div>
                                                                                 {fact.claimReference && (
-                                                                                    <div className="text-xs text-indigo-500 font-sans font-semibold">
+                                                                                    <div className="text-[9px] text-indigo-500 font-sans font-semibold">
                                                                                         {activePayerTab === 'insurance' ? `Policy/Claim: ${fact.claimReference}` : `Emp ID: ${fact.claimReference}`}
                                                                                     </div>
                                                                                 )}
                                                                             </td>
-                                                                            <td className="py-3 text-xs font-bold dark:text-zinc-300">{fact.patientName || 'Unknown Patient'}</td>
-                                                                            <td className="py-3 text-xs">
+                                                                            <td className="py-3 text-[10px] font-bold dark:text-zinc-300">{fact.patientName || 'Unknown Patient'}</td>
+                                                                            <td className="py-3 text-[10px]">
                                                                                 {fact.primaryDoctorName ? (
-                                                                                    <span className="font-semibold text-zinc-700 dark:text-zinc-300 text-xs truncate max-w-[160px] inline-block" title={fact.primaryDoctorName}>
+                                                                                    <span className="font-semibold text-zinc-700 dark:text-zinc-300 text-[10px] truncate max-w-[160px] inline-block" title={fact.primaryDoctorName}>
                                                                                         {fact.primaryDoctorName}
                                                                                     </span>
                                                                                 ) : (
-                                                                                    <span className="text-zinc-400 text-xs">—</span>
+                                                                                    <span className="text-zinc-400 text-[10px]">—</span>
                                                                                 )}
                                                                             </td>
-                                                                            <td className="py-3 text-xs text-zinc-600 dark:text-zinc-400 max-w-[200px] truncate" title={fact.testsSummary || (fact.testNames?.join(', ')) || (fact.tests?.join(', ')) || '-'}>
+                                                                            <td className="py-3 text-[10px] text-zinc-600 dark:text-zinc-400 max-w-[200px] truncate" title={fact.testsSummary || (fact.testNames?.join(', ')) || (fact.tests?.join(', ')) || '-'}>
                                                                                 {fact.testsSummary || (fact.testNames?.join(', ')) || (fact.tests?.join(', ')) || '-'}
                                                                             </td>
-                                                                            <td className="py-3 text-xs text-zinc-400">{new Date(fact.occurredAt || fact.date).toLocaleDateString()}</td>
-                                                                            <td className="py-3 text-xs font-black text-right dark:text-zinc-300">₹{(fact.totalAmount || fact.amount || 0).toLocaleString()}</td>
-                                                                            <td className="py-3 text-xs font-black text-right text-rose-500">₹{(fact.balanceDue !== undefined && !isNaN(fact.balanceDue) ? fact.balanceDue : (fact.amount || 0) - (fact.amountReceived || 0)).toLocaleString()}</td>
+                                                                            <td className="py-3 text-[10px] text-zinc-400">{new Date(fact.occurredAt || fact.date).toLocaleDateString()}</td>
+                                                                            <td className="py-3 text-[10px] font-black text-right dark:text-zinc-300">₹{(fact.totalAmount || fact.amount || 0).toLocaleString()}</td>
+                                                                            <td className="py-3 text-[10px] font-black text-right text-rose-500">₹{(fact.balanceDue !== undefined && !isNaN(fact.balanceDue) ? fact.balanceDue : (fact.amount || 0) - (fact.amountReceived || 0)).toLocaleString()}</td>
                                                                         </tr>
                                                                     );
                                                                 })}
@@ -566,7 +566,7 @@ const RecoveryModal = ({ partner, onClose, onConfirm, settling }) => {
                         </div>
                         <div>
                             <h2 className="text-lg font-bold dark:text-white text-zinc-900">Partner Recovery</h2>
-                            <p className="text-xs text-zinc-500 font-medium uppercase tracking-widest">Collecting dues from {partner.partnerName}</p>
+                            <p className="text-[11px] text-zinc-500 font-medium uppercase tracking-widest">Collecting dues from {partner.partnerName}</p>
                         </div>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-xl transition-all">
@@ -576,7 +576,7 @@ const RecoveryModal = ({ partner, onClose, onConfirm, settling }) => {
 
                 <div className="p-8 space-y-6">
                     <div className="p-6 bg-zinc-50 dark:bg-zinc-900/50 rounded-3xl text-center space-y-3">
-                        <div className="flex justify-between items-center text-xs font-bold text-zinc-400 uppercase tracking-widest px-2">
+                        <div className="flex justify-between items-center text-[10px] font-bold text-zinc-400 uppercase tracking-widest px-2">
                             <span>Total Outstanding</span>
                             <span>Bills: {partner.billCount}</span>
                         </div>
@@ -585,7 +585,7 @@ const RecoveryModal = ({ partner, onClose, onConfirm, settling }) => {
 
                     <div className="space-y-4">
                         <div className="space-y-1.5">
-                            <label className="text-xs font-bold uppercase tracking-widest text-zinc-400 px-1">Recovery Amount (₹)</label>
+                            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 px-1">Recovery Amount (₹)</label>
                             <input 
                                 type="number" 
                                 value={amount}
@@ -598,7 +598,7 @@ const RecoveryModal = ({ partner, onClose, onConfirm, settling }) => {
                                     <button 
                                         key={pct}
                                         onClick={() => setAmount((partner.totalAmount * pct).toFixed(2))}
-                                        className="flex-1 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-xs font-black text-zinc-500 hover:bg-emerald-500/10 hover:text-emerald-500 transition-all"
+                                        className="flex-1 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-[10px] font-black text-zinc-500 hover:bg-emerald-500/10 hover:text-emerald-500 transition-all"
                                     >
                                         {pct * 100}% Dues
                                     </button>
@@ -607,7 +607,7 @@ const RecoveryModal = ({ partner, onClose, onConfirm, settling }) => {
                         </div>
 
                         <div className="space-y-2">
-                            <p className="text-xs text-zinc-400 uppercase font-black tracking-widest ml-1">Received Via</p>
+                            <p className="text-[10px] text-zinc-400 uppercase font-black tracking-widest ml-1">Received Via</p>
                             <div className="grid grid-cols-2 gap-4">
                                 {[
                                     { id: 'BankTransfer', label: 'Bank Transfer', icon: CreditCard },
@@ -623,14 +623,14 @@ const RecoveryModal = ({ partner, onClose, onConfirm, settling }) => {
                                         }`}
                                     >
                                         <m.icon size={18} />
-                                        <span className="text-xs font-bold">{m.label}</span>
+                                        <span className="text-[11px] font-bold">{m.label}</span>
                                     </button>
                                 ))}
                             </div>
                         </div>
 
                         <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20">
-                            <p className="text-xs text-amber-600 leading-relaxed font-bold">
+                            <p className="text-[10px] text-amber-600 leading-relaxed font-bold">
                                 <span className="uppercase mr-1">FIFO Distribution:</span>
                                 Funds will be applied to the oldest invoices first.
                             </p>

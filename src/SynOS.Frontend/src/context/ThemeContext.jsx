@@ -12,12 +12,7 @@ export function ThemeProvider({ children }) {
         return 'light';
     });
 
-    // Display scale / interface density: 'small' | 'medium' | 'large' (default: 'medium')
-    const [displaySize, setDisplaySizeState] = useState(() => {
-        return localStorage.getItem('synos_display_size') || 'medium';
-    });
-
-    // Font size / typography legibility: 'small' | 'medium' | 'large' (default: 'medium')
+    // Font size customisation: 'small' | 'medium' | 'large' (default: 'medium')
     const [fontSize, setFontSizeState] = useState(() => {
         return localStorage.getItem('synos_font_size') || 'medium';
     });
@@ -38,18 +33,6 @@ export function ThemeProvider({ children }) {
     useEffect(() => {
         const root = window.document.documentElement;
 
-        // Apply display size attribute and classes
-        root.setAttribute('data-display-size', displaySize);
-        root.classList.remove('display-size-small', 'display-size-medium', 'display-size-large');
-        root.classList.add(`display-size-${displaySize}`);
-
-        // Persist
-        localStorage.setItem('synos_display_size', displaySize);
-    }, [displaySize]);
-
-    useEffect(() => {
-        const root = window.document.documentElement;
-
         // Apply font size attribute and classes
         root.setAttribute('data-font-size', fontSize);
         root.classList.remove('font-size-small', 'font-size-medium', 'font-size-large');
@@ -64,12 +47,6 @@ export function ThemeProvider({ children }) {
         setTheme(newTheme);
     };
 
-    const handleSetDisplaySize = (newSize) => {
-        if (['small', 'medium', 'large'].includes(newSize)) {
-            setDisplaySizeState(newSize);
-        }
-    };
-
     const handleSetFontSize = (newSize) => {
         if (['small', 'medium', 'large'].includes(newSize)) {
             setFontSizeState(newSize);
@@ -79,8 +56,6 @@ export function ThemeProvider({ children }) {
     const value = {
         theme,
         setTheme: handleSetTheme,
-        displaySize,
-        setDisplaySize: handleSetDisplaySize,
         fontSize,
         setFontSize: handleSetFontSize
     };

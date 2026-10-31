@@ -717,7 +717,7 @@ export function TypistTerminal() {
                     <button
                         onClick={() => setActiveTerminalMode('pathology')}
                         className={cn(
-                            "px-3.5 py-1 rounded-lg text-xs font-extrabold uppercase tracking-wider transition-all flex items-center gap-1.5",
+                            "px-3.5 py-1 rounded-lg text-[11px] font-extrabold uppercase tracking-wider transition-all flex items-center gap-1.5",
                             activeTerminalMode === 'pathology' 
                                 ? "bg-synos-primary text-white shadow-sm"
                                 : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
@@ -728,7 +728,7 @@ export function TypistTerminal() {
                     <button
                         onClick={() => setActiveTerminalMode('radiology')}
                         className={cn(
-                            "px-3.5 py-1 rounded-lg text-xs font-extrabold uppercase tracking-wider transition-all flex items-center gap-1.5",
+                            "px-3.5 py-1 rounded-lg text-[11px] font-extrabold uppercase tracking-wider transition-all flex items-center gap-1.5",
                             activeTerminalMode === 'radiology'
                                 ? "bg-synos-primary text-white shadow-sm"
                                 : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
@@ -804,11 +804,11 @@ export function TypistTerminal() {
                                 {isLoadingList ? (
                                     <div className="flex flex-col items-center justify-center py-12 opacity-50">
                                         <Loader2 className="w-8 h-8 animate-spin mb-2" />
-                                        <span className="text-sm font-medium text-zinc-500 font-mono tracking-normal">Initializing Queue...</span>
+                                        <span className="text-sm font-medium text-zinc-500 font-mono tracking-tighter">Initializing Queue...</span>
                                     </div>
                                 ) : filteredReports.length === 0 ? (
                                     <div className="text-center py-12 dark:bg-zinc-900/50 bg-white/50 rounded-xl border border-dashed dark:border-white/10 border-zinc-300">
-                                        <p className="dark:text-zinc-500 text-zinc-400 text-sm italic font-mono tracking-normal">Queue is empty</p>
+                                        <p className="dark:text-zinc-500 text-zinc-400 text-sm italic font-mono tracking-tighter">Queue is empty</p>
                                     </div>
                                 ) : filteredReports.map(report => (
                                     <PathologistWorklistCard
@@ -833,7 +833,7 @@ export function TypistTerminal() {
                                     title="Request Stock"
                                 >
                                     <Package className="w-5 h-5" />
-                                    <span className="text-xs font-black uppercase tracking-widest overflow-hidden max-w-0 group-hover:max-w-xs transition-all duration-500">
+                                    <span className="text-[10px] font-black uppercase tracking-widest overflow-hidden max-w-0 group-hover:max-w-xs transition-all duration-500">
                                         Request Stock
                                     </span>
                                 </button>
@@ -887,17 +887,17 @@ export function TypistTerminal() {
                                             <User className="w-4 h-4" />
                                         </div>
                                         <div className="flex items-center gap-2 flex-wrap">
-                                            <h2 className="text-sm font-bold tracking-normal dark:text-zinc-200 text-zinc-800 uppercase">{patientName}</h2>
+                                            <h2 className="text-sm font-bold tracking-tight dark:text-zinc-200 text-zinc-800 uppercase">{patientName}</h2>
                                             <span className="text-zinc-400 text-xs">•</span>
                                             <div className="flex items-center gap-1.5 dark:text-zinc-400 text-zinc-500 text-xs font-semibold">
                                                 <span>{patientAgeGender}</span>
                                                 <span className="text-zinc-400 font-normal">|</span>
-                                                <span className="font-mono text-xs tracking-normal">{token}</span>
+                                                <span className="font-mono text-[11px] tracking-tight">{token}</span>
                                             </div>
                                             {siblingReports.length > 1 && (
                                                 <>
                                                     <span className="text-zinc-400 text-xs">•</span>
-                                                    <div className="flex items-center gap-2 px-2 py-0.5 bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 rounded-lg text-xs font-bold">
+                                                    <div className="flex items-center gap-2 px-2 py-0.5 bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 rounded-lg text-[10px] font-bold">
                                                         <span>Report {currentReportIndex + 1} of {siblingReports.length}</span>
                                                         <span className="opacity-45">|</span>
                                                         <button 
@@ -919,7 +919,7 @@ export function TypistTerminal() {
                                                 </>
                                             )}
                                             {siblingReports.length > 1 && remainingReportsCount > 0 && (
-                                                <span className="bg-rose-500/10 text-rose-500 border border-rose-500/20 text-xs px-2 py-0.5 rounded-full font-bold">
+                                                <span className="bg-rose-500/10 text-rose-500 border border-rose-500/20 text-[10px] px-2 py-0.5 rounded-full font-bold">
                                                     {remainingReportsCount} {remainingReportsCount === 1 ? 'Report' : 'Reports'} Remaining
                                                 </span>
                                             )}
@@ -927,15 +927,15 @@ export function TypistTerminal() {
                                     </div>
                                     <div className="flex items-center gap-3">
                                         {livePathologistConnected && (
-                                            <div className="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-full text-xs font-black uppercase tracking-widest shrink-0">
+                                            <div className="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-full text-[8px] font-black uppercase tracking-widest shrink-0">
                                                 <div className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse" />
                                                 Live Pathologist
                                             </div>
                                         )}
                                         <div className="flex items-center gap-1.5 text-xs font-semibold">
-                                            <span className="text-xs uppercase font-bold dark:text-zinc-500 text-zinc-400 tracking-wider">Stage:</span>
+                                            <span className="text-[9px] uppercase font-bold dark:text-zinc-500 text-zinc-400 tracking-wider">Stage:</span>
                                             <div className={cn(
-                                                "px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider",
+                                                "px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider",
                                                 calculatedReportStructure?.status === 'ReadyForVerification' 
                                                     ? "bg-amber-500/10 text-amber-600 border border-amber-500/20"
                                                     : "bg-synos-primary/10 text-synos-primary border border-synos-primary/20"
@@ -950,7 +950,7 @@ export function TypistTerminal() {
                                     <div className="flex-[0_1_35%] max-h-[35%] min-h-[120px] overflow-y-auto pr-2 custom-scrollbar -mx-2 px-2">
                                         <table className="w-full border-separate border-spacing-y-1">
                                             <thead>
-                                                <tr className="text-xs uppercase font-semibold tracking-widest dark:text-zinc-500 text-zinc-400">
+                                                <tr className="text-[10px] uppercase font-semibold tracking-widest dark:text-zinc-500 text-zinc-400">
                                                     <th className="text-left px-3 pb-1">Parameter</th>
                                                     <th className="text-right px-3 pb-1">Value</th>
                                                     <th className="text-left px-3 pb-1">Unit</th>
@@ -964,7 +964,7 @@ export function TypistTerminal() {
                                                         {group.groupName && (
                                                             <tr className="contents">
                                                                 <td colSpan={5} className="pt-2 pb-1">
-                                                                    <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                                                                    <span className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                                                                         {group.groupName}
                                                                     </span>
                                                                 </td>
@@ -1008,7 +1008,7 @@ export function TypistTerminal() {
                                                                     <td className="px-3 py-1.5 last:rounded-r-xl border-y border-transparent">
                                                                         {isAbnormal && (
                                                                             <span className={cn(
-                                                                                "text-xs font-bold uppercase px-2 py-0.5 rounded-full",
+                                                                                "text-[10px] font-bold uppercase px-2 py-0.5 rounded-full",
                                                                                 currentFlag?.includes("Critical") 
                                                                                     ? "bg-red-100 text-red-700" 
                                                                                     : (currentFlag === "Low" ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-700")
@@ -1032,7 +1032,7 @@ export function TypistTerminal() {
                                     {/* Bottom Half: Clinical Interpretation & Comments (Scrollable) */}
                                     <div className="flex-[1_1_65%] min-h-0 overflow-y-auto pr-2 custom-scrollbar space-y-4 pt-1 flex flex-col justify-between">
                                             <div className="flex-1 flex flex-col min-h-0">
-                                                <label className="text-xs uppercase font-semibold dark:text-zinc-500 text-zinc-400 block mb-1 tracking-wider">
+                                                <label className="text-[10px] uppercase font-semibold dark:text-zinc-500 text-zinc-400 block mb-1 tracking-wider">
                                                     Clinical Report Narrative
                                                 </label>
                                                 <RichMedicalEditor 
@@ -1049,7 +1049,7 @@ export function TypistTerminal() {
                                             {!isLocked ? (
                                                 <div className="flex flex-col w-full" style={{ gap: 'var(--ws-gap)' }}>
                                                     {lastSavedAt && (
-                                                        <div className="text-xs font-bold text-green-500 uppercase tracking-widest animate-pulse flex items-center gap-1.5 self-end">
+                                                        <div className="text-[10px] font-bold text-green-500 uppercase tracking-widest animate-pulse flex items-center gap-1.5 self-end">
                                                             <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
                                                             Preview Updated via Backend
                                                         </div>
@@ -1059,7 +1059,7 @@ export function TypistTerminal() {
                                                         <button 
                                                             onClick={handleSaveInterpretation}
                                                             disabled={isSaving}
-                                                            className="px-3 py-2 rounded-xl text-xs font-bold bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 border border-slate-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-750 transition-all shadow-sm shrink-0 uppercase tracking-normal active:scale-95 disabled:opacity-40"
+                                                            className="px-3 py-2 rounded-xl text-xs font-bold bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 border border-slate-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-750 transition-all shadow-sm shrink-0 uppercase tracking-tight active:scale-95 disabled:opacity-40"
                                                         >
                                                             {isSaving ? "Saving..." : "Save Draft"}
                                                         </button>
@@ -1084,7 +1084,7 @@ export function TypistTerminal() {
                                                                  }}
                                                                  className="w-3.5 h-3.5 accent-amber-500 rounded cursor-pointer"
                                                              />
-                                                             <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                                                             <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
                                                                  Preprinted
                                                              </span>
                                                          </label>
@@ -1093,7 +1093,7 @@ export function TypistTerminal() {
                                                         <button 
                                                             onClick={() => window.print()}
                                                             disabled={!selectedReportId}
-                                                            className="px-3 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-slate-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-750 transition-all shadow-sm shrink-0 uppercase tracking-normal"
+                                                            className="px-3 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border border-slate-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-750 transition-all shadow-sm shrink-0 uppercase tracking-tight"
                                                             title="Quick Print"
                                                         >
                                                             <Printer className="w-3.5 h-3.5" />
@@ -1106,7 +1106,7 @@ export function TypistTerminal() {
                                                                 handleSubmit(true);
                                                             }}
                                                             disabled={isSubmitting || isSaving || !interpretation.interpretation}
-                                                            className="px-3 py-2 rounded-xl text-xs font-semibold bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/40 hover:bg-amber-100 transition-all shadow-sm shrink-0 uppercase tracking-normal disabled:opacity-40"
+                                                            className="px-3 py-2 rounded-xl text-xs font-semibold bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800/40 hover:bg-amber-100 transition-all shadow-sm shrink-0 uppercase tracking-tight disabled:opacity-40"
                                                             title="Print & Submit for Manual Sign"
                                                         >
                                                             Manual Sign
@@ -1116,7 +1116,7 @@ export function TypistTerminal() {
                                             ) : (
                                                 <div className="flex-1 flex items-center justify-center p-3 dark:bg-amber-500/10 bg-amber-50 rounded-2xl border border-amber-500/20 gap-3">
                                                     <Clock className="w-4 h-4 text-amber-500" />
-                                                    <span className="text-xs font-black uppercase tracking-widest text-amber-700 dark:text-amber-500">
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-amber-700 dark:text-amber-500">
                                                         Pending Pathologist
                                                     </span>
                                                 </div>
@@ -1147,15 +1147,15 @@ export function TypistTerminal() {
                         <div className="dark:bg-zinc-950 bg-[linear-gradient(to_bottom,rgba(248,253,255,0.98)_0%,rgba(238,245,248,0.98)_50%,rgba(228,235,238,0.98)_100%)] px-6 py-3 border-b dark:border-white/5 border-black/5 flex items-center justify-between z-10 no-print">
                              <div className="flex items-center gap-2 select-none">
                                 <FileText className="w-4 h-4 text-synos-primary" />
-                                <span className="text-xs font-black uppercase tracking-widest dark:text-zinc-400 text-zinc-600">Draft Preview</span>
-                                <span className="text-xs font-mono bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-400 text-zinc-500 px-1.5 py-0.5 rounded ml-2">
+                                <span className="text-[10px] font-black uppercase tracking-widest dark:text-zinc-400 text-zinc-600">Draft Preview</span>
+                                <span className="text-[9px] font-mono bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-400 text-zinc-500 px-1.5 py-0.5 rounded ml-2">
                                     Ctrl+Scroll to Zoom ({Math.round(previewScale * 100)}%) • Drag to Pan
                                 </span>
                              </div>
                              {reportData && (
                                 <div className="flex items-center gap-1.5">
                                     <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                                    <span className="text-xs font-black uppercase tracking-normal text-green-600">Synced</span>
+                                    <span className="text-[8px] font-black uppercase tracking-tighter text-green-600">Synced</span>
                                 </div>
                              )}
                         </div>
@@ -1172,12 +1172,12 @@ export function TypistTerminal() {
                             {(isLoadingDetail || templateLoading) ? (
                                 <div className="h-full flex flex-col items-center justify-center opacity-30 no-print">
                                     <Loader2 className="w-6 h-6 animate-spin mb-4" />
-                                    <span className="text-xs font-black uppercase tracking-[0.2em]">Synchronizing Context...</span>
+                                    <span className="text-[8px] font-black uppercase tracking-[0.2em]">Synchronizing Context...</span>
                                 </div>
                             ) : (!reportData || !template) ? (
                                 <div className="h-full flex flex-col items-center justify-center text-center opacity-20 p-8 no-print">
                                     <Printer className="w-12 h-12 mb-4" />
-                                    <p className="text-xs font-black uppercase tracking-widest leading-relaxed">
+                                    <p className="text-[9px] font-black uppercase tracking-widest leading-relaxed">
                                         Select a record to initialize high-fidelity render
                                     </p>
                                 </div>

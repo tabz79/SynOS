@@ -74,7 +74,7 @@ import { MachineIntegrationTab } from './components/MachineIntegrationTab';
 import { CommercialPaperworkTab } from './components/CommercialPaperworkTab';
 
 export function SystemSettingsScreen() {
-  const { theme, fontSize, setFontSize, displaySize, setDisplaySize } = useTheme();
+  const { theme, fontSize, setFontSize } = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialTab = searchParams.get('tab') || 'settings';
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -1628,32 +1628,24 @@ export function SystemSettingsScreen() {
                   UI Display & Typography Settings
                 </h3>
                 <p className="text-xs text-zinc-500 font-medium mt-1">
-                  Customise display readability, text scale, and visual ergonomics independently across counters, workstations, and displays.
+                  Customise display readability, text scale, and visual ergonomics across counters, workstations, and small laptop displays.
                 </p>
               </div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="px-3 py-1 rounded-lg text-xs font-bold bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                  Display Density: {displaySize?.toUpperCase() || 'MEDIUM'}
-                </span>
+              <div className="flex items-center gap-2">
                 <span className="px-3 py-1 rounded-lg text-xs font-bold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-                  Font Legibility: {fontSize?.toUpperCase() || 'MEDIUM'}
+                  Active Scale: {fontSize?.toUpperCase() || 'MEDIUM'}
                 </span>
               </div>
             </div>
 
-            {/* CONTROL 1: DISPLAY SIZE (INTERFACE DENSITY) */}
-            <div className="synos-dept-card rounded-2xl p-6 border border-zinc-200 dark:border-zinc-800 space-y-5">
+            {/* Typography Scale Selection */}
+            <div className="synos-dept-card rounded-2xl p-6 border border-zinc-200 dark:border-zinc-800 space-y-6">
               <div>
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider flex items-center gap-2">
-                    1. Display Size & Interface Density
-                  </h4>
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">
-                    Controls padding, card height & container spacing
-                  </span>
-                </div>
+                <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider flex items-center gap-2">
+                  Interface Font Size Customisation
+                </h4>
                 <p className="text-xs text-zinc-500 mt-1">
-                  Governs how compact or roomy cards, padding, buttons, and layout containers appear on your monitor.
+                  Select your preferred optical size. Changes take effect across the entire system immediately and persist for your workstation.
                 </p>
               </div>
 
@@ -1661,104 +1653,24 @@ export function SystemSettingsScreen() {
                 {[
                   {
                     id: 'small',
-                    label: 'Small (Compact UI)',
-                    scale: '14.5px Base Layout',
-                    desc: 'Tight padding and dense layouts for large 24"-32" QHD / 4K displays where maximum multi-column visibility is preferred.',
+                    label: 'Small (Compact)',
+                    scale: '14px Base Scale',
+                    desc: 'Optimised for large 24"-32" QHD / 4K displays where maximum data density and multi-column ledger view is preferred.',
                     badge: 'High Density'
                   },
                   {
                     id: 'medium',
-                    label: 'Medium (Standard UI)',
-                    scale: '16px Base Layout (Default)',
-                    desc: 'Balanced workstation comfort for 14"-15.6" Full HD screens and clinic laptops. Solid proportions with no awkward overflow.',
+                    label: 'Medium (Standard)',
+                    scale: '16px Base Scale (Default)',
+                    desc: 'Balanced comfort for 14"-15.6" Full HD laptops and standard clinic monitors. Provides crisp readability without horizontal overflow.',
                     badge: 'Recommended'
                   },
                   {
                     id: 'large',
-                    label: 'Large (Spacious UI)',
-                    scale: '18px Base Layout',
-                    desc: 'Expanded padding, taller cards, and larger interactive targets for touchscreen counter displays.',
-                    badge: 'Spacious Targets'
-                  }
-                ].map(opt => {
-                  const isSelected = (displaySize || 'medium') === opt.id;
-                  return (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      onClick={() => setDisplaySize(opt.id)}
-                      className={`text-left p-5 rounded-2xl border transition-all cursor-pointer relative flex flex-col justify-between ${
-                        isSelected 
-                          ? 'bg-blue-500/10 dark:bg-blue-500/20 border-blue-500 ring-2 ring-blue-500/30 shadow-md' 
-                          : 'bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700'
-                      }`}
-                    >
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="font-extrabold text-sm text-zinc-900 dark:text-zinc-100">{opt.label}</span>
-                          {isSelected && (
-                            <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs">
-                              ✓
-                            </span>
-                          )}
-                        </div>
-                        <span className="inline-block px-2 py-0.5 rounded text-xs font-mono font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
-                          {opt.scale}
-                        </span>
-                        <p className="text-xs text-zinc-500 font-normal leading-relaxed">
-                          {opt.desc}
-                        </p>
-                      </div>
-                      <div className="mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs font-bold">
-                        <span className="text-zinc-400">{opt.badge}</span>
-                        <span className={isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-400'}>
-                          {isSelected ? 'Active Display Mode' : 'Click to Apply'}
-                        </span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* CONTROL 2: FONT SIZE (TYPOGRAPHY LEGIBILITY SCALE) */}
-            <div className="synos-dept-card rounded-2xl p-6 border border-zinc-200 dark:border-zinc-800 space-y-5">
-              <div>
-                <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider flex items-center gap-2">
-                    2. Font Size & Text Legibility Scale
-                  </h4>
-                  <span className="text-xs font-semibold px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">
-                    Isolated from card & padding dimensions
-                  </span>
-                </div>
-                <p className="text-xs text-zinc-500 mt-1">
-                  Scales all titles, numbers, labels, and table typography independently. You can keep Display Size Medium and set Font Size to Large!
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {[
-                  {
-                    id: 'small',
-                    label: 'Small (Dense Text)',
-                    scale: '13-14px Optical Text',
-                    desc: 'Compact fonts for multi-row data grids and dense clinical records.',
-                    badge: 'High Data Density'
-                  },
-                  {
-                    id: 'medium',
-                    label: 'Medium (Standard Text)',
-                    scale: '15-16px Optical Text',
-                    desc: 'Standard clean typography with crisp clarity across normal reading distances.',
-                    badge: 'Standard Baseline'
-                  },
-                  {
-                    id: 'large',
                     label: 'Large (High Legibility)',
-                    scale: '18-20px Optical Text (+25%)',
-                    desc: 'Bold, prominent, high-legibility text that fills cards comfortably without inflating spacing.',
-                    badge: 'Maximum Legibility'
+                    scale: '18px Base Scale',
+                    desc: 'Engineered specifically for small displays, 1366x768 counter screens, or operators needing elevated legibility.',
+                    badge: 'Enhanced Legibility'
                   }
                 ].map(opt => {
                   const isSelected = (fontSize || 'medium') === opt.id;
@@ -1777,22 +1689,22 @@ export function SystemSettingsScreen() {
                         <div className="flex items-center justify-between">
                           <span className="font-extrabold text-sm text-zinc-900 dark:text-zinc-100">{opt.label}</span>
                           {isSelected && (
-                            <span className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs">
+                            <span className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]">
                               ✓
                             </span>
                           )}
                         </div>
-                        <span className="inline-block px-2 py-0.5 rounded text-xs font-mono font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
+                        <span className="inline-block px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
                           {opt.scale}
                         </span>
                         <p className="text-xs text-zinc-500 font-normal leading-relaxed">
                           {opt.desc}
                         </p>
                       </div>
-                      <div className="mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs font-bold">
+                      <div className="mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-[11px] font-bold">
                         <span className="text-zinc-400">{opt.badge}</span>
                         <span className={isSelected ? 'text-indigo-600 dark:text-indigo-400' : 'text-zinc-400'}>
-                          {isSelected ? 'Active Font Mode' : 'Click to Apply'}
+                          {isSelected ? 'Active Mode' : 'Click to Apply'}
                         </span>
                       </div>
                     </button>
@@ -1804,31 +1716,31 @@ export function SystemSettingsScreen() {
               <div className="mt-8 p-6 rounded-2xl bg-zinc-50/80 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 space-y-4">
                 <div className="flex items-center justify-between">
                   <h5 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
-                    Live Interface Combination Preview
+                    Live Interface Typography Preview
                   </h5>
-                  <span className="text-xs text-zinc-500 font-mono font-semibold">
-                    Display: {displaySize?.toUpperCase() || 'MEDIUM'} • Font: {fontSize?.toUpperCase() || 'MEDIUM'}
+                  <span className="text-[10px] text-zinc-400 font-mono">
+                    Changes reflect live across this preview and all open screens
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {/* Sample Patient Card */}
                   <div className="p-3.5 bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-1.5 shadow-xs">
-                    <span className="text-xs uppercase font-bold text-zinc-400 block">Patient Identification</span>
+                    <span className="text-[10px] uppercase font-bold text-zinc-400 block">Patient Identification</span>
                     <p className="text-sm font-bold text-zinc-900 dark:text-white">Rajesh Kumar Sharma</p>
                     <p className="text-xs text-zinc-500 font-mono">UHID: SYN-2026-0842 • Age: 42Y / Male</p>
                   </div>
 
                   {/* Sample Diagnostic Order */}
                   <div className="p-3.5 bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-1.5 shadow-xs">
-                    <span className="text-xs uppercase font-bold text-indigo-500 block">Investigation Master</span>
+                    <span className="text-[10px] uppercase font-bold text-indigo-500 block">Investigation Master</span>
                     <p className="text-sm font-bold text-zinc-900 dark:text-white">Complete Blood Count (CBC)</p>
                     <p className="text-xs text-zinc-500">Pathology / Hematology • Fasting EDTA Whole Blood</p>
                   </div>
 
                   {/* Sample Financial Metric */}
                   <div className="p-3.5 bg-white dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-1.5 shadow-xs">
-                    <span className="text-xs uppercase font-bold text-emerald-500 block">Finance Ledger Balance</span>
+                    <span className="text-[10px] uppercase font-bold text-emerald-500 block">Finance Ledger Balance</span>
                     <p className="text-lg font-black text-zinc-900 dark:text-white font-mono">₹4,250.00</p>
                     <p className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold">Counter Settled • Direct Patient</p>
                   </div>
@@ -1837,7 +1749,7 @@ export function SystemSettingsScreen() {
 
               {/* Caveats & Design Integrity Notes */}
               <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs space-y-2">
-                <p className="font-bold flex items-center gap-1.5 uppercase tracking-wider text-xs">
+                <p className="font-bold flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
                   <span>ℹ️</span> Typography Scale Engineering & Layout Integrity Notes
                 </p>
                 <ul className="list-disc list-inside space-y-1 text-xs opacity-90 pl-1">
@@ -2302,7 +2214,7 @@ export function SystemSettingsScreen() {
                         <p>Discount Value: <strong className="text-zinc-900 dark:text-zinc-100">{d.type === 0 ? `${d.value}%` : `₹${d.value}`}</strong></p>
                         {d.maxLimit && <p>Max Cap: <strong className="text-zinc-900 dark:text-zinc-100">₹{d.maxLimit}</strong></p>}
                         {d.effectiveFrom && (
-                          <p className="text-xs text-zinc-500 font-medium">
+                          <p className="text-[11px] text-zinc-500 font-medium">
                             Range: {formatDate(d.effectiveFrom)} – {d.effectiveTo ? formatDate(d.effectiveTo) : 'Forever'}
                           </p>
                         )}
@@ -2730,7 +2642,7 @@ export function SystemSettingsScreen() {
                 <tbody className="divide-y dark:divide-zinc-800 divide-zinc-200">
                   {auditLogs.map(log => (
                     <tr key={log.auditId} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors">
-                      <td className="p-4 text-zinc-450 font-mono text-xs">
+                      <td className="p-4 text-zinc-450 font-mono text-[11px]">
                         {formatDateTime(log.createdAt)}
                       </td>
                       <td className="p-4 text-zinc-200 font-semibold">
@@ -2921,7 +2833,7 @@ export function SystemSettingsScreen() {
                   </div>
                   <div className="border-t dark:border-zinc-800 border-zinc-100 pt-3 mt-2 flex justify-between items-center text-xxs text-zinc-400">
                     <span>Status: <strong>{b.isActive ? 'Active Operational' : 'Deactivated'}</strong></span>
-                    <span className="font-mono text-xs opacity-60">{b.branchId}</span>
+                    <span className="font-mono text-[9px] opacity-60">{b.branchId}</span>
                   </div>
                 </div>
               ))}
@@ -3076,7 +2988,7 @@ export function SystemSettingsScreen() {
                         <span className={`w-1.5 h-1.5 rounded-full ${ws.isActive ? 'bg-emerald-500' : 'bg-zinc-550'}`} title={ws.isActive ? 'Active' : 'Inactive'} />
                       </div>
                       <h4 className="font-bold text-sm text-zinc-800 dark:text-zinc-200 mt-2">{ws.name}</h4>
-                      <p className="text-xs text-zinc-400 mt-1">Registered: {formatDate(ws.createdAt)}</p>
+                      <p className="text-[10px] text-zinc-400 mt-1">Registered: {formatDate(ws.createdAt)}</p>
                     </div>
                     <div className="flex space-x-2 shrink-0">
                       <button
@@ -3331,7 +3243,7 @@ export function SystemSettingsScreen() {
                           <td className="p-4 font-mono font-bold text-zinc-850 dark:text-zinc-200">
                             {config.terminalIdentifier}
                             {isCurrent && (
-                              <span className="ml-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-xs font-sans font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                              <span className="ml-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-[9px] font-sans font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
                                 Current Node
                               </span>
                             )}
@@ -3348,7 +3260,7 @@ export function SystemSettingsScreen() {
                             )}
                           </td>
                           <td className="p-4">
-                            <span className={`inline-flex items-center gap-1 text-xs font-bold uppercase ${config.isLeadPrintTerminal ? 'text-indigo-600 dark:text-indigo-400' : 'text-zinc-500'}`}>
+                            <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase ${config.isLeadPrintTerminal ? 'text-indigo-600 dark:text-indigo-400' : 'text-zinc-500'}`}>
                               <span className={`w-1.5 h-1.5 rounded-full ${config.isLeadPrintTerminal ? 'bg-indigo-500' : 'bg-zinc-550'}`} />
                               {config.isLeadPrintTerminal ? 'AUTHORIZED LEAD' : 'Standard Web'}
                             </span>
@@ -4418,7 +4330,7 @@ export function SystemSettingsScreen() {
                       <h5 className="text-sm font-bold text-zinc-800 dark:text-zinc-200">New Software Available</h5>
                       <p className="text-xxs text-zinc-400 mt-0.5">Version: <span className="font-mono text-synos-primary font-bold">v{availableUpdate.version}</span></p>
                     </div>
-                    <span className="text-xs bg-synos-primary/10 text-synos-primary font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    <span className="text-[10px] bg-synos-primary/10 text-synos-primary font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
                       Staged
                     </span>
                   </div>
@@ -4490,7 +4402,7 @@ export function SystemSettingsScreen() {
 
                       return (
                         <div key={check.code} className="flex items-start gap-3 bg-zinc-50 dark:bg-zinc-900/60 p-3 rounded-xl border border-zinc-200/50 dark:border-zinc-850/50">
-                          <span className={`flex items-center justify-center h-5 w-5 rounded-full border text-xs font-bold shrink-0 ${getSeverityStyle(check.severity)}`}>
+                          <span className={`flex items-center justify-center h-5 w-5 rounded-full border text-[10px] font-bold shrink-0 ${getSeverityStyle(check.severity)}`}>
                             {getIcon(check.severity)}
                           </span>
                           <div>
@@ -4653,7 +4565,7 @@ export function SystemSettingsScreen() {
                     <h3 className="text-base font-extrabold text-zinc-900 dark:text-white leading-tight">
                       {resetMode === 'deployment' ? 'Client Deployment Reset' : 'Operational Data Reset'}
                     </h3>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-extrabold tracking-wider uppercase ${
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold tracking-wider uppercase ${
                       resetMode === 'deployment' 
                         ? 'bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800' 
                         : 'bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
@@ -4661,7 +4573,7 @@ export function SystemSettingsScreen() {
                       {resetMode === 'deployment' ? 'Factory Clean Slate' : 'Workflow Purge'}
                     </span>
                   </div>
-                  <p className="text-xs text-zinc-400 font-medium mt-0.5">
+                  <p className="text-[11px] text-zinc-400 font-medium mt-0.5">
                     {resetMode === 'deployment'
                       ? 'Purges 100% of financial ledgers and operational records back to ₹0 so the client starts fresh at Day 0.'
                       : 'Cleans patient testing orders, specimens, results, and worklists while preserving financial overheads and payroll ledgers.'}
@@ -4674,10 +4586,10 @@ export function SystemSettingsScreen() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {/* Column 1: Wiped / Zeroed */}
                   <div className="p-3.5 rounded-2xl bg-rose-50/70 dark:bg-rose-955/20 border border-rose-200 dark:border-rose-900/40 space-y-2">
-                    <span className="text-xs font-extrabold uppercase tracking-wider text-rose-700 dark:text-rose-400 flex items-center gap-1">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-rose-700 dark:text-rose-400 flex items-center gap-1">
                       ✕ Reset to {resetMode === 'deployment' ? '₹0' : 'Empty'} / Purged
                     </span>
-                    <ul className="text-xs text-rose-900 dark:text-rose-300/90 space-y-1 list-disc list-inside font-medium leading-relaxed">
+                    <ul className="text-[11px] text-rose-900 dark:text-rose-300/90 space-y-1 list-disc list-inside font-medium leading-relaxed">
                       {resetMode === 'deployment' ? (
                         <>
                           <li>Patient Invoices, Bills & Dues (₹0)</li>
@@ -4707,10 +4619,10 @@ export function SystemSettingsScreen() {
 
                   {/* Column 2: Preserved */}
                   <div className="p-3.5 rounded-2xl bg-emerald-50/70 dark:bg-emerald-955/20 border border-emerald-200 dark:border-emerald-900/40 space-y-2">
-                    <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
                       ✓ 100% Kept / Preserved
                     </span>
-                    <ul className="text-xs text-emerald-900 dark:text-emerald-300/90 space-y-1 list-disc list-inside font-medium leading-relaxed">
+                    <ul className="text-[11px] text-emerald-900 dark:text-emerald-300/90 space-y-1 list-disc list-inside font-medium leading-relaxed">
                       <li>Doctor Registry (Referral Partners)</li>
                       <li>Test Catalog, Panels & Pricing</li>
                       <li>Reference Labs & B2B Rate Lists</li>
@@ -4733,10 +4645,10 @@ export function SystemSettingsScreen() {
                 {/* Backup Safety Guarantee Banner */}
                 <div className="p-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-850 rounded-xl space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs uppercase font-bold text-zinc-400 block">Pre-Flight Safety Guarantee</span>
-                    <span className="text-xs font-mono font-bold text-emerald-600">Auto SQL Backup Pre-Executed</span>
+                    <span className="text-[10px] uppercase font-bold text-zinc-400 block">Pre-Flight Safety Guarantee</span>
+                    <span className="text-[10px] font-mono font-bold text-emerald-600">Auto SQL Backup Pre-Executed</span>
                   </div>
-                  <p className="text-xs text-zinc-500 font-medium">
+                  <p className="text-[11px] text-zinc-500 font-medium">
                     A full database backup tagged <span className="font-mono font-bold text-zinc-700 dark:text-zinc-300">"{resetMode === 'deployment' ? 'ClientDeploymentReset' : 'OperationalDataReset'}"</span> will be verified on disk before any deletion is committed.
                   </p>
                 </div>
@@ -4757,14 +4669,14 @@ export function SystemSettingsScreen() {
                     onChange={e => setUnderstoodChecked(e.target.checked)}
                     className="mt-0.5 rounded border-zinc-300 text-red-600 focus:ring-red-500 cursor-pointer"
                   />
-                  <span className="text-xs text-zinc-700 dark:text-zinc-300 font-medium leading-relaxed">
+                  <span className="text-[11px] text-zinc-700 dark:text-zinc-300 font-medium leading-relaxed">
                     I understand what this button does to the data. I confirm that I want to proceed and accept that all purged items cannot be undone except via backup restoration.
                   </span>
                 </label>
 
                 {/* Type RESET Confirmation */}
                 <div className="space-y-1">
-                  <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
                     Type <span className="font-mono text-red-600 font-extrabold">RESET</span> to confirm
                   </label>
                   <input
@@ -4779,7 +4691,7 @@ export function SystemSettingsScreen() {
 
                 {/* Password Confirmation */}
                 <div className="space-y-1">
-                  <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
                     Confirm Administrator Password
                   </label>
                   <input

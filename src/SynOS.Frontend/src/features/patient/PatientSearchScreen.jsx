@@ -135,23 +135,23 @@ export function PatientSearchScreen() {
                   <tr key={p.patientId} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/20 transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-xs font-medium text-zinc-500 border dark:border-zinc-700">
+                        <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-medium text-zinc-500 border dark:border-zinc-700">
                           {p.firstName[0]?.toUpperCase()}{p.lastName ? p.lastName[0]?.toUpperCase() : ''}
                         </div>
                         <div className="space-y-0.5">
                           <p className="text-sm font-medium text-zinc-700 dark:text-zinc-200">{p.firstName} {p.lastName}</p>
-                          <p className="text-xs text-zinc-450 dark:text-zinc-500 font-medium">{p.currentPhoneNumber || 'No phone registered'}</p>
+                          <p className="text-[10px] text-zinc-450 dark:text-zinc-500 font-medium">{p.currentPhoneNumber || 'No phone registered'}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col gap-0.5">
                         <span className="text-xs text-zinc-650 dark:text-zinc-400 capitalize">{p.gender} &bull; {calculateAge(p.dateOfBirth)}</span>
-                        <span className="text-xs text-zinc-400 font-medium">DOB: {formatDate(p.dateOfBirth)}</span>
+                        <span className="text-[10px] text-zinc-400 font-medium">DOB: {formatDate(p.dateOfBirth)}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="px-2.5 py-0.5 bg-synos-primary/10 text-synos-primary border border-synos-primary/10 rounded-md text-xs font-mono font-medium uppercase tracking-normal">
+                      <span className="px-2.5 py-0.5 bg-synos-primary/10 text-synos-primary border border-synos-primary/10 rounded-md text-[9px] font-mono font-medium uppercase tracking-normal">
                         {p.mrn || 'NO MRN'}
                       </span>
                     </td>
@@ -164,12 +164,12 @@ export function PatientSearchScreen() {
                       <div className="flex flex-wrap gap-1 max-w-[200px]">
                         {p.lastVisitTestCodes && p.lastVisitTestCodes.length > 0 ? (
                           p.lastVisitTestCodes.map((code, idx) => (
-                            <span key={idx} className="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border dark:border-zinc-700/60 rounded text-xs font-mono">
+                            <span key={idx} className="px-1.5 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border dark:border-zinc-700/60 rounded text-[9px] font-mono">
                               {code}
                             </span>
                           ))
                         ) : (
-                          <span className="text-xs text-zinc-400 italic">No tests ordered</span>
+                          <span className="text-[9px] text-zinc-400 italic">No tests ordered</span>
                         )}
                       </div>
                     </td>

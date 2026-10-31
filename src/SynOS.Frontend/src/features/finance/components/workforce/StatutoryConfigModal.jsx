@@ -85,17 +85,17 @@ export function StatutoryConfigModal({ isOpen, onClose, onConfigUpdated }) {
                                             </div>
                                             <div>
                                                 <h4 className="font-bold text-sm dark:text-white">{config.componentName} Calculation</h4>
-                                                <p className="text-xs text-zinc-500 uppercase tracking-normal">Automatic Deduction Engine</p>
+                                                <p className="text-[10px] text-zinc-500 uppercase tracking-tighter">Automatic Deduction Engine</p>
                                             </div>
                                         </div>
-                                        <div className={`px-2 py-0.5 rounded-full text-xs font-bold ${config.isActive ? 'bg-emerald-500/10 text-emerald-500' : 'bg-zinc-500/10 text-zinc-500'}`}>
+                                        <div className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${config.isActive ? 'bg-emerald-500/10 text-emerald-500' : 'bg-zinc-500/10 text-zinc-500'}`}>
                                             {config.isActive ? 'ACTIVE' : 'DISABLED'}
                                         </div>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4 mb-4">
                                         <div className="space-y-1">
-                                            <label className="text-xs font-bold text-zinc-400 uppercase ml-1">Employee Share (%)</label>
+                                            <label className="text-[10px] font-bold text-zinc-400 uppercase ml-1">Employee Share (%)</label>
                                             <div className="relative">
                                                 <input 
                                                     type="number"
@@ -110,7 +110,7 @@ export function StatutoryConfigModal({ isOpen, onClose, onConfigUpdated }) {
                                             </div>
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-xs font-bold text-zinc-400 uppercase ml-1">Employer Share (%)</label>
+                                            <label className="text-[10px] font-bold text-zinc-400 uppercase ml-1">Employer Share (%)</label>
                                             <div className="relative">
                                                 <input 
                                                     type="number"
@@ -129,7 +129,7 @@ export function StatutoryConfigModal({ isOpen, onClose, onConfigUpdated }) {
                                     <button 
                                         onClick={() => handleUpdate(config)}
                                         disabled={isSubmitting}
-                                        className="w-full py-2 bg-zinc-900 dark:bg-white dark:text-zinc-900 text-white rounded-xl text-xs font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all hover:bg-emerald-500 dark:hover:bg-emerald-500 dark:hover:text-white"
+                                        className="w-full py-2 bg-zinc-900 dark:bg-white dark:text-zinc-900 text-white rounded-xl text-[10px] font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all hover:bg-emerald-500 dark:hover:bg-emerald-500 dark:hover:text-white"
                                     >
                                         Save Changes
                                     </button>
@@ -140,7 +140,7 @@ export function StatutoryConfigModal({ isOpen, onClose, onConfigUpdated }) {
                 </div>
 
                 <div className="p-4 bg-zinc-50 dark:bg-zinc-900/50 border-t dark:border-zinc-900 border-zinc-100 flex justify-between items-center">
-                    <p className="text-xs text-zinc-500 max-w-[200px]">Changes here will affect future payroll calculations only.</p>
+                    <p className="text-[10px] text-zinc-500 max-w-[200px]">Changes here will affect future payroll calculations only.</p>
                     <button onClick={onClose} className="px-6 py-2 rounded-xl text-sm font-bold dark:text-zinc-400 hover:text-synos-primary transition-colors">
                         Done
                     </button>

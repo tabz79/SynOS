@@ -497,7 +497,7 @@ export function ReportTemplatesScreen() {
               >
                 <span className="font-semibold text-sm tracking-tight text-zinc-800 dark:text-zinc-200 block">{t.modality}</span>
                 <span className="text-xs text-zinc-500 dark:text-zinc-400 font-medium leading-relaxed block">{t.title}</span>
-                <div className="flex flex-wrap items-center gap-2 mt-1 text-xs font-bold">
+                <div className="flex flex-wrap items-center gap-2 mt-1 text-[10px] font-bold">
                   <span className="bg-synos-primary/10 text-synos-primary border border-synos-primary/20 px-2 py-0.5 rounded">{t.columns.length} Columns</span>
                   <span className="bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 px-2 py-0.5 rounded">{t.signatureSlots.length} Doctor Slots</span>
                   <span className={cn("px-2 py-0.5 rounded text-white border", t.usePreprinted ? "bg-amber-600/80 border-amber-600" : "bg-emerald-600/80 border-emerald-600")}>
@@ -638,7 +638,7 @@ export function ReportTemplatesScreen() {
                             )}
                             style={{ flex: `${col.weight} 1 0%` }}
                           >
-                            <div className="flex items-center justify-between gap-1 text-xs font-semibold tracking-wider opacity-85">
+                            <div className="flex items-center justify-between gap-1 text-[9px] font-semibold tracking-wider opacity-85">
                               <span className="truncate">{col.code}</span>
                               <span className="font-mono text-synos-primary">{widthPct}%</span>
                             </div>
@@ -651,7 +651,7 @@ export function ReportTemplatesScreen() {
                             >
                               {col.title || "(Untitled)"}
                             </div>
-                            <div className="text-xs font-mono text-zinc-400 flex justify-between items-center opacity-70">
+                            <div className="text-[8px] font-mono text-zinc-400 flex justify-between items-center opacity-70">
                               <span>Weight: {col.weight}</span>
                               <span>Align: {col.alignment[0]}</span>
                             </div>
@@ -733,7 +733,7 @@ export function ReportTemplatesScreen() {
                       <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
                         {/* Header Title Input */}
                         <div className="md:col-span-5 space-y-1.5">
-                          <label className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 ml-0.5">Column Header Label</label>
+                          <label className="text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 ml-0.5">Column Header Label</label>
                           <input
                             type="text"
                             className="w-full bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs font-bold text-zinc-700 dark:text-zinc-300 dark:text-zinc-200 outline-none focus:ring-1 focus:ring-synos-primary"
@@ -744,7 +744,7 @@ export function ReportTemplatesScreen() {
 
                         {/* Width Weight Controller */}
                         <div className="md:col-span-3 space-y-1.5">
-                          <label className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 ml-0.5">Width Weight (Proportion)</label>
+                          <label className="text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 ml-0.5">Width Weight (Proportion)</label>
                           <div className="flex items-center gap-3">
                             <input
                               type="range"
@@ -762,7 +762,7 @@ export function ReportTemplatesScreen() {
 
                         {/* Text Alignment */}
                         <div className="md:col-span-2 space-y-1.5">
-                          <label className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 ml-0.5 block">Alignment</label>
+                          <label className="text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 dark:text-zinc-500 ml-0.5 block">Alignment</label>
                           <div className="flex items-center gap-1 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-0.5 rounded-xl w-fit">
                             {["Left", "Center", "Right"].map(align => (
                               <button
@@ -803,10 +803,10 @@ export function ReportTemplatesScreen() {
 
                   {/* Add column form */}
                   <form onSubmit={handleAddColumn} className="bg-zinc-50/50 dark:bg-zinc-900/10 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl p-5 space-y-4">
-                    <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block">Add custom column definition</span>
+                    <span className="text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 block">Add custom column definition</span>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                       <div className="space-y-1">
-                        <label className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 ml-1">Column Code (LIMS Tag)</label>
+                        <label className="text-[9px] font-semibold text-zinc-400 dark:text-zinc-500 ml-1">Column Code (LIMS Tag)</label>
                         <input
                           id="new-col-code"
                           type="text"
@@ -825,7 +825,7 @@ export function ReportTemplatesScreen() {
                         </datalist>
                       </div>
                       <div className="space-y-1 md:col-span-2">
-                        <label className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 ml-1">Header Title</label>
+                        <label className="text-[9px] font-semibold text-zinc-400 dark:text-zinc-500 ml-1">Header Title</label>
                         <input
                           id="new-col-title"
                           type="text"
@@ -839,7 +839,7 @@ export function ReportTemplatesScreen() {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-zinc-600 dark:text-zinc-400 font-medium">Weight:</span>
+                        <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-medium">Weight:</span>
                         <input
                           id="new-col-weight"
                           type="number"
@@ -851,7 +851,7 @@ export function ReportTemplatesScreen() {
                         />
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-zinc-600 dark:text-zinc-400 font-medium">Align:</span>
+                        <span className="text-[10px] text-zinc-600 dark:text-zinc-400 font-medium">Align:</span>
                         <select
                           id="new-col-align"
                           className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs font-bold text-zinc-800 dark:text-zinc-200 focus:ring-1 focus:ring-synos-primary outline-none"
@@ -871,7 +871,7 @@ export function ReportTemplatesScreen() {
                           checked={newColBold}
                           onChange={(e) => setNewColBold(e.target.checked)}
                         />
-                        <span className="text-xs text-zinc-700 dark:text-zinc-300 font-medium">Bold cell emphasis</span>
+                        <span className="text-[10px] text-zinc-700 dark:text-zinc-300 font-medium">Bold cell emphasis</span>
                       </label>
                     </div>
                     <div className="flex justify-end pt-2">
@@ -899,7 +899,7 @@ export function ReportTemplatesScreen() {
                   />
                   <div>
                     <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 block">Include Signatures Block</span>
-                    <span className="text-xs text-zinc-400 block">Render pathologist / radiologist signature lines on reports</span>
+                    <span className="text-[9px] text-zinc-400 block">Render pathologist / radiologist signature lines on reports</span>
                   </div>
                 </label>
 
@@ -914,7 +914,7 @@ export function ReportTemplatesScreen() {
                           </span>
                           <div>
                             <span className="font-bold text-sm text-zinc-800 dark:text-zinc-200 block">{slot.title}</span>
-                            <span className="text-xs font-semibold mt-0.5 block text-synos-primary">Default Signature Designation</span>
+                            <span className="text-[9px] font-semibold mt-0.5 block text-synos-primary">Default Signature Designation</span>
                           </div>
                         </div>
                         <div className="flex items-center gap-6">
@@ -932,7 +932,7 @@ export function ReportTemplatesScreen() {
                                 setTemplates(templates.map(t => t.id === selectedTemplate.id ? updatedTemplate : t));
                               }}
                             />
-                            <span className="text-xs text-zinc-700 dark:text-zinc-300 font-medium">Mandatory sign-off</span>
+                            <span className="text-[10px] text-zinc-700 dark:text-zinc-300 font-medium">Mandatory sign-off</span>
                           </label>
 
                           {!isDefaultPathologist ? (
@@ -952,10 +952,10 @@ export function ReportTemplatesScreen() {
                 </div>
 
                 <form onSubmit={handleAddSignatureSlot} className={cn("bg-zinc-50/50 dark:bg-zinc-900/10 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl p-5 space-y-4 transition-all", !(selectedTemplate.includeSignatures ?? true) && "opacity-40 pointer-events-none")}>
-                  <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block">Add doctor signature slot</span>
+                  <span className="text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 block">Add doctor signature slot</span>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-end">
                     <div className="space-y-1">
-                      <label className="text-xs font-semibold text-zinc-650 dark:text-zinc-400 ml-1">Doctor Designation</label>
+                      <label className="text-[9px] font-semibold text-zinc-650 dark:text-zinc-400 ml-1">Doctor Designation</label>
                       <select
                         id="new-slot-type"
                         className="w-full bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary font-bold text-zinc-700"
@@ -975,7 +975,7 @@ export function ReportTemplatesScreen() {
                           checked={newSlotRequired}
                           onChange={(e) => setNewSlotRequired(e.target.checked)}
                         />
-                        <span className="text-xs text-zinc-700 dark:text-zinc-300 font-medium">Mark as mandatory</span>
+                        <span className="text-[10px] text-zinc-700 dark:text-zinc-300 font-medium">Mark as mandatory</span>
                       </label>
                       <button
                         id="btn-add-slot"
@@ -1009,7 +1009,7 @@ export function ReportTemplatesScreen() {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 dark:text-zinc-500">Template Title</label>
+                        <label className="text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 dark:text-zinc-500">Template Title</label>
                         <input
                           type="text"
                           className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary"
@@ -1018,7 +1018,7 @@ export function ReportTemplatesScreen() {
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 dark:text-zinc-500">Modality Mapping</label>
+                        <label className="text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 dark:text-zinc-500">Modality Mapping</label>
                         <input
                           type="text"
                           className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary font-bold"
@@ -1029,7 +1029,7 @@ export function ReportTemplatesScreen() {
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 dark:text-zinc-500">Spacing Density</label>
+                      <label className="text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 dark:text-zinc-500">Spacing Density</label>
                       <div className="flex gap-2">
                         {["Compact", "Comfortable", "Large-print"].map(densityOpt => (
                           <button
@@ -1057,8 +1057,8 @@ export function ReportTemplatesScreen() {
                           className="rounded border-zinc-300 dark:border-zinc-700 dark:border-zinc-700 text-synos-primary focus:ring-synos-primary w-4.5 h-4.5"
                         />
                         <div>
-                          <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 block">Preprinted Sheet</span>
-                          <span className="text-xs text-zinc-400 block">Physical hardcopy</span>
+                          <span className="text-[11px] font-bold text-zinc-800 dark:text-zinc-200 block">Preprinted Sheet</span>
+                          <span className="text-[9px] text-zinc-400 block">Physical hardcopy</span>
                         </div>
                       </label>
 
@@ -1070,8 +1070,8 @@ export function ReportTemplatesScreen() {
                           className="rounded border-zinc-300 dark:border-zinc-700 dark:border-zinc-700 text-synos-primary focus:ring-synos-primary w-4.5 h-4.5"
                         />
                         <div>
-                          <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 block">Digital Branding</span>
-                          <span className="text-xs text-zinc-400 block">PDF branding & logo</span>
+                          <span className="text-[11px] font-bold text-zinc-800 dark:text-zinc-200 block">Digital Branding</span>
+                          <span className="text-[9px] text-zinc-400 block">PDF branding & logo</span>
                         </div>
                       </label>
                     </div>
@@ -1081,10 +1081,10 @@ export function ReportTemplatesScreen() {
                       "border border-zinc-200 dark:border-zinc-800 rounded-lg p-3 space-y-2.5 transition-all duration-300",
                       selectedTemplate.usePreprinted ? "bg-zinc-50/50 dark:bg-zinc-950 opacity-100" : "opacity-40 pointer-events-none select-none"
                     )}>
-                      <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block">Print margins (mm)</span>
+                      <span className="text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 block">Print margins (mm)</span>
                       <div className="grid grid-cols-3 gap-2">
                         <div>
-                          <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 block mb-1">Top</label>
+                          <label className="text-[8px] font-semibold text-zinc-500 dark:text-zinc-400 block mb-1">Top</label>
                           <input
                             type="number"
                             className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded px-2 py-1 text-xs w-full font-mono text-center outline-none focus:ring-1 focus:ring-synos-primary"
@@ -1093,7 +1093,7 @@ export function ReportTemplatesScreen() {
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 block mb-1">Bottom</label>
+                          <label className="text-[8px] font-semibold text-zinc-500 dark:text-zinc-400 block mb-1">Bottom</label>
                           <input
                             type="number"
                             className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded px-2 py-1 text-xs w-full font-mono text-center outline-none focus:ring-1 focus:ring-synos-primary"
@@ -1102,7 +1102,7 @@ export function ReportTemplatesScreen() {
                           />
                         </div>
                         <div>
-                          <label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 block mb-1">Sides</label>
+                          <label className="text-[8px] font-semibold text-zinc-500 dark:text-zinc-400 block mb-1">Sides</label>
                           <input
                             type="number"
                             className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded px-2 py-1 text-xs w-full font-mono text-center outline-none focus:ring-1 focus:ring-synos-primary"
@@ -1122,7 +1122,7 @@ export function ReportTemplatesScreen() {
 
                     {/* bgType selector */}
                     <div className="space-y-1.5">
-                      <label className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 dark:text-zinc-500">Background Canvas Style</label>
+                      <label className="text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 dark:text-zinc-500">Background Canvas Style</label>
                       <div className="flex gap-1.5">
                         {[
                           { id: "solid", label: "Solid Color" },
@@ -1134,7 +1134,7 @@ export function ReportTemplatesScreen() {
                             type="button"
                             onClick={() => handleUpdateTemplateField("bgType", opt.id)}
                             className={cn(
-                              "flex-1 py-1.5 text-xs font-bold rounded-lg border transition-all",
+                              "flex-1 py-1.5 text-[11px] font-bold rounded-lg border transition-all",
                               selectedTemplate.bgType === opt.id
                                 ? "bg-synos-primary/10 border-synos-primary/30 text-synos-primary font-semibold"
                                 : "bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-500"
@@ -1149,7 +1149,7 @@ export function ReportTemplatesScreen() {
                     {/* bgType conditional options */}
                     {selectedTemplate.bgType === "solid" && (
                       <div className="space-y-1.5 animate-in slide-in-from-top-1 duration-150">
-                        <label className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 dark:text-zinc-500">Canvas Color</label>
+                        <label className="text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 dark:text-zinc-500">Canvas Color</label>
                         <div className="flex gap-2">
                           <input
                             type="color"
@@ -1170,7 +1170,7 @@ export function ReportTemplatesScreen() {
                     {selectedTemplate.bgType === "gradient" && (
                       <div className="grid grid-cols-2 gap-3.5 animate-in slide-in-from-top-1 duration-150">
                         <div className="space-y-1">
-                          <label className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 dark:text-zinc-500">Start Color</label>
+                          <label className="text-[8px] font-semibold text-zinc-600 dark:text-zinc-400 dark:text-zinc-500">Start Color</label>
                           <div className="flex gap-1.5">
                             <input
                               type="color"
@@ -1180,14 +1180,14 @@ export function ReportTemplatesScreen() {
                             />
                             <input
                               type="text"
-                              className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono"
+                              className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2 py-1 text-[10px] w-full text-zinc-900 dark:text-zinc-100 font-mono"
                               value={selectedTemplate.bgGradientStart || "#ffffff"}
                               onChange={(e) => handleUpdateTemplateField("bgGradientStart", e.target.value)}
                             />
                           </div>
                         </div>
                         <div className="space-y-1">
-                          <label className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 dark:text-zinc-500">End Color</label>
+                          <label className="text-[8px] font-semibold text-zinc-600 dark:text-zinc-400 dark:text-zinc-500">End Color</label>
                           <div className="flex gap-1.5">
                             <input
                               type="color"
@@ -1197,14 +1197,14 @@ export function ReportTemplatesScreen() {
                             />
                             <input
                               type="text"
-                              className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2 py-1 text-xs w-full text-zinc-900 dark:text-zinc-100 font-mono"
+                              className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2 py-1 text-[10px] w-full text-zinc-900 dark:text-zinc-100 font-mono"
                               value={selectedTemplate.bgGradientEnd || "#f1f5f9"}
                               onChange={(e) => handleUpdateTemplateField("bgGradientEnd", e.target.value)}
                             />
                           </div>
                         </div>
                         <div className="col-span-2 space-y-1">
-                          <div className="flex justify-between text-xs font-semibold text-zinc-600 dark:text-zinc-400">
+                          <div className="flex justify-between text-[9px] font-semibold text-zinc-600 dark:text-zinc-400">
                             <span>Gradient Angle</span>
                             <span className="font-mono">{selectedTemplate.bgGradientAngle || 135}°</span>
                           </div>
@@ -1223,7 +1223,7 @@ export function ReportTemplatesScreen() {
                     {selectedTemplate.bgType === "image" && (
                       <div className="space-y-3 animate-in slide-in-from-top-1 duration-150">
                         <div className="space-y-1.5">
-                          <label className="text-xs font-semibold text-zinc-650 dark:text-zinc-400 block">Department Master Backdrop Theme</label>
+                          <label className="text-[9px] font-semibold text-zinc-650 dark:text-zinc-400 block">Department Master Backdrop Theme</label>
                           <div className="grid grid-cols-2 gap-2">
                             {[
                               { name: "Hematology", path: "/assets/report-masters/hematology-master.svg", color: "bg-indigo-500/10 border-indigo-500/30" },
@@ -1245,22 +1245,22 @@ export function ReportTemplatesScreen() {
                                       : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 text-zinc-600 dark:text-zinc-400"
                                   )}
                                 >
-                                  <div className={cn("w-full h-8 rounded border mb-1 flex items-center justify-center text-xs font-bold uppercase tracking-wider", theme.color)}>
+                                  <div className={cn("w-full h-8 rounded border mb-1 flex items-center justify-center text-[8px] font-bold uppercase tracking-wider", theme.color)}>
                                     {theme.name.substring(0, 4)}
                                   </div>
-                                  <span className="text-xs font-bold block">{theme.name}</span>
+                                  <span className="text-[9px] font-bold block">{theme.name}</span>
                                 </button>
                               );
                             })}
                           </div>
                         </div>
                         <div className="space-y-1.5 border-t border-zinc-100 dark:border-zinc-800 pt-3">
-                          <label className="text-xs font-semibold text-zinc-650 dark:text-zinc-400 block">External Custom Backdrop (Canva/Crystal)</label>
+                          <label className="text-[9px] font-semibold text-zinc-650 dark:text-zinc-400 block">External Custom Backdrop (Canva/Crystal)</label>
                           {selectedTemplate.backgroundPath && selectedTemplate.backgroundPath.startsWith("data:") ? (
                             <div className="flex items-center gap-3 bg-white dark:bg-zinc-950 p-2 border border-zinc-200 dark:border-zinc-800 rounded-xl">
                               <img src={selectedTemplate.backgroundPath} alt="Custom Backdrop Preview" className="h-10 w-10 object-contain rounded border border-zinc-100 dark:border-zinc-800" />
                               <div className="flex-1 min-w-0">
-                                <span className="text-xs text-zinc-500 block truncate font-mono">Custom Backdrop Active</span>
+                                <span className="text-[10px] text-zinc-500 block truncate font-mono">Custom Backdrop Active</span>
                               </div>
                               <button
                                 type="button"
@@ -1287,12 +1287,12 @@ export function ReportTemplatesScreen() {
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                               />
                               <Plus className="w-4 h-4 text-zinc-400 group-hover:text-synos-primary transition-colors mb-1" />
-                              <span className="text-xs text-zinc-500 font-semibold group-hover:text-zinc-600 transition-colors">Upload Canva/A4 preprinted PNG</span>
+                              <span className="text-[10px] text-zinc-500 font-semibold group-hover:text-zinc-600 transition-colors">Upload Canva/A4 preprinted PNG</span>
                             </div>
                           )}
                         </div>
                         <div className="space-y-1">
-                          <div className="flex justify-between text-xs font-semibold text-zinc-600 dark:text-zinc-400 font-medium">
+                          <div className="flex justify-between text-[9px] font-semibold text-zinc-600 dark:text-zinc-400 font-medium">
                             <span>Image Overlay Opacity</span>
                             <span className="font-mono">{Math.round((selectedTemplate.bgImageOpacity || 0.05) * 100)}%</span>
                           </div>
@@ -1311,11 +1311,11 @@ export function ReportTemplatesScreen() {
 
                     {/* Border Width / Style / Color / Radius & Page Padding */}
                     <div className="border-t border-zinc-200 dark:border-zinc-800 pt-3.5 space-y-3.5">
-                      <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block">Border & canvas framing</span>
+                      <span className="text-[10px] font-semibold text-zinc-700 dark:text-zinc-300 block">Border & canvas framing</span>
                       
                       <div className="grid grid-cols-2 gap-3.5">
                         <div className="space-y-1">
-                          <div className="flex justify-between text-xs font-semibold text-zinc-600 dark:text-zinc-400">
+                          <div className="flex justify-between text-[9px] font-semibold text-zinc-600 dark:text-zinc-400">
                             <span>Border Width</span>
                             <span className="font-mono">{selectedTemplate.borderWidth ?? 1}px</span>
                           </div>
@@ -1330,7 +1330,7 @@ export function ReportTemplatesScreen() {
                         </div>
 
                         <div className="space-y-1">
-                          <div className="flex justify-between text-xs font-semibold text-zinc-600 dark:text-zinc-400">
+                          <div className="flex justify-between text-[9px] font-semibold text-zinc-600 dark:text-zinc-400">
                             <span>Border Radius</span>
                             <span className="font-mono">{selectedTemplate.borderRadius ?? 12}px</span>
                           </div>
@@ -1345,7 +1345,7 @@ export function ReportTemplatesScreen() {
                         </div>
 
                         <div className="space-y-1">
-                          <div className="flex justify-between text-xs font-semibold text-zinc-600 dark:text-zinc-400">
+                          <div className="flex justify-between text-[9px] font-semibold text-zinc-600 dark:text-zinc-400">
                             <span>Page Inner Padding</span>
                             <span className="font-mono">{selectedTemplate.pagePadding ?? 24}px</span>
                           </div>
@@ -1360,7 +1360,7 @@ export function ReportTemplatesScreen() {
                         </div>
 
                         <div className="space-y-1">
-                          <label className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 dark:text-zinc-500">Border Style</label>
+                          <label className="text-[8px] font-semibold text-zinc-600 dark:text-zinc-400 dark:text-zinc-500">Border Style</label>
                           <select
                             className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-xs w-full text-zinc-700 outline-none"
                             value={selectedTemplate.borderStyle || "solid"}
@@ -1376,7 +1376,7 @@ export function ReportTemplatesScreen() {
                       </div>
 
                       <div className="space-y-1.5">
-                        <label className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 dark:text-zinc-500">Border Color</label>
+                        <label className="text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 dark:text-zinc-500">Border Color</label>
                         <div className="flex gap-2">
                           <input
                             type="color"
@@ -1409,8 +1409,8 @@ export function ReportTemplatesScreen() {
                         className="rounded border-zinc-300 dark:border-zinc-700 text-synos-primary focus:ring-synos-primary w-4.5 h-4.5"
                       />
                       <div>
-                        <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 block">Enable Absolute Coordinates</span>
-                        <span className="text-xs text-zinc-400 block">Overlay blocks using physical millimeter rulers</span>
+                        <span className="text-[11px] font-bold text-zinc-800 dark:text-zinc-200 block">Enable Absolute Coordinates</span>
+                        <span className="text-[9px] text-zinc-400 block">Overlay blocks using physical millimeter rulers</span>
                       </div>
                     </label>
 
@@ -1419,7 +1419,7 @@ export function ReportTemplatesScreen() {
                       selectedTemplate.enableAbsolutePositioning ? "opacity-100 animate-in slide-in-from-top-1 duration-150" : "opacity-40 pointer-events-none select-none"
                     )}>
                       <div className="space-y-1">
-                        <div className="flex justify-between text-xs font-semibold text-zinc-650 dark:text-zinc-400">
+                        <div className="flex justify-between text-[9px] font-semibold text-zinc-650 dark:text-zinc-400">
                           <span>Patient Block Y-Offset</span>
                           <span className="font-mono font-bold text-synos-primary">{selectedTemplate.patientBlockY ?? 55} mm</span>
                         </div>
@@ -1434,7 +1434,7 @@ export function ReportTemplatesScreen() {
                       </div>
 
                       <div className="space-y-1">
-                        <div className="flex justify-between text-xs font-semibold text-zinc-650 dark:text-zinc-400">
+                        <div className="flex justify-between text-[9px] font-semibold text-zinc-650 dark:text-zinc-400">
                           <span>Findings Table Y-Offset</span>
                           <span className="font-mono font-bold text-synos-primary">{selectedTemplate.tableBlockY ?? 95} mm</span>
                         </div>
@@ -1449,7 +1449,7 @@ export function ReportTemplatesScreen() {
                       </div>
 
                       <div className="space-y-1">
-                        <div className="flex justify-between text-xs font-semibold text-zinc-650 dark:text-zinc-400">
+                        <div className="flex justify-between text-[9px] font-semibold text-zinc-650 dark:text-zinc-400">
                           <span>Signature Block Y-Offset (from bottom)</span>
                           <span className="font-mono font-bold text-synos-primary">{selectedTemplate.signatureBlockY ?? 25} mm</span>
                         </div>
@@ -1474,7 +1474,7 @@ export function ReportTemplatesScreen() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {/* Sub-section: Brand Name & Typography */}
                       <div className="space-y-4 bg-zinc-50/50 dark:bg-zinc-950/20 p-4 rounded-xl border border-zinc-200/60 dark:border-zinc-800">
-                        <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400 block">Brand Typography & Header text</span>
+                        <span className="text-[10px] font-semibold text-zinc-600 dark:text-zinc-400 block">Brand Typography & Header text</span>
                         
                         <div className="flex gap-4 border-b border-zinc-200/60 dark:border-zinc-850 pb-2">
                           <label className="flex items-center gap-2 cursor-pointer select-none">
@@ -1484,7 +1484,7 @@ export function ReportTemplatesScreen() {
                               checked={selectedTemplate.includeHeaderName ?? true}
                               onChange={(e) => handleUpdateTemplateField("includeHeaderName", e.target.checked)}
                             />
-                            <span className="text-xs font-semibold text-zinc-750 dark:text-zinc-300">Show Brand Title</span>
+                            <span className="text-[10px] font-semibold text-zinc-750 dark:text-zinc-300">Show Brand Title</span>
                           </label>
 
                           <label className="flex items-center gap-2 cursor-pointer select-none">
@@ -1494,12 +1494,12 @@ export function ReportTemplatesScreen() {
                               checked={selectedTemplate.includeHeaderSubtitle ?? true}
                               onChange={(e) => handleUpdateTemplateField("includeHeaderSubtitle", e.target.checked)}
                             />
-                            <span className="text-xs font-semibold text-zinc-750 dark:text-zinc-300">Show Subtitle</span>
+                            <span className="text-[10px] font-semibold text-zinc-750 dark:text-zinc-300">Show Subtitle</span>
                           </label>
                         </div>
 
                         <div className={cn("space-y-1.5 transition-all duration-300", !(selectedTemplate.includeHeaderName ?? true) && "opacity-40 pointer-events-none select-none")}>
-                          <label className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Brand Main Title Text</label>
+                          <label className="text-[9px] font-semibold text-zinc-600 dark:text-zinc-400">Brand Main Title Text</label>
                           <input
                             type="text"
                             className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-1.5 text-xs w-full text-zinc-900 dark:text-zinc-100 outline-none"
@@ -1510,7 +1510,7 @@ export function ReportTemplatesScreen() {
 
                         <div className={cn("grid grid-cols-3 gap-2 transition-all duration-300", !(selectedTemplate.includeHeaderName ?? true) && "opacity-40 pointer-events-none select-none")}>
                           <div className="space-y-1">
-                            <label className="text-xs font-semibold text-zinc-400 block mb-0.5">Size (px)</label>
+                            <label className="text-[8px] font-semibold text-zinc-400 block mb-0.5">Size (px)</label>
                             <input
                               type="number"
                               className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded px-2 py-1 text-xs w-full font-mono text-center outline-none"
@@ -1519,7 +1519,7 @@ export function ReportTemplatesScreen() {
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-xs font-semibold text-zinc-400 block mb-0.5">Weight</label>
+                            <label className="text-[8px] font-semibold text-zinc-400 block mb-0.5">Weight</label>
                             <select
                               className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded px-1.5 py-1 text-xs w-full text-zinc-700 outline-none"
                               value={selectedTemplate.brandNameWeight || "900"}
@@ -1533,7 +1533,7 @@ export function ReportTemplatesScreen() {
                             </select>
                           </div>
                           <div className="space-y-1">
-                            <label className="text-xs font-semibold text-zinc-400 block mb-0.5">Color</label>
+                            <label className="text-[8px] font-semibold text-zinc-400 block mb-0.5">Color</label>
                             <input
                               type="color"
                               className="w-full h-7 rounded border border-zinc-200 dark:border-zinc-800 cursor-pointer p-0"
@@ -1545,7 +1545,7 @@ export function ReportTemplatesScreen() {
 
                         {/* Subtitle details */}
                         <div className={cn("space-y-1.5 border-t border-zinc-200 dark:border-zinc-800 pt-3 transition-all duration-300", !(selectedTemplate.includeHeaderSubtitle ?? true) && "opacity-40 pointer-events-none select-none")}>
-                          <label className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Brand Subtitle Text</label>
+                          <label className="text-[9px] font-semibold text-zinc-600 dark:text-zinc-400">Brand Subtitle Text</label>
                           <input
                             type="text"
                             className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-1.5 text-xs w-full text-zinc-900 dark:text-zinc-100 outline-none"
@@ -1556,7 +1556,7 @@ export function ReportTemplatesScreen() {
 
                         <div className={cn("grid grid-cols-2 gap-2 transition-all duration-300", !(selectedTemplate.includeHeaderSubtitle ?? true) && "opacity-40 pointer-events-none select-none")}>
                           <div className="space-y-1">
-                            <label className="text-xs font-semibold text-zinc-400 block mb-0.5">Size (px)</label>
+                            <label className="text-[8px] font-semibold text-zinc-400 block mb-0.5">Size (px)</label>
                             <input
                               type="number"
                               className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded px-2 py-1 text-xs w-full font-mono text-center outline-none"
@@ -1565,7 +1565,7 @@ export function ReportTemplatesScreen() {
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-xs font-semibold text-zinc-400 block mb-0.5">Color</label>
+                            <label className="text-[8px] font-semibold text-zinc-400 block mb-0.5">Color</label>
                             <input
                               type="color"
                               className="w-full h-7 rounded border border-zinc-200 dark:border-zinc-800 cursor-pointer p-0"
@@ -1579,7 +1579,7 @@ export function ReportTemplatesScreen() {
                       {/* Sub-section: Logo URL, alignment, sizes */}
                       <div className="space-y-4 bg-zinc-50/50 dark:bg-zinc-950/25 p-4 rounded-xl border border-zinc-200/60 dark:border-zinc-800">
                         <div className="flex items-center justify-between border-b border-zinc-150 dark:border-zinc-800 pb-2">
-                          <span className="text-xs font-semibold text-zinc-650 dark:text-zinc-400 block">Brand Logo & Header Dividers</span>
+                          <span className="text-[10px] font-semibold text-zinc-650 dark:text-zinc-400 block">Brand Logo & Header Dividers</span>
                           <label className="flex items-center gap-2 cursor-pointer select-none">
                             <input
                               type="checkbox"
@@ -1587,18 +1587,18 @@ export function ReportTemplatesScreen() {
                               checked={selectedTemplate.includeLogo ?? true}
                               onChange={(e) => handleUpdateTemplateField("includeLogo", e.target.checked)}
                             />
-                            <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">Show Clinic Logo</span>
+                            <span className="text-[10px] font-semibold text-zinc-700 dark:text-zinc-300">Show Clinic Logo</span>
                           </label>
                         </div>
 
                         <div className={cn("space-y-4 transition-all duration-300", !(selectedTemplate.includeLogo ?? true) && "opacity-40 pointer-events-none select-none")}>
                           <div className="space-y-1.5">
-                            <label className="text-xs font-semibold text-zinc-650 dark:text-zinc-400 block">Clinic Logo (PNG/Image)</label>
+                            <label className="text-[9px] font-semibold text-zinc-650 dark:text-zinc-400 block">Clinic Logo (PNG/Image)</label>
                             {selectedTemplate.logoUrl ? (
                               <div className="flex items-center gap-3 bg-white dark:bg-zinc-950 p-2 border border-zinc-200 dark:border-zinc-800 rounded-xl">
                                 <img src={selectedTemplate.logoUrl} alt="Logo Preview" className="h-10 w-10 object-contain rounded border border-zinc-100 dark:border-zinc-800" />
                                 <div className="flex-1 min-w-0">
-                                  <span className="text-xs text-zinc-500 block truncate">Logo loaded</span>
+                                  <span className="text-[10px] text-zinc-500 block truncate">Logo loaded</span>
                                 </div>
                                 <button
                                   type="button"
@@ -1618,14 +1618,14 @@ export function ReportTemplatesScreen() {
                                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                 />
                                 <Plus className="w-4 h-4 text-zinc-400 group-hover:text-synos-primary transition-colors mb-1" />
-                                <span className="text-xs text-zinc-500 font-semibold group-hover:text-zinc-600 transition-colors">Choose local logo image</span>
+                                <span className="text-[10px] text-zinc-500 font-semibold group-hover:text-zinc-600 transition-colors">Choose local logo image</span>
                               </div>
                             )}
                           </div>
 
                           <div className="grid grid-cols-2 gap-3.5">
                             <div className="space-y-1">
-                              <label className="text-xs font-semibold text-zinc-400 block mb-0.5">Logo Width (px)</label>
+                              <label className="text-[8px] font-semibold text-zinc-400 block mb-0.5">Logo Width (px)</label>
                               <input
                                 type="number"
                                 min="20"
@@ -1636,7 +1636,7 @@ export function ReportTemplatesScreen() {
                               />
                             </div>
                             <div className="space-y-1">
-                              <label className="text-xs font-semibold text-zinc-400 block mb-0.5">Logo Position</label>
+                              <label className="text-[8px] font-semibold text-zinc-400 block mb-0.5">Logo Position</label>
                               <select
                                 className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded px-1.5 py-1 text-xs w-full text-zinc-600 dark:text-zinc-400 outline-none font-bold"
                                 value={selectedTemplate.logoPosition || "Left"}
@@ -1659,13 +1659,13 @@ export function ReportTemplatesScreen() {
                               onChange={(e) => handleUpdateTemplateField("showHeaderDivider", e.target.checked)}
                               className="rounded border-zinc-300 text-synos-primary focus:ring-0 w-3.5 h-3.5"
                             />
-                            <span className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Draw Header Divider Line</span>
+                            <span className="text-[9px] font-semibold text-zinc-600 dark:text-zinc-400">Draw Header Divider Line</span>
                           </label>
 
                           {selectedTemplate.showHeaderDivider !== false && (
                             <div className="grid grid-cols-3 gap-2.5 animate-in slide-in-from-top-1 duration-150">
                               <div>
-                                <label className="text-xs font-semibold text-zinc-400 block mb-0.5">Width</label>
+                                <label className="text-[8px] font-semibold text-zinc-400 block mb-0.5">Width</label>
                                 <input
                                   type="number"
                                   className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded px-2 py-1 text-xs w-full font-mono text-center outline-none"
@@ -1674,7 +1674,7 @@ export function ReportTemplatesScreen() {
                                 />
                               </div>
                               <div>
-                                <label className="text-xs font-semibold text-zinc-400 block mb-0.5">Style</label>
+                                <label className="text-[8px] font-semibold text-zinc-400 block mb-0.5">Style</label>
                                 <select
                                   className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded px-1.5 py-1 text-xs w-full text-zinc-600 dark:text-zinc-400 outline-none"
                                   value={selectedTemplate.headerDividerStyle || "solid"}
@@ -1686,7 +1686,7 @@ export function ReportTemplatesScreen() {
                                 </select>
                               </div>
                               <div>
-                                <label className="text-xs font-semibold text-zinc-400 block mb-0.5">Color</label>
+                                <label className="text-[8px] font-semibold text-zinc-400 block mb-0.5">Color</label>
                                 <input
                                   type="color"
                                   className="w-full h-7 rounded border border-zinc-200 dark:border-zinc-800 cursor-pointer p-0"
@@ -1715,7 +1715,7 @@ export function ReportTemplatesScreen() {
                           checked={selectedTemplate.includeWatermark ?? true}
                           onChange={(e) => handleUpdateTemplateField("includeWatermark", e.target.checked)}
                         />
-                        <span className="text-xs font-semibold text-zinc-750 dark:text-zinc-300">Enable Watermark Settings</span>
+                        <span className="text-[10px] font-semibold text-zinc-750 dark:text-zinc-300">Enable Watermark Settings</span>
                       </label>
 
                       <label className="flex items-center gap-2 cursor-pointer select-none">
@@ -1725,7 +1725,7 @@ export function ReportTemplatesScreen() {
                           checked={selectedTemplate.includeFooter ?? true}
                           onChange={(e) => handleUpdateTemplateField("includeFooter", e.target.checked)}
                         />
-                        <span className="text-xs font-semibold text-zinc-750 dark:text-zinc-300">Enable Footer Settings</span>
+                        <span className="text-[10px] font-semibold text-zinc-750 dark:text-zinc-300">Enable Footer Settings</span>
                       </label>
                     </div>
 
@@ -1733,7 +1733,7 @@ export function ReportTemplatesScreen() {
                       <div className={cn("space-y-4 transition-all duration-300", !(selectedTemplate.includeWatermark ?? true) && "opacity-40 pointer-events-none select-none")}>
                         <div className="grid grid-cols-3 gap-2">
                           <div className="col-span-2 space-y-1.5">
-                            <label className="text-xs font-semibold text-zinc-650 dark:text-zinc-400">Watermark Overlay Text</label>
+                            <label className="text-[9px] font-semibold text-zinc-650 dark:text-zinc-400">Watermark Overlay Text</label>
                             <input
                               type="text"
                               className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-1.5 text-xs w-full text-zinc-900 dark:text-zinc-100 outline-none"
@@ -1742,7 +1742,7 @@ export function ReportTemplatesScreen() {
                             />
                           </div>
                           <div className="space-y-1.5">
-                            <label className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Opacity (0.01-0.5)</label>
+                            <label className="text-[9px] font-semibold text-zinc-600 dark:text-zinc-400">Opacity (0.01-0.5)</label>
                             <input
                               type="number"
                               step="0.01"
@@ -1757,7 +1757,7 @@ export function ReportTemplatesScreen() {
 
                         <div className="grid grid-cols-2 gap-3.5">
                           <div className="space-y-1">
-                            <div className="flex justify-between text-xs font-semibold text-zinc-600 dark:text-zinc-400">
+                            <div className="flex justify-between text-[9px] font-semibold text-zinc-600 dark:text-zinc-400">
                               <span>Font Size (px)</span>
                               <span className="font-mono">{selectedTemplate.watermarkSize || 32}px</span>
                             </div>
@@ -1772,7 +1772,7 @@ export function ReportTemplatesScreen() {
                           </div>
 
                           <div className="space-y-1">
-                            <div className="flex justify-between text-xs font-semibold text-zinc-600 dark:text-zinc-400">
+                            <div className="flex justify-between text-[9px] font-semibold text-zinc-600 dark:text-zinc-400">
                               <span>Rotation</span>
                               <span className="font-mono">{selectedTemplate.watermarkRotation ?? 12}°</span>
                             </div>
@@ -1790,7 +1790,7 @@ export function ReportTemplatesScreen() {
 
                       <div className={cn("space-y-4 transition-all duration-300", !(selectedTemplate.includeFooter ?? true) && "opacity-40 pointer-events-none select-none")}>
                         <div className="space-y-1.5">
-                          <label className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Footer Brand Subtext</label>
+                          <label className="text-[9px] font-semibold text-zinc-600 dark:text-zinc-400">Footer Brand Subtext</label>
                           <input
                             type="text"
                             placeholder="Sector 4, Phase 2, Health City | Email: reports@synos.in"
@@ -1801,7 +1801,7 @@ export function ReportTemplatesScreen() {
                         </div>
 
                         <div className="space-y-1.5">
-                          <label className="text-xs font-semibold text-zinc-600 dark:text-zinc-400">Branding Color Theme Preset</label>
+                          <label className="text-[9px] font-semibold text-zinc-600 dark:text-zinc-400">Branding Color Theme Preset</label>
                           <select
                             className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-1.5 text-xs w-full outline-none font-bold text-zinc-700"
                             value={selectedTemplate.themeColor || "Indigo"}
@@ -1827,7 +1827,7 @@ export function ReportTemplatesScreen() {
         <div className="col-span-12 lg:col-span-4 bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm space-y-6 lg:h-full lg:overflow-y-auto custom-scrollbar">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div className="flex items-center gap-3">
-              <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 block uppercase tracking-wider">Live Report Preview</span>
+              <span className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 block uppercase tracking-wider">Live Report Preview</span>
               <label className="flex items-center gap-1.5 cursor-pointer select-none">
                 <input
                   type="checkbox"
@@ -1835,7 +1835,7 @@ export function ReportTemplatesScreen() {
                   checked={showGuidelines}
                   onChange={(e) => setShowGuidelines(e.target.checked)}
                 />
-                <span className="text-xs font-bold text-zinc-500 dark:text-zinc-450 uppercase tracking-wider">Guidelines</span>
+                <span className="text-[9px] font-bold text-zinc-500 dark:text-zinc-450 uppercase tracking-wider">Guidelines</span>
               </label>
             </div>
             
@@ -1951,7 +1951,7 @@ export function ReportTemplatesScreen() {
                     className="absolute left-0 right-0 border-t border-dashed border-indigo-400/80"
                     style={{ top: `${selectedTemplate.patientBlockY ?? 55}mm` }}
                   >
-                    <span className="absolute right-4 -top-3 bg-indigo-600 text-white font-mono text-xs font-bold px-1.5 py-0.5 rounded shadow-sm">
+                    <span className="absolute right-4 -top-3 bg-indigo-600 text-white font-mono text-[8px] font-bold px-1.5 py-0.5 rounded shadow-sm">
                       Patient Y: {selectedTemplate.patientBlockY ?? 55}mm
                     </span>
                   </div>
@@ -1961,7 +1961,7 @@ export function ReportTemplatesScreen() {
                     className="absolute left-0 right-0 border-t border-dashed border-emerald-400/80"
                     style={{ top: `${selectedTemplate.tableBlockY ?? 95}mm` }}
                   >
-                    <span className="absolute right-4 -top-3 bg-emerald-600 text-white font-mono text-xs font-bold px-1.5 py-0.5 rounded shadow-sm">
+                    <span className="absolute right-4 -top-3 bg-emerald-600 text-white font-mono text-[8px] font-bold px-1.5 py-0.5 rounded shadow-sm">
                       Table Y: {selectedTemplate.tableBlockY ?? 95}mm
                     </span>
                   </div>
@@ -1971,7 +1971,7 @@ export function ReportTemplatesScreen() {
                     className="absolute left-0 right-0 border-b border-dashed border-violet-400/80"
                     style={{ bottom: `${selectedTemplate.signatureBlockY ?? 25}mm` }}
                   >
-                    <span className="absolute right-4 -bottom-3 bg-violet-600 text-white font-mono text-xs font-bold px-1.5 py-0.5 rounded shadow-sm">
+                    <span className="absolute right-4 -bottom-3 bg-violet-600 text-white font-mono text-[8px] font-bold px-1.5 py-0.5 rounded shadow-sm">
                       Signature Bottom Y: {selectedTemplate.signatureBlockY ?? 25}mm
                     </span>
                   </div>
@@ -2080,7 +2080,7 @@ export function ReportTemplatesScreen() {
                   {/* Physical Preprinted top space indicators in non-absolute layout */}
                   {!selectedTemplate.enableAbsolutePositioning && previewMode === "physical" && selectedTemplate.usePreprinted && (
                     <div className="h-[90px] border border-dashed border-zinc-200 bg-zinc-50/50 rounded-lg flex flex-col justify-center items-center mb-6 relative z-10">
-                      <span className="text-xs font-semibold tracking-wider text-zinc-600 dark:text-zinc-400">Physical pre-printed sheet header region</span>
+                      <span className="text-[8px] font-semibold tracking-wider text-zinc-600 dark:text-zinc-400">Physical pre-printed sheet header region</span>
                       <span className="text-[7px] text-zinc-400 font-mono mt-0.5">Top Safe Margins: {selectedTemplate.topMargin}mm (~90px gap)</span>
                     </div>
                   )}
@@ -2106,7 +2106,7 @@ export function ReportTemplatesScreen() {
                           zIndex: 20
                         }}
                         onPointerDown={(e) => handleStartDrag(e, 'patientNameX', 'patientNameY', coords.patientNameX, coords.patientNameY)}
-                        className="bg-transparent border-0 shadow-none p-1 text-xs text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
+                        className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
                       >
                         <span className="font-bold text-zinc-800 dark:text-zinc-100">Rajesh Kumar</span>
                       </div>
@@ -2121,7 +2121,7 @@ export function ReportTemplatesScreen() {
                           zIndex: 20
                         }}
                         onPointerDown={(e) => handleStartDrag(e, 'patientAgeSexX', 'patientAgeSexY', coords.patientAgeSexX, coords.patientAgeSexY)}
-                        className="bg-transparent border-0 shadow-none p-1 text-xs text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
+                        className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
                       >
                         <span className="font-semibold text-zinc-700 dark:text-zinc-300">32Y / Male</span>
                       </div>
@@ -2136,7 +2136,7 @@ export function ReportTemplatesScreen() {
                           zIndex: 20
                         }}
                         onPointerDown={(e) => handleStartDrag(e, 'refDoctorX', 'refDoctorY', coords.refDoctorX, coords.refDoctorY)}
-                        className="bg-transparent border-0 shadow-none p-1 text-xs text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
+                        className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
                       >
                         <span className="font-bold text-zinc-850 dark:text-zinc-100">Dr. S. Sharma, MD</span>
                       </div>
@@ -2151,7 +2151,7 @@ export function ReportTemplatesScreen() {
                           zIndex: 20
                         }}
                         onPointerDown={(e) => handleStartDrag(e, 'patientIdX', 'patientIdY', coords.patientIdX, coords.patientIdY)}
-                        className="bg-transparent border-0 shadow-none p-1 text-xs text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
+                        className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
                       >
                         <span className="font-semibold font-mono text-zinc-700 dark:text-zinc-300">PID-2026-8940</span>
                       </div>
@@ -2166,7 +2166,7 @@ export function ReportTemplatesScreen() {
                           zIndex: 20
                         }}
                         onPointerDown={(e) => handleStartDrag(e, 'billingDateX', 'billingDateY', coords.billingDateX, coords.billingDateY)}
-                        className="bg-transparent border-0 shadow-none p-1 text-xs text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
+                        className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
                       >
                         <span className="font-semibold text-zinc-700 dark:text-zinc-300">20-May-2026</span>
                       </div>
@@ -2181,7 +2181,7 @@ export function ReportTemplatesScreen() {
                           zIndex: 20
                         }}
                         onPointerDown={(e) => handleStartDrag(e, 'reportDateX', 'reportDateY', coords.reportDateX, coords.reportDateY)}
-                        className="bg-transparent border-0 shadow-none p-1 text-xs text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
+                        className="bg-transparent border-0 shadow-none p-1 text-[10px] text-zinc-850 dark:text-zinc-200 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
                       >
                         <span className="font-bold text-zinc-800 dark:text-zinc-100">22-May-2026</span>
                       </div>
@@ -2195,7 +2195,7 @@ export function ReportTemplatesScreen() {
                       }}
                       className="transition-all"
                     >
-                      <div className="flex justify-between items-center text-xs border-b border-zinc-150 pb-1.5 font-semibold text-zinc-650 dark:text-zinc-400">
+                      <div className="flex justify-between items-center text-[9px] border-b border-zinc-150 pb-1.5 font-semibold text-zinc-650 dark:text-zinc-400">
                         <div>
                           <span className="font-bold text-zinc-800">Patient:</span> Rajesh Kumar, M / 32Y
                         </div>
@@ -2223,7 +2223,7 @@ export function ReportTemplatesScreen() {
                       className="bg-transparent border-0 shadow-none p-1 transition-all select-none hover:ring-1 hover:ring-synos-primary/50 hover:bg-synos-primary/5 rounded"
                     >
                       <div className={cn(
-                        "text-xs tracking-wider text-zinc-650 mb-1 font-semibold",
+                        "text-[9px] tracking-wider text-zinc-650 mb-1 font-semibold",
                         selectedTemplate.density === "Compact" && "py-0.5",
                         selectedTemplate.density === "Comfortable" && "py-1.5",
                         selectedTemplate.density === "Large-print" && "py-2.5 text-xs"
@@ -2254,7 +2254,7 @@ export function ReportTemplatesScreen() {
                   >
                     {!selectedTemplate.enableAbsolutePositioning && (
                       <div className={cn(
-                        "text-xs tracking-wider text-zinc-600 dark:text-zinc-400 mb-2 font-semibold",
+                        "text-[9px] tracking-wider text-zinc-600 dark:text-zinc-400 mb-2 font-semibold",
                         selectedTemplate.density === "Compact" && "py-0.5",
                         selectedTemplate.density === "Comfortable" && "py-1.5",
                         selectedTemplate.density === "Large-print" && "py-2.5 text-xs"
@@ -2264,7 +2264,7 @@ export function ReportTemplatesScreen() {
                     )}
                     <table className="w-full border-collapse">
                       <thead>
-                        <tr className="border-t border-b border-zinc-900 text-xs font-bold text-zinc-800">
+                        <tr className="border-t border-b border-zinc-900 text-[9px] font-bold text-zinc-800">
                           {selectedTemplate.columns.map((col, idx) => (
                             <th
                               key={idx}
@@ -2279,7 +2279,7 @@ export function ReportTemplatesScreen() {
                           ))}
                         </tr>
                       </thead>
-                      <tbody className="text-xs text-zinc-800">
+                      <tbody className="text-[10px] text-zinc-800">
                         {[
                           { name: "GLUCOSE ESTIMATION, FASTING", val: "104.5", unit: "mg/dL", ref: "70.0 - 110.0", meth: "Hexokinase" },
                           { name: "GLUCOSE ESTIMATION, POST-PRANDIAL", val: "142.8", unit: "mg/dL", ref: "70.0 - 140.0", meth: "GOD-PAP" }
@@ -2371,7 +2371,7 @@ export function ReportTemplatesScreen() {
                           {previewMode === "digital" && selectedTemplate.includeBranding && (
                             <span className="font-mono text-[7px] text-zinc-500 italic block mb-0.5">/Signed digitally/</span>
                           )}
-                          <div className="border-t border-zinc-300 pt-1 text-xs font-semibold text-zinc-650">
+                          <div className="border-t border-zinc-300 pt-1 text-[8px] font-semibold text-zinc-650">
                             {slot.title}
                             {slot.required && <span className="text-rose-500 font-bold ml-0.5">*</span>}
                           </div>
@@ -2383,7 +2383,7 @@ export function ReportTemplatesScreen() {
                   {/* Physical Preprinted Bottom Margins indicator in non-absolute layout */}
                   {!selectedTemplate.enableAbsolutePositioning && previewMode === "physical" && selectedTemplate.usePreprinted && (
                     <div className="h-[70px] border border-dashed border-zinc-200 bg-zinc-50/50 rounded-lg flex flex-col justify-center items-center mt-4 relative">
-                      <span className="text-xs font-semibold tracking-wider text-zinc-600 dark:text-zinc-400">Physical pre-printed sheet region</span>
+                      <span className="text-[8px] font-semibold tracking-wider text-zinc-600 dark:text-zinc-400">Physical pre-printed sheet region</span>
                       <span className="text-[7px] text-zinc-400 font-mono mt-0.5">Bottom Safe Margins: {selectedTemplate.bottomMargin}mm (~70px gap)</span>
                     </div>
                   )}

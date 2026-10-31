@@ -121,7 +121,7 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
   return (
     <div
       className={cn(
-        "sticky top-0 z-50 h-14 w-full px-3 sm:px-6 flex items-center justify-between select-none transition-all duration-300 isolation-auto relative",
+        "sticky top-0 z-50 h-12 w-full px-3 sm:px-6 flex items-center justify-between select-none transition-all duration-300 isolation-auto relative",
         ui.bar
       )}
       style={{
@@ -146,34 +146,34 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
           <img 
             src="/assets/synos-lockup.svg" 
             alt="SynOS" 
-            className="h-8 sm:h-8.5 md:h-9 max-w-[170px] sm:max-w-[230px] lg:max-w-[290px] xl:max-w-none object-contain object-left dark:invert transition-all" 
+            className="h-7 sm:h-7.5 md:h-8 max-w-[160px] sm:max-w-[220px] lg:max-w-[280px] xl:max-w-none object-contain object-left dark:invert transition-all" 
           />
         </div>
 
         {isTakeoverActive && (
           <div className="flex items-center gap-1.5 sm:gap-2.5">
-            <div className="h-5 w-px bg-zinc-300 dark:bg-zinc-700 hidden sm:block shrink-0" />
+            <div className="h-4 w-px bg-zinc-300 dark:bg-zinc-700 hidden sm:block shrink-0" />
             
             <div className={cn(
-              "flex items-center gap-2 sm:gap-2.5 px-3 sm:px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition-all",
+              "flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-medium transition-all",
               ui.pill
             )}>
               <div className="flex items-center gap-1.5 shrink-0">
-                <User className="w-4 h-4 opacity-75 shrink-0 text-synos-primary" />
-                <span className="whitespace-nowrap">
-                  <span className="hidden md:inline opacity-75">Takeover: </span>
+                <User className="w-3.5 h-3.5 opacity-70 shrink-0" />
+                <span className="text-xs whitespace-nowrap">
+                  <span className="hidden md:inline opacity-70">Takeover: </span>
                   <span className="font-bold text-zinc-900 dark:text-zinc-100">{takeoverRoleName}</span>
                 </span>
               </div>
               
-              <div className="w-px h-4 bg-black/10 dark:bg-white/10 shrink-0" />
+              <div className="w-px h-3.5 bg-black/10 dark:bg-white/10 shrink-0" />
 
               <button 
                 onClick={() => navigate('/admin')}
-                className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white transition-colors cursor-pointer whitespace-nowrap group"
+                className="flex items-center gap-1 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white transition-colors cursor-pointer whitespace-nowrap group"
                 title="Exit Role → Return to Control Tower"
               >
-                <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform shrink-0" />
+                <ArrowLeft className="w-3 h-3 group-hover:-translate-x-0.5 transition-transform shrink-0" />
                 <span className="hidden lg:inline">Exit to Control Tower</span>
                 <span className="inline lg:hidden">Exit</span>
               </button>
@@ -197,15 +197,15 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
               }
             }}
             className={cn(
-              "flex items-center gap-2 px-3 sm:px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer",
+              "flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-medium transition-all",
               ui.pill,
               !isAdmin && "cursor-default hover:bg-zinc-900"
             )}
             title={currentBranchName}
           >
-            <Globe className="w-4 h-4 opacity-75 shrink-0 text-synos-primary" />
-            <span className="max-w-[110px] sm:max-w-[160px] truncate">{currentBranchName}</span>
-            {isAdmin && <ChevronDown className="w-3.5 h-3.5 opacity-60 shrink-0" />}
+            <Globe className="w-3.5 h-3.5 opacity-70 shrink-0" />
+            <span className="max-w-[100px] sm:max-w-[150px] truncate">{currentBranchName}</span>
+            {isAdmin && <ChevronDown className="w-3 h-3 opacity-50 shrink-0" />}
           </button>
 
           {activeDropdown === 'facility' && isAdmin && (
@@ -213,7 +213,7 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
               ref={facilityRef}
               className="absolute right-0 mt-2 w-64 z-50 synos-elevated-card rounded-2xl p-2 shadow-2xl border border-slate-300 dark:border-white/12 animate-in fade-in-50 zoom-in-95 duration-150"
             >
-              <div className="px-3 py-1.5 mb-1 text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-zinc-200 dark:border-zinc-800">
+              <div className="px-3 py-1.5 mb-1 text-[10px] font-extrabold uppercase tracking-wider text-zinc-400 border-b border-zinc-200 dark:border-zinc-800">
                 Active Branch Facility
               </div>
               {availableBranches.map(b => {
@@ -222,7 +222,7 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
                   <button
                     key={b.id || b.branchId}
                     className={cn(
-                      "w-full px-3.5 py-2 text-left text-xs sm:text-sm rounded-xl font-bold transition-all mb-0.5 cursor-pointer",
+                      "w-full px-3.5 py-2 text-left text-xs rounded-xl font-bold transition-all mb-0.5",
                       isSelected
                         ? "bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold shadow-xs"
                         : "text-zinc-800 dark:text-zinc-200 hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400"
@@ -245,7 +245,7 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
         <button
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           className={cn(
-            "flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all hover:scale-105 cursor-pointer",
+            "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all hover:scale-105 cursor-pointer",
             ui.pill
           )}
           title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} mode`}
@@ -253,13 +253,13 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
         >
           {isDark ? (
             <>
-              <Sun className="w-4 h-4 text-amber-500 hover:rotate-45 transition-transform shrink-0" />
-              <span className="hidden lg:inline text-xs sm:text-sm font-bold text-amber-500">Light</span>
+              <Sun className="w-3.5 h-3.5 text-amber-500 hover:rotate-45 transition-transform shrink-0" />
+              <span className="hidden lg:inline text-[11px] font-bold text-amber-500">Light</span>
             </>
           ) : (
             <>
-              <Moon className="w-4 h-4 text-zinc-600 hover:-rotate-12 transition-transform shrink-0" />
-              <span className="hidden lg:inline text-xs sm:text-sm font-bold text-zinc-700">Dark</span>
+              <Moon className="w-3.5 h-3.5 text-zinc-600 hover:-rotate-12 transition-transform shrink-0" />
+              <span className="hidden lg:inline text-[11px] font-bold text-zinc-600">Dark</span>
             </>
           )}
         </button>
@@ -269,14 +269,14 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
           <button
             onClick={() => setActiveDropdown(activeDropdown === 'role' ? null : 'role')}
             className={cn(
-              "flex items-center gap-2 px-3 sm:px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer",
+              "flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-medium transition-all",
               ui.pill
             )}
             title={user?.name || "User"}
           >
-            <Shield className="w-4 h-4 opacity-75 shrink-0 text-synos-primary" />
-            <span className="max-w-[100px] sm:max-w-[150px] truncate">{user?.name || "User"}</span>
-            <ChevronDown className="w-3.5 h-3.5 opacity-60 shrink-0" />
+            <Shield className="w-3.5 h-3.5 opacity-70 shrink-0" />
+            <span className="max-w-[90px] sm:max-w-[140px] truncate">{user?.name || "User"}</span>
+            <ChevronDown className="w-3 h-3 opacity-50 shrink-0" />
           </button>
 
           {activeDropdown === 'role' && (
@@ -284,56 +284,56 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
               ref={roleRef}
               className="absolute right-0 mt-2 w-56 z-50 synos-elevated-card rounded-2xl p-2 shadow-2xl border border-slate-300 dark:border-white/12 animate-in fade-in-50 zoom-in-95 duration-150"
             >
-              <div className="px-3 py-1.5 mb-1 text-xs font-bold uppercase tracking-wider text-slate-500 border-b border-zinc-200 dark:border-zinc-800">
+              <div className="px-3 py-1.5 mb-1 text-[10px] font-extrabold uppercase tracking-wider text-zinc-400 border-b border-zinc-200 dark:border-zinc-800">
                 Account & Options
               </div>
 
               <button
-                className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl font-bold text-zinc-800 dark:text-zinc-200 hover:bg-synos-primary/10 hover:text-synos-primary transition-all flex items-center gap-2.5 cursor-pointer"
+                className="w-full px-3.5 py-2 text-xs rounded-xl font-bold text-zinc-800 dark:text-zinc-200 hover:bg-synos-primary/10 hover:text-synos-primary transition-all flex items-center gap-2.5"
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               >
-                {isDark ? <Moon className="w-4 h-4 text-synos-primary" /> : <Sun className="w-4 h-4 text-amber-500" />}
+                {isDark ? <Moon className="w-3.5 h-3.5 text-synos-primary" /> : <Sun className="w-3.5 h-3.5 text-amber-500" />}
                 Theme: <span className="capitalize font-extrabold text-synos-primary">{theme}</span>
               </button>
 
               <div className="h-px bg-zinc-200 dark:bg-zinc-800/80 my-1" />
               
               <button
-                className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl font-bold text-zinc-800 dark:text-zinc-200 hover:bg-synos-primary/10 hover:text-synos-primary transition-all flex items-center gap-2.5 cursor-pointer"
+                className="w-full px-3.5 py-2 text-xs rounded-xl font-bold text-zinc-800 dark:text-zinc-200 hover:bg-synos-primary/10 hover:text-synos-primary transition-all flex items-center gap-2.5"
                 onClick={() => { navigate('/my-hr'); setActiveDropdown(null); }}
               >
-                <Shield className="w-4 h-4 text-synos-primary" />
+                <Shield className="w-3.5 h-3.5 text-synos-primary" />
                 My HR
               </button>
 
               <button
-                className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl font-bold text-zinc-800 dark:text-zinc-200 hover:bg-synos-primary/10 hover:text-synos-primary transition-all flex items-center gap-2.5 cursor-pointer"
+                className="w-full px-3.5 py-2 text-xs rounded-xl font-bold text-zinc-800 dark:text-zinc-200 hover:bg-synos-primary/10 hover:text-synos-primary transition-all flex items-center gap-2.5"
                 onClick={() => { navigate('/my-hr/attendance'); setActiveDropdown(null); }}
               >
-                <Clock className="w-4 h-4 text-synos-primary" />
+                <Clock className="w-3.5 h-3.5 text-synos-primary" />
                 My Attendance
               </button>
 
               <button
-                className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl font-bold text-zinc-800 dark:text-zinc-200 hover:bg-synos-primary/10 hover:text-synos-primary transition-all flex items-center gap-2.5 cursor-pointer"
+                className="w-full px-3.5 py-2 text-xs rounded-xl font-bold text-zinc-800 dark:text-zinc-200 hover:bg-synos-primary/10 hover:text-synos-primary transition-all flex items-center gap-2.5"
                 onClick={() => { navigate('/my-hr/leave'); setActiveDropdown(null); }}
               >
-                <Activity className="w-4 h-4 text-synos-primary" />
+                <Activity className="w-3.5 h-3.5 text-synos-primary" />
                 Apply Leave
               </button>
 
               <button
-                className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl font-bold text-zinc-800 dark:text-zinc-200 hover:bg-synos-primary/10 hover:text-synos-primary transition-all flex items-center gap-2.5 cursor-pointer"
+                className="w-full px-3.5 py-2 text-xs rounded-xl font-bold text-zinc-800 dark:text-zinc-200 hover:bg-synos-primary/10 hover:text-synos-primary transition-all flex items-center gap-2.5"
                 onClick={() => { navigate('/my-hr/requests'); setActiveDropdown(null); }}
               >
-                <Activity className="w-4 h-4 opacity-50 text-synos-primary" />
+                <Activity className="w-3.5 h-3.5 opacity-50 text-synos-primary" />
                 My Requests
               </button>
 
               <div className="h-px bg-zinc-200 dark:bg-zinc-800/80 my-1" />
 
               <button
-                className="w-full px-3.5 py-2 text-xs sm:text-sm rounded-xl font-black text-red-600 dark:text-red-400 hover:bg-red-500/10 hover:text-red-700 transition-all flex items-center gap-2.5 cursor-pointer"
+                className="w-full px-3.5 py-2 text-xs rounded-xl font-black text-red-600 dark:text-red-400 hover:bg-red-500/10 hover:text-red-700 transition-all flex items-center gap-2.5"
                 onClick={handleLogout}
               >
                 Sign Out
@@ -344,23 +344,23 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
 
         {/* Time + Status (Fake Frost Pill) */}
         <div className={cn(
-          "flex items-center gap-2.5 sm:gap-3 px-3.5 sm:px-4 py-2 rounded-xl",
+          "flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-1.5 rounded-xl",
           ui.timePill
         )}>
-          <span className="font-mono text-xs sm:text-sm dark:text-zinc-300 text-zinc-800 font-medium whitespace-nowrap">
+          <span className="font-mono text-xs dark:text-zinc-400 text-zinc-700 whitespace-nowrap">
             <span className="hidden xl:inline">{dateDisplay} </span>
-            <span className="dark:text-zinc-100 text-zinc-900 font-bold">{timeDisplay}</span>
+            <span className="dark:text-zinc-200 text-zinc-900">{timeDisplay}</span>
           </span>
 
-          <div className="w-px h-3.5 dark:bg-white/10 bg-black/10 shrink-0" />
+          <div className="w-px h-3 dark:bg-white/10 bg-black/10 shrink-0" />
 
           {isConnected ? (
-            <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-xs font-bold whitespace-nowrap">
-              <Wifi className="w-4 h-4 shrink-0" /> LIVE
+            <span className="flex items-center gap-1 text-emerald-500 text-[10px] font-bold whitespace-nowrap">
+              <Wifi className="w-3.5 h-3.5 shrink-0" /> LIVE
             </span>
           ) : (
-            <span className="flex items-center gap-1.5 text-red-600 dark:text-red-400 text-xs font-bold whitespace-nowrap">
-              <WifiOff className="w-4 h-4 animate-pulse shrink-0" /> OFFLINE
+            <span className="flex items-center gap-1 text-red-500 text-[10px] font-bold whitespace-nowrap">
+              <WifiOff className="w-3.5 h-3.5 animate-pulse shrink-0" /> OFFLINE
             </span>
           )}
         </div>

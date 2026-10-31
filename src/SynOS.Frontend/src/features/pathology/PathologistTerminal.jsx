@@ -909,7 +909,7 @@ export function PathologistTerminal() {
                                     title="Request Stock"
                                 >
                                     <Package className="w-5 h-5" />
-                                    <span className="text-xs font-black uppercase tracking-widest overflow-hidden max-w-0 group-hover:max-w-xs transition-all duration-500">
+                                    <span className="text-[10px] font-black uppercase tracking-widest overflow-hidden max-w-0 group-hover:max-w-xs transition-all duration-500">
                                         Request Stock
                                     </span>
                                 </button>
@@ -958,8 +958,8 @@ export function PathologistTerminal() {
                                                 <AlertCircle className="w-5 h-5" />
                                             </div>
                                             <div>
-                                                <h4 className="text-sm font-black text-red-600 uppercase tracking-normal">Identity Guard Blocked</h4>
-                                                <p className="text-xs text-red-500 font-bold uppercase tracking-wider">
+                                                <h4 className="text-sm font-black text-red-600 uppercase tracking-tight">Identity Guard Blocked</h4>
+                                                <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider">
                                                     Missing: {missingIdentityFields.join(" • ")}
                                                 </p>
                                             </div>
@@ -987,17 +987,17 @@ export function PathologistTerminal() {
                                             <User className="w-4 h-4" />
                                         </div>
                                         <div className="flex items-center gap-2 flex-wrap">
-                                            <h2 className="text-sm font-bold tracking-normal dark:text-zinc-200 text-zinc-800 uppercase">{patientName}</h2>
+                                            <h2 className="text-sm font-bold tracking-tight dark:text-zinc-200 text-zinc-800 uppercase">{patientName}</h2>
                                             <span className="text-zinc-400 text-xs">•</span>
                                             <div className="flex items-center gap-1.5 dark:text-zinc-400 text-zinc-500 text-xs font-semibold">
                                                 <span>{patientAgeGender}</span>
                                                 <span className="text-zinc-400 font-normal">|</span>
-                                                <span className="font-mono text-xs tracking-normal">{token}</span>
+                                                <span className="font-mono text-[11px] tracking-tight">{token}</span>
                                             </div>
                                             {siblingReports.length > 1 && (
                                                 <>
                                                     <span className="text-zinc-400 text-xs">•</span>
-                                                    <div className="flex items-center gap-2 px-2 py-0.5 bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 rounded-lg text-xs font-bold">
+                                                    <div className="flex items-center gap-2 px-2 py-0.5 bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 rounded-lg text-[10px] font-bold">
                                                         <span>Report {currentReportIndex + 1} of {siblingReports.length}</span>
                                                         <span className="opacity-45">|</span>
                                                         <button 
@@ -1019,7 +1019,7 @@ export function PathologistTerminal() {
                                                 </>
                                             )}
                                             {siblingReports.length > 1 && remainingReportsCount > 0 && (
-                                                <span className="bg-rose-500/10 text-rose-500 border border-rose-500/20 text-xs px-2 py-0.5 rounded-full font-bold">
+                                                <span className="bg-rose-500/10 text-rose-500 border border-rose-500/20 text-[10px] px-2 py-0.5 rounded-full font-bold">
                                                     {remainingReportsCount} {remainingReportsCount === 1 ? 'Report' : 'Reports'} Remaining
                                                 </span>
                                             )}
@@ -1027,15 +1027,15 @@ export function PathologistTerminal() {
                                     </div>
                                     <div className="flex items-center gap-3">
                                         {liveTypistConnected && (
-                                            <div className="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-full text-xs font-black uppercase tracking-widest shrink-0">
+                                            <div className="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-full text-[8px] font-black uppercase tracking-widest shrink-0">
                                                 <div className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse" />
                                                 Live Typist
                                             </div>
                                         )}
                                         <div className="flex items-center gap-1.5 text-xs font-semibold">
-                                            <span className="text-xs uppercase font-bold dark:text-zinc-500 text-zinc-400 tracking-wider">Status:</span>
+                                            <span className="text-[9px] uppercase font-bold dark:text-zinc-500 text-zinc-400 tracking-wider">Status:</span>
                                             <div className={cn(
-                                                "px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider border",
+                                                "px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border",
                                                 reportStructure?.status === 'Signed' ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" :
                                                 reportStructure?.status === 'ManualVerified' ? "bg-cyan-500/10 text-cyan-500 border-cyan-500/20" :
                                                 reportStructure?.status === 'ReadyForVerification' ? "bg-orange-500/10 text-orange-500 border-orange-500/20" :
@@ -1043,7 +1043,7 @@ export function PathologistTerminal() {
                                             )}>
                                                 {reportStructure?.status?.replace(/([A-Z])/g, ' $1').trim() || 'Draft'}
                                             </div>
-                                            <span className="dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-750 px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider border dark:border-white/5 border-zinc-200">
+                                            <span className="dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-300 text-zinc-750 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border dark:border-white/5 border-zinc-200">
                                                 {reportStructure?.modality}
                                             </span>
                                         </div>
@@ -1056,7 +1056,7 @@ export function PathologistTerminal() {
                                     <div className="flex-[0_1_35%] max-h-[35%] min-h-[120px] overflow-y-auto pr-2 custom-scrollbar -mx-2 px-2">
                                         <table className="w-full border-separate border-spacing-y-1">
                                             <thead>
-                                                <tr className="text-xs uppercase font-semibold tracking-widest dark:text-zinc-500 text-zinc-400">
+                                                <tr className="text-[10px] uppercase font-semibold tracking-widest dark:text-zinc-500 text-zinc-400">
                                                     <th className="text-left px-3 pb-1">Parameter</th>
                                                     <th className="text-right px-3 pb-1">Value</th>
                                                     <th className="text-left px-3 pb-1">Unit</th>
@@ -1070,7 +1070,7 @@ export function PathologistTerminal() {
                                                         {group.groupName && (
                                                             <tr className="contents">
                                                                 <td colSpan={5} className="pt-2 pb-1">
-                                                                    <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                                                                    <span className="text-[10px] font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                                                                         {group.groupName}
                                                                     </span>
                                                                 </td>
@@ -1114,7 +1114,7 @@ export function PathologistTerminal() {
                                                                     <td className="px-3 py-1.5 last:rounded-r-xl border-y border-transparent">
                                                                         {isAbnormal && (
                                                                             <span className={cn(
-                                                                                "text-xs font-bold uppercase px-2 py-0.5 rounded-full",
+                                                                                "text-[10px] font-bold uppercase px-2 py-0.5 rounded-full",
                                                                                 currentFlag?.includes("Critical") 
                                                                                     ? "bg-red-100 text-red-700" 
                                                                                     : (currentFlag === "Low" ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-700")
@@ -1138,7 +1138,7 @@ export function PathologistTerminal() {
                                     {/* Bottom Half: Editors & Actions (Scrollable) */}
                                     <div className="flex-[1_1_65%] min-h-0 overflow-y-auto pr-2 custom-scrollbar space-y-4 pt-1 flex flex-col justify-between">
                                             <div className="flex-1 flex flex-col min-h-0">
-                                                <label className="text-xs uppercase font-semibold dark:text-zinc-500 text-zinc-400 block mb-1 tracking-wider">
+                                                <label className="text-[10px] uppercase font-semibold dark:text-zinc-500 text-zinc-400 block mb-1 tracking-wider">
                                                     Clinical Report Narrative
                                                 </label>
                                                 <RichMedicalEditor 
@@ -1158,7 +1158,7 @@ export function PathologistTerminal() {
                                                 {!isReadOnly ? (
                                                     <div className="flex flex-col w-full gap-1.5">
                                                         {lastSavedAt && (
-                                                            <span className="text-xs font-bold text-green-500 uppercase tracking-widest flex items-center gap-1.5 self-start">
+                                                            <span className="text-[9px] font-bold text-green-500 uppercase tracking-widest flex items-center gap-1.5 self-start">
                                                                 <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
                                                                 Live Preview Synced
                                                             </span>
@@ -1168,7 +1168,7 @@ export function PathologistTerminal() {
                                                             <button 
                                                                 onClick={handleSaveInterpretation}
                                                                 disabled={isSaving}
-                                                                className="px-4 py-2 rounded-xl text-xs font-bold bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 border border-slate-300 dark:border-zinc-700 hover:bg-zinc-50 transition-all shadow-sm shrink-0 active:scale-95 disabled:opacity-40 uppercase tracking-normal"
+                                                                className="px-4 py-2 rounded-xl text-xs font-bold bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 border border-slate-300 dark:border-zinc-700 hover:bg-zinc-50 transition-all shadow-sm shrink-0 active:scale-95 disabled:opacity-40 uppercase tracking-tight"
                                                             >
                                                                 {isSaving ? "Syncing..." : "Update Report"}
                                                             </button>
@@ -1177,7 +1177,7 @@ export function PathologistTerminal() {
                                                             {reportStructure?.status === 'ReadyForVerification' && (
                                                                 <button 
                                                                     onClick={handleReopen}
-                                                                    className="px-3 py-2 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 border border-red-200 transition-all uppercase tracking-normal shrink-0"
+                                                                    className="px-3 py-2 rounded-xl text-xs font-bold text-red-600 hover:bg-red-50 border border-red-200 transition-all uppercase tracking-tight shrink-0"
                                                                 >
                                                                     Reject to Typist
                                                                 </button>
@@ -1193,7 +1193,7 @@ export function PathologistTerminal() {
                                                                     }}
                                                                     className="w-3.5 h-3.5 accent-amber-500 rounded cursor-pointer"
                                                                 />
-                                                                <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                                                                <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
                                                                     Preprinted
                                                                 </span>
                                                             </label>
@@ -1201,7 +1201,7 @@ export function PathologistTerminal() {
                                                             {/* Print Review */}
                                                             <button 
                                                                 onClick={handlePrint}
-                                                                className="px-3 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 border border-slate-300 dark:border-zinc-700 hover:bg-zinc-50 transition-all shadow-sm shrink-0 flex items-center gap-1.5 uppercase tracking-normal"
+                                                                className="px-3 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 border border-slate-300 dark:border-zinc-700 hover:bg-zinc-50 transition-all shadow-sm shrink-0 flex items-center gap-1.5 uppercase tracking-tight"
                                                                 title="Print Review"
                                                             >
                                                                 <Printer className="w-3.5 h-3.5" />
@@ -1221,7 +1221,7 @@ export function PathologistTerminal() {
                                                     </div>
                                                 ) : (
                                                     <div className="flex items-center justify-between w-full">
-                                                        <div className="flex items-center gap-3 text-emerald-600 bg-emerald-500/10 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest border border-emerald-500/20">
+                                                        <div className="flex items-center gap-3 text-emerald-600 bg-emerald-500/10 px-5 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest border border-emerald-500/20">
                                                             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                                                             {reportStructure?.status === 'ManualVerified' ? "Report Manually Verified (Audit Locked)" : "Digital Signature Active (Immutable Trace)"}
                                                         </div>
@@ -1236,7 +1236,7 @@ export function PathologistTerminal() {
                                                                     }}
                                                                     className="w-3.5 h-3.5 accent-amber-500 rounded cursor-pointer"
                                                                 />
-                                                                <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                                                                <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
                                                                     Preprinted
                                                                 </span>
                                                             </label>
@@ -1277,10 +1277,10 @@ export function PathologistTerminal() {
                         <div className="dark:bg-zinc-950 bg-[linear-gradient(to_bottom,rgba(248,253,255,0.98)_0%,rgba(238,245,248,0.98)_50%,rgba(228,235,238,0.98)_100%)] px-6 py-3 border-b dark:border-white/5 border-black/5 flex items-center justify-between z-10 shrink-0 select-none no-print">
                              <div className="flex items-center gap-2">
                                 <FileText className="w-4 h-4 text-synos-primary" />
-                                <span className="text-xs font-black uppercase tracking-widest dark:text-zinc-400 text-zinc-600">
+                                <span className="text-[10px] font-black uppercase tracking-widest dark:text-zinc-400 text-zinc-600">
                                     {isReadOnly ? "Audit Evidence" : "Live Preview"}
                                 </span>
-                                <span className="text-xs font-mono bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-400 text-zinc-500 px-1.5 py-0.5 rounded ml-2">
+                                <span className="text-[9px] font-mono bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-400 text-zinc-500 px-1.5 py-0.5 rounded ml-2">
                                     Ctrl+Scroll to Zoom ({Math.round(previewScale * 100)}%) • Drag to Pan
                                 </span>
                              </div>
@@ -1291,7 +1291,7 @@ export function PathologistTerminal() {
                                         isReadOnly ? "bg-amber-500" : "bg-green-500 animate-pulse"
                                     )} />
                                     <span className={cn(
-                                        "text-xs font-black uppercase tracking-tighter",
+                                        "text-[8px] font-black uppercase tracking-tighter",
                                         isReadOnly ? "text-amber-600" : "text-green-600"
                                     )}>
                                         {isReadOnly ? "LOCKED" : "SYNCED"}
@@ -1312,12 +1312,12 @@ export function PathologistTerminal() {
                             {(isLoadingDetail || templateLoading) ? (
                                 <div className="h-full flex flex-col items-center justify-center opacity-30 no-print">
                                     <Loader2 className="w-6 h-6 animate-spin mb-4" />
-                                    <span className="text-xs font-black uppercase tracking-[0.2em]">Assembling Preview...</span>
+                                    <span className="text-[8px] font-black uppercase tracking-[0.2em]">Assembling Preview...</span>
                                 </div>
                             ) : (!reportData || !template) ? (
                                 <div className="h-full flex flex-col items-center justify-center text-center opacity-20 p-8 no-print">
                                     <Printer className="w-12 h-12 mb-4" />
-                                    <p className="text-xs font-black uppercase tracking-widest leading-relaxed">
+                                    <p className="text-[9px] font-black uppercase tracking-widest leading-relaxed">
                                         Select record for high-fidelity render
                                     </p>
                                 </div>
@@ -1361,7 +1361,7 @@ export function PathologistTerminal() {
                                 </div>
                                 <div>
                                     <h3 className="text-lg font-black dark:text-zinc-200 uppercase tracking-tight">Identity Setup</h3>
-                                    <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest leading-none">Digital Signature Verification</p>
+                                    <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest leading-none">Digital Signature Verification</p>
                                 </div>
                             </div>
                             <button 
@@ -1374,7 +1374,7 @@ export function PathologistTerminal() {
                         <div className="p-8 space-y-6">
                             <div className="space-y-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-black text-zinc-500 uppercase tracking-widest ml-1">Full Professional Name</label>
+                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1">Full Professional Name</label>
                                     <input 
                                         type="text"
                                         value={tempProfile.name}
@@ -1384,7 +1384,7 @@ export function PathologistTerminal() {
                                     />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-xs font-black text-zinc-500 uppercase tracking-widest ml-1">Professional Designation</label>
+                                    <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1">Professional Designation</label>
                                     <input 
                                         type="text"
                                         value={tempProfile.designation}
@@ -1397,7 +1397,7 @@ export function PathologistTerminal() {
 
                             <div className="relative pt-2">
                                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-200 dark:via-white/5 to-transparent"></div>
-                                <label className="text-xs font-black text-zinc-500 uppercase tracking-widest ml-1 mb-4 block pt-4 text-center">Digital Signature</label>
+                                <label className="text-[10px] font-black text-zinc-500 uppercase tracking-widest ml-1 mb-4 block pt-4 text-center">Digital Signature</label>
                                 
                                 <label className="block w-full cursor-pointer group">
                                     <div className={cn(
@@ -1422,14 +1422,14 @@ export function PathologistTerminal() {
                                                 <Upload className="w-8 h-8 text-zinc-400 group-hover:text-indigo-500" />
                                             </div>
                                             <span className="text-sm font-black dark:text-zinc-300 text-zinc-600 uppercase tracking-widest mb-1">Click to Upload</span>
-                                            <span className="text-xs text-zinc-400 font-medium">Clear PNG or JPG (Cursive Ink preferred)</span>
+                                            <span className="text-[10px] text-zinc-400 font-medium">Clear PNG or JPG (Cursive Ink preferred)</span>
                                         </>
                                     )}
                                 </div>
                             </label>
                             
                             {!userProfile?.signatureImageUrl && (
-                                <p className="text-center text-xs text-amber-600 font-black uppercase tracking-normal mt-4 animate-pulse">
+                                <p className="text-center text-[10px] text-amber-600 font-black uppercase tracking-tighter mt-4 animate-pulse">
                                     Please select a signature image to complete activation
                                 </p>
                             )}
@@ -1448,11 +1448,11 @@ export function PathologistTerminal() {
                             <div className="mt-8 space-y-3">
                                 <div className="flex gap-3 items-start opacity-70">
                                     <Check className="w-4 h-4 text-emerald-500 mt-0.5" />
-                                    <p className="text-xs text-zinc-500 font-medium leading-relaxed">Your signature will be baked into the final clinical reports as a legal evidence of verification.</p>
+                                    <p className="text-[11px] text-zinc-500 font-medium leading-relaxed">Your signature will be baked into the final clinical reports as a legal evidence of verification.</p>
                                 </div>
                                 <div className="flex gap-3 items-start opacity-70">
                                     <Check className="w-4 h-4 text-emerald-500 mt-0.5" />
-                                    <p className="text-xs text-zinc-500 font-medium leading-relaxed">This setup is required once to enable the digital signing protocol.</p>
+                                    <p className="text-[11px] text-zinc-500 font-medium leading-relaxed">This setup is required once to enable the digital signing protocol.</p>
                                 </div>
                             </div>
                         </div>

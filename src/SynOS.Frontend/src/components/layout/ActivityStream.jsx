@@ -326,9 +326,9 @@ export function ActivityStream({ serverTime }) {
             <div className={cn("h-12 flex items-center px-4 shrink-0", ui.headerRow)} style={lightHeaderStyle}>
                 <div className="flex items-center gap-2">
                     {/* REQ: Keep Pulse Green in Top Window Bar */}
-                    <Activity className="h-4.5 w-4.5 text-green-600" />
+                    <Activity className="h-4 w-4 text-green-600" />
                     <h2 className={cn(
-                        "text-sm sm:text-base font-bold",
+                        "text-sm font-medium",
                         isDark ? "text-zinc-200" : "text-zinc-800"
                     )}>
                         Live Stream
@@ -350,46 +350,46 @@ export function ActivityStream({ serverTime }) {
                         {groupedEvents.map((group, groupIdx) => (
                             // REQ: Left side lines too faded -> Made darker (border-black/[0.1] or border-zinc-700)
                             <div key={`${group.token}-${groupIdx}`} className={cn(
-                                "relative pl-3.5 ml-1.5 border-l-2",
-                                isDark ? "border-zinc-700" : "border-slate-300" // Darker border
+                                "relative pl-3 ml-1.5 border-l",
+                                isDark ? "border-zinc-700" : "border-black/[0.12]" // Darker border
                             )}>
                                 {/* Timeline Dot */}
                                 <div className={cn(
-                                    "absolute -left-[6px] top-0.5 h-3 w-3 rounded-full border-2",
-                                    isDark ? "bg-zinc-800 border-zinc-900" : "bg-white border-white ring-1 ring-slate-400"
+                                    "absolute -left-[5px] top-0.5 h-2.5 w-2.5 rounded-full border-2",
+                                    isDark ? "bg-zinc-800 border-zinc-900" : "bg-white border-white ring-1 ring-black/[0.1]"
                                 )} />
 
                                 <div className="mb-3 flex flex-col gap-0.5">
                                     <div className="flex items-center gap-2">
                                         {/* REQ: Fix Token Spacing - Trimmed & Monospace Font adjusted */}
                                         <span className={cn(
-                                            "text-xs font-mono font-bold px-2 py-0.5 rounded-md",
-                                            isDark ? "text-zinc-300 bg-white/10" : "text-slate-800 bg-slate-100 border border-slate-200"
+                                            "text-[10px] font-mono font-medium px-1.5 py-0.5 rounded",
+                                            isDark ? "text-zinc-400 bg-white/5" : "text-zinc-600 bg-black/[0.04]"
                                         )}>
                                             {(group.token || "").trim()}
                                         </span>
-                                        <span className="text-xs sm:text-sm text-slate-900 dark:text-zinc-100 font-bold truncate max-w-[150px]">
+                                        <span className="text-xs text-foreground/90 font-medium truncate max-w-[140px]">
                                             {group.patientName}
                                         </span>
                                     </div>
-                                    <div className="text-xs text-slate-500 dark:text-zinc-400 pl-1 font-medium">
+                                    <div className="text-[10px] text-muted-foreground pl-1 font-medium">
                                         {getRelativeTime(group.timestamp)}
                                     </div>
                                 </div>
 
                                 <div className="space-y-1.5">
                                     {group.items.map((event, idx) => (
-                                        <div key={event.eventId || idx} className="group relative flex gap-2.5 text-xs sm:text-sm">
+                                        <div key={event.eventId || idx} className="group relative flex gap-2.5 text-xs">
                                             <div className="mt-0.5 transition-colors text-muted-foreground group-hover:text-foreground">
                                                 {mapEventTypeToIcon(event.eventType, event.messageResolved)}
                                             </div>
                                             <div className="flex-1 space-y-0.5">
-                                                <p className="text-xs sm:text-sm leading-snug text-slate-800 dark:text-zinc-200 group-hover:text-black dark:group-hover:text-white transition-colors font-medium">
+                                                <p className="text-xs leading-snug text-foreground/90 group-hover:text-foreground transition-colors font-medium">
                                                     {formatEventTitle(event)}
                                                 </p>
 
                                                 {event.subMessage && (
-                                                    <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">{event.subMessage}</p>
+                                                    <p className="text-[10px] text-emerald-600/80 dark:text-emerald-500/70">{event.subMessage}</p>
                                                 )}
                                             </div>
                                         </div>

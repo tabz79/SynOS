@@ -553,13 +553,13 @@ export function RadiologyTypistTerminal({ selectedStudy, setSelectedStudy, hubCo
                                     {loading ? (
                                         <div className="h-full flex items-center justify-center flex-col gap-2">
                                             <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
-                                            <span className="text-xs text-zinc-550">Loading dictation worklist...</span>
+                                            <span className="text-[11px] text-zinc-550">Loading dictation worklist...</span>
                                         </div>
                                     ) : filteredStudies.length === 0 ? (
                                         <div className="h-full flex items-center justify-center flex-col text-center p-6 dark:text-zinc-555 text-zinc-400">
                                             <Database className="h-8 w-8 mb-2 dark:text-zinc-750 text-zinc-300" />
                                             <span className="text-xs font-semibold uppercase">Queue Cleared</span>
-                                            <span className="text-xs dark:text-zinc-650 text-zinc-555 mt-1">No studies waiting for transcription.</span>
+                                            <span className="text-[10px] dark:text-zinc-650 text-zinc-555 mt-1">No studies waiting for transcription.</span>
                                         </div>
                                     ) : (
                                         filteredStudies.map((study) => {
@@ -581,15 +581,15 @@ export function RadiologyTypistTerminal({ selectedStudy, setSelectedStudy, hubCo
                                                     }`}
                                                 >
                                                     <div className="flex justify-between items-center mb-1">
-                                                        <span className="text-xs font-black uppercase text-synos-primary">
+                                                        <span className="text-[10px] font-black uppercase text-synos-primary">
                                                             Token #{study.tokenNumber}
                                                         </span>
-                                                        <span className="text-xs font-black uppercase text-synos-primary">
+                                                        <span className="text-[10px] font-black uppercase text-synos-primary">
                                                             {study.modality}
                                                         </span>
                                                     </div>
                                                     <h4 className="font-bold text-sm dark:text-zinc-200 text-zinc-800">{study.patientName}</h4>
-                                                    <p className="text-xs dark:text-zinc-400 text-zinc-550 truncate mt-1">{study.testName}</p>
+                                                    <p className="text-[11px] dark:text-zinc-400 text-zinc-550 truncate mt-1">{study.testName}</p>
                                                 </div>
                                             );
                                         })
@@ -623,7 +623,7 @@ export function RadiologyTypistTerminal({ selectedStudy, setSelectedStudy, hubCo
                                             <span className="text-zinc-400 text-xs">•</span>
                                             <span className="text-xs text-zinc-500 font-semibold">{selectedStudy.testName} ({selectedStudy.modality})</span>
                                         </div>
-                                        <div className="flex items-center gap-1.5 mt-0.5 text-xs dark:text-zinc-400 text-zinc-550">
+                                        <div className="flex items-center gap-1.5 mt-0.5 text-[11px] dark:text-zinc-400 text-zinc-550">
                                             <span className={`h-1.5 w-1.5 rounded-full ${liveRadiologistConnected ? 'bg-emerald-500 animate-pulse' : 'bg-amber-550'}`} />
                                             <span>
                                                 {liveRadiologistConnected ? 'Radiologist Online (SignalR Active)' : 'Waiting for Radiologist...'}
@@ -685,12 +685,12 @@ export function RadiologyTypistTerminal({ selectedStudy, setSelectedStudy, hubCo
                                                     }}
                                                     className="w-3.5 h-3.5 accent-amber-500 rounded cursor-pointer"
                                                 />
-                                                <span className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                                                <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
                                                     Preprinted
                                                 </span>
                                             </label>
 
-                                            <span className="text-xs font-extrabold uppercase bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                            <span className="text-[9px] font-extrabold uppercase bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded-full flex items-center gap-1">
                                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                                 Live Synced
                                             </span>
@@ -708,7 +708,7 @@ export function RadiologyTypistTerminal({ selectedStudy, setSelectedStudy, hubCo
                                     >
                                         {/* Zoom & Pan Hint Overlay */}
                                         <div className="absolute top-2 left-3 z-10 pointer-events-none">
-                                            <span className="text-xs font-mono bg-zinc-900/80 text-zinc-200 px-2 py-0.5 rounded shadow-sm backdrop-blur-sm">
+                                            <span className="text-[9px] font-mono bg-zinc-900/80 text-zinc-200 px-2 py-0.5 rounded shadow-sm backdrop-blur-sm">
                                                 Ctrl+Scroll to Zoom ({Math.round(previewScale * 100)}%) • Drag to Pan
                                             </span>
                                         </div>
@@ -716,7 +716,7 @@ export function RadiologyTypistTerminal({ selectedStudy, setSelectedStudy, hubCo
                                         {(previewLoading || templateLoading) ? (
                                             <div className="h-full flex flex-col items-center justify-center opacity-40">
                                                 <Loader2 className="w-6 h-6 animate-spin mb-2 text-synos-primary" />
-                                                <span className="text-xs font-bold uppercase tracking-widest text-zinc-500">Rendering A4 Preview...</span>
+                                                <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-500">Rendering A4 Preview...</span>
                                             </div>
                                         ) : (reportData && template) ? (
                                             <div className="p-4 flex justify-center items-start w-full h-full absolute top-0 left-0">
@@ -733,7 +733,7 @@ export function RadiologyTypistTerminal({ selectedStudy, setSelectedStudy, hubCo
                                         ) : (
                                             <div className="h-full flex flex-col items-center justify-center text-center opacity-40 p-6">
                                                 <FileText className="w-8 h-8 mb-2 text-zinc-400" />
-                                                <p className="text-xs font-bold uppercase tracking-widest text-zinc-500">
+                                                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">
                                                     Awaiting Draft Data...
                                                 </p>
                                             </div>
@@ -746,7 +746,7 @@ export function RadiologyTypistTerminal({ selectedStudy, setSelectedStudy, hubCo
                         <div className="h-full flex flex-col items-center justify-center p-8 text-center dark:text-zinc-550 text-zinc-400">
                             <Users className="h-10 w-10 mb-2 dark:text-zinc-750 text-zinc-300" />
                             <h3 className="font-bold text-sm uppercase tracking-wider dark:text-zinc-300 text-zinc-700">Cooperative Workplace</h3>
-                            <p className="text-xs dark:text-zinc-500 text-zinc-550 mt-1 max-w-xs leading-relaxed">
+                            <p className="text-[11px] dark:text-zinc-500 text-zinc-550 mt-1 max-w-xs leading-relaxed">
                                 Select a study from the collaborative queue to start real-time character-synchronized dictation with the radiologist.
                             </p>
                         </div>

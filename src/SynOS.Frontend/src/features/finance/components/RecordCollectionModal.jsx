@@ -34,23 +34,23 @@ export const RecordCollectionModal = ({ isOpen, onClose, onConfirm, entityName, 
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div className="space-y-1">
-            <p className="text-xs font-bold uppercase text-zinc-400 tracking-normal">Source Account</p>
+            <p className="text-[10px] font-bold uppercase text-zinc-400 tracking-tighter">Source Account</p>
             <p className="text-lg font-bold dark:text-zinc-100 text-zinc-900">{entityName}</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-900/50 border dark:border-zinc-800 border-zinc-100">
-              <p className="text-xs font-bold text-zinc-400 uppercase tracking-normal">Total Bill</p>
+              <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter">Total Bill</p>
               <p className="text-sm font-bold dark:text-zinc-300">₹{totalAmount}</p>
             </div>
             <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-900/50 border dark:border-zinc-800 border-zinc-100">
-              <p className="text-xs font-bold text-zinc-400 uppercase tracking-normal">Pending Dues</p>
+              <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter">Pending Dues</p>
               <p className="text-sm font-bold text-rose-500">₹{pendingAmount}</p>
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs font-bold uppercase text-zinc-400 tracking-normal">Amount to Collect (INR)</label>
+            <label className="text-[10px] font-bold uppercase text-zinc-400 tracking-tighter">Amount to Collect (INR)</label>
             <div className="relative">
               <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">
                 <IndianRupee className="w-4 h-4" />
@@ -65,7 +65,7 @@ export const RecordCollectionModal = ({ isOpen, onClose, onConfirm, entityName, 
                 placeholder="0.00"
               />
             </div>
-            <p className="text-xs text-zinc-500 italic">Partial settlements are automatically tracked against the ledger.</p>
+            <p className="text-[10px] text-zinc-500 italic">Partial settlements are automatically tracked against the ledger.</p>
           </div>
 
           {error && (
