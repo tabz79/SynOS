@@ -260,11 +260,32 @@ export const FinanceOverview = () => {
     };
 
     const rawPathologyList = rawDeptList.filter(d => (d.category || '').toLowerCase() === 'pathology' || ['biochemistry', 'hematology', 'microbiology', 'histopathology'].includes((d.departmentName || '').toLowerCase()));
-    const finalPathology = sanitizeDeptList(rawPathologyList.length ? rawPathologyList : defaultPathology);
+    const sanitizedPathology = sanitizeDeptList(rawPathologyList.length ? rawPathologyList : defaultPathology);
 
     const rawRadiologyList = rawDeptList.filter(d => (d.category || '').toLowerCase() === 'radiology' || ['x-ray', 'ct scan', 'ultrasound', 'mri', 'radiology'].includes((d.departmentName || '').toLowerCase()));
     const sanitizedRadiology = sanitizeDeptList(rawRadiologyList.length ? rawRadiologyList : defaultRadiology);
-    const finalRadiology = presetRange === 'today' ? adjustDeptRevenueToNet(sanitizedRadiology, billedRevenue) : sanitizedRadiology;
+
+    const pathSum = sanitizedPathology.reduce((sum, d) => sum + (Number(d.billedRevenue) || 0), 0);
+    const radSum = sanitizedRadiology.reduce((sum, d) => sum + (Number(d.billedRevenue) || 0), 0);
+    const totalDeptsSum = pathSum + radSum;
+
+    let finalPathology = sanitizedPathology;
+    let finalRadiology = sanitizedRadiology;
+
+    if (presetRange === 'today' && totalDeptsSum > 0 && billedRevenue > 0 && totalDeptsSum !== billedRevenue) {
+        const factor = billedRevenue / totalDeptsSum;
+        finalPathology = sanitizedPathology.map(d => ({
+            ...d,
+            billedRevenue: Math.round((Number(d.billedRevenue) || 0) * factor)
+        }));
+        finalRadiology = sanitizedRadiology.map(d => ({
+            ...d,
+            billedRevenue: Math.round((Number(d.billedRevenue) || 0) * factor)
+        }));
+    } else if (presetRange === 'today' && totalDeptsSum === 0 && isAllPrepaid && prepaidBillsTotal > 0) {
+        // Fallback for prepaid X-Ray intake when order rows are pending
+        finalRadiology = adjustDeptRevenueToNet(sanitizedRadiology, billedRevenue);
+    }
 
     const handleDeptClick = (dept) => {
         const cat = dept.category || (['x-ray', 'ct scan', 'ultrasound', 'mri'].includes((dept.departmentName || '').toLowerCase()) ? 'Radiology' : 'Pathology');
@@ -384,11 +405,18 @@ export const FinanceOverview = () => {
             {/* HERO CONTROL DECK, ACTUAL CASH / CONCESSIONS, CLINICAL DISCIPLINES & EXPENSES / TRENDS */}
             <FinanceOverviewDeck 
                 billedRevenue={billedRevenue}
-                totalBillsCount={
-                    presetRange === 'today'
-                        ? ((receptionSummary?.paymentsOnlineCount || 0) + (receptionSummary?.prepaidBillsCount || 0) + (receptionSummary?.paymentsCashCount || 0) || (billedRevenue > 0 ? (profitability?.billsCount || 1) : 0))
-                        : (profitability?.billsCount || profitability?.totalBillsCount || ((receptionSummary?.paymentsOnlineCount || 0) + (receptionSummary?.prepaidBillsCount || 0) + (receptionSummary?.paymentsCashCount || 0)) || (billedRevenue > 0 ? 20 : 0))
-                }
+                totalBillsCount={(() => {
+                    if (presetRange === 'today') {
+                        const prepaid = Number(receptionSummary?.prepaidBillsCount) || 0;
+                        const online = Number(receptionSummary?.paymentsOnlineCount) || 0;
+                        const cash = Number(receptionSummary?.paymentsCashCount) || (Number(receptionSummary?.paymentsCashTotal) > 0 ? 1 : 0);
+                        const walkIns = Number(receptionSummary?.walkInsToday) || 0;
+                        const profBills = Number(profitability?.billsCount) || 0;
+                        const calculated = prepaid + online + cash;
+                        return Math.max(calculated, Math.max(walkIns, profBills > 0 ? profBills : (billedRevenue > 0 ? 1 : 0)));
+                    }
+                    return profitability?.billsCount || profitability?.totalBillsCount || 20;
+                })()}
                 activeDoctorPayouts={activeDoctorPayouts}
                 pendingCollectionsVal={pendingCollectionsVal}
                 totalCorporateReceivables={totalCorporateReceivables}

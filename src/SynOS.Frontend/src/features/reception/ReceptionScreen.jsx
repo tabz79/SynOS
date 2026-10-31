@@ -184,8 +184,14 @@ export function ReceptionScreen() {
     }, [showHistory]);
 
     // STAGE 1: Data Fetching (SignalR + Polling) (Strict DTO)
+    const effectiveWalkIns = summary ? Math.max(
+        Number(summary.walkInsToday) || 0,
+        (Number(summary.prepaidBillsCount) || 0) + (Number(summary.paymentsOnlineCount) || 0) + ((Number(summary.paymentsCashTotal) > 0) ? 1 : 0),
+        actionQueue?.filter(r => r.dateGroup === "Today" || !r.isFinalized)?.length || 0
+    ) : 0;
+
     const realityTiles = summary ? [
-        { value: summary.walkInsToday?.toString() || "0", label: "Walk-Ins", qualifier: "Paid/Credit", icon: Users, color: "zinc" },
+        { value: effectiveWalkIns.toString(), label: "Walk-Ins", qualifier: "Paid/Credit", icon: Users, color: "zinc" },
         { value: `₹${(summary.paymentsCashTotal || 0).toLocaleString()}`, label: "Cash Collected", icon: ClipboardList, color: "emerald" },
         { value: summary.paymentsOnlineCount?.toString() || "0", label: "Online Payments", icon: ClipboardList, color: "blue" },
         { value: `₹${(summary.paymentsOnlineTotal || 0).toLocaleString()}`, label: "Online Total", icon: ClipboardList, color: "blue" },

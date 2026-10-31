@@ -91,7 +91,8 @@ namespace SynOS.Services
             var endUtc = endOfToday.UtcDateTime;
 
             var visitsQuery = _context.Visits
-                .Where(v => v.BranchId == branchId && v.CreatedAt >= startUtc && v.CreatedAt < endUtc
+                .Where(v => v.BranchId == branchId 
+                         && (v.TokenDate == today || (v.CreatedAt >= startUtc && v.CreatedAt < endUtc))
                          && v.Status != VisitStatus.Cancelled
                          && (v.Status != VisitStatus.Draft || v.Orders.Any() || v.Invoices.Any()));
 
@@ -121,7 +122,10 @@ namespace SynOS.Services
             });
 
             var finalPrepaidCount = prepaidCount > 0 ? prepaidCount : (stats?.PrepaidCount ?? 0);
-            var finalWalkIns = Math.Max(walkIns, Math.Max(stats?.WalkIns ?? 0, finalPrepaidCount));
+            
+            // Total Walk-Ins: ALL patients who registered at the reception desk today (Paid cash/online + Corporate Prepaid)
+            var statsWalkIns = (stats?.WalkIns ?? 0) + (stats?.PrepaidCount ?? 0);
+            var finalWalkIns = Math.Max(walkIns, Math.Max(statsWalkIns, finalPrepaidCount + (stats?.WalkIns ?? 0)));
 
             var paymentsQuery = _context.Payments
                 .Include(p => p.Invoice)

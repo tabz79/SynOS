@@ -516,7 +516,9 @@ namespace SynOS.Services.EconomicsIntelligence
                     Department = o.Department ?? "",
                     Category = o.Test != null ? (o.Test.Category ?? "") : "",
                     Modality = o.Test != null && o.Test.ModalityMaster != null ? (o.Test.ModalityMaster.Name ?? "") : "",
+                    DeptName = o.Test != null && o.Test.DepartmentMaster != null ? (o.Test.DepartmentMaster.Name ?? "") : "",
                     TestName = o.Test != null ? (o.Test.TestName ?? "") : (o.TestCode ?? ""),
+                    TestCode = o.TestCode ?? "",
                     Price = o.Price - o.Discount
                 })
                 .ToListAsync();
@@ -545,15 +547,75 @@ namespace SynOS.Services.EconomicsIntelligence
                 if (recentOrders.Any())
                 {
                     var matched = recentOrders.Where(o => {
-                        var combined = $"{o.Department} {o.Category} {o.Modality} {o.TestName}".ToLower();
-                        if (target.Modality == "Biochemistry") return combined.Contains("biochem");
-                        if (target.Modality == "Hematology") return combined.Contains("hemat") || combined.Contains("haemat") || combined.Contains("cbc");
-                        if (target.Modality == "Microbiology") return combined.Contains("microbio") || combined.Contains("culture");
-                        if (target.Modality == "Histopathology") return combined.Contains("histo") || combined.Contains("biopsy");
-                        if (target.Modality == "X-Ray") return combined.Contains("x-ray") || combined.Contains("xray") || combined.Contains("x-rays") || combined.Contains("xrays") || combined.Contains(" xr ") || combined.EndsWith("xr");
-                        if (target.Modality == "CT Scan") return combined.Contains(" ct ") || combined.Contains("ct scan") || combined.StartsWith("ct");
-                        if (target.Modality == "Ultrasound") return combined.Contains("ultrasound") || combined.Contains("usg") || combined.Contains("echo");
-                        if (target.Modality == "MRI") return combined.Contains("mri") || combined.Contains(" mr ");
+                        var combined = $"{o.Department} {o.Category} {o.Modality} {o.DeptName} {o.TestName} {o.TestCode}".ToLower();
+                        if (target.Modality == "Hematology")
+                        {
+                            return combined.Contains("hemat") || combined.Contains("haemat") || 
+                                   combined.Contains("cbc") || combined.Contains("cbp") || 
+                                   combined.Contains("platel") || combined.Contains("blood") || 
+                                   combined.Contains("esr") || combined.Contains("hemoglobin") || 
+                                   combined.Contains("haemoglobin") || combined.Contains(" hb") || 
+                                   combined.Contains("wbc") || combined.Contains("rbc") || 
+                                   combined.Contains("pcv") || combined.Contains("smear") || 
+                                   combined.Contains("coagulation") || combined.Contains("pt/inr") || 
+                                   combined.Contains("prothrombin") || combined.Contains("clotting");
+                        }
+                        if (target.Modality == "Biochemistry")
+                        {
+                            return combined.Contains("biochem") || combined.Contains("glucose") || 
+                                   combined.Contains("sugar") || combined.Contains("rbs") || 
+                                   combined.Contains("fbs") || combined.Contains("ppbs") || 
+                                   combined.Contains("lft") || combined.Contains("liver") || 
+                                   combined.Contains("kft") || combined.Contains("rft") || 
+                                   combined.Contains("renal") || combined.Contains("kidney") || 
+                                   combined.Contains("lipid") || combined.Contains("cholesterol") || 
+                                   combined.Contains("electrolyte") || combined.Contains("sodium") || 
+                                   combined.Contains("potassium") || combined.Contains("thyroid") || 
+                                   combined.Contains("tsh") || combined.Contains("hba1c") || 
+                                   combined.Contains("creatinine") || combined.Contains("urea") || 
+                                   combined.Contains("bilirubin") || combined.Contains("calcium") || 
+                                   combined.Contains("vitamin");
+                        }
+                        if (target.Modality == "Microbiology")
+                        {
+                            return combined.Contains("microbio") || combined.Contains("culture") || 
+                                   combined.Contains("gram") || combined.Contains("afb") || 
+                                   combined.Contains("sputum") || combined.Contains("urine routine") || 
+                                   combined.Contains("urine complete") || combined.Contains("stool") || 
+                                   combined.Contains("widal") || combined.Contains("serology") || 
+                                   combined.Contains("dengue") || combined.Contains("malaria") || 
+                                   combined.Contains("hiv") || combined.Contains("hbsag") || 
+                                   combined.Contains("hcv") || combined.Contains("vdrl") || 
+                                   combined.Contains("tpha");
+                        }
+                        if (target.Modality == "Histopathology")
+                        {
+                            return combined.Contains("histo") || combined.Contains("biopsy") || 
+                                   combined.Contains("fnac") || combined.Contains("pap") || 
+                                   combined.Contains("cytology") || combined.Contains("tissue");
+                        }
+                        if (target.Modality == "X-Ray")
+                        {
+                            return combined.Contains("x-ray") || combined.Contains("xray") || 
+                                   combined.Contains("x-rays") || combined.Contains("xrays") || 
+                                   combined.Contains(" xr ") || combined.EndsWith("xr");
+                        }
+                        if (target.Modality == "CT Scan")
+                        {
+                            return combined.Contains(" ct ") || combined.Contains("ct scan") || 
+                                   combined.StartsWith("ct ") || combined.StartsWith("ct_") || 
+                                   combined.Contains("computed tomography");
+                        }
+                        if (target.Modality == "Ultrasound")
+                        {
+                            return combined.Contains("ultrasound") || combined.Contains("usg") || 
+                                   combined.Contains("echo") || combined.Contains("sonography");
+                        }
+                        if (target.Modality == "MRI")
+                        {
+                            return combined.Contains("mri") || combined.Contains(" mr ") || 
+                                   combined.Contains("magnetic resonance");
+                        }
                         return false;
                     }).ToList();
 
@@ -571,7 +633,7 @@ namespace SynOS.Services.EconomicsIntelligence
                         {
                             deptRev = rawMatchedPrice;
                         }
-                        testsCount = matched.Count;
+                        testsCount = matched.Count();
                     }
                     else
                     {
