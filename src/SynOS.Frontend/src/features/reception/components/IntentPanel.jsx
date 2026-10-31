@@ -1,7 +1,8 @@
 
-import { X, Loader2, ArrowRight, AlertCircle, CheckCircle2, Printer, FileText, Building2, ScrollText, Pencil, Save, History, ChevronDown, ChevronUp, Ban } from 'lucide-react'
+import { X, Loader2, ArrowRight, AlertCircle, CheckCircle2, Printer, FileText, Building2, ScrollText, Pencil, Save, History, ChevronDown, ChevronUp, Ban, Check, SlidersHorizontal, RefreshCw } from 'lucide-react'
 import { useReceptionDrawer } from '../hooks/useReceptionPanelUI'
 import { PatientIdentification } from './PatientIdentification'
+import { RichPatientCard } from '@/components/patient/RichPatientCard'
 import { VisitDetails } from './VisitDetails'
 import { BillingSummary, extractB2BInfo } from './BillingSummary'
 import { cn } from '@/lib/utils'
@@ -30,6 +31,7 @@ export function IntentPanel({ onVisitUpdated }) {
 
     // MOTION CANON: Rigid Body Entry
     const panelRef = useRef(null);
+    const payerModeContainerRef = useRef(null);
     usePanelEntry(panelRef, isOpen);
 
     // FOCUS CANON: Iron Dome Trap
@@ -83,42 +85,127 @@ export function IntentPanel({ onVisitUpdated }) {
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [isPartialPayment, setIsPartialPayment] = useState(false);
     const [customPaymentAmount, setCustomPaymentAmount] = useState('');
+    const [userPayerExpandedState, setUserPayerExpandedState] = useState(false);
+    const [isPatientCardCollapsed, setIsPatientCardCollapsed] = useState(false);
+
+    // In-Panel Post-Processing & Print Dispatch State (Split Screen Mode)
+    const [postProcessingSession, setPostProcessingSession] = useState(null);
+    const [selectedDocFormat, setSelectedDocFormat] = useState('thermal'); // 'thermal' | 'a4' | 'claim'
+    const [selectedPrinter, setSelectedPrinter] = useState(() => {
+        return (typeof window !== 'undefined' && localStorage.getItem('synos_receipt_printer_name')) || 'default';
+    });
+    const [isPrinting, setIsPrinting] = useState(false);
+    const [printFeedback, setPrintFeedback] = useState(null);
+    const [availablePrinters, setAvailablePrinters] = useState([]);
+    const [partnerClaimData, setPartnerClaimData] = useState(null);
+    const [isLoadingClaimDoc, setIsLoadingClaimDoc] = useState(false);
+
+    // Fetch system printers if running inside Electron shell
+    useEffect(() => {
+        async function fetchSystemPrinters() {
+            if (window.api && typeof window.api.invoke === 'function') {
+                try {
+                    const config = await window.api.invoke('get-terminal-printer-config');
+                    if (config?.ReceiptPrinterName && !localStorage.getItem('synos_receipt_printer_name')) {
+                        setSelectedPrinter(config.ReceiptPrinterName);
+                    }
+                } catch (e) {}
+                try {
+                    const list = await window.api.invoke('get-printers');
+                    if (Array.isArray(list) && list.length > 0) {
+                        setAvailablePrinters(list.map(p => ({
+                            id: p.name || p.id,
+                            name: p.displayName || p.name,
+                            isDefault: Boolean(p.isDefault)
+                        })));
+                    }
+                } catch (e) {}
+            }
+        }
+        fetchSystemPrinters();
+    }, []);
+
+    const printerOptions = useMemo(() => {
+        const defaultList = [
+            { id: 'default', name: 'Default System / OS Dialog' },
+            { id: 'Thermal POS-80', name: 'Thermal POS-80 (Receipt Roll)' },
+            { id: 'Office Laser A4', name: 'Office Laser Printer (A4)' },
+            { id: 'Save as PDF', name: 'Save as PDF' }
+        ];
+        if (availablePrinters.length > 0) {
+            const seen = new Set(defaultList.map(p => p.id));
+            const custom = [];
+            for (const p of availablePrinters) {
+                if (!seen.has(p.id)) {
+                    custom.push({ id: p.id, name: `${p.name} ${p.isDefault ? '(Default)' : ''}` });
+                    seen.add(p.id);
+                }
+            }
+            return [...defaultList, ...custom];
+        }
+        return defaultList;
+    }, [availablePrinters]);
+
+    const handlePrinterChange = (e) => {
+        const val = e.target.value;
+        setSelectedPrinter(val);
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('synos_receipt_printer_name', val);
+        }
+    };
+
+    // Auto-minimize Billing & Payer Mode when user moves to or interacts with other sections
+    useEffect(() => {
+        if (!userPayerExpandedState) return;
+
+        const handlePointerDown = (e) => {
+            if (payerModeContainerRef.current && !payerModeContainerRef.current.contains(e.target)) {
+                setUserPayerExpandedState(false);
+            }
+        };
+
+        const handleFocusIn = (e) => {
+            if (payerModeContainerRef.current && !payerModeContainerRef.current.contains(e.target)) {
+                setUserPayerExpandedState(false);
+            }
+        };
+
+        document.addEventListener('pointerdown', handlePointerDown);
+        document.addEventListener('focusin', handleFocusIn);
+        return () => {
+            document.removeEventListener('pointerdown', handlePointerDown);
+            document.removeEventListener('focusin', handleFocusIn);
+        };
+    }, [userPayerExpandedState]);
 
     const { theme } = useTheme();
     const isDark = theme === 'dark';
 
     // THEME ISOLATION CONTRACT: Style Branching
-    // THEME ISOLATION CONTRACT: Style Branching
     const ui = isDark ? {
-        // DARK MODE: Solid Zinc, No Blur (Performance)
-        panel: "bg-zinc-900 border-l border-white/10 shadow-2xl z-20",
-        header: "bg-zinc-900 border-b border-white/5",
-        footer: "bg-zinc-900 border-t border-white/5",
+        panel: "bg-zinc-950 border border-zinc-800 shadow-2xl z-20",
+        header: "bg-zinc-900/80 backdrop-blur-md border-b border-zinc-800",
+        footer: "bg-zinc-900/80 backdrop-blur-md border-t border-zinc-800 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.5)]",
         title: "text-white",
-        subtitle: "text-zinc-500",
+        subtitle: "text-zinc-400",
         actionBtn: {
-            enabled: "bg-white text-black hover:bg-zinc-200 shadow-lg shadow-white/5",
-            disabled: "bg-zinc-800 text-zinc-500"
+            enabled: "bg-synos-primary text-white hover:brightness-105 shadow-md shadow-synos-primary/25 active:scale-[0.99] transition-all",
+            disabled: "bg-zinc-800 text-zinc-500 cursor-not-allowed"
         }
     } : {
-        // LIGHT MODE: REAL FAKE FROST (System Bar Match)
-        // No Blur = No Performance Hit.
-        // KNIFE-EDGE STYLE: Sharp borders, deep shadow, no blur.
+        // LIGHT MODE: Atmospheric Sky Canvas from Discount Master
         panel: cn(
-            "bg-[linear-gradient(to_bottom,#F5FCFF_0%,#E6F2F5_50%,#D7E1E4_100%)]",
-            "border-l border-white shadow-[-20px_0_50px_rgba(0,0,0,0.3)]", // Knife Edge: Solid White Border + Deep Shadow
-            "border-t border-white/80", // Top Rim Light
-            "z-20"
+            "bg-[radial-gradient(ellipse_at_top,_#EAF2F9_0%,_#DCE7F2_50%,_#CEDCE8_100%)]",
+            "border-l border-white/80 shadow-[-20px_0_60px_rgba(15,35,60,0.18)]",
+            "z-30"
         ),
-        // Header: EXACT MATCH with ActivityStream.jsx (Line 172)
-        header: "bg-[linear-gradient(to_bottom,rgba(248,253,255,0.98)_0%,rgba(238,245,248,0.98)_50%,rgba(228,235,238,0.98)_100%)] border-b border-black/[0.06]",
-        // Footer: Matches bottom of panel gradient for anchor
-        footer: "bg-[#D7E1E4] border-t border-black/[0.06] shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.05)]",
-        title: "text-zinc-900",
-        subtitle: "text-zinc-500",
+        header: "bg-transparent border-b border-slate-200/60 backdrop-blur-md",
+        footer: "bg-white/60 backdrop-blur-md border-t border-slate-200/60 shadow-[0_-4px_20px_-10px_rgba(15,35,60,0.05)]",
+        title: "text-slate-900",
+        subtitle: "text-slate-500",
         actionBtn: {
-            enabled: "bg-zinc-900 text-white hover:bg-black shadow-lg shadow-black/20 transition-transform active:scale-95",
-            disabled: "bg-zinc-100 text-zinc-400 border border-black/[0.05]"
+            enabled: "bg-synos-primary text-white hover:brightness-105 shadow-md shadow-synos-primary/25 active:scale-[0.99] transition-all",
+            disabled: "bg-slate-300 text-slate-500 cursor-not-allowed"
         }
     };
 
@@ -145,6 +232,7 @@ export function IntentPanel({ onVisitUpdated }) {
             setIsEditDemographicsOpen(false);
             setIsBatchEditConfirmModalOpen(false);
             setBatchEditReason('');
+            setUserPayerExpandedState(null);
             return;
         }
 
@@ -348,6 +436,10 @@ export function IntentPanel({ onVisitUpdated }) {
     };
 
     const handleCloseAndReset = () => {
+        setPostProcessingSession(null);
+        setSelectedDocFormat('thermal');
+        setPartnerClaimData(null);
+        setPrintFeedback(null);
         setError(null);
         setSnapshot(null);
         handleClearPatient();
@@ -583,81 +675,132 @@ export function IntentPanel({ onVisitUpdated }) {
         };
     };
 
-    const handlePrintReceipt = async (overrideToken, overridePaidAmount) => {
+    const buildThermalPayload = (overrideToken, overridePaidAmount) => {
         const visitObj = snapshot?.visit;
-        if (!visitObj) return;
-        try {
-            const tokenToPrint = overrideToken || visitObj?.visitToken || visitObj?.token;
-            if (!tokenToPrint || tokenToPrint.startsWith("DRAFT") || tokenToPrint.startsWith("D-")) {
-                console.warn("Prevented draft token from leaking into print:", tokenToPrint);
-                return;
-            }
-            const p = displayedPatient || snapshot?.patient;
+        const p = displayedPatient || snapshot?.patient;
+        const rawToken = overrideToken || postProcessingSession?.token || visitObj?.visitToken || visitObj?.token;
+        const isDraftToken = !rawToken || rawToken.startsWith("DRAFT") || rawToken.startsWith("D-");
+        const tokenToPrint = isDraftToken ? (visitObj?.visitToken || "REC-2026") : rawToken;
 
-            const effectiveGross = stagedGross !== undefined ? stagedGross : (snapshot?.billing?.grossAmount || 0);
-            const effectiveDiscount = stagedDiscountAmt !== undefined ? stagedDiscountAmt : (snapshot?.billing?.discountAmount || 0);
-            const effectiveNet = stagedNet !== undefined ? stagedNet : (snapshot?.billing?.netAmount || 0);
-            const effectivePaid = overridePaidAmount !== undefined
-                ? overridePaidAmount
-                : (isPrepaid ? 0 : (snapshot?.billing?.totalPaid !== undefined ? Number(snapshot.billing.totalPaid) : effectiveNet));
+        const effectiveGross = stagedGross !== undefined ? stagedGross : (snapshot?.billing?.grossAmount || 0);
+        const effectiveDiscount = stagedDiscountAmt !== undefined ? stagedDiscountAmt : (snapshot?.billing?.discountAmount || 0);
+        const effectiveNet = stagedNet !== undefined ? stagedNet : (snapshot?.billing?.netAmount || 0);
+        const effectivePaid = overridePaidAmount !== undefined
+            ? overridePaidAmount
+            : (postProcessingSession?.paidAmount !== undefined
+                ? postProcessingSession.paidAmount
+                : (isPrepaid ? 0 : (snapshot?.billing?.totalPaid !== undefined ? Number(snapshot.billing.totalPaid) : effectiveNet)));
 
-            const effectiveDiscountReason = stagedDiscount?.remove
-                ? ""
-                : (stagedDiscount?.reason || stagedDiscount?.name || snapshot?.billing?.appliedDiscount?.reason || snapshot?.billing?.appliedDiscount?.name || "");
+        const effectiveDiscountReason = stagedDiscount?.remove
+            ? ""
+            : (stagedDiscount?.reason || stagedDiscount?.name || snapshot?.billing?.appliedDiscount?.reason || snapshot?.billing?.appliedDiscount?.name || "");
 
-            const billerDisplay = visitObj?.billedBy 
-                || snapshot?.billing?.billedBy 
-                || (user?.name ? `${user.name}` : "Staff Desk");
+        const billerDisplay = visitObj?.billedBy 
+            || snapshot?.billing?.billedBy 
+            || (user?.name ? `${user.name}` : "Staff Desk");
 
-            const effectiveTests = [
-                ...activeRemainingTests,
-                ...stagedAddedTests.map(t => ({
-                    ...t,
-                    testCode: t.testCode || t.code,
-                    name: t.testName || t.name || t.testCode,
-                    price: Number(t.basePrice || t.price || t.Price) || 0
-                }))
-            ];
+        const effectiveTests = [
+            ...activeRemainingTests,
+            ...stagedAddedTests.map(t => ({
+                ...t,
+                testCode: t.testCode || t.code,
+                name: t.testName || t.name || t.testCode,
+                price: Number(t.basePrice || t.price || t.Price) || 0
+            }))
+        ];
 
-            const effectiveRefPartner = stagedReferralPartnerId !== undefined
-                ? (stagedReferralPartnerId ? (referralPartners.find(p => (p.referralPartnerId || p.id) === stagedReferralPartnerId) || visitObj?.referralPartner || snapshot?.billing?.referral?.partner) : null)
-                : (visitObj?.referralPartner || snapshot?.billing?.referral?.partner);
+        const effectiveRefPartner = stagedReferralPartnerId !== undefined
+            ? (stagedReferralPartnerId ? (referralPartners.find(p => (p.referralPartnerId || p.id) === stagedReferralPartnerId) || visitObj?.referralPartner || snapshot?.billing?.referral?.partner) : null)
+            : (visitObj?.referralPartner || snapshot?.billing?.referral?.partner);
 
-            const printPayload = {
-                visitId: visitObj?.visitId || currentVisitId,
-                token: tokenToPrint,
-                biller: {
-                    billedBy: billerDisplay,
-                    discountReason: effectiveDiscountReason
-                },
-                billerName: billerDisplay,
+        return {
+            visitId: visitObj?.visitId || currentVisitId,
+            token: tokenToPrint,
+            isPrepaid: isPrepaid || billingMode === 'PrepaidPartner',
+            isInsurance: billingMode === 'Insurance',
+            biller: {
+                billedBy: billerDisplay,
+                discountReason: effectiveDiscountReason
+            },
+            billerName: billerDisplay,
+            discountReason: effectiveDiscountReason,
+            patient: {
+                name: p?.fullName || p?.name || "Patient",
+                sex: p?.gender || "M",
+                age: p?.age || "",
+                mrn: p?.mrn || ""
+            },
+            billing: {
+                ...snapshot?.billing,
+                grossAmount: effectiveGross,
+                discountAmount: effectiveDiscount,
                 discountReason: effectiveDiscountReason,
-                patient: {
-                    name: p?.fullName || p?.name || "Patient",
-                    sex: p?.gender || "M",
-                    age: p?.age || "",
-                    mrn: p?.mrn || ""
-                },
-                billing: {
-                    ...snapshot?.billing,
-                    grossAmount: effectiveGross,
-                    discountAmount: effectiveDiscount,
-                    discountReason: effectiveDiscountReason,
-                    netAmount: effectiveNet,
-                    totalPaid: effectivePaid,
-                    paymentMethod: isPrepaid ? "Corporate B2B Prepaid" : (snapshot?.billing?.paymentMethod || paymentMethod || "Cash")
-                },
-                orders: effectiveTests.map(t => ({
-                    testCode: t.testCode,
-                    testName: t.testName || t.name || t.testCode,
-                    grossAmount: Number(t.price || t.basePrice || 0),
-                    discount: 0,
-                    netAmount: Number(t.price || t.basePrice || 0)
-                })),
-                referringDoctorName: effectiveRefPartner?.name || effectiveRefPartner?.displayName || "Self"
-            };
-            const html = generateThermalInvoiceHtml(printPayload);
-            await legacyTriggerPrint(html);
+                netAmount: effectiveNet,
+                totalPaid: effectivePaid,
+                paymentMethod: isPrepaid ? "Corporate B2B Prepaid" : (snapshot?.billing?.paymentMethod || paymentMethod || "Cash")
+            },
+            orders: effectiveTests.map(t => ({
+                testCode: t.testCode,
+                testName: t.testName || t.name || t.testCode,
+                grossAmount: Number(t.price || t.basePrice || 0),
+                discount: 0,
+                netAmount: Number(t.price || t.basePrice || 0)
+            })),
+            referringDoctorName: effectiveRefPartner?.name || effectiveRefPartner?.displayName || "Self"
+        };
+    };
+
+    const thermalHtml = useMemo(() => {
+        try {
+            const payload = buildThermalPayload();
+            return generateThermalInvoiceHtml(payload);
+        } catch (e) {
+            console.warn("Failed to generate thermal preview HTML:", e);
+            return "<html><body><p>Generating Thermal Slip...</p></body></html>";
+        }
+    }, [snapshot, stagedGross, stagedDiscountAmt, stagedNet, postProcessingSession, paymentMethod, isPrepaid, billingMode, activeRemainingTests, stagedAddedTests, displayedPatient]);
+
+    // Automatically fetch claim statement when Doc Claim format is active
+    useEffect(() => {
+        if (selectedDocFormat === 'claim' && !partnerClaimData) {
+            const visitId = currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id;
+            if (visitId) {
+                setIsLoadingClaimDoc(true);
+                FinanceApi.getPartnerClaimStatement({ visitIds: [visitId] })
+                    .then(data => setPartnerClaimData(data))
+                    .catch(err => console.warn("Could not load partner claim statement:", err))
+                    .finally(() => setIsLoadingClaimDoc(false));
+            }
+        }
+    }, [selectedDocFormat, partnerClaimData, currentVisitId, snapshot]);
+
+    const handleExecutePrint = async () => {
+        setIsPrinting(true);
+        setPrintFeedback(null);
+        try {
+            if (selectedDocFormat === 'thermal') {
+                const payload = buildThermalPayload();
+                const html = generateThermalInvoiceHtml(payload);
+                await legacyTriggerPrint(html, selectedPrinter === 'default' ? undefined : selectedPrinter);
+                setPrintFeedback({ type: 'success', message: `Dispatched to ${selectedPrinter === 'default' ? 'Receipt Printer' : selectedPrinter}!` });
+            } else {
+                window.print();
+                setPrintFeedback({ type: 'success', message: 'Print job dispatched to printer!' });
+            }
+        } catch (err) {
+            console.error("Print execution failed:", err);
+            setPrintFeedback({ type: 'error', message: err.message || 'Printing failed. Check printer connection.' });
+        } finally {
+            setIsPrinting(false);
+            setTimeout(() => setPrintFeedback(null), 3500);
+        }
+    };
+
+    const handlePrintReceipt = async (overrideToken, overridePaidAmount) => {
+        try {
+            const payload = buildThermalPayload(overrideToken, overridePaidAmount);
+            const html = generateThermalInvoiceHtml(payload);
+            await legacyTriggerPrint(html, selectedPrinter === 'default' ? undefined : selectedPrinter);
         } catch (err) {
             console.error("Failed to print receipt:", err);
         }
@@ -705,13 +848,19 @@ export function IntentPanel({ onVisitUpdated }) {
             setIsActionSubmitting(true);
             try {
                 const res = await ReceptionApi.markVisitAsPrepaid(snapshot.visit.visitId);
-                // Auto-print thermal receipt slip for prepaid visit
-                handlePrintReceipt(res?.token).catch(err => console.error("Thermal print error:", err));
-                handleCloseAndReset();
+                await loadSnapshot();
+                setPostProcessingSession({
+                    visitId: snapshot.visit.visitId,
+                    token: res?.token || snapshot.visit.token || snapshot.visit.visitToken,
+                    billingMode: 'PrepaidPartner',
+                    paidAmount: 0,
+                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                });
+                setSelectedDocFormat('thermal');
             } catch (err) {
                 setError(err.message);
-                setIsLoading(false);
             } finally {
+                setIsLoading(false);
                 setIsActionSubmitting(false);
             }
             return;
@@ -749,14 +898,19 @@ export function IntentPanel({ onVisitUpdated }) {
                     await ReceptionApi.collectPayment(snapshot.visit.visitId, coPay, paymentMethod).catch(err => console.warn("Co-Pay collection:", err));
                 }
 
-                // Auto-print thermal receipt slip with exact total paid so far
-                const currentPaid = snapshot?.billing?.totalPaid || 0;
-                handlePrintReceipt(res?.token, currentPaid + effectiveAmount).catch(err => console.error("Thermal print error:", err));
-                handleCloseAndReset();
+                await loadSnapshot();
+                setPostProcessingSession({
+                    visitId: snapshot.visit.visitId,
+                    token: res?.token || snapshot.visit.token || snapshot.visit.visitToken,
+                    billingMode: 'Insurance',
+                    paidAmount: coPay,
+                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                });
+                setSelectedDocFormat('thermal');
             } catch (err) {
                 setError(err.message);
-                setIsLoading(false);
             } finally {
+                setIsLoading(false);
                 setIsActionSubmitting(false);
             }
             return;
@@ -788,14 +942,19 @@ export function IntentPanel({ onVisitUpdated }) {
 
                 const res = await ReceptionApi.markVisitAsCorporate(snapshot.visit.visitId);
 
-                // Auto-print thermal receipt slip with exact total paid so far
-                const currentPaid = snapshot?.billing?.totalPaid || 0;
-                handlePrintReceipt(res?.token, currentPaid + effectiveAmount).catch(err => console.error("Thermal print error:", err));
-                handleCloseAndReset();
+                await loadSnapshot();
+                setPostProcessingSession({
+                    visitId: snapshot.visit.visitId,
+                    token: res?.token || snapshot.visit.token || snapshot.visit.visitToken,
+                    billingMode: 'Corporate',
+                    paidAmount: 0,
+                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                });
+                setSelectedDocFormat('thermal');
             } catch (err) {
                 setError(err.message);
-                setIsLoading(false);
             } finally {
+                setIsLoading(false);
                 setIsActionSubmitting(false);
             }
             return;
@@ -813,25 +972,37 @@ export function IntentPanel({ onVisitUpdated }) {
 
                 const res = await ReceptionApi.collectPayment(snapshot.visit.visitId, effectiveAmount, paymentMethod);
 
-                // Auto-print thermal receipt slip with exact total paid so far
                 const currentPaid = snapshot?.billing?.totalPaid || 0;
-                handlePrintReceipt(res?.token, currentPaid + effectiveAmount).catch(err => console.error("Thermal print error:", err));
+                await loadSnapshot();
 
                 setIsPartialPayment(false);
                 setCustomPaymentAmount('');
 
-                // Instantly reset and close panel - zero extra clicks or modals
-                handleCloseAndReset();
+                setPostProcessingSession({
+                    visitId: snapshot.visit.visitId,
+                    token: res?.token || snapshot.visit.token || snapshot.visit.visitToken,
+                    billingMode: 'Standard',
+                    paidAmount: currentPaid + effectiveAmount,
+                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                });
+                setSelectedDocFormat('thermal');
             } catch (err) {
                 // If invoice was ALREADY in Paid status (e.g. from prior submit), sync smoothly
                 if (err.message && err.message.toLowerCase().includes("paid")) {
-                    handlePrintReceipt().catch(err => console.error("Thermal print error:", err));
-                    handleCloseAndReset();
+                    await loadSnapshot();
+                    setPostProcessingSession({
+                        visitId: snapshot.visit.visitId,
+                        token: snapshot?.visit?.token || snapshot?.visit?.visitToken,
+                        billingMode: 'Standard',
+                        paidAmount: snapshot?.billing?.totalPaid || snapshot?.billing?.netAmount || 0,
+                        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    });
+                    setSelectedDocFormat('thermal');
                 } else {
                     setError(err.message);
                 }
-                setIsLoading(false);
             } finally {
+                setIsLoading(false);
                 setIsActionSubmitting(false);
             }
             return;
@@ -839,7 +1010,14 @@ export function IntentPanel({ onVisitUpdated }) {
 
         // 5. GENERATE BILL / FINISH VISIT
         if (snapshot.billing.paymentStatus === 'Paid' && !isCorrectionIntent) {
-            handleCloseAndReset();
+            setPostProcessingSession({
+                visitId: snapshot.visit.visitId,
+                token: snapshot.visit.token || snapshot.visit.visitToken,
+                billingMode: billingMode,
+                paidAmount: snapshot?.billing?.totalPaid || snapshot?.billing?.netAmount || 0,
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            });
+            setSelectedDocFormat('thermal');
         }
     };
 
@@ -930,9 +1108,17 @@ export function IntentPanel({ onVisitUpdated }) {
             setStagedSecondaryPartnerId(undefined);
             setIsBatchEditConfirmModalOpen(false);
             setBatchEditReason('');
+            setUserPayerExpandedState(null);
             
             await loadSnapshot();
-            alert(result.message || "Visit successfully updated and settled!");
+            setPostProcessingSession({
+                visitId: vId,
+                token: snapshot?.visit?.token || snapshot?.visit?.visitToken,
+                billingMode: billingMode,
+                paidAmount: isPrepaid ? 0 : (stagedNet !== undefined ? stagedNet : (snapshot?.billing?.totalPaid || 0)),
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            });
+            setSelectedDocFormat('thermal');
         } catch (err) {
             console.error("Batch edit failed", err);
             alert("Batch edit failed: " + err.message);
@@ -940,8 +1126,6 @@ export function IntentPanel({ onVisitUpdated }) {
             setIsSubmittingBatchEdit(false);
         }
     };
-
-    if (!isOpen) return null;
 
     const hasPatient = !!snapshot?.patient;
     const hasVisit = !!snapshot?.visit;
@@ -954,13 +1138,44 @@ export function IntentPanel({ onVisitUpdated }) {
     const hasTests = Boolean(
         (snapshot?.visit?.tests && snapshot?.visit?.tests.length > 0) || 
         (snapshot?.billing?.items && snapshot?.billing?.items.length > 0) || 
-        (snapshot?.billing?.grossAmount > 0)
+        (snapshot?.billing?.grossAmount > 0) ||
+        (stagedAddedTests && stagedAddedTests.length > 0)
     );
+
+    const hasMovedToVisitDetails = Boolean(
+        hasTests || 
+        (stagedAddedTests && stagedAddedTests.length > 0) || 
+        stagedReferralPartnerId !== undefined || 
+        snapshot?.visit?.referralPartnerId || 
+        snapshot?.visit?.id || 
+        snapshot?.visit?.visitId
+    );
+
+    const isPayerModeCollapsed = !userPayerExpandedState;
 
     const isZeroNetDue = hasTests && remainingDue === 0;
     const canCheckout = (snapshot?.billing?.paymentStatus === 'PendingPayment' || snapshot?.billing?.paymentStatus === 'PartialPayment') && (remainingDue > 0 || isZeroNetDue);
     const canLockPrepaid = (isPrepaidIntent || billingMode === 'PrepaidPartner') && !snapshot?.billing?.isLocked;
     const isVisitFinalized = snapshot?.billing?.paymentStatus === 'Paid' || (remainingDue <= 0 && totalDue > 0) || Boolean(snapshot?.billing?.isLocked);
+    const isPostProcessingView = Boolean(postProcessingSession) || (isVisitFinalized && !isCorrectionIntent);
+
+    // Keyboard shortcuts for in-panel print and close
+    useEffect(() => {
+        if (!isOpen || !isPostProcessingView) return;
+        const handleKeyDown = (e) => {
+            if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey && !['TEXTAREA', 'INPUT', 'SELECT'].includes(e.target.tagName)) {
+                e.preventDefault();
+                handleExecutePrint();
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                handleCloseAndReset();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, isPostProcessingView, selectedDocFormat, selectedPrinter, thermalHtml]);
+
+    if (!isOpen) return null;
 
     // Determine Button Label & State
     let mainActionLabel = "Identify Patient & Start Visit";
@@ -1015,36 +1230,44 @@ export function IntentPanel({ onVisitUpdated }) {
         <div 
             ref={panelRef} 
             className={cn(
-                "flex flex-col h-full overflow-hidden rounded-2xl transition-[width,transform,opacity] duration-300 ease-out shadow-2xl z-30", 
-                hasPatient ? "absolute right-0 top-0 bottom-0 w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[86vw] xl:w-[85vw] 2xl:w-[84vw] max-w-[1780px]" : "absolute right-0 top-0 bottom-0 w-[90vw] sm:w-[480px] max-w-[520px]",
+                "flex flex-col h-full overflow-hidden rounded-[28px] transition-[width,transform,opacity] duration-300 ease-out z-30", 
+                (isPostProcessingView || hasPatient || isCorrectionIntent) 
+                    ? "absolute right-0 top-0 bottom-0 w-[94vw] max-w-[1720px]" 
+                    : "absolute right-0 top-0 bottom-0 w-[90vw] sm:w-[40vw] max-w-[42vw] min-w-[380px]",
                 ui.panel
             )}
         >
             {/* Header */}
-            <div className={cn("h-14 xl:h-16 flex items-center justify-between px-4 shrink-0", ui.header)}>
-                <div>
-                    <h2 className={cn("text-lg xl:text-xl font-bold tracking-tight flex items-baseline gap-2", ui.title)}>
-                        {panelTitle}
+            <div className={cn("h-16 flex items-center justify-between px-6 shrink-0", ui.header)}>
+                <div className="flex items-center gap-3">
+                    <h2 className={cn("text-2xl font-bold tracking-normal flex items-baseline gap-2.5", ui.title)}>
+                        {isPostProcessingView ? "Visit Finalized & Print Dispatch" : panelTitle}
                         {(snapshot?.visit?.visitToken || snapshot?.visit?.token) && (
-                            <span className="text-xs font-mono font-normal opacity-60">
+                            <span className="text-xs font-mono font-bold text-slate-400 dark:text-zinc-500 bg-slate-100 dark:bg-zinc-800/80 px-2.5 py-0.5 rounded-full border border-slate-200/60 dark:border-zinc-700/60">
                                 #{snapshot?.visit?.visitToken || snapshot?.visit?.token}
                             </span>
                         )}
                     </h2>
+                    {isPostProcessingView && (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            {billingMode === 'PrepaidPartner' ? 'Corporate B2B Registered' : 'Billed & Settled'}
+                        </span>
+                    )}
                 </div>
                 <button
                     onClick={handleCloseAndReset}
                     className={cn(
-                        "p-2 -mr-2 rounded-full transition-all duration-200 active:scale-95",
-                        isDark ? "hover:bg-white/10 text-zinc-400 hover:text-white" : "hover:bg-black/5 text-zinc-500 hover:text-zinc-900"
+                        "p-2 rounded-full transition-all duration-200 active:scale-95 cursor-pointer",
+                        isDark ? "hover:bg-white/10 text-zinc-400 hover:text-white" : "hover:bg-slate-100 text-slate-400 hover:text-slate-700"
                     )}
                 >
                     <X className="w-5 h-5" />
                 </button>
             </div>
 
-            {/* PanelBody - REQUIRED ARCHITECTURE (Locked Chrome / Isolation) */}
-            <div className={cn("flex-1 min-h-0 flex flex-col", (snapshot?.patient || isCorrectionIntent) ? "overflow-y-auto" : "overflow-hidden")}>
+            {/* PanelBody - REQUIRED ARCHITECTURE (Locked Chrome / Isolation - No Panel-Level Scroll) */}
+            <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
                 {isLoading && !snapshot && <div className="flex items-center justify-center h-40"><Loader2 className="w-8 h-8 text-synos-primary animate-spin" /></div>}
                 {error && (
                     <div className="m-4 bg-red-500/10 border border-red-500/50 rounded-lg p-3 text-red-200 text-sm flex items-center justify-between gap-3 animate-in fade-in">
@@ -1064,39 +1287,542 @@ export function IntentPanel({ onVisitUpdated }) {
 
                 {snapshot && (
                     <>
-                        {/* 1. Patient Identification (Internal Padding Managed) */}
-                        <div className="relative">
-                            <PatientIdentification
-                                snapshot={{ ...snapshot, patient: displayedPatient }}
-                                onSelectPatient={handleSelectPatient}
-                                onClearPatient={handleClearPatient}
-                                onEditPatient={handleOpenEditDemographics}
-                                isCorrectionIntent={isCorrectionIntent}
-                            />
-                        </div>
+                        {(!hasPatient && !isCorrectionIntent) ? (
+                            /* 1. SEARCH STATE (No Patient Identified Yet) */
+                            <div className="relative h-full flex-1 min-h-0">
+                                <PatientIdentification
+                                    snapshot={{ ...snapshot, patient: displayedPatient }}
+                                    onSelectPatient={handleSelectPatient}
+                                    onClearPatient={handleClearPatient}
+                                    onEditPatient={handleOpenEditDemographics}
+                                    isCorrectionIntent={isCorrectionIntent}
+                                />
+                            </div>
+                        ) : isPostProcessingView ? (
+                            /* 2. POST-PROCESSING SPLIT VIEW: 50% DOCUMENT PREVIEW & PRINTER / 50% CONSOLIDATION OF VISIT */
+                            <div className="p-4 sm:p-6 max-w-full mx-auto w-full flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-300">
+                                {/* Inline Print Stylesheet for In-Panel Document Printing */}
+                                <style>{`
+                                    @media print {
+                                        body * {
+                                            visibility: hidden !important;
+                                        }
+                                        #synos-inpanel-print-canvas, #synos-inpanel-print-canvas * {
+                                            visibility: visible !important;
+                                        }
+                                        #synos-inpanel-print-canvas {
+                                            position: absolute !important;
+                                            left: 0 !important;
+                                            top: 0 !important;
+                                            width: 100% !important;
+                                            max-width: none !important;
+                                            margin: 0 !important;
+                                            padding: 0 !important;
+                                            transform: none !important;
+                                            box-shadow: none !important;
+                                            border: none !important;
+                                            background: white !important;
+                                        }
+                                    }
+                                `}</style>
 
-                        {/* Block-Level Isolation for Visit Details (Scrollable) */}
-                        {(hasPatient || isCorrectionIntent) && (
-                            <div className="px-3 xl:px-4 pb-3 xl:pb-4 mt-3 xl:mt-4 space-y-3.5 xl:space-y-4 animate-in fade-in duration-300">
-                                {/* Full-width 4-mode segmented toggle bar separated from payer box */}
-                                <div className={cn(
-                                    "p-3 rounded-2xl border transition-all shadow-xs",
-                                    isDark ? "bg-zinc-900/60 border-zinc-800" : "bg-white/80 border-black/5"
-                                )}>
-                                    <MultiPayerSelector
-                                        billingMode={billingMode}
-                                        onChangeMode={handleBillingModeChange}
-                                        disabled={snapshot?.billing?.isLocked && !isCorrectionIntent}
-                                        isDark={isDark}
-                                    />
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 xl:gap-6 items-stretch flex-1 min-h-0 overflow-hidden">
+                                    {/* LEFT HALF (50% Width) - Document Preview & Print Controls */}
+                                    <div className="flex flex-col h-full min-h-0 overflow-hidden">
+                                        <div className={cn(
+                                            "rounded-[28px] border p-4 sm:p-5 flex flex-col h-full min-h-0 overflow-hidden transition-all",
+                                            isDark
+                                                ? "bg-zinc-900/90 border-zinc-800 shadow-xl"
+                                                : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_14px_40px_rgba(15,35,60,0.08),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"
+                                        )}>
+                                            {/* Top Controls Toolbar: Format Switcher & Printer Selector */}
+                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/80 dark:border-zinc-800 shrink-0">
+                                                {/* Format Pills */}
+                                                <div className="flex items-center gap-1.5 bg-slate-200/60 dark:bg-zinc-800/60 p-1 rounded-xl border border-slate-300/60 dark:border-zinc-700/60">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setSelectedDocFormat('thermal')}
+                                                        className={cn(
+                                                            "px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer",
+                                                            selectedDocFormat === 'thermal'
+                                                                ? "bg-slate-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs"
+                                                                : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
+                                                        )}
+                                                    >
+                                                        <ScrollText className="w-3.5 h-3.5" />
+                                                        <span>Thermal (80mm)</span>
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setSelectedDocFormat('a4')}
+                                                        className={cn(
+                                                            "px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer",
+                                                            selectedDocFormat === 'a4'
+                                                                ? "bg-slate-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs"
+                                                                : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
+                                                        )}
+                                                    >
+                                                        <FileText className="w-3.5 h-3.5" />
+                                                        <span>{isPrepaid ? 'A4 Slip' : 'A4 Tax Invoice'}</span>
+                                                    </button>
+                                                    {(isPrepaid || Boolean(snapshot?.visit?.referralPartnerId) || Boolean(stagedReferralPartnerId) || Boolean(snapshot?.billing?.referral?.partner)) && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setSelectedDocFormat('claim')}
+                                                            className={cn(
+                                                                "px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer",
+                                                                selectedDocFormat === 'claim'
+                                                                    ? "bg-slate-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs"
+                                                                    : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
+                                                            )}
+                                                        >
+                                                            <Building2 className="w-3.5 h-3.5" />
+                                                            <span>Doc Claim</span>
+                                                        </button>
+                                                    )}
+                                                </div>
+
+                                                {/* Printer Selector */}
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400 flex items-center gap-1">
+                                                        <Printer className="w-3.5 h-3.5 text-synos-primary" />
+                                                        <span className="hidden sm:inline">Printer:</span>
+                                                    </span>
+                                                    <select
+                                                        value={selectedPrinter}
+                                                        onChange={handlePrinterChange}
+                                                        className="text-xs font-bold bg-white dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 rounded-xl px-2.5 py-1.5 text-slate-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-synos-primary shadow-2xs cursor-pointer"
+                                                    >
+                                                        {printerOptions.map(p => (
+                                                            <option key={p.id} value={p.id}>
+                                                                {p.name}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            {/* Live Document Canvas Surface */}
+                                            <div className="flex-1 min-h-0 my-3 rounded-2xl border border-slate-300/60 dark:border-zinc-800 bg-slate-200/50 dark:bg-zinc-950/80 p-3 flex justify-center overflow-y-auto relative shadow-inner">
+                                                {selectedDocFormat === 'thermal' && (
+                                                    <div className="w-[285px] max-w-full my-auto rounded-xl shadow-xl overflow-hidden border border-slate-300 dark:border-zinc-700 bg-white flex flex-col mx-auto">
+                                                        <div className="bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 px-3 py-1.5 text-[11px] font-mono border-b border-slate-200 dark:border-zinc-700 flex justify-between items-center">
+                                                            <span>Thermal POS (80mm)</span>
+                                                            <span className="text-[10px] bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 font-bold">1:1 Roll Preview</span>
+                                                        </div>
+                                                        <iframe
+                                                            title="Thermal POS Receipt"
+                                                            srcDoc={thermalHtml}
+                                                            className="w-full h-[490px] border-0 mx-auto"
+                                                        />
+                                                    </div>
+                                                )}
+                                                {selectedDocFormat === 'a4' && (
+                                                    <div className="w-full h-full flex justify-center py-2 overflow-y-auto">
+                                                        <div 
+                                                            id="synos-inpanel-print-canvas" 
+                                                            style={{ 
+                                                                width: '210mm', 
+                                                                minHeight: '297mm',
+                                                                transform: 'scale(0.60)',
+                                                                transformOrigin: 'top center',
+                                                                marginBottom: '-118mm'
+                                                            }}
+                                                            className="bg-white text-zinc-900 shadow-2xl rounded-sm p-8 sm:p-10 border border-slate-300 dark:border-zinc-700 flex flex-col justify-between shrink-0"
+                                                        >
+                                                            <DynamicDocumentRenderer
+                                                                slotId={isPrepaid ? 'prepaid_patient_a4_slip' : 'patient_tax_invoice'}
+                                                                data={buildTaxInvoiceData()}
+                                                                readOnly={true}
+                                                            />
+                                                            <div className="mt-6 pt-2 border-t border-zinc-200 flex items-center justify-between text-[8px] text-zinc-400 select-none">
+                                                                <span>SynOS Enterprise Clinical & Financial OS • Confidential</span>
+                                                                <span>A4 Verified Statement • Generated: {new Date().toLocaleDateString()}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                                {selectedDocFormat === 'claim' && (
+                                                    <div className="w-full h-full flex justify-center py-2 overflow-y-auto">
+                                                        {isLoadingClaimDoc ? (
+                                                            <div className="flex flex-col items-center justify-center h-64 gap-2 text-slate-500">
+                                                                <Loader2 className="w-6 h-6 animate-spin text-synos-primary" />
+                                                                <span className="text-xs font-semibold">Generating Doctor Receivable Statement...</span>
+                                                            </div>
+                                                        ) : (
+                                                            <div 
+                                                                id="synos-inpanel-print-canvas" 
+                                                                style={{ 
+                                                                    width: '210mm', 
+                                                                    minHeight: '297mm',
+                                                                    transform: 'scale(0.60)',
+                                                                    transformOrigin: 'top center',
+                                                                    marginBottom: '-118mm'
+                                                                }}
+                                                                className="bg-white text-zinc-900 shadow-2xl rounded-sm p-8 sm:p-10 border border-slate-300 dark:border-zinc-700 flex flex-col justify-between shrink-0"
+                                                            >
+                                                                <DynamicDocumentRenderer
+                                                                    slotId="partner_b2b_invoice"
+                                                                    data={partnerClaimData || buildTaxInvoiceData()}
+                                                                    readOnly={true}
+                                                                />
+                                                                <div className="mt-6 pt-2 border-t border-zinc-200 flex items-center justify-between text-[8px] text-zinc-400 select-none">
+                                                                    <span>SynOS Enterprise Clinical & Financial OS • Doctor Receivable Claim</span>
+                                                                    <span>Commercial Statement • Generated: {new Date().toLocaleDateString()}</span>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Bottom Print Action Bar */}
+                                            <div className="pt-2 flex items-center justify-between gap-3 border-t border-slate-200/80 dark:border-zinc-800 shrink-0">
+                                                <div className="flex items-center gap-2">
+                                                    {printFeedback ? (
+                                                        <span className={cn(
+                                                            "text-xs font-bold px-2.5 py-1 rounded-lg flex items-center gap-1.5 animate-in fade-in",
+                                                            printFeedback.type === 'success'
+                                                                ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
+                                                                : "bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800"
+                                                        )}>
+                                                            <CheckCircle2 className="w-3.5 h-3.5" />
+                                                            {printFeedback.message}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400 flex items-center gap-1.5">
+                                                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                                                            Ready to Print • {selectedDocFormat === 'thermal' ? '80mm Roll' : 'A4 Paper'} • {selectedPrinter === 'default' ? 'OS Dialog' : selectedPrinter}
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleExecutePrint}
+                                                        disabled={isPrinting}
+                                                        className="py-3 px-6 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 bg-emerald-50 hover:bg-emerald-100/90 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/80 shadow-xs active:scale-[0.99] transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-1"
+                                                    >
+                                                        {isPrinting ? (
+                                                            <>
+                                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                                <span>Dispatching...</span>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Printer className="w-4 h-4 text-emerald-700 dark:text-emerald-300" />
+                                                                <span>Print {selectedDocFormat === 'thermal' ? 'Thermal Slip' : (selectedDocFormat === 'a4' ? 'A4 Invoice' : 'Doc Claim')}</span>
+                                                                <span className="text-[10px] font-mono opacity-70 bg-emerald-200/50 dark:bg-emerald-900/60 px-1.5 py-0.5 rounded">↵ Enter</span>
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* RIGHT HALF (50% Width) - Visit Consolidation Summary */}
+                                    <div className="flex flex-col h-full min-h-0 overflow-hidden">
+                                        <div className={cn(
+                                            "rounded-[28px] border p-4 sm:p-5 flex flex-col h-full min-h-0 overflow-hidden transition-all",
+                                            isDark
+                                                ? "bg-zinc-900/90 border-zinc-800 shadow-xl"
+                                                : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_14px_40px_rgba(15,35,60,0.08),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"
+                                        )}>
+                                            {/* Section Header */}
+                                            <div className="flex items-center justify-between pb-3 border-b border-slate-200/80 dark:border-zinc-800 shrink-0">
+                                                <div className="flex items-center gap-2.5">
+                                                    <div className="w-7 h-7 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-sm shadow-xs">
+                                                        <CheckCircle2 className="w-4 h-4" />
+                                                    </div>
+                                                    <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-normal">
+                                                        Visit Consolidation Summary
+                                                    </h3>
+                                                </div>
+                                                {/* Mode badge */}
+                                                <span className={cn(
+                                                    "px-2.5 py-1 rounded-full text-xs font-bold border",
+                                                    billingMode === 'PrepaidPartner'
+                                                        ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30"
+                                                        : billingMode === 'Insurance'
+                                                            ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30"
+                                                            : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60"
+                                                )}>
+                                                    {billingMode === 'PrepaidPartner' ? 'Corporate B2B (Prepaid)' : billingMode === 'Insurance' ? 'Insurance / TPA' : 'Direct / Standard'}
+                                                </span>
+                                            </div>
+
+                                            {/* Scrollable Summary Cards */}
+                                            <div className="flex-1 min-h-0 my-3 overflow-y-auto space-y-3.5 pr-1">
+                                                {/* Card 1: Patient Demographics */}
+                                                <div className="rounded-2xl border border-[#CCDCE8] dark:border-zinc-800 bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] dark:bg-zinc-950/80 p-3.5 sm:p-4 shadow-[inset_0_1px_3px_rgba(15,35,60,0.06),0_1px_0_rgba(255,255,255,0.7)] space-y-2.5">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-10 h-10 rounded-full bg-synos-primary/15 text-synos-primary flex items-center justify-center font-bold text-base">
+                                                                {(displayedPatient?.fullName || displayedPatient?.name || 'P')[0]?.toUpperCase()}
+                                                            </div>
+                                                            <div>
+                                                                <div className="font-bold text-base text-slate-900 dark:text-white">
+                                                                    {displayedPatient?.fullName || displayedPatient?.name || 'Direct Patient'}
+                                                                </div>
+                                                                <div className="text-xs font-medium text-slate-500 dark:text-zinc-400 flex items-center gap-2">
+                                                                    <span>Age: {displayedPatient?.age ? `${displayedPatient.age} Yrs` : '—'}</span>
+                                                                    <span>•</span>
+                                                                    <span>Sex: {displayedPatient?.gender || '—'}</span>
+                                                                    <span>•</span>
+                                                                    <span className="font-mono">MRN: {displayedPatient?.mrn || displayedPatient?.uhid || '—'}</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        {displayedPatient?.phone && (
+                                                            <div className="text-right">
+                                                                <span className="text-xs font-mono font-semibold text-slate-600 dark:text-zinc-300 bg-white/70 dark:bg-zinc-800 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-zinc-700">
+                                                                    {displayedPatient.phone}
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Doctor / Corporate Channel Info */}
+                                                    <div className="pt-2 border-t border-slate-200/60 dark:border-zinc-800/80 grid grid-cols-2 gap-2 text-xs">
+                                                        <div>
+                                                            <span className="text-slate-500 dark:text-zinc-400 block font-medium">Prescribing Doctor</span>
+                                                            <span className="font-bold text-slate-800 dark:text-zinc-200">
+                                                                {snapshot?.billing?.referral?.partner?.name || snapshot?.billing?.referral?.partner?.displayName || snapshot?.visit?.referringDoctorName || "Direct / Self"}
+                                                            </span>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-slate-500 dark:text-zinc-400 block font-medium">Billed To Channel</span>
+                                                            <span className="font-bold text-slate-800 dark:text-zinc-200">
+                                                                {billingMode === 'PrepaidPartner'
+                                                                    ? `${snapshot?.billing?.referral?.partner?.name || 'Partner Doctor'} (B2B Receivable)`
+                                                                    : billingMode === 'Corporate'
+                                                                        ? `${snapshot?.visit?.corporateAccount?.companyName || 'Corporate Client'}`
+                                                                        : billingMode === 'Insurance'
+                                                                            ? `${snapshot?.visit?.insuranceCompany?.name || 'Insurance TPA'}`
+                                                                            : 'Direct Counter Collection'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Card 2: Tests & Investigations */}
+                                                <div className="rounded-2xl border border-[#CCDCE8] dark:border-zinc-800 bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] dark:bg-zinc-950/80 p-3.5 sm:p-4 shadow-[inset_0_1px_3px_rgba(15,35,60,0.06),0_1px_0_rgba(255,255,255,0.7)] space-y-2">
+                                                    <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-zinc-300">
+                                                        <span>Ordered Investigations ({activeRemainingTests.length + stagedAddedTests.length})</span>
+                                                        <span>Standard Tariff</span>
+                                                    </div>
+                                                    <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                                                        {[...activeRemainingTests, ...stagedAddedTests].map((t, idx) => (
+                                                            <div key={idx} className="flex items-center justify-between text-xs bg-white/70 dark:bg-zinc-900/60 p-2 rounded-xl border border-slate-200/60 dark:border-zinc-800">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300">
+                                                                        {t.testCode || t.code}
+                                                                    </span>
+                                                                    <span className="font-semibold text-slate-800 dark:text-zinc-200">
+                                                                        {t.testName || t.name || t.testCode}
+                                                                    </span>
+                                                                    {(t.department || t.category) && (
+                                                                        <span className="text-[10px] text-slate-500 dark:text-zinc-400">
+                                                                            ({t.department || t.category})
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                <span className="font-mono font-bold text-slate-800 dark:text-zinc-200">
+                                                                    ₹{Number(t.price || t.basePrice || 0).toLocaleString()}
+                                                                </span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                {/* Card 3: Financial Settlement Ledger */}
+                                                <div className="rounded-2xl border border-[#CCDCE8] dark:border-zinc-800 bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] dark:bg-zinc-950/80 p-3.5 sm:p-4 shadow-[inset_0_1px_3px_rgba(15,35,60,0.06),0_1px_0_rgba(255,255,255,0.7)] space-y-2.5">
+                                                    <div className="space-y-1.5 text-xs">
+                                                        <div className="flex items-center justify-between text-slate-600 dark:text-zinc-400">
+                                                            <span>Total Gross Tariff</span>
+                                                            <span className="font-mono font-bold text-slate-800 dark:text-zinc-200">
+                                                                ₹{(stagedGross !== undefined ? stagedGross : (snapshot?.billing?.grossAmount || snapshot?.billing?.netAmount || 0)).toLocaleString()}
+                                                            </span>
+                                                        </div>
+
+                                                        {(stagedDiscountAmt > 0 || (snapshot?.billing?.discountAmount > 0)) && (
+                                                            <div className="flex items-center justify-between text-rose-600 dark:text-rose-400">
+                                                                <span>
+                                                                    Applied Concession
+                                                                    {(stagedDiscount?.reason || snapshot?.billing?.appliedDiscount?.reason) ? ` (${stagedDiscount?.reason || snapshot?.billing?.appliedDiscount?.reason})` : ''}
+                                                                </span>
+                                                                <span className="font-mono font-bold">
+                                                                    -₹{(stagedDiscountAmt !== undefined ? stagedDiscountAmt : (snapshot?.billing?.discountAmount || 0)).toLocaleString()}
+                                                                </span>
+                                                            </div>
+                                                        )}
+
+                                                        <div className="flex items-center justify-between text-slate-600 dark:text-zinc-400">
+                                                            <span>GST / Statutory Tax</span>
+                                                            <span className="font-mono font-bold text-slate-800 dark:text-zinc-200">₹0</span>
+                                                        </div>
+
+                                                        <div className="pt-2 border-t border-slate-300/80 dark:border-zinc-700/80 flex items-baseline justify-between">
+                                                            <span className="font-bold text-sm text-slate-900 dark:text-white">Net Bill Amount</span>
+                                                            <span className="font-black text-2xl text-slate-900 dark:text-white">
+                                                                ₹{(stagedNet !== undefined ? stagedNet : (snapshot?.billing?.netAmount || 0)).toLocaleString()}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Settlement Allocation Pod */}
+                                                    <div className="mt-2 p-2.5 rounded-xl bg-white/80 dark:bg-zinc-900/80 border border-slate-200 dark:border-zinc-800 space-y-1.5 text-xs">
+                                                        {billingMode === 'PrepaidPartner' ? (
+                                                            <>
+                                                                <div className="flex items-center justify-between font-bold text-blue-700 dark:text-blue-300">
+                                                                    <span>Patient Desk Collection</span>
+                                                                    <span className="font-mono">₹0 (Zero Counter Payment)</span>
+                                                                </div>
+                                                                <div className="flex items-center justify-between font-semibold text-slate-700 dark:text-zinc-300">
+                                                                    <span>Doctor B2B Receivable</span>
+                                                                    <span className="font-mono font-bold text-blue-600 dark:text-blue-400">
+                                                                        ₹{(stagedNet !== undefined ? stagedNet : (snapshot?.billing?.netAmount || 0)).toLocaleString()}
+                                                                    </span>
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <div className="flex items-center justify-between font-bold text-emerald-800 dark:text-emerald-300">
+                                                                    <span>Counter Amount Paid</span>
+                                                                    <span className="font-mono">
+                                                                        ₹{(postProcessingSession?.paidAmount !== undefined ? postProcessingSession.paidAmount : (snapshot?.billing?.totalPaid || snapshot?.billing?.netAmount || 0)).toLocaleString()} via {paymentMethod || snapshot?.billing?.paymentMethod || 'Cash'}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="flex items-center justify-between font-semibold text-slate-700 dark:text-zinc-300">
+                                                                    <span>Balance Remaining Due</span>
+                                                                    <span className="font-mono font-bold text-emerald-700 dark:text-emerald-300">
+                                                                        ₹{Math.max(0, (stagedNet !== undefined ? stagedNet : (snapshot?.billing?.netAmount || 0)) - (postProcessingSession?.paidAmount !== undefined ? postProcessingSession.paidAmount : (snapshot?.billing?.totalPaid || 0))).toLocaleString()} (Fully Settled)
+                                                                    </span>
+                                                                </div>
+                                                            </>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Billed By & Timestamp footer */}
+                                                    <div className="pt-1 flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400">
+                                                        <span>Billed by: <strong className="text-slate-700 dark:text-zinc-300">{snapshot?.visit?.billedBy || user?.name || 'Staff Desk'}</strong></span>
+                                                        <span>Status: <strong className="text-emerald-700 dark:text-emerald-300">Locked & Audited</strong></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Bottom Actions on Right Half */}
+                                            <div className="pt-2 flex items-center gap-3 border-t border-slate-200/80 dark:border-zinc-800 shrink-0">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setPostProcessingSession(null);
+                                                        openCorrectionIntent(currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id);
+                                                    }}
+                                                    className="py-3.5 px-4 rounded-2xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-slate-300 dark:border-zinc-700 bg-white/90 dark:bg-zinc-800/90 text-slate-700 dark:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all active:scale-95 shadow-2xs cursor-pointer shrink-0"
+                                                    title="Enter Visit Correction to amend tests or alter billing"
+                                                >
+                                                    <Pencil className="w-4 h-4 text-synos-primary" />
+                                                    <span>Visit Correction</span>
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={handleCloseAndReset}
+                                                    className="flex-1 py-3.5 px-6 rounded-2xl font-bold text-base flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 shadow-md active:scale-[0.99] transition-all cursor-pointer"
+                                                >
+                                                    <span>Done & Back to Queue</span>
+                                                    <span className="text-[10px] font-mono opacity-70 bg-white/20 dark:bg-black/20 px-1.5 py-0.5 rounded">Esc</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
+                            </div>
+                        ) : (
+                            /* 2. IDENTIFIED PATIENT WORKFLOW (Strictly following iOS Target Design) */
+                            <div className="p-4 sm:p-6 max-w-full mx-auto w-full flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-300">
+                                {/* 2-COLUMN UNIFIED WORKFLOW (Left 7 cols: Patient Identification -> Visit Details | Right 5 cols: Billing & Payer Mode -> Financials) */}
+                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 xl:gap-6 items-stretch flex-1 min-h-0 overflow-hidden">
+                                    {/* LEFT COLUMN: 7 Cols */}
+                                    <div 
+                                        className="lg:col-span-7 flex flex-col gap-5 h-full min-h-0 overflow-y-auto pr-1.5"
+                                        onFocusCapture={() => { if (userPayerExpandedState) setUserPayerExpandedState(false); }}
+                                        onPointerDownCapture={() => { if (userPayerExpandedState) setUserPayerExpandedState(false); }}
+                                    >
+                                        {/* Step 1: Patient Identification (Compressed height, tightly hugs content, collapsible) */}
+                                        <div className={cn(
+                                            "rounded-[28px] border transition-all shrink-0",
+                                            isPatientCardCollapsed ? "p-3 sm:p-3.5 space-y-0" : "p-4 sm:p-5 space-y-3",
+                                            isDark
+                                                ? "bg-zinc-900/90 border-zinc-800 shadow-xl"
+                                                : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_14px_40px_rgba(15,35,60,0.08),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"
+                                        )}>
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2.5">
+                                                    <div className="w-7 h-7 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-sm shadow-xs">
+                                                        1
+                                                    </div>
+                                                    <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-normal">
+                                                        Patient Identification
+                                                    </h3>
+                                                    {isPatientCardCollapsed && (
+                                                        <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-zinc-300 ml-2">
+                                                            <span className="font-bold text-slate-900 dark:text-white">{displayedPatient?.fullName || displayedPatient?.name}</span>
+                                                            <span>•</span>
+                                                            <span>{displayedPatient?.age ? `${displayedPatient.age} Yrs` : ''} {displayedPatient?.gender || ''}</span>
+                                                            {displayedPatient?.phone && (
+                                                                <>
+                                                                    <span>•</span>
+                                                                    <span className="font-mono">{displayedPatient.phone}</span>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    {isPatientCardCollapsed ? (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setIsPatientCardCollapsed(false)}
+                                                            className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 transition-all cursor-pointer active:scale-95"
+                                                            title="Expand Patient Identification"
+                                                        >
+                                                            <span>Expand</span>
+                                                            <ChevronDown className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setIsPatientCardCollapsed(true)}
+                                                            className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 transition-all cursor-pointer active:scale-95"
+                                                            title="Minimize"
+                                                        >
+                                                            <span>Minimize</span>
+                                                            <ChevronUp className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
 
-                                {/* 2-Column Grid for Visit Details & Billing Summary (58% / 42% Ratio) */}
-                                <div className={cn(
-                                    hasPatient ? "grid grid-cols-1 lg:grid-cols-12 gap-5 xl:gap-6 items-start" : "flex flex-col gap-4",
-                                    (snapshot?.patient || isCorrectionIntent) ? "" : "flex-1 min-h-0 overflow-y-auto"
-                                )}>
-                                    <div className={hasPatient ? "lg:col-span-7 flex flex-col gap-5" : ""}>
+                                            {/* The Patient Card (Recessed Pod - Compacted) */}
+                                            {!isPatientCardCollapsed && (
+                                                <div className="rounded-2xl border border-[#CCDCE8] dark:border-zinc-800 bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] dark:bg-zinc-950/80 p-3.5 sm:p-4 shadow-[inset_0_1px_3px_rgba(15,35,60,0.06),0_1px_0_rgba(255,255,255,0.7)] animate-in fade-in duration-200">
+                                                    <RichPatientCard
+                                                        patient={displayedPatient}
+                                                        onAction={handleClearPatient}
+                                                        actionLabel={(Boolean(snapshot?.visit?.id || snapshot?.visit?.visitId || snapshot?.billing?.isLocked)) ? null : "Change"}
+                                                        secondaryActionLabel={isCorrectionIntent ? "Edit" : null}
+                                                        onSecondaryAction={handleOpenEditDemographics}
+                                                        isLocked={true}
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Step 2: Visit Details (Directly below Patient Identification, pulled up!) */}
                                         <VisitDetails
                                             snapshot={snapshot}
                                             visitId={currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id || snapshot?.visit?.VisitId}
@@ -1117,30 +1843,96 @@ export function IntentPanel({ onVisitUpdated }) {
                                         />
                                     </div>
 
-                                    <div className={cn("animate-in fade-in duration-700", hasPatient ? "lg:col-span-5 flex flex-col gap-5 sticky top-2" : "")}>
-                                        <BillingSummary
-                                            snapshot={snapshot}
-                                            onVisitUpdated={loadSnapshot}
-                                            isCorrectionIntent={isCorrectionIntent}
-                                            isPrepaidIntent={isPrepaidIntent}
-                                            billingMode={billingMode}
-                                            paymentMethod={paymentMethod}
-                                            setPaymentMethod={setPaymentMethod}
-                                            onOpenModal={setActiveModal}
-                                            createdDiscountReason={createdDiscountReason}
-                                            stagedDiscount={stagedDiscount}
-                                            onStageDiscount={setStagedDiscount}
-                                            stagedGross={stagedGross}
-                                            stagedDiscountAmt={stagedDiscountAmt}
-                                            stagedNet={stagedNet}
-                                            settlementDiff={settlementDiff}
-                                            originalPaid={originalPaid}
-                                            isPartialPayment={isPartialPayment}
-                                            setIsPartialPayment={setIsPartialPayment}
-                                            customPaymentAmount={customPaymentAmount}
-                                            setCustomPaymentAmount={setCustomPaymentAmount}
-                                            referralPartners={referralPartners}
-                                        />
+                                    {/* RIGHT COLUMN: 5 Cols (Split-scroll: independent smooth scroll for Billing & Financials) */}
+                                    <div className="lg:col-span-5 flex flex-col gap-4 h-full min-h-0 overflow-y-auto pr-1.5">
+                                        {/* Billing & Payer Mode */}
+                                        <div 
+                                            ref={payerModeContainerRef}
+                                            className={cn(
+                                                "rounded-[28px] border transition-all flex flex-col justify-between shrink-0",
+                                                isPayerModeCollapsed ? "p-4 sm:p-5 space-y-3" : "p-6 sm:p-7 space-y-4",
+                                                isDark
+                                                    ? "bg-zinc-900/90 border-zinc-800 shadow-xl"
+                                                    : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_14px_40px_rgba(15,35,60,0.08),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"
+                                            )}
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2.5">
+                                                    <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-normal">
+                                                        Billing & Payer Mode
+                                                    </h3>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    {isPayerModeCollapsed ? (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setUserPayerExpandedState(true)}
+                                                            className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:hover:bg-blue-900/50 border border-blue-200/80 dark:border-blue-800/40 transition-all cursor-pointer shadow-2xs active:scale-95"
+                                                            title="Change Payer Mode"
+                                                        >
+                                                            <span>Change</span>
+                                                            <ChevronDown className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setUserPayerExpandedState(false)}
+                                                            className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-all cursor-pointer active:scale-95"
+                                                            title="Minimize"
+                                                        >
+                                                            <span>Minimize</span>
+                                                            <ChevronDown className="w-3.5 h-3.5 rotate-180 transition-transform duration-200" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Column Layout with Auto-Collapse & Expand */}
+                                            <MultiPayerSelector
+                                                billingMode={billingMode}
+                                                onChangeMode={(mode) => {
+                                                    handleBillingModeChange(mode);
+                                                    setUserPayerExpandedState(false);
+                                                }}
+                                                disabled={snapshot?.billing?.isLocked && !isCorrectionIntent}
+                                                isDark={isDark}
+                                                layout="column"
+                                                showHeader={false}
+                                                isCollapsed={isPayerModeCollapsed}
+                                                onToggleCollapse={() => setUserPayerExpandedState(prev => !prev)}
+                                            />
+                                        </div>
+
+                                        {/* Step 3: Financials (BillingSummary with internal scroll) */}
+                                        <div 
+                                            className="flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-700"
+                                            onFocusCapture={() => { if (userPayerExpandedState) setUserPayerExpandedState(false); }}
+                                            onPointerDownCapture={() => { if (userPayerExpandedState) setUserPayerExpandedState(false); }}
+                                        >
+                                            <BillingSummary
+                                                snapshot={snapshot}
+                                                onVisitUpdated={loadSnapshot}
+                                                isCorrectionIntent={isCorrectionIntent}
+                                                isPrepaidIntent={isPrepaidIntent}
+                                                billingMode={billingMode}
+                                                paymentMethod={paymentMethod}
+                                                setPaymentMethod={setPaymentMethod}
+                                                onOpenModal={setActiveModal}
+                                                createdDiscountReason={createdDiscountReason}
+                                                stagedDiscount={stagedDiscount}
+                                                onStageDiscount={setStagedDiscount}
+                                                stagedGross={stagedGross}
+                                                stagedDiscountAmt={stagedDiscountAmt}
+                                                stagedNet={stagedNet}
+                                                settlementDiff={settlementDiff}
+                                                originalPaid={originalPaid}
+                                                isPartialPayment={isPartialPayment}
+                                                setIsPartialPayment={setIsPartialPayment}
+                                                customPaymentAmount={customPaymentAmount}
+                                                setCustomPaymentAmount={setCustomPaymentAmount}
+                                                referralPartners={referralPartners}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
 
@@ -1159,7 +1951,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                 <span className="type-section-header font-bold text-xs">
                                                     Amendment & Audit History
                                                 </span>
-                                                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-synos-primary/10 text-synos-primary border border-synos-primary/20">
+                                                <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-synos-primary/10 text-synos-primary border border-synos-primary/20">
                                                     {snapshot.correctionHistory.length} {snapshot.correctionHistory.length === 1 ? 'Record' : 'Records'}
                                                 </span>
                                             </div>
@@ -1190,7 +1982,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                                 <div className="flex items-center gap-1.5 font-bold">
                                                                     <span className="text-zinc-900 dark:text-zinc-100">{h.createdByName || "Staff Desk"}</span>
                                                                     <span className="text-zinc-400 font-normal">•</span>
-                                                                    <span className="text-[11px] font-mono text-zinc-500 dark:text-zinc-400 font-normal">
+                                                                    <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 font-normal">
                                                                         {new Date(h.createdAt).toLocaleString('en-IN', {
                                                                             day: '2-digit', month: 'short', year: 'numeric',
                                                                             hour: '2-digit', minute: '2-digit', hour12: true
@@ -1207,13 +1999,13 @@ export function IntentPanel({ onVisitUpdated }) {
                                                                 </div>
                                                             </div>
 
-                                                            <div className="text-[11px] text-zinc-700 dark:text-zinc-300">
+                                                            <div className="text-xs text-zinc-700 dark:text-zinc-300">
                                                                 <span className="font-semibold text-zinc-500 dark:text-zinc-400 mr-1">Reason:</span>
                                                                 <span>{h.reason || "Visit amended via Reception"}</span>
                                                             </div>
 
                                                             {parsedPayload && (
-                                                                <div className="flex flex-wrap gap-1.5 pt-1 text-[10px]">
+                                                                <div className="flex flex-wrap gap-1.5 pt-1 text-xs">
                                                                     {parsedPayload.addTestCodes?.length > 0 && (
                                                                         <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 font-medium">
                                                                             +Added: {parsedPayload.addTestCodes.join(", ")}
@@ -1244,204 +2036,214 @@ export function IntentPanel({ onVisitUpdated }) {
                 )}
             </div>
 
-            {/* Footer / Status Bar - UNIFIED BUTTON */}
-            <div className={cn("p-4 flex justify-center shrink-0", ui.footer)}>
-                {isCorrectionIntent ? (
-                    <div className="flex items-center gap-2 w-full max-w-2xl mx-auto">
-                        <button
-                            type="button"
-                            onClick={() => setTaxInvoiceModal({ 
-                                isOpen: true, 
-                                slotId: isPrepaid ? 'prepaid_patient_a4_slip' : 'patient_tax_invoice', 
-                                data: buildTaxInvoiceData(), 
-                                title: isPrepaid ? 'Prepaid Patient Slip (A4)' : 'Patient Tax Invoice (A4)' 
-                            })}
-                            className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-synos-primary/40 text-synos-primary bg-synos-primary/10 hover:bg-synos-primary/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1"
-                            title={isPrepaid ? "Preview & Print Prepaid Patient Slip (A4)" : "Preview & Print Full A4 Tax Invoice"}
-                        >
-                            <FileText className="w-4 h-4" /> A4 Receipt
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => handlePrintReceipt()}
-                            className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
-                            title="Print Thermal 80mm POS Slip"
-                        >
-                            <Printer className="w-4 h-4" /> Thermal
-                        </button>
-                        <button
-                            type="button"
-                            disabled={isGeneratingClaimDoc}
-                            onClick={handlePrintDoctorReceivable}
-                            className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-indigo-500/40 text-indigo-500 dark:text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
-                            title="Print Doctor's Receivable Statement for Safe Keeping & Claims"
-                        >
-                            {isGeneratingClaimDoc ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Building2 className="w-3.5 h-3.5" />}
-                            Doc Claim
-                        </button>
-
-                        {/* UNIFIED PRIMARY ACTION BUTTON */}
-                        {stagedChangesCount > 0 ? (
-                            <>
-                                <button
-                                    type="button"
-                                    onClick={() => setIsCancelModalOpen(true)}
-                                    className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-rose-500/30 text-rose-500 hover:bg-rose-500/10 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer"
-                                    title="Cancel this visit and automatically process refunds"
-                                >
-                                    <Ban className="w-3.5 h-3.5" />
-                                    <span>Cancel Visit</span>
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setStagedAddedTests([]);
-                                        setStagedRemovedOrderIds([]);
-                                        setStagedDiscount(null);
-                                        setStagedDemographics(null);
-                                        setStagedReferralPartnerId(undefined);
-                                        setStagedSecondaryPartnerId(undefined);
-                                        openResumeIntent(currentVisitId || drawerState.visitId);
-                                    }}
-                                    className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-zinc-600/40 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer"
-                                    title="Discard staged edits and exit correction mode"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setIsBatchEditConfirmModalOpen(true)}
-                                    className="flex-1 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer bg-synos-primary text-white hover:bg-synos-primary/90 focus:outline-none focus:ring-2 focus:ring-synos-primary"
-                                >
-                                    <span>Save Changes & Settle</span>
-                                    <span className="px-2 py-0.5 rounded-full bg-white/20 text-xs font-mono font-bold">
-                                        {stagedChangesCount}
-                                    </span>
-                                    <ArrowRight className="w-4 h-4" />
-                                </button>
-                            </>
-                        ) : (
+            {/* Footer / Status Bar - UNIFIED BUTTON (Hidden in In-Panel Post-Processing Split View) */}
+            {!isPostProcessingView && (
+                <div className={cn("p-4 flex justify-center shrink-0", ui.footer)}>
+                    {isCorrectionIntent ? (
+                        <div className="flex items-center gap-2 w-full max-w-2xl mx-auto">
                             <button
                                 type="button"
-                                onClick={() => openResumeIntent(currentVisitId || drawerState.visitId)}
-                                className={cn(
-                                    "flex-1 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1",
-                                    ui.actionBtn.enabled
-                                )}
+                                onClick={() => setTaxInvoiceModal({ 
+                                    isOpen: true, 
+                                    slotId: isPrepaid ? 'prepaid_patient_a4_slip' : 'patient_tax_invoice', 
+                                    data: buildTaxInvoiceData(), 
+                                    title: isPrepaid ? 'Prepaid Patient Slip (A4)' : 'Patient Tax Invoice (A4)' 
+                                })}
+                                className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-synos-primary/40 text-synos-primary bg-synos-primary/10 hover:bg-synos-primary/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1"
+                                title={isPrepaid ? "Preview & Print Prepaid Patient Slip (A4)" : "Preview & Print Full A4 Tax Invoice"}
                             >
-                                Close Editor <CheckCircle2 className="w-4 h-4" />
+                                <FileText className="w-4 h-4" /> A4 Receipt
                             </button>
-                        )}
-                    </div>
-                ) : isVisitFinalized ? (
-                    <div className="flex items-center gap-2 w-full max-w-2xl mx-auto">
-                        <button
-                            type="button"
-                            onClick={() => setTaxInvoiceModal({ 
-                                isOpen: true, 
-                                slotId: isPrepaid ? 'prepaid_patient_a4_slip' : 'patient_tax_invoice', 
-                                data: buildTaxInvoiceData(), 
-                                title: isPrepaid ? 'Prepaid Patient Slip (A4)' : 'Patient Tax Invoice (A4)' 
-                            })}
-                            className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-synos-primary/40 text-synos-primary bg-synos-primary/10 hover:bg-synos-primary/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1"
-                            title={isPrepaid ? "Preview & Print Prepaid Patient Slip (A4)" : "Preview & Print Full A4 Tax Invoice"}
-                        >
-                            <FileText className="w-4 h-4" /> A4 Receipt
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setTaxInvoiceModal({ 
-                                isOpen: true, 
-                                slotId: isPrepaid ? 'patient_thermal_prepaid_slip' : (billingMode === 'Insurance' ? 'insurance_thermal_receipt' : 'patient_thermal_receipt'), 
-                                paperSize: 'thermal80',
-                                data: buildTaxInvoiceData(), 
-                                title: isPrepaid ? 'Prepaid Patient Slip (80mm)' : (billingMode === 'Insurance' ? 'Insurance Thermal Receipt (80mm)' : 'Thermal Slip (80mm)') 
-                            })}
-                            className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
-                            title="Preview & Print Thermal 80mm POS Slip"
-                        >
-                            <Printer className="w-4 h-4" /> Thermal
-                        </button>
-                        <button
-                            type="button"
-                            disabled={isGeneratingClaimDoc}
-                            onClick={handlePrintDoctorReceivable}
-                            className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-indigo-500/40 text-indigo-500 dark:text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
-                            title="Print Doctor's Receivable Statement for Safe Keeping & Claims"
-                        >
-                            {isGeneratingClaimDoc ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Building2 className="w-3.5 h-3.5" />}
-                            Doc Claim
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => openCorrectionIntent(currentVisitId || drawerState.visitId)}
-                            className="flex-1 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 border border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-all active:scale-95 shadow-sm cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1"
-                            title="Enter Full-Fledged Visit Correction Mode to Add/Remove Tests or Alter Billing"
-                        >
-                            <Pencil className="w-4 h-4 text-synos-primary" />
-                            <span>Visit Correction</span>
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setIsCancelModalOpen(true)}
-                            className="py-3 px-3.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-rose-500/30 text-rose-600 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 transition-all active:scale-95 shadow-sm cursor-pointer shrink-0"
-                            title="Cancel this visit and issue automated refund"
-                        >
-                            <Ban className="w-3.5 h-3.5" />
-                            <span>Cancel Visit</span>
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handleCloseAndReset}
-                            className={cn(
-                                "py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1 shrink-0",
-                                isDark ? "bg-zinc-800 text-zinc-300 hover:bg-zinc-700" : "bg-zinc-200 text-zinc-800 hover:bg-zinc-300"
-                            )}
-                        >
-                            Close
-                        </button>
-                    </div>
-                ) : (
-                    hasVisit && (
-                        <div className="flex flex-col gap-1.5 w-full max-w-2xl mx-auto">
-                            <div className="flex items-center gap-2 w-full">
-                                {snapshot?.visit?.visitId && (
+                            <button
+                                type="button"
+                                onClick={() => handlePrintReceipt()}
+                                className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 hover:bg-emerald-100 transition-all active:scale-95 shadow-2xs shrink-0 cursor-pointer"
+                                title="Print Thermal 80mm POS Slip"
+                            >
+                                <Printer className="w-4 h-4 text-emerald-700 dark:text-emerald-300" /> Thermal
+                            </button>
+                            <button
+                                type="button"
+                                disabled={isGeneratingClaimDoc}
+                                onClick={handlePrintDoctorReceivable}
+                                className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-indigo-500/40 text-indigo-500 dark:text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
+                                title="Print Doctor's Receivable Statement for Safe Keeping & Claims"
+                            >
+                                {isGeneratingClaimDoc ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Building2 className="w-3.5 h-3.5" />}
+                                Doc Claim
+                            </button>
+
+                            {/* UNIFIED PRIMARY ACTION BUTTON */}
+                            {stagedChangesCount > 0 ? (
+                                <>
                                     <button
                                         type="button"
                                         onClick={() => setIsCancelModalOpen(true)}
-                                        className="py-2.5 px-3 rounded-xl border border-rose-500/30 text-rose-600 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0"
-                                        title="Cancel this visit"
+                                        className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-rose-500/30 text-rose-500 hover:bg-rose-500/10 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer"
+                                        title="Cancel this visit and automatically process refunds"
                                     >
                                         <Ban className="w-3.5 h-3.5" />
-                                        <span>Cancel</span>
+                                        <span>Cancel Visit</span>
                                     </button>
-                                )}
-                                <button
-                                    onClick={handleUnifiedAction}
-                                    disabled={!isActionEnabled || isLoading || isActionSubmitting}
-                                    className={cn(
-                                        "flex-1 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1",
-                                        (isActionEnabled && !isActionSubmitting)
-                                            ? ui.actionBtn.enabled
-                                            : ui.actionBtn.disabled
-                                    )}
-                                >
-                                    {(isLoading || isActionSubmitting) ? <Loader2 className="w-4 h-4 animate-spin" /> : (
-                                        <>
-                                            {mainActionLabel} <ArrowRight className="w-4 h-4" />
-                                        </>
-                                    )}
-                                </button>
-                            </div>
-                            {canLockPrepaid && !(snapshot?.billing?.referral?.partner || snapshot?.billing?.referral?.draft) && (
-                                <p className="text-xs text-amber-500 dark:text-amber-400 font-medium text-center">
-                                    * Please select a Referral Partner above (Who collected payment outside?)
-                                </p>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setStagedAddedTests([]);
+                                            setStagedRemovedOrderIds([]);
+                                            setStagedDiscount(null);
+                                            setStagedDemographics(null);
+                                            setStagedReferralPartnerId(undefined);
+                                            setStagedSecondaryPartnerId(undefined);
+                                            openResumeIntent(currentVisitId || drawerState.visitId);
+                                        }}
+                                        className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-zinc-600/40 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer"
+                                        title="Discard staged edits and exit correction mode"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsBatchEditConfirmModalOpen(true)}
+                                        className="flex-1 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer bg-synos-primary text-white hover:bg-synos-primary/90 focus:outline-none focus:ring-2 focus:ring-synos-primary"
+                                    >
+                                        <span>Save Changes & Settle</span>
+                                        <span className="px-2 py-0.5 rounded-full bg-white/20 text-xs font-mono font-bold">
+                                            {stagedChangesCount}
+                                        </span>
+                                        <ArrowRight className="w-4 h-4" />
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsCancelModalOpen(true)}
+                                        className="py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 transition-all active:scale-95 shadow-2xs cursor-pointer shrink-0"
+                                        title="Cancel this visit and issue automated refund"
+                                    >
+                                        <Ban className="w-4 h-4" />
+                                        <span>Cancel Visit</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => openResumeIntent(currentVisitId || drawerState.visitId)}
+                                        className={cn(
+                                            "flex-1 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1",
+                                            ui.actionBtn.enabled
+                                        )}
+                                    >
+                                        Close Editor <CheckCircle2 className="w-4 h-4" />
+                                    </button>
+                                </>
                             )}
                         </div>
-                    )
-                )}
-            </div>
+                    ) : isVisitFinalized ? (
+                        <div className="flex items-center gap-2.5 w-full max-w-2xl mx-auto">
+                            <button
+                                type="button"
+                                onClick={() => setTaxInvoiceModal({ 
+                                    isOpen: true, 
+                                    slotId: isPrepaid ? 'prepaid_patient_a4_slip' : 'patient_tax_invoice', 
+                                    data: buildTaxInvoiceData(), 
+                                    title: isPrepaid ? 'Prepaid Patient Slip (A4)' : 'Patient Tax Invoice (A4)' 
+                                })}
+                                className="py-2.5 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 border border-sky-200 dark:border-sky-800 text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/30 hover:bg-sky-100 transition-all active:scale-95 shadow-2xs shrink-0 cursor-pointer"
+                                title={isPrepaid ? "Preview & Print Prepaid Patient Slip (A4)" : "Preview & Print Full A4 Tax Invoice"}
+                            >
+                                <FileText className="w-4 h-4" /> A4 Receipt
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setTaxInvoiceModal({ 
+                                    isOpen: true, 
+                                    slotId: isPrepaid ? 'patient_thermal_prepaid_slip' : (billingMode === 'Insurance' ? 'insurance_thermal_receipt' : 'patient_thermal_receipt'), 
+                                    paperSize: 'thermal80',
+                                    data: buildTaxInvoiceData(), 
+                                    title: isPrepaid ? 'Prepaid Patient Slip (80mm)' : (billingMode === 'Insurance' ? 'Insurance Thermal Receipt (80mm)' : 'Thermal Slip (80mm)') 
+                                })}
+                                className="py-2.5 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 hover:bg-emerald-100 transition-all active:scale-95 shadow-2xs shrink-0 cursor-pointer"
+                                title="Preview & Print Thermal 80mm POS Slip"
+                            >
+                                <Printer className="w-4 h-4" /> Thermal
+                            </button>
+                            <button
+                                type="button"
+                                disabled={isGeneratingClaimDoc}
+                                onClick={handlePrintDoctorReceivable}
+                                className="py-2.5 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 hover:bg-indigo-100 transition-all active:scale-95 shadow-2xs shrink-0 cursor-pointer"
+                                title="Print Doctor's Receivable Statement for Safe Keeping & Claims"
+                            >
+                                {isGeneratingClaimDoc ? <Loader2 className="w-4 h-4 animate-spin" /> : <Building2 className="w-4 h-4" />}
+                                Doc Claim
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => openCorrectionIntent(currentVisitId || drawerState.visitId)}
+                                className="flex-1 py-3 px-5 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 border border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-all active:scale-95 shadow-2xs cursor-pointer"
+                                title="Enter Full-Fledged Visit Correction Mode to Add/Remove Tests or Alter Billing"
+                            >
+                                <Pencil className="w-4 h-4 text-synos-primary" />
+                                <span>Visit Correction</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setIsCancelModalOpen(true)}
+                                className="py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 transition-all active:scale-95 shadow-2xs cursor-pointer shrink-0"
+                                title="Cancel this visit and issue automated refund"
+                            >
+                                <Ban className="w-4 h-4" />
+                                <span>Cancel Visit</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleCloseAndReset}
+                                className="py-3 px-5 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-1.5 border border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 transition-all active:scale-95 shadow-2xs cursor-pointer shrink-0"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    ) : (
+                        hasVisit && (
+                            <div className="flex flex-col gap-2 w-full max-w-2xl mx-auto">
+                                <div className="flex items-center gap-2.5 w-full">
+                                    {snapshot?.visit?.visitId && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsCancelModalOpen(true)}
+                                            className="py-3.5 px-4 rounded-2xl border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 font-bold text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs"
+                                            title="Cancel this visit"
+                                        >
+                                            <Ban className="w-4 h-4" />
+                                            <span>Cancel</span>
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={handleUnifiedAction}
+                                        disabled={!isActionEnabled || isLoading || isActionSubmitting}
+                                        className={cn(
+                                            "w-full py-3.5 px-6 rounded-2xl font-bold text-base flex items-center justify-center gap-2 transition-all active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1 shadow-sm",
+                                            (isActionEnabled && !isActionSubmitting)
+                                                ? ui.actionBtn.enabled
+                                                : ui.actionBtn.disabled
+                                        )}
+                                    >
+                                        {(isLoading || isActionSubmitting) ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                                            <>
+                                                {mainActionLabel} <ArrowRight className="w-4 h-4" />
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
+                                {canLockPrepaid && !(snapshot?.billing?.referral?.partner || snapshot?.billing?.referral?.draft) && (
+                                    <p className="text-xs text-amber-500 dark:text-amber-400 font-medium text-center">
+                                        * Please select a Referral Partner above (Who collected payment outside?)
+                                    </p>
+                                )}
+                            </div>
+                        )
+                    )}
+                </div>
+            )}
 
             {/* Commercial Patient Tax Invoice Viewer */}
             {taxInvoiceModal.isOpen && taxInvoiceModal.data && (
@@ -1584,7 +2386,7 @@ export function IntentPanel({ onVisitUpdated }) {
                         <div className="space-y-3.5 text-xs">
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="space-y-1">
-                                    <label className="font-bold uppercase tracking-wider text-[10px] text-zinc-500">First Name</label>
+                                    <label className="text-xs sm:text-sm font-semibold tracking-normal text-slate-700 dark:text-zinc-300">First Name</label>
                                     <input
                                         type="text"
                                         value={editDemographicsDraft.firstName}
@@ -1594,7 +2396,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                     />
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="font-bold uppercase tracking-wider text-[10px] text-zinc-500">Last Name</label>
+                                    <label className="text-xs sm:text-sm font-semibold tracking-normal text-slate-700 dark:text-zinc-300">Last Name</label>
                                     <input
                                         type="text"
                                         value={editDemographicsDraft.lastName}
@@ -1607,7 +2409,7 @@ export function IntentPanel({ onVisitUpdated }) {
 
                             <div className="grid grid-cols-3 gap-3">
                                 <div className="col-span-1 space-y-1">
-                                    <label className="font-bold uppercase tracking-wider text-[10px] text-zinc-500">Age</label>
+                                    <label className="text-xs sm:text-sm font-semibold tracking-normal text-slate-700 dark:text-zinc-300">Age</label>
                                     <input
                                         type="number"
                                         min="0"
@@ -1619,7 +2421,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                     />
                                 </div>
                                 <div className="col-span-1 space-y-1">
-                                    <label className="font-bold uppercase tracking-wider text-[10px] text-zinc-500">Age Unit</label>
+                                    <label className="text-xs sm:text-sm font-semibold tracking-normal text-slate-700 dark:text-zinc-300">Age Unit</label>
                                     <select
                                         value={editDemographicsDraft.ageUnit}
                                         onChange={(e) => setEditDemographicsDraft(prev => ({ ...prev, ageUnit: e.target.value }))}
@@ -1631,7 +2433,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                     </select>
                                 </div>
                                 <div className="col-span-1 space-y-1">
-                                    <label className="font-bold uppercase tracking-wider text-[10px] text-zinc-500">Gender</label>
+                                    <label className="text-xs sm:text-sm font-semibold tracking-normal text-slate-700 dark:text-zinc-300">Gender</label>
                                     <select
                                         value={editDemographicsDraft.gender}
                                         onChange={(e) => setEditDemographicsDraft(prev => ({ ...prev, gender: e.target.value }))}
@@ -1645,7 +2447,7 @@ export function IntentPanel({ onVisitUpdated }) {
                             </div>
 
                             <div className="space-y-1">
-                                <label className="font-bold uppercase tracking-wider text-[10px] text-zinc-500">Mobile Number</label>
+                                <label className="text-xs sm:text-sm font-semibold tracking-normal text-slate-700 dark:text-zinc-300">Mobile Number</label>
                                 <input
                                     type="tel"
                                     value={editDemographicsDraft.mobile}
@@ -1723,7 +2525,7 @@ export function IntentPanel({ onVisitUpdated }) {
 
                                 return (
                                     <div className="p-3 rounded-xl border border-indigo-500/30 bg-indigo-50/70 dark:bg-indigo-950/30 space-y-1">
-                                        <div className="font-bold text-[11px] uppercase tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
+                                        <div className="font-bold text-xs sm:text-sm tracking-normal text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
                                             <span>👨‍⚕️ Referring Doctor Changed</span>
                                         </div>
                                         <div className="text-xs font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2 pt-0.5">
@@ -1731,7 +2533,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                             <ArrowRight className="w-3.5 h-3.5 text-indigo-500" />
                                             <span className="text-indigo-700 dark:text-indigo-300 font-bold">{newName}</span>
                                         </div>
-                                        <div className="text-[11px] text-zinc-600 dark:text-zinc-400 pt-0.5">
+                                        <div className="text-xs text-zinc-600 dark:text-zinc-400 pt-0.5">
                                             * This visit and all bills are now assigned to <strong>{newName}</strong>.
                                         </div>
                                     </div>
@@ -1740,7 +2542,7 @@ export function IntentPanel({ onVisitUpdated }) {
                             {/* 1. Demographics Summary */}
                             {stagedDemographics && (
                                 <div className="p-3 rounded-xl border border-blue-500/30 bg-blue-500/5 space-y-1">
-                                    <div className="font-bold text-[11px] uppercase tracking-wider text-blue-500 flex items-center gap-1.5">
+                                    <div className="font-bold text-xs sm:text-sm tracking-normal text-blue-500 flex items-center gap-1.5">
                                         <span>👤 Patient Demographics Updated</span>
                                     </div>
                                     <div className="text-xs space-y-0.5 pt-1 font-medium text-zinc-700 dark:text-zinc-300">
@@ -1753,8 +2555,8 @@ export function IntentPanel({ onVisitUpdated }) {
 
                             {/* 2. Added Tests & Specimen Container Analysis */}
                             {stagedAddedTests.length > 0 && (
-                                <div className="p-3 rounded-xl border border-emerald-500/30 bg-emerald-500/5 space-y-2">
-                                    <div className="font-bold text-[11px] uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                                <div className="p-3 rounded-xl border border-emerald-500/30 bg-emerald-50/70 dark:bg-emerald-950/30 space-y-2">
+                                    <div className="font-bold text-xs sm:text-sm tracking-normal text-emerald-600 dark:text-emerald-400">
                                         🧪 Tests Added ({stagedAddedTests.length})
                                     </div>
                                     <div className="space-y-1.5">
@@ -1765,11 +2567,11 @@ export function IntentPanel({ onVisitUpdated }) {
 
                                             return (
                                                 <div key={idx} className="flex flex-col gap-0.5 p-2 rounded-lg bg-white/60 dark:bg-zinc-800/60 border border-emerald-500/20">
-                                                    <div className="flex justify-between font-bold">
+                                                    <div className="flex justify-between font-bold text-xs">
                                                         <span>{t.name || t.testName} ({t.code || t.testCode})</span>
                                                         <span className="font-mono">₹{t.price || t.basePrice || 0}</span>
                                                     </div>
-                                                    <div className="text-[11px] flex items-center gap-1.5 mt-0.5">
+                                                    <div className="text-xs flex items-center gap-1.5 mt-0.5">
                                                         {isReuse ? (
                                                             <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
                                                                 ✓ Reusing collected {existingSpec.tubeName || specType || "Specimen"} container (No new pricking)
@@ -1789,8 +2591,8 @@ export function IntentPanel({ onVisitUpdated }) {
 
                             {/* 3. Removed Tests */}
                             {stagedRemovedOrderIds.length > 0 && (
-                                <div className="p-3 rounded-xl border border-red-500/30 bg-red-500/5 space-y-1.5">
-                                    <div className="font-bold text-[11px] uppercase tracking-wider text-red-500">
+                                <div className="p-3 rounded-xl border border-red-500/30 bg-red-50/70 dark:bg-red-950/30 space-y-1.5">
+                                    <div className="font-bold text-xs sm:text-sm tracking-normal text-red-500">
                                         🗑️ Tests Cancelled ({stagedRemovedOrderIds.length})
                                     </div>
                                     <div className="space-y-1">
@@ -1809,11 +2611,11 @@ export function IntentPanel({ onVisitUpdated }) {
 
                             {/* 4. Clinical Report Re-Signing Notice */}
                             {snapshot?.visit?.reports?.some(r => r.status === 'Signed' || r.status === 'ManualVerified') && (
-                                <div className="p-3 rounded-xl border border-purple-500/30 bg-purple-500/5 space-y-1 text-purple-700 dark:text-purple-300">
-                                    <div className="font-bold text-[11px] uppercase tracking-wider flex items-center gap-1.5">
+                                <div className="p-3 rounded-xl border border-purple-500/30 bg-purple-50/70 dark:bg-purple-950/30 space-y-1 text-purple-700 dark:text-purple-300">
+                                    <div className="font-bold text-xs sm:text-sm tracking-normal flex items-center gap-1.5">
                                         <span>📋 Doctor Re-verification Required</span>
                                     </div>
-                                    <p className="text-[11px] leading-relaxed opacity-90">
+                                    <p className="text-xs leading-relaxed opacity-90">
                                         This visit has previously signed doctor reports. In accordance with clinical safety, the report will be reset and re-queued for the pathologist to review and re-authorize.
                                     </p>
                                 </div>
@@ -1866,12 +2668,12 @@ export function IntentPanel({ onVisitUpdated }) {
                                                     ? (isDark ? "bg-emerald-950/40 border-emerald-500/50" : "bg-emerald-50/90 border-emerald-300")
                                                     : (isDark ? "bg-zinc-800/60 border-zinc-700" : "bg-slate-50 border-slate-300")
                                         )}>
-                                            <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider">
+                                            <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider">
                                                 <span className="flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400">
                                                     <span className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
                                                     Corporate B2B Partner Bill
                                                 </span>
-                                                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20">
+                                                <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full border bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20">
                                                     Billed to Doctor
                                                 </span>
                                             </div>
@@ -1882,11 +2684,11 @@ export function IntentPanel({ onVisitUpdated }) {
 
                                             <div className="grid grid-cols-2 gap-2 text-xs pt-1">
                                                 <div className="p-2.5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-2xs">
-                                                    <div className="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase">Previous Doctor Bill</div>
+                                                    <div className="text-xs text-zinc-500 dark:text-zinc-400 font-semibold uppercase">Previous Doctor Bill</div>
                                                     <div className="font-mono text-sm font-bold text-zinc-800 dark:text-zinc-200 mt-0.5">₹{originalB2BClaim.toLocaleString()}</div>
                                                 </div>
                                                 <div className="p-2.5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-2xs">
-                                                    <div className="text-[10px] text-zinc-500 dark:text-zinc-400 font-semibold uppercase">New Doctor Bill</div>
+                                                    <div className="text-xs text-zinc-500 dark:text-zinc-400 font-semibold uppercase">New Doctor Bill</div>
                                                     <div className="font-mono text-sm font-bold text-indigo-600 dark:text-indigo-400 mt-0.5">₹{currentB2BClaim.toLocaleString()}</div>
                                                 </div>
                                             </div>
@@ -1900,7 +2702,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                 </span>
                                             </div>
 
-                                            <div className="text-[11px] leading-relaxed text-zinc-600 dark:text-zinc-400 pt-0.5">
+                                            <div className="text-xs leading-relaxed text-zinc-600 dark:text-zinc-400 pt-0.5">
                                                 {b2bClaimDiff > 0 && (
                                                     <p className="font-semibold text-amber-700 dark:text-amber-300">
                                                         * Doctor bill increases by ₹{b2bClaimDiff.toLocaleString()} (New bill ₹{currentB2BClaim.toLocaleString()} vs Old bill ₹{originalB2BClaim.toLocaleString()}). Added to doctor's monthly account.
@@ -1916,7 +2718,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                         * Doctor bill unchanged at ₹{currentB2BClaim.toLocaleString()}.
                                                     </p>
                                                 )}
-                                                <div className="text-[10px] text-zinc-600 dark:text-zinc-400 mt-1 font-semibold flex items-center gap-1">
+                                                <div className="text-xs text-zinc-600 dark:text-zinc-400 mt-1 font-semibold flex items-center gap-1">
                                                     <span>✓ Collect from Patient: <strong className="text-zinc-900 dark:text-zinc-100">₹0 (Billed directly to doctor)</strong></span>
                                                 </div>
                                             </div>
@@ -1948,17 +2750,17 @@ export function IntentPanel({ onVisitUpdated }) {
                                             </span>
                                         </div>
                                         {settlementDiff > 0 && (
-                                            <p className="text-[11px] font-semibold text-amber-700 dark:text-amber-300">
+                                            <p className="text-xs font-semibold text-amber-700 dark:text-amber-300">
                                                 * Collect ₹{settlementDiff.toLocaleString()} from patient at the counter via {paymentMethod}.
                                             </p>
                                         )}
                                         {settlementDiff < 0 && (
-                                            <p className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
+                                            <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">
                                                 * Give ₹{Math.abs(settlementDiff).toLocaleString()} refund cash to patient from cash drawer.
                                             </p>
                                         )}
                                         {settlementDiff === 0 && (
-                                            <p className="text-[11px] font-medium text-zinc-600 dark:text-zinc-400">
+                                            <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
                                                 * No additional payment needed from patient.
                                             </p>
                                         )}
@@ -1968,7 +2770,7 @@ export function IntentPanel({ onVisitUpdated }) {
 
                             {/* 6. Reason for Change */}
                             <div className="space-y-1 pt-1">
-                                <label className="font-bold uppercase tracking-wider text-[10px] text-zinc-600 dark:text-zinc-400 block">
+                                <label className="text-xs sm:text-sm font-semibold tracking-normal text-slate-700 dark:text-zinc-300 block">
                                     Reason for Change <span className="text-red-500">*</span>
                                 </label>
                                 <textarea
@@ -2022,7 +2824,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                 </div>
                                 <div>
                                     <h3 className="font-bold text-sm">Cancel Patient Visit</h3>
-                                    <p className="text-[11px] text-zinc-400">Token: <span className="font-mono font-bold text-zinc-700 dark:text-zinc-200">{snapshot?.visit?.token || snapshot?.visit?.visitToken || 'WAIT'}</span></p>
+                                    <p className="text-xs text-zinc-500">Token: <span className="font-mono font-bold text-zinc-700 dark:text-zinc-200">{snapshot?.visit?.token || snapshot?.visit?.visitToken || 'WAIT'}</span></p>
                                 </div>
                             </div>
                             <button
@@ -2054,7 +2856,7 @@ export function IntentPanel({ onVisitUpdated }) {
 
                         {/* Reason Selection */}
                         <div className="space-y-2">
-                            <label className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                            <label className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-zinc-300 tracking-normal">
                                 Cancellation Reason (Mandatory)
                             </label>
                             <div className="flex flex-wrap gap-1.5">
@@ -2071,7 +2873,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                         type="button"
                                         onClick={() => setCancelReason(preset)}
                                         className={cn(
-                                            "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer border",
+                                            "px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer border",
                                             cancelReason === preset
                                                 ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 border-zinc-900 dark:border-zinc-100 shadow-xs"
                                                 : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:text-zinc-900 dark:hover:text-white"
@@ -2095,7 +2897,7 @@ export function IntentPanel({ onVisitUpdated }) {
 
                         {/* Optional Notes */}
                         <div className="space-y-1">
-                            <label className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                            <label className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-zinc-300 tracking-normal">
                                 Administrative Notes (Optional)
                             </label>
                             <textarea
