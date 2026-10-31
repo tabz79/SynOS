@@ -273,18 +273,27 @@ namespace SynOS.Services.EconomicsIntelligence
                 .Where(f => f.OccurredAt >= start && f.OccurredAt <= end && f.Direction == RevenueDirection.Inflow)
                 .ToListAsync();
 
-            summary.TotalRevenueCash = revenueFacts.Sum(f => f.Amount);
-            
-            // Separation for Drawer Reconciliation
+            // Desk collections ONLY: Cash or direct digital payments (Card, UPI, Gateway).
+            // STRICT CONTRACT: Exclude Prepaid, Partner Account, Corporate credit, or ledger receivables.
             summary.CashCollected = revenueFacts.Where(f => f.PaymentMode == PaymentMode.Cash).Sum(f => f.Amount);
-            summary.OnlineCollected = revenueFacts.Where(f => f.PaymentMode != PaymentMode.Cash).Sum(f => f.Amount);
+            summary.OnlineCollected = revenueFacts.Where(f => f.PaymentMode == PaymentMode.Card || 
+                                                             f.PaymentMode == PaymentMode.UPI || 
+                                                             f.PaymentMode == PaymentMode.BankTransfer).Sum(f => f.Amount);
+            summary.TotalRevenueCash = summary.CashCollected + summary.OnlineCollected;
 
-            // Reconcile with direct Payments table for physical drawer and digital truth
+            // Reconcile with direct Payments table for physical drawer and digital truth (excluding B2B Partner credit/receivable adjustments)
             var paymentsQuery = _context.Payments
                 .Include(p => p.Invoice)
                     .ThenInclude(i => i.Visit)
                 .AsNoTracking()
-                .Where(p => p.ReceivedAt >= start && p.ReceivedAt <= end);
+                .Where(p => p.ReceivedAt >= start && p.ReceivedAt <= end && 
+                            p.Method != "PartnerAccount" && 
+                            p.Method != "Prepaid" && 
+                            p.Method != "PartnerCollects" &&
+                            p.Method != "DoctorAccount" &&
+                            p.Method != "B2B" &&
+                            p.Method != "Insurance" &&
+                            (p.Invoice == null || p.Invoice.Visit == null || (p.Invoice.Visit.PaymentCollectionModel != "PartnerCollects" && p.Invoice.Visit.PaymentCollectionModel != "PrepaidPartner")));
 
             if (branchId.HasValue)
             {
@@ -292,13 +301,25 @@ namespace SynOS.Services.EconomicsIntelligence
             }
 
             var actualPayments = await paymentsQuery.ToListAsync();
-            var totalActualPayments = actualPayments.Sum(p => p.Amount);
 
-            if (totalActualPayments > summary.TotalRevenueCash)
+            if (actualPayments.Any())
             {
-                summary.TotalRevenueCash = totalActualPayments;
-                summary.CashCollected = actualPayments.Where(p => (p.Method ?? "").ToLower().Contains("cash")).Sum(p => p.Amount);
-                summary.OnlineCollected = actualPayments.Where(p => !(p.Method ?? "").ToLower().Contains("cash")).Sum(p => p.Amount);
+                var directCash = actualPayments.Where(p => {
+                    var m = (p.Method ?? "").ToLower().Trim();
+                    return m == "cash" || m == "0";
+                }).Sum(p => p.Amount);
+
+                var directOnline = actualPayments.Where(p => {
+                    var m = (p.Method ?? "").ToLower().Trim();
+                    return m == "card" || m == "upi" || m == "banktransfer" || m == "1" || m == "2" || m == "3" || m == "gateway";
+                }).Sum(p => p.Amount);
+
+                if ((directCash + directOnline) > summary.TotalRevenueCash)
+                {
+                    summary.CashCollected = directCash;
+                    summary.OnlineCollected = directOnline;
+                    summary.TotalRevenueCash = directCash + directOnline;
+                }
             }
 
             var consumableFactsQuery = _context.CostAttribution_UsageFacts.AsNoTracking();
@@ -333,16 +354,63 @@ namespace SynOS.Services.EconomicsIntelligence
                 .Where(f => f.OccurredAt >= start && f.OccurredAt <= end && f.Category == "Overhead")
                 .SumAsync(f => f.Amount);
 
-            // --- ACCRUAL BASIS (Obligations) ---
+            // --- ACCRUAL BASIS (Obligations & Net Billed Legal Truth) ---
             var invoicesQuery = _context.Invoices.AsNoTracking();
             if (branchId.HasValue)
             {
                 invoicesQuery = invoicesQuery.Where(i => i.Visit != null && i.Visit.BranchId == branchId.Value);
             }
 
-            summary.TotalRevenueAccrual = await invoicesQuery
+            var invoicesInPeriod = await invoicesQuery
                 .Where(i => i.CreatedAt >= start && i.CreatedAt <= end)
-                .SumAsync(i => i.Total);
+                .Select(i => new {
+                    i.GrossAmount,
+                    i.DiscountAmount,
+                    i.NetAmount,
+                    i.Total
+                })
+                .ToListAsync();
+
+            decimal calculatedNetBilled = 0;
+            foreach (var inv in invoicesInPeriod)
+            {
+                if (inv.NetAmount > 0)
+                {
+                    calculatedNetBilled += inv.NetAmount;
+                }
+                else if (inv.DiscountAmount > 0)
+                {
+                    var baseGross = inv.GrossAmount > 0 ? inv.GrossAmount : inv.Total;
+                    calculatedNetBilled += Math.Max(0, baseGross - inv.DiscountAmount);
+                }
+                else
+                {
+                    calculatedNetBilled += (inv.Total > 0 ? inv.Total : inv.GrossAmount);
+                }
+            }
+
+            // Also check total active concessions declared in period
+            var totalConcessionsInPeriod = await _context.DiscountFacts
+                .AsNoTracking()
+                .Where(df => df.AppliedAt >= start && df.AppliedAt <= end && df.IsActive)
+                .SumAsync(df => df.DiscountAmount);
+
+            var totalGrossInPeriod = invoicesInPeriod.Sum(i => i.GrossAmount > 0 ? i.GrossAmount : i.Total);
+            if (totalConcessionsInPeriod > 0 && calculatedNetBilled >= totalGrossInPeriod && totalGrossInPeriod > 0)
+            {
+                calculatedNetBilled = Math.Max(0, totalGrossInPeriod - totalConcessionsInPeriod);
+            }
+
+            summary.TotalRevenueAccrual = calculatedNetBilled;
+
+            summary.BillsCount = invoicesInPeriod.Count;
+
+            if (summary.BillsCount == 0)
+            {
+                var visitsQuery = _context.Visits.AsNoTracking();
+                if (branchId.HasValue) visitsQuery = visitsQuery.Where(v => v.BranchId == branchId.Value);
+                summary.BillsCount = await visitsQuery.Where(v => v.CreatedAt >= start && v.CreatedAt <= end).CountAsync();
+            }
 
             var vendorPayablesQuery = _context.VendorPayables.AsNoTracking();
             if (branchId.HasValue)
@@ -464,7 +532,7 @@ namespace SynOS.Services.EconomicsIntelligence
                         if (target.Modality == "Hematology") return combined.Contains("hemat") || combined.Contains("haemat") || combined.Contains("cbc");
                         if (target.Modality == "Microbiology") return combined.Contains("microbio") || combined.Contains("culture");
                         if (target.Modality == "Histopathology") return combined.Contains("histo") || combined.Contains("biopsy");
-                        if (target.Modality == "X-Ray") return combined.Contains("x-ray") || combined.Contains("xray") || combined.Contains(" xr ") || combined.EndsWith("xr");
+                        if (target.Modality == "X-Ray") return combined.Contains("x-ray") || combined.Contains("xray") || combined.Contains("x-rays") || combined.Contains("xrays") || combined.Contains(" xr ") || combined.EndsWith("xr");
                         if (target.Modality == "CT Scan") return combined.Contains(" ct ") || combined.Contains("ct scan") || combined.StartsWith("ct");
                         if (target.Modality == "Ultrasound") return combined.Contains("ultrasound") || combined.Contains("usg") || combined.Contains("echo");
                         if (target.Modality == "MRI") return combined.Contains("mri") || combined.Contains(" mr ");
@@ -473,16 +541,36 @@ namespace SynOS.Services.EconomicsIntelligence
 
                     if (matched.Any())
                     {
-                        deptRev = matched.Sum(m => Math.Max(0, m.Price));
+                        var rawMatchedPrice = matched.Sum(m => Math.Max(0, m.Price));
+                        var totalOrdersGross = recentOrders.Sum(o => Math.Max(0, o.Price));
+
+                        // Scale to net revenue if concession was applied at visit/invoice level
+                        if (summary.TotalRevenueAccrual > 0 && totalOrdersGross > summary.TotalRevenueAccrual)
+                        {
+                            deptRev = Math.Round(rawMatchedPrice * (summary.TotalRevenueAccrual / totalOrdersGross), MidpointRounding.AwayFromZero);
+                        }
+                        else
+                        {
+                            deptRev = rawMatchedPrice;
+                        }
                         testsCount = matched.Count;
                     }
+                    else
+                    {
+                        deptRev = 0;
+                        testsCount = 0;
+                    }
                 }
-
-                // If no direct matches in DB or revenue is 0, provide realistic distribution
-                if (deptRev <= 0)
+                else if (totalRev > 0 && (end - start).TotalDays > 3)
                 {
+                    // Only provide baseline proportional distribution for broad legacy historical time windows (e.g. Month/Quarter) if zero discrete order rows exist
                     deptRev = Math.Round(totalRev * target.Share, MidpointRounding.AwayFromZero);
                     testsCount = Math.Max(1, (int)Math.Round(target.DefaultCount * (totalRev > 100000 ? (totalRev / 200000m) : 1m)));
+                }
+                else
+                {
+                    deptRev = 0;
+                    testsCount = 0;
                 }
 
                 // Material / direct cost calculation:

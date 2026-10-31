@@ -40,6 +40,9 @@ namespace SynOS.Models.DTOs.Economics
         public decimal CashMarginPercentage => TotalRevenueCash > 0 ? (NetCashPosition / TotalRevenueCash) * 100 : 0;
         public decimal AccrualMarginPercentage => TotalRevenueAccrual > 0 ? (NetAccrualPosition / TotalRevenueAccrual) * 100 : 0;
 
+        public int BillsCount { get; set; }
+        public int TotalBillsCount => BillsCount;
+
         public string Currency { get; set; } = "INR";
         public System.Collections.Generic.List<DepartmentProfitabilityDto> DepartmentProfitability { get; set; } = new System.Collections.Generic.List<DepartmentProfitabilityDto>();
         public System.Collections.Generic.List<PartnerRoiDto> TopPartnerRoi { get; set; } = new System.Collections.Generic.List<PartnerRoiDto>();
