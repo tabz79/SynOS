@@ -65,6 +65,9 @@ export function VisitDetails({
         setIsProcessing(true);
         try {
             await ReceptionApi.deleteVisit(visitId);
+            // INSTANT EVENT & CALLBACK: Evict from Action Queues immediately across all listeners
+            window.dispatchEvent(new CustomEvent('synos:visit-deleted', { detail: { visitId } }));
+            if (onVisitUpdated) onVisitUpdated(visitId, 'deleted');
             closePanel();
         } catch (err) {
             console.error("Failed to delete draft visit:", err);
@@ -129,7 +132,7 @@ export function VisitDetails({
 
     // Auto-minimize Referring Doctor section when user moves to or interacts with other sections
     useEffect(() => {
-        if (!userDoctorExpandedState) return;
+        if (userDoctorExpandedState === false) return;
 
         const handlePointerDown = (e) => {
             if (doctorSectionRef.current && !doctorSectionRef.current.contains(e.target)) {
@@ -1224,7 +1227,10 @@ export function VisitDetails({
                                 ? (activeCorporateAccountId ? "Search insurance packages & tests..." : "Select insurance company above first...") 
                                 : "Add Test Code or Name..."}
                             value={filter}
-                            onFocus={() => setIsSearchFocused(true)}
+                            onFocus={() => {
+                                setIsSearchFocused(true);
+                                setUserDoctorExpandedState(false);
+                            }}
                             onBlur={() => {
                                 setTimeout(() => setIsSearchFocused(false), 200);
                             }}

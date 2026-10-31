@@ -45,12 +45,20 @@ export function MultiPayerSelector({
         if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
             e.preventDefault();
             const nextIndex = (index + 1) % visibleModes.length;
+            const nextMode = visibleModes[nextIndex];
+            if (nextMode && !disabled) {
+                onChangeMode(nextMode.id);
+            }
             if (modeRefs.current[nextIndex]) {
                 modeRefs.current[nextIndex].focus();
             }
         } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
             e.preventDefault();
             const prevIndex = (index - 1 + visibleModes.length) % visibleModes.length;
+            const prevMode = visibleModes[prevIndex];
+            if (prevMode && !disabled) {
+                onChangeMode(prevMode.id);
+            }
             if (modeRefs.current[prevIndex]) {
                 modeRefs.current[prevIndex].focus();
             }

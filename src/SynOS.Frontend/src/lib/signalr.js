@@ -10,12 +10,10 @@ export const SignalRService = {
         if (!connection) {
             connection = new HubConnectionBuilder()
                 .withUrl("/dashboardHub", {
-                    accessTokenFactory: () => localStorage.getItem('synos_jwt'),
-                    skipNegotiation: true,
-                    transport: HttpTransportType.WebSockets
+                    accessTokenFactory: () => localStorage.getItem('synos_jwt')
                 })
-                .withAutomaticReconnect()
-                .configureLogging(LogLevel.Information)
+                .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
+                .configureLogging(LogLevel.Warning)
                 .build();
         }
         return connection;
@@ -72,7 +70,7 @@ export const SignalRService = {
                 });
             })
             .catch(err => {
-                console.error("SignalR: Connection Failed:", err);
+                console.warn("SignalR: Connection pending or fallback active:", err.message || err);
                 SignalRService._notifyStatusChange("Not Synced");
                 connectionPromise = null;
             });
@@ -207,12 +205,10 @@ export const BranchOperationsSignalRService = {
         if (!branchConnection) {
             branchConnection = new HubConnectionBuilder()
                 .withUrl("/branchOperationsHub", {
-                    accessTokenFactory: () => localStorage.getItem('synos_jwt'),
-                    skipNegotiation: true,
-                    transport: HttpTransportType.WebSockets
+                    accessTokenFactory: () => localStorage.getItem('synos_jwt')
                 })
-                .withAutomaticReconnect()
-                .configureLogging(LogLevel.Information)
+                .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
+                .configureLogging(LogLevel.Warning)
                 .build();
 
             // Register default listeners here to ensure they exist before start() is called,
@@ -295,7 +291,7 @@ export const BranchOperationsSignalRService = {
                 });
             })
             .catch(err => {
-                console.error("SignalR(Branch): Connection Failed:", err);
+                console.warn("SignalR(Branch): Connection pending or fallback active:", err.message || err);
                 branchConnectionPromise = null;
             });
 

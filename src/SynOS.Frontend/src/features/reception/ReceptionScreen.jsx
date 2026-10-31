@@ -44,7 +44,12 @@ export function ReceptionScreen() {
     // Helper: Normalize Backend DTO using shared API method
     const normalizeQueueData = ReceptionApi.normalizeQueueData;
 
-    const refreshDashboard = async () => {
+    const refreshDashboard = async (targetVisitId, action) => {
+        if (action === 'deleted' && targetVisitId) {
+            // INSTANT OPTIMISTIC EVICTION (< 1 ms): Remove deleted visit immediately from UI queue
+            setActionQueue(prev => prev.filter(r => r.visitId !== targetVisitId));
+        }
+
         try {
             const [summaryData, queueData] = await Promise.all([
                 ReceptionApi.getDashboardSummary(),
@@ -61,8 +66,18 @@ export function ReceptionScreen() {
         }
     };
 
-    // Wiring: Initial Load + SignalR Subscription
+    // Wiring: Initial Load + SignalR Subscription + Deletion Event Listener
     useEffect(() => {
+        const handleVisitDeleted = (e) => {
+            const deletedId = e.detail?.visitId;
+            if (deletedId) {
+                // Instant zero-lag removal from Action Queues table
+                setActionQueue(prev => prev.filter(r => r.visitId !== deletedId));
+                refreshDashboard();
+            }
+        };
+        window.addEventListener('synos:visit-deleted', handleVisitDeleted);
+
         // Pre-warm master catalogs in background immediately on mount (< 1 ms start)
         prewarmReceptionCatalogs();
 
@@ -157,6 +172,7 @@ export function ReceptionScreen() {
 
         // Cleanup
         return () => {
+            window.removeEventListener('synos:visit-deleted', handleVisitDeleted);
             SignalRService.stopConnection();
             if (window._signalrStatusSubscribers) window._signalrStatusSubscribers = []; // Reset subs
             clearInterval(interval);

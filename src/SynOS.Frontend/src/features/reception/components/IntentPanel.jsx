@@ -359,6 +359,10 @@ export function IntentPanel({ onVisitUpdated }) {
     const handleSelectPatient = async (patient) => {
         if (!patient?.id) return;
 
+        // Ensure Payer Mode is fully expanded with its options upon patient selection
+        setUserPayerExpandedState(true);
+        setIsPatientCardCollapsed(false);
+
         // INSTANT OPTIMISTIC SELECTION (< 1 ms): Render Visit Details immediately without full-screen spinner
         const patientName = patient.fullName || patient.name || `${patient.firstName || ''} ${patient.lastName || ''}`.trim();
         const optimisticPatient = {
@@ -531,6 +535,15 @@ export function IntentPanel({ onVisitUpdated }) {
             return () => clearTimeout(timer);
         }
     }, [isOpen, displayedPatient?.id, currentPatientId, snapshot?.patient?.id]);
+
+    const handleVisitDetailsUpdated = (vId, action) => {
+        if (action === 'deleted') {
+            if (onVisitUpdated) onVisitUpdated(vId, 'deleted');
+            return;
+        }
+        loadSnapshot();
+        if (onVisitUpdated) onVisitUpdated(vId, action);
+    };
 
     // Staged Financial & Test Basket Calculations
     const originalTests = snapshot?.visit?.tests || [];
@@ -1356,11 +1369,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                 {/* 2-COLUMN UNIFIED WORKFLOW (Left 7 cols: Patient Identification -> Visit Details | Right 5 cols: Billing & Payer Mode -> Financials) */}
                                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 xl:gap-6 items-stretch flex-1 min-h-0 overflow-hidden">
                                     {/* LEFT COLUMN: 7 Cols */}
-                                    <div 
-                                        className="lg:col-span-7 flex flex-col gap-5 h-full min-h-0 overflow-y-auto pr-1.5"
-                                        onFocusCapture={() => { if (userPayerExpandedState !== false) setUserPayerExpandedState(false); }}
-                                        onPointerDownCapture={() => { if (userPayerExpandedState !== false) setUserPayerExpandedState(false); }}
-                                    >
+                                    <div className="lg:col-span-7 flex flex-col gap-5 h-full min-h-0 overflow-y-auto pr-1.5">
                                         {/* Step 1: Patient Identification (Compressed height, tightly hugs content, collapsible) */}
                                         <div className={cn(
                                             "rounded-[28px] border transition-all shrink-0",
@@ -1431,25 +1440,31 @@ export function IntentPanel({ onVisitUpdated }) {
                                             )}
                                         </div>
 
-                                        {/* Step 2: Visit Details (Directly below Patient Identification, pulled up!) */}
-                                        <VisitDetails
-                                            snapshot={snapshot}
-                                            visitId={currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id || snapshot?.visit?.VisitId}
-                                            onVisitUpdated={loadSnapshot}
-                                            setIsPrepaidIntent={setIsPrepaidIntent}
-                                            isCorrectionIntent={isCorrectionIntent}
-                                            billingMode={billingMode}
-                                            onOpenModal={setActiveModal}
-                                            stagedAddedTests={stagedAddedTests}
-                                            onAddStagedTest={handleAddStagedTest}
-                                            stagedRemovedOrderIds={stagedRemovedOrderIds}
-                                            onToggleRemoveOrderId={handleToggleRemoveOrderId}
-                                            onRemoveStagedAddedTest={handleRemoveStagedAddedTest}
-                                            stagedReferralPartnerId={stagedReferralPartnerId}
-                                            stagedSecondaryPartnerId={stagedSecondaryPartnerId}
-                                            onStageReferral={(pId) => setStagedReferralPartnerId(pId)}
-                                            onStageSecondaryReferral={(sId) => setStagedSecondaryPartnerId(sId)}
-                                        />
+                                        {/* Step 2: Visit Details (Directly below Patient Identification, auto-minimizes Payer Mode on entry) */}
+                                        <div
+                                            className="min-h-0"
+                                            onFocusCapture={() => { if (userPayerExpandedState !== false) setUserPayerExpandedState(false); }}
+                                            onPointerDownCapture={() => { if (userPayerExpandedState !== false) setUserPayerExpandedState(false); }}
+                                        >
+                                            <VisitDetails
+                                                snapshot={snapshot}
+                                                visitId={currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id || snapshot?.visit?.VisitId}
+                                                onVisitUpdated={handleVisitDetailsUpdated}
+                                                setIsPrepaidIntent={setIsPrepaidIntent}
+                                                isCorrectionIntent={isCorrectionIntent}
+                                                billingMode={billingMode}
+                                                onOpenModal={setActiveModal}
+                                                stagedAddedTests={stagedAddedTests}
+                                                onAddStagedTest={handleAddStagedTest}
+                                                stagedRemovedOrderIds={stagedRemovedOrderIds}
+                                                onToggleRemoveOrderId={handleToggleRemoveOrderId}
+                                                onRemoveStagedAddedTest={handleRemoveStagedAddedTest}
+                                                stagedReferralPartnerId={stagedReferralPartnerId}
+                                                stagedSecondaryPartnerId={stagedSecondaryPartnerId}
+                                                onStageReferral={(pId) => setStagedReferralPartnerId(pId)}
+                                                onStageSecondaryReferral={(sId) => setStagedSecondaryPartnerId(sId)}
+                                            />
+                                        </div>
                                     </div>
 
                                     {/* RIGHT COLUMN: 5 Cols (Split-scroll: independent smooth scroll for Billing & Financials) */}
