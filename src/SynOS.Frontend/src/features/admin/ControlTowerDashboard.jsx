@@ -200,8 +200,8 @@ export function ControlTowerDashboard() {
             {/* HEADER WITH SWITCHER */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">Control Tower</h1>
-                    <p className="text-xs text-zinc-500 font-medium mt-1">Real-time oversight of operations, phlebotomy collections, test flows, and financials.</p>
+                    <h1 className="text-3xl font-black dark:text-white text-zinc-900 tracking-tight">Control Tower</h1>
+                    <p className="text-sm text-zinc-600 dark:text-zinc-400 font-medium mt-1">Real-time oversight of operations, phlebotomy collections, test flows, and financials.</p>
                 </div>
 
                 {/* Clean Subscription Reminder Card */}
@@ -280,7 +280,7 @@ export function ControlTowerDashboard() {
                         <button
                             onClick={() => setIsConsolidated(true)}
                             className={cn(
-                                "px-4 py-2 rounded-xl text-xs font-bold transition-all",
+                                "px-4 py-2 rounded-xl text-sm font-bold transition-all",
                                 isConsolidated 
                                     ? "bg-zinc-100 dark:bg-zinc-800 text-synos-primary shadow-sm"
                                     : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
@@ -291,7 +291,7 @@ export function ControlTowerDashboard() {
                         <button
                             onClick={() => setIsConsolidated(false)}
                             className={cn(
-                                "px-4 py-2 rounded-xl text-xs font-bold transition-all",
+                                "px-4 py-2 rounded-xl text-sm font-bold transition-all",
                                 !isConsolidated 
                                     ? "bg-white dark:bg-zinc-800 text-synos-primary shadow-sm"
                                     : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
@@ -305,9 +305,9 @@ export function ControlTowerDashboard() {
 
             {/* Operations Section */}
             <div className="space-y-4">
-                <div className="flex items-center gap-2 border-b border-black/[0.05] dark:border-white/[0.05] pb-2">
-                    <span className="w-1 h-4 bg-synos-primary rounded-full" />
-                    <h2 className="text-xs font-black dark:text-zinc-400 text-zinc-650 tracking-wider uppercase">Operations</h2>
+                <div className="flex items-center gap-2.5 border-b border-black/[0.06] dark:border-white/[0.06] pb-2.5">
+                    <span className="w-1.5 h-5 bg-synos-primary rounded-full" />
+                    <h2 className="text-sm sm:text-base font-extrabold dark:text-zinc-200 text-zinc-800 tracking-wider uppercase">Operations</h2>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {operationsCards.map((card) => (
@@ -318,9 +318,9 @@ export function ControlTowerDashboard() {
 
             {/* Pathology Section */}
             <div className="space-y-4">
-                <div className="flex items-center gap-2 border-b border-black/[0.05] dark:border-white/[0.05] pb-2">
-                    <span className="w-1 h-4 bg-synos-primary rounded-full" />
-                    <h2 className="text-xs font-black dark:text-zinc-400 text-zinc-650 tracking-wider uppercase">Pathology</h2>
+                <div className="flex items-center gap-2.5 border-b border-black/[0.06] dark:border-white/[0.06] pb-2.5">
+                    <span className="w-1.5 h-5 bg-synos-primary rounded-full" />
+                    <h2 className="text-sm sm:text-base font-extrabold dark:text-zinc-200 text-zinc-800 tracking-wider uppercase">Pathology</h2>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {pathologyCards.map((card) => (
@@ -331,9 +331,9 @@ export function ControlTowerDashboard() {
 
             {/* Radiology Section */}
             <div className="space-y-4">
-                <div className="flex items-center gap-2 border-b border-black/[0.05] dark:border-white/[0.05] pb-2">
-                    <span className="w-1 h-4 bg-synos-primary rounded-full" />
-                    <h2 className="text-xs font-black dark:text-zinc-400 text-zinc-650 tracking-wider uppercase">Radiology</h2>
+                <div className="flex items-center gap-2.5 border-b border-black/[0.06] dark:border-white/[0.06] pb-2.5">
+                    <span className="w-1.5 h-5 bg-synos-primary rounded-full" />
+                    <h2 className="text-sm sm:text-base font-extrabold dark:text-zinc-200 text-zinc-800 tracking-wider uppercase">Radiology</h2>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {radiologyCards.map((card) => (
@@ -378,35 +378,35 @@ function DepartmentCard({ title, subtitle, icon: Icon, watermark: Watermark, dat
                         <div className="flex gap-3.5 items-center">
                             <Icon className="w-5 h-5 text-zinc-500 group-hover:text-synos-primary transition-colors" />
                             <div>
-                                <h3 className="type-value !text-sm leading-none mb-1 font-bold">{title}</h3>
-                                <p className="type-meta text-xs text-zinc-500">{data?.secondaryText || subtitle}</p>
+                                <h3 className="text-base sm:text-lg leading-tight mb-1 font-bold text-zinc-900 dark:text-white">{title}</h3>
+                                <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-medium">{data?.secondaryText || subtitle}</p>
                             </div>
                         </div>
                         {data?.status && (
-                            <div className="flex items-center gap-1.5 shrink-0 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xs px-2 py-0.5 rounded-full border border-black/5 dark:border-white/5">
+                            <div className="flex items-center gap-1.5 shrink-0 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xs px-2.5 py-1 rounded-full border border-black/5 dark:border-white/5">
                                 <div className={cn("w-1.5 h-1.5 rounded-full", data.status === 'On Track' ? 'bg-cyan-500' : 'bg-rose-500')} />
-                                <span className="type-meta text-[11px] font-medium">{data.status}</span>
+                                <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-200">{data.status}</span>
                             </div>
                         )}
                     </div>
                     <div className="flex items-baseline gap-2 pt-1">
-                        <span className="type-display !text-4xl leading-none font-black">{data?.count || 0}</span>
-                        <span className="type-label text-xs text-zinc-500">{data?.primaryText || 'items pending'}</span>
+                        <span className="text-4xl sm:text-5xl leading-none font-black text-zinc-900 dark:text-white tabular-nums">{data?.count || 0}</span>
+                        <span className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">{data?.primaryText || 'items pending'}</span>
                     </div>
                 </div>
 
                 {/* Queue or Standby */}
                 <div className="mt-4 pt-2">
                     {data?.items && data.items.length > 0 ? (
-                        <div className="space-y-1.5 max-w-[62%]">
+                        <div className="space-y-1.5 max-w-[68%]">
                             {data.items.map((item, idx) => (
-                                <div key={idx} className="flex flex-col text-[11px] group/item bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xs py-1 px-2.5 rounded-lg shadow-2xs border border-slate-200/80 dark:border-white/10">
-                                    <span className="type-code font-bold truncate">{item.name}</span>
+                                <div key={idx} className="flex flex-col text-xs group/item bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xs py-1.5 px-3 rounded-lg shadow-2xs border border-slate-200/80 dark:border-white/10">
+                                    <span className="font-bold text-xs sm:text-sm text-zinc-900 dark:text-white truncate">{item.name}</span>
                                     <div className="flex items-center justify-between gap-2 mt-0.5">
-                                        <span className="type-meta italic opacity-75 truncate text-[10px]">{item.detail}</span>
+                                        <span className="italic opacity-80 truncate text-xs text-zinc-500 dark:text-zinc-400">{item.detail}</span>
                                         <div className="flex items-center gap-1 shrink-0">
-                                            <div className={cn("w-1 h-1 rounded-full", item.statusBadge === 'Critical' ? 'bg-rose-500' : 'bg-cyan-500')} />
-                                            <span className="text-[10px] font-semibold opacity-80">{item.statusBadge}</span>
+                                            <div className={cn("w-1.5 h-1.5 rounded-full", item.statusBadge === 'Critical' ? 'bg-rose-500' : 'bg-cyan-500')} />
+                                            <span className="text-xs font-bold opacity-90">{item.statusBadge}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -414,14 +414,14 @@ function DepartmentCard({ title, subtitle, icon: Icon, watermark: Watermark, dat
                         </div>
                     ) : (
                         <div className="py-5">
-                            <span className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 tracking-wide">Standby</span>
+                            <span className="text-sm font-bold text-zinc-400 dark:text-zinc-500 tracking-wide">Standby</span>
                         </div>
                     )}
                 </div>
             </div>
-            <button onClick={onAction} className="w-full py-2.5 border-t dark:border-white/5 border-slate-200/80 type-section-header hover:text-white hover:bg-synos-primary transition-[background-color,color] flex items-center justify-center gap-2 relative z-10 text-xs font-semibold text-zinc-600 dark:text-zinc-300">
+            <button onClick={onAction} className="w-full py-3 border-t dark:border-white/5 border-slate-200/80 hover:text-white hover:bg-synos-primary transition-[background-color,color] flex items-center justify-center gap-2 relative z-10 text-sm font-bold text-zinc-700 dark:text-zinc-200">
                 {btnText}
-                <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
             </button>
         </div>
     );
@@ -448,13 +448,13 @@ function MetricBox({ label, value, icon: Icon, watermark: Watermark, isCurrency,
 
             <div className="relative z-10 flex flex-col justify-between h-full">
                 <div className="flex items-center justify-between mb-2">
-                    <span className="type-label text-xs font-semibold text-zinc-500">{label}</span>
+                    <span className="text-xs sm:text-sm font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">{label}</span>
                     <Icon className={cn("w-4 h-4", highlight ? 'text-indigo-600 dark:text-indigo-400' : 'text-zinc-500')} />
                 </div>
-                <div className={cn("type-display !text-2xl font-black", highlight ? "text-indigo-600 dark:text-indigo-400" : "text-zinc-900 dark:text-white")}>
+                <div className={cn("type-display !text-2xl sm:!text-3xl font-black tracking-tight", highlight ? "text-indigo-600 dark:text-indigo-400" : "text-zinc-900 dark:text-white")}>
                     {value ?? (isCurrency ? '₹ 0' : '0')}
                 </div>
-                <div className="type-meta mt-1 opacity-50 text-[10px]">Reality Check</div>
+                <div className="text-xs font-semibold mt-1 opacity-60 text-zinc-500">Live Metric</div>
             </div>
         </div>
     );

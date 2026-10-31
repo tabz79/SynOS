@@ -41570,7 +41570,7 @@ Details: ${A.inner}`);
       if (!n || !it) return;
       const ze = () => {
         if (!Ht.current) return;
-        const Jn = Ht.current.clientWidth - 24, Lr = Math.min(1.42, Math.max(0.55, Jn / 794));
+        const Jn = Ht.current.clientWidth - 16, Lr = Math.max(0.65, Jn / 794);
         Sn(Number(Lr.toFixed(2)));
       };
       ze();
@@ -41810,10 +41810,10 @@ Details: ${A.inner}`);
                               className: "flex-1 min-h-0 my-3 rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-[#EAF1F6]/70 dark:bg-zinc-950/70 p-2 sm:p-2.5 flex justify-center items-start overflow-y-auto relative shadow-inner",
                               children: [
                                 Ze === "thermal" && r.jsxs("div", {
-                                  className: "w-[360px] sm:w-[380px] max-w-full my-auto rounded-2xl shadow-2xl overflow-hidden border border-slate-300 dark:border-zinc-700 bg-white flex flex-col mx-auto transition-transform shrink-0",
+                                  className: "w-[380px] sm:w-[420px] max-w-full h-full max-h-[850px] rounded-2xl shadow-2xl overflow-hidden border border-slate-300 dark:border-zinc-700 bg-white flex flex-col mx-auto transition-transform shrink-0",
                                   children: [
                                     r.jsxs("div", {
-                                      className: "bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 px-4 py-2 text-xs font-mono border-b border-slate-200 dark:border-zinc-700 flex justify-between items-center",
+                                      className: "bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 px-4 py-2.5 text-xs font-mono border-b border-slate-200 dark:border-zinc-700 flex justify-between items-center shrink-0",
                                       children: [
                                         r.jsx("span", {
                                           className: "font-bold",
@@ -41828,7 +41828,7 @@ Details: ${A.inner}`);
                                     r.jsx("iframe", {
                                       title: "Thermal POS Receipt",
                                       srcDoc: oA,
-                                      className: "w-full h-[620px] 2xl:h-[740px] border-0 mx-auto"
+                                      className: "w-full flex-1 min-h-[580px] border-0 mx-auto"
                                     })
                                   ]
                                 }),
@@ -81745,16 +81745,16 @@ ${n}
                 backgroundBlendMode: "overlay",
                 backgroundRepeat: "repeat"
               },
-              className: "w-64 border-r dark:border-zinc-900 border-zinc-200 dark:bg-zinc-950 bg-gradient-to-b from-white/98 to-zinc-50/95 flex flex-col relative shrink-0 animate-in slide-in-from-left duration-200",
+              className: "w-72 2xl:w-80 border-r dark:border-zinc-900 border-zinc-200 dark:bg-zinc-950 bg-gradient-to-b from-white/98 to-zinc-50/95 flex flex-col relative shrink-0 animate-in slide-in-from-left duration-200",
               children: [
                 r.jsx("div", {
                   className: "absolute inset-0 border-r border-white/40 pointer-events-none"
                 }),
                 r.jsxs("div", {
-                  className: "flex items-center justify-between px-4 pt-3.5 pb-2 border-b dark:border-zinc-900 border-zinc-200 shrink-0",
+                  className: "flex items-center justify-between px-4 pt-3.5 pb-2.5 border-b dark:border-zinc-900 border-zinc-200 shrink-0",
                   children: [
                     r.jsx("span", {
-                      className: "text-[10px] font-black uppercase tracking-widest text-zinc-400",
+                      className: "text-xs font-black uppercase tracking-wider text-zinc-500 dark:text-zinc-400",
                       children: "Navigation"
                     }),
                     r.jsx("button", {
@@ -81763,31 +81763,31 @@ ${n}
                       className: "p-1 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer",
                       title: "Minimize Navigation Panel (\u2318B / Ctrl+B)",
                       children: r.jsx(fme, {
-                        className: "w-3.5 h-3.5"
+                        className: "w-4 h-4"
                       })
                     })
                   ]
                 }),
                 r.jsxs("nav", {
-                  className: "flex-1 overflow-y-auto p-3 pt-3 space-y-6 relative z-10",
+                  className: "flex-1 overflow-y-auto p-3.5 space-y-6 relative z-10",
                   children: [
                     a.map((A, o) => r.jsxs("div", {
                       className: "space-y-1",
                       children: [
                         r.jsxs("div", {
-                          className: "px-3 flex items-center justify-between group cursor-default",
+                          className: "px-3 py-1 flex items-center justify-between group cursor-default",
                           children: [
                             r.jsx("span", {
-                              className: "type-section-header group-hover:text-synos-primary transition-colors",
+                              className: "text-xs sm:text-sm font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 group-hover:text-synos-primary transition-colors",
                               children: A.title
                             }),
                             r.jsx(Ss, {
-                              className: "w-3 h-3 text-zinc-400 dark:text-zinc-600"
+                              className: "w-3.5 h-3.5 text-zinc-400 dark:text-zinc-600"
                             })
                           ]
                         }),
                         r.jsx("div", {
-                          className: "space-y-0.5",
+                          className: "space-y-1",
                           children: A.items.map((l) => r.jsx(Y7, {
                             item: l
                           }, l.name))
@@ -81795,7 +81795,7 @@ ${n}
                       ]
                     }, o)),
                     r.jsx("div", {
-                      className: "space-y-0.5 pt-3 border-t dark:border-zinc-900 border-zinc-200",
+                      className: "space-y-1 pt-3.5 border-t dark:border-zinc-900 border-zinc-200",
                       children: s.map((A) => r.jsx(Y7, {
                         item: A
                       }, A.name))
@@ -81803,25 +81803,25 @@ ${n}
                   ]
                 }),
                 r.jsx("div", {
-                  className: "p-3 border-t dark:border-zinc-900 border-zinc-200",
+                  className: "p-3.5 border-t dark:border-zinc-900 border-zinc-200",
                   children: r.jsx("div", {
-                    className: "flex items-center justify-between dark:bg-zinc-900/50 bg-white p-2.5 rounded-xl border dark:border-zinc-800 border-zinc-200 shadow-sm",
+                    className: "flex items-center justify-between dark:bg-zinc-900/50 bg-white p-3 rounded-xl border dark:border-zinc-800 border-zinc-200 shadow-sm",
                     children: r.jsxs("div", {
-                      className: "flex items-center gap-2.5 overflow-hidden",
+                      className: "flex items-center gap-3 overflow-hidden",
                       children: [
                         r.jsx("div", {
-                          className: "w-8 h-8 shrink-0 rounded-full dark:bg-zinc-800 bg-zinc-200 flex items-center justify-center text-xs font-bold dark:text-zinc-300 text-zinc-700 border dark:border-zinc-700 border-zinc-300",
+                          className: "w-9 h-9 shrink-0 rounded-full dark:bg-zinc-800 bg-zinc-200 flex items-center justify-center text-sm font-bold dark:text-zinc-300 text-zinc-700 border dark:border-zinc-700 border-zinc-300",
                           children: ((_a = t == null ? void 0 : t.name) == null ? void 0 : _a.substring(0, 2).toUpperCase()) || "AD"
                         }),
                         r.jsxs("div", {
                           className: "overflow-hidden",
                           children: [
                             r.jsx("p", {
-                              className: "type-value truncate leading-tight",
+                              className: "text-sm font-bold text-zinc-900 dark:text-white truncate leading-tight",
                               children: (t == null ? void 0 : t.name) || "Admin"
                             }),
                             r.jsx("p", {
-                              className: "type-meta uppercase tracking-tighter",
+                              className: "text-xs font-semibold text-zinc-500 uppercase tracking-tight",
                               children: "Administrator"
                             })
                           ]
@@ -81857,13 +81857,13 @@ ${n}
   }
   function Y7({ item: t }) {
     return t.disabled ? r.jsxs("div", {
-      className: "flex items-center gap-2.5 px-3 py-1.5 rounded-md text-zinc-400 dark:text-zinc-600 cursor-not-allowed opacity-50 select-none",
+      className: "flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-zinc-400 dark:text-zinc-600 cursor-not-allowed opacity-50 select-none",
       children: [
         r.jsx(t.icon, {
-          className: "w-4 h-4 shrink-0"
+          className: "w-5 h-5 shrink-0"
         }),
         r.jsx("span", {
-          className: "text-xs font-medium",
+          className: "text-sm font-medium",
           children: t.name
         })
       ]
@@ -81871,16 +81871,16 @@ ${n}
       to: t.path,
       end: t.exact,
       className: ({ isActive: e }) => `
-                flex items-center gap-2.5 px-3 py-1.5 rounded-md transition-all duration-150 group border
-                ${e ? "bg-synos-primary/10 text-synos-primary dark:text-white dark:border-synos-primary/30 border-synos-primary/30 font-bold shadow-xs" : "text-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-900/80 hover:bg-zinc-100 hover:text-zinc-900 border-transparent font-semibold"}
+                flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition-all duration-150 group border
+                ${e ? "bg-synos-primary/10 text-synos-primary dark:text-white dark:border-synos-primary/30 border-synos-primary/30 font-bold shadow-xs" : "text-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-900/80 hover:bg-zinc-100 hover:text-zinc-950 dark:hover:text-white border-transparent font-semibold"}
             `,
       children: ({ isActive: e }) => r.jsxs(r.Fragment, {
         children: [
           r.jsx(t.icon, {
-            className: `w-4 h-4 shrink-0 transition-colors ${e ? "text-synos-primary" : "text-zinc-700 dark:text-zinc-300 group-hover:text-synos-primary"}`
+            className: `w-5 h-5 shrink-0 transition-colors ${e ? "text-synos-primary" : "text-zinc-500 dark:text-zinc-400 group-hover:text-synos-primary"}`
           }),
           r.jsx("span", {
-            className: `text-xs leading-tight transition-colors ${e ? "text-synos-primary dark:text-white font-bold" : "text-zinc-800 dark:text-zinc-200 group-hover:text-zinc-900 dark:group-hover:text-white font-semibold"}`,
+            className: `text-sm leading-snug transition-colors ${e ? "text-synos-primary dark:text-white font-bold" : "text-zinc-800 dark:text-zinc-200 group-hover:text-zinc-950 dark:group-hover:text-white font-semibold"}`,
             children: t.name
           })
         ]
@@ -82218,11 +82218,11 @@ ${n}
             r.jsxs("div", {
               children: [
                 r.jsx("h1", {
-                  className: "text-2xl font-black dark:text-white text-zinc-900 tracking-tight",
+                  className: "text-3xl font-black dark:text-white text-zinc-900 tracking-tight",
                   children: "Control Tower"
                 }),
                 r.jsx("p", {
-                  className: "text-xs text-zinc-500 font-medium mt-1",
+                  className: "text-sm text-zinc-600 dark:text-zinc-400 font-medium mt-1",
                   children: "Real-time oversight of operations, phlebotomy collections, test flows, and financials."
                 })
               ]
@@ -82369,12 +82369,12 @@ ${n}
               children: [
                 r.jsx("button", {
                   onClick: () => g(true),
-                  className: Ne("px-4 py-2 rounded-xl text-xs font-bold transition-all", c ? "bg-zinc-100 dark:bg-zinc-800 text-synos-primary shadow-sm" : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"),
+                  className: Ne("px-4 py-2 rounded-xl text-sm font-bold transition-all", c ? "bg-zinc-100 dark:bg-zinc-800 text-synos-primary shadow-sm" : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"),
                   children: "Consolidated View"
                 }),
                 r.jsx("button", {
                   onClick: () => g(false),
-                  className: Ne("px-4 py-2 rounded-xl text-xs font-bold transition-all", c ? "text-zinc-500 hover:text-zinc-900 dark:hover:text-white" : "bg-white dark:bg-zinc-800 text-synos-primary shadow-sm"),
+                  className: Ne("px-4 py-2 rounded-xl text-sm font-bold transition-all", c ? "text-zinc-500 hover:text-zinc-900 dark:hover:text-white" : "bg-white dark:bg-zinc-800 text-synos-primary shadow-sm"),
                   children: "Branch View"
                 })
               ]
@@ -82385,13 +82385,13 @@ ${n}
           className: "space-y-4",
           children: [
             r.jsxs("div", {
-              className: "flex items-center gap-2 border-b border-black/[0.05] dark:border-white/[0.05] pb-2",
+              className: "flex items-center gap-2.5 border-b border-black/[0.06] dark:border-white/[0.06] pb-2.5",
               children: [
                 r.jsx("span", {
-                  className: "w-1 h-4 bg-synos-primary rounded-full"
+                  className: "w-1.5 h-5 bg-synos-primary rounded-full"
                 }),
                 r.jsx("h2", {
-                  className: "text-xs font-black dark:text-zinc-400 text-zinc-650 tracking-wider uppercase",
+                  className: "text-sm sm:text-base font-extrabold dark:text-zinc-200 text-zinc-800 tracking-wider uppercase",
                   children: "Operations"
                 })
               ]
@@ -82411,13 +82411,13 @@ ${n}
           className: "space-y-4",
           children: [
             r.jsxs("div", {
-              className: "flex items-center gap-2 border-b border-black/[0.05] dark:border-white/[0.05] pb-2",
+              className: "flex items-center gap-2.5 border-b border-black/[0.06] dark:border-white/[0.06] pb-2.5",
               children: [
                 r.jsx("span", {
-                  className: "w-1 h-4 bg-synos-primary rounded-full"
+                  className: "w-1.5 h-5 bg-synos-primary rounded-full"
                 }),
                 r.jsx("h2", {
-                  className: "text-xs font-black dark:text-zinc-400 text-zinc-650 tracking-wider uppercase",
+                  className: "text-sm sm:text-base font-extrabold dark:text-zinc-200 text-zinc-800 tracking-wider uppercase",
                   children: "Pathology"
                 })
               ]
@@ -82437,13 +82437,13 @@ ${n}
           className: "space-y-4",
           children: [
             r.jsxs("div", {
-              className: "flex items-center gap-2 border-b border-black/[0.05] dark:border-white/[0.05] pb-2",
+              className: "flex items-center gap-2.5 border-b border-black/[0.06] dark:border-white/[0.06] pb-2.5",
               children: [
                 r.jsx("span", {
-                  className: "w-1 h-4 bg-synos-primary rounded-full"
+                  className: "w-1.5 h-5 bg-synos-primary rounded-full"
                 }),
                 r.jsx("h2", {
-                  className: "text-xs font-black dark:text-zinc-400 text-zinc-650 tracking-wider uppercase",
+                  className: "text-sm sm:text-base font-extrabold dark:text-zinc-200 text-zinc-800 tracking-wider uppercase",
                   children: "Radiology"
                 })
               ]
@@ -82550,11 +82550,11 @@ ${n}
                         r.jsxs("div", {
                           children: [
                             r.jsx("h3", {
-                              className: "type-value !text-sm leading-none mb-1 font-bold",
+                              className: "text-base sm:text-lg leading-tight mb-1 font-bold text-zinc-900 dark:text-white",
                               children: t
                             }),
                             r.jsx("p", {
-                              className: "type-meta text-xs text-zinc-500",
+                              className: "text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-medium",
                               children: (a == null ? void 0 : a.secondaryText) || e
                             })
                           ]
@@ -82562,13 +82562,13 @@ ${n}
                       ]
                     }),
                     (a == null ? void 0 : a.status) && r.jsxs("div", {
-                      className: "flex items-center gap-1.5 shrink-0 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xs px-2 py-0.5 rounded-full border border-black/5 dark:border-white/5",
+                      className: "flex items-center gap-1.5 shrink-0 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xs px-2.5 py-1 rounded-full border border-black/5 dark:border-white/5",
                       children: [
                         r.jsx("div", {
                           className: Ne("w-1.5 h-1.5 rounded-full", a.status === "On Track" ? "bg-cyan-500" : "bg-rose-500")
                         }),
                         r.jsx("span", {
-                          className: "type-meta text-[11px] font-medium",
+                          className: "text-xs font-semibold text-zinc-700 dark:text-zinc-200",
                           children: a.status
                         })
                       ]
@@ -82579,11 +82579,11 @@ ${n}
                   className: "flex items-baseline gap-2 pt-1",
                   children: [
                     r.jsx("span", {
-                      className: "type-display !text-4xl leading-none font-black",
+                      className: "text-4xl sm:text-5xl leading-none font-black text-zinc-900 dark:text-white tabular-nums",
                       children: (a == null ? void 0 : a.count) || 0
                     }),
                     r.jsx("span", {
-                      className: "type-label text-xs text-zinc-500",
+                      className: "text-sm font-semibold text-zinc-500 dark:text-zinc-400",
                       children: (a == null ? void 0 : a.primaryText) || "items pending"
                     })
                   ]
@@ -82593,29 +82593,29 @@ ${n}
             r.jsx("div", {
               className: "mt-4 pt-2",
               children: (a == null ? void 0 : a.items) && a.items.length > 0 ? r.jsx("div", {
-                className: "space-y-1.5 max-w-[62%]",
+                className: "space-y-1.5 max-w-[68%]",
                 children: a.items.map((c, g) => r.jsxs("div", {
-                  className: "flex flex-col text-[11px] group/item bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xs py-1 px-2.5 rounded-lg shadow-2xs border border-slate-200/80 dark:border-white/10",
+                  className: "flex flex-col text-xs group/item bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xs py-1.5 px-3 rounded-lg shadow-2xs border border-slate-200/80 dark:border-white/10",
                   children: [
                     r.jsx("span", {
-                      className: "type-code font-bold truncate",
+                      className: "font-bold text-xs sm:text-sm text-zinc-900 dark:text-white truncate",
                       children: c.name
                     }),
                     r.jsxs("div", {
                       className: "flex items-center justify-between gap-2 mt-0.5",
                       children: [
                         r.jsx("span", {
-                          className: "type-meta italic opacity-75 truncate text-[10px]",
+                          className: "italic opacity-80 truncate text-xs text-zinc-500 dark:text-zinc-400",
                           children: c.detail
                         }),
                         r.jsxs("div", {
                           className: "flex items-center gap-1 shrink-0",
                           children: [
                             r.jsx("div", {
-                              className: Ne("w-1 h-1 rounded-full", c.statusBadge === "Critical" ? "bg-rose-500" : "bg-cyan-500")
+                              className: Ne("w-1.5 h-1.5 rounded-full", c.statusBadge === "Critical" ? "bg-rose-500" : "bg-cyan-500")
                             }),
                             r.jsx("span", {
-                              className: "text-[10px] font-semibold opacity-80",
+                              className: "text-xs font-bold opacity-90",
                               children: c.statusBadge
                             })
                           ]
@@ -82627,7 +82627,7 @@ ${n}
               }) : r.jsx("div", {
                 className: "py-5",
                 children: r.jsx("span", {
-                  className: "text-xs font-semibold text-zinc-400 dark:text-zinc-500 tracking-wide",
+                  className: "text-sm font-bold text-zinc-400 dark:text-zinc-500 tracking-wide",
                   children: "Standby"
                 })
               })
@@ -82636,11 +82636,11 @@ ${n}
         }),
         r.jsxs("button", {
           onClick: A,
-          className: "w-full py-2.5 border-t dark:border-white/5 border-slate-200/80 type-section-header hover:text-white hover:bg-synos-primary transition-[background-color,color] flex items-center justify-center gap-2 relative z-10 text-xs font-semibold text-zinc-600 dark:text-zinc-300",
+          className: "w-full py-3 border-t dark:border-white/5 border-slate-200/80 hover:text-white hover:bg-synos-primary transition-[background-color,color] flex items-center justify-center gap-2 relative z-10 text-sm font-bold text-zinc-700 dark:text-zinc-200",
           children: [
             s,
             r.jsx(ml, {
-              className: "w-3 h-3 group-hover:translate-x-1 transition-transform"
+              className: "w-3.5 h-3.5 group-hover:translate-x-1 transition-transform"
             })
           ]
         })
@@ -82665,7 +82665,7 @@ ${n}
               className: "flex items-center justify-between mb-2",
               children: [
                 r.jsx("span", {
-                  className: "type-label text-xs font-semibold text-zinc-500",
+                  className: "text-xs sm:text-sm font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400",
                   children: t
                 }),
                 r.jsx(n, {
@@ -82674,12 +82674,12 @@ ${n}
               ]
             }),
             r.jsx("div", {
-              className: Ne("type-display !text-2xl font-black", s ? "text-indigo-600 dark:text-indigo-400" : "text-zinc-900 dark:text-white"),
+              className: Ne("type-display !text-2xl sm:!text-3xl font-black tracking-tight", s ? "text-indigo-600 dark:text-indigo-400" : "text-zinc-900 dark:text-white"),
               children: e ?? (a ? "\u20B9 0" : "0")
             }),
             r.jsx("div", {
-              className: "type-meta mt-1 opacity-50 text-[10px]",
-              children: "Reality Check"
+              className: "text-xs font-semibold mt-1 opacity-60 text-zinc-500",
+              children: "Live Metric"
             })
           ]
         })

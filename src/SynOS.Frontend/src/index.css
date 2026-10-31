@@ -40,52 +40,72 @@
   }
 
   /* Large / High Legibility Mode Tier Enhancements */
-  html.font-size-large .text-xs,
-  html[data-font-size="large"] .text-xs {
+  html.font-size-large .text-\[8px\],
+  html.font-size-large .text-\[8\.5px\],
+  html.font-size-large .text-\[9px\],
+  html.font-size-large .text-\[9\.5px\],
+  html.font-size-large .text-\[10px\],
+  html.font-size-large .text-\[10\.5px\],
+  html.font-size-large .text-xxs,
+  html[data-font-size="large"] .text-\[8px\],
+  html[data-font-size="large"] .text-\[8\.5px\],
+  html[data-font-size="large"] .text-\[9px\],
+  html[data-font-size="large"] .text-\[9\.5px\],
+  html[data-font-size="large"] .text-\[10px\],
+  html[data-font-size="large"] .text-\[10\.5px\],
+  html[data-font-size="large"] .text-xxs {
+    font-size: 0.84375rem !important;
+    line-height: 1.25rem !important;
+  }
+
+  html.font-size-large .text-\[11px\],
+  html.font-size-large .text-\[11\.5px\],
+  html[data-font-size="large"] .text-\[11px\],
+  html[data-font-size="large"] .text-\[11\.5px\] {
     font-size: 0.875rem !important;
     line-height: 1.25rem !important;
   }
+
+  html.font-size-large .text-xs,
+  html[data-font-size="large"] .text-xs {
+    font-size: 0.9375rem !important;
+    line-height: 1.375rem !important;
+  }
+
   html.font-size-large .text-sm,
   html[data-font-size="large"] .text-sm {
-    font-size: 1.05rem !important;
+    font-size: 1.0625rem !important;
     line-height: 1.5rem !important;
   }
+
   html.font-size-large .text-base,
   html[data-font-size="large"] .text-base {
-    font-size: 1.22rem !important;
+    font-size: 1.25rem !important;
     line-height: 1.75rem !important;
   }
+
   html.font-size-large .text-lg,
   html[data-font-size="large"] .text-lg {
     font-size: 1.38rem !important;
     line-height: 1.85rem !important;
   }
+
   html.font-size-large .text-xl,
   html[data-font-size="large"] .text-xl {
     font-size: 1.55rem !important;
     line-height: 2rem !important;
   }
+
   html.font-size-large .text-2xl,
   html[data-font-size="large"] .text-2xl {
     font-size: 1.85rem !important;
     line-height: 2.25rem !important;
   }
+
   html.font-size-large .text-3xl,
   html[data-font-size="large"] .text-3xl {
     font-size: 2.25rem !important;
     line-height: 2.5rem !important;
-  }
-
-  /* Clinical Legibility Floor: Protect fine print from ever dropping below 12px */
-  .text-xxs {
-    font-size: 0.75rem !important; /* 12px absolute minimum */
-    line-height: 1rem !important;
-  }
-  html.font-size-large .text-xxs {
-    font-size: 0.825rem !important;
-  }
-  html.font-size-medium .text-xxs {
-    font-size: 0.75rem !important;
   }
 
   /* LIGHT MODE (DEFAULT) */
@@ -320,22 +340,22 @@
   /* TYPOGRAPHY SYSTEM (ENTERPRISE CLINICAL CANON - SINGLE GOVERNING AUTHORITY) */
   /* Role: Pricing Totals, Hero Stats */
   .type-display {
-    @apply text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-normal text-zinc-900 dark:text-white tabular-nums;
+    @apply text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-zinc-900 dark:text-white tabular-nums;
   }
 
   /* Role: Panel / Screen Main Headers */
   .type-page-title {
-    @apply text-xl sm:text-2xl md:text-3xl font-bold tracking-normal text-zinc-900 dark:text-white;
+    @apply text-2xl sm:text-3xl font-black tracking-tight text-zinc-900 dark:text-white;
   }
 
-  /* Role: Card / Island Container Titles (e.g., Step 1, Step 2, Step 3) */
+  /* Role: Card / Island Container Titles (e.g., Step 1, Step 2, Step 3, Department Cards) */
   .type-card-title {
-    @apply text-base sm:text-lg font-bold tracking-normal text-slate-900 dark:text-white;
+    @apply text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white;
   }
 
-  /* Role: Section Dividers & Block Headers (e.g., Referring Doctor, Test Selection) */
+  /* Role: Section Dividers & Block Headers (e.g., Referring Doctor, Test Selection, Operations) */
   .type-section-header {
-    @apply text-sm font-bold tracking-normal text-slate-800 dark:text-zinc-200;
+    @apply text-sm sm:text-base font-extrabold uppercase tracking-wider text-slate-800 dark:text-zinc-200;
   }
 
   /* Role: Form Labels, Input Hints */
@@ -355,7 +375,7 @@
 
   /* Role: Badges, Timestamps, Secondary info */
   .type-meta {
-    @apply text-xs font-medium tracking-normal text-slate-500 dark:text-zinc-400;
+    @apply text-xs sm:text-sm font-medium tracking-normal text-slate-500 dark:text-zinc-400;
   }
 
   /* Role: MRNs, Test Codes, Search Inputs */
@@ -642,6 +662,46 @@
       0 0 0 2px #18181b,
       0 0 0 4px #818CF8,
       0 8px 18px -2px rgba(99, 102, 241, 0.45) !important;
+  }
+}
+
+/* 
+ * SYNOS CLINICAL LEGIBILITY ENGINE: ROOT TYPOGRAPHIC ELEVATION (SCREEN ONLY)
+ * Clinical software invariant: No text anywhere on-screen shall render below 12.5px.
+ * All micro-print utility classes are elevated to crisp, readable clinical baselines.
+ * Screen-only: Leaves medical report PDF/print engines (#printable-report) 100% untouched.
+ */
+@media screen {
+  .text-\[8px\],
+  .text-\[8\.5px\],
+  .text-\[9px\],
+  .text-\[9\.5px\],
+  .text-\[10px\],
+  .text-\[10\.5px\],
+  .text-xxs {
+    font-size: 0.78125rem !important; /* ~12.5px at 16px base */
+    line-height: 1.15rem !important;
+  }
+
+  .text-\[11px\],
+  .text-\[11\.5px\] {
+    font-size: 0.8125rem !important; /* ~13px at 16px base */
+    line-height: 1.2rem !important;
+  }
+
+  .text-xs {
+    font-size: 0.84375rem !important; /* ~13.5px at 16px base */
+    line-height: 1.25rem !important;
+  }
+
+  .text-sm {
+    font-size: 0.9375rem !important; /* ~15px at 16px base */
+    line-height: 1.375rem !important;
+  }
+
+  .text-base {
+    font-size: 1.03125rem !important; /* ~16.5px at 16px base */
+    line-height: 1.5rem !important;
   }
 }
 

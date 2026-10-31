@@ -1247,11 +1247,11 @@ export function IntentPanel({ onVisitUpdated }) {
         const calculateScale = () => {
             if (!previewContainerRef.current) return;
             const containerWidth = previewContainerRef.current.clientWidth;
-            // Available width inside container with snug margins (removes empty side padding)
-            const targetWidth = containerWidth - 24;
+            // Available width inside container with snug margins (fills container edge-to-edge)
+            const targetWidth = containerWidth - 16;
             // 210mm in pixels at 96 DPI is 793.7px
-            // Smooth responsive scale: 0.55 on small screens up to 1.42 on widescreen monitors
-            const scale = Math.min(1.42, Math.max(0.55, targetWidth / 794));
+            // Smooth responsive scale: expands dynamically to fill container width without artificial ceiling
+            const scale = Math.max(0.65, targetWidth / 794);
             setCanvasScale(Number(scale.toFixed(2)));
         };
         calculateScale();
@@ -1512,15 +1512,15 @@ export function IntentPanel({ onVisitUpdated }) {
                                                 className="flex-1 min-h-0 my-3 rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-[#EAF1F6]/70 dark:bg-zinc-950/70 p-2 sm:p-2.5 flex justify-center items-start overflow-y-auto relative shadow-inner"
                                             >
                                                 {selectedDocFormat === 'thermal' && (
-                                                    <div className="w-[360px] sm:w-[380px] max-w-full my-auto rounded-2xl shadow-2xl overflow-hidden border border-slate-300 dark:border-zinc-700 bg-white flex flex-col mx-auto transition-transform shrink-0">
-                                                        <div className="bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 px-4 py-2 text-xs font-mono border-b border-slate-200 dark:border-zinc-700 flex justify-between items-center">
+                                                    <div className="w-[380px] sm:w-[420px] max-w-full h-full max-h-[850px] rounded-2xl shadow-2xl overflow-hidden border border-slate-300 dark:border-zinc-700 bg-white flex flex-col mx-auto transition-transform shrink-0">
+                                                        <div className="bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 px-4 py-2.5 text-xs font-mono border-b border-slate-200 dark:border-zinc-700 flex justify-between items-center shrink-0">
                                                             <span className="font-bold">Thermal POS (80mm)</span>
                                                             <span className="text-[10px] bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 font-bold">1:1 Roll Preview</span>
                                                         </div>
                                                         <iframe
                                                             title="Thermal POS Receipt"
                                                             srcDoc={thermalHtml}
-                                                            className="w-full h-[620px] 2xl:h-[740px] border-0 mx-auto"
+                                                            className="w-full flex-1 min-h-[580px] border-0 mx-auto"
                                                         />
                                                     </div>
                                                 )}
