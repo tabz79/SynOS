@@ -30528,7 +30528,7 @@ Details: ${A.inner}`);
   };
   function aBe({ snapshot: t, onSelectPatient: e, onClearPatient: n, onEditPatient: i, isCorrectionIntent: a }) {
     var _a2, _b2, _c2;
-    const [s, A] = j.useState(""), [o, l] = j.useState([]), [c, g] = j.useState(false), [d, u] = j.useState(-1), h = useRef(null);
+    const [s, A] = j.useState(""), [o, l] = j.useState([]), [c, g] = j.useState(false), [d, u] = j.useState(-1), h = j.useRef(null);
     j.useEffect(() => {
       u(-1);
     }, [

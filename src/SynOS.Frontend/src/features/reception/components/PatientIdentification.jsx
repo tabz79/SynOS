@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Search, X, Loader2, UserPlus, Phone, Fingerprint, ArrowRight, User, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ReceptionApi } from '@/api/reception'
