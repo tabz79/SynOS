@@ -103,7 +103,9 @@ namespace SynOS.Services
                 visitsQuery = visitsQuery.Where(v => v.AssignedReceptionistId == currentUserId || v.CreatedByUserId == currentUserId);
             }
 
-            var walkIns = await visitsQuery.CountAsync();
+            var walkIns = await visitsQuery
+                .Where(v => v.PaymentCollectionModel != "PartnerCollects")
+                .CountAsync();
 
             var prepaidVisits = await visitsQuery
                 .Where(v => v.PaymentCollectionModel == "PartnerCollects" && (v.Status == VisitStatus.Paid || v.Status == VisitStatus.FullPaid))

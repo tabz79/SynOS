@@ -16,6 +16,15 @@ using SynOS.Models.Entities.IMS;
 using SynOS.Models.Enums.IMS;
 using SynOS.Models.DTOs.IMS;
 using SynOS.Services.Inventory;
+using SynOS.Models.Entities.Referral;
+using SynOS.Models.Enums.Referral;
+using SynOS.Models.ReadModels;
+using SynOS.Models.Events;
+using SynOS.Services.Operational;
+using SynOS.Services.Security;
+using SynOS.Services.Time;
+using SynOS.Services.Referral;
+using SynOS.Services.Revenue;
 using Xunit;
 
 namespace SynOS.Tests
@@ -779,6 +788,175 @@ namespace SynOS.Tests
             Assert.Single(historyBranchB);
             Assert.Equal("Rahul Sharma", historyBranchB[0].PatientName);
             Assert.Equal(500m, historyBranchB[0].DiscountAmount);
+        }
+
+        [Fact]
+        public async Task Phase12_CorporateB2B_Prepaid_Settlement_Audit_Passes_Enterprise_Invariants()
+        {
+            // Arrange
+            using var db = GetDbContext();
+            var branchId = Guid.NewGuid();
+            var actorUserId = Guid.NewGuid();
+            var partnerId = Guid.NewGuid();
+
+            var partner = new ReferralPartner
+            {
+                ReferralPartnerId = partnerId,
+                Name = "DR. B. DURGA SURESH, MS.",
+                PartnerType = PartnerType.Doctor,
+                DefaultCommissionPercentage = 10m,
+                IsActive = true
+            };
+            db.ReferralPartners.Add(partner);
+
+            var patient = new Patient
+            {
+                PatientId = Guid.NewGuid(),
+                FirstName = "Test",
+                LastName = "Patient3",
+                MRN = "A00003",
+                CurrentPhoneNumber = "555-0102",
+                DateOfBirth = DateTime.UtcNow.AddYears(-43),
+                Gender = "Male",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            db.Patients.Add(patient);
+
+            var visitId = Guid.NewGuid();
+            var visit = new Visit
+            {
+                VisitId = visitId,
+                PatientId = patient.PatientId,
+                BranchId = branchId,
+                Token = "D-3AD456586D",
+                TokenDate = DateTime.UtcNow.Date,
+                Department = "Radiology",
+                Status = VisitStatus.Draft,
+                AssignedReceptionistId = actorUserId,
+                CreatedByUserId = actorUserId,
+                PaymentCollectionModel = "PartnerCollects",
+                BillingType = BillingType.PrepaidPartner,
+                ReferralPartnerId = partnerId,
+                B2BDiscountAmount = 200m,
+                B2BDiscountType = "Flat",
+                B2BDiscountValue = 200m,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTimeOffset.UtcNow
+            };
+            db.Visits.Add(visit);
+
+            var testItem = new Test
+            {
+                TestId = Guid.NewGuid(),
+                TestCode = "ROUTINE_XRAYS_2",
+                TestName = "ROUTINE XRAYS 2"
+            };
+            db.Tests.Add(testItem);
+
+            var order = new Order
+            {
+                OrderId = Guid.NewGuid(),
+                VisitId = visitId,
+                TestId = testItem.TestId,
+                TestCode = testItem.TestCode,
+                Price = 600m,
+                Department = "Radiology",
+                Status = OrderStatus.Pending,
+                CreatedAt = DateTime.UtcNow
+            };
+            db.Orders.Add(order);
+
+            var invoice = new Invoice
+            {
+                InvoiceId = Guid.NewGuid(),
+                VisitId = visitId,
+                Currency = "INR",
+                CreatedAt = DateTime.UtcNow
+            };
+            db.Invoices.Add(invoice);
+
+            await db.SaveChangesAsync();
+
+            // Mock dependencies
+            var loggerMock = new Mock<ILogger<VisitService>>();
+            var eventWriterMock = new Mock<IOperationalEventWriter>();
+            var userContextMock = new Mock<IUserContext>();
+            userContextMock.Setup(u => u.CurrentUserId).Returns(actorUserId);
+            userContextMock.Setup(u => u.CurrentBranchId).Returns(branchId);
+            userContextMock.Setup(u => u.CurrentRole).Returns("Receptionist");
+
+            var testsCacheMock = new Mock<ITestsCacheService>();
+            var auditMock = new Mock<IAuditService>();
+            var referralFinancialMock = new Mock<IReferralFinancialService>();
+            var revenueFactWriterMock = new Mock<IRevenueFactWriter>();
+            var revenueEngine = new SynOS.Services.Revenue.RevenueEngine(db);
+            var labTimeMock = new Mock<ILabTimeProvider>();
+            labTimeMock.Setup(l => l.GetLabToday()).Returns(DateTime.UtcNow.Date);
+            labTimeMock.Setup(l => l.GetLabTimeZone()).Returns(TimeZoneInfo.Utc);
+
+            var lifecycleMock = new Mock<IVisitLifecyclePolicy>();
+            var outboxMock = new Mock<IMiddlewareOutboxService>();
+            var imsConsumptionMock = new Mock<IImsConsumptionService>();
+
+            var visitService = new VisitService(
+                db,
+                loggerMock.Object,
+                testsCacheMock.Object,
+                auditMock.Object,
+                eventWriterMock.Object,
+                userContextMock.Object,
+                referralFinancialMock.Object,
+                revenueFactWriterMock.Object,
+                revenueEngine,
+                labTimeMock.Object,
+                lifecycleMock.Object,
+                outboxMock.Object,
+                imsConsumptionMock.Object
+            );
+
+            // Act: Mark Visit as Corporate B2B Prepaid
+            await visitService.MarkVisitAsPrepaidAsync(visitId, actorUserId);
+
+            // Assert: Enterprise Invariants
+            var updatedVisit = await db.Visits.Include(v => v.Invoices).FirstOrDefaultAsync(v => v.VisitId == visitId);
+            Assert.NotNull(updatedVisit);
+            Assert.Equal("PartnerCollects", updatedVisit.PaymentCollectionModel);
+            Assert.Equal(BillingType.PrepaidPartner, updatedVisit.BillingType);
+            Assert.Equal(VisitStatus.Paid, updatedVisit.Status);
+
+            var updatedInvoice = updatedVisit.Invoices.FirstOrDefault();
+            Assert.NotNull(updatedInvoice);
+            Assert.Equal("Paid", updatedInvoice.Status); // Must NOT be PendingPayment!
+
+            // Payment must be recorded under PartnerAccount
+            var payment = await db.Payments.FirstOrDefaultAsync(p => p.InvoiceId == updatedInvoice.InvoiceId);
+            Assert.NotNull(payment);
+            Assert.Equal("PartnerAccount", payment.Method);
+            Assert.Equal(600m, payment.Amount);
+
+            // Partner ReceivableFact must be created with ₹400 (₹600 gross - ₹200 concession)
+            var receivable = await db.ReceivableFacts.FirstOrDefaultAsync(r => r.SourceVisitId == visitId);
+            Assert.NotNull(receivable);
+            Assert.Equal(partnerId, receivable.ReferralPartnerId);
+            Assert.Equal(400m, receivable.Amount);
+
+            // Event must be written for RECEIVABLE_CREATED so operational stats increment PrepaidBillsCount
+            eventWriterMock.Verify(w => w.WriteEventAsync(
+                BranchEventType.RECEIVABLE_CREATED,
+                branchId.ToString(),
+                visitId.ToString(),
+                It.IsAny<string>(),
+                It.Is<string>(s => s.Contains("400")),
+                It.IsAny<string>(),
+                actorUserId.ToString(),
+                false,
+                receivable.ReceivableFactId,
+                null,
+                TimelineVisibility.Hide,
+                It.IsAny<Guid>(),
+                null
+            ), Times.Once);
         }
     }
 }

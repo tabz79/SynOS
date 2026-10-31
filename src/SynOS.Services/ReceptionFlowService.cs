@@ -511,10 +511,7 @@ namespace SynOS.Services
             visit.UpdatedAt = DateTimeOffset.UtcNow;
             await _context.SaveChangesAsync();
 
-            if (hadPackages)
-            {
-                await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
-            }
+            await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
 
             _logger.LogInformation("Updated BillingContext for Visit {VisitId} to {BillingType}", visitId, billingType);
         }

@@ -1148,6 +1148,7 @@ namespace SynOS.Services
             CheckVisitOwnership(visit);
 
             visit.PaymentCollectionModel = "PartnerCollects";
+            visit.BillingType = BillingType.PrepaidPartner;
             visit.Status = VisitStatus.Paid;
             if (visit.Token.StartsWith("DRAFT", StringComparison.OrdinalIgnoreCase) || visit.Token.StartsWith("D-", StringComparison.OrdinalIgnoreCase))
             {
@@ -1157,10 +1158,97 @@ namespace SynOS.Services
 
             await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
 
+            // Re-fetch or use latest invoice
+            var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
+            decimal invoiceTotal = invoice?.Total ?? 0m;
+            decimal b2bConcession = visit.B2BDiscountAmount ?? 0m;
+            decimal partnerReceivableAmount = Math.Max(0m, invoiceTotal - b2bConcession);
+
+            if (invoice != null)
+            {
+                invoice.Status = "Paid";
+
+                var existingPayment = await _context.Payments.FirstOrDefaultAsync(p => p.InvoiceId == invoice.InvoiceId && p.Method == "PartnerAccount");
+                if (existingPayment == null)
+                {
+                    var partnerPayment = new Payment
+                    {
+                        PaymentId = Guid.NewGuid(),
+                        InvoiceId = invoice.InvoiceId,
+                        Amount = invoiceTotal,
+                        Method = "PartnerAccount",
+                        ReceiptNo = $"SYS-{visit.Token}",
+                        ReceivedAt = DateTime.UtcNow,
+                        ReceivedByUserId = actorUserId
+                    };
+                    _context.Payments.Add(partnerPayment);
+                }
+                else
+                {
+                    existingPayment.Amount = invoiceTotal;
+                }
+            }
+
+            // Create or update ReceivableFact for the B2B Partner / Doctor
+            var effectivePartnerId = visit.SecondaryReferralPartnerId ?? visit.ReferralPartnerId;
+            ReceivableFact? receivable = null;
+            if (effectivePartnerId.HasValue)
+            {
+                receivable = await _context.ReceivableFacts.FirstOrDefaultAsync(r => r.SourceVisitId == visitId);
+                bool isNewReceivable = false;
+                if (receivable == null)
+                {
+                    isNewReceivable = true;
+                    receivable = new ReceivableFact
+                    {
+                        ReceivableFactId = Guid.NewGuid(),
+                        SourceVisitId = visit.VisitId,
+                        ReferralPartnerId = effectivePartnerId.Value,
+                        DebtorId = effectivePartnerId.Value,
+                        Amount = partnerReceivableAmount,
+                        Currency = invoice?.Currency ?? "INR",
+                        OccurredAt = DateTimeOffset.UtcNow,
+                        RecordedAt = DateTimeOffset.UtcNow
+                    };
+                    _context.ReceivableFacts.Add(receivable);
+                }
+                else
+                {
+                    receivable.Amount = partnerReceivableAmount;
+                    receivable.ReferralPartnerId = effectivePartnerId.Value;
+                    receivable.DebtorId = effectivePartnerId.Value;
+                    receivable.RecordedAt = DateTimeOffset.UtcNow;
+                }
+
+                await _context.SaveChangesAsync();
+
+                string actorNameNow = await GetActorNameAsync(actorUserId);
+                if (isNewReceivable)
+                {
+                    await _operationalEventWriter.WriteEventAsync(
+                        BranchEventType.RECEIVABLE_CREATED,
+                        _userContext.CurrentBranchId.ToString(),
+                        visit.VisitId.ToString(),
+                        visit.Token,
+                        $"Prepaid B2B receivable of ₹{partnerReceivableAmount:N2} created for partner",
+                        actorNameNow,
+                        actorUserId.ToString(),
+                        false,
+                        receivable.ReceivableFactId,
+                        null,
+                        TimelineVisibility.Hide,
+                        intentId ?? Guid.NewGuid()
+                    );
+                }
+            }
+            else
+            {
+                await _context.SaveChangesAsync();
+            }
+
             // ENRICHED METADATA
             string actorName = await GetActorNameAsync(actorUserId);
             string patientName = $"{visit.Patient?.FirstName} {visit.Patient?.LastName}".Trim();
-            var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault(); // Get Invoice
 
             var testCodes = visit.Orders?.Select(o => o.Test?.TestCode).Where(c => !string.IsNullOrEmpty(c)).ToList() ?? new List<string?>();
             string doctorName = visit.SecondaryReferralPartner?.Name ?? visit.ReferralPartner?.Name ?? "";

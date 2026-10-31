@@ -117,12 +117,20 @@ namespace SynOS.Services.Revenue
             }
             else
             {
-                invoice.Status = "PendingPayment";
-                // Don't revert Visit status if it's already Finalized/etc? 
-                // "Visit Operational State".
-                // Keep it simple: Financial status sync.
-                if (visit.Status == VisitStatus.FullPaid || visit.Status == VisitStatus.PartialPayment)
-                    visit.Status = VisitStatus.PendingPayment;
+                // If it's a Prepaid partner visit or already marked Paid, preserve Paid status on invoice
+                if ((visit.PaymentCollectionModel == "PartnerCollects" || visit.BillingType == BillingType.PrepaidPartner) && visit.Status == VisitStatus.Paid)
+                {
+                    invoice.Status = "Paid";
+                }
+                else
+                {
+                    invoice.Status = "PendingPayment";
+                    // Don't revert Visit status if it's already Finalized/etc? 
+                    // "Visit Operational State".
+                    // Keep it simple: Financial status sync.
+                    if (visit.Status == VisitStatus.FullPaid || visit.Status == VisitStatus.PartialPayment)
+                        visit.Status = VisitStatus.PendingPayment;
+                }
             }
 
             await _context.SaveChangesAsync();

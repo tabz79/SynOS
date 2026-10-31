@@ -558,6 +558,17 @@ export function BillingSummary({
     const totalNet = stagedNet !== undefined ? stagedNet : (billing?.netAmount || billing?.totalAmount || 0);
     const remainingDue = Math.max(0, totalNet - totalPaid);
 
+    const grossTariff = stagedGross !== undefined ? stagedGross : (billing?.grossAmount || 0);
+    const effectiveB2BVal = isB2BEditing ? (Number(localB2BInput) || 0) : (stagedDiscount?.value !== undefined ? Number(stagedDiscount.value) : (Number(localB2BInput) || b2bInfo.rawVal || 0));
+    let computedB2BDiscountAmt = 0;
+    if (b2bDiscountType === 'PERCENTAGE') {
+        const pct = Math.min(100, Math.max(0, effectiveB2BVal));
+        computedB2BDiscountAmt = Math.round((grossTariff * (pct / 100)) * 100) / 100;
+    } else {
+        computedB2BDiscountAmt = Math.min(grossTariff, Math.max(0, effectiveB2BVal));
+    }
+    const computedB2BNetClaim = Math.max(0, grossTariff - computedB2BDiscountAmt);
+
     let displayAmountToCollect = remainingDue;
     let amountLabel = billing?.paymentStatus === 'Paid' ? "Total Bill Amount" : (totalPaid > 0 ? "Remaining Due to Collect" : "Amount to Collect");
 
@@ -583,7 +594,16 @@ export function BillingSummary({
                     <h3 className={cn("tracking-tight", ui.headerText)}>Financials</h3>
                     {isProcessing && <Loader2 className="w-3 h-3 animate-spin text-synos-primary" />}
                 </div>
-                {billing.paymentStatus && (
+                {isPrepaid ? (
+                    <div className={cn(
+                        "px-2 py-0.5 rounded type-section-header tracking-wider border",
+                        (billing.paymentStatus === 'Paid' || billing.isLocked)
+                            ? (isDark ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-emerald-100 text-emerald-700 border-emerald-200")
+                            : (isDark ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20" : "bg-indigo-50 text-indigo-700 border-indigo-200")
+                    )}>
+                        {(billing.paymentStatus === 'Paid' || billing.isLocked) ? "B2B Settled" : "Corporate B2B (Prepaid)"}
+                    </div>
+                ) : billing.paymentStatus && (
                     <div className={cn(
                         "px-2 py-0.5 rounded type-section-header tracking-wider border",
                         billing.paymentStatus === 'Paid'
@@ -695,6 +715,15 @@ export function BillingSummary({
                                     )}
                                 </div>
                             )
+                        ) : isPrepaid && computedB2BDiscountAmt > 0 ? (
+                            <div className="flex items-center gap-2">
+                                <span className={cn("font-mono font-bold flex items-center gap-1", isDark ? "text-emerald-400" : "text-emerald-600")}>
+                                    - ₹{computedB2BDiscountAmt.toLocaleString()}
+                                    <span className="text-xs opacity-80 font-semibold">
+                                        ({b2bDiscountType === 'PERCENTAGE' ? `${effectiveB2BVal}% Doctor Tariff Concession` : `₹${computedB2BDiscountAmt.toLocaleString()} Doctor Tariff Concession`})
+                                    </span>
+                                </span>
+                            </div>
                         ) : billing.appliedDiscount && (billing.discountAmount > 0) ? (
                             <div className="flex items-center gap-2">
                                 <span className={cn("font-mono font-bold flex items-center gap-1", isDark ? "text-emerald-400" : "text-emerald-600")}>
@@ -714,6 +743,8 @@ export function BillingSummary({
                                     </button>
                                 )}
                             </div>
+                        ) : isPrepaid ? (
+                            <span className="type-code opacity-50">Standard Doctor Tariff (No concession)</span>
                         ) : (
                             <span className="type-code opacity-50">No discount applied</span>
                         )}
@@ -731,15 +762,28 @@ export function BillingSummary({
                     {/* Net Payable */}
                     <div className="flex justify-between items-center">
                         <span className={ui.netLabel}>
-                            {isCorrectionIntent ? "Revised Net Amount" : "Net Bill Total"}
+                            {isCorrectionIntent ? "Revised Net Amount" : (isPrepaid ? "Patient Desk Total" : "Net Bill Total")}
                         </span>
                         <span className={cn("flex items-center", ui.netValue)}>
                             <IndianRupee className="w-4 h-4 mr-0.5" />
-                            {isCorrectionIntent && stagedNet !== undefined 
-                                ? stagedNet.toLocaleString() 
-                                : (totalNet?.toLocaleString() ?? "—")}
+                            {isPrepaid 
+                                ? "0" 
+                                : (isCorrectionIntent && stagedNet !== undefined 
+                                    ? stagedNet.toLocaleString() 
+                                    : (totalNet?.toLocaleString() ?? "—"))}
                         </span>
                     </div>
+
+                    {isPrepaid && (
+                        <div className="flex justify-between items-center text-xs pt-1 border-t border-dashed border-indigo-200 dark:border-indigo-800/40">
+                            <span className="text-indigo-600 dark:text-indigo-400 font-semibold flex items-center gap-1">
+                                <span>Billed to Partner / Doctor:</span>
+                            </span>
+                            <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                                ₹{computedB2BNetClaim.toLocaleString()}
+                            </span>
+                        </div>
+                    )}
 
                     {/* Already Paid at Desk */}
                     {totalPaid > 0 && (
