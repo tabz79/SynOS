@@ -1341,7 +1341,7 @@ export function IntentPanel({ onVisitUpdated }) {
             className={cn(
                 "flex flex-col h-full overflow-hidden rounded-[28px] transition-[width,transform,opacity] duration-300 ease-out z-30", 
                 (hasPatient || isCorrectionIntent) 
-                    ? "absolute right-0 top-0 bottom-0 w-[94vw] max-w-[1720px]" 
+                    ? "absolute right-0 top-0 bottom-0 w-[85vw] max-w-[85vw]" 
                     : "absolute right-0 top-0 bottom-0 w-[90vw] sm:w-[40vw] max-w-[42vw] min-w-[380px]",
                 ui.panel
             )}
@@ -1672,24 +1672,27 @@ export function IntentPanel({ onVisitUpdated }) {
 
                                                 <div className="flex items-center gap-2">
                                                     {/* Bill / Token Badge */}
-                                                    <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-sm border border-slate-800 dark:border-zinc-200">
-                                                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-300 dark:text-zinc-500">Bill / Token:</span>
-                                                        <span className="font-mono text-xs font-black tracking-wider">
+                                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200/80 dark:border-zinc-700/80 text-xs font-mono font-medium">
+                                                        <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">Token:</span>
+                                                        <span className="font-bold">
                                                             {snapshot?.visit?.visitToken || snapshot?.visit?.token || postProcessingSession?.token || currentVisitId}
                                                         </span>
                                                     </div>
 
-                                                    {/* Canonical Payer Mode Badge - Bold & High Visibility */}
+                                                    {/* Canonical Payer Mode Pill - Refined, Elegant */}
                                                     <div className={cn(
-                                                        "px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-sm border",
+                                                        "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border",
                                                         billingMode === 'PrepaidPartner'
-                                                            ? "bg-indigo-600 text-white border-indigo-700 shadow-indigo-500/20"
+                                                            ? "bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800"
                                                             : billingMode === 'Insurance'
-                                                                ? "bg-purple-600 text-white border-purple-700 shadow-purple-500/20"
-                                                                : "bg-emerald-600 text-white border-emerald-700 shadow-emerald-500/20"
+                                                                ? "bg-purple-50 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800"
+                                                                : "bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800"
                                                     )}>
-                                                        <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                                                        <span>BILL TYPE: {billingMode === 'PrepaidPartner' ? 'CORPORATE B2B (PREPAID)' : billingMode === 'Insurance' ? 'INSURANCE / TPA' : 'DIRECT / STANDARD (RETAIL)'}</span>
+                                                        <span className={cn(
+                                                            "w-1.5 h-1.5 rounded-full",
+                                                            billingMode === 'PrepaidPartner' ? "bg-indigo-500" : billingMode === 'Insurance' ? "bg-purple-500" : "bg-emerald-500"
+                                                        )} />
+                                                        <span>Bill Type: {billingMode === 'PrepaidPartner' ? 'Corporate B2B (Prepaid)' : billingMode === 'Insurance' ? 'Insurance / TPA' : 'Direct / Standard'}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1776,8 +1779,11 @@ export function IntentPanel({ onVisitUpdated }) {
                                                             </span>
                                                         </div>
 
-                                                        {/* Side-by-side doctor cards */}
-                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch">
+                                                        {/* Single full-width doctor card or side-by-side if secondary partner exists */}
+                                                        <div className={cn(
+                                                            "items-stretch",
+                                                            effectiveSecondaryPartner ? "grid grid-cols-1 sm:grid-cols-2 gap-3" : "w-full"
+                                                        )}>
                                                             {/* Prescribing Doctor */}
                                                             <div className={cn(
                                                                 "flex items-center gap-3 p-3.5 rounded-xl border transition-all",
@@ -1798,45 +1804,35 @@ export function IntentPanel({ onVisitUpdated }) {
                                                                             </span>
                                                                         )}
                                                                     </div>
-                                                                    <div className="text-xs text-slate-500 dark:text-zinc-400 font-medium truncate mt-1">
-                                                                        Type: {effectivePartner?.partnerType || 'Doctor'}
-                                                                    </div>
                                                                 </div>
                                                             </div>
 
-                                                            {/* Second Referral Doctor / RMP */}
-                                                            <div className={cn(
-                                                                "flex items-center gap-3 p-3.5 rounded-xl border transition-all",
-                                                                effectiveSecondaryPartner
-                                                                    ? (isDark ? "bg-emerald-950/20 border-emerald-900/40 text-emerald-300" : "bg-[#F4F9F6] border-[#D3E8DD] text-slate-900 shadow-2xs")
-                                                                    : (isDark ? "bg-zinc-900/40 border-dashed border-zinc-700/80 text-zinc-400" : "bg-slate-50/60 border-dashed border-slate-300 text-slate-500")
-                                                            )}>
+                                                            {/* Second Referral Doctor / RMP - ONLY rendered if secondary partner exists */}
+                                                            {effectiveSecondaryPartner && (
                                                                 <div className={cn(
-                                                                    "w-2.5 h-2.5 rounded-full shrink-0",
-                                                                    effectiveSecondaryPartner ? "bg-[#3D9970] shadow-[0_0_6px_rgba(61,153,112,0.35)]" : "bg-slate-300 dark:bg-zinc-600"
-                                                                )}></div>
-                                                                <div className="flex-1 min-w-0">
-                                                                    <span className={cn(
-                                                                        "text-[11px] font-bold uppercase tracking-wider block leading-tight",
-                                                                        effectiveSecondaryPartner ? "text-[#2D6A4F] dark:text-emerald-300" : "text-slate-400 dark:text-zinc-500"
-                                                                    )}>
-                                                                        Second Referral Doctor / RMP
-                                                                    </span>
-                                                                    <div className="flex items-center gap-2 mt-0.5">
-                                                                        <span className="truncate tracking-normal text-sm sm:text-base font-bold text-slate-800 dark:text-zinc-200">
-                                                                            {secondaryDoctorDisplay || "No RMP assigned (Optional)"}
+                                                                    "flex items-center gap-3 p-3.5 rounded-xl border transition-all",
+                                                                    isDark ? "bg-emerald-950/20 border-emerald-900/40 text-emerald-300" : "bg-[#F4F9F6] border-[#D3E8DD] text-slate-900 shadow-2xs"
+                                                                )}>
+                                                                    <div className="w-2.5 h-2.5 rounded-full shrink-0 bg-[#3D9970] shadow-[0_0_6px_rgba(61,153,112,0.35)]"></div>
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <span className="text-[11px] font-bold uppercase tracking-wider block leading-tight text-[#2D6A4F] dark:text-emerald-300">
+                                                                            Second Referral Doctor / RMP
                                                                         </span>
+                                                                        <div className="flex items-center gap-2 mt-0.5">
+                                                                            <span className="truncate tracking-normal text-sm sm:text-base font-bold text-slate-800 dark:text-zinc-200">
+                                                                                {secondaryDoctorDisplay}
+                                                                            </span>
+                                                                        </div>
                                                                     </div>
                                                                 </div>
-                                                            </div>
+                                                            )}
                                                         </div>
                                                     </div>
 
                                                     {/* Ordered Investigations */}
                                                     <div className="space-y-2">
-                                                        <div className="flex items-center justify-between text-xs sm:text-sm font-bold text-slate-700 dark:text-zinc-300">
-                                                            <span>Ordered Investigations ({activeRemainingTests.length + stagedAddedTests.length})</span>
-                                                            <span className="text-slate-500 dark:text-zinc-400">Standard Tariff</span>
+                                                        <div className="text-xs sm:text-sm font-bold text-slate-700 dark:text-zinc-300">
+                                                            Ordered Investigations ({activeRemainingTests.length + stagedAddedTests.length})
                                                         </div>
                                                         <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
                                                             {[...activeRemainingTests, ...stagedAddedTests].map((t, idx) => (
@@ -1886,19 +1882,6 @@ export function IntentPanel({ onVisitUpdated }) {
                                                             </h3>
                                                         </div>
                                                         <div className="flex items-center gap-2">
-                                                            {/* Canonical Bill Type Badge in Card 3 */}
-                                                            <span className={cn(
-                                                                "px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-xs border",
-                                                                billingMode === 'PrepaidPartner'
-                                                                    ? "bg-indigo-600 text-white border-indigo-700"
-                                                                    : billingMode === 'Insurance'
-                                                                        ? "bg-purple-600 text-white border-purple-700"
-                                                                        : "bg-emerald-600 text-white border-emerald-700"
-                                                            )}>
-                                                                <span className="w-1.5 h-1.5 rounded-full bg-white" />
-                                                                <span>Bill Type: {billingMode === 'PrepaidPartner' ? 'Corporate B2B (Prepaid)' : billingMode === 'Insurance' ? 'Insurance / TPA' : 'Direct / Standard'}</span>
-                                                            </span>
-
                                                             {/* Paid Status Pill */}
                                                             <div className={cn(
                                                                 "flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs font-bold",
@@ -1920,21 +1903,14 @@ export function IntentPanel({ onVisitUpdated }) {
                                                         </div>
 
                                                         <div className="p-2.5 rounded-xl bg-white dark:bg-zinc-800/80 border border-slate-200/90 dark:border-zinc-700/80 shadow-2xs">
-                                                            <div className="flex items-center justify-between">
-                                                                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-400 block">Concession</span>
-                                                                {discountReasonDisplay && (
-                                                                    <span className="text-[10px] font-extrabold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/60 px-1.5 py-0.5 rounded border border-rose-200/70 dark:border-rose-900/60 truncate max-w-[110px]" title={discountReasonDisplay}>
-                                                                        {discountReasonDisplay}
-                                                                    </span>
-                                                                )}
-                                                            </div>
+                                                            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-400 block">Concession</span>
                                                             {(stagedDiscountAmt || snapshot?.billing?.discountAmount) ? (
                                                                 <div className="flex items-baseline gap-1 mt-0.5">
                                                                     <span className="font-mono font-black text-sm sm:text-base text-rose-600 dark:text-rose-400">
                                                                         -₹{(stagedDiscountAmt !== undefined ? stagedDiscountAmt : (snapshot?.billing?.discountAmount || 0)).toLocaleString()}
                                                                     </span>
                                                                     {discountReasonDisplay && (
-                                                                        <span className="text-[11px] font-bold text-rose-600/90 dark:text-rose-400/90 truncate max-w-[90px]" title={discountReasonDisplay}>
+                                                                        <span className="text-[11px] font-bold text-rose-600/90 dark:text-rose-400/90 truncate max-w-[110px]" title={discountReasonDisplay}>
                                                                             ({discountReasonDisplay})
                                                                         </span>
                                                                     )}
@@ -1957,8 +1933,8 @@ export function IntentPanel({ onVisitUpdated }) {
                                                         </div>
                                                     </div>
 
-                                                    {/* Settlement & Audit Pod (Single combined pod) */}
-                                                    <div className="p-3 rounded-xl bg-white/95 dark:bg-zinc-800/90 border border-slate-200/90 dark:border-zinc-700/80 shadow-2xs space-y-2">
+                                                    {/* Settlement Pod (Clean and minimal) */}
+                                                    <div className="p-3 rounded-xl bg-white/95 dark:bg-zinc-800/90 border border-slate-200/90 dark:border-zinc-700/80 shadow-2xs">
                                                         {billingMode === 'PrepaidPartner' ? (
                                                             <div className="flex items-center justify-between text-xs sm:text-sm">
                                                                 <span className="font-bold text-slate-700 dark:text-zinc-300">
@@ -1983,14 +1959,6 @@ export function IntentPanel({ onVisitUpdated }) {
                                                                 </div>
                                                             </div>
                                                         )}
-
-                                                        <div className="pt-2 border-t border-slate-100 dark:border-zinc-700/80 flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400">
-                                                            <span>Billed by: <strong className="text-slate-800 dark:text-zinc-200">{snapshot?.visit?.billedBy || user?.name || 'Staff Desk'}</strong></span>
-                                                            <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400 font-bold">
-                                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                                                Locked & Audited
-                                                            </span>
-                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>

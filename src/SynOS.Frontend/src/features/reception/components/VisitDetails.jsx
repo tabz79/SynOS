@@ -817,8 +817,11 @@ export function VisitDetails({
                 {/* CONTEXTUAL SUB-PANEL: Standard Direct */}
                 {billingMode === 'Standard' && (
                     isDoctorSectionCollapsed ? (
-                        /* MINIMIZED: SIDE BY SIDE IN A SINGLE ROW */
-                        <div className="pt-2 border-t border-slate-200/60 dark:border-zinc-800/60 grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch">
+                        /* MINIMIZED: SINGLE FULL-WIDTH CARD OR 2-COLUMNS IF SECONDARY PARTNER PRESENT */
+                        <div className={cn(
+                            "pt-2 border-t border-slate-200/60 dark:border-zinc-800/60 items-stretch",
+                            effectiveSecondaryPartner ? "grid grid-cols-1 sm:grid-cols-2 gap-3" : "w-full"
+                        )}>
                             {/* Doctor 1: Prescribing Doctor / Consultant */}
                             <div 
                                 onClick={() => setUserDoctorExpandedState(true)}
@@ -842,10 +845,6 @@ export function VisitDetails({
                                             </span>
                                         )}
                                     </div>
-                                    <div className="text-xs text-slate-500 dark:text-zinc-400 font-medium truncate mt-0.5">
-                                        Type: {effectivePartner?.partnerType || 'Doctor'}
-                                        {!effectiveSecondaryPartner && ` • Comm: ${snapshot?.billing?.referral?.commissionCutPercentage || 0}%`}
-                                    </div>
                                 </div>
                                 {canEditReferral && effectivePartner && (
                                     <button
@@ -863,67 +862,45 @@ export function VisitDetails({
                                 )}
                             </div>
 
-                            {/* Doctor 2: Second Referral Doctor / RMP */}
-                            <div 
-                                onClick={() => setUserDoctorExpandedState(true)}
-                                className={cn(
-                                    "flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer group",
-                                    effectiveSecondaryPartner
-                                        ? (isDark ? "bg-emerald-950/20 border-emerald-900/40 text-emerald-300 hover:border-emerald-800/60" : "bg-[#F4F9F6] border-[#D3E8DD] text-slate-900 shadow-2xs hover:border-[#BCDDCB]")
-                                        : (isDark ? "bg-zinc-900/40 border-dashed border-zinc-700/80 text-zinc-400 hover:border-zinc-600 hover:bg-zinc-800/40" : "bg-slate-50/60 border-dashed border-slate-300 text-slate-500 hover:border-blue-400 hover:bg-blue-50/20")
-                                )}
-                            >
-                                <div className={cn(
-                                    "w-2.5 h-2.5 rounded-full shrink-0",
-                                    effectiveSecondaryPartner ? "bg-[#3D9970] shadow-[0_0_6px_rgba(61,153,112,0.35)]" : "bg-slate-300 dark:bg-zinc-600"
-                                )}></div>
-                                <div className="flex-1 min-w-0">
-                                    <span className={cn(
-                                        "text-[11px] font-bold uppercase tracking-wider block leading-tight",
-                                        effectiveSecondaryPartner ? "text-[#2D6A4F] dark:text-emerald-300" : "text-slate-400 dark:text-zinc-500"
-                                    )}>
-                                        Second Referral Doctor / RMP
-                                    </span>
-                                    {effectiveSecondaryPartner ? (
-                                        <>
-                                            <div className="flex items-center gap-2 mt-0.5">
-                                                <span className="truncate tracking-normal text-sm sm:text-base font-bold text-slate-900 dark:text-white">
-                                                    {effectiveSecondaryPartner.displayName}
-                                                </span>
-                                                <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#E1F1E8] text-[#245E49] dark:bg-emerald-950/40 dark:text-emerald-300 font-bold border border-[#BCE2CD] dark:border-emerald-800 uppercase shrink-0">
-                                                    {effectiveSecondaryPartner.partnerType || 'RMP'}
-                                                </span>
-                                            </div>
-                                            <div className="text-xs text-[#3D705C] dark:text-emerald-400/90 font-medium truncate mt-0.5">
-                                                Commission Cut: {effectiveSecondaryPartner.commissionCutPercentage || 0}% • Exclusive RMP Route
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <div className="flex items-center justify-between mt-1">
-                                            <span className="text-xs text-slate-500 dark:text-zinc-400 font-medium italic">
-                                                No RMP assigned (Optional)
+                            {/* Doctor 2: Second Referral Doctor / RMP (Only rendered if secondary partner exists) */}
+                            {effectiveSecondaryPartner && (
+                                <div 
+                                    onClick={() => setUserDoctorExpandedState(true)}
+                                    className={cn(
+                                        "flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer group",
+                                        isDark ? "bg-emerald-950/20 border-emerald-900/40 text-emerald-300 hover:border-emerald-800/60" : "bg-[#F4F9F6] border-[#D3E8DD] text-slate-900 shadow-2xs hover:border-[#BCDDCB]"
+                                    )}
+                                >
+                                    <div className="w-2.5 h-2.5 rounded-full shrink-0 bg-[#3D9970] shadow-[0_0_6px_rgba(61,153,112,0.35)]"></div>
+                                    <div className="flex-1 min-w-0">
+                                        <span className="text-[11px] font-bold uppercase tracking-wider block leading-tight text-[#2D6A4F] dark:text-emerald-300">
+                                            Second Referral Doctor / RMP
+                                        </span>
+                                        <div className="flex items-center gap-2 mt-0.5">
+                                            <span className="truncate tracking-normal text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                                                {effectiveSecondaryPartner.displayName}
                                             </span>
-                                            <span className="text-xs text-blue-600 dark:text-blue-400 font-bold group-hover:underline">
-                                                + Add RMP
+                                            <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#E1F1E8] text-[#245E49] dark:bg-emerald-950/40 dark:text-emerald-300 font-bold border border-[#BCE2CD] dark:border-emerald-800 uppercase shrink-0">
+                                                {effectiveSecondaryPartner.partnerType || 'RMP'}
                                             </span>
                                         </div>
+                                    </div>
+                                    {canEditReferral && (
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleRemoveSecondaryReferral();
+                                            }}
+                                            disabled={isProcessing}
+                                            className="text-zinc-400 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors shrink-0"
+                                            title="Remove Second Referral Doctor"
+                                        >
+                                            <X className="w-3.5 h-3.5" />
+                                        </button>
                                     )}
                                 </div>
-                                {canEditReferral && effectiveSecondaryPartner && (
-                                    <button
-                                        type="button"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleRemoveSecondaryReferral();
-                                        }}
-                                        disabled={isProcessing}
-                                        className="text-zinc-400 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors shrink-0"
-                                        title="Remove Second Referral Doctor"
-                                    >
-                                        <X className="w-3.5 h-3.5" />
-                                    </button>
-                                )}
-                            </div>
+                            )}
                         </div>
                     ) : (
                         /* EXPANDED: FULL 2-TIER STACKED VIEW */
