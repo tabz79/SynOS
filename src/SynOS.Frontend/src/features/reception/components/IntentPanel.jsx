@@ -1477,9 +1477,9 @@ export function IntentPanel({ onVisitUpdated }) {
                                             </div>
 
                                             {/* Live Document Canvas Surface */}
-                                            <div className="flex-1 min-h-0 my-3 rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-[#EAF1F6]/70 dark:bg-zinc-950/70 p-3 sm:p-4 flex justify-center items-center overflow-y-auto relative shadow-inner">
+                                            <div className="flex-1 min-h-0 my-3 rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-[#EAF1F6]/70 dark:bg-zinc-950/70 p-3 sm:p-4 flex justify-center items-start overflow-y-auto relative shadow-inner">
                                                 {selectedDocFormat === 'thermal' && (
-                                                    <div className="w-[340px] sm:w-[360px] max-w-full my-auto rounded-2xl shadow-2xl overflow-hidden border border-slate-300 dark:border-zinc-700 bg-white flex flex-col mx-auto transition-transform">
+                                                    <div className="w-[360px] sm:w-[380px] max-w-full my-auto rounded-2xl shadow-2xl overflow-hidden border border-slate-300 dark:border-zinc-700 bg-white flex flex-col mx-auto transition-transform shrink-0">
                                                         <div className="bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 px-4 py-2 text-xs font-mono border-b border-slate-200 dark:border-zinc-700 flex justify-between items-center">
                                                             <span className="font-bold">Thermal POS (80mm)</span>
                                                             <span className="text-[10px] bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 font-bold">1:1 Roll Preview</span>
@@ -1487,7 +1487,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                         <iframe
                                                             title="Thermal POS Receipt"
                                                             srcDoc={thermalHtml}
-                                                            className="w-full h-[540px] sm:h-[580px] border-0 mx-auto"
+                                                            className="w-full h-[740px] sm:h-[760px] border-0 mx-auto"
                                                         />
                                                     </div>
                                                 )}
@@ -1498,9 +1498,9 @@ export function IntentPanel({ onVisitUpdated }) {
                                                             style={{ 
                                                                 width: '210mm', 
                                                                 minHeight: '297mm',
-                                                                transform: 'scale(0.62)',
+                                                                transform: 'scale(0.92)',
                                                                 transformOrigin: 'top center',
-                                                                marginBottom: '-110mm'
+                                                                marginBottom: '-22mm'
                                                             }}
                                                             className="bg-white text-zinc-900 shadow-2xl rounded-sm p-8 sm:p-10 border border-slate-300 dark:border-zinc-700 flex flex-col justify-between shrink-0"
                                                         >
@@ -1529,9 +1529,9 @@ export function IntentPanel({ onVisitUpdated }) {
                                                                 style={{ 
                                                                     width: '210mm', 
                                                                     minHeight: '297mm',
-                                                                    transform: 'scale(0.62)',
+                                                                    transform: 'scale(0.92)',
                                                                     transformOrigin: 'top center',
-                                                                    marginBottom: '-110mm'
+                                                                    marginBottom: '-22mm'
                                                                 }}
                                                                 className="bg-white text-zinc-900 shadow-2xl rounded-sm p-8 sm:p-10 border border-slate-300 dark:border-zinc-700 flex flex-col justify-between shrink-0"
                                                             >
@@ -1623,14 +1623,15 @@ export function IntentPanel({ onVisitUpdated }) {
 
                                                     {/* Canonical Payer Mode Badge */}
                                                     <span className={cn(
-                                                        "px-2.5 py-1 rounded-full text-xs font-bold border",
+                                                        "px-3 py-1 rounded-full text-xs font-extrabold border shadow-2xs tracking-normal flex items-center gap-1.5",
                                                         billingMode === 'PrepaidPartner'
                                                             ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30"
                                                             : billingMode === 'Insurance'
                                                                 ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30"
                                                                 : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60"
                                                     )}>
-                                                        {billingMode === 'PrepaidPartner' ? 'Corporate B2B (Prepaid)' : billingMode === 'Insurance' ? 'Insurance / TPA' : 'Direct / Standard'}
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />
+                                                        <span>Bill Type: {billingMode === 'PrepaidPartner' ? 'Corporate B2B (Prepaid)' : billingMode === 'Insurance' ? 'Insurance / TPA' : 'Direct / Standard'}</span>
                                                     </span>
                                                 </div>
                                             </div>
@@ -1652,20 +1653,6 @@ export function IntentPanel({ onVisitUpdated }) {
                                                             <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-normal">
                                                                 Patient Identification
                                                             </h3>
-                                                        </div>
-                                                        <div className="flex items-center gap-2">
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    setPostProcessingSession(null);
-                                                                    openCorrectionIntent(currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id);
-                                                                }}
-                                                                className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-slate-700 dark:text-zinc-200 bg-white/90 hover:bg-white dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-300/80 dark:border-zinc-700 shadow-2xs hover:shadow-xs transition-all cursor-pointer active:scale-95 synos-focus-btn"
-                                                                title="Edit Patient Demographics in Visit Correction"
-                                                            >
-                                                                <Pencil className="w-3.5 h-3.5 text-slate-500 dark:text-zinc-400" />
-                                                                <span>Edit</span>
-                                                            </button>
                                                         </div>
                                                     </div>
 
@@ -1743,8 +1730,8 @@ export function IntentPanel({ onVisitUpdated }) {
                                                                     <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 block leading-tight">
                                                                         Prescribing Doctor
                                                                     </span>
-                                                                    <div className="flex items-center gap-2 mt-0.5">
-                                                                        <span className="truncate tracking-normal text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                                                                    <div className="flex items-center gap-2 mt-1">
+                                                                        <span className="truncate tracking-normal text-sm sm:text-base font-extrabold text-blue-700 dark:text-blue-300 bg-blue-50/80 dark:bg-blue-950/40 px-2.5 py-0.5 rounded-lg border border-blue-200/80 dark:border-blue-900/50">
                                                                             {doctorDisplay}
                                                                         </span>
                                                                         {effectivePartner && effectiveSecondaryPartner && (
@@ -1753,7 +1740,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                                             </span>
                                                                         )}
                                                                     </div>
-                                                                    <div className="text-xs text-slate-500 dark:text-zinc-400 font-medium truncate mt-0.5">
+                                                                    <div className="text-xs text-slate-500 dark:text-zinc-400 font-medium truncate mt-1">
                                                                         Type: {effectivePartner?.partnerType || 'Doctor'}
                                                                     </div>
                                                                 </div>
@@ -1804,11 +1791,11 @@ export function IntentPanel({ onVisitUpdated }) {
                                                                             {t.testCode || t.code}
                                                                         </span>
                                                                         <div>
-                                                                            <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-white block">
+                                                                            <span className="font-extrabold text-base text-slate-950 dark:text-white block tracking-tight">
                                                                                 {t.testName || t.name || t.testCode}
                                                                             </span>
                                                                             {(t.department || t.category) && (
-                                                                                <span className="text-xs text-slate-500 dark:text-zinc-400 font-medium">
+                                                                                <span className="inline-flex items-center px-2 py-0.5 mt-0.5 rounded-md text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/60">
                                                                                     {t.department || t.category}
                                                                                 </span>
                                                                             )}
@@ -1823,9 +1810,9 @@ export function IntentPanel({ onVisitUpdated }) {
                                                     </div>
                                                 </div>
 
-                                                {/* CARD 3: Financials */}
+                                                {/* CARD 3: Financials - Unified Consolidated Card */}
                                                 <div className={cn(
-                                                    "rounded-[24px] border transition-all p-4 sm:p-5 space-y-4 shrink-0 synos-focus-card",
+                                                    "rounded-[24px] border transition-all p-4 sm:p-4.5 space-y-3 shrink-0 synos-focus-card",
                                                     isDark
                                                         ? "bg-zinc-900/90 border-zinc-800 shadow-xl"
                                                         : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_12px_36px_rgba(15,35,60,0.07),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"
@@ -1840,102 +1827,92 @@ export function IntentPanel({ onVisitUpdated }) {
                                                                 Financials
                                                             </h3>
                                                         </div>
-                                                        <div className="px-3 py-1 rounded-full text-xs sm:text-sm font-bold border tracking-normal bg-[#EAF5F0] text-[#245E49] border-[#CFE8DD] dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800">
-                                                            {billingMode === 'PrepaidPartner' ? 'B2B Partner Billed' : 'Paid'}
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Referral row */}
-                                                    <div className="p-3 rounded-xl bg-white/90 dark:bg-zinc-800/80 border border-slate-200/90 dark:border-zinc-700/80 flex items-center justify-between text-xs sm:text-sm shadow-2xs">
                                                         <div className="flex items-center gap-2">
-                                                            <span className="font-semibold text-slate-500 dark:text-zinc-400 text-xs uppercase tracking-wider">Referral:</span>
-                                                            <span className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_6px_rgba(59,130,246,0.4)]"></span>
-                                                            <span className="font-bold text-slate-900 dark:text-white">{doctorDisplay}</span>
-                                                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-                                                                {effectivePartner?.partnerType || 'Doctor'}
+                                                            {/* Canonical Bill Type Badge */}
+                                                            <span className={cn(
+                                                                "px-2.5 py-1 rounded-full text-xs font-extrabold border shadow-2xs tracking-normal flex items-center gap-1.5",
+                                                                billingMode === 'PrepaidPartner'
+                                                                    ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800"
+                                                                    : billingMode === 'Insurance'
+                                                                        ? "bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border-purple-200 dark:border-purple-800"
+                                                                        : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
+                                                            )}>
+                                                                <span className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />
+                                                                <span>Bill Type: {billingMode === 'PrepaidPartner' ? 'Corporate B2B (Prepaid)' : billingMode === 'Insurance' ? 'Insurance / TPA' : 'Direct / Standard'}</span>
                                                             </span>
+
+                                                            {/* Paid Status Pill */}
+                                                            <div className={cn(
+                                                                "flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs font-bold",
+                                                                isDark ? "bg-zinc-800/80 border-zinc-700 text-zinc-300" : "bg-emerald-50 border-emerald-200 text-emerald-700"
+                                                            )}>
+                                                                <Lock className="w-3.5 h-3.5 text-emerald-600" />
+                                                                <span>PAID</span>
+                                                            </div>
                                                         </div>
-                                                        <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400">
-                                                            {billingMode === 'PrepaidPartner' ? 'B2B Tariff' : 'Counter Collection'}
-                                                        </span>
                                                     </div>
 
-                                                    {/* Ledger breakdown */}
-                                                    <div className="space-y-2 text-sm sm:text-base">
-                                                        <div className="flex items-center justify-between text-slate-600 dark:text-zinc-400">
-                                                            <span className="font-medium">Total Amount</span>
-                                                            <span className="font-mono font-bold text-slate-900 dark:text-white">
-                                                                ₹{(stagedGross !== undefined ? stagedGross : (snapshot?.billing?.grossAmount || snapshot?.billing?.netAmount || 0)).toLocaleString()}
+                                                    {/* Consolidated Financial Metrics Row (4 key numbers side-by-side) */}
+                                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                                                        <div className="p-2.5 rounded-xl bg-white dark:bg-zinc-800/80 border border-slate-200/90 dark:border-zinc-700/80 shadow-2xs">
+                                                            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-400 block">Gross Tariff</span>
+                                                            <span className="font-mono font-bold text-sm sm:text-base text-slate-800 dark:text-zinc-200">
+                                                                ₹{(stagedGross !== undefined ? stagedGross : (snapshot?.billing?.grossAmount || 0)).toLocaleString()}
                                                             </span>
                                                         </div>
 
-                                                        <div className="flex items-center justify-between text-slate-600 dark:text-zinc-400">
-                                                            <span className="font-medium">Discount</span>
-                                                            {(stagedDiscountAmt > 0 || (snapshot?.billing?.discountAmount > 0)) ? (
-                                                                <span className="font-mono font-bold text-rose-600 dark:text-rose-400">
-                                                                    - ₹{(stagedDiscountAmt !== undefined ? stagedDiscountAmt : (snapshot?.billing?.discountAmount || 0)).toLocaleString()}
-                                                                    {(stagedDiscount?.reason || snapshot?.billing?.appliedDiscount?.reason) && (
-                                                                        <span className="text-xs font-normal ml-1">({stagedDiscount?.reason || snapshot?.billing?.appliedDiscount?.reason})</span>
-                                                                    )}
+                                                        <div className="p-2.5 rounded-xl bg-white dark:bg-zinc-800/80 border border-slate-200/90 dark:border-zinc-700/80 shadow-2xs">
+                                                            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-400 block">Concession</span>
+                                                            {(stagedDiscountAmt || snapshot?.billing?.discountAmount) ? (
+                                                                <span className="font-mono font-bold text-sm sm:text-base text-rose-600 dark:text-rose-400 truncate block">
+                                                                    -₹{(stagedDiscountAmt !== undefined ? stagedDiscountAmt : (snapshot?.billing?.discountAmount || 0)).toLocaleString()}
                                                                 </span>
                                                             ) : (
-                                                                <span className="text-slate-400 dark:text-zinc-500 text-xs sm:text-sm">No discount applied</span>
+                                                                <span className="text-xs text-slate-400 dark:text-zinc-500 font-medium leading-6">₹0</span>
                                                             )}
                                                         </div>
 
-                                                        <div className="flex items-center justify-between text-slate-600 dark:text-zinc-400">
-                                                            <span className="font-medium">GST / Tax</span>
-                                                            <span className="font-mono font-bold text-slate-900 dark:text-white">₹0</span>
+                                                        <div className="p-2.5 rounded-xl bg-white dark:bg-zinc-800/80 border border-slate-200/90 dark:border-zinc-700/80 shadow-2xs">
+                                                            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-400 block">GST / Tax</span>
+                                                            <span className="font-mono font-bold text-sm sm:text-base text-slate-800 dark:text-zinc-200">₹0</span>
+                                                        </div>
+
+                                                        <div className="p-2.5 rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 text-white dark:from-zinc-800 dark:to-zinc-900 border border-slate-800 dark:border-zinc-700 shadow-xs">
+                                                            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-300 dark:text-zinc-400 block">Net Amount</span>
+                                                            <span className="font-mono font-black text-base sm:text-lg text-emerald-400 block">
+                                                                ₹{(stagedNet !== undefined ? stagedNet : (snapshot?.billing?.netAmount || 0)).toLocaleString()}
+                                                            </span>
                                                         </div>
                                                     </div>
 
-                                                    {/* Big Total Bill Amount Card (Identical to Image 1) */}
-                                                    <div className="p-4 sm:p-5 rounded-2xl bg-white dark:bg-zinc-800/90 border border-slate-200/90 dark:border-zinc-700/80 shadow-xs flex items-center justify-between">
-                                                        <span className="font-bold text-base sm:text-lg text-slate-900 dark:text-white">
-                                                            {billingMode === 'PrepaidPartner' ? 'Amount to Collect (Prepaid Partner)' : 'Total Bill Amount'}
-                                                        </span>
-                                                        <span className="font-black text-3xl sm:text-4xl text-slate-900 dark:text-white font-mono tracking-tight">
-                                                            ₹{billingMode === 'PrepaidPartner' ? '0' : (stagedNet !== undefined ? stagedNet : (snapshot?.billing?.netAmount || 0)).toLocaleString()}
-                                                        </span>
-                                                    </div>
-
-                                                    {/* Settlement Allocation Pod (Identical to Image 1) */}
-                                                    <div className="p-3.5 rounded-xl bg-white/90 dark:bg-zinc-800/80 border border-slate-200/90 dark:border-zinc-700/80 space-y-2 text-xs sm:text-sm">
+                                                    {/* Settlement & Audit Pod (Single combined pod) */}
+                                                    <div className="p-3 rounded-xl bg-white/95 dark:bg-zinc-800/90 border border-slate-200/90 dark:border-zinc-700/80 shadow-2xs space-y-2">
                                                         {billingMode === 'PrepaidPartner' ? (
-                                                            <>
-                                                                <div className="flex items-center justify-between font-bold text-blue-700 dark:text-blue-300">
-                                                                    <span>Patient Desk Collection</span>
-                                                                    <span className="font-mono">₹0 (Zero Counter Payment)</span>
-                                                                </div>
-                                                                <div className="flex items-center justify-between font-semibold text-slate-700 dark:text-zinc-300">
-                                                                    <span>Doctor B2B Receivable</span>
-                                                                    <span className="font-mono font-bold text-blue-600 dark:text-blue-400 text-sm">
-                                                                        ₹{(stagedNet !== undefined ? stagedNet : (snapshot?.billing?.netAmount || 0)).toLocaleString()}
-                                                                    </span>
-                                                                </div>
-                                                            </>
+                                                            <div className="flex items-center justify-between text-xs sm:text-sm">
+                                                                <span className="font-bold text-slate-700 dark:text-zinc-300">
+                                                                    Patient Desk Payment: <strong className="font-mono text-emerald-600">₹0 (Prepaid Partner)</strong>
+                                                                </span>
+                                                                <span className="font-bold text-blue-700 dark:text-blue-300">
+                                                                    B2B Receivable: <strong className="font-mono">₹{(stagedNet !== undefined ? stagedNet : (snapshot?.billing?.netAmount || 0)).toLocaleString()}</strong>
+                                                                </span>
+                                                            </div>
                                                         ) : (
-                                                            <>
-                                                                <div className="flex items-center justify-between text-slate-700 dark:text-zinc-300">
-                                                                    <span className="font-medium">Revised Net Amount</span>
-                                                                    <span className="font-mono font-bold text-slate-900 dark:text-white">
-                                                                        ₹{(stagedNet !== undefined ? stagedNet : (snapshot?.billing?.netAmount || 0)).toLocaleString()}
-                                                                    </span>
-                                                                </div>
-                                                                <div className="flex items-center justify-between font-bold text-emerald-700 dark:text-emerald-400">
-                                                                    <span className="flex items-center gap-1.5">
-                                                                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                                                                        Already Paid at Desk
-                                                                    </span>
+                                                            <div className="flex items-center justify-between text-xs sm:text-sm">
+                                                                <div className="flex items-center gap-1.5 font-bold text-emerald-700 dark:text-emerald-400">
+                                                                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                                                                    <span>Desk Collection:</span>
                                                                     <span className="font-mono">
-                                                                        - ₹{(postProcessingSession?.paidAmount !== undefined ? postProcessingSession.paidAmount : (snapshot?.billing?.totalPaid || snapshot?.billing?.netAmount || 0)).toLocaleString()}
+                                                                        ₹{(postProcessingSession?.paidAmount !== undefined ? postProcessingSession.paidAmount : (snapshot?.billing?.totalPaid || snapshot?.billing?.netAmount || 0)).toLocaleString()}
                                                                     </span>
+                                                                    <span className="text-xs font-normal text-slate-500 dark:text-zinc-400">via {paymentMethod}</span>
                                                                 </div>
-                                                            </>
+                                                                <div className="text-xs font-semibold text-slate-600 dark:text-zinc-400">
+                                                                    Balance Due: <strong className="font-mono text-slate-900 dark:text-white">₹0</strong> <span className="text-emerald-600 font-bold">(Fully Settled)</span>
+                                                                </div>
+                                                            </div>
                                                         )}
 
-                                                        {/* Live Bill Difference Pod */}
-                                                        <div className="pt-2 border-t border-slate-100 dark:border-zinc-700/80 flex items-center justify-between text-[11px] sm:text-xs text-slate-500 dark:text-zinc-400">
+                                                        <div className="pt-2 border-t border-slate-100 dark:border-zinc-700/80 flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400">
                                                             <span>Billed by: <strong className="text-slate-800 dark:text-zinc-200">{snapshot?.visit?.billedBy || user?.name || 'Staff Desk'}</strong></span>
                                                             <span className="flex items-center gap-1 text-emerald-700 dark:text-emerald-400 font-bold">
                                                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
