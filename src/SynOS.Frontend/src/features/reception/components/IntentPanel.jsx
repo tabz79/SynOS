@@ -85,7 +85,7 @@ export function IntentPanel({ onVisitUpdated }) {
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [isPartialPayment, setIsPartialPayment] = useState(false);
     const [customPaymentAmount, setCustomPaymentAmount] = useState('');
-    const [userPayerExpandedState, setUserPayerExpandedState] = useState(false);
+    const [userPayerExpandedState, setUserPayerExpandedState] = useState(null);
     const [isPatientCardCollapsed, setIsPatientCardCollapsed] = useState(false);
 
     // In-Panel Post-Processing & Print Dispatch State (Split Screen Mode)
@@ -160,13 +160,27 @@ export function IntentPanel({ onVisitUpdated }) {
 
         const handlePointerDown = (e) => {
             if (payerModeContainerRef.current && !payerModeContainerRef.current.contains(e.target)) {
-                setUserPayerExpandedState(false);
+                const isPortal = e.target.closest && (
+                    e.target.closest('[role="dialog"]') || 
+                    e.target.closest('[role="listbox"]') ||
+                    e.target.closest('.suggestion-portal')
+                );
+                if (!isPortal) {
+                    setUserPayerExpandedState(false);
+                }
             }
         };
 
         const handleFocusIn = (e) => {
             if (payerModeContainerRef.current && !payerModeContainerRef.current.contains(e.target)) {
-                setUserPayerExpandedState(false);
+                const isPortal = e.target.closest && (
+                    e.target.closest('[role="dialog"]') || 
+                    e.target.closest('[role="listbox"]') ||
+                    e.target.closest('.suggestion-portal')
+                );
+                if (!isPortal) {
+                    setUserPayerExpandedState(false);
+                }
             }
         };
 
@@ -1151,12 +1165,13 @@ export function IntentPanel({ onVisitUpdated }) {
         snapshot?.visit?.visitId
     );
 
-    const isPayerModeCollapsed = !userPayerExpandedState;
-
     const isZeroNetDue = hasTests && remainingDue === 0;
     const canCheckout = (snapshot?.billing?.paymentStatus === 'PendingPayment' || snapshot?.billing?.paymentStatus === 'PartialPayment') && (remainingDue > 0 || isZeroNetDue);
     const canLockPrepaid = (isPrepaidIntent || billingMode === 'PrepaidPartner') && !snapshot?.billing?.isLocked;
     const isVisitFinalized = snapshot?.billing?.paymentStatus === 'Paid' || (remainingDue <= 0 && totalDue > 0) || Boolean(snapshot?.billing?.isLocked);
+    const isPayerModeCollapsed = userPayerExpandedState !== null
+        ? !userPayerExpandedState
+        : Boolean(isVisitFinalized);
     const isPostProcessingView = Boolean(postProcessingSession) || (isVisitFinalized && !isCorrectionIntent);
 
     // Keyboard shortcuts for in-panel print and close
@@ -1301,8 +1316,8 @@ export function IntentPanel({ onVisitUpdated }) {
                                     {/* LEFT COLUMN: 7 Cols */}
                                     <div 
                                         className="lg:col-span-7 flex flex-col gap-5 h-full min-h-0 overflow-y-auto pr-1.5"
-                                        onFocusCapture={() => { if (userPayerExpandedState) setUserPayerExpandedState(false); }}
-                                        onPointerDownCapture={() => { if (userPayerExpandedState) setUserPayerExpandedState(false); }}
+                                        onFocusCapture={() => { if (userPayerExpandedState !== false) setUserPayerExpandedState(false); }}
+                                        onPointerDownCapture={() => { if (userPayerExpandedState !== false) setUserPayerExpandedState(false); }}
                                     >
                                         {/* Step 1: Patient Identification (Compressed height, tightly hugs content, collapsible) */}
                                         <div className={cn(
@@ -1444,7 +1459,6 @@ export function IntentPanel({ onVisitUpdated }) {
                                                 billingMode={billingMode}
                                                 onChangeMode={(mode) => {
                                                     handleBillingModeChange(mode);
-                                                    setUserPayerExpandedState(false);
                                                 }}
                                                 disabled={snapshot?.billing?.isLocked && !isCorrectionIntent}
                                                 isDark={isDark}

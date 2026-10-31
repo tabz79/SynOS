@@ -49,57 +49,9 @@ export function BillingSummary({
     const [customDiscountType, setCustomDiscountType] = useState('FLAT'); // 'FLAT' | 'PERCENTAGE'
     const [customDiscountValue, setCustomDiscountValue] = useState('');
     const [customDiscountReason, setCustomDiscountReason] = useState('');
-    const [isDiscountExpanded, setIsDiscountExpanded] = useState(false);
+    const [userDiscountExpandedState, setUserDiscountExpandedState] = useState(null);
     const concessionEditorRef = useRef(null);
     const concessionTriggerRef = useRef(null);
-
-    // Auto-minimize Concession / Discount when user moves to or interacts with other sections
-    useEffect(() => {
-        if (!isDiscountExpanded) return;
-
-        const handlePointerDown = (e) => {
-            if (
-                concessionEditorRef.current && 
-                !concessionEditorRef.current.contains(e.target) &&
-                concessionTriggerRef.current && 
-                !concessionTriggerRef.current.contains(e.target)
-            ) {
-                const isPortal = e.target.closest && (
-                    e.target.closest('[role="dialog"]') || 
-                    e.target.closest('[role="listbox"]') ||
-                    e.target.closest('.suggestion-portal')
-                );
-                if (!isPortal) {
-                    setIsDiscountExpanded(false);
-                }
-            }
-        };
-
-        const handleFocusIn = (e) => {
-            if (
-                concessionEditorRef.current && 
-                !concessionEditorRef.current.contains(e.target) &&
-                concessionTriggerRef.current && 
-                !concessionTriggerRef.current.contains(e.target)
-            ) {
-                const isPortal = e.target.closest && (
-                    e.target.closest('[role="dialog"]') || 
-                    e.target.closest('[role="listbox"]') ||
-                    e.target.closest('.suggestion-portal')
-                );
-                if (!isPortal) {
-                    setIsDiscountExpanded(false);
-                }
-            }
-        };
-
-        document.addEventListener('pointerdown', handlePointerDown);
-        document.addEventListener('focusin', handleFocusIn);
-        return () => {
-            document.removeEventListener('pointerdown', handlePointerDown);
-            document.removeEventListener('focusin', handleFocusIn);
-        };
-    }, [isDiscountExpanded]);
 
     // Preset Discount Reasons State
     const [discountReasons, setDiscountReasons] = useState([]);
@@ -627,6 +579,17 @@ export function BillingSummary({
         amountLabel = displayAmountToCollect > 0 ? "Patient Co-Pay to Collect" : "Cashless Claim (₹0 at desk)";
     }
 
+    const currentGross = (isCorrectionIntent && stagedGross !== undefined)
+        ? stagedGross
+        : (billing?.grossAmount || 0);
+    const hasTestsForBilling = currentGross > 0 || (snapshot?.tests?.length || 0) > 0;
+    const isDiscountExpanded = userDiscountExpandedState !== null
+        ? Boolean(userDiscountExpandedState)
+        : Boolean(hasTestsForBilling && canPerformActions && !isPrepaid && !isCorporate && (billing?.paymentStatus === 'PendingPayment' || !billing?.paymentStatus));
+    const setIsDiscountExpanded = (val) => {
+        setUserDiscountExpandedState(typeof val === 'function' ? val(isDiscountExpanded) : val);
+    };
+
     return (
         <div className="flex-1 min-h-0 flex flex-col overflow-hidden space-y-3 h-full">
             {/* Header */}
@@ -857,6 +820,15 @@ export function BillingSummary({
                                             Concession / Discount
                                         </span>
                                         <div className="flex items-center gap-2 text-sm">
+                                            <button
+                                                type="button"
+                                                onClick={() => setIsDiscountExpanded(false)}
+                                                className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-all cursor-pointer active:scale-95"
+                                                title="Minimize Concession"
+                                            >
+                                                <span>Minimize</span>
+                                                <ChevronDown className="w-3.5 h-3.5 rotate-180 transition-transform duration-200" />
+                                            </button>
                                             <span className="text-slate-500 dark:text-zinc-400 font-medium">Preset Code</span>
                                             <button
                                                 type="button"

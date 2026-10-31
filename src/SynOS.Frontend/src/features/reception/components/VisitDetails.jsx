@@ -121,8 +121,11 @@ export function VisitDetails({
         effectiveSecondaryPartner || 
         snapshot?.billing?.referral?.referrerText
     );
-    const [userDoctorExpandedState, setUserDoctorExpandedState] = useState(false);
-    const isDoctorSectionCollapsed = !userDoctorExpandedState;
+    const hasTests = (snapshot?.tests?.length || 0) > 0 || (stagedAddedTests?.length || 0) > 0;
+    const [userDoctorExpandedState, setUserDoctorExpandedState] = useState(null);
+    const isDoctorSectionCollapsed = userDoctorExpandedState !== null
+        ? !userDoctorExpandedState
+        : Boolean(isFinalized || isLocked || (hasDoctorConfigured && hasTests));
 
     // Auto-minimize Referring Doctor section when user moves to or interacts with other sections
     useEffect(() => {
@@ -1186,8 +1189,8 @@ export function VisitDetails({
             {/* SECTION 3: Test Selection (Reordered Down) */}
             <div 
                 className={cn(ui.section)}
-                onFocusCapture={() => { if (userDoctorExpandedState) setUserDoctorExpandedState(false); }}
-                onPointerDownCapture={() => { if (userDoctorExpandedState) setUserDoctorExpandedState(false); }}
+                onFocusCapture={() => { if (userDoctorExpandedState !== false) setUserDoctorExpandedState(false); }}
+                onPointerDownCapture={() => { if (userDoctorExpandedState !== false) setUserDoctorExpandedState(false); }}
             >
                 <div className="flex items-center justify-between">
                     <h4 className={ui.sectionTitle}>Test Selection</h4>
