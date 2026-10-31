@@ -11,88 +11,81 @@
    * - large: High Legibility for small screens / low-res operator counter displays (17px - 18.5px)
    */
 
-  /* Default & Medium Scale */
+  /* 
+   * SYNOS ENTERPRISE TYPOGRAPHY & SCALING ARCHITECTURE
+   * 1. Absolute Clinical Floor: Base font size is anchored at 16px (Medium / Default).
+   * 2. Space Adaptation (NOT text shrinking): Smaller screens adapt by tightening margins, 
+   *    paddings, and gaps (--ws-padding, --ws-gap) so layouts fit comfortably without microscopic text.
+   * 3. Clear Typographic Hierarchy: Headings, body, and metadata follow clear mathematical ratios.
+   * 4. User-Governed Scale: Persisted from System Settings (Medium = 16px, Large = 18px, Small = 14.5px).
+   */
+
+  /* Default & Medium Scale: Firm 16px baseline */
   html,
   html.font-size-medium,
   html[data-font-size="medium"] {
     font-size: 16px;
   }
-  @media (max-width: 1536px) or (max-height: 900px) {
-    html,
-    html.font-size-medium,
-    html[data-font-size="medium"] {
-      font-size: 15px;
-    }
-  }
-  @media (max-width: 1366px) or (max-height: 768px) {
-    html,
-    html.font-size-medium,
-    html[data-font-size="medium"] {
-      font-size: 14.25px; /* Comfortable, natural scaling on 768p displays */
-    }
-  }
-  @media (max-width: 1100px) or (max-height: 650px) {
-    html,
-    html.font-size-medium,
-    html[data-font-size="medium"] {
-      font-size: 13.5px;
-    }
-  }
 
-  /* Small / Compact Scale (Dense data for high-res 27"+ monitors) */
+  /* Small / Compact Scale: For 27"+ QHD / 4K multi-column setups */
   html.font-size-small,
   html[data-font-size="small"] {
-    font-size: 15px;
-  }
-  @media (max-width: 1536px) or (max-height: 900px) {
-    html.font-size-small,
-    html[data-font-size="small"] {
-      font-size: 14px;
-    }
-  }
-  @media (max-width: 1366px) or (max-height: 768px) {
-    html.font-size-small,
-    html[data-font-size="small"] {
-      font-size: 13px;
-    }
-  }
-  @media (max-width: 1100px) or (max-height: 650px) {
-    html.font-size-small,
-    html[data-font-size="small"] {
-      font-size: 12px;
-    }
+    font-size: 14.5px;
   }
 
-  /* Large / High Legibility Scale (For admins with small displays or vision preference) */
+  /* Large / High Legibility Scale: For operators or low-res counter displays */
   html.font-size-large,
   html[data-font-size="large"] {
-    font-size: 17.5px;
-  }
-  @media (max-width: 1536px) or (max-height: 900px) {
-    html.font-size-large,
-    html[data-font-size="large"] {
-      font-size: 16.5px;
-    }
-  }
-  @media (max-width: 1366px) or (max-height: 768px) {
-    html.font-size-large,
-    html[data-font-size="large"] {
-      font-size: 15.5px;
-    }
-  }
-  @media (max-width: 1100px) or (max-height: 650px) {
-    html.font-size-large,
-    html[data-font-size="large"] {
-      font-size: 14.5px;
-    }
+    font-size: 18px;
   }
 
-  /* Micro-typography scaling when Large or Medium size is selected */
+  /* Large / High Legibility Mode Tier Enhancements */
+  html.font-size-large .text-xs,
+  html[data-font-size="large"] .text-xs {
+    font-size: 0.875rem !important;
+    line-height: 1.25rem !important;
+  }
+  html.font-size-large .text-sm,
+  html[data-font-size="large"] .text-sm {
+    font-size: 1.05rem !important;
+    line-height: 1.5rem !important;
+  }
+  html.font-size-large .text-base,
+  html[data-font-size="large"] .text-base {
+    font-size: 1.22rem !important;
+    line-height: 1.75rem !important;
+  }
+  html.font-size-large .text-lg,
+  html[data-font-size="large"] .text-lg {
+    font-size: 1.38rem !important;
+    line-height: 1.85rem !important;
+  }
+  html.font-size-large .text-xl,
+  html[data-font-size="large"] .text-xl {
+    font-size: 1.55rem !important;
+    line-height: 2rem !important;
+  }
+  html.font-size-large .text-2xl,
+  html[data-font-size="large"] .text-2xl {
+    font-size: 1.85rem !important;
+    line-height: 2.25rem !important;
+  }
+  html.font-size-large .text-3xl,
+  html[data-font-size="large"] .text-3xl {
+    font-size: 2.25rem !important;
+    line-height: 2.5rem !important;
+  }
+
+  /* Clinical Legibility Floor: Protect fine print from ever dropping below 12px */
+  .text-xxs {
+    font-size: 0.75rem !important; /* 12px absolute minimum */
+    line-height: 1rem !important;
+  }
   html.font-size-large .text-xxs {
-    font-size: 0.8rem !important;
+    font-size: 0.825rem !important;
   }
   html.font-size-medium .text-xxs {
-    font-size: 0.72rem !important;
+    font-size: 0.75rem !important;
   }
 
   /* LIGHT MODE (DEFAULT) */
@@ -211,8 +204,8 @@
   }
 
   body {
-    /* SINGLE GOVERNING TYPOGRAPHY AUTHORITY: Enterprise San Francisco & Inter */
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    /* SINGLE GOVERNING TYPOGRAPHY AUTHORITY: Inter & Enterprise System Standards */
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     letter-spacing: normal;
     @apply text-foreground antialiased;
 
