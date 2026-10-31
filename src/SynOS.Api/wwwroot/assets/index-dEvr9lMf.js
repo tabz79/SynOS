@@ -41728,10 +41728,10 @@ Details: ${A.inner}`);
                       r.jsx("div", {
                         className: "flex flex-col h-full min-h-0 overflow-hidden",
                         children: r.jsxs("div", {
-                          className: Ne("rounded-[28px] border p-4 sm:p-5 flex flex-col h-full min-h-0 overflow-hidden transition-all", Yn ? "bg-zinc-900/90 border-zinc-800 shadow-xl" : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_14px_40px_rgba(15,35,60,0.08),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"),
+                          className: Ne("rounded-[28px] border p-4 sm:p-5 flex flex-col h-full min-h-0 overflow-hidden transition-all", Yn ? "bg-zinc-950/80 border-zinc-800 shadow-xl" : "bg-gradient-to-b from-[#DFEAF3] via-[#D6E4EF] to-[#CCE0EC] border border-[#BACFE0]/80 shadow-[0_14px_40px_rgba(15,35,60,0.08),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_rgba(255,255,255,0.7)]"),
                           children: [
                             r.jsxs("div", {
-                              className: "flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/80 dark:border-zinc-800 shrink-0",
+                              className: "flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#BACFE0]/80 dark:border-zinc-800 shrink-0",
                               children: [
                                 r.jsxs("div", {
                                   className: "flex items-center gap-1.5 bg-slate-200/60 dark:bg-zinc-800/60 p-1 rounded-xl border border-slate-300/60 dark:border-zinc-700/60",
@@ -42004,10 +42004,10 @@ Details: ${A.inner}`);
                       r.jsx("div", {
                         className: "flex flex-col h-full min-h-0 overflow-hidden",
                         children: r.jsxs("div", {
-                          className: Ne("rounded-[28px] border p-4 sm:p-5 flex flex-col h-full min-h-0 overflow-hidden transition-all", Yn ? "bg-zinc-900/90 border-zinc-800 shadow-xl" : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_14px_40px_rgba(15,35,60,0.08),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"),
+                          className: Ne("rounded-[28px] border p-4 sm:p-5 flex flex-col h-full min-h-0 overflow-hidden transition-all", Yn ? "bg-zinc-950/80 border-zinc-800 shadow-xl" : "bg-gradient-to-b from-[#DFEAF3] via-[#D6E4EF] to-[#CCE0EC] border border-[#BACFE0]/80 shadow-[0_14px_40px_rgba(15,35,60,0.08),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_rgba(255,255,255,0.7)]"),
                           children: [
                             r.jsxs("div", {
-                              className: "flex items-center justify-between pb-3 border-b border-slate-200/80 dark:border-zinc-800 shrink-0",
+                              className: "flex items-center justify-between pb-3 border-b border-[#BACFE0]/80 dark:border-zinc-800 shrink-0",
                               children: [
                                 r.jsxs("div", {
                                   className: "flex items-center gap-2.5",
@@ -42062,7 +42062,7 @@ Details: ${A.inner}`);
                               className: "flex-1 min-h-0 my-3 overflow-y-auto space-y-4 pr-1.5",
                               children: [
                                 r.jsxs("div", {
-                                  className: Ne("rounded-[24px] border transition-all p-4 sm:p-5 space-y-3 shrink-0 synos-focus-card", Yn ? "bg-zinc-900/90 border-zinc-800 shadow-xl" : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_12px_36px_rgba(15,35,60,0.07),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"),
+                                  className: Ne("rounded-[24px] border transition-all p-4 sm:p-5 space-y-3 shrink-0 synos-focus-card", Yn ? "bg-zinc-900/90 border-zinc-800 shadow-xl" : "bg-gradient-to-b from-[#FFFFFF] via-[#F8FBFE] to-[#F1F6FA] border border-white/95 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.04),inset_0_1px_0_#FFFFFF]"),
                                   children: [
                                     r.jsx("div", {
                                       className: "flex items-center justify-between",
@@ -42096,7 +42096,7 @@ Details: ${A.inner}`);
                                   ]
                                 }),
                                 r.jsxs("div", {
-                                  className: Ne("rounded-[24px] border transition-all p-4 sm:p-5 space-y-4 shrink-0 synos-focus-card", Yn ? "bg-zinc-900/90 border-zinc-800 shadow-xl" : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_12px_36px_rgba(15,35,60,0.07),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"),
+                                  className: Ne("rounded-[24px] border transition-all p-4 sm:p-5 space-y-4 shrink-0 synos-focus-card", Yn ? "bg-zinc-900/90 border-zinc-800 shadow-xl" : "bg-gradient-to-b from-[#FFFFFF] via-[#F8FBFE] to-[#F1F6FA] border border-white/95 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.04),inset_0_1px_0_#FFFFFF]"),
                                   children: [
                                     r.jsxs("div", {
                                       className: "flex items-center justify-between",
@@ -42267,7 +42267,7 @@ Details: ${A.inner}`);
                                   ]
                                 }),
                                 r.jsxs("div", {
-                                  className: Ne("rounded-[24px] border transition-all p-4 sm:p-4.5 space-y-3 shrink-0 synos-focus-card", Yn ? "bg-zinc-900/90 border-zinc-800 shadow-xl" : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_12px_36px_rgba(15,35,60,0.07),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"),
+                                  className: Ne("rounded-[24px] border transition-all p-4 sm:p-4.5 space-y-3 shrink-0 synos-focus-card", Yn ? "bg-zinc-900/90 border-zinc-800 shadow-xl" : "bg-gradient-to-b from-[#FFFFFF] via-[#F8FBFE] to-[#F1F6FA] border border-white/95 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.04),inset_0_1px_0_#FFFFFF]"),
                                   children: [
                                     r.jsxs("div", {
                                       className: "flex items-center justify-between",
@@ -42464,7 +42464,7 @@ Details: ${A.inner}`);
                               ]
                             }),
                             r.jsxs("div", {
-                              className: "pt-3 flex items-center gap-3 border-t border-slate-200/80 dark:border-zinc-800 shrink-0",
+                              className: "pt-3 flex items-center gap-3 border-t border-[#BACFE0]/80 dark:border-zinc-800 shrink-0",
                               children: [
                                 r.jsxs("button", {
                                   type: "button",

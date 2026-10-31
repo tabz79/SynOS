@@ -1436,11 +1436,11 @@ export function IntentPanel({ onVisitUpdated }) {
                                         <div className={cn(
                                             "rounded-[28px] border p-4 sm:p-5 flex flex-col h-full min-h-0 overflow-hidden transition-all",
                                             isDark
-                                                ? "bg-zinc-900/90 border-zinc-800 shadow-xl"
-                                                : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_14px_40px_rgba(15,35,60,0.08),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"
+                                                ? "bg-zinc-950/80 border-zinc-800 shadow-xl"
+                                                : "bg-gradient-to-b from-[#DFEAF3] via-[#D6E4EF] to-[#CCE0EC] border border-[#BACFE0]/80 shadow-[0_14px_40px_rgba(15,35,60,0.08),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_rgba(255,255,255,0.7)]"
                                         )}>
                                             {/* Top Controls Toolbar: Format Switcher & Printer Selector */}
-                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/80 dark:border-zinc-800 shrink-0">
+                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#BACFE0]/80 dark:border-zinc-800 shrink-0">
                                                 {/* Format Switcher Pills */}
                                                 <div className="flex items-center gap-1.5 bg-slate-200/60 dark:bg-zinc-800/60 p-1 rounded-xl border border-slate-300/60 dark:border-zinc-700/60">
                                                     <button
@@ -1656,11 +1656,11 @@ export function IntentPanel({ onVisitUpdated }) {
                                         <div className={cn(
                                             "rounded-[28px] border p-4 sm:p-5 flex flex-col h-full min-h-0 overflow-hidden transition-all",
                                             isDark
-                                                ? "bg-zinc-900/90 border-zinc-800 shadow-xl"
-                                                : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_14px_40px_rgba(15,35,60,0.08),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"
+                                                ? "bg-zinc-950/80 border-zinc-800 shadow-xl"
+                                                : "bg-gradient-to-b from-[#DFEAF3] via-[#D6E4EF] to-[#CCE0EC] border border-[#BACFE0]/80 shadow-[0_14px_40px_rgba(15,35,60,0.08),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_rgba(255,255,255,0.7)]"
                                         )}>
                                             {/* Header: Check icon, Title, Payer Mode Badge, Token */}
-                                            <div className="flex items-center justify-between pb-3 border-b border-slate-200/80 dark:border-zinc-800 shrink-0">
+                                            <div className="flex items-center justify-between pb-3 border-b border-[#BACFE0]/80 dark:border-zinc-800 shrink-0">
                                                 <div className="flex items-center gap-2.5">
                                                     <div className="w-7 h-7 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-sm shadow-xs">
                                                         <CheckCircle2 className="w-4 h-4" />
@@ -1704,7 +1704,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                     "rounded-[24px] border transition-all p-4 sm:p-5 space-y-3 shrink-0 synos-focus-card",
                                                     isDark
                                                         ? "bg-zinc-900/90 border-zinc-800 shadow-xl"
-                                                        : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_12px_36px_rgba(15,35,60,0.07),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"
+                                                        : "bg-gradient-to-b from-[#FFFFFF] via-[#F8FBFE] to-[#F1F6FA] border border-white/95 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.04),inset_0_1px_0_#FFFFFF]"
                                                 )}>
                                                     <div className="flex items-center justify-between">
                                                         <div className="flex items-center gap-2.5">
@@ -1737,7 +1737,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                     "rounded-[24px] border transition-all p-4 sm:p-5 space-y-4 shrink-0 synos-focus-card",
                                                     isDark
                                                         ? "bg-zinc-900/90 border-zinc-800 shadow-xl"
-                                                        : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_12px_36px_rgba(15,35,60,0.07),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"
+                                                        : "bg-gradient-to-b from-[#FFFFFF] via-[#F8FBFE] to-[#F1F6FA] border border-white/95 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.04),inset_0_1px_0_#FFFFFF]"
                                                 )}>
                                                     {/* Header */}
                                                     <div className="flex items-center justify-between">
@@ -1869,7 +1869,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                     "rounded-[24px] border transition-all p-4 sm:p-4.5 space-y-3 shrink-0 synos-focus-card",
                                                     isDark
                                                         ? "bg-zinc-900/90 border-zinc-800 shadow-xl"
-                                                        : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_12px_36px_rgba(15,35,60,0.07),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"
+                                                        : "bg-gradient-to-b from-[#FFFFFF] via-[#F8FBFE] to-[#F1F6FA] border border-white/95 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.04),inset_0_1px_0_#FFFFFF]"
                                                 )}>
                                                     {/* Header */}
                                                     <div className="flex items-center justify-between">
@@ -1964,7 +1964,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                             </div>
 
                                             {/* Bottom Actions on Right Half */}
-                                            <div className="pt-3 flex items-center gap-3 border-t border-slate-200/80 dark:border-zinc-800 shrink-0">
+                                            <div className="pt-3 flex items-center gap-3 border-t border-[#BACFE0]/80 dark:border-zinc-800 shrink-0">
                                                 <button
                                                     type="button"
                                                     onClick={() => {
