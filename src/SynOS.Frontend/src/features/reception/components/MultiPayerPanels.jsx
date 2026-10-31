@@ -145,7 +145,7 @@ export function MultiPayerSelector({
                                 }
                             }}
                             className={cn(
-                                "relative flex items-center justify-between border text-left transition-all active:scale-[0.99] cursor-pointer",
+                                "relative flex items-center justify-between border text-left transition-all active:scale-[0.99] cursor-pointer synos-focus-card",
                                 isCol ? "p-2.5 sm:p-3 rounded-2xl" : "p-4 rounded-2xl",
                                 isSelected
                                     ? isDark

@@ -561,6 +561,116 @@
   .dark .synos-card-elevated table:not(#printable-report table):not(.print-page-container table) tbody tr:hover {
     background-color: rgba(39, 39, 42, 0.4) !important;
   }
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     🚀 SYNOS PRO RECEPTION KEYBOARD NAVIGATION & FOCUS ENGINE 🚀
+     Combines Left Accent Anchor + Elevation Lift + Ambient Indigo Bloom
+     Guarantees 100% visibility without heavy border clutter across all themes.
+     ═══════════════════════════════════════════════════════════════════════════ */
+
+  /* 1. Pro Card Focus (Patient cards, Doctor cards, Test items, Payer modes) */
+  .synos-focus-card {
+    position: relative;
+    transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), 
+                box-shadow 0.16s cubic-bezier(0.16, 1, 0.3, 1), 
+                border-color 0.16s ease,
+                background-color 0.16s ease !important;
+  }
+
+  .synos-focus-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    bottom: 8px;
+    width: 4px;
+    border-radius: 0 4px 4px 0;
+    background-color: transparent;
+    transition: background-color 0.15s ease, transform 0.15s ease, opacity 0.15s ease;
+    transform: scaleY(0.3);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 20;
+  }
+
+  .synos-focus-card:focus-within::before,
+  .synos-focus-card:focus::before,
+  .synos-focus-card.is-active-nav::before {
+    background-color: #4F46E5 !important;
+    transform: scaleY(1);
+    opacity: 1;
+  }
+
+  .dark .synos-focus-card:focus-within::before,
+  .dark .synos-focus-card:focus::before,
+  .dark .synos-focus-card.is-active-nav::before {
+    background-color: #818CF8 !important;
+  }
+
+  .synos-focus-card:focus-within,
+  .synos-focus-card:focus,
+  .synos-focus-card.is-active-nav {
+    transform: translateY(-1.5px) !important;
+    box-shadow: 
+      0 12px 28px -4px rgba(79, 70, 229, 0.16), 
+      0 4px 10px -2px rgba(0, 0, 0, 0.04),
+      0 0 0 1px rgba(79, 70, 229, 0.35) !important;
+    border-color: rgba(99, 102, 241, 0.5) !important;
+  }
+
+  .dark .synos-focus-card:focus-within,
+  .dark .synos-focus-card:focus,
+  .dark .synos-focus-card.is-active-nav {
+    box-shadow: 
+      0 12px 28px -4px rgba(99, 102, 241, 0.28), 
+      0 4px 10px -2px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(129, 140, 248, 0.45) !important;
+    border-color: rgba(129, 140, 248, 0.55) !important;
+  }
+
+  /* 2. Pro Input Focus (Search bars, Doctor inputs, Concession inputs) */
+  .synos-focus-input {
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease !important;
+  }
+
+  .synos-focus-input:focus {
+    outline: none !important;
+    border-color: #6366F1 !important;
+    transform: translateY(-0.5px) !important;
+    box-shadow: 
+      0 0 0 3px rgba(99, 102, 241, 0.2), 
+      0 6px 16px -2px rgba(79, 70, 229, 0.14) !important;
+  }
+
+  .dark .synos-focus-input:focus {
+    border-color: #818CF8 !important;
+    box-shadow: 
+      0 0 0 3px rgba(129, 140, 248, 0.3), 
+      0 6px 16px -2px rgba(0, 0, 0, 0.6) !important;
+  }
+
+  /* 3. Pro Button Focus (Select, Edit, Add, Remove [X], Delete Draft, Submit) */
+  .synos-focus-btn {
+    transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+  }
+
+  .synos-focus-btn:focus,
+  .synos-focus-btn:focus-visible {
+    outline: none !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 
+      0 0 0 2px #ffffff,
+      0 0 0 4px #4F46E5,
+      0 8px 18px -2px rgba(79, 70, 229, 0.32) !important;
+  }
+
+  .dark .synos-focus-btn:focus,
+  .dark .synos-focus-btn:focus-visible {
+    box-shadow: 
+      0 0 0 2px #18181b,
+      0 0 0 4px #818CF8,
+      0 8px 18px -2px rgba(99, 102, 241, 0.45) !important;
+  }
 }
 
 @media print {

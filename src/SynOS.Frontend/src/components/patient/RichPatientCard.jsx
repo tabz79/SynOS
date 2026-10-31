@@ -132,9 +132,9 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
             onClick={onAction}
             className={cn(
                 "flex flex-col gap-3 transition-all group",
+                !isLocked && "synos-focus-card",
                 isLocked ? cardUi.locked : cardUi.inactive,
-                !isLocked && "focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 focus-within:bg-blue-50/50 dark:focus-within:bg-blue-950/30",
-                isHighlighted && "ring-2 ring-blue-500 border-blue-500 bg-blue-50/50 dark:bg-blue-950/30 shadow-sm"
+                isHighlighted && "is-active-nav ring-1 ring-indigo-500/40 bg-indigo-50/20 dark:bg-indigo-950/20"
             )}
         >
             {/* NEW LAYOUT: STRICT GRID */}
@@ -187,7 +187,7 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
                                     e.stopPropagation();
                                 }
                             }}
-                            className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-slate-700 dark:text-zinc-200 bg-white/90 hover:bg-white dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-300/80 dark:border-zinc-700 shadow-2xs hover:shadow-xs transition-all cursor-pointer active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                            className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-slate-700 dark:text-zinc-200 bg-white/90 hover:bg-white dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-300/80 dark:border-zinc-700 shadow-2xs hover:shadow-xs transition-all cursor-pointer active:scale-95 synos-focus-btn"
                             title="Edit Patient Demographics"
                         >
                             <Pencil className="w-3.5 h-3.5 text-slate-500 dark:text-zinc-400" />
@@ -263,7 +263,7 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
                                 }
                             }}
                             className={cn(
-                                "text-[#0369A1] hover:text-[#0284C7] font-semibold underline underline-offset-4 decoration-blue-200 hover:decoration-blue-500 transition-all text-sm leading-none focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1 rounded px-1.5 py-0.5 cursor-pointer",
+                                "text-[#0369A1] hover:text-[#0284C7] font-semibold underline underline-offset-4 decoration-blue-200 hover:decoration-blue-500 transition-all text-sm leading-none rounded px-1.5 py-0.5 cursor-pointer synos-focus-btn",
                                 actionLabel === "Select" && "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 no-underline px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 font-bold hover:bg-blue-600 hover:text-white transition-all shadow-2xs"
                             )}
                         >

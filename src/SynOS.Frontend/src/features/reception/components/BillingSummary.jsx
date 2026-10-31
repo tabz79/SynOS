@@ -720,7 +720,7 @@ export function BillingSummary({
                                             }
                                         }}
                                         className={cn(
-                                            "px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer border shadow-2xs shrink-0",
+                                            "px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer border shadow-2xs shrink-0 synos-focus-btn",
                                             isDiscountExpanded
                                                 ? "bg-slate-900 text-white border-slate-900 dark:bg-zinc-700 dark:border-zinc-600 shadow-xs"
                                                 : (hasDiscountApplied
@@ -944,7 +944,7 @@ export function BillingSummary({
                                                             const clean = raw.startsWith('0') && raw.length > 1 && !raw.startsWith('0.') ? raw.replace(/^0+/, '') : raw;
                                                             setCustomDiscountValue(clean);
                                                         }}
-                                                        className={cn("w-full h-12 px-4 rounded-xl text-base font-mono font-bold outline-none border", ui.input)}
+                                                        className={cn("w-full h-12 px-4 rounded-xl text-base font-mono font-bold outline-none border synos-focus-input", ui.input)}
                                                     />
                                                 </div>
                                             </div>
@@ -1632,7 +1632,7 @@ export function BillingSummary({
                                     setCustomPaymentAmount?.('');
                                 }}
                                 className={cn(
-                                    "flex-1 py-2 px-3 rounded-lg text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5",
+                                    "flex-1 py-2 px-3 rounded-lg text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 synos-focus-btn",
                                     !isPartialPayment
                                         ? "bg-[#506A85] text-white shadow-xs"
                                         : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
@@ -1652,7 +1652,7 @@ export function BillingSummary({
                                     }
                                 }}
                                 className={cn(
-                                    "flex-1 py-2 px-3 rounded-lg text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5",
+                                    "flex-1 py-2 px-3 rounded-lg text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 synos-focus-btn",
                                     isPartialPayment
                                         ? "bg-[#506A85] text-white shadow-xs"
                                         : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
@@ -1751,7 +1751,7 @@ export function BillingSummary({
                                     type="button"
                                     onClick={() => setPaymentMethod && setPaymentMethod(method)}
                                     className={cn(
-                                        "flex flex-col items-center justify-center py-2.5 rounded-xl border text-sm font-bold tracking-normal transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1 cursor-pointer",
+                                        "flex flex-col items-center justify-center py-2.5 rounded-xl border text-sm font-bold tracking-normal transition-all active:scale-95 cursor-pointer synos-focus-btn",
                                         paymentMethod === method
                                             ? ui.method.active
                                             : ui.method.inactive

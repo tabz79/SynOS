@@ -761,7 +761,7 @@ export function VisitDetails({
                                 if (payerBtn) payerBtn.focus();
                             }
                         }}
-                        className="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold tracking-normal bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition-all active:scale-95 flex items-center gap-1.5 shadow-2xs disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-1 cursor-pointer"
+                        className="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold tracking-normal bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition-all active:scale-95 flex items-center gap-1.5 shadow-2xs disabled:opacity-50 cursor-pointer synos-focus-btn"
                     >
                         {isProcessing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Delete Draft"}
                     </button>
@@ -972,7 +972,7 @@ export function VisitDetails({
                                                 }
                                             }
                                         }}
-                                        className="bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-200/60 dark:bg-sky-950/40 dark:text-sky-400 dark:border-sky-800 rounded-lg px-3 py-1.5 text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer tracking-normal shadow-2xs"
+                                        className="bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-200/60 dark:bg-sky-950/40 dark:text-sky-400 dark:border-sky-800 rounded-lg px-3 py-1.5 text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer tracking-normal shadow-2xs synos-focus-btn"
                                     >
                                         <Plus className="w-4 h-4" /> Add Doctor
                                     </button>
@@ -1006,7 +1006,7 @@ export function VisitDetails({
                                                 }
                                             }
                                         }}
-                                        className={cn("flex items-center gap-3 font-bold p-3.5 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500",
+                                        className={cn("flex items-center gap-3 font-bold p-3.5 rounded-xl border cursor-pointer synos-focus-card focus:outline-none",
                                         isDark ? "bg-zinc-800/60 border-zinc-700/60 text-zinc-100" : "bg-white border border-[#D5E2EC] text-slate-900 shadow-[0_1px_3px_rgba(15,35,60,0.04)]")}
                                     >
                                         <div className="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.4)]"></div>
@@ -1050,7 +1050,7 @@ export function VisitDetails({
                                                         handleRemoveReferral();
                                                     }
                                                 }}
-                                                className="ml-auto text-zinc-500 hover:text-red-400 p-1 hover:bg-red-400/10 rounded transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
+                                                className="ml-auto text-zinc-500 hover:text-red-400 p-1 hover:bg-red-400/10 rounded transition-colors cursor-pointer synos-focus-btn"
                                                 title="Remove Primary Doctor"
                                             >
                                                 <X className="w-4 h-4" />
@@ -1139,7 +1139,7 @@ export function VisitDetails({
                                                 }
                                             }
                                         }}
-                                        className="bg-[#EBF5EF] hover:bg-[#DFF0E6] text-[#245E49] border border-[#CCE8D8] dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800 rounded-lg px-3 py-1.5 text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer tracking-normal shadow-2xs"
+                                        className="bg-[#EBF5EF] hover:bg-[#DFF0E6] text-[#245E49] border border-[#CCE8D8] dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800 rounded-lg px-3 py-1.5 text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer tracking-normal shadow-2xs synos-focus-btn"
                                     >
                                         <Plus className="w-4 h-4" /> Add RMP
                                     </button>
@@ -1166,7 +1166,7 @@ export function VisitDetails({
                                                 if (addDoc) addDoc.focus();
                                             }
                                         }}
-                                        className={cn("flex items-center gap-3 font-bold p-3.5 rounded-xl border focus:outline-none focus:ring-2 focus:ring-emerald-500",
+                                        className={cn("flex items-center gap-3 font-bold p-3.5 rounded-xl border cursor-pointer synos-focus-card focus:outline-none",
                                         isDark ? "bg-emerald-950/20 border-emerald-900/40 text-emerald-300" : "bg-[#F4F9F6] border-[#D3E8DD] text-slate-900 shadow-2xs")}
                                     >
                                         <div className="w-3 h-3 rounded-full bg-[#3D9970] shadow-[0_0_6px_rgba(61,153,112,0.35)]"></div>
@@ -1207,7 +1207,7 @@ export function VisitDetails({
                                                         handleRemoveSecondaryReferral();
                                                     }
                                                 }}
-                                                className="ml-auto text-zinc-500 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
+                                                className="ml-auto text-zinc-500 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer synos-focus-btn"
                                                 title="Remove Second Referral Doctor"
                                             >
                                                 <X className="w-4 h-4" />
@@ -1281,7 +1281,7 @@ export function VisitDetails({
                                             }
                                         }
                                     }}
-                                    className="bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-200/60 dark:bg-sky-950/40 dark:text-sky-400 dark:border-sky-800 rounded-lg px-2.5 py-1 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                                    className="bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-200/60 dark:bg-sky-950/40 dark:text-sky-400 dark:border-sky-800 rounded-lg px-2.5 py-1 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer synos-focus-btn"
                                 >
                                     <Plus className="w-3.5 h-3.5" /> Add Doctor
                                 </button>
@@ -1315,7 +1315,7 @@ export function VisitDetails({
                                             }
                                         }
                                     }}
-                                    className={cn("flex items-center gap-2 font-semibold p-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500",
+                                    className={cn("flex items-center gap-2 font-semibold p-3 rounded-xl border cursor-pointer synos-focus-card focus:outline-none",
                                     isDark ? "bg-zinc-800/60 border-zinc-700/60 text-zinc-100" : "bg-white border border-[#D5E2EC] text-slate-900 shadow-[0_1px_3px_rgba(15,35,60,0.04)]")}
                                 >
                                     <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></div>
@@ -1351,7 +1351,7 @@ export function VisitDetails({
                                                     handleRemoveReferral();
                                                 }
                                             }}
-                                            className="ml-auto text-zinc-400 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
+                                            className="ml-auto text-zinc-400 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer synos-focus-btn"
                                             title="Remove Doctor"
                                         >
                                             <X className="w-3.5 h-3.5" />
@@ -1571,7 +1571,7 @@ export function VisitDetails({
                             }}
                             disabled={isInstitutionalMode && !activeCorporateAccountId}
                             style={{ paddingLeft: '3rem', paddingRight: '1rem' }}
-                            className={cn(ui.input, "w-full h-12 rounded-xl py-2 focus:outline-none transition-colors disabled:opacity-50 text-base")}
+                            className={cn(ui.input, "w-full h-12 rounded-xl py-2 focus:outline-none transition-colors disabled:opacity-50 text-base synos-focus-input")}
                         />
 
                         {/* Search Suggestions Dropdown */}
@@ -1732,7 +1732,7 @@ export function VisitDetails({
                                                         }}
                                                         onKeyDown={handleTestRemoveKeyDown}
                                                         disabled={isProcessing}
-                                                        className="text-zinc-400 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
+                                                        className="text-zinc-400 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer synos-focus-btn"
                                                         title="Remove Test"
                                                     >
                                                         <X className="w-4 h-4" />
@@ -1775,7 +1775,7 @@ export function VisitDetails({
                                             data-test-remove-btn="true"
                                             onClick={() => onRemoveStagedAddedTest && onRemoveStagedAddedTest(sIdx)}
                                             onKeyDown={handleTestRemoveKeyDown}
-                                            className="text-emerald-500 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400"
+                                            className="text-emerald-500 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer synos-focus-btn"
                                             title="Discard Add-On"
                                         >
                                             <X className="w-4 h-4" />
@@ -2035,7 +2035,7 @@ export function VisitDetails({
                                     }
                                 }
                             }}
-                            className="rounded-xl border border-[#D5E2EC] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2 text-sm font-semibold text-slate-800 dark:text-zinc-200 shadow-2xs hover:bg-slate-50 dark:hover:bg-zinc-700/50 flex items-center gap-2 cursor-pointer transition-all tracking-normal focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                            className="rounded-xl border border-[#D5E2EC] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2 text-sm font-semibold text-slate-800 dark:text-zinc-200 shadow-2xs hover:bg-slate-50 dark:hover:bg-zinc-700/50 flex items-center gap-2 cursor-pointer transition-all tracking-normal synos-focus-btn"
                         >
                             <Beaker className="w-4 h-4 text-slate-500" />
                             <span>Outsource Test</span>
@@ -2238,7 +2238,7 @@ function ReferralCombinedInput({
                 aria-disabled={isProcessing}
                 placeholder="Search Doctor / Clinic Name..."
                 style={{ paddingLeft: '3rem', paddingRight: '1rem' }}
-                className={cn(ui.input, "w-full h-12 rounded-xl text-base font-medium outline-none transition-colors", 
+                className={cn(ui.input, "w-full h-12 rounded-xl text-base font-medium outline-none transition-colors synos-focus-input", 
                     isProcessing && "opacity-70 pointer-events-none",
                     isReadOnly && "cursor-default bg-slate-50/80 dark:bg-zinc-850 font-bold text-zinc-900 dark:text-zinc-100 border-slate-300 dark:border-zinc-700 shadow-none")}
                 onFocus={() => {

@@ -30362,7 +30362,7 @@ Details: ${A.inner}`);
     };
     return r.jsx("div", {
       onClick: e,
-      className: De("flex flex-col gap-3 transition-all group", s ? R.locked : R.inactive, !s && "focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 focus-within:bg-blue-50/50 dark:focus-within:bg-blue-950/30", A && "ring-2 ring-blue-500 border-blue-500 bg-blue-50/50 dark:bg-blue-950/30 shadow-sm"),
+      className: De("flex flex-col gap-3 transition-all group", !s && "synos-focus-card", s ? R.locked : R.inactive, A && "is-active-nav ring-1 ring-indigo-500/40 bg-indigo-50/20 dark:bg-indigo-950/20"),
       children: r.jsxs("div", {
         className: "grid grid-cols-[auto_1fr_auto] gap-x-4 gap-y-1.5 items-center",
         children: [
@@ -30396,7 +30396,7 @@ Details: ${A.inner}`);
                     U && U.focus();
                   } else T.key === "Tab" && T.shiftKey && (T.preventDefault(), T.stopPropagation());
                 },
-                className: "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-slate-700 dark:text-zinc-200 bg-white/90 hover:bg-white dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-300/80 dark:border-zinc-700 shadow-2xs hover:shadow-xs transition-all cursor-pointer active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1",
+                className: "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-slate-700 dark:text-zinc-200 bg-white/90 hover:bg-white dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-300/80 dark:border-zinc-700 shadow-2xs hover:shadow-xs transition-all cursor-pointer active:scale-95 synos-focus-btn",
                 title: "Edit Patient Demographics",
                 children: [
                   r.jsx(Dp, {
@@ -30447,7 +30447,7 @@ Details: ${A.inner}`);
                     U && U.focus();
                   }
                 },
-                className: De("text-[#0369A1] hover:text-[#0284C7] font-semibold underline underline-offset-4 decoration-blue-200 hover:decoration-blue-500 transition-all text-sm leading-none focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1 rounded px-1.5 py-0.5 cursor-pointer", n === "Select" && "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 no-underline px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 font-bold hover:bg-blue-600 hover:text-white transition-all shadow-2xs"),
+                className: De("text-[#0369A1] hover:text-[#0284C7] font-semibold underline underline-offset-4 decoration-blue-200 hover:decoration-blue-500 transition-all text-sm leading-none rounded px-1.5 py-0.5 cursor-pointer synos-focus-btn", n === "Select" && "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 no-underline px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 font-bold hover:bg-blue-600 hover:text-white transition-all shadow-2xs"),
                 children: n
               })
             ]
@@ -30683,7 +30683,7 @@ Details: ${A.inner}`);
                               }
                             },
                             placeholder: "Search by Mobile...",
-                            className: De("w-full h-11 rounded-xl !pl-10 !pr-10 py-2.5 text-base font-medium tracking-normal focus:outline-none transition-all", x.input),
+                            className: De("w-full h-11 rounded-xl !pl-10 !pr-10 py-2.5 text-base font-medium tracking-normal focus:outline-none transition-all synos-focus-input", x.input),
                             autoFocus: true
                           }),
                           c && r.jsx(Jn, {
@@ -30704,7 +30704,7 @@ Details: ${A.inner}`);
                   children: o.map((v, w) => {
                     const R = v.id || v.Id || v.patientId, T = w === d;
                     return r.jsx("div", {
-                      className: De("rounded-2xl transition-all duration-150 focus-within:ring-2 focus-within:ring-blue-500", T && "ring-2 ring-blue-500 shadow-md"),
+                      className: "rounded-2xl transition-all duration-150",
                       children: r.jsx(Hw, {
                         patient: v,
                         onAction: () => b({
@@ -30739,7 +30739,7 @@ Details: ${A.inner}`);
                           w.length > 0 && (v.preventDefault(), v.stopPropagation(), w[w.length - 1].focus(), u(w.length - 1));
                         }
                       },
-                      className: De("flex items-center gap-2 px-4 py-1.5 rounded-md type-label shadow-sm transition-colors", o.length > 0 ? C ? "bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700" : "bg-zinc-100 hover:bg-zinc-200 text-zinc-600 border-zinc-200 border" : C ? "bg-zinc-100 hover:bg-white text-zinc-900" : "bg-zinc-900 hover:bg-black text-white"),
+                      className: De("flex items-center gap-2 px-4 py-1.5 rounded-md type-label shadow-sm transition-colors synos-focus-btn", o.length > 0 ? C ? "bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700" : "bg-zinc-100 hover:bg-zinc-200 text-zinc-600 border-zinc-200 border" : C ? "bg-zinc-100 hover:bg-white text-zinc-900" : "bg-zinc-900 hover:bg-black text-white"),
                       children: [
                         r.jsx(Xg, {
                           className: "w-3.5 h-3.5"
@@ -31709,7 +31709,7 @@ Details: ${A.inner}`);
               onClick: () => {
                 A && o ? o() : n || (t !== f.id && e(f.id), u());
               },
-              className: De("relative flex items-center justify-between border text-left transition-all active:scale-[0.99] cursor-pointer", c ? "p-2.5 sm:p-3 rounded-2xl" : "p-4 rounded-2xl", B ? i ? "bg-blue-950/30 border-blue-500 text-white shadow-xs ring-2 ring-blue-500/20" : "bg-gradient-to-b from-[#E2F0FD] to-[#D3E8FA] border-2 border-[#3B82F6] text-[#1E3A8A] shadow-[0_6px_20px_rgba(37,99,235,0.18),inset_0_1px_0_#FFFFFF]" : i ? "bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200" : "bg-gradient-to-b from-[#FFFFFF] to-[#F1F6FA] border border-[#D5E2EC] text-slate-700 hover:border-slate-300 hover:shadow-[0_6px_20px_rgba(15,35,60,0.08)] shadow-[0_4px_14px_rgba(15,35,60,0.05),0_1px_2px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]", n && "opacity-50 cursor-not-allowed"),
+              className: De("relative flex items-center justify-between border text-left transition-all active:scale-[0.99] cursor-pointer synos-focus-card", c ? "p-2.5 sm:p-3 rounded-2xl" : "p-4 rounded-2xl", B ? i ? "bg-blue-950/30 border-blue-500 text-white shadow-xs ring-2 ring-blue-500/20" : "bg-gradient-to-b from-[#E2F0FD] to-[#D3E8FA] border-2 border-[#3B82F6] text-[#1E3A8A] shadow-[0_6px_20px_rgba(37,99,235,0.18),inset_0_1px_0_#FFFFFF]" : i ? "bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200" : "bg-gradient-to-b from-[#FFFFFF] to-[#F1F6FA] border border-[#D5E2EC] text-slate-700 hover:border-slate-300 hover:shadow-[0_6px_20px_rgba(15,35,60,0.08)] shadow-[0_4px_14px_rgba(15,35,60,0.05),0_1px_2px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]", n && "opacity-50 cursor-not-allowed"),
               children: [
                 r.jsxs("div", {
                   className: "flex items-center gap-3 min-w-0",
@@ -33620,7 +33620,7 @@ Details: ${A.inner}`);
                   Dt && Dt.focus();
                 }
               },
-              className: "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold tracking-normal bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition-all active:scale-95 flex items-center gap-1.5 shadow-2xs disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-1 cursor-pointer",
+              className: "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold tracking-normal bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition-all active:scale-95 flex items-center gap-1.5 shadow-2xs disabled:opacity-50 cursor-pointer synos-focus-btn",
               children: ve ? r.jsx(Jn, {
                 className: "w-3.5 h-3.5 animate-spin"
               }) : "Delete Draft"
@@ -33849,7 +33849,7 @@ Details: ${A.inner}`);
                               }
                             }
                           },
-                          className: "bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-200/60 dark:bg-sky-950/40 dark:text-sky-400 dark:border-sky-800 rounded-lg px-3 py-1.5 text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer tracking-normal shadow-2xs",
+                          className: "bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-200/60 dark:bg-sky-950/40 dark:text-sky-400 dark:border-sky-800 rounded-lg px-3 py-1.5 text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer tracking-normal shadow-2xs synos-focus-btn",
                           children: [
                             r.jsx(vi, {
                               className: "w-4 h-4"
@@ -33882,7 +33882,7 @@ Details: ${A.inner}`);
                           }
                         }
                       },
-                      className: De("flex items-center gap-3 font-bold p-3.5 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500", pt ? "bg-zinc-800/60 border-zinc-700/60 text-zinc-100" : "bg-white border border-[#D5E2EC] text-slate-900 shadow-[0_1px_3px_rgba(15,35,60,0.04)]"),
+                      className: De("flex items-center gap-3 font-bold p-3.5 rounded-xl border cursor-pointer synos-focus-card focus:outline-none", pt ? "bg-zinc-800/60 border-zinc-700/60 text-zinc-100" : "bg-white border border-[#D5E2EC] text-slate-900 shadow-[0_1px_3px_rgba(15,35,60,0.04)]"),
                       children: [
                         r.jsx("div", {
                           className: "w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.4)]"
@@ -33930,7 +33930,7 @@ Details: ${A.inner}`);
                               Dt && Dt.focus();
                             } else (rt.key === "Enter" || rt.key === " ") && (rt.preventDefault(), rt.stopPropagation(), ct());
                           },
-                          className: "ml-auto text-zinc-500 hover:text-red-400 p-1 hover:bg-red-400/10 rounded transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400",
+                          className: "ml-auto text-zinc-500 hover:text-red-400 p-1 hover:bg-red-400/10 rounded transition-colors cursor-pointer synos-focus-btn",
                           title: "Remove Primary Doctor",
                           children: r.jsx($n, {
                             className: "w-4 h-4"
@@ -34021,7 +34021,7 @@ Details: ${A.inner}`);
                               }
                             }
                           },
-                          className: "bg-[#EBF5EF] hover:bg-[#DFF0E6] text-[#245E49] border border-[#CCE8D8] dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800 rounded-lg px-3 py-1.5 text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer tracking-normal shadow-2xs",
+                          className: "bg-[#EBF5EF] hover:bg-[#DFF0E6] text-[#245E49] border border-[#CCE8D8] dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800 rounded-lg px-3 py-1.5 text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer tracking-normal shadow-2xs synos-focus-btn",
                           children: [
                             r.jsx(vi, {
                               className: "w-4 h-4"
@@ -34049,7 +34049,7 @@ Details: ${A.inner}`);
                           Dt && Dt.focus();
                         }
                       },
-                      className: De("flex items-center gap-3 font-bold p-3.5 rounded-xl border focus:outline-none focus:ring-2 focus:ring-emerald-500", pt ? "bg-emerald-950/20 border-emerald-900/40 text-emerald-300" : "bg-[#F4F9F6] border-[#D3E8DD] text-slate-900 shadow-2xs"),
+                      className: De("flex items-center gap-3 font-bold p-3.5 rounded-xl border cursor-pointer synos-focus-card focus:outline-none", pt ? "bg-emerald-950/20 border-emerald-900/40 text-emerald-300" : "bg-[#F4F9F6] border-[#D3E8DD] text-slate-900 shadow-2xs"),
                       children: [
                         r.jsx("div", {
                           className: "w-3 h-3 rounded-full bg-[#3D9970] shadow-[0_0_6px_rgba(61,153,112,0.35)]"
@@ -34097,7 +34097,7 @@ Details: ${A.inner}`);
                               Dt && Dt.focus();
                             } else (rt.key === "Enter" || rt.key === " ") && (rt.preventDefault(), rt.stopPropagation(), Sn());
                           },
-                          className: "ml-auto text-zinc-500 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400",
+                          className: "ml-auto text-zinc-500 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer synos-focus-btn",
                           title: "Remove Second Referral Doctor",
                           children: r.jsx($n, {
                             className: "w-4 h-4"
@@ -34168,7 +34168,7 @@ Details: ${A.inner}`);
                               }
                             }
                           },
-                          className: "bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-200/60 dark:bg-sky-950/40 dark:text-sky-400 dark:border-sky-800 rounded-lg px-2.5 py-1 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer",
+                          className: "bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-200/60 dark:bg-sky-950/40 dark:text-sky-400 dark:border-sky-800 rounded-lg px-2.5 py-1 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer synos-focus-btn",
                           children: [
                             r.jsx(vi, {
                               className: "w-3.5 h-3.5"
@@ -34201,7 +34201,7 @@ Details: ${A.inner}`);
                           }
                         }
                       },
-                      className: De("flex items-center gap-2 font-semibold p-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500", pt ? "bg-zinc-800/60 border-zinc-700/60 text-zinc-100" : "bg-white border border-[#D5E2EC] text-slate-900 shadow-[0_1px_3px_rgba(15,35,60,0.04)]"),
+                      className: De("flex items-center gap-2 font-semibold p-3 rounded-xl border cursor-pointer synos-focus-card focus:outline-none", pt ? "bg-zinc-800/60 border-zinc-700/60 text-zinc-100" : "bg-white border border-[#D5E2EC] text-slate-900 shadow-[0_1px_3px_rgba(15,35,60,0.04)]"),
                       children: [
                         r.jsx("div", {
                           className: "w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"
@@ -34236,7 +34236,7 @@ Details: ${A.inner}`);
                               Dt && Dt.focus();
                             } else (rt.key === "Enter" || rt.key === " ") && (rt.preventDefault(), rt.stopPropagation(), ct());
                           },
-                          className: "ml-auto text-zinc-400 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400",
+                          className: "ml-auto text-zinc-400 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer synos-focus-btn",
                           title: "Remove Doctor",
                           children: r.jsx($n, {
                             className: "w-3.5 h-3.5"
@@ -34416,7 +34416,7 @@ Details: ${A.inner}`);
                     paddingLeft: "3rem",
                     paddingRight: "1rem"
                   },
-                  className: De(gt.input, "w-full h-12 rounded-xl py-2 focus:outline-none transition-colors disabled:opacity-50 text-base")
+                  className: De(gt.input, "w-full h-12 rounded-xl py-2 focus:outline-none transition-colors disabled:opacity-50 text-base synos-focus-input")
                 }),
                 ae.length > 0 && B.trim().length > 0 && (x || document.activeElement === (T == null ? void 0 : T.current)) && r.jsx("div", {
                   ref: R,
@@ -34582,7 +34582,7 @@ Details: ${A.inner}`);
                               },
                               onKeyDown: be,
                               disabled: ve,
-                              className: "text-zinc-400 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400",
+                              className: "text-zinc-400 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer synos-focus-btn",
                               title: "Remove Test",
                               children: r.jsx($n, {
                                 className: "w-4 h-4"
@@ -34643,7 +34643,7 @@ Details: ${A.inner}`);
                             "data-test-remove-btn": "true",
                             onClick: () => d && d(Ln),
                             onKeyDown: be,
-                            className: "text-emerald-500 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400",
+                            className: "text-emerald-500 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer synos-focus-btn",
                             title: "Discard Add-On",
                             children: r.jsx($n, {
                               className: "w-4 h-4"
@@ -34992,7 +34992,7 @@ Details: ${A.inner}`);
                 }
               }
             },
-            className: "rounded-xl border border-[#D5E2EC] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2 text-sm font-semibold text-slate-800 dark:text-zinc-200 shadow-2xs hover:bg-slate-50 dark:hover:bg-zinc-700/50 flex items-center gap-2 cursor-pointer transition-all tracking-normal focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1",
+            className: "rounded-xl border border-[#D5E2EC] dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3.5 py-2 text-sm font-semibold text-slate-800 dark:text-zinc-200 shadow-2xs hover:bg-slate-50 dark:hover:bg-zinc-700/50 flex items-center gap-2 cursor-pointer transition-all tracking-normal synos-focus-btn",
             children: [
               r.jsx(CA, {
                 className: "w-4 h-4 text-slate-500"
@@ -35156,7 +35156,7 @@ Details: ${A.inner}`);
             paddingLeft: "3rem",
             paddingRight: "1rem"
           },
-          className: De(U.input, "w-full h-12 rounded-xl text-base font-medium outline-none transition-colors", n && "opacity-70 pointer-events-none", e && "cursor-default bg-slate-50/80 dark:bg-zinc-850 font-bold text-zinc-900 dark:text-zinc-100 border-slate-300 dark:border-zinc-700 shadow-none"),
+          className: De(U.input, "w-full h-12 rounded-xl text-base font-medium outline-none transition-colors synos-focus-input", n && "opacity-70 pointer-events-none", e && "cursor-default bg-slate-50/80 dark:bg-zinc-850 font-bold text-zinc-900 dark:text-zinc-100 border-slate-300 dark:border-zinc-700 shadow-none"),
           onFocus: () => {
             I(true);
           },
@@ -35695,7 +35695,7 @@ Details: ${A.inner}`);
                             }
                           }
                         },
-                        className: De("px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer border shadow-2xs shrink-0", gr ? "bg-slate-900 text-white border-slate-900 dark:bg-zinc-700 dark:border-zinc-600 shadow-xs" : _t ? "bg-[#EBF5EF] dark:bg-emerald-950/30 text-[#245E49] dark:text-emerald-300 border border-[#CCE8D8] dark:border-emerald-800 hover:bg-[#DFF0E6]" : "bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 border-[#CCDCE8] dark:border-zinc-700 hover:bg-slate-50"),
+                        className: De("px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer border shadow-2xs shrink-0 synos-focus-btn", gr ? "bg-slate-900 text-white border-slate-900 dark:bg-zinc-700 dark:border-zinc-600 shadow-xs" : _t ? "bg-[#EBF5EF] dark:bg-emerald-950/30 text-[#245E49] dark:text-emerald-300 border border-[#CCE8D8] dark:border-emerald-800 hover:bg-[#DFF0E6]" : "bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 border-[#CCDCE8] dark:border-zinc-700 hover:bg-slate-50"),
                         children: [
                           r.jsx($u, {
                             className: "w-3.5 h-3.5 text-slate-500 dark:text-zinc-400"
@@ -35995,7 +35995,7 @@ Details: ${A.inner}`);
                                     const Hn = Mn.target.value, lr = Hn.startsWith("0") && Hn.length > 1 && !Hn.startsWith("0.") ? Hn.replace(/^0+/, "") : Hn;
                                     K(lr);
                                   },
-                                  className: De("w-full h-12 px-4 rounded-xl text-base font-mono font-bold outline-none border", At.input)
+                                  className: De("w-full h-12 px-4 rounded-xl text-base font-mono font-bold outline-none border synos-focus-input", At.input)
                                 })
                               })
                             ]
@@ -36760,7 +36760,7 @@ Details: ${A.inner}`);
                       onClick: () => {
                         B == null ? void 0 : B(false), x == null ? void 0 : x("");
                       },
-                      className: De("flex-1 py-2 px-3 rounded-lg text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5", m ? "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white" : "bg-[#506A85] text-white shadow-xs"),
+                      className: De("flex-1 py-2 px-3 rounded-lg text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 synos-focus-btn", m ? "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white" : "bg-[#506A85] text-white shadow-xs"),
                       children: [
                         r.jsx(qr, {
                           className: "w-4 h-4"
@@ -36780,7 +36780,7 @@ Details: ${A.inner}`);
                       onClick: () => {
                         B == null ? void 0 : B(true), C || (x == null ? void 0 : x(String(Math.round(wn * 0.5))));
                       },
-                      className: De("flex-1 py-2 px-3 rounded-lg text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5", m ? "bg-[#506A85] text-white shadow-xs" : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"),
+                      className: De("flex-1 py-2 px-3 rounded-lg text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 synos-focus-btn", m ? "bg-[#506A85] text-white shadow-xs" : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"),
                       children: [
                         r.jsx(Ii, {
                           className: "w-4 h-4"
@@ -36907,7 +36907,7 @@ Details: ${A.inner}`);
                   ].map((_t) => r.jsxs("button", {
                     type: "button",
                     onClick: () => A && A(_t),
-                    className: De("flex flex-col items-center justify-center py-2.5 rounded-xl border text-sm font-bold tracking-normal transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1 cursor-pointer", s === _t ? At.method.active : At.method.inactive),
+                    className: De("flex flex-col items-center justify-center py-2.5 rounded-xl border text-sm font-bold tracking-normal transition-all active:scale-95 cursor-pointer synos-focus-btn", s === _t ? At.method.active : At.method.inactive),
                     children: [
                       _t === "Cash" && r.jsx(Vs, {
                         className: "w-3 h-3 mb-1"
@@ -42265,7 +42265,7 @@ Details: ${A.inner}`);
                   ((_K2 = R == null ? void 0 : R.visit) == null ? void 0 : _K2.visitId) && r.jsxs("button", {
                     type: "button",
                     onClick: () => gr(true),
-                    className: "py-3.5 px-4 rounded-2xl border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 font-bold text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs",
+                    className: "py-3.5 px-4 rounded-2xl border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 font-bold text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn",
                     title: "Cancel this visit",
                     children: [
                       r.jsx(Ch, {
@@ -42279,7 +42279,7 @@ Details: ${A.inner}`);
                   r.jsx("button", {
                     onClick: zt,
                     disabled: !it || U || Ln,
-                    className: De("w-full py-3.5 px-6 rounded-2xl font-bold text-base flex items-center justify-center gap-2 transition-all active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1 shadow-sm", it && !Ln ? be.actionBtn.enabled : be.actionBtn.disabled),
+                    className: De("w-full py-3.5 px-6 rounded-2xl font-bold text-base flex items-center justify-center gap-2 transition-all active:scale-[0.99] shadow-sm synos-focus-btn", it && !Ln ? be.actionBtn.enabled : be.actionBtn.disabled),
                     children: U || Ln ? r.jsx(Jn, {
                       className: "w-4 h-4 animate-spin"
                     }) : r.jsxs(r.Fragment, {

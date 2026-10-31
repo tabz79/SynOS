@@ -197,7 +197,7 @@ export function PatientIdentification({
                                         }}
                                         placeholder="Search by Mobile..."
                                         className={cn(
-                                            "w-full h-11 rounded-xl !pl-10 !pr-10 py-2.5 text-base font-medium tracking-normal focus:outline-none transition-all",
+                                            "w-full h-11 rounded-xl !pl-10 !pr-10 py-2.5 text-base font-medium tracking-normal focus:outline-none transition-all synos-focus-input",
                                             ui.input
                                         )}
                                         autoFocus
@@ -220,10 +220,7 @@ export function PatientIdentification({
                                     return (
                                         <div
                                             key={pId}
-                                            className={cn(
-                                                "rounded-2xl transition-all duration-150 focus-within:ring-2 focus-within:ring-blue-500",
-                                                isHighlighted && "ring-2 ring-blue-500 shadow-md"
-                                            )}
+                                            className="rounded-2xl transition-all duration-150"
                                         >
                                             <RichPatientCard
                                                 patient={p}
@@ -272,7 +269,7 @@ export function PatientIdentification({
                                         }
                                     }}
                                     className={cn(
-                                        "flex items-center gap-2 px-4 py-1.5 rounded-md type-label shadow-sm transition-colors",
+                                        "flex items-center gap-2 px-4 py-1.5 rounded-md type-label shadow-sm transition-colors synos-focus-btn",
                                         matches.length > 0
                                             ? (isDark ? "bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border-zinc-700" : "bg-zinc-100 hover:bg-zinc-200 text-zinc-600 border-zinc-200 border")
                                             : (isDark ? "bg-zinc-100 hover:bg-white text-zinc-900" : "bg-zinc-900 hover:bg-black text-white")

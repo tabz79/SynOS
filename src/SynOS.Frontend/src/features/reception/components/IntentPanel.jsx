@@ -1822,7 +1822,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                         <button
                                             type="button"
                                             onClick={() => setIsCancelModalOpen(true)}
-                                            className="py-3.5 px-4 rounded-2xl border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 font-bold text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs"
+                                            className="py-3.5 px-4 rounded-2xl border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 font-bold text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn"
                                             title="Cancel this visit"
                                         >
                                             <Ban className="w-4 h-4" />
@@ -1833,7 +1833,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                         onClick={handleUnifiedAction}
                                         disabled={!isActionEnabled || isLoading || isActionSubmitting}
                                         className={cn(
-                                            "w-full py-3.5 px-6 rounded-2xl font-bold text-base flex items-center justify-center gap-2 transition-all active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1 shadow-sm",
+                                            "w-full py-3.5 px-6 rounded-2xl font-bold text-base flex items-center justify-center gap-2 transition-all active:scale-[0.99] shadow-sm synos-focus-btn",
                                             (isActionEnabled && !isActionSubmitting)
                                                 ? ui.actionBtn.enabled
                                                 : ui.actionBtn.disabled
