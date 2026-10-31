@@ -34754,7 +34754,7 @@ Details: ${A.inner}`);
     }, [
       t
     ]);
-    const B = useMemo(() => {
+    const B = j.useMemo(() => {
       if (!c || c.trim().length === 0) return (i || []).slice(0, 15);
       const R = c.toLowerCase();
       return (i || []).filter((T) => T.name && T.name.toLowerCase().includes(R)).slice(0, 15);
