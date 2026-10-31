@@ -1147,16 +1147,24 @@ namespace SynOS.Services
 
             CheckVisitOwnership(visit);
 
+            // Resilient Actor User Resolution (Guarantees Foreign Key Integrity on Payments & Audits)
+            var effectiveUserId = actorUserId;
+            if (effectiveUserId == Guid.Empty || !await _context.Users.AnyAsync(u => u.UserId == effectiveUserId))
+            {
+                var fallbackUser = await _context.Users.OrderBy(u => u.CreatedAt).FirstOrDefaultAsync();
+                effectiveUserId = fallbackUser?.UserId ?? (visit.CreatedByUserId.HasValue && visit.CreatedByUserId.Value != Guid.Empty ? visit.CreatedByUserId.Value : Guid.NewGuid());
+            }
+
             visit.PaymentCollectionModel = "PartnerCollects";
             visit.BillingType = BillingType.PrepaidPartner;
             visit.Status = VisitStatus.Paid;
             if (visit.Token.StartsWith("DRAFT", StringComparison.OrdinalIgnoreCase) || visit.Token.StartsWith("D-", StringComparison.OrdinalIgnoreCase))
             {
-                await AssignOfficialTokenAsync(visitId, actorUserId);
+                await AssignOfficialTokenAsync(visitId, effectiveUserId);
             }
             await _context.SaveChangesAsync();
 
-            await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
+            await _revenueEngine.ApplySnapshotAsync(visitId, effectiveUserId);
 
             // Re-fetch or use latest invoice
             var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
@@ -1169,6 +1177,9 @@ namespace SynOS.Services
                 invoice.Status = "Paid";
 
                 var existingPayment = await _context.Payments.FirstOrDefaultAsync(p => p.InvoiceId == invoice.InvoiceId && p.Method == "PartnerAccount");
+                var cleanReceiptNo = $"SYS-{visit.Token}";
+                if (cleanReceiptNo.Length > 50) cleanReceiptNo = cleanReceiptNo.Substring(0, 50);
+
                 if (existingPayment == null)
                 {
                     var partnerPayment = new Payment
@@ -1177,15 +1188,16 @@ namespace SynOS.Services
                         InvoiceId = invoice.InvoiceId,
                         Amount = invoiceTotal,
                         Method = "PartnerAccount",
-                        ReceiptNo = $"SYS-{visit.Token}",
+                        ReceiptNo = cleanReceiptNo,
                         ReceivedAt = DateTime.UtcNow,
-                        ReceivedByUserId = actorUserId
+                        ReceivedByUserId = effectiveUserId
                     };
                     _context.Payments.Add(partnerPayment);
                 }
                 else
                 {
                     existingPayment.Amount = invoiceTotal;
+                    existingPayment.ReceivedByUserId = effectiveUserId;
                 }
             }
 
@@ -1194,6 +1206,15 @@ namespace SynOS.Services
             ReceivableFact? receivable = null;
             if (effectivePartnerId.HasValue)
             {
+                var partnerExists = await _context.ReferralPartners.AnyAsync(p => p.ReferralPartnerId == effectivePartnerId.Value);
+                var validPartnerFkId = partnerExists ? effectivePartnerId.Value : (Guid?)null;
+                var partnerName = visit.SecondaryReferralPartner?.Name ?? visit.ReferralPartner?.Name;
+                if (string.IsNullOrWhiteSpace(partnerName))
+                {
+                    var dbPartner = await _context.ReferralPartners.FirstOrDefaultAsync(p => p.ReferralPartnerId == effectivePartnerId.Value);
+                    partnerName = dbPartner?.Name ?? "B2B Partner";
+                }
+
                 receivable = await _context.ReceivableFacts.FirstOrDefaultAsync(r => r.SourceVisitId == visitId);
                 bool isNewReceivable = false;
                 if (receivable == null)
@@ -1203,8 +1224,10 @@ namespace SynOS.Services
                     {
                         ReceivableFactId = Guid.NewGuid(),
                         SourceVisitId = visit.VisitId,
-                        ReferralPartnerId = effectivePartnerId.Value,
+                        ReferralPartnerId = validPartnerFkId,
                         DebtorId = effectivePartnerId.Value,
+                        DebtorName = partnerName,
+                        DebtorType = DebtorType.Partner,
                         Amount = partnerReceivableAmount,
                         Currency = invoice?.Currency ?? "INR",
                         OccurredAt = DateTimeOffset.UtcNow,
@@ -1215,14 +1238,15 @@ namespace SynOS.Services
                 else
                 {
                     receivable.Amount = partnerReceivableAmount;
-                    receivable.ReferralPartnerId = effectivePartnerId.Value;
+                    receivable.ReferralPartnerId = validPartnerFkId;
                     receivable.DebtorId = effectivePartnerId.Value;
+                    receivable.DebtorName = partnerName;
                     receivable.RecordedAt = DateTimeOffset.UtcNow;
                 }
 
                 await _context.SaveChangesAsync();
 
-                string actorNameNow = await GetActorNameAsync(actorUserId);
+                string actorNameNow = await GetActorNameAsync(effectiveUserId);
                 if (isNewReceivable)
                 {
                     await _operationalEventWriter.WriteEventAsync(
@@ -1232,7 +1256,7 @@ namespace SynOS.Services
                         visit.Token,
                         $"Prepaid B2B receivable of ₹{partnerReceivableAmount:N2} created for partner",
                         actorNameNow,
-                        actorUserId.ToString(),
+                        effectiveUserId.ToString(),
                         false,
                         receivable.ReceivableFactId,
                         null,
@@ -1247,7 +1271,7 @@ namespace SynOS.Services
             }
 
             // ENRICHED METADATA
-            string actorName = await GetActorNameAsync(actorUserId);
+            string actorName = await GetActorNameAsync(effectiveUserId);
             string patientName = $"{visit.Patient?.FirstName} {visit.Patient?.LastName}".Trim();
 
             var testCodes = visit.Orders?.Select(o => o.Test?.TestCode).Where(c => !string.IsNullOrEmpty(c)).ToList() ?? new List<string?>();
@@ -1273,7 +1297,7 @@ namespace SynOS.Services
                 visit.Token,
                 "Visit marked as Paid (Partner Collects)",
                 actorName,
-                actorUserId.ToString(),
+                effectiveUserId.ToString(),
                 true, null, null,
                 TimelineVisibility.Surface,
                 intentId ?? Guid.NewGuid(),

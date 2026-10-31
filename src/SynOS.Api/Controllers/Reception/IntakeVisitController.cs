@@ -104,7 +104,7 @@ namespace SynOS.Api.Controllers.Reception
             {
                 var userId = GetCurrentUserId();
                 await _service.MarkVisitAsPrepaidAsync(request.VisitId, userId);
-                return Ok();
+                return Ok(new { success = true });
             }
             catch (System.Collections.Generic.KeyNotFoundException ex)
             {
@@ -113,6 +113,11 @@ namespace SynOS.Api.Controllers.Reception
             catch (InvalidOperationException ex)
             {
                 return BadRequest(new { message = ex.Message });
+            }
+            catch (Microsoft.EntityFrameworkCore.DbUpdateException ex)
+            {
+                var innerMsg = ex.InnerException?.Message ?? ex.Message;
+                return StatusCode(500, new { message = $"Database error: {innerMsg}" });
             }
             catch (Exception ex)
             {
