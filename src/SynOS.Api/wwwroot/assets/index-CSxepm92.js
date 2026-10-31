@@ -40516,21 +40516,6 @@ Details: ${A.inner}`);
       };
     }, [
       Ne
-    ]), j.useEffect(() => {
-      var _a2;
-      if (!n) return;
-      if (!!((Qr == null ? void 0 : Qr.id) || J || ((_a2 = R == null ? void 0 : R.patient) == null ? void 0 : _a2.id))) {
-        const qe = setTimeout(() => {
-          const mt = document.getElementById("btn-edit-demographics");
-          mt && mt.focus();
-        }, 100);
-        return () => clearTimeout(qe);
-      }
-    }, [
-      n,
-      Qr == null ? void 0 : Qr.id,
-      J,
-      (_a = R == null ? void 0 : R.patient) == null ? void 0 : _a.id
     ]);
     const { theme: Dt } = ns(), $t = Dt === "dark", be = $t ? {
       panel: "bg-zinc-950 border border-zinc-800 shadow-2xl z-20",
@@ -40729,7 +40714,24 @@ Details: ${A.inner}`);
     }, [
       R == null ? void 0 : R.patient,
       ue
-    ]), ii = ((_b2 = R == null ? void 0 : R.visit) == null ? void 0 : _b2.tests) || [], kr = ii.filter((Ue) => !Ue.parentOrderId && !(Ue.price === 0 && !Ue.isProfile && ii.some((qe) => qe.isProfile)) && !q.includes(Ue.orderId || Ue.OrderId || Ue.TestId || Ue.testId)), wt = kr.reduce((Ue, qe) => Ue + (Number(qe.basePrice || qe.price || qe.Price) || 0), 0), Pt = ie.reduce((Ue, qe) => Ue + (Number(qe.basePrice || qe.price || qe.Price) || 0), 0), Ht = wt + Pt, Xt = f === "PrepaidPartner" || u;
+    ]);
+    j.useEffect(() => {
+      var _a2;
+      if (!n) return;
+      if (!!((Qr == null ? void 0 : Qr.id) || J || ((_a2 = R == null ? void 0 : R.patient) == null ? void 0 : _a2.id))) {
+        const qe = setTimeout(() => {
+          const mt = document.getElementById("btn-edit-demographics");
+          mt && mt.focus();
+        }, 100);
+        return () => clearTimeout(qe);
+      }
+    }, [
+      n,
+      Qr == null ? void 0 : Qr.id,
+      J,
+      (_a = R == null ? void 0 : R.patient) == null ? void 0 : _a.id
+    ]);
+    const ii = ((_b2 = R == null ? void 0 : R.visit) == null ? void 0 : _b2.tests) || [], kr = ii.filter((Ue) => !Ue.parentOrderId && !(Ue.price === 0 && !Ue.isProfile && ii.some((qe) => qe.isProfile)) && !q.includes(Ue.orderId || Ue.OrderId || Ue.TestId || Ue.testId)), wt = kr.reduce((Ue, qe) => Ue + (Number(qe.basePrice || qe.price || qe.Price) || 0), 0), Pt = ie.reduce((Ue, qe) => Ue + (Number(qe.basePrice || qe.price || qe.Price) || 0), 0), Ht = wt + Pt, Xt = f === "PrepaidPartner" || u;
     let Cn = 0;
     if (ee == null ? void 0 : ee.remove) Cn = 0;
     else if (ee) {

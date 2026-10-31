@@ -193,21 +193,6 @@ export function IntentPanel({ onVisitUpdated }) {
         };
     }, [userPayerExpandedState]);
 
-    // Auto-focus Edit Demographics button after adding/selecting a patient
-    useEffect(() => {
-        if (!isOpen) return;
-        const patientPresent = Boolean(displayedPatient?.id || currentPatientId || snapshot?.patient?.id);
-        if (patientPresent) {
-            const timer = setTimeout(() => {
-                const editBtn = document.getElementById('btn-edit-demographics');
-                if (editBtn) {
-                    editBtn.focus();
-                }
-            }, 100);
-            return () => clearTimeout(timer);
-        }
-    }, [isOpen, displayedPatient?.id, currentPatientId, snapshot?.patient?.id]);
-
     const { theme } = useTheme();
     const isDark = theme === 'dark';
 
@@ -531,6 +516,21 @@ export function IntentPanel({ onVisitUpdated }) {
             isModified: true
         };
     }, [snapshot?.patient, stagedDemographics]);
+
+    // Auto-focus Edit Demographics button after adding/selecting a patient
+    useEffect(() => {
+        if (!isOpen) return;
+        const patientPresent = Boolean(displayedPatient?.id || currentPatientId || snapshot?.patient?.id);
+        if (patientPresent) {
+            const timer = setTimeout(() => {
+                const editBtn = document.getElementById('btn-edit-demographics');
+                if (editBtn) {
+                    editBtn.focus();
+                }
+            }, 100);
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen, displayedPatient?.id, currentPatientId, snapshot?.patient?.id]);
 
     // Staged Financial & Test Basket Calculations
     const originalTests = snapshot?.visit?.tests || [];
