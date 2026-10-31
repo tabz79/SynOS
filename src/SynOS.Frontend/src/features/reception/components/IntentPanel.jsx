@@ -1238,6 +1238,35 @@ export function IntentPanel({ onVisitUpdated }) {
     const doctorDisplay = effectivePartner ? (effectivePartner.displayName || effectivePartner.name) : (snapshot?.billing?.referral?.referrerText || snapshot?.visit?.referringDoctorName || "Direct / Self");
     const secondaryDoctorDisplay = effectiveSecondaryPartner ? (effectiveSecondaryPartner.displayName || effectiveSecondaryPartner.name) : null;
 
+    // Responsive Canvas Zoom for A4/Claim Document Preview (Fills Container Width)
+    const previewContainerRef = useRef(null);
+    const [canvasScale, setCanvasScale] = useState(1.35);
+
+    useEffect(() => {
+        if (!isOpen || !isPostProcessingView) return;
+        const calculateScale = () => {
+            if (!previewContainerRef.current) return;
+            const containerWidth = previewContainerRef.current.clientWidth;
+            // Available width inside container with snug margins (removes empty side padding)
+            const targetWidth = containerWidth - 24;
+            // 210mm in pixels at 96 DPI is 793.7px
+            const scale = Math.max(1.0, targetWidth / 794);
+            setCanvasScale(Number(scale.toFixed(2)));
+        };
+        calculateScale();
+        const timer = setTimeout(calculateScale, 60);
+        const ro = new ResizeObserver(calculateScale);
+        if (previewContainerRef.current) ro.observe(previewContainerRef.current);
+        return () => {
+            clearTimeout(timer);
+            ro.disconnect();
+        };
+    }, [isOpen, isPostProcessingView, selectedDocFormat]);
+
+    const discountReasonDisplay = stagedDiscount?.remove
+        ? ""
+        : (stagedDiscount?.reason || stagedDiscount?.name || snapshot?.billing?.appliedDiscount?.reason || snapshot?.billing?.appliedDiscount?.name || snapshot?.billing?.discountReason || snapshot?.billing?.DiscountReason || "");
+
     // Keyboard shortcuts for in-panel print and close
     useEffect(() => {
         if (!isOpen || !isPostProcessingView) return;
@@ -1477,7 +1506,10 @@ export function IntentPanel({ onVisitUpdated }) {
                                             </div>
 
                                             {/* Live Document Canvas Surface */}
-                                            <div className="flex-1 min-h-0 my-3 rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-[#EAF1F6]/70 dark:bg-zinc-950/70 p-3 sm:p-4 flex justify-center items-start overflow-y-auto relative shadow-inner">
+                                            <div 
+                                                ref={previewContainerRef}
+                                                className="flex-1 min-h-0 my-3 rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-[#EAF1F6]/70 dark:bg-zinc-950/70 p-2 sm:p-2.5 flex justify-center items-start overflow-y-auto relative shadow-inner"
+                                            >
                                                 {selectedDocFormat === 'thermal' && (
                                                     <div className="w-[360px] sm:w-[380px] max-w-full my-auto rounded-2xl shadow-2xl overflow-hidden border border-slate-300 dark:border-zinc-700 bg-white flex flex-col mx-auto transition-transform shrink-0">
                                                         <div className="bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 px-4 py-2 text-xs font-mono border-b border-slate-200 dark:border-zinc-700 flex justify-between items-center">
@@ -1492,32 +1524,43 @@ export function IntentPanel({ onVisitUpdated }) {
                                                     </div>
                                                 )}
                                                 {selectedDocFormat === 'a4' && (
-                                                    <div className="w-full h-full flex justify-center py-2 overflow-y-auto">
+                                                    <div className="w-full flex justify-center py-2 overflow-x-hidden">
                                                         <div 
-                                                            id="synos-inpanel-print-canvas" 
-                                                            style={{ 
-                                                                width: '210mm', 
-                                                                minHeight: '297mm',
-                                                                transform: 'scale(0.92)',
-                                                                transformOrigin: 'top center',
-                                                                marginBottom: '-22mm'
+                                                            style={{
+                                                                width: `${Math.round(794 * canvasScale)}px`,
+                                                                height: `${Math.round(1123 * canvasScale + 30)}px`,
+                                                                position: 'relative',
+                                                                flexShrink: 0
                                                             }}
-                                                            className="bg-white text-zinc-900 shadow-2xl rounded-sm p-8 sm:p-10 border border-slate-300 dark:border-zinc-700 flex flex-col justify-between shrink-0"
                                                         >
-                                                            <DynamicDocumentRenderer
-                                                                slotId={isPrepaid ? 'prepaid_patient_a4_slip' : 'patient_tax_invoice'}
-                                                                data={buildTaxInvoiceData()}
-                                                                readOnly={true}
-                                                            />
-                                                            <div className="mt-6 pt-2 border-t border-zinc-200 flex items-center justify-between text-[8px] text-zinc-400 select-none">
-                                                                <span>SynOS Enterprise Clinical & Financial OS</span>
-                                                                <span>A4 Statement • Generated: {new Date().toLocaleDateString()}</span>
+                                                            <div 
+                                                                id="synos-inpanel-print-canvas" 
+                                                                style={{ 
+                                                                    width: '210mm', 
+                                                                    minHeight: '297mm',
+                                                                    transform: `scale(${canvasScale})`,
+                                                                    transformOrigin: 'top left',
+                                                                    position: 'absolute',
+                                                                    top: 0,
+                                                                    left: 0
+                                                                }}
+                                                                className="bg-white text-zinc-900 shadow-2xl rounded-sm p-8 sm:p-10 border border-slate-300 dark:border-zinc-700 flex flex-col justify-between shrink-0"
+                                                            >
+                                                                <DynamicDocumentRenderer
+                                                                    slotId={isPrepaid ? 'prepaid_patient_a4_slip' : 'patient_tax_invoice'}
+                                                                    data={buildTaxInvoiceData()}
+                                                                    readOnly={true}
+                                                                />
+                                                                <div className="mt-6 pt-2 border-t border-zinc-200 flex items-center justify-between text-[8px] text-zinc-400 select-none">
+                                                                    <span>SynOS Enterprise Clinical & Financial OS</span>
+                                                                    <span>A4 Statement • Generated: {new Date().toLocaleDateString()}</span>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 )}
                                                 {selectedDocFormat === 'claim' && (
-                                                    <div className="w-full h-full flex justify-center py-2 overflow-y-auto">
+                                                    <div className="w-full flex justify-center py-2 overflow-x-hidden">
                                                         {isLoadingClaimDoc ? (
                                                             <div className="flex flex-col items-center justify-center h-64 gap-2 text-slate-500">
                                                                 <Loader2 className="w-6 h-6 animate-spin text-synos-primary" />
@@ -1525,24 +1568,35 @@ export function IntentPanel({ onVisitUpdated }) {
                                                             </div>
                                                         ) : (
                                                             <div 
-                                                                id="synos-inpanel-print-canvas" 
-                                                                style={{ 
-                                                                    width: '210mm', 
-                                                                    minHeight: '297mm',
-                                                                    transform: 'scale(0.92)',
-                                                                    transformOrigin: 'top center',
-                                                                    marginBottom: '-22mm'
+                                                                style={{
+                                                                    width: `${Math.round(794 * canvasScale)}px`,
+                                                                    height: `${Math.round(1123 * canvasScale + 30)}px`,
+                                                                    position: 'relative',
+                                                                    flexShrink: 0
                                                                 }}
-                                                                className="bg-white text-zinc-900 shadow-2xl rounded-sm p-8 sm:p-10 border border-slate-300 dark:border-zinc-700 flex flex-col justify-between shrink-0"
                                                             >
-                                                                <DynamicDocumentRenderer
-                                                                    slotId="partner_b2b_invoice"
-                                                                    data={partnerClaimData || buildTaxInvoiceData()}
-                                                                    readOnly={true}
-                                                                />
-                                                                <div className="mt-6 pt-2 border-t border-zinc-200 flex items-center justify-between text-[8px] text-zinc-400 select-none">
-                                                                    <span>SynOS Enterprise Clinical & Financial OS • Doctor Receivable Claim</span>
-                                                                    <span>Commercial Statement • Generated: {new Date().toLocaleDateString()}</span>
+                                                                <div 
+                                                                    id="synos-inpanel-print-canvas" 
+                                                                    style={{ 
+                                                                        width: '210mm', 
+                                                                        minHeight: '297mm',
+                                                                        transform: `scale(${canvasScale})`,
+                                                                        transformOrigin: 'top left',
+                                                                        position: 'absolute',
+                                                                        top: 0,
+                                                                        left: 0
+                                                                    }}
+                                                                    className="bg-white text-zinc-900 shadow-2xl rounded-sm p-8 sm:p-10 border border-slate-300 dark:border-zinc-700 flex flex-col justify-between shrink-0"
+                                                                >
+                                                                    <DynamicDocumentRenderer
+                                                                        slotId="partner_b2b_invoice"
+                                                                        data={partnerClaimData || buildTaxInvoiceData()}
+                                                                        readOnly={true}
+                                                                    />
+                                                                    <div className="mt-6 pt-2 border-t border-zinc-200 flex items-center justify-between text-[8px] text-zinc-400 select-none">
+                                                                        <span>SynOS Enterprise Clinical & Financial OS • Doctor Receivable Claim</span>
+                                                                        <span>Commercial Statement • Generated: {new Date().toLocaleDateString()}</span>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         )}
@@ -1616,23 +1670,26 @@ export function IntentPanel({ onVisitUpdated }) {
                                                 </div>
 
                                                 <div className="flex items-center gap-2">
-                                                    {/* Token Badge */}
-                                                    <span className="font-mono text-xs font-semibold px-2.5 py-1 rounded-lg bg-white/90 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 border border-slate-300/80 dark:border-zinc-700 shadow-2xs">
-                                                        {snapshot?.visit?.visitToken || snapshot?.visit?.token || postProcessingSession?.token || currentVisitId}
-                                                    </span>
+                                                    {/* Bill / Token Badge */}
+                                                    <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-sm border border-slate-800 dark:border-zinc-200">
+                                                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-300 dark:text-zinc-500">Bill / Token:</span>
+                                                        <span className="font-mono text-xs font-black tracking-wider">
+                                                            {snapshot?.visit?.visitToken || snapshot?.visit?.token || postProcessingSession?.token || currentVisitId}
+                                                        </span>
+                                                    </div>
 
-                                                    {/* Canonical Payer Mode Badge */}
-                                                    <span className={cn(
-                                                        "px-3 py-1 rounded-full text-xs font-extrabold border shadow-2xs tracking-normal flex items-center gap-1.5",
+                                                    {/* Canonical Payer Mode Badge - Bold & High Visibility */}
+                                                    <div className={cn(
+                                                        "px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-sm border",
                                                         billingMode === 'PrepaidPartner'
-                                                            ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30"
+                                                            ? "bg-indigo-600 text-white border-indigo-700 shadow-indigo-500/20"
                                                             : billingMode === 'Insurance'
-                                                                ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30"
-                                                                : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60"
+                                                                ? "bg-purple-600 text-white border-purple-700 shadow-purple-500/20"
+                                                                : "bg-emerald-600 text-white border-emerald-700 shadow-emerald-500/20"
                                                     )}>
-                                                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />
-                                                        <span>Bill Type: {billingMode === 'PrepaidPartner' ? 'Corporate B2B (Prepaid)' : billingMode === 'Insurance' ? 'Insurance / TPA' : 'Direct / Standard'}</span>
-                                                    </span>
+                                                        <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                                                        <span>BILL TYPE: {billingMode === 'PrepaidPartner' ? 'CORPORATE B2B (PREPAID)' : billingMode === 'Insurance' ? 'INSURANCE / TPA' : 'DIRECT / STANDARD (RETAIL)'}</span>
+                                                    </div>
                                                 </div>
                                             </div>
 
@@ -1828,16 +1885,16 @@ export function IntentPanel({ onVisitUpdated }) {
                                                             </h3>
                                                         </div>
                                                         <div className="flex items-center gap-2">
-                                                            {/* Canonical Bill Type Badge */}
+                                                            {/* Canonical Bill Type Badge in Card 3 */}
                                                             <span className={cn(
-                                                                "px-2.5 py-1 rounded-full text-xs font-extrabold border shadow-2xs tracking-normal flex items-center gap-1.5",
+                                                                "px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-xs border",
                                                                 billingMode === 'PrepaidPartner'
-                                                                    ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800"
+                                                                    ? "bg-indigo-600 text-white border-indigo-700"
                                                                     : billingMode === 'Insurance'
-                                                                        ? "bg-purple-50 text-purple-700 dark:bg-purple-950/60 dark:text-purple-300 border-purple-200 dark:border-purple-800"
-                                                                        : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
+                                                                        ? "bg-purple-600 text-white border-purple-700"
+                                                                        : "bg-emerald-600 text-white border-emerald-700"
                                                             )}>
-                                                                <span className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />
+                                                                <span className="w-1.5 h-1.5 rounded-full bg-white" />
                                                                 <span>Bill Type: {billingMode === 'PrepaidPartner' ? 'Corporate B2B (Prepaid)' : billingMode === 'Insurance' ? 'Insurance / TPA' : 'Direct / Standard'}</span>
                                                             </span>
 
@@ -1862,11 +1919,25 @@ export function IntentPanel({ onVisitUpdated }) {
                                                         </div>
 
                                                         <div className="p-2.5 rounded-xl bg-white dark:bg-zinc-800/80 border border-slate-200/90 dark:border-zinc-700/80 shadow-2xs">
-                                                            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-400 block">Concession</span>
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-400 block">Concession</span>
+                                                                {discountReasonDisplay && (
+                                                                    <span className="text-[10px] font-extrabold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/60 px-1.5 py-0.5 rounded border border-rose-200/70 dark:border-rose-900/60 truncate max-w-[110px]" title={discountReasonDisplay}>
+                                                                        {discountReasonDisplay}
+                                                                    </span>
+                                                                )}
+                                                            </div>
                                                             {(stagedDiscountAmt || snapshot?.billing?.discountAmount) ? (
-                                                                <span className="font-mono font-bold text-sm sm:text-base text-rose-600 dark:text-rose-400 truncate block">
-                                                                    -₹{(stagedDiscountAmt !== undefined ? stagedDiscountAmt : (snapshot?.billing?.discountAmount || 0)).toLocaleString()}
-                                                                </span>
+                                                                <div className="flex items-baseline gap-1 mt-0.5">
+                                                                    <span className="font-mono font-black text-sm sm:text-base text-rose-600 dark:text-rose-400">
+                                                                        -₹{(stagedDiscountAmt !== undefined ? stagedDiscountAmt : (snapshot?.billing?.discountAmount || 0)).toLocaleString()}
+                                                                    </span>
+                                                                    {discountReasonDisplay && (
+                                                                        <span className="text-[11px] font-bold text-rose-600/90 dark:text-rose-400/90 truncate max-w-[90px]" title={discountReasonDisplay}>
+                                                                            ({discountReasonDisplay})
+                                                                        </span>
+                                                                    )}
+                                                                </div>
                                                             ) : (
                                                                 <span className="text-xs text-slate-400 dark:text-zinc-500 font-medium leading-6">₹0</span>
                                                             )}
