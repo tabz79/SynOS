@@ -438,7 +438,7 @@ export function generateThermalInvoiceHtml(payload = {}) {
             html, body {
                 width: 72mm !important;
                 max-width: 72mm !important;
-                margin: 0 !important;
+                margin: 0 auto !important;
                 padding: 0 !important;
                 color: #000000 !important;
                 background: #ffffff !important;
@@ -451,7 +451,7 @@ export function generateThermalInvoiceHtml(payload = {}) {
             .thermal-receipt-root {
                 width: 72mm !important;
                 max-width: 72mm !important;
-                margin: 0 !important;
+                margin: 0 auto !important;
                 padding: 1.5mm 1.5mm !important;
                 box-sizing: border-box !important;
                 page-break-after: avoid !important;
@@ -461,7 +461,7 @@ export function generateThermalInvoiceHtml(payload = {}) {
             }
         }
         html, body {
-            margin: 0;
+            margin: 0 auto;
             padding: 0;
             width: 72mm;
             max-width: 72mm;
@@ -476,7 +476,7 @@ export function generateThermalInvoiceHtml(payload = {}) {
         .thermal-receipt-root {
             width: 72mm;
             max-width: 72mm;
-            margin: 0;
+            margin: 0 auto;
             padding: 1.5mm 1.5mm;
             box-sizing: border-box;
         }
@@ -797,7 +797,7 @@ export function generateThermalPrepaidSlipHtml(payload = {}) {
             html, body {
                 width: 72mm !important;
                 max-width: 72mm !important;
-                margin: 0 !important;
+                margin: 0 auto !important;
                 padding: 0 !important;
                 color: #000000 !important;
                 background: #ffffff !important;
@@ -810,7 +810,7 @@ export function generateThermalPrepaidSlipHtml(payload = {}) {
             .thermal-receipt-root {
                 width: 72mm !important;
                 max-width: 72mm !important;
-                margin: 0 !important;
+                margin: 0 auto !important;
                 padding: 1.5mm 1.5mm !important;
                 box-sizing: border-box !important;
                 page-break-after: avoid !important;
@@ -820,7 +820,7 @@ export function generateThermalPrepaidSlipHtml(payload = {}) {
             }
         }
         html, body {
-            margin: 0;
+            margin: 0 auto;
             padding: 0;
             width: 72mm;
             max-width: 72mm;
@@ -835,7 +835,7 @@ export function generateThermalPrepaidSlipHtml(payload = {}) {
         .thermal-receipt-root {
             width: 72mm;
             max-width: 72mm;
-            margin: 0;
+            margin: 0 auto;
             padding: 1.5mm 1.5mm;
             box-sizing: border-box;
         }
@@ -1163,7 +1163,7 @@ export function generateThermalInsuranceReceiptHtml(payload = {}) {
             html, body {
                 width: 72mm !important;
                 max-width: 72mm !important;
-                margin: 0 !important;
+                margin: 0 auto !important;
                 padding: 0 !important;
                 color: #000000 !important;
                 background: #ffffff !important;
@@ -1176,7 +1176,7 @@ export function generateThermalInsuranceReceiptHtml(payload = {}) {
             .thermal-receipt-root {
                 width: 72mm !important;
                 max-width: 72mm !important;
-                margin: 0 !important;
+                margin: 0 auto !important;
                 padding: 1.5mm 1.5mm !important;
                 box-sizing: border-box !important;
                 page-break-after: avoid !important;
@@ -1186,7 +1186,7 @@ export function generateThermalInsuranceReceiptHtml(payload = {}) {
             }
         }
         html, body {
-            margin: 0;
+            margin: 0 auto;
             padding: 0;
             width: 72mm;
             max-width: 72mm;
@@ -1201,7 +1201,7 @@ export function generateThermalInsuranceReceiptHtml(payload = {}) {
         .thermal-receipt-root {
             width: 72mm;
             max-width: 72mm;
-            margin: 0;
+            margin: 0 auto;
             padding: 1.5mm 1.5mm;
             box-sizing: border-box;
         }

@@ -86,6 +86,7 @@ export function IntentPanel({ onVisitUpdated }) {
     const [isPartialPayment, setIsPartialPayment] = useState(false);
     const [customPaymentAmount, setCustomPaymentAmount] = useState('');
     const [userPayerExpandedState, setUserPayerExpandedState] = useState(false);
+    const [isPatientCardCollapsed, setIsPatientCardCollapsed] = useState(false);
 
     // In-Panel Post-Processing & Print Dispatch State (Split Screen Mode)
     const [postProcessingSession, setPostProcessingSession] = useState(null);
@@ -1248,7 +1249,7 @@ export function IntentPanel({ onVisitUpdated }) {
                         )}
                     </h2>
                     {isPostProcessingView && (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             {billingMode === 'PrepaidPartner' ? 'Corporate B2B Registered' : 'Billed & Settled'}
                         </span>
@@ -1402,45 +1403,73 @@ export function IntentPanel({ onVisitUpdated }) {
                                             </div>
 
                                             {/* Live Document Canvas Surface */}
-                                            <div className="flex-1 min-h-0 my-3 rounded-2xl border border-slate-300/60 dark:border-zinc-800 bg-slate-200/50 dark:bg-zinc-950/80 p-3 flex justify-center items-start overflow-y-auto relative shadow-inner">
+                                            <div className="flex-1 min-h-0 my-3 rounded-2xl border border-slate-300/60 dark:border-zinc-800 bg-slate-200/50 dark:bg-zinc-950/80 p-3 flex justify-center overflow-y-auto relative shadow-inner">
                                                 {selectedDocFormat === 'thermal' && (
-                                                    <div className="w-[330px] max-w-full my-auto rounded-lg shadow-xl overflow-hidden border border-slate-300 dark:border-zinc-700 bg-white flex flex-col">
+                                                    <div className="w-[285px] max-w-full my-auto rounded-xl shadow-xl overflow-hidden border border-slate-300 dark:border-zinc-700 bg-white flex flex-col mx-auto">
                                                         <div className="bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 px-3 py-1.5 text-[11px] font-mono border-b border-slate-200 dark:border-zinc-700 flex justify-between items-center">
                                                             <span>Thermal POS (80mm)</span>
-                                                            <span className="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded font-bold">1:1 Roll Preview</span>
+                                                            <span className="text-[10px] bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 font-bold">1:1 Roll Preview</span>
                                                         </div>
                                                         <iframe
                                                             title="Thermal POS Receipt"
                                                             srcDoc={thermalHtml}
-                                                            className="w-full h-[490px] border-0"
+                                                            className="w-full h-[490px] border-0 mx-auto"
                                                         />
                                                     </div>
                                                 )}
                                                 {selectedDocFormat === 'a4' && (
-                                                    <div className="w-full flex justify-center py-2 max-h-full overflow-y-auto">
-                                                        <div id="synos-inpanel-print-canvas" className="transform scale-[0.60] xl:scale-[0.68] 2xl:scale-[0.75] origin-top shadow-2xl rounded-lg overflow-hidden bg-white">
+                                                    <div className="w-full h-full flex justify-center py-2 overflow-y-auto">
+                                                        <div 
+                                                            id="synos-inpanel-print-canvas" 
+                                                            style={{ 
+                                                                width: '210mm', 
+                                                                minHeight: '297mm',
+                                                                transform: 'scale(0.60)',
+                                                                transformOrigin: 'top center',
+                                                                marginBottom: '-118mm'
+                                                            }}
+                                                            className="bg-white text-zinc-900 shadow-2xl rounded-sm p-8 sm:p-10 border border-slate-300 dark:border-zinc-700 flex flex-col justify-between shrink-0"
+                                                        >
                                                             <DynamicDocumentRenderer
                                                                 slotId={isPrepaid ? 'prepaid_patient_a4_slip' : 'patient_tax_invoice'}
                                                                 data={buildTaxInvoiceData()}
                                                                 readOnly={true}
                                                             />
+                                                            <div className="mt-6 pt-2 border-t border-zinc-200 flex items-center justify-between text-[8px] text-zinc-400 select-none">
+                                                                <span>SynOS Enterprise Clinical & Financial OS • Confidential</span>
+                                                                <span>A4 Verified Statement • Generated: {new Date().toLocaleDateString()}</span>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 )}
                                                 {selectedDocFormat === 'claim' && (
-                                                    <div className="w-full flex justify-center py-2 max-h-full overflow-y-auto">
+                                                    <div className="w-full h-full flex justify-center py-2 overflow-y-auto">
                                                         {isLoadingClaimDoc ? (
                                                             <div className="flex flex-col items-center justify-center h-64 gap-2 text-slate-500">
                                                                 <Loader2 className="w-6 h-6 animate-spin text-synos-primary" />
                                                                 <span className="text-xs font-semibold">Generating Doctor Receivable Statement...</span>
                                                             </div>
                                                         ) : (
-                                                            <div id="synos-inpanel-print-canvas" className="transform scale-[0.60] xl:scale-[0.68] 2xl:scale-[0.75] origin-top shadow-2xl rounded-lg overflow-hidden bg-white">
+                                                            <div 
+                                                                id="synos-inpanel-print-canvas" 
+                                                                style={{ 
+                                                                    width: '210mm', 
+                                                                    minHeight: '297mm',
+                                                                    transform: 'scale(0.60)',
+                                                                    transformOrigin: 'top center',
+                                                                    marginBottom: '-118mm'
+                                                                }}
+                                                                className="bg-white text-zinc-900 shadow-2xl rounded-sm p-8 sm:p-10 border border-slate-300 dark:border-zinc-700 flex flex-col justify-between shrink-0"
+                                                            >
                                                                 <DynamicDocumentRenderer
                                                                     slotId="partner_b2b_invoice"
                                                                     data={partnerClaimData || buildTaxInvoiceData()}
                                                                     readOnly={true}
                                                                 />
+                                                                <div className="mt-6 pt-2 border-t border-zinc-200 flex items-center justify-between text-[8px] text-zinc-400 select-none">
+                                                                    <span>SynOS Enterprise Clinical & Financial OS • Doctor Receivable Claim</span>
+                                                                    <span>Commercial Statement • Generated: {new Date().toLocaleDateString()}</span>
+                                                                </div>
                                                             </div>
                                                         )}
                                                     </div>
@@ -1454,15 +1483,15 @@ export function IntentPanel({ onVisitUpdated }) {
                                                         <span className={cn(
                                                             "text-xs font-bold px-2.5 py-1 rounded-lg flex items-center gap-1.5 animate-in fade-in",
                                                             printFeedback.type === 'success'
-                                                                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
-                                                                : "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/30"
+                                                                ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
+                                                                : "bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800"
                                                         )}>
                                                             <CheckCircle2 className="w-3.5 h-3.5" />
                                                             {printFeedback.message}
                                                         </span>
                                                     ) : (
                                                         <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400 flex items-center gap-1.5">
-                                                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                                                             Ready to Print • {selectedDocFormat === 'thermal' ? '80mm Roll' : 'A4 Paper'} • {selectedPrinter === 'default' ? 'OS Dialog' : selectedPrinter}
                                                         </span>
                                                     )}
@@ -1473,7 +1502,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                         type="button"
                                                         onClick={handleExecutePrint}
                                                         disabled={isPrinting}
-                                                        className="py-3 px-6 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/25 active:scale-[0.99] transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
+                                                        className="py-3 px-6 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 bg-emerald-50 hover:bg-emerald-100/90 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/80 shadow-xs active:scale-[0.99] transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-1"
                                                     >
                                                         {isPrinting ? (
                                                             <>
@@ -1482,9 +1511,9 @@ export function IntentPanel({ onVisitUpdated }) {
                                                             </>
                                                         ) : (
                                                             <>
-                                                                <Printer className="w-4 h-4" />
+                                                                <Printer className="w-4 h-4 text-emerald-700 dark:text-emerald-300" />
                                                                 <span>Print {selectedDocFormat === 'thermal' ? 'Thermal Slip' : (selectedDocFormat === 'a4' ? 'A4 Invoice' : 'Doc Claim')}</span>
-                                                                <span className="text-[10px] font-mono opacity-70 bg-black/20 px-1.5 py-0.5 rounded">↵ Enter</span>
+                                                                <span className="text-[10px] font-mono opacity-70 bg-emerald-200/50 dark:bg-emerald-900/60 px-1.5 py-0.5 rounded">↵ Enter</span>
                                                             </>
                                                         )}
                                                     </button>
@@ -1518,7 +1547,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                         ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30"
                                                         : billingMode === 'Insurance'
                                                             ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30"
-                                                            : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                                                            : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60"
                                                 )}>
                                                     {billingMode === 'PrepaidPartner' ? 'Corporate B2B (Prepaid)' : billingMode === 'Insurance' ? 'Insurance / TPA' : 'Direct / Standard'}
                                                 </span>
@@ -1660,7 +1689,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                             </>
                                                         ) : (
                                                             <>
-                                                                <div className="flex items-center justify-between font-bold text-emerald-700 dark:text-emerald-300">
+                                                                <div className="flex items-center justify-between font-bold text-emerald-800 dark:text-emerald-300">
                                                                     <span>Counter Amount Paid</span>
                                                                     <span className="font-mono">
                                                                         ₹{(postProcessingSession?.paidAmount !== undefined ? postProcessingSession.paidAmount : (snapshot?.billing?.totalPaid || snapshot?.billing?.netAmount || 0)).toLocaleString()} via {paymentMethod || snapshot?.billing?.paymentMethod || 'Cash'}
@@ -1668,7 +1697,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                                 </div>
                                                                 <div className="flex items-center justify-between font-semibold text-slate-700 dark:text-zinc-300">
                                                                     <span>Balance Remaining Due</span>
-                                                                    <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                                                                    <span className="font-mono font-bold text-emerald-700 dark:text-emerald-300">
                                                                         ₹{Math.max(0, (stagedNet !== undefined ? stagedNet : (snapshot?.billing?.netAmount || 0)) - (postProcessingSession?.paidAmount !== undefined ? postProcessingSession.paidAmount : (snapshot?.billing?.totalPaid || 0))).toLocaleString()} (Fully Settled)
                                                                     </span>
                                                                 </div>
@@ -1679,7 +1708,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                     {/* Billed By & Timestamp footer */}
                                                     <div className="pt-1 flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400">
                                                         <span>Billed by: <strong className="text-slate-700 dark:text-zinc-300">{snapshot?.visit?.billedBy || user?.name || 'Staff Desk'}</strong></span>
-                                                        <span>Status: <strong className="text-emerald-600 dark:text-emerald-400">Locked & Audited</strong></span>
+                                                        <span>Status: <strong className="text-emerald-700 dark:text-emerald-300">Locked & Audited</strong></span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1723,9 +1752,10 @@ export function IntentPanel({ onVisitUpdated }) {
                                         onFocusCapture={() => { if (userPayerExpandedState) setUserPayerExpandedState(false); }}
                                         onPointerDownCapture={() => { if (userPayerExpandedState) setUserPayerExpandedState(false); }}
                                     >
-                                        {/* Step 1: Patient Identification (Compressed height, tightly hugs content) */}
+                                        {/* Step 1: Patient Identification (Compressed height, tightly hugs content, collapsible) */}
                                         <div className={cn(
-                                            "rounded-[28px] border p-4 sm:p-5 space-y-3 transition-all shrink-0",
+                                            "rounded-[28px] border transition-all shrink-0",
+                                            isPatientCardCollapsed ? "p-3 sm:p-3.5 space-y-0" : "p-4 sm:p-5 space-y-3",
                                             isDark
                                                 ? "bg-zinc-900/90 border-zinc-800 shadow-xl"
                                                 : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_14px_40px_rgba(15,35,60,0.08),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"
@@ -1738,20 +1768,58 @@ export function IntentPanel({ onVisitUpdated }) {
                                                     <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-normal">
                                                         Patient Identification
                                                     </h3>
+                                                    {isPatientCardCollapsed && (
+                                                        <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-zinc-300 ml-2">
+                                                            <span className="font-bold text-slate-900 dark:text-white">{displayedPatient?.fullName || displayedPatient?.name}</span>
+                                                            <span>•</span>
+                                                            <span>{displayedPatient?.age ? `${displayedPatient.age} Yrs` : ''} {displayedPatient?.gender || ''}</span>
+                                                            {displayedPatient?.phone && (
+                                                                <>
+                                                                    <span>•</span>
+                                                                    <span className="font-mono">{displayedPatient.phone}</span>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    {isPatientCardCollapsed ? (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setIsPatientCardCollapsed(false)}
+                                                            className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 transition-all cursor-pointer active:scale-95"
+                                                            title="Expand Patient Identification"
+                                                        >
+                                                            <span>Expand</span>
+                                                            <ChevronDown className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setIsPatientCardCollapsed(true)}
+                                                            className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 transition-all cursor-pointer active:scale-95"
+                                                            title="Minimize"
+                                                        >
+                                                            <span>Minimize</span>
+                                                            <ChevronUp className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
 
                                             {/* The Patient Card (Recessed Pod - Compacted) */}
-                                            <div className="rounded-2xl border border-[#CCDCE8] dark:border-zinc-800 bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] dark:bg-zinc-950/80 p-3.5 sm:p-4 shadow-[inset_0_1px_3px_rgba(15,35,60,0.06),0_1px_0_rgba(255,255,255,0.7)]">
-                                                <RichPatientCard
-                                                    patient={displayedPatient}
-                                                    onAction={handleClearPatient}
-                                                    actionLabel={(Boolean(snapshot?.visit?.id || snapshot?.visit?.visitId || snapshot?.billing?.isLocked)) ? null : "Change"}
-                                                    secondaryActionLabel={isCorrectionIntent ? "Edit" : null}
-                                                    onSecondaryAction={handleOpenEditDemographics}
-                                                    isLocked={true}
-                                                />
-                                            </div>
+                                            {!isPatientCardCollapsed && (
+                                                <div className="rounded-2xl border border-[#CCDCE8] dark:border-zinc-800 bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] dark:bg-zinc-950/80 p-3.5 sm:p-4 shadow-[inset_0_1px_3px_rgba(15,35,60,0.06),0_1px_0_rgba(255,255,255,0.7)] animate-in fade-in duration-200">
+                                                    <RichPatientCard
+                                                        patient={displayedPatient}
+                                                        onAction={handleClearPatient}
+                                                        actionLabel={(Boolean(snapshot?.visit?.id || snapshot?.visit?.visitId || snapshot?.billing?.isLocked)) ? null : "Change"}
+                                                        secondaryActionLabel={isCorrectionIntent ? "Edit" : null}
+                                                        onSecondaryAction={handleOpenEditDemographics}
+                                                        isLocked={true}
+                                                    />
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Step 2: Visit Details (Directly below Patient Identification, pulled up!) */}
@@ -1775,8 +1843,8 @@ export function IntentPanel({ onVisitUpdated }) {
                                         />
                                     </div>
 
-                                    {/* RIGHT COLUMN: 5 Cols (Non-scrolling shell; only Financials card scrolls internally) */}
-                                    <div className="lg:col-span-5 flex flex-col gap-4 h-full min-h-0 overflow-hidden">
+                                    {/* RIGHT COLUMN: 5 Cols (Split-scroll: independent smooth scroll for Billing & Financials) */}
+                                    <div className="lg:col-span-5 flex flex-col gap-4 h-full min-h-0 overflow-y-auto pr-1.5">
                                         {/* Billing & Payer Mode */}
                                         <div 
                                             ref={payerModeContainerRef}
@@ -1989,10 +2057,10 @@ export function IntentPanel({ onVisitUpdated }) {
                             <button
                                 type="button"
                                 onClick={() => handlePrintReceipt()}
-                                className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-500/40 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
+                                className="py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 hover:bg-emerald-100 transition-all active:scale-95 shadow-2xs shrink-0 cursor-pointer"
                                 title="Print Thermal 80mm POS Slip"
                             >
-                                <Printer className="w-4 h-4" /> Thermal
+                                <Printer className="w-4 h-4 text-emerald-700 dark:text-emerald-300" /> Thermal
                             </button>
                             <button
                                 type="button"
@@ -2046,16 +2114,27 @@ export function IntentPanel({ onVisitUpdated }) {
                                     </button>
                                 </>
                             ) : (
-                                <button
-                                    type="button"
-                                    onClick={() => openResumeIntent(currentVisitId || drawerState.visitId)}
-                                    className={cn(
-                                        "flex-1 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1",
-                                        ui.actionBtn.enabled
-                                    )}
-                                >
-                                    Close Editor <CheckCircle2 className="w-4 h-4" />
-                                </button>
+                                <>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsCancelModalOpen(true)}
+                                        className="py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 transition-all active:scale-95 shadow-2xs cursor-pointer shrink-0"
+                                        title="Cancel this visit and issue automated refund"
+                                    >
+                                        <Ban className="w-4 h-4" />
+                                        <span>Cancel Visit</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => openResumeIntent(currentVisitId || drawerState.visitId)}
+                                        className={cn(
+                                            "flex-1 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1",
+                                            ui.actionBtn.enabled
+                                        )}
+                                    >
+                                        Close Editor <CheckCircle2 className="w-4 h-4" />
+                                    </button>
+                                </>
                             )}
                         </div>
                     ) : isVisitFinalized ? (
