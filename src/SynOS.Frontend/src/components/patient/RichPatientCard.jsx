@@ -75,7 +75,7 @@ export const formatPatientDob = (dobString, isDobKnown) => {
     return `${day}-${month}-${year} (${status})`;
 };
 
-export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActionLabel, onSecondaryAction, isLocked }) => {
+export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActionLabel, onSecondaryAction, isLocked, isHighlighted, patientIndex }) => {
     // Robust extraction
     const p = patient;
     let name = p.name || p.Name || p.fullName || p.FullName || p.displayName || p.DisplayName || `${p.firstName || p.FirstName || ''} ${p.lastName || p.LastName || ''}`.trim();
@@ -132,7 +132,8 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
             onClick={onAction}
             className={cn(
                 "flex flex-col gap-3 transition-all group",
-                isLocked ? cardUi.locked : cardUi.inactive
+                isLocked ? cardUi.locked : cardUi.inactive,
+                isHighlighted && "ring-2 ring-blue-500 border-blue-500 bg-blue-50/50 dark:bg-blue-950/30 shadow-sm"
             )}
         >
             {/* NEW LAYOUT: STRICT GRID */}
@@ -194,28 +195,63 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
                     )}
                     {actionLabel && (
                         <button 
-                            id="btn-change-patient"
+                            id={actionLabel === "Select" ? `btn-select-patient-${p.id || p.Id || p.patientId || patientIndex}` : "btn-change-patient"}
+                            data-patient-select-btn={actionLabel === "Select" ? "true" : undefined}
                             type="button"
                             onClick={(e) => {
                                 e.stopPropagation();
                                 if (onAction) onAction();
                             }}
                             onKeyDown={(e) => {
-                                if (e.key === 'Tab' && !e.shiftKey) {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    const payerBtn = document.getElementById('btn-payer-mode-active') ||
-                                                     document.querySelector('[data-payer-mode-btn="true"][data-selected="true"]') ||
-                                                     document.querySelector('[data-payer-mode-btn="true"]');
-                                    if (payerBtn) payerBtn.focus();
-                                } else if (e.key === 'Tab' && e.shiftKey) {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    const editBtn = document.getElementById('btn-edit-demographics');
-                                    if (editBtn) editBtn.focus();
+                                if (actionLabel === "Select") {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        if (onAction) onAction();
+                                    } else if (e.key === 'ArrowDown') {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        const allButtons = Array.from(document.querySelectorAll('[data-patient-select-btn="true"]'));
+                                        const currentPos = allButtons.indexOf(e.currentTarget);
+                                        if (currentPos !== -1 && currentPos < allButtons.length - 1) {
+                                            allButtons[currentPos + 1].focus();
+                                        } else {
+                                            const newBtn = document.getElementById('btn-new-patient');
+                                            if (newBtn) newBtn.focus();
+                                        }
+                                    } else if (e.key === 'ArrowUp') {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        const allButtons = Array.from(document.querySelectorAll('[data-patient-select-btn="true"]'));
+                                        const currentPos = allButtons.indexOf(e.currentTarget);
+                                        if (currentPos > 0) {
+                                            allButtons[currentPos - 1].focus();
+                                        } else {
+                                            const searchInput = document.getElementById('input-patient-search');
+                                            if (searchInput) searchInput.focus();
+                                        }
+                                    }
+                                } else {
+                                    // Active Visit Identified Patient Card "Change" Button
+                                    if (e.key === 'Tab' && !e.shiftKey) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        const payerBtn = document.getElementById('btn-payer-mode-active') ||
+                                                         document.querySelector('[data-payer-mode-btn="true"][data-selected="true"]') ||
+                                                         document.querySelector('[data-payer-mode-btn="true"]');
+                                        if (payerBtn) payerBtn.focus();
+                                    } else if (e.key === 'Tab' && e.shiftKey) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        const editBtn = document.getElementById('btn-edit-demographics');
+                                        if (editBtn) editBtn.focus();
+                                    }
                                 }
                             }}
-                            className="text-[#0369A1] hover:text-[#0284C7] font-semibold underline underline-offset-4 decoration-blue-200 hover:decoration-blue-500 transition-all text-sm leading-none focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1 rounded px-1.5 py-0.5 cursor-pointer"
+                            className={cn(
+                                "text-[#0369A1] hover:text-[#0284C7] font-semibold underline underline-offset-4 decoration-blue-200 hover:decoration-blue-500 transition-all text-sm leading-none focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1 rounded px-1.5 py-0.5 cursor-pointer",
+                                actionLabel === "Select" && "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 no-underline px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 font-bold hover:bg-blue-600 hover:text-white transition-all shadow-2xs"
+                            )}
                         >
                             {actionLabel}
                         </button>

@@ -16,6 +16,23 @@ export function PatientIdentification({
     const [searchQuery, setSearchQuery] = useState("");
     const [matches, setMatches] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
+    const [selectedMatchIndex, setSelectedMatchIndex] = useState(-1);
+    const resultsContainerRef = useRef(null);
+
+    // Reset highlighted match when matches change
+    useEffect(() => {
+        setSelectedMatchIndex(-1);
+    }, [matches]);
+
+    // Keep active highlighted match smoothly in view
+    useEffect(() => {
+        if (selectedMatchIndex >= 0 && resultsContainerRef.current) {
+            const el = resultsContainerRef.current.children[selectedMatchIndex];
+            if (el && typeof el.scrollIntoView === 'function') {
+                el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+        }
+    }, [selectedMatchIndex]);
 
     // Local UI state for "New Patient Form" visibility
     const [isNewPatientMode, setIsNewPatientMode] = useState(false);
@@ -136,9 +153,48 @@ export function PatientIdentification({
                                 <div className="relative group">
                                     <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-600 transition-colors pointer-events-none" />
                                     <input
+                                        id="input-patient-search"
                                         type="text"
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'ArrowDown') {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                if (matches.length > 0) {
+                                                    setSelectedMatchIndex(prev => (prev < matches.length - 1 ? prev + 1 : 0));
+                                                }
+                                            } else if (e.key === 'ArrowUp') {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                if (matches.length > 0) {
+                                                    setSelectedMatchIndex(prev => (prev > 0 ? prev - 1 : matches.length - 1));
+                                                }
+                                            } else if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                if (selectedMatchIndex >= 0 && selectedMatchIndex < matches.length) {
+                                                    const chosen = matches[selectedMatchIndex];
+                                                    handleSelectPatient({ ...chosen, id: chosen.id || chosen.Id || chosen.patientId });
+                                                } else if (matches.length === 1) {
+                                                    const chosen = matches[0];
+                                                    handleSelectPatient({ ...chosen, id: chosen.id || chosen.Id || chosen.patientId });
+                                                }
+                                            } else if (e.key === 'Tab') {
+                                                if (!e.shiftKey && matches.length > 0) {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    const targetIdx = selectedMatchIndex >= 0 ? selectedMatchIndex : 0;
+                                                    setSelectedMatchIndex(targetIdx);
+                                                    const targetP = matches[targetIdx];
+                                                    const pId = targetP.id || targetP.Id || targetP.patientId;
+                                                    const selectBtn = document.getElementById(`btn-select-patient-${pId}`);
+                                                    if (selectBtn) {
+                                                        selectBtn.focus();
+                                                    }
+                                                }
+                                            }
+                                        }}
                                         placeholder="Search by Mobile..."
                                         className={cn(
                                             "w-full h-11 rounded-xl !pl-10 !pr-10 py-2.5 text-base font-medium tracking-normal focus:outline-none transition-all",
@@ -155,18 +211,28 @@ export function PatientIdentification({
                     </div>
 
                     {/* BLOCK B: SEARCH RESULTS (The ONLY Scrolling Region) */}
-                    <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-700 p-4 sm:p-6 pt-3 space-y-3">
+                    <div ref={resultsContainerRef} className="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-zinc-700 p-4 sm:p-6 pt-3 space-y-3">
                         {matches.length > 0 && (
                             <>
-                                {matches.map(p => {
+                                {matches.map((p, idx) => {
                                     const pId = p.id || p.Id || p.patientId;
+                                    const isHighlighted = idx === selectedMatchIndex;
                                     return (
-                                        <RichPatientCard
+                                        <div
                                             key={pId}
-                                            patient={p}
-                                            onAction={() => handleSelectPatient({ ...p, id: pId })}
-                                            actionLabel="Select"
-                                        />
+                                            className={cn(
+                                                "rounded-2xl transition-all duration-150",
+                                                isHighlighted && "ring-2 ring-blue-500 shadow-md"
+                                            )}
+                                        >
+                                            <RichPatientCard
+                                                patient={p}
+                                                onAction={() => handleSelectPatient({ ...p, id: pId })}
+                                                actionLabel="Select"
+                                                patientIndex={idx}
+                                                isHighlighted={isHighlighted}
+                                            />
+                                        </div>
                                     );
                                 })}
                             </>
@@ -189,6 +255,7 @@ export function PatientIdentification({
                                 )}
 
                                 <button
+                                    id="btn-new-patient"
                                     onClick={() => setIsNewPatientMode(true)}
                                     className={cn(
                                         "flex items-center gap-2 px-4 py-1.5 rounded-md type-label shadow-sm transition-colors",

@@ -1934,14 +1934,10 @@ function ReferralCombinedInput({
         return (partners || []).filter(p => p.name && p.name.toLowerCase().includes(q)).slice(0, 15);
     }, [value, partners]);
 
-    // Reset keyboard selection index when suggestions change
+    // Reset keyboard selection index when suggestions change - start at -1 (nothing pre-selected)
     useEffect(() => {
-        if (showSuggestions && suggestions.length > 0) {
-            setSelectedIndex(0);
-        } else {
-            setSelectedIndex(-1);
-        }
-    }, [value, showSuggestions, suggestions.length]);
+        setSelectedIndex(-1);
+    }, [value, showSuggestions]);
 
     // Scroll selected item into view inside dropdown
     useEffect(() => {
@@ -1995,6 +1991,7 @@ function ReferralCombinedInput({
             e.stopPropagation();
             if (showSuggestions && selectedIndex >= 0 && selectedIndex < suggestions.length) {
                 handleApply(suggestions[selectedIndex].referralPartnerId);
+                setShowSuggestions(false);
                 if (onAdvanceForward) onAdvanceForward();
             } else {
                 setShowSuggestions(false);
@@ -2007,18 +2004,15 @@ function ReferralCombinedInput({
         } else if (e.key === 'Tab') {
             e.preventDefault();
             e.stopPropagation();
+            // TAB NEVER COMMITS UNCONFIRMED SELECTIONS (Enterprise Focus Traversal Law)
+            setShowSuggestions(false);
             if (!e.shiftKey) {
-                if (showSuggestions && selectedIndex >= 0 && selectedIndex < suggestions.length) {
-                    handleApply(suggestions[selectedIndex].referralPartnerId);
-                }
-                setShowSuggestions(false);
                 if (onAdvanceForward) onAdvanceForward();
                 else {
                     const target = nextInputRef?.current ? nextInputRef.current : fallbackNextRef?.current;
                     if (target) target.focus();
                 }
             } else {
-                setShowSuggestions(false);
                 if (onAdvanceBackward) onAdvanceBackward();
             }
         } else if (e.key === 'Escape') {
