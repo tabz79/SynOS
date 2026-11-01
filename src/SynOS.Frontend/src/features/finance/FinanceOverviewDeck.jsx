@@ -67,9 +67,9 @@ export const DepartmentBreakdownCard = ({
     const formatInr = (val) => Math.round(Number(val) || 0).toLocaleString('en-IN');
 
     return (
-        <div className="flex-1 min-w-0 p-3.5 sm:p-4 rounded-[22px] bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-[0_4px_20px_rgba(15,35,60,0.06)] flex flex-col justify-between overflow-hidden">
+        <div className="flex-1 min-w-0 p-4 sm:p-4.5 rounded-[22px] bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-[0_4px_20px_rgba(15,35,60,0.06)] flex flex-col justify-between overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-zinc-800 shrink-0">
+            <div className="flex items-center justify-between pb-1.5 border-b border-slate-100 dark:border-zinc-800 shrink-0">
                 <div className="flex items-center gap-2.5">
                     <div className={cn("w-7 h-7 sm:w-8 sm:h-8 rounded-[9px] flex items-center justify-center shrink-0 shadow-2xs", iconBg)}>
                         <CardIcon size={16} strokeWidth={2.4} />
@@ -90,16 +90,16 @@ export const DepartmentBreakdownCard = ({
                 </div>
             </div>
 
-            {/* Department Breakdown Grid with ZERO SCROLL and Always Visible 4 Rows */}
+            {/* Department Breakdown with ZERO SCROLL and Fluid Width Progress Tracks (CLOSES MARKERS 8 & 9) */}
             <div className="flex-1 min-h-0 flex flex-col justify-between pt-1">
                 {/* Column Headers */}
-                <div className="grid grid-cols-12 text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-zinc-500 pb-0.5 border-b border-slate-100 dark:border-zinc-800 shrink-0">
-                    <div className="col-span-5 pl-0.5">{colHeader}</div>
-                    <div className="col-span-3 text-right pr-2">Billed</div>
-                    <div className="col-span-4 pl-3">Share</div>
+                <div className="flex items-center text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-zinc-500 pb-1 border-b border-slate-100 dark:border-zinc-800 shrink-0">
+                    <div className="w-[180px] sm:w-[210px] lg:w-[230px] pl-0.5 shrink-0">{colHeader}</div>
+                    <div className="flex-1 px-4 text-left">Volume Share & Workload</div>
+                    <div className="w-[90px] sm:w-[110px] text-right pr-1 shrink-0">Billed</div>
                 </div>
 
-                {/* 4 Rows: Each is flex-1 with min-h-0 so all 4 fit mathematically without any inner scroll */}
+                {/* 4 Rows: Each is flex-1 with min-h-0 so all 4 fit mathematically */}
                 <div className="flex-1 min-h-0 flex flex-col justify-between divide-y divide-slate-100/70 dark:divide-zinc-800/50">
                     {items.map((item, idx) => {
                         const name = item.departmentName || item.modality || 'General';
@@ -114,40 +114,40 @@ export const DepartmentBreakdownCard = ({
                             <div 
                                 key={idx}
                                 onClick={() => onItemClick(item)}
-                                className="flex-1 min-h-0 grid grid-cols-12 items-center py-0.5 sm:py-1 pl-0.5 group hover:bg-slate-50/70 dark:hover:bg-zinc-800/40 transition-colors cursor-pointer rounded-lg"
+                                className="flex-1 min-h-0 flex items-center py-1 pl-0.5 group hover:bg-slate-50/70 dark:hover:bg-zinc-800/40 transition-colors cursor-pointer rounded-lg"
                             >
-                                {/* Column 1: Icon + Name + Subtitle Count */}
-                                <div className="col-span-5 flex items-center gap-2 min-w-0 pr-2">
-                                    <div className={cn("w-6 h-6 sm:w-7 sm:h-7 rounded-[7px] flex items-center justify-center shrink-0 shadow-2xs", iconConfig.bg)}>
+                                {/* Column 1: Icon + Name + Count (Fixed compact width, NO DEAD SPACE!) */}
+                                <div className="w-[180px] sm:w-[210px] lg:w-[230px] flex items-center gap-2.5 min-w-0 pr-3 shrink-0">
+                                    <div className={cn("w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] flex items-center justify-center shrink-0 shadow-2xs", iconConfig.bg)}>
                                         {iconConfig.icon}
                                     </div>
                                     <div className="min-w-0 truncate">
-                                        <div className="font-bold text-slate-900 dark:text-white text-xs sm:text-[13px] truncate group-hover:text-synos-primary transition-colors leading-tight">
+                                        <div className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm truncate group-hover:text-synos-primary transition-colors leading-tight">
                                             {name}
                                         </div>
-                                        <div className="text-[10px] font-semibold text-slate-500 dark:text-zinc-400 tabular-nums leading-none mt-0.5">
+                                        <div className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400 tabular-nums leading-none mt-0.5">
                                             {units} {units === 1 ? unitLabel.replace(/s$/, '') : unitLabel}
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Column 2: Billed Currency */}
-                                <div className="col-span-3 text-right pr-2 min-w-0 truncate">
-                                    <span className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm tabular-nums tracking-normal">
-                                        ₹{formatInr(billed)}
-                                    </span>
-                                </div>
-
-                                {/* Column 3: Fatter Progress Bar + Bold Percentage */}
-                                <div className="col-span-4 pl-3 flex items-center gap-2 w-full">
-                                    <div className="flex-1 h-[16px] sm:h-[18px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner">
+                                {/* Column 2: Fluid Fatter Progress Bar + Percentage (STRETCHES TO FILL ENTIRE MIDDLE VOID!) */}
+                                <div className="flex-1 px-4 flex items-center gap-3 min-w-0">
+                                    <div className="flex-1 h-[18px] sm:h-[20px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner">
                                         <div 
                                             className={cn("h-full rounded-full transition-all duration-500", barGradient)}
                                             style={{ width: `${Math.min(100, Math.max(share > 0 ? 5 : 0, share))}%` }}
                                         />
                                     </div>
-                                    <span className="text-[11px] sm:text-xs font-bold text-slate-700 dark:text-zinc-200 w-10 text-right shrink-0 tabular-nums">
+                                    <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-zinc-200 w-12 text-right shrink-0 tabular-nums">
                                         {share.toFixed(1)}%
+                                    </span>
+                                </div>
+
+                                {/* Column 3: Billed Currency (Anchored cleanly on Right) */}
+                                <div className="w-[90px] sm:w-[110px] text-right pr-1 shrink-0 min-w-0 truncate">
+                                    <span className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm lg:text-base tabular-nums tracking-normal">
+                                        ₹{formatInr(billed)}
                                     </span>
                                 </div>
                             </div>
@@ -181,11 +181,11 @@ export const ActualCashCard = ({
     return (
         <div 
             onClick={onNavigate}
-            className="p-3.5 sm:p-4 rounded-[22px] bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-[0_4px_20px_rgba(15,35,60,0.06)] flex flex-col justify-center cursor-pointer hover:border-synos-primary/60 transition-all group h-full"
+            className="p-4 sm:p-4.5 rounded-[22px] bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-[0_4px_20px_rgba(15,35,60,0.06)] flex items-center cursor-pointer hover:border-synos-primary/60 transition-all group h-full"
         >
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-3 sm:gap-4 items-center">
+            <div className="flex flex-col md:flex-row md:items-center w-full gap-4 sm:gap-6">
                 {/* Left Part: Icon, Title, and Big Total Numeral */}
-                <div className="md:col-span-5 flex flex-col justify-center space-y-1">
+                <div className="w-[230px] sm:w-[260px] lg:w-[280px] shrink-0 flex flex-col justify-center space-y-1">
                     <div className="flex items-center gap-2">
                         <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-[10px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
                             <Wallet size={18} strokeWidth={2.4} />
@@ -194,7 +194,7 @@ export const ActualCashCard = ({
                             Actual Cash (Desk Collections)
                         </h3>
                     </div>
-                    <p className="text-2xl sm:text-3xl lg:text-[32px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums">
+                    <p className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums">
                         ₹{formatInr(total)}
                     </p>
                     <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400">
@@ -202,61 +202,57 @@ export const ActualCashCard = ({
                     </span>
                 </div>
 
-                {/* Right Part: Cash & Online Channels with Fatter Bars */}
-                <div className="md:col-span-7 flex flex-col justify-center space-y-2">
+                {/* Right Part: Fluid Cash & Online Channels (STRETCHES ACROSS ENTIRE WIDTH - CLOSES MARKER 5) */}
+                <div className="flex-1 md:border-l md:border-slate-100 dark:md:border-zinc-800 md:pl-5 lg:pl-7 flex flex-col justify-center space-y-2.5 min-w-0">
                     {/* Row 1: Cash (Physical Desk) */}
-                    <div className="space-y-0.5">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-1.5">
-                                <div className="w-6 h-6 rounded-[6px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                                    <Banknote size={13} strokeWidth={2.3} />
-                                </div>
-                                <span className="text-xs font-bold text-slate-800 dark:text-zinc-200">
-                                    Cash (Physical Desk)
-                                </span>
+                    <div className="flex items-center gap-3 w-full">
+                        <div className="w-[145px] sm:w-[165px] shrink-0 flex items-center gap-2">
+                            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-[7px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                                <Banknote size={14} strokeWidth={2.3} />
                             </div>
-                            <div className="flex items-baseline gap-1.5">
-                                <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white tabular-nums tracking-normal">
-                                    ₹{formatInr(cashAmt)}
-                                </span>
-                                <span className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 tabular-nums">
-                                    {cashPct.toFixed(1)}%
-                                </span>
-                            </div>
+                            <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-200 truncate">
+                                Cash (Physical Desk)
+                            </span>
                         </div>
-                        <div className="h-[16px] sm:h-[18px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner">
+                        <div className="flex-1 h-[18px] sm:h-[20px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner min-w-0">
                             <div 
                                 className="h-full rounded-full bg-gradient-to-r from-[#60A5FA] via-[#3B82F6] to-[#2563EB] transition-all duration-500 shadow-[0_2px_8px_rgba(37,99,235,0.35)]"
                                 style={{ width: `${Math.min(100, Math.max(cashAmt > 0 ? 5 : 0, cashPct))}%` }}
                             />
                         </div>
+                        <div className="w-[110px] sm:w-[130px] shrink-0 text-right flex items-baseline justify-end gap-1.5">
+                            <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white tabular-nums tracking-normal">
+                                ₹{formatInr(cashAmt)}
+                            </span>
+                            <span className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 tabular-nums">
+                                ({cashPct.toFixed(1)}%)
+                            </span>
+                        </div>
                     </div>
 
                     {/* Row 2: Online (Digital Gateway) */}
-                    <div className="space-y-0.5">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-1.5">
-                                <div className="w-6 h-6 rounded-[6px] bg-[#FAF5FF] text-[#A855F7] dark:bg-purple-950/40 dark:text-purple-400 border border-purple-100/90 dark:border-purple-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                                    <CreditCard size={13} strokeWidth={2.3} />
-                                </div>
-                                <span className="text-xs font-bold text-slate-800 dark:text-zinc-200">
-                                    Online (Digital Gateway)
-                                </span>
+                    <div className="flex items-center gap-3 w-full">
+                        <div className="w-[145px] sm:w-[165px] shrink-0 flex items-center gap-2">
+                            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-[7px] bg-[#FAF5FF] text-[#A855F7] dark:bg-purple-950/40 dark:text-purple-400 border border-purple-100/90 dark:border-purple-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                                <CreditCard size={14} strokeWidth={2.3} />
                             </div>
-                            <div className="flex items-baseline gap-1.5">
-                                <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white tabular-nums tracking-normal">
-                                    ₹{formatInr(onlineAmt)}
-                                </span>
-                                <span className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 tabular-nums">
-                                    {onlinePct.toFixed(1)}%
-                                </span>
-                            </div>
+                            <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-200 truncate">
+                                Online (Digital Gateway)
+                            </span>
                         </div>
-                        <div className="h-[16px] sm:h-[18px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner">
+                        <div className="flex-1 h-[18px] sm:h-[20px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner min-w-0">
                             <div 
                                 className="h-full rounded-full bg-gradient-to-r from-[#C084FC] via-[#A855F7] to-[#9333EA] transition-all duration-500 shadow-[0_2px_8px_rgba(147,51,234,0.35)]"
                                 style={{ width: `${Math.min(100, Math.max(onlineAmt > 0 ? 5 : 0, onlinePct))}%` }}
                             />
+                        </div>
+                        <div className="w-[110px] sm:w-[130px] shrink-0 text-right flex items-baseline justify-end gap-1.5">
+                            <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white tabular-nums tracking-normal">
+                                ₹{formatInr(onlineAmt)}
+                            </span>
+                            <span className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 tabular-nums">
+                                ({onlinePct.toFixed(1)}%)
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -274,14 +270,20 @@ export const ConcessionsCard = ({
     const amt = Number(concessionsAmount) || 0;
     const rate = amt > 0 ? (Number(concessionsRate) || 0) : 0;
 
+    const statusConfig = rate <= 15 
+        ? { label: "Standard (<15%)", bg: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60" }
+        : rate <= 25 
+            ? { label: "Moderate (15-25%)", bg: "bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 border-amber-200 dark:border-amber-800/60" }
+            : { label: "Elevated (>25%)", bg: "bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300 border-rose-200 dark:border-rose-800/60" };
+
     return (
         <div 
             onClick={onNavigate}
-            className="p-3.5 sm:p-4 rounded-[22px] bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-[0_4px_20px_rgba(15,35,60,0.06)] flex items-center justify-between cursor-pointer hover:border-synos-primary/60 transition-all group h-full"
+            className="p-4 sm:p-4.5 rounded-[22px] bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-[0_4px_20px_rgba(15,35,60,0.06)] flex items-center cursor-pointer hover:border-synos-primary/60 transition-all group h-full"
         >
-            <div className="flex items-center justify-between w-full gap-2.5">
+            <div className="flex items-center w-full gap-4">
                 {/* Left side: Icon, Title, and Big Amount */}
-                <div className="flex flex-col justify-center space-y-1">
+                <div className="w-[160px] sm:w-[180px] shrink-0 flex flex-col justify-center space-y-1">
                     <div className="flex items-center gap-2">
                         <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-[10px] bg-[#FFF1F2] text-[#E11D48] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs">
                             <Percent size={18} strokeWidth={2.4} />
@@ -290,7 +292,7 @@ export const ConcessionsCard = ({
                             Concessions Given
                         </h3>
                     </div>
-                    <p className="text-2xl sm:text-3xl lg:text-[32px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums">
+                    <p className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums">
                         ₹{formatInr(amt)}
                     </p>
                     <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400">
@@ -298,17 +300,30 @@ export const ConcessionsCard = ({
                     </span>
                 </div>
 
-                {/* Right side: Fatter Vertical Capsule Bar + Percentage text */}
-                <div className="flex items-center gap-2.5 shrink-0 pr-0.5">
-                    <div className="w-6 sm:w-7 h-[58px] sm:h-[64px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 p-1 flex flex-col justify-end overflow-hidden shadow-inner">
+                {/* Right side: Fluid Concession Impact Meter (STRETCHES ACROSS ENTIRE WIDTH - CLOSES MARKER 6) */}
+                <div className="flex-1 border-l border-slate-100 dark:border-zinc-800 pl-4 sm:pl-5 flex flex-col justify-center space-y-2 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs font-bold text-slate-700 dark:text-zinc-300">
+                            Concession Burden
+                        </span>
+                        <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", statusConfig.bg)}>
+                            {statusConfig.label}
+                        </span>
+                    </div>
+
+                    <div className="h-[18px] sm:h-[20px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner w-full">
                         <div 
-                            className="w-full rounded-full bg-gradient-to-t from-[#F43F5E] via-[#FB7185] to-[#FDA4AF] transition-all duration-700 shadow-[0_2px_8px_rgba(251,113,133,0.35)]"
-                            style={{ height: `${amt > 0 ? Math.min(100, Math.max(8, rate)) : 0}%` }}
+                            className="h-full rounded-full bg-gradient-to-r from-[#FDA4AF] via-[#FB7185] to-[#E11D48] transition-all duration-700 shadow-[0_2px_8px_rgba(251,113,133,0.35)]"
+                            style={{ width: `${amt > 0 ? Math.min(100, Math.max(8, rate)) : 0}%` }}
                         />
                     </div>
-                    <span className="text-base sm:text-lg font-black text-rose-600 dark:text-rose-400 tabular-nums">
-                        {rate.toFixed(1)}%
-                    </span>
+
+                    <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-zinc-400">
+                        <span>Tariff Impact</span>
+                        <span className="text-sm font-black text-rose-600 dark:text-rose-400 tabular-nums">
+                            {rate.toFixed(1)}% Discounted
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -321,7 +336,7 @@ export const OperatingExpensesCard = ({
     onNavigate = () => {}
 }) => {
     const formatInr = (val) => Math.round(Number(val) || 0).toLocaleString('en-IN');
-    const radius = 32;
+    const radius = 36;
     const circumference = 2 * Math.PI * radius;
     const amt = Number(amount) || 0;
     const numRate = amt > 0 ? (Number(rate) || 0) : 0;
@@ -330,10 +345,10 @@ export const OperatingExpensesCard = ({
     return (
         <div 
             onClick={onNavigate}
-            className="p-3.5 sm:p-4 rounded-[22px] bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-[0_4px_20px_rgba(15,35,60,0.06)] flex items-center justify-between cursor-pointer hover:border-synos-primary/60 transition-all group h-full"
+            className="p-4 sm:p-4.5 rounded-[22px] bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-[0_4px_20px_rgba(15,35,60,0.06)] flex items-center justify-between cursor-pointer hover:border-synos-primary/60 transition-all group h-full"
         >
-            {/* Left Column: Icon + Title + Currency Numeral */}
-            <div className="flex flex-col justify-between h-full py-0.5">
+            {/* Left Column: Icon + Title + Numeral + Burn Context (COHESIVE STACK - CLOSES MARKER 10) */}
+            <div className="flex flex-col justify-center space-y-1.5 flex-1 min-w-0 pr-3">
                 <div className="flex items-center gap-2">
                     <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-[10px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
                         <Receipt size={18} strokeWidth={2.3} />
@@ -343,18 +358,18 @@ export const OperatingExpensesCard = ({
                     </h3>
                 </div>
 
-                <div className="pt-1">
+                <div>
                     <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none tabular-nums">
                         ₹{formatInr(amt)}
                     </p>
                     <p className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400 mt-1">
-                        Overheads, payables & burn
+                        Overheads, payables & facility burn
                     </p>
                 </div>
             </div>
 
-            {/* Right Side: Proportional Donut Ring Gauge */}
-            <div className="relative w-[78px] h-[78px] sm:w-[86px] sm:h-[86px] flex items-center justify-center shrink-0">
+            {/* Right Side: Scaled Proportional Donut Ring Gauge (CLOSES MARKER 11) */}
+            <div className="relative w-[92px] h-[92px] sm:w-[102px] sm:h-[102px] flex items-center justify-center shrink-0">
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                     <defs>
                         <linearGradient id="opExpensesDonutGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -368,7 +383,7 @@ export const OperatingExpensesCard = ({
                         r={radius}
                         stroke="#E2ECF6"
                         className="dark:stroke-zinc-800"
-                        strokeWidth="10"
+                        strokeWidth="11"
                         fill="none"
                     />
                     <circle
@@ -376,7 +391,7 @@ export const OperatingExpensesCard = ({
                         cy="50"
                         r={radius}
                         stroke="url(#opExpensesDonutGrad)"
-                        strokeWidth="10"
+                        strokeWidth="11"
                         strokeDasharray={circumference}
                         strokeDashoffset={strokeDashoffset}
                         strokeLinecap="round"
@@ -384,9 +399,14 @@ export const OperatingExpensesCard = ({
                         className="transition-all duration-700"
                     />
                 </svg>
-                <span className="absolute text-base sm:text-lg font-extrabold text-slate-800 dark:text-zinc-200 tabular-nums tracking-tight">
-                    {numRate.toFixed(1)}%
-                </span>
+                <div className="absolute flex flex-col items-center justify-center text-center">
+                    <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none">
+                        {numRate.toFixed(1)}%
+                    </span>
+                    <span className="text-[9px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-tighter mt-0.5">
+                        Burn
+                    </span>
+                </div>
             </div>
         </div>
     );
@@ -402,7 +422,7 @@ export const PayrollCard = ({
     onNavigate = () => {}
 }) => {
     const formatInr = (val) => Math.round(Number(val) || 0).toLocaleString('en-IN');
-    const radius = 32;
+    const radius = 36;
     const circumference = 2 * Math.PI * radius;
     const strokeDashoffset = circumference * (1 - Math.min(100, Math.max(0, rate)) / 100);
 
@@ -411,10 +431,10 @@ export const PayrollCard = ({
     return (
         <div 
             onClick={onNavigate}
-            className="p-3.5 sm:p-4 rounded-[22px] bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-[0_4px_20px_rgba(15,35,60,0.06)] flex items-center justify-between cursor-pointer hover:border-synos-primary/60 transition-all group h-full"
+            className="p-4 sm:p-4.5 rounded-[22px] bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-[0_4px_20px_rgba(15,35,60,0.06)] flex items-center justify-between cursor-pointer hover:border-synos-primary/60 transition-all group h-full"
         >
-            {/* Left Column: Icon + Title + Staff Badge + Numeral + Burn Subtitle */}
-            <div className="flex flex-col justify-between h-full py-0.5">
+            {/* Left Column: Icon + Title + Staff Badge + Numeral + Burn Subtitle (COHESIVE STACK - CLOSES MARKER 12) */}
+            <div className="flex flex-col justify-center space-y-1.5 flex-1 min-w-0 pr-3">
                 <div className="flex items-center gap-1.5 flex-wrap">
                     <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-[10px] bg-[#FAF5FF] text-[#A855F7] dark:bg-purple-950/40 dark:text-purple-400 border border-purple-100/90 dark:border-purple-800/40 flex items-center justify-center shrink-0 shadow-2xs">
                         <Users size={18} strokeWidth={2.3} />
@@ -432,7 +452,7 @@ export const PayrollCard = ({
                     )}
                 </div>
 
-                <div className="pt-1">
+                <div>
                     <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none tabular-nums">
                         ₹{formatInr(displayAmount)}
                     </p>
@@ -442,8 +462,8 @@ export const PayrollCard = ({
                 </div>
             </div>
 
-            {/* Right Side: Proportional Donut Ring Gauge */}
-            <div className="relative w-[78px] h-[78px] sm:w-[86px] sm:h-[86px] flex items-center justify-center shrink-0">
+            {/* Right Side: Scaled Proportional Donut Ring Gauge (CLOSES MARKER 13) */}
+            <div className="relative w-[92px] h-[92px] sm:w-[102px] sm:h-[102px] flex items-center justify-center shrink-0">
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                     <defs>
                         <linearGradient id="payrollDonutGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -457,7 +477,7 @@ export const PayrollCard = ({
                         r={radius}
                         stroke="#E2ECF6"
                         className="dark:stroke-zinc-800"
-                        strokeWidth="10"
+                        strokeWidth="11"
                         fill="none"
                     />
                     <circle
@@ -465,7 +485,7 @@ export const PayrollCard = ({
                         cy="50"
                         r={radius}
                         stroke="url(#payrollDonutGrad)"
-                        strokeWidth="10"
+                        strokeWidth="11"
                         strokeDasharray={circumference}
                         strokeDashoffset={strokeDashoffset}
                         strokeLinecap="round"
@@ -473,9 +493,14 @@ export const PayrollCard = ({
                         className="transition-all duration-700"
                     />
                 </svg>
-                <span className="absolute text-base sm:text-lg font-extrabold text-slate-800 dark:text-zinc-200 tabular-nums tracking-tight">
-                    {Number(rate || 0).toFixed(1)}%
-                </span>
+                <div className="absolute flex flex-col items-center justify-center text-center">
+                    <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none">
+                        {Number(rate || 0).toFixed(1)}%
+                    </span>
+                    <span className="text-[9px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-tighter mt-0.5">
+                        Share
+                    </span>
+                </div>
             </div>
         </div>
     );
@@ -646,15 +671,15 @@ export const FinanceOverviewDeck = ({
     const totalRadiologyScans = finalRadiology.reduce((sum, d) => sum + (Number(d.totalTestsCompleted) || 0), 0);
 
     return (
-        <div className="flex-1 min-h-0 flex flex-col justify-between gap-3 sm:gap-3.5 lg:gap-4">
-            {/* ROW 1: HERO CONTROL DECK: CARD 1 & CARD 2 */}
-            <div className="flex-1 min-h-[105px] p-3.5 sm:p-4 lg:p-4.5 rounded-[22px] bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-[0_4px_20px_rgba(15,35,60,0.06)] grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 items-center">
+        <div className="flex-1 min-h-0 flex flex-col justify-start gap-3 sm:gap-3.5 lg:gap-4">
+            {/* ROW 1: HERO CONTROL DECK: 3 MATHEMATICALLY BALANCED PODS (CLOSES MARKER 2) */}
+            <div className="flex-1 min-h-[105px] p-4 sm:p-4.5 rounded-[22px] bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-[0_4px_20px_rgba(15,35,60,0.06)] grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 items-center">
                 
-                {/* Left Column (5 Cols): Total Amount Billed Hero Card */}
-                <div className="lg:col-span-5 flex items-center gap-3.5 sm:gap-4">
+                {/* Pod 1 (4 Cols): Total Amount Billed Hero Metric */}
+                <div className="lg:col-span-4 flex items-center gap-3.5 sm:gap-4 min-w-0">
                     {/* 3D Tactile Squircle Icon */}
                     <div className="w-[64px] h-[64px] sm:w-[72px] sm:h-[72px] rounded-[18px] bg-gradient-to-b from-[#EBF5FF] to-[#D6EBFE] border border-white/90 dark:border-white/10 shadow-[0_8px_18px_rgba(37,99,235,0.18),inset_0_2px_2px_#FFFFFF] flex items-center justify-center text-[#1C6CF2] dark:text-sky-400 shrink-0">
-                        <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                        <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                             <rect x="2" y="4" width="20" height="16" rx="3" />
                             <line x1="2" y1="10" x2="22" y2="10" />
                             <line x1="6" y1="15" x2="10" y2="15" />
@@ -674,7 +699,7 @@ export const FinanceOverviewDeck = ({
                         <p className="text-2xl sm:text-3xl lg:text-[38px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums">
                             ₹{formatInr(billedRevenue)}
                         </p>
-                        <p className="text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-zinc-400">
+                        <p className="text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-zinc-400 truncate">
                             {concessionsAmount > 0 
                                 ? `Net Billed (₹${formatInr(billedRevenue + concessionsAmount)} Gross - ₹${formatInr(concessionsAmount)} Concessions)`
                                 : 'Net Clinical Tariff Billed'}
@@ -682,8 +707,40 @@ export const FinanceOverviewDeck = ({
                     </div>
                 </div>
 
-                {/* Right Column (7 Cols): Payouts vs Receivables & Dues Split Slider Card */}
-                <div className="lg:col-span-7 lg:border-l lg:border-slate-200/90 dark:lg:border-zinc-800 lg:pl-6 flex flex-col justify-center space-y-2.5">
+                {/* Pod 2 (3 Cols): Executive Bridge - Realization Rate & ARPB (OBLITERATES MARKER 2 DEAD SPACE!) */}
+                <div className="lg:col-span-3 lg:border-x lg:border-slate-100 dark:lg:border-zinc-800 lg:px-4 xl:px-5 flex flex-col justify-center space-y-2">
+                    <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-700 dark:text-zinc-300">
+                            Net Realization Rate
+                        </span>
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60">
+                            {billedRevenue + concessionsAmount > 0 
+                                ? `${((billedRevenue / (billedRevenue + concessionsAmount)) * 100).toFixed(1)}% Yield` 
+                                : '100% Yield'}
+                        </span>
+                    </div>
+
+                    <div className="h-[18px] sm:h-[20px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner">
+                        <div 
+                            className="h-full rounded-full bg-gradient-to-r from-[#38BDF8] via-[#3B82F6] to-[#2563EB] transition-all duration-500 shadow-[0_2px_8px_rgba(37,99,235,0.35)]"
+                            style={{ 
+                                width: `${billedRevenue + concessionsAmount > 0 
+                                    ? Math.min(100, Math.max(5, (billedRevenue / (billedRevenue + concessionsAmount)) * 100)) 
+                                    : 100}%` 
+                            }}
+                        />
+                    </div>
+
+                    <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-zinc-400">
+                        <span>Avg Revenue / Bill (ARPB)</span>
+                        <span className="font-bold text-slate-800 dark:text-zinc-200 tabular-nums">
+                            ₹{formatInr(totalBillsCount > 0 ? Math.round(billedRevenue / totalBillsCount) : billedRevenue)}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Pod 3 (5 Cols): Payouts vs Receivables & Dues Split Slider */}
+                <div className="lg:col-span-5 flex flex-col justify-center space-y-2.5">
                     <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal">
                         Doctor Payouts vs Receivables & Dues
                     </h3>

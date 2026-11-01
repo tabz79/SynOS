@@ -509,7 +509,7 @@ export const FinanceOverview = () => {
     const dailyTrends = trendsData?.Daily || [];
 
     return (
-        <div className="px-5 sm:px-6 py-3.5 sm:py-4 w-full flex-1 min-h-0 flex flex-col justify-between gap-3 sm:gap-3.5 animate-in fade-in duration-500 relative">
+        <div className="px-5 sm:px-6 py-3.5 sm:py-4 w-full flex-1 min-h-0 flex flex-col justify-start gap-3 sm:gap-3.5 animate-in fade-in duration-500 relative">
             {/* HEADER WITH TITLE, MODERN ACTIVITY RADAR & STANDARD GLOBAL FILTER BAR */}
             <div className="shrink-0 flex flex-col md:flex-row md:items-center md:justify-between gap-3 min-h-[44px]">
                 <div className="flex items-center gap-3.5">
