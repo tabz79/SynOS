@@ -23,6 +23,8 @@ import { useTheme } from "@/context/ThemeContext";
 import { cn } from "@/lib/utils";
 import { ReceptionApi } from "@/api/reception";
 import { useAuth } from '@/context/AuthContext';
+import { useGlobalFilter } from '@/context/GlobalFilterContext';
+import { StandardFilterBar } from '@/components/layout/StandardFilterBar';
 import { AdminApi } from '@/api/admin';
 import {
     ReceptionWatermark,
@@ -47,22 +49,18 @@ import {
 export function ControlTowerDashboard() {
     const { theme } = useTheme();
     const isDark = theme === 'dark';
-    const { user, activeOversightBranchId } = useAuth();
-    const isAdmin = user?.role === 'Admin' || user?.role === 'SystemAdmin';
+    const { user } = useAuth();
+    const { isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
 
     const [summary, setSummary] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
 
-    // Strategy A Switcher State
-    const [isConsolidated, setIsConsolidated] = useState(true);
-    const [branches, setBranches] = useState([]);
     const [licenseInfo, setLicenseInfo] = useState(null);
     const [copiedId, setCopiedId] = useState(false);
 
     useEffect(() => {
         if (isAdmin) {
-            loadBranches();
             loadLicenseInfo();
         }
     }, [isAdmin]);
@@ -95,15 +93,6 @@ export function ControlTowerDashboard() {
         }
     };
 
-    const loadBranches = async () => {
-        try {
-            const data = await AdminApi.getBranches();
-            setBranches(data || []);
-        } catch (e) {
-            console.error("Failed to load branches for Control Tower", e);
-        }
-    };
-
     const loadLicenseInfo = async () => {
         try {
             const token = localStorage.getItem('synos_jwt');
@@ -126,7 +115,7 @@ export function ControlTowerDashboard() {
         fetchSummary();
         const interval = setInterval(fetchSummary, 30000); // Refresh every 30s
         return () => clearInterval(interval);
-    }, [isConsolidated, activeOversightBranchId]);
+    }, [isConsolidated, effectiveBranchId]);
 
     const fetchSummary = async () => {
         try {
@@ -135,10 +124,8 @@ export function ControlTowerDashboard() {
             const q = [];
             if (isConsolidated && isAdmin) {
                 q.push('isConsolidated=true');
-            } else if (activeOversightBranchId) {
-                q.push(`branchId=${activeOversightBranchId}`);
-            } else if (user?.branchId) {
-                q.push(`branchId=${user.branchId}`);
+            } else if (effectiveBranchId) {
+                q.push(`branchId=${effectiveBranchId}`);
             }
             const qs = q.length ? '?' + q.join('&') : '';
             const url = `/api/v1/dashboard/control-tower/summary${qs}`;
@@ -276,30 +263,7 @@ export function ControlTowerDashboard() {
                 })()}
 
                 {isAdmin && (
-                    <div className="flex items-center gap-3 bg-white dark:bg-zinc-900 p-1.5 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-md w-fit">
-                        <button
-                            onClick={() => setIsConsolidated(true)}
-                            className={cn(
-                                "px-4 py-2 rounded-xl text-sm font-bold transition-all",
-                                isConsolidated 
-                                    ? "bg-zinc-100 dark:bg-zinc-800 text-synos-primary shadow-sm"
-                                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
-                            )}
-                        >
-                            Consolidated View
-                        </button>
-                        <button
-                            onClick={() => setIsConsolidated(false)}
-                            className={cn(
-                                "px-4 py-2 rounded-xl text-sm font-bold transition-all",
-                                !isConsolidated 
-                                    ? "bg-white dark:bg-zinc-800 text-synos-primary shadow-sm"
-                                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
-                            )}
-                        >
-                            Branch View
-                        </button>
-                    </div>
+                    <StandardFilterBar showPresets={false} showCustomRange={false} />
                 )}
             </div>
 

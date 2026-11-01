@@ -81,10 +81,10 @@ export const DepartmentBreakdownCard = ({
                     </div>
                 </div>
                 <div className="flex items-baseline gap-1.5 shrink-0">
-                    <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-normal">
+                    <span className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tabular-nums tracking-tight">
                         ₹{formatInr(totalAmount)}
                     </span>
-                    <span className="text-sm font-semibold text-slate-500 dark:text-zinc-400 tabular-nums">
+                    <span className="text-xs sm:text-sm font-normal text-slate-500 dark:text-zinc-400 tabular-nums">
                         ({totalUnits} {totalUnits === 1 ? unitLabel.replace(/s$/, '') : unitLabel})
                     </span>
                 </div>
@@ -123,7 +123,7 @@ export const DepartmentBreakdownCard = ({
                                                 {iconConfig.icon}
                                             </div>
                                             <div className="min-w-0 truncate">
-                                                <div className="font-bold text-slate-900 dark:text-white text-base sm:text-lg truncate group-hover:text-synos-primary transition-colors">
+                                                <div className="font-bold text-slate-900 dark:text-white text-sm sm:text-base truncate group-hover:text-synos-primary transition-colors">
                                                     {name}
                                                 </div>
                                                 <div className="text-xs sm:text-sm font-medium text-slate-500 dark:text-zinc-400 tabular-nums">
@@ -135,7 +135,7 @@ export const DepartmentBreakdownCard = ({
 
                                     {/* Column 2: Large Bold Billed Currency */}
                                     <td className="py-3.5 text-right align-middle pr-2">
-                                        <span className="font-extrabold text-slate-900 dark:text-white text-base sm:text-lg lg:text-xl tabular-nums tracking-normal">
+                                        <span className="font-semibold text-slate-900 dark:text-white text-sm sm:text-base lg:text-lg tabular-nums tracking-normal">
                                             ₹{formatInr(billed)}
                                         </span>
                                     </td>
@@ -149,7 +149,7 @@ export const DepartmentBreakdownCard = ({
                                                     style={{ width: `${Math.min(100, Math.max(share > 0 ? 5 : 0, share))}%` }}
                                                 />
                                             </div>
-                                            <span className="text-sm sm:text-base font-bold text-slate-700 dark:text-zinc-200 w-14 text-right shrink-0 tabular-nums">
+                                            <span className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-zinc-300 w-12 text-right shrink-0 tabular-nums">
                                                 {share.toFixed(1)}%
                                             </span>
                                         </div>
@@ -199,7 +199,7 @@ export const ActualCashCard = ({
                             Actual Cash (Desk Collections)
                         </h3>
                     </div>
-                    <p className="text-4xl sm:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-1 tabular-nums">
+                    <p className="text-2xl sm:text-3xl lg:text-[34px] font-bold text-slate-900 dark:text-white tracking-tight leading-none my-1 tabular-nums">
                         ₹{formatInr(total)}
                     </p>
                 </div>
@@ -213,15 +213,15 @@ export const ActualCashCard = ({
                                 <div className="w-9 h-9 rounded-[11px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
                                     <Banknote size={19} strokeWidth={2.3} />
                                 </div>
-                                <span className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                                <span className="text-sm sm:text-base font-semibold text-slate-800 dark:text-zinc-200">
                                     Cash (Physical Desk)
                                 </span>
                             </div>
                             <div className="flex items-baseline gap-2">
-                                <span className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-normal">
+                                <span className="text-base sm:text-lg lg:text-xl font-semibold text-slate-900 dark:text-white tabular-nums tracking-normal">
                                     ₹{formatInr(cashAmt)}
                                 </span>
-                                <span className="text-sm sm:text-base font-bold text-slate-500 dark:text-zinc-400 tabular-nums">
+                                <span className="text-xs sm:text-sm font-medium text-slate-500 dark:text-zinc-400 tabular-nums">
                                     {cashPct.toFixed(1)}%
                                 </span>
                             </div>
@@ -241,15 +241,15 @@ export const ActualCashCard = ({
                                 <div className="w-9 h-9 rounded-[11px] bg-[#FAF5FF] text-[#A855F7] dark:bg-purple-950/40 dark:text-purple-400 border border-purple-100/90 dark:border-purple-800/40 flex items-center justify-center shrink-0 shadow-2xs">
                                     <CreditCard size={19} strokeWidth={2.3} />
                                 </div>
-                                <span className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                                <span className="text-sm sm:text-base font-semibold text-slate-800 dark:text-zinc-200">
                                     Online (Digital Gateway)
                                 </span>
                             </div>
                             <div className="flex items-baseline gap-2">
-                                <span className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-normal">
+                                <span className="text-base sm:text-lg lg:text-xl font-semibold text-slate-900 dark:text-white tabular-nums tracking-normal">
                                     ₹{formatInr(onlineAmt)}
                                 </span>
-                                <span className="text-sm sm:text-base font-bold text-slate-500 dark:text-zinc-400 tabular-nums">
+                                <span className="text-xs sm:text-sm font-medium text-slate-500 dark:text-zinc-400 tabular-nums">
                                     {onlinePct.toFixed(1)}%
                                 </span>
                             </div>
@@ -292,7 +292,7 @@ export const ConcessionsCard = ({
                             Concessions Given
                         </h3>
                     </div>
-                    <p className="text-4xl sm:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-1 tabular-nums">
+                    <p className="text-2xl sm:text-3xl lg:text-[34px] font-bold text-slate-900 dark:text-white tracking-tight leading-none my-1 tabular-nums">
                         ₹{formatInr(amt)}
                     </p>
                 </div>
@@ -305,7 +305,7 @@ export const ConcessionsCard = ({
                             style={{ height: `${amt > 0 ? Math.min(100, Math.max(8, rate)) : 0}%` }}
                         />
                     </div>
-                    <span className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white tabular-nums">
+                    <span className="text-base sm:text-lg font-bold text-rose-600 dark:text-rose-400 tabular-nums">
                         {rate.toFixed(1)}%
                     </span>
                 </div>
@@ -343,7 +343,7 @@ export const OperatingExpensesCard = ({
                 </div>
 
                 <div className="pt-4">
-                    <p className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none tabular-nums">
+                    <p className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight leading-none tabular-nums">
                         ₹{formatInr(amt)}
                     </p>
                 </div>
@@ -380,7 +380,7 @@ export const OperatingExpensesCard = ({
                         className="transition-all duration-700"
                     />
                 </svg>
-                <span className="absolute text-xl sm:text-2xl font-black text-slate-900 dark:text-white tabular-nums tracking-tight">
+                <span className="absolute text-base sm:text-lg font-bold text-slate-800 dark:text-zinc-200 tabular-nums tracking-tight">
                     {numRate.toFixed(1)}%
                 </span>
             </div>
@@ -429,10 +429,10 @@ export const PayrollCard = ({
                 </div>
 
                 <div className="pt-3">
-                    <p className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none tabular-nums">
+                    <p className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight leading-none tabular-nums">
                         ₹{formatInr(displayAmount)}
                     </p>
-                    <p className="text-xs sm:text-sm font-semibold text-slate-500 dark:text-zinc-400 mt-1.5 tabular-nums">
+                    <p className="text-xs sm:text-sm font-normal text-slate-500 dark:text-zinc-400 mt-1.5 tabular-nums">
                         {isToday ? `₹${formatInr(monthlyAmount)}/mo (₹${formatInr(dailyAmount)}/day)` : `₹${formatInr(dailyAmount)}/day burn`}
                     </p>
                 </div>
@@ -469,7 +469,7 @@ export const PayrollCard = ({
                         className="transition-all duration-700"
                     />
                 </svg>
-                <span className="absolute text-xl sm:text-2xl font-black text-slate-900 dark:text-white tabular-nums tracking-tight">
+                <span className="absolute text-base sm:text-lg font-bold text-slate-800 dark:text-zinc-200 tabular-nums tracking-tight">
                     {rate.toFixed(1)}%
                 </span>
             </div>
@@ -668,10 +668,10 @@ export const FinanceOverviewDeck = ({
                                 {totalBillsCount} Bills Processed
                             </span>
                         </div>
-                        <p className="text-4xl sm:text-5xl lg:text-[54px] font-extrabold text-slate-900 dark:text-white tracking-normal leading-none my-2.5 tabular-nums">
+                        <p className="text-3xl sm:text-4xl lg:text-[44px] font-bold text-slate-900 dark:text-white tracking-tight leading-none my-2.5 tabular-nums">
                             ₹{formatInr(billedRevenue)}
                         </p>
-                        <p className="text-sm sm:text-base font-medium text-slate-600 dark:text-zinc-300">
+                        <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-zinc-400">
                             {concessionsAmount > 0 
                                 ? `Net Billed (₹${formatInr(billedRevenue + concessionsAmount)} Gross - ₹${formatInr(concessionsAmount)} Concessions)`
                                 : 'Net Clinical Tariff Billed'}
@@ -710,14 +710,14 @@ export const FinanceOverviewDeck = ({
                             </div>
                             <div>
                                 <div className="flex items-baseline gap-1.5">
-                                    <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-normal">
+                                    <span className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tabular-nums tracking-tight">
                                         ₹{formatInr(doctorPayoutsVal)}
                                     </span>
-                                    <span className="text-sm sm:text-base font-semibold text-slate-500 dark:text-zinc-400 tabular-nums">
+                                    <span className="text-xs sm:text-sm font-normal text-slate-500 dark:text-zinc-400 tabular-nums">
                                         ({totalSplitSum > 0 ? payoutsShare : 0}%)
                                     </span>
                                 </div>
-                                <span className="text-sm sm:text-base text-slate-600 dark:text-zinc-300 font-semibold block">
+                                <span className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 font-medium block">
                                     Doctor Commissions
                                 </span>
                             </div>
@@ -727,14 +727,14 @@ export const FinanceOverviewDeck = ({
                         <div className="flex items-center gap-3.5 text-right">
                             <div>
                                 <div className="flex items-baseline gap-1.5 justify-end">
-                                    <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-normal">
+                                    <span className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tabular-nums tracking-tight">
                                         ₹{formatInr(totalReceivablesAndDues)}
                                     </span>
-                                    <span className="text-sm sm:text-base font-semibold text-slate-500 dark:text-zinc-400 tabular-nums">
+                                    <span className="text-xs sm:text-sm font-normal text-slate-500 dark:text-zinc-400 tabular-nums">
                                         ({totalSplitSum > 0 ? duesShare : 0}%)
                                     </span>
                                 </div>
-                                <span className="text-sm sm:text-base text-slate-600 dark:text-zinc-300 font-semibold block">
+                                <span className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 font-medium block">
                                     Receivables & Desk Dues
                                 </span>
                             </div>

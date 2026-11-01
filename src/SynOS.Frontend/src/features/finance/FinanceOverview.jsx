@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
     IndianRupee, 
@@ -25,20 +25,25 @@ import {
 import { FinanceApi } from '@/api/finance';
 import { ReceptionApi } from '@/api/reception';
 import { useAuth } from '@/context/AuthContext';
-import { AdminApi } from '@/api/admin';
+import { useGlobalFilter } from '@/context/GlobalFilterContext';
+import { StandardFilterBar } from '@/components/layout/StandardFilterBar';
 import { cn } from '@/lib/utils';
 import { FinanceOverviewDeck, ConsolidatedDeskCashCard } from './FinanceOverviewDeck';
 
 export const FinanceOverview = () => {
     const navigate = useNavigate();
-    const [loading, setLoading] = useState(true);
-    const { user, activeOversightBranchId } = useAuth();
-    const isAdmin = user?.role === 'Admin' || user?.role === 'SystemAdmin';
-    
-    // Strategy A Switcher State
-    const [isConsolidated, setIsConsolidated] = useState(true);
-    const [presetRange, setPresetRange] = useState('month');
-    const [branches, setBranches] = useState([]);
+    const { user } = useAuth();
+    const {
+        presetRange,
+        customDates,
+        isConsolidated,
+        effectiveBranchId,
+        isAdmin
+    } = useGlobalFilter();
+
+    const [isInitialLoading, setIsInitialLoading] = useState(true);
+    const [isUpdating, setIsUpdating] = useState(false);
+    const hasLoadedMastersRef = useRef(false);
 
     // Live aggregated states
     const [profitability, setProfitability] = useState(null);
@@ -60,98 +65,126 @@ export const FinanceOverview = () => {
     const [receptionSummary, setReceptionSummary] = useState(null);
     const [todayActionQueue, setTodayActionQueue] = useState([]);
 
+    // 1. Load static masters once on mount
     useEffect(() => {
-        if (isAdmin) {
-            loadBranches();
-        }
-    }, [isAdmin]);
+        let isMounted = true;
+        const loadStaticMasters = async () => {
+            try {
+                const [
+                    vendorsRes,
+                    labsRes,
+                    staffRes,
+                    runsRes,
+                    insCompsRes,
+                    corpAccsRes
+                ] = await Promise.allSettled([
+                    FinanceApi.getVendors(),
+                    FinanceApi.getReferenceLabs(),
+                    FinanceApi.WorkforceApi.getStaff(),
+                    FinanceApi.WorkforceApi.getRuns(),
+                    ReceptionApi.getInsuranceCompanies(),
+                    ReceptionApi.getCorporateAccounts()
+                ]);
 
-    const loadBranches = async () => {
-        try {
-            const data = await AdminApi.getBranches();
-            setBranches(data || []);
-        } catch (e) {
-            console.error("Failed to load branches for Finance Overview", e);
-        }
-    };
+                if (!isMounted) return;
+                if (vendorsRes.status === 'fulfilled') setVendors(vendorsRes.value || []);
+                if (labsRes.status === 'fulfilled') setReferenceLabs(labsRes.value || []);
+                if (staffRes.status === 'fulfilled') setStaff(staffRes.value || []);
+                if (runsRes.status === 'fulfilled') setPayrollRuns(runsRes.value || []);
+                if (insCompsRes.status === 'fulfilled') setInsuranceCompanies(insCompsRes.value || []);
+                if (corpAccsRes.status === 'fulfilled') setCorporateAccounts(corpAccsRes.value || []);
+                hasLoadedMastersRef.current = true;
+            } catch (err) {
+                console.error("Failed to load static finance masters", err);
+            }
+        };
 
+        loadStaticMasters();
+        return () => { isMounted = false; };
+    }, []);
+
+    // 2. Load dynamic data on mount and whenever filter horizons or branch changes
     useEffect(() => {
-        loadDashboardData();
-    }, [isConsolidated, activeOversightBranchId, presetRange]);
+        let isMounted = true;
 
-    const loadDashboardData = async () => {
-        try {
-            setLoading(true);
-            const bId = isConsolidated && isAdmin ? null : (activeOversightBranchId || user?.branchId);
-            const isCons = isConsolidated && isAdmin;
+        const loadDynamicData = async () => {
+            try {
+                if (!hasLoadedMastersRef.current && isInitialLoading) {
+                    // Initial load
+                } else {
+                    setIsUpdating(true);
+                }
 
-            const [
-                profitRes,
-                vendorsRes,
-                payablesRes,
-                overheadsRes,
-                receivablesRes,
-                referralRes,
-                outsourcedRes,
-                labsRes,
-                staffRes,
-                runsRes,
-                insCompsRes,
-                insClaimsRes,
-                corpAccsRes,
-                corpVisitsRes,
-                concessionRes,
-                trendsRes,
-                receptionRes,
-                queueRes
-            ] = await Promise.allSettled([
-                FinanceApi.getProfitabilitySummary(null, null, bId, isCons, presetRange),
-                FinanceApi.getVendors(),
-                FinanceApi.getVendorPayables(),
-                FinanceApi.getOverheadExpenses(),
-                FinanceApi.getReceivables(),
-                FinanceApi.getReferralSummary(bId, isCons),
-                FinanceApi.getOutsourcedPayables(),
-                FinanceApi.getReferenceLabs(),
-                FinanceApi.WorkforceApi.getStaff(),
-                FinanceApi.WorkforceApi.getRuns(),
-                ReceptionApi.getInsuranceCompanies(),
-                fetch('/api/v1/insurance-companies/claims', { headers: FinanceApi.getHeaders() }).then(r => r.ok ? r.json() : []),
-                ReceptionApi.getCorporateAccounts(),
-                fetch('/api/v1/corporate-accounts/visits', { headers: FinanceApi.getHeaders() }).then(r => r.ok ? r.json() : []),
-                FinanceApi.getConcessionIntelligence({ preset: presetRange, branchId: bId, isConsolidated: isCons }).catch(() => null),
-                FinanceApi.getRevenueTrends(7).catch(() => null),
-                ReceptionApi.getDashboardSummary().catch(() => null),
-                ReceptionApi.getActionQueue(false).catch(() => [])
-            ]);
+                const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
+                const isCons = isConsolidated && isAdmin;
 
-            if (profitRes.status === 'fulfilled') setProfitability(profitRes.value);
-            if (vendorsRes.status === 'fulfilled') setVendors(vendorsRes.value);
-            if (payablesRes.status === 'fulfilled') setPayables(payablesRes.value);
-            if (overheadsRes.status === 'fulfilled') setOverheads(overheadsRes.value);
-            if (receivablesRes.status === 'fulfilled') setReceivables(receivablesRes.value);
-            if (referralRes.status === 'fulfilled') setReferrals(referralRes.value);
-            if (outsourcedRes.status === 'fulfilled') setOutsourced(outsourcedRes.value);
-            if (labsRes.status === 'fulfilled') setReferenceLabs(labsRes.value);
-            if (staffRes.status === 'fulfilled') setStaff(staffRes.value);
-            if (runsRes.status === 'fulfilled') setPayrollRuns(runsRes.value);
-            if (insCompsRes.status === 'fulfilled') setInsuranceCompanies(insCompsRes.value || []);
-            if (insClaimsRes.status === 'fulfilled') setInsuranceClaims(insClaimsRes.value || []);
-            if (corpAccsRes.status === 'fulfilled') setCorporateAccounts(corpAccsRes.value || []);
-            if (corpVisitsRes.status === 'fulfilled') setCorporateVisits(corpVisitsRes.value || []);
-            if (concessionRes.status === 'fulfilled' && concessionRes.value) setConcessionData(concessionRes.value);
-            if (trendsRes && trendsRes.status === 'fulfilled' && trendsRes.value) setTrendsData(trendsRes.value);
-            if (receptionRes && receptionRes.status === 'fulfilled' && receptionRes.value) setReceptionSummary(receptionRes.value);
-            if (queueRes && queueRes.status === 'fulfilled' && Array.isArray(queueRes.value)) setTodayActionQueue(queueRes.value);
+                const start = presetRange === 'custom' ? customDates?.start : null;
+                const end = presetRange === 'custom' ? customDates?.end : null;
 
-        } catch (err) {
-            console.error("Dashboard aggregation failed", err);
-        } finally {
-            setLoading(false);
-        }
-    };
+                const [
+                    profitRes,
+                    payablesRes,
+                    overheadsRes,
+                    receivablesRes,
+                    referralRes,
+                    outsourcedRes,
+                    insClaimsRes,
+                    corpVisitsRes,
+                    concessionRes,
+                    trendsRes,
+                    receptionRes,
+                    queueRes
+                ] = await Promise.allSettled([
+                    FinanceApi.getProfitabilitySummary(start, end, bId, isCons, presetRange),
+                    FinanceApi.getVendorPayables(),
+                    FinanceApi.getOverheadExpenses(),
+                    FinanceApi.getReceivables(),
+                    FinanceApi.getReferralSummary(bId, isCons),
+                    FinanceApi.getOutsourcedPayables(),
+                    fetch('/api/v1/insurance-companies/claims', { headers: FinanceApi.getHeaders() }).then(r => r.ok ? r.json() : []),
+                    fetch('/api/v1/corporate-accounts/visits', { headers: FinanceApi.getHeaders() }).then(r => r.ok ? r.json() : []),
+                    FinanceApi.getConcessionIntelligence({ 
+                        preset: presetRange, 
+                        fromDate: start, 
+                        toDate: end, 
+                        branchId: bId, 
+                        isConsolidated: isCons 
+                    }).catch(() => null),
+                    FinanceApi.getRevenueTrends(7).catch(() => null),
+                    ReceptionApi.getDashboardSummary().catch(() => null),
+                    ReceptionApi.getActionQueue(false).catch(() => [])
+                ]);
 
-    if (loading) {
+                if (!isMounted) return;
+
+                if (profitRes.status === 'fulfilled') setProfitability(profitRes.value);
+                if (payablesRes.status === 'fulfilled') setPayables(payablesRes.value || []);
+                if (overheadsRes.status === 'fulfilled') setOverheads(overheadsRes.value || []);
+                if (receivablesRes.status === 'fulfilled') setReceivables(receivablesRes.value || []);
+                if (referralRes.status === 'fulfilled') setReferrals(referralRes.value);
+                if (outsourcedRes.status === 'fulfilled') setOutsourced(outsourcedRes.value || []);
+                if (insClaimsRes.status === 'fulfilled') setInsuranceClaims(insClaimsRes.value || []);
+                if (corpVisitsRes.status === 'fulfilled') setCorporateVisits(corpVisitsRes.value || []);
+                if (concessionRes.status === 'fulfilled' && concessionRes.value) setConcessionData(concessionRes.value);
+                if (trendsRes && trendsRes.status === 'fulfilled' && trendsRes.value) setTrendsData(trendsRes.value);
+                if (receptionRes && receptionRes.status === 'fulfilled' && receptionRes.value) setReceptionSummary(receptionRes.value);
+                if (queueRes && queueRes.status === 'fulfilled' && Array.isArray(queueRes.value)) setTodayActionQueue(queueRes.value);
+
+            } catch (err) {
+                console.error("Dashboard dynamic load failed", err);
+            } finally {
+                if (isMounted) {
+                    setIsInitialLoading(false);
+                    setIsUpdating(false);
+                }
+            }
+        };
+
+        loadDynamicData();
+        return () => { isMounted = false; };
+    }, [isConsolidated, effectiveBranchId, presetRange, customDates?.start, customDates?.end]);
+
+    if (isInitialLoading) {
         return (
             <div className="flex flex-col items-center justify-center h-full p-20 space-y-4 bg-zinc-50/50 dark:bg-zinc-950/20">
                 <div className="relative w-12 h-12">
@@ -375,7 +408,13 @@ export const FinanceOverview = () => {
     };
 
     const handleExportPnl = () => {
-        FinanceApi.exportProfitabilityPnl(null, null, isConsolidated ? null : activeOversightBranchId);
+        FinanceApi.exportProfitabilityPnl(
+            presetRange, 
+            isConsolidated, 
+            isConsolidated ? null : effectiveBranchId, 
+            customDates?.start || '', 
+            customDates?.end || ''
+        );
     };
 
     // Active staff headcount & Dynamic Payroll calculation
@@ -422,65 +461,19 @@ export const FinanceOverview = () => {
     const dailyTrends = trendsData?.Daily || [];
 
     return (
-        <div className="px-6 py-5 w-full space-y-6 animate-in fade-in duration-500">
-            {/* HEADER WITH SWITCHER & EXPORT */}
+        <div className="px-6 py-5 w-full space-y-6 animate-in fade-in duration-500 relative">
+            {/* Subtle top loading line indicator for background updates */}
+            {isUpdating && (
+                <div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-synos-primary via-sky-400 to-indigo-500 z-50 animate-pulse shadow-sm" />
+            )}
+
+            {/* HEADER WITH TITLE & STANDARD GLOBAL FILTER BAR */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
                     <h1 className="text-3xl md:text-4xl font-extrabold dark:text-white text-slate-900 tracking-normal leading-tight">Finance Hub</h1>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
-                    {/* Time Horizon Selector */}
-                    <div className="flex items-center gap-1 bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
-                        {[
-                            { id: 'today', label: 'Today' },
-                            { id: 'month', label: 'This Month' },
-                            { id: 'quarter', label: 'This Quarter' },
-                            { id: 'year', label: 'This Year' }
-                        ].map(t => (
-                            <button
-                                key={t.id}
-                                onClick={() => setPresetRange(t.id)}
-                                className={cn(
-                                    "px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer",
-                                    presetRange === t.id 
-                                        ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs font-bold" 
-                                        : "text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
-                                )}
-                            >
-                                {t.label}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Consolidated Switcher */}
-                    {isAdmin && (
-                        <div className="flex items-center gap-1 bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
-                            <button
-                                onClick={() => setIsConsolidated(true)}
-                                className={cn(
-                                    "px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer",
-                                    isConsolidated 
-                                        ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs font-bold"
-                                        : "text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
-                                )}
-                            >
-                                All Branches
-                            </button>
-                            <button
-                                onClick={() => setIsConsolidated(false)}
-                                className={cn(
-                                    "px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer",
-                                    !isConsolidated 
-                                        ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs font-bold"
-                                        : "text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
-                                )}
-                            >
-                                Branch View
-                            </button>
-                        </div>
-                    )}
-                </div>
+                <StandardFilterBar />
             </div>
 
             {/* HERO CONTROL DECK, ACTUAL CASH / CONCESSIONS, CLINICAL DISCIPLINES & EXPENSES / TRENDS */}

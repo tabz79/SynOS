@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from '@/context/AuthContext'
 import { PrintOrchestratorProvider } from '@/context/PrintOrchestratorContext'
+import { GlobalFilterProvider } from '@/context/GlobalFilterContext'
 import { ReceptionProvider } from '@/features/reception/hooks/useReceptionPanelUI'
 import { ReceptionScreen } from '@/features/reception/ReceptionScreen'
 import { PhlebotomyScreen } from '@/features/phlebotomy/PhlebotomyScreen'
@@ -114,7 +115,8 @@ function App() {
   return (
     <AuthProvider>
       <PrintOrchestratorProvider>
-        <BrowserRouter>
+        <GlobalFilterProvider>
+          <BrowserRouter>
           <Routes>
             {/* Public Routes */}
             <Route path="/login" element={<LoginPage />} />
@@ -320,8 +322,9 @@ function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
-      </PrintOrchestratorProvider>
-    </AuthProvider>
+      </GlobalFilterProvider>
+    </PrintOrchestratorProvider>
+  </AuthProvider>
   )
 }
 
