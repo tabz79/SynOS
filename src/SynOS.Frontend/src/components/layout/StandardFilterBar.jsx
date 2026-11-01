@@ -33,23 +33,19 @@ export const StandardFilterBar = ({
         isAdmin
     } = useGlobalFilter();
 
-    const [isCustomOpen, setIsCustomOpen] = useState(presetRange === 'custom');
+    const [isCustomOpen, setIsCustomOpen] = useState(false);
     const [isBranchDropdownOpen, setIsBranchDropdownOpen] = useState(false);
     const branchDropdownRef = useRef(null);
     const customPopoverRef = useRef(null);
 
-    // Keep custom popover in sync if preset is custom
-    useEffect(() => {
-        if (presetRange === 'custom') {
-            setIsCustomOpen(true);
-        }
-    }, [presetRange]);
-
-    // Click outside to close branch dropdown
+    // Click outside to close dropdowns
     useEffect(() => {
         const handleClickOutside = (e) => {
             if (branchDropdownRef.current && !branchDropdownRef.current.contains(e.target)) {
                 setIsBranchDropdownOpen(false);
+            }
+            if (customPopoverRef.current && !customPopoverRef.current.contains(e.target)) {
+                setIsCustomOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -98,10 +94,10 @@ export const StandardFilterBar = ({
     ];
 
     return (
-        <div className={cn("flex flex-wrap items-center gap-3 relative", className)}>
+        <div className={cn("flex items-center gap-2.5 flex-nowrap shrink-0", className)}>
             {/* Time Horizon Segment */}
             {showPresets && (
-                <div className="flex items-center gap-1 bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
+                <div className="flex items-center gap-1 bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl shrink-0">
                     {timePresets.map(t => (
                         <button
                             key={t.id}
@@ -118,91 +114,98 @@ export const StandardFilterBar = ({
                         </button>
                     ))}
 
-                    {/* Custom Range Button */}
+                    {/* Custom Range Button + Floating Popover */}
                     {showCustomRange && (
-                        <button
-                            type="button"
-                            onClick={() => {
-                                if (presetRange === 'custom') {
-                                    setIsCustomOpen(!isCustomOpen);
-                                } else {
-                                    handlePresetSelect('custom');
-                                    setIsCustomOpen(true);
-                                }
-                            }}
-                            className={cn(
-                                "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap",
-                                presetRange === 'custom'
-                                    ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs font-bold"
-                                    : "text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
-                            )}
-                            title="Select custom date range"
-                        >
-                            <Calendar className="w-3.5 h-3.5 text-synos-primary" />
-                            <span>Custom Range</span>
-                            {presetRange === 'custom' && customDates?.start && customDates?.end && (
-                                <span className="text-[10px] bg-synos-primary/10 text-synos-primary px-1.5 py-0.5 rounded font-mono hidden md:inline">
-                                    {customDates.start.slice(5)} to {customDates.end.slice(5)}
-                                </span>
-                            )}
-                        </button>
-                    )}
-                </div>
-            )}
-
-            {/* Custom Range Popover Bar */}
-            {showPresets && showCustomRange && isCustomOpen && (
-                <div 
-                    ref={customPopoverRef}
-                    className="flex flex-wrap items-center gap-2 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 p-1.5 px-3 rounded-xl shadow-md animate-in fade-in slide-in-from-top-1 duration-200"
-                >
-                    <span className="text-xs font-bold text-slate-500 dark:text-zinc-400 flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5 text-synos-primary" />
-                        Quick:
-                    </span>
-                    <div className="flex items-center gap-1">
-                        {[
-                            { label: '2 Days', days: 2 },
-                            { label: '3 Days', days: 3 },
-                            { label: '7 Days', days: 7 },
-                            { label: '30 Days', days: 30 }
-                        ].map(q => (
+                        <div className="relative" ref={customPopoverRef}>
                             <button
-                                key={q.days}
                                 type="button"
-                                onClick={() => handleQuickDays(q.days)}
-                                className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 transition-colors"
+                                onClick={() => {
+                                    if (presetRange === 'custom') {
+                                        setIsCustomOpen(!isCustomOpen);
+                                    } else {
+                                        handlePresetSelect('custom');
+                                        setIsCustomOpen(true);
+                                    }
+                                }}
+                                className={cn(
+                                    "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap",
+                                    presetRange === 'custom'
+                                        ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs font-bold"
+                                        : "text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
+                                )}
+                                title="Select custom date range"
                             >
-                                {q.label}
+                                <Calendar className="w-3.5 h-3.5 text-synos-primary" />
+                                <span>Custom Range</span>
+                                {presetRange === 'custom' && customDates?.start && customDates?.end && (
+                                    <span className="text-[10px] bg-synos-primary/10 text-synos-primary px-1.5 py-0.5 rounded font-mono hidden md:inline">
+                                        {customDates.start.slice(5)} to {customDates.end.slice(5)}
+                                    </span>
+                                )}
                             </button>
-                        ))}
-                    </div>
 
-                    <div className="w-px h-4 bg-slate-300 dark:bg-zinc-700 mx-1 hidden sm:block" />
+                            {/* Absolute Floating Popover Bar (Zero Layout Shift) */}
+                            {isCustomOpen && (
+                                <div 
+                                    className="absolute right-0 top-full mt-2 w-auto min-w-[320px] bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 p-3 rounded-2xl shadow-xl z-50 animate-in fade-in slide-in-from-top-1 duration-150 space-y-2.5"
+                                >
+                                    <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-zinc-800">
+                                        <span className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 flex items-center gap-1 uppercase tracking-wider">
+                                            <Clock className="w-3.5 h-3.5 text-synos-primary" />
+                                            Quick Horizon
+                                        </span>
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsCustomOpen(false)}
+                                            className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-0.5 cursor-pointer"
+                                        >
+                                            <X className="w-3.5 h-3.5" />
+                                        </button>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                        {[
+                                            { label: '2 Days', days: 2 },
+                                            { label: '3 Days', days: 3 },
+                                            { label: '7 Days', days: 7 },
+                                            { label: '30 Days', days: 30 }
+                                        ].map(q => (
+                                            <button
+                                                key={q.days}
+                                                type="button"
+                                                onClick={() => handleQuickDays(q.days)}
+                                                className="flex-1 px-2 py-1 rounded-lg text-xs font-bold bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 transition-colors cursor-pointer text-center"
+                                            >
+                                                {q.label}
+                                            </button>
+                                        ))}
+                                    </div>
 
-                    {/* Start & End Date Inputs */}
-                    <div className="flex items-center gap-1.5">
-                        <input
-                            type="date"
-                            value={customDates?.start || ''}
-                            onChange={(e) => handleCustomDateChange('start', e.target.value)}
-                            className="bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-700 rounded-lg px-2 py-1 text-xs font-bold text-slate-800 dark:text-zinc-200 focus:outline-none focus:ring-1 focus:ring-synos-primary"
-                        />
-                        <span className="text-xs text-slate-400 font-medium">to</span>
-                        <input
-                            type="date"
-                            value={customDates?.end || ''}
-                            onChange={(e) => handleCustomDateChange('end', e.target.value)}
-                            className="bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-700 rounded-lg px-2 py-1 text-xs font-bold text-slate-800 dark:text-zinc-200 focus:outline-none focus:ring-1 focus:ring-synos-primary"
-                        />
-                    </div>
+                                    <div className="flex items-center gap-2 pt-1 border-t border-slate-100 dark:border-zinc-800">
+                                        <input
+                                            type="date"
+                                            value={customDates?.start || ''}
+                                            onChange={(e) => handleCustomDateChange('start', e.target.value)}
+                                            className="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-700 rounded-lg px-2.5 py-1 text-xs font-bold text-slate-800 dark:text-zinc-200 focus:outline-none focus:ring-1 focus:ring-synos-primary"
+                                        />
+                                        <span className="text-xs text-slate-400 font-medium">to</span>
+                                        <input
+                                            type="date"
+                                            value={customDates?.end || ''}
+                                            onChange={(e) => handleCustomDateChange('end', e.target.value)}
+                                            className="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-700 rounded-lg px-2.5 py-1 text-xs font-bold text-slate-800 dark:text-zinc-200 focus:outline-none focus:ring-1 focus:ring-synos-primary"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             )}
 
             {/* Branch Horizon Segment (Consolidated vs Branch View) */}
             {showBranches && isAdmin && (
-                <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1 bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl relative" ref={branchDropdownRef}>
+                <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-1 bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl relative shrink-0" ref={branchDropdownRef}>
                         {/* All Branches Button */}
                         <button
                             type="button"

@@ -44,6 +44,7 @@ export const FinanceOverview = () => {
     const [isInitialLoading, setIsInitialLoading] = useState(true);
     const [isUpdating, setIsUpdating] = useState(false);
     const hasLoadedMastersRef = useRef(false);
+    const dynamicCacheRef = useRef({});
 
     // Live aggregated states
     const [profitability, setProfitability] = useState(null);
@@ -65,7 +66,7 @@ export const FinanceOverview = () => {
     const [receptionSummary, setReceptionSummary] = useState(null);
     const [todayActionQueue, setTodayActionQueue] = useState([]);
 
-    // 1. Load static masters once on mount
+    // 1. Load static & non-preset dependent masters once on mount
     useEffect(() => {
         let isMounted = true;
         const loadStaticMasters = async () => {
@@ -76,14 +77,28 @@ export const FinanceOverview = () => {
                     staffRes,
                     runsRes,
                     insCompsRes,
-                    corpAccsRes
+                    corpAccsRes,
+                    payablesRes,
+                    overheadsRes,
+                    receivablesRes,
+                    outsourcedRes,
+                    insClaimsRes,
+                    corpVisitsRes,
+                    trendsRes
                 ] = await Promise.allSettled([
                     FinanceApi.getVendors(),
                     FinanceApi.getReferenceLabs(),
                     FinanceApi.WorkforceApi.getStaff(),
                     FinanceApi.WorkforceApi.getRuns(),
                     ReceptionApi.getInsuranceCompanies(),
-                    ReceptionApi.getCorporateAccounts()
+                    ReceptionApi.getCorporateAccounts(),
+                    FinanceApi.getVendorPayables(),
+                    FinanceApi.getOverheadExpenses(),
+                    FinanceApi.getReceivables(),
+                    FinanceApi.getOutsourcedPayables(),
+                    fetch('/api/v1/insurance-companies/claims', { headers: FinanceApi.getHeaders() }).then(r => r.ok ? r.json() : []),
+                    fetch('/api/v1/corporate-accounts/visits', { headers: FinanceApi.getHeaders() }).then(r => r.ok ? r.json() : []),
+                    FinanceApi.getRevenueTrends(7).catch(() => null)
                 ]);
 
                 if (!isMounted) return;
@@ -93,6 +108,14 @@ export const FinanceOverview = () => {
                 if (runsRes.status === 'fulfilled') setPayrollRuns(runsRes.value || []);
                 if (insCompsRes.status === 'fulfilled') setInsuranceCompanies(insCompsRes.value || []);
                 if (corpAccsRes.status === 'fulfilled') setCorporateAccounts(corpAccsRes.value || []);
+                if (payablesRes.status === 'fulfilled') setPayables(payablesRes.value || []);
+                if (overheadsRes.status === 'fulfilled') setOverheads(overheadsRes.value || []);
+                if (receivablesRes.status === 'fulfilled') setReceivables(receivablesRes.value || []);
+                if (outsourcedRes.status === 'fulfilled') setOutsourced(outsourcedRes.value || []);
+                if (insClaimsRes.status === 'fulfilled') setInsuranceClaims(insClaimsRes.value || []);
+                if (corpVisitsRes.status === 'fulfilled') setCorporateVisits(corpVisitsRes.value || []);
+                if (trendsRes && trendsRes.status === 'fulfilled' && trendsRes.value) setTrendsData(trendsRes.value);
+                
                 hasLoadedMastersRef.current = true;
             } catch (err) {
                 console.error("Failed to load static finance masters", err);
@@ -103,46 +126,38 @@ export const FinanceOverview = () => {
         return () => { isMounted = false; };
     }, []);
 
-    // 2. Load dynamic data on mount and whenever filter horizons or branch changes
+    // 2. Load dynamic time/branch filtered data with instant client cache & minimized roundtrips
     useEffect(() => {
         let isMounted = true;
 
         const loadDynamicData = async () => {
-            try {
+            const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
+            const isCons = isConsolidated && isAdmin;
+            const start = presetRange === 'custom' ? customDates?.start : null;
+            const end = presetRange === 'custom' ? customDates?.end : null;
+
+            const cacheKey = `${bId || 'consolidated'}_${presetRange}_${start || ''}_${end || ''}`;
+            const cached = dynamicCacheRef.current[cacheKey];
+
+            // If previously loaded, serve from cache instantly (0ms UI latency)
+            if (cached) {
+                if (cached.profitability) setProfitability(cached.profitability);
+                if (cached.concessionData) setConcessionData(cached.concessionData);
+                if (cached.referrals) setReferrals(cached.referrals);
+                if (cached.receptionSummary) setReceptionSummary(cached.receptionSummary);
+                if (cached.todayActionQueue) setTodayActionQueue(cached.todayActionQueue);
+            } else {
                 if (!hasLoadedMastersRef.current && isInitialLoading) {
-                    // Initial load
+                    // Initial full-page mount
                 } else {
                     setIsUpdating(true);
                 }
+            }
 
-                const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
-                const isCons = isConsolidated && isAdmin;
-
-                const start = presetRange === 'custom' ? customDates?.start : null;
-                const end = presetRange === 'custom' ? customDates?.end : null;
-
-                const [
-                    profitRes,
-                    payablesRes,
-                    overheadsRes,
-                    receivablesRes,
-                    referralRes,
-                    outsourcedRes,
-                    insClaimsRes,
-                    corpVisitsRes,
-                    concessionRes,
-                    trendsRes,
-                    receptionRes,
-                    queueRes
-                ] = await Promise.allSettled([
+            try {
+                // Highly targeted: Only query endpoints that strictly depend on date preset & branch
+                const dynamicPromises = [
                     FinanceApi.getProfitabilitySummary(start, end, bId, isCons, presetRange),
-                    FinanceApi.getVendorPayables(),
-                    FinanceApi.getOverheadExpenses(),
-                    FinanceApi.getReceivables(),
-                    FinanceApi.getReferralSummary(bId, isCons),
-                    FinanceApi.getOutsourcedPayables(),
-                    fetch('/api/v1/insurance-companies/claims', { headers: FinanceApi.getHeaders() }).then(r => r.ok ? r.json() : []),
-                    fetch('/api/v1/corporate-accounts/visits', { headers: FinanceApi.getHeaders() }).then(r => r.ok ? r.json() : []),
                     FinanceApi.getConcessionIntelligence({ 
                         preset: presetRange, 
                         fromDate: start, 
@@ -150,25 +165,43 @@ export const FinanceOverview = () => {
                         branchId: bId, 
                         isConsolidated: isCons 
                     }).catch(() => null),
-                    FinanceApi.getRevenueTrends(7).catch(() => null),
-                    ReceptionApi.getDashboardSummary().catch(() => null),
-                    ReceptionApi.getActionQueue(false).catch(() => [])
-                ]);
+                    FinanceApi.getReferralSummary(bId, isCons).catch(() => null)
+                ];
 
+                if (presetRange === 'today') {
+                    dynamicPromises.push(ReceptionApi.getDashboardSummary().catch(() => null));
+                    dynamicPromises.push(ReceptionApi.getActionQueue(false).catch(() => []));
+                }
+
+                const results = await Promise.allSettled(dynamicPromises);
                 if (!isMounted) return;
 
-                if (profitRes.status === 'fulfilled') setProfitability(profitRes.value);
-                if (payablesRes.status === 'fulfilled') setPayables(payablesRes.value || []);
-                if (overheadsRes.status === 'fulfilled') setOverheads(overheadsRes.value || []);
-                if (receivablesRes.status === 'fulfilled') setReceivables(receivablesRes.value || []);
-                if (referralRes.status === 'fulfilled') setReferrals(referralRes.value);
-                if (outsourcedRes.status === 'fulfilled') setOutsourced(outsourcedRes.value || []);
-                if (insClaimsRes.status === 'fulfilled') setInsuranceClaims(insClaimsRes.value || []);
-                if (corpVisitsRes.status === 'fulfilled') setCorporateVisits(corpVisitsRes.value || []);
-                if (concessionRes.status === 'fulfilled' && concessionRes.value) setConcessionData(concessionRes.value);
-                if (trendsRes && trendsRes.status === 'fulfilled' && trendsRes.value) setTrendsData(trendsRes.value);
-                if (receptionRes && receptionRes.status === 'fulfilled' && receptionRes.value) setReceptionSummary(receptionRes.value);
-                if (queueRes && queueRes.status === 'fulfilled' && Array.isArray(queueRes.value)) setTodayActionQueue(queueRes.value);
+                const profitRes = results[0];
+                const concessionRes = results[1];
+                const referralRes = results[2];
+                const receptionRes = presetRange === 'today' ? results[3] : null;
+                const queueRes = presetRange === 'today' ? results[4] : null;
+
+                const freshProfit = profitRes.status === 'fulfilled' ? profitRes.value : null;
+                const freshConcession = concessionRes.status === 'fulfilled' && concessionRes.value ? concessionRes.value : null;
+                const freshReferral = referralRes.status === 'fulfilled' ? referralRes.value : null;
+                const freshReception = receptionRes?.status === 'fulfilled' && receptionRes.value ? receptionRes.value : null;
+                const freshQueue = queueRes?.status === 'fulfilled' && Array.isArray(queueRes.value) ? queueRes.value : [];
+
+                if (freshProfit) setProfitability(freshProfit);
+                if (freshConcession) setConcessionData(freshConcession);
+                if (freshReferral) setReferrals(freshReferral);
+                if (freshReception) setReceptionSummary(freshReception);
+                if (freshQueue.length > 0) setTodayActionQueue(freshQueue);
+
+                // Cache entry for instant recall
+                dynamicCacheRef.current[cacheKey] = {
+                    profitability: freshProfit,
+                    concessionData: freshConcession,
+                    referrals: freshReferral,
+                    receptionSummary: freshReception,
+                    todayActionQueue: freshQueue
+                };
 
             } catch (err) {
                 console.error("Dashboard dynamic load failed", err);
@@ -462,15 +495,22 @@ export const FinanceOverview = () => {
 
     return (
         <div className="px-6 py-5 w-full space-y-6 animate-in fade-in duration-500 relative">
-            {/* Subtle top loading line indicator for background updates */}
-            {isUpdating && (
-                <div className="fixed top-0 left-0 right-0 h-1 bg-gradient-to-r from-synos-primary via-sky-400 to-indigo-500 z-50 animate-pulse shadow-sm" />
-            )}
-
-            {/* HEADER WITH TITLE & STANDARD GLOBAL FILTER BAR */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl md:text-4xl font-extrabold dark:text-white text-slate-900 tracking-normal leading-tight">Finance Hub</h1>
+            {/* HEADER WITH TITLE, MODERN ACTIVITY RADAR & STANDARD GLOBAL FILTER BAR */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 min-h-[48px]">
+                <div className="flex items-center gap-3.5">
+                    <h1 className="text-3xl md:text-4xl font-extrabold dark:text-white text-slate-900 tracking-normal leading-tight">
+                        Finance Hub
+                    </h1>
+                    {/* Modern Pulsing Activity Radar Loading Badge (User Requested Position) */}
+                    {isUpdating && (
+                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-synos-primary/10 border border-synos-primary/25 text-synos-primary shadow-xs animate-in fade-in duration-150">
+                            <div className="relative flex items-center justify-center w-3 h-3">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-synos-primary opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-synos-primary"></span>
+                            </div>
+                            <span className="text-xs font-bold tracking-wide uppercase">Updating...</span>
+                        </div>
+                    )}
                 </div>
 
                 <StandardFilterBar />
