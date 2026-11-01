@@ -588,6 +588,18 @@ export function IntentPanel({ onVisitUpdated }) {
     // Auto-focus Edit Demographics button after adding/selecting/resuming a patient
     useEffect(() => {
         if (!isOpen) return;
+
+        // In Visit Summary view, initial focus MUST land on Thermal (80mm)
+        if (isPostProcessingView) {
+            const timer = setTimeout(() => {
+                const thermalBtn = document.getElementById('btn-doc-format-thermal');
+                if (thermalBtn) {
+                    thermalBtn.focus();
+                }
+            }, 80);
+            return () => clearTimeout(timer);
+        }
+
         const patientPresent = Boolean(
             displayedPatient?.id || 
             displayedPatient?.patientId || 
@@ -610,6 +622,7 @@ export function IntentPanel({ onVisitUpdated }) {
         }
     }, [
         isOpen, 
+        isPostProcessingView,
         displayedPatient?.id, 
         displayedPatient?.patientId, 
         displayedPatient?.fullName, 
@@ -1371,7 +1384,11 @@ export function IntentPanel({ onVisitUpdated }) {
     useEffect(() => {
         if (!isOpen || !isPostProcessingView) return;
         const handleKeyDown = (e) => {
-            if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey && !['TEXTAREA', 'INPUT', 'SELECT'].includes(e.target.tagName)) {
+            if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
+                // If focus is currently on an interactive button, select, or input, allow that element's own action
+                if (['TEXTAREA', 'INPUT', 'SELECT', 'BUTTON'].includes(e.target?.tagName)) {
+                    return;
+                }
                 e.preventDefault();
                 handleExecutePrint();
             } else if (e.key === 'Escape') {
@@ -1459,6 +1476,7 @@ export function IntentPanel({ onVisitUpdated }) {
 
                 </div>
                 <button
+                    tabIndex={isPostProcessingView ? -1 : 0}
                     onClick={handleCloseAndReset}
                     className={cn(
                         "p-2 rounded-full transition-all duration-200 active:scale-95 cursor-pointer",
@@ -1543,8 +1561,22 @@ export function IntentPanel({ onVisitUpdated }) {
                                                 {/* Format Switcher Pills */}
                                                 <div className="flex items-center gap-1.5 bg-slate-200/60 dark:bg-zinc-800/60 p-1 rounded-xl border border-slate-300/60 dark:border-zinc-700/60">
                                                     <button
+                                                        id="btn-doc-format-thermal"
+                                                        data-summary-nav="true"
+                                                        data-initial-focus={isPostProcessingView ? "true" : undefined}
                                                         type="button"
                                                         onClick={() => setSelectedDocFormat('thermal')}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Tab') {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                if (e.shiftKey) {
+                                                                    document.getElementById('btn-summary-done')?.focus();
+                                                                } else {
+                                                                    document.getElementById('btn-doc-format-a4')?.focus();
+                                                                }
+                                                            }
+                                                        }}
                                                         className={cn(
                                                             "px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer synos-focus-btn",
                                                             selectedDocFormat === 'thermal'
@@ -1556,8 +1588,23 @@ export function IntentPanel({ onVisitUpdated }) {
                                                         <span>Thermal (80mm)</span>
                                                     </button>
                                                     <button
+                                                        id="btn-doc-format-a4"
+                                                        data-summary-nav="true"
                                                         type="button"
                                                         onClick={() => setSelectedDocFormat('a4')}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Tab') {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                if (e.shiftKey) {
+                                                                    document.getElementById('btn-doc-format-thermal')?.focus();
+                                                                } else {
+                                                                    const claimBtn = document.getElementById('btn-doc-format-claim');
+                                                                    if (claimBtn) claimBtn.focus();
+                                                                    else document.getElementById('select-summary-printer')?.focus();
+                                                                }
+                                                            }
+                                                        }}
                                                         className={cn(
                                                             "px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer synos-focus-btn",
                                                             selectedDocFormat === 'a4'
@@ -1570,8 +1617,21 @@ export function IntentPanel({ onVisitUpdated }) {
                                                     </button>
                                                     {(isPrepaid || Boolean(snapshot?.visit?.referralPartnerId) || Boolean(stagedReferralPartnerId) || Boolean(snapshot?.billing?.referral?.partner)) && (
                                                         <button
+                                                            id="btn-doc-format-claim"
+                                                            data-summary-nav="true"
                                                             type="button"
                                                             onClick={() => setSelectedDocFormat('claim')}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Tab') {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                    if (e.shiftKey) {
+                                                                        document.getElementById('btn-doc-format-a4')?.focus();
+                                                                    } else {
+                                                                        document.getElementById('select-summary-printer')?.focus();
+                                                                    }
+                                                                }
+                                                            }}
                                                             className={cn(
                                                                 "px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer synos-focus-btn",
                                                                 selectedDocFormat === 'claim'
@@ -1592,8 +1652,23 @@ export function IntentPanel({ onVisitUpdated }) {
                                                         <span className="hidden sm:inline">Printer:</span>
                                                     </span>
                                                     <select
+                                                        id="select-summary-printer"
+                                                        data-summary-nav="true"
                                                         value={selectedPrinter}
                                                         onChange={handlePrinterChange}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Tab') {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                if (e.shiftKey) {
+                                                                    const claimBtn = document.getElementById('btn-doc-format-claim');
+                                                                    if (claimBtn) claimBtn.focus();
+                                                                    else document.getElementById('btn-doc-format-a4')?.focus();
+                                                                } else {
+                                                                    document.getElementById('btn-execute-print')?.focus();
+                                                                }
+                                                            }
+                                                        }}
                                                         className="text-xs font-bold bg-white dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 rounded-xl px-2.5 py-1.5 text-slate-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-synos-primary shadow-2xs cursor-pointer synos-focus-input"
                                                     >
                                                         {printerOptions.map(p => (
@@ -1618,6 +1693,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                         </div>
                                                         <iframe
                                                             title="Thermal POS Receipt"
+                                                            tabIndex={-1}
                                                             srcDoc={thermalHtml}
                                                             className="w-full flex-1 min-h-[580px] border-0 mx-auto"
                                                         />
@@ -1727,8 +1803,21 @@ export function IntentPanel({ onVisitUpdated }) {
 
                                                 <div className="flex items-center gap-2">
                                                     <button
+                                                        id="btn-execute-print"
+                                                        data-summary-nav="true"
                                                         type="button"
                                                         onClick={handleExecutePrint}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Tab') {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                if (e.shiftKey) {
+                                                                    document.getElementById('select-summary-printer')?.focus();
+                                                                } else {
+                                                                    document.getElementById('btn-summary-visit-correction')?.focus();
+                                                                }
+                                                            }
+                                                        }}
                                                         disabled={isPrinting}
                                                         className="py-3 px-6 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-md active:scale-[0.99] transition-all cursor-pointer synos-focus-btn"
                                                     >
@@ -1800,7 +1889,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                             <div className="flex-1 min-h-0 my-3 overflow-y-auto space-y-4 pr-1.5">
                                                 {/* CARD 1: Patient Identification */}
                                                 <div className={cn(
-                                                    "rounded-[24px] border transition-all p-4 sm:p-5 space-y-3 shrink-0 synos-focus-card",
+                                                    "rounded-[24px] border transition-all p-4 sm:p-5 space-y-3 shrink-0",
                                                     isDark
                                                         ? "bg-zinc-900/90 border-zinc-800 shadow-xl"
                                                         : "bg-gradient-to-b from-[#FFFFFF] via-[#F8FBFE] to-[#F1F6FA] border border-white/95 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.04),inset_0_1px_0_#FFFFFF]"
@@ -1822,18 +1911,14 @@ export function IntentPanel({ onVisitUpdated }) {
                                                             patient={displayedPatient}
                                                             isLocked={true}
                                                             actionLabel={null}
-                                                            secondaryActionLabel="Edit"
-                                                            onSecondaryAction={() => {
-                                                                setPostProcessingSession(null);
-                                                                openCorrectionIntent(currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id);
-                                                            }}
+                                                            secondaryActionLabel={null}
                                                         />
                                                     </div>
                                                 </div>
 
                                                 {/* CARD 2: Visit Details (Doctor Channel & Ordered Investigations) */}
                                                 <div className={cn(
-                                                    "rounded-[24px] border transition-all p-4 sm:p-5 space-y-4 shrink-0 synos-focus-card",
+                                                    "rounded-[24px] border transition-all p-4 sm:p-5 space-y-4 shrink-0",
                                                     isDark
                                                         ? "bg-zinc-900/90 border-zinc-800 shadow-xl"
                                                         : "bg-gradient-to-b from-[#FFFFFF] via-[#F8FBFE] to-[#F1F6FA] border border-white/95 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.04),inset_0_1px_0_#FFFFFF]"
@@ -1928,44 +2013,54 @@ export function IntentPanel({ onVisitUpdated }) {
                                                         </div>
                                                     </div>
 
-                                                    {/* Ordered Investigations */}
-                                                    <div className="space-y-2">
-                                                        <div className="text-xs sm:text-sm font-bold text-slate-700 dark:text-zinc-300">
-                                                            Ordered Investigations ({activeRemainingTests.length + stagedAddedTests.length})
-                                                        </div>
-                                                        <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
-                                                            {[...activeRemainingTests, ...stagedAddedTests].map((t, idx) => (
-                                                                <div 
-                                                                    key={idx} 
-                                                                    className="group flex items-center justify-between p-3.5 sm:p-4 rounded-xl bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] dark:bg-zinc-900 border border-[#CCDCE8] dark:border-zinc-800 shadow-[inset_0_1px_2px_rgba(15,35,60,0.04),0_1px_0_rgba(255,255,255,0.7)]"
-                                                                >
-                                                                    <div className="flex items-center gap-3">
-                                                                        <span className="px-3 py-1.5 rounded-lg bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 border border-slate-200/90 dark:border-zinc-700 shadow-[0_1px_2px_rgba(15,35,60,0.06)] font-mono text-xs font-bold">
-                                                                            {t.testCode || t.code}
-                                                                        </span>
-                                                                        <div>
-                                                                            <span className="font-extrabold text-base text-slate-950 dark:text-white block tracking-tight">
-                                                                                {t.testName || t.name || t.testCode}
-                                                                            </span>
-                                                                            {(t.department || t.category) && (
-                                                                                <span className="inline-flex items-center px-2 py-0.5 mt-0.5 rounded-md text-[11px] font-bold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/60">
-                                                                                    {t.department || t.category}
-                                                                                </span>
-                                                                            )}
-                                                                        </div>
-                                                                    </div>
-                                                                    <span className="font-black font-mono text-base sm:text-lg text-slate-900 dark:text-white">
-                                                                        ₹{Number(t.price || t.basePrice || 0).toLocaleString()}
-                                                                    </span>
+                                                    {/* Ordered Investigations (Dynamic 2-Col Split >2, Scroll >6) */}
+                                                    {(() => {
+                                                        const summaryTests = [...activeRemainingTests, ...stagedAddedTests];
+                                                        const isSplit = summaryTests.length > 2;
+                                                        const shouldScroll = summaryTests.length > 6;
+                                                        return (
+                                                            <div className="space-y-2">
+                                                                <div className="text-xs sm:text-sm font-bold text-slate-700 dark:text-zinc-300">
+                                                                    Ordered Investigations ({summaryTests.length})
                                                                 </div>
-                                                            ))}
-                                                        </div>
-                                                    </div>
+                                                                <div className={cn(
+                                                                    isSplit ? "grid grid-cols-1 sm:grid-cols-2 gap-2" : "space-y-2",
+                                                                    shouldScroll ? "max-h-[260px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-zinc-700" : "overflow-visible"
+                                                                )}>
+                                                                    {summaryTests.map((t, idx) => (
+                                                                        <div 
+                                                                            key={idx} 
+                                                                            className="group flex items-center justify-between p-2.5 sm:p-3 rounded-xl bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] dark:bg-zinc-900 border border-[#CCDCE8] dark:border-zinc-800 shadow-[inset_0_1px_2px_rgba(15,35,60,0.04),0_1px_0_rgba(255,255,255,0.7)] min-w-0"
+                                                                        >
+                                                                            <div className="flex items-center gap-2.5 min-w-0 flex-1 mr-2">
+                                                                                <span className="px-2 py-1 rounded-md bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 border border-slate-200/90 dark:border-zinc-700 shadow-[0_1px_2px_rgba(15,35,60,0.06)] font-mono text-xs font-bold shrink-0">
+                                                                                    {t.testCode || t.code}
+                                                                                </span>
+                                                                                <div className="min-w-0 flex-1">
+                                                                                    <span className="font-extrabold text-xs sm:text-sm text-slate-950 dark:text-white block tracking-tight truncate">
+                                                                                        {t.testName || t.name || t.testCode}
+                                                                                    </span>
+                                                                                    {(t.department || t.category) && (
+                                                                                        <span className="inline-flex items-center px-1.5 py-0.5 mt-0.5 rounded text-[10px] font-bold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/60">
+                                                                                            {t.department || t.category}
+                                                                                        </span>
+                                                                                    )}
+                                                                                </div>
+                                                                            </div>
+                                                                            <span className="font-black font-mono text-sm sm:text-base text-slate-900 dark:text-white shrink-0">
+                                                                                ₹{Number(t.price || t.basePrice || 0).toLocaleString()}
+                                                                            </span>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })()}
                                                 </div>
 
                                                 {/* CARD 3: Financials - Unified Consolidated Card */}
                                                 <div className={cn(
-                                                    "rounded-[24px] border transition-all p-4 sm:p-4.5 space-y-3 shrink-0 synos-focus-card",
+                                                    "rounded-[24px] border transition-all p-4 sm:p-4.5 space-y-3 shrink-0",
                                                     isDark
                                                         ? "bg-zinc-900/90 border-zinc-800 shadow-xl"
                                                         : "bg-gradient-to-b from-[#FFFFFF] via-[#F8FBFE] to-[#F1F6FA] border border-white/95 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.04),inset_0_1px_0_#FFFFFF]"
@@ -2065,10 +2160,23 @@ export function IntentPanel({ onVisitUpdated }) {
                                             {/* Bottom Actions on Right Half */}
                                             <div className="pt-3 flex items-center gap-3 border-t border-[#BACFE0]/80 dark:border-zinc-800 shrink-0">
                                                 <button
+                                                    id="btn-summary-visit-correction"
+                                                    data-summary-nav="true"
                                                     type="button"
                                                     onClick={() => {
                                                         setPostProcessingSession(null);
                                                         openCorrectionIntent(currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id);
+                                                    }}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Tab') {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            if (e.shiftKey) {
+                                                                document.getElementById('btn-execute-print')?.focus();
+                                                            } else {
+                                                                document.getElementById('btn-summary-done')?.focus();
+                                                            }
+                                                        }
                                                     }}
                                                     className="py-3.5 px-5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 border border-slate-300 dark:border-zinc-700 bg-white/90 dark:bg-zinc-800/90 text-slate-700 dark:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all active:scale-95 shadow-2xs cursor-pointer shrink-0 synos-focus-btn"
                                                     title="Enter Visit Correction to amend tests or alter billing"
@@ -2078,8 +2186,21 @@ export function IntentPanel({ onVisitUpdated }) {
                                                 </button>
 
                                                 <button
+                                                    id="btn-summary-done"
+                                                    data-summary-nav="true"
                                                     type="button"
                                                     onClick={handleCloseAndReset}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Tab') {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            if (e.shiftKey) {
+                                                                document.getElementById('btn-summary-visit-correction')?.focus();
+                                                            } else {
+                                                                document.getElementById('btn-doc-format-thermal')?.focus();
+                                                            }
+                                                        }
+                                                    }}
                                                     className="flex-1 py-3.5 px-6 rounded-2xl font-bold text-base flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 shadow-md active:scale-[0.99] transition-all cursor-pointer synos-focus-btn"
                                                 >
                                                     <span>Done & Back to Queue</span>

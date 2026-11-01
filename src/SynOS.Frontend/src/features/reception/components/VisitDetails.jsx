@@ -1614,8 +1614,8 @@ export function VisitDetails({
                 {/* Selected Internal Tests List (Dynamic 1-Col <=4, 2-Col Split >4, Internal Scroll >8) */}
                 {(() => {
                     const totalSelectedTests = internalTests.length + (isCorrectionIntent ? stagedAddedTests.length : 0);
-                    const isSplitGrid = totalSelectedTests > 4;
-                    const hasInternalScroll = totalSelectedTests > 8;
+                    const isSplitGrid = totalSelectedTests > 2;
+                    const hasInternalScroll = totalSelectedTests > 6;
 
                     if (totalSelectedTests === 0 && (!isReadOnly || isCorrectionIntent)) {
                         return (
@@ -1630,7 +1630,7 @@ export function VisitDetails({
                     return (
                         <div className={cn(
                             isSplitGrid ? "grid grid-cols-1 sm:grid-cols-2 gap-2.5" : "space-y-2.5",
-                            hasInternalScroll && "max-h-[300px] overflow-y-auto pr-1.5 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-zinc-700"
+                            hasInternalScroll && "max-h-[260px] overflow-y-auto pr-1.5 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-zinc-700"
                         )}>
                             {internalTests.map(test => {
                                 const orderId = test.orderId || test.OrderId || test.TestId || test.testId;
