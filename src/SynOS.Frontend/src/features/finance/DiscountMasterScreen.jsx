@@ -698,7 +698,9 @@ export function DiscountMasterScreen() {
         presetRange,
         customDates,
         isConsolidated,
-        effectiveBranchId
+        setIsConsolidated,
+        effectiveBranchId,
+        currentBranchName
     } = useGlobalFilter();
 
     // Normalize tab
