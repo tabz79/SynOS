@@ -2028,7 +2028,7 @@ Error generating stack: ` + H.message + `
     }, Qr = yn(er), ot = d({}, er, {
       view: 0,
       detail: 0
-    }), kt = yn(ot), Yt, In, tr, Ir = d({}, ot, {
+    }), kt = yn(ot), Jt, In, tr, Ir = d({}, ot, {
       screenX: 0,
       screenY: 0,
       clientX: 0,
@@ -2046,7 +2046,7 @@ Error generating stack: ` + H.message + `
         return Q.relatedTarget === void 0 ? Q.fromElement === Q.srcElement ? Q.toElement : Q.fromElement : Q.relatedTarget;
       },
       movementX: function(Q) {
-        return "movementX" in Q ? Q.movementX : (Q !== tr && (tr && Q.type === "mousemove" ? (Yt = Q.screenX - tr.screenX, In = Q.screenY - tr.screenY) : In = Yt = 0, tr = Q), Yt);
+        return "movementX" in Q ? Q.movementX : (Q !== tr && (tr && Q.type === "mousemove" ? (Jt = Q.screenX - tr.screenX, In = Q.screenY - tr.screenY) : In = Jt = 0, tr = Q), Jt);
       },
       movementY: function(Q) {
         return "movementY" in Q ? Q.movementY : In;
@@ -40846,10 +40846,10 @@ Details: ${A.inner}`);
           }
           try {
             const kt = await window.api.invoke("get-printers");
-            Array.isArray(kt) && kt.length > 0 && Ln(kt.map((Yt) => ({
-              id: Yt.name || Yt.id,
-              name: Yt.displayName || Yt.name,
-              isDefault: !!Yt.isDefault
+            Array.isArray(kt) && kt.length > 0 && Ln(kt.map((Jt) => ({
+              id: Jt.name || Jt.id,
+              name: Jt.displayName || Jt.name,
+              isDefault: !!Jt.isDefault
             })));
           } catch {
           }
@@ -40877,14 +40877,14 @@ Details: ${A.inner}`);
         }
       ];
       if (dn.length > 0) {
-        const kt = new Set(ot.map((In) => In.id)), Yt = [];
-        for (const In of dn) kt.has(In.id) || (Yt.push({
+        const kt = new Set(ot.map((In) => In.id)), Jt = [];
+        for (const In of dn) kt.has(In.id) || (Jt.push({
           id: In.id,
           name: `${In.name} ${In.isDefault ? "(Default)" : ""}`
         }), kt.add(In.id));
         return [
           ...ot,
-          ...Yt
+          ...Jt
         ];
       }
       return ot;
@@ -40933,28 +40933,28 @@ Details: ${A.inner}`);
       const ot = m.current;
       try {
         const kt = await Xt.getIntakeSnapshot(J, le);
-        if (T((Yt) => {
-          const In = (kt == null ? void 0 : kt.visit) || (Yt == null ? void 0 : Yt.visit) || {
+        if (T((Jt) => {
+          const In = (kt == null ? void 0 : kt.visit) || (Jt == null ? void 0 : Jt.visit) || {
             visitId: le || null,
             paymentCollectionModel: "LabCollects",
             tests: []
-          }, tr = (kt == null ? void 0 : kt.patient) || (Yt == null ? void 0 : Yt.patient);
+          }, tr = (kt == null ? void 0 : kt.patient) || (Jt == null ? void 0 : Jt.patient);
           return {
             ...kt,
             patient: tr,
             visit: In,
-            billing: (kt == null ? void 0 : kt.billing) || (Yt == null ? void 0 : Yt.billing) || {
+            billing: (kt == null ? void 0 : kt.billing) || (Jt == null ? void 0 : Jt.billing) || {
               netAmount: 0,
               totalPaid: 0,
               paymentStatus: "PendingPayment"
             },
-            uiState: (kt == null ? void 0 : kt.uiState) || (Yt == null ? void 0 : Yt.uiState) || {
+            uiState: (kt == null ? void 0 : kt.uiState) || (Jt == null ? void 0 : Jt.uiState) || {
               canRegisterPatient: true
             }
           };
         }), ((_a2 = kt == null ? void 0 : kt.visit) == null ? void 0 : _a2.id) && kt.visit.id !== le && re(kt.visit.id), ((_b3 = kt == null ? void 0 : kt.visit) == null ? void 0 : _b3.visitId) && kt.visit.visitId !== le && re(kt.visit.visitId), ((_c2 = kt == null ? void 0 : kt.patient) == null ? void 0 : _c2.patientId) && kt.patient.patientId !== J && K(kt.patient.patientId), ot === m.current) {
-          const Yt = (_d3 = kt == null ? void 0 : kt.visit) == null ? void 0 : _d3.billingType;
-          Yt === 1 || Yt === "PrepaidPartner" || ((_e3 = kt == null ? void 0 : kt.visit) == null ? void 0 : _e3.paymentCollectionModel) === "PartnerCollects" ? (I("PrepaidPartner"), h(true)) : Yt === 2 || Yt === "Insurance" || Yt === 3 || Yt === "Corporate" ? (I("Insurance"), h(false)) : (Yt === 0 || Yt === "Standard") && (I("Standard"), h(false));
+          const Jt = (_d3 = kt == null ? void 0 : kt.visit) == null ? void 0 : _d3.billingType;
+          Jt === 1 || Jt === "PrepaidPartner" || ((_e3 = kt == null ? void 0 : kt.visit) == null ? void 0 : _e3.paymentCollectionModel) === "PartnerCollects" ? (I("PrepaidPartner"), h(true)) : Jt === 2 || Jt === "Insurance" || Jt === 3 || Jt === "Corporate" ? (I("Insurance"), h(false)) : (Jt === 0 || Jt === "Standard") && (I("Standard"), h(false));
         }
       } catch (kt) {
         console.error("Failed to load intake snapshot:", kt), G("Failed to load session. Please try closing and reopening.");
@@ -40968,15 +40968,15 @@ Details: ${A.inner}`);
       const ot = (kt) => {
         var _a2, _b3;
         if (!kt) return;
-        const Yt = ((_a2 = kt == null ? void 0 : kt.visit) == null ? void 0 : _a2.visitId) || ((_b3 = kt == null ? void 0 : kt.visit) == null ? void 0 : _b3.id);
-        if ((d || g) && Yt && Yt !== le) {
+        const Jt = ((_a2 = kt == null ? void 0 : kt.visit) == null ? void 0 : _a2.visitId) || ((_b3 = kt == null ? void 0 : kt.visit) == null ? void 0 : _b3.id);
+        if ((d || g) && Jt && Jt !== le) {
           console.log("IntentPanel: Ignoring update for different visit", {
             current: le,
-            received: Yt
+            received: Jt
           });
           return;
         }
-        T(kt), Yt && !le && re(Yt);
+        T(kt), Jt && !le && re(Jt);
       };
       return wa.onIntakeSnapshotUpdated(ot), () => {
       };
@@ -40988,7 +40988,7 @@ Details: ${A.inner}`);
     const Nt = async (ot) => {
       if (!(ot == null ? void 0 : ot.id)) return;
       It(true), yt(false);
-      const kt = ot.fullName || ot.name || `${ot.firstName || ""} ${ot.lastName || ""}`.trim(), Yt = {
+      const kt = ot.fullName || ot.name || `${ot.firstName || ""} ${ot.lastName || ""}`.trim(), Jt = {
         patientId: ot.id,
         mrn: ot.mrn || ot.MRN || ot.patientId,
         fullName: kt || "Patient",
@@ -40999,7 +40999,7 @@ Details: ${A.inner}`);
       };
       T((In) => ({
         ...In,
-        patient: Yt,
+        patient: Jt,
         visit: (In == null ? void 0 : In.visit) || {
           visitId: null,
           paymentCollectionModel: "LabCollects",
@@ -41028,18 +41028,18 @@ Details: ${A.inner}`);
       if (f === ot) return;
       const kt = ++m.current;
       I(ot), h(ot === "PrepaidPartner");
-      const Yt = le || ((_a2 = R == null ? void 0 : R.visit) == null ? void 0 : _a2.visitId) || ((_b3 = R == null ? void 0 : R.visit) == null ? void 0 : _b3.id);
-      if (Yt && (!((_c2 = R == null ? void 0 : R.billing) == null ? void 0 : _c2.isLocked) || g)) try {
+      const Jt = le || ((_a2 = R == null ? void 0 : R.visit) == null ? void 0 : _a2.visitId) || ((_b3 = R == null ? void 0 : R.visit) == null ? void 0 : _b3.id);
+      if (Jt && (!((_c2 = R == null ? void 0 : R.billing) == null ? void 0 : _c2.isLocked) || g)) try {
         if (ot !== "Insurance" && ot !== "Corporate") {
           const tr = (((_d3 = R == null ? void 0 : R.visit) == null ? void 0 : _d3.tests) || []).filter((Ir) => (Ir.code || Ir.testCode || "").toUpperCase().startsWith("PKG-") || Ir.isPackage === true);
           for (const Ir of tr) try {
-            await Xt.removeTestFromVisit(Yt, Ir.code || Ir.testCode);
+            await Xt.removeTestFromVisit(Jt, Ir.code || Ir.testCode);
           } catch (qr) {
             console.warn("Failed to strip package from visit on mode change:", qr);
           }
         }
         if (await Xt.updateBillingContext({
-          visitId: Yt,
+          visitId: Jt,
           billingType: ot
         }), kt !== m.current) return;
         await Ve();
@@ -41097,8 +41097,8 @@ Details: ${A.inner}`);
       T((kt) => {
         var _a2;
         if (!kt || !kt.visit) return kt;
-        const Yt = kt.visit.tests || [], In = ot.testCode || ot.code;
-        if (Yt.some((ir) => (ir.testCode || ir.code) === In)) return kt;
+        const Jt = kt.visit.tests || [], In = ot.testCode || ot.code;
+        if (Jt.some((ir) => (ir.testCode || ir.code) === In)) return kt;
         const tr = "opt-" + Date.now(), Ir = {
           ...ot,
           orderId: tr,
@@ -41112,7 +41112,7 @@ Details: ${A.inner}`);
           dept: ot.dept || ot.department || "GENERAL",
           isOptimistic: true
         }, qr = [
-          ...Yt,
+          ...Jt,
           Ir
         ], pr = qr.reduce((ir, zi) => ir + (Number(zi.price || zi.basePrice) || 0), 0), bi = ((_a2 = kt.billing) == null ? void 0 : _a2.discountAmount) || 0, lr = Math.max(0, pr - bi);
         return {
@@ -41130,21 +41130,21 @@ Details: ${A.inner}`);
         };
       });
     }, gn = (ot, kt) => {
-      T((Yt) => {
+      T((Jt) => {
         var _a2;
-        if (!Yt || !Yt.visit) return Yt;
-        const tr = (Yt.visit.tests || []).filter((bi) => {
+        if (!Jt || !Jt.visit) return Jt;
+        const tr = (Jt.visit.tests || []).filter((bi) => {
           const lr = (bi.testCode || bi.code) === ot;
           return !(kt && (bi.orderId === kt || bi.OrderId === kt) || lr);
-        }), Ir = tr.reduce((bi, lr) => bi + (Number(lr.price || lr.basePrice) || 0), 0), qr = ((_a2 = Yt.billing) == null ? void 0 : _a2.discountAmount) || 0, pr = Math.max(0, Ir - qr);
+        }), Ir = tr.reduce((bi, lr) => bi + (Number(lr.price || lr.basePrice) || 0), 0), qr = ((_a2 = Jt.billing) == null ? void 0 : _a2.discountAmount) || 0, pr = Math.max(0, Ir - qr);
         return {
-          ...Yt,
+          ...Jt,
           visit: {
-            ...Yt.visit,
+            ...Jt.visit,
             tests: tr
           },
           billing: {
-            ...Yt.billing,
+            ...Jt.billing,
             grossAmount: Ir,
             netAmount: pr,
             totalAmount: pr
@@ -41174,23 +41174,15 @@ Details: ${A.inner}`);
     j.useEffect(() => {
       var _a2, _b3, _c2, _d3;
       if (!n) return;
-      if (Ht) {
-        const kt = setTimeout(() => {
-          const Yt = document.getElementById("btn-doc-format-thermal");
-          Yt && Yt.focus();
-        }, 80);
-        return () => clearTimeout(kt);
-      }
       if (!!((mn == null ? void 0 : mn.id) || (mn == null ? void 0 : mn.patientId) || (mn == null ? void 0 : mn.fullName) || (mn == null ? void 0 : mn.name) || J || ((_a2 = R == null ? void 0 : R.patient) == null ? void 0 : _a2.id) || ((_b3 = R == null ? void 0 : R.patient) == null ? void 0 : _b3.patientId) || ((_c2 = R == null ? void 0 : R.patient) == null ? void 0 : _c2.fullName) || ((_d3 = R == null ? void 0 : R.patient) == null ? void 0 : _d3.name))) {
         const kt = setTimeout(() => {
-          const Yt = document.getElementById("btn-edit-demographics");
-          Yt && Yt.focus();
+          const Jt = document.getElementById("btn-edit-demographics");
+          Jt && Jt.focus();
         }, 80);
         return () => clearTimeout(kt);
       }
     }, [
       n,
-      Ht,
       mn == null ? void 0 : mn.id,
       mn == null ? void 0 : mn.patientId,
       mn == null ? void 0 : mn.fullName,
@@ -41224,7 +41216,7 @@ Details: ${A.inner}`);
     } else Wi = ((_f2 = R == null ? void 0 : R.billing) == null ? void 0 : _f2.appliedDiscount) && Number((_g2 = R == null ? void 0 : R.billing) == null ? void 0 : _g2.discountAmount) || 0;
     const Ii = Math.max(0, pi - Wi), $s = Gr ? 0 : Number(((_h = R == null ? void 0 : R.billing) == null ? void 0 : _h.totalPaid) ?? ((_i = R == null ? void 0 : R.billing) == null ? void 0 : _i.netAmount) ?? 0), Va = Gr ? 0 : Ii - $s, Kt = ie.length + q.length + (ee ? 1 : 0) + (ue ? 1 : 0) + (xe !== void 0 ? 1 : 0) + (Te !== void 0 ? 1 : 0), ja = () => {
       var _a3, _b3, _c2, _d3, _e3, _f3, _g3, _h2, _i2;
-      const ot = R == null ? void 0 : R.visit, kt = mn || (R == null ? void 0 : R.patient), Yt = R == null ? void 0 : R.billing, In = pi !== void 0 ? pi : (Yt == null ? void 0 : Yt.grossAmount) || (Yt == null ? void 0 : Yt.netAmount) || 0, tr = Wi !== void 0 ? Wi : (Yt == null ? void 0 : Yt.discountAmount) || 0, Ir = Ii !== void 0 ? Ii : (Yt == null ? void 0 : Yt.netAmount) || 0, qr = Gr ? 0 : (Yt == null ? void 0 : Yt.totalPaid) !== void 0 ? Number(Yt.totalPaid) : 0, pr = Gr ? 0 : Math.max(0, Ir - qr), bi = f === "Corporate" || (ot == null ? void 0 : ot.billingType) === "Corporate" || !!(ot == null ? void 0 : ot.corporateAccountId), lr = f === "Insurance" || (ot == null ? void 0 : ot.billingType) === "Insurance" || !!(ot == null ? void 0 : ot.insuranceCompanyId), ir = Gr || !!(ot == null ? void 0 : ot.referralPartnerId) || xe !== void 0, zi = ((_a3 = ot == null ? void 0 : ot.corporateAccount) == null ? void 0 : _a3.companyName) || ((_b3 = ot == null ? void 0 : ot.corporateAccount) == null ? void 0 : _b3.name) || (bi ? "Corporate Client" : ""), _a2 = ((_c2 = ot == null ? void 0 : ot.corporateAccount) == null ? void 0 : _c2.corporateCode) || "", ca = (ot == null ? void 0 : ot.employeeId) || "", dA = ((_d3 = ot == null ? void 0 : ot.insuranceCompany) == null ? void 0 : _d3.name) || (lr ? "Insurance Provider" : ""), da = ((_e3 = ot == null ? void 0 : ot.insuranceCompany) == null ? void 0 : _e3.tpaName) || "", il = (ot == null ? void 0 : ot.policyNumber) || "", TA = (ot == null ? void 0 : ot.preAuthApprovalNumber) || "", $d = (ot == null ? void 0 : ot.insuranceCoPayAmount) || 0, Ro = xe !== void 0 ? xe ? Ke.find((Oi) => (Oi.referralPartnerId || Oi.id) === xe) || (ot == null ? void 0 : ot.referralPartner) || ((_f3 = Yt == null ? void 0 : Yt.referral) == null ? void 0 : _f3.partner) : null : (ot == null ? void 0 : ot.referralPartner) || ((_g3 = Yt == null ? void 0 : Yt.referral) == null ? void 0 : _g3.partner), Dc = (Ro == null ? void 0 : Ro.name) || (Ro == null ? void 0 : Ro.displayName) || (ir ? "Referral Partner" : "Self / Direct"), VA = (Ro == null ? void 0 : Ro.clinicName) || "", eg = (Ro == null ? void 0 : Ro.code) || "", al = [
+      const ot = R == null ? void 0 : R.visit, kt = mn || (R == null ? void 0 : R.patient), Jt = R == null ? void 0 : R.billing, In = pi !== void 0 ? pi : (Jt == null ? void 0 : Jt.grossAmount) || (Jt == null ? void 0 : Jt.netAmount) || 0, tr = Wi !== void 0 ? Wi : (Jt == null ? void 0 : Jt.discountAmount) || 0, Ir = Ii !== void 0 ? Ii : (Jt == null ? void 0 : Jt.netAmount) || 0, qr = Gr ? 0 : (Jt == null ? void 0 : Jt.totalPaid) !== void 0 ? Number(Jt.totalPaid) : 0, pr = Gr ? 0 : Math.max(0, Ir - qr), bi = f === "Corporate" || (ot == null ? void 0 : ot.billingType) === "Corporate" || !!(ot == null ? void 0 : ot.corporateAccountId), lr = f === "Insurance" || (ot == null ? void 0 : ot.billingType) === "Insurance" || !!(ot == null ? void 0 : ot.insuranceCompanyId), ir = Gr || !!(ot == null ? void 0 : ot.referralPartnerId) || xe !== void 0, zi = ((_a3 = ot == null ? void 0 : ot.corporateAccount) == null ? void 0 : _a3.companyName) || ((_b3 = ot == null ? void 0 : ot.corporateAccount) == null ? void 0 : _b3.name) || (bi ? "Corporate Client" : ""), _a2 = ((_c2 = ot == null ? void 0 : ot.corporateAccount) == null ? void 0 : _c2.corporateCode) || "", ca = (ot == null ? void 0 : ot.employeeId) || "", dA = ((_d3 = ot == null ? void 0 : ot.insuranceCompany) == null ? void 0 : _d3.name) || (lr ? "Insurance Provider" : ""), da = ((_e3 = ot == null ? void 0 : ot.insuranceCompany) == null ? void 0 : _e3.tpaName) || "", il = (ot == null ? void 0 : ot.policyNumber) || "", TA = (ot == null ? void 0 : ot.preAuthApprovalNumber) || "", $d = (ot == null ? void 0 : ot.insuranceCoPayAmount) || 0, Ro = xe !== void 0 ? xe ? Ke.find((Oi) => (Oi.referralPartnerId || Oi.id) === xe) || (ot == null ? void 0 : ot.referralPartner) || ((_f3 = Jt == null ? void 0 : Jt.referral) == null ? void 0 : _f3.partner) : null : (ot == null ? void 0 : ot.referralPartner) || ((_g3 = Jt == null ? void 0 : Jt.referral) == null ? void 0 : _g3.partner), Dc = (Ro == null ? void 0 : Ro.name) || (Ro == null ? void 0 : Ro.displayName) || (ir ? "Referral Partner" : "Self / Direct"), VA = (Ro == null ? void 0 : Ro.clinicName) || "", eg = (Ro == null ? void 0 : Ro.code) || "", al = [
         ...Vi,
         ...ie.map((Oi) => ({
           ...Oi,
@@ -41232,11 +41224,11 @@ Details: ${A.inner}`);
           name: Oi.testName || Oi.name || Oi.testCode,
           price: Number(Oi.basePrice || Oi.price || Oi.Price) || 0
         }))
-      ], id = al.some((Oi) => Oi.isOutsourced || !!Oi.referenceLabName), vl = al.filter((Oi) => Oi.isOutsourced && Oi.referenceLabName).map((Oi) => Oi.referenceLabName), Nl = (ee == null ? void 0 : ee.remove) ? "" : (ee == null ? void 0 : ee.reason) || (ee == null ? void 0 : ee.name) || ((_h2 = Yt == null ? void 0 : Yt.appliedDiscount) == null ? void 0 : _h2.reason) || ((_i2 = Yt == null ? void 0 : Yt.appliedDiscount) == null ? void 0 : _i2.name) || "", ad = (ot == null ? void 0 : ot.billedBy) || (Yt == null ? void 0 : Yt.billedBy) || ((e == null ? void 0 : e.name) ? `${e.name}` : "Staff Desk"), vA = (ot == null ? void 0 : ot.visitToken) || (ot == null ? void 0 : ot.token);
+      ], id = al.some((Oi) => Oi.isOutsourced || !!Oi.referenceLabName), vl = al.filter((Oi) => Oi.isOutsourced && Oi.referenceLabName).map((Oi) => Oi.referenceLabName), Nl = (ee == null ? void 0 : ee.remove) ? "" : (ee == null ? void 0 : ee.reason) || (ee == null ? void 0 : ee.name) || ((_h2 = Jt == null ? void 0 : Jt.appliedDiscount) == null ? void 0 : _h2.reason) || ((_i2 = Jt == null ? void 0 : Jt.appliedDiscount) == null ? void 0 : _i2.name) || "", ad = (ot == null ? void 0 : ot.billedBy) || (Jt == null ? void 0 : Jt.billedBy) || ((e == null ? void 0 : e.name) ? `${e.name}` : "Staff Desk"), vA = (ot == null ? void 0 : ot.visitToken) || (ot == null ? void 0 : ot.token);
       return {
         billNumber: (!vA || vA.startsWith("DRAFT") || vA.startsWith("D-") ? "" : vA) || "INV-REC-001",
         date: (/* @__PURE__ */ new Date()).toISOString(),
-        status: (Yt == null ? void 0 : Yt.paymentStatus) || (pr <= 0 ? "Paid" : "PendingPayment"),
+        status: (Jt == null ? void 0 : Jt.paymentStatus) || (pr <= 0 ? "Paid" : "PendingPayment"),
         biller: {
           billedBy: ad,
           discountReason: Nl
@@ -41300,7 +41292,7 @@ Details: ${A.inner}`);
       };
     }, zt = (ot, kt) => {
       var _a3, _b3, _c2, _d3, _e3, _f3, _g3, _h2, _i2, _j3, _k3, _l2, _m3, _n2;
-      const Yt = R == null ? void 0 : R.visit, In = mn || (R == null ? void 0 : R.patient), tr = (pt == null ? void 0 : pt.token) || (Yt == null ? void 0 : Yt.visitToken) || (Yt == null ? void 0 : Yt.token), qr = !tr || tr.startsWith("DRAFT") || tr.startsWith("D-") ? (Yt == null ? void 0 : Yt.visitToken) || "REC-2026" : tr, pr = pi !== void 0 ? pi : ((_a3 = R == null ? void 0 : R.billing) == null ? void 0 : _a3.grossAmount) || 0, bi = Wi !== void 0 ? Wi : ((_b3 = R == null ? void 0 : R.billing) == null ? void 0 : _b3.discountAmount) || 0, lr = Ii !== void 0 ? Ii : ((_c2 = R == null ? void 0 : R.billing) == null ? void 0 : _c2.netAmount) || 0, ir = (pt == null ? void 0 : pt.paidAmount) !== void 0 ? pt.paidAmount : Gr ? 0 : ((_d3 = R == null ? void 0 : R.billing) == null ? void 0 : _d3.totalPaid) !== void 0 ? Number(R.billing.totalPaid) : lr, zi = (ee == null ? void 0 : ee.remove) ? "" : (ee == null ? void 0 : ee.reason) || (ee == null ? void 0 : ee.name) || ((_f3 = (_e3 = R == null ? void 0 : R.billing) == null ? void 0 : _e3.appliedDiscount) == null ? void 0 : _f3.reason) || ((_h2 = (_g3 = R == null ? void 0 : R.billing) == null ? void 0 : _g3.appliedDiscount) == null ? void 0 : _h2.name) || "", _a2 = (Yt == null ? void 0 : Yt.billedBy) || ((_i2 = R == null ? void 0 : R.billing) == null ? void 0 : _i2.billedBy) || ((e == null ? void 0 : e.name) ? `${e.name}` : "Staff Desk"), ca = [
+      const Jt = R == null ? void 0 : R.visit, In = mn || (R == null ? void 0 : R.patient), tr = (pt == null ? void 0 : pt.token) || (Jt == null ? void 0 : Jt.visitToken) || (Jt == null ? void 0 : Jt.token), qr = !tr || tr.startsWith("DRAFT") || tr.startsWith("D-") ? (Jt == null ? void 0 : Jt.visitToken) || "REC-2026" : tr, pr = pi !== void 0 ? pi : ((_a3 = R == null ? void 0 : R.billing) == null ? void 0 : _a3.grossAmount) || 0, bi = Wi !== void 0 ? Wi : ((_b3 = R == null ? void 0 : R.billing) == null ? void 0 : _b3.discountAmount) || 0, lr = Ii !== void 0 ? Ii : ((_c2 = R == null ? void 0 : R.billing) == null ? void 0 : _c2.netAmount) || 0, ir = (pt == null ? void 0 : pt.paidAmount) !== void 0 ? pt.paidAmount : Gr ? 0 : ((_d3 = R == null ? void 0 : R.billing) == null ? void 0 : _d3.totalPaid) !== void 0 ? Number(R.billing.totalPaid) : lr, zi = (ee == null ? void 0 : ee.remove) ? "" : (ee == null ? void 0 : ee.reason) || (ee == null ? void 0 : ee.name) || ((_f3 = (_e3 = R == null ? void 0 : R.billing) == null ? void 0 : _e3.appliedDiscount) == null ? void 0 : _f3.reason) || ((_h2 = (_g3 = R == null ? void 0 : R.billing) == null ? void 0 : _g3.appliedDiscount) == null ? void 0 : _h2.name) || "", _a2 = (Jt == null ? void 0 : Jt.billedBy) || ((_i2 = R == null ? void 0 : R.billing) == null ? void 0 : _i2.billedBy) || ((e == null ? void 0 : e.name) ? `${e.name}` : "Staff Desk"), ca = [
         ...Vi,
         ...ie.map((da) => ({
           ...da,
@@ -41308,9 +41300,9 @@ Details: ${A.inner}`);
           name: da.testName || da.name || da.testCode,
           price: Number(da.basePrice || da.price || da.Price) || 0
         }))
-      ], dA = xe !== void 0 ? xe ? Ke.find((da) => (da.referralPartnerId || da.id) === xe) || (Yt == null ? void 0 : Yt.referralPartner) || ((_k3 = (_j3 = R == null ? void 0 : R.billing) == null ? void 0 : _j3.referral) == null ? void 0 : _k3.partner) : null : (Yt == null ? void 0 : Yt.referralPartner) || ((_m3 = (_l2 = R == null ? void 0 : R.billing) == null ? void 0 : _l2.referral) == null ? void 0 : _m3.partner);
+      ], dA = xe !== void 0 ? xe ? Ke.find((da) => (da.referralPartnerId || da.id) === xe) || (Jt == null ? void 0 : Jt.referralPartner) || ((_k3 = (_j3 = R == null ? void 0 : R.billing) == null ? void 0 : _j3.referral) == null ? void 0 : _k3.partner) : null : (Jt == null ? void 0 : Jt.referralPartner) || ((_m3 = (_l2 = R == null ? void 0 : R.billing) == null ? void 0 : _l2.referral) == null ? void 0 : _m3.partner);
       return {
-        visitId: (Yt == null ? void 0 : Yt.visitId) || le,
+        visitId: (Jt == null ? void 0 : Jt.visitId) || le,
         token: qr,
         isPrepaid: Gr || f === "PrepaidPartner",
         isInsurance: f === "Insurance",
@@ -41403,10 +41395,10 @@ Details: ${A.inner}`);
       }
     }, cr = async (ot, kt) => {
       try {
-        const Yt = zt(ot, kt), In = ow(Yt);
+        const Jt = zt(ot, kt), In = ow(Jt);
         await mF(In, it === "default" ? void 0 : it);
-      } catch (Yt) {
-        console.error("Failed to print receipt:", Yt);
+      } catch (Jt) {
+        console.error("Failed to print receipt:", Jt);
       }
     }, [Sr, Wr] = j.useState(false), va = async () => {
       var _a2, _b3, _c2;
@@ -41479,10 +41471,10 @@ Details: ${A.inner}`);
               preAuthApprovalNumber: ((_d3 = ot == null ? void 0 : ot.preAuthApprovalNumber) == null ? void 0 : _d3.trim()) || null,
               insuranceCoPayAmount: (ot == null ? void 0 : ot.insuranceCoPayAmount) || 0
             });
-            const Yt = await Xt.markVisitAsInsurance(R.visit.visitId), In = (ot == null ? void 0 : ot.insuranceCoPayAmount) || 0;
+            const Jt = await Xt.markVisitAsInsurance(R.visit.visitId), In = (ot == null ? void 0 : ot.insuranceCoPayAmount) || 0;
             In > 0 && await Xt.collectPayment(R.visit.visitId, In, B).catch((tr) => console.warn("Co-Pay collection:", tr)), await Ve(), ct({
               visitId: R.visit.visitId,
-              token: (Yt == null ? void 0 : Yt.token) || R.visit.token || R.visit.visitToken,
+              token: (Jt == null ? void 0 : Jt.token) || R.visit.token || R.visit.visitToken,
               billingMode: "Insurance",
               paidAmount: In,
               timestamp: (/* @__PURE__ */ new Date()).toLocaleTimeString([], {
@@ -41490,8 +41482,8 @@ Details: ${A.inner}`);
                 minute: "2-digit"
               })
             }), Ue("thermal");
-          } catch (Yt) {
-            G(Yt.message);
+          } catch (Jt) {
+            G(Jt.message);
           } finally {
             _(false), En(false);
           }
@@ -41516,10 +41508,10 @@ Details: ${A.inner}`);
               corporateAccountId: ot.corporateAccountId,
               employeeId: kt
             });
-            const Yt = await Xt.markVisitAsCorporate(R.visit.visitId);
+            const Jt = await Xt.markVisitAsCorporate(R.visit.visitId);
             await Ve(), ct({
               visitId: R.visit.visitId,
-              token: (Yt == null ? void 0 : Yt.token) || R.visit.token || R.visit.visitToken,
+              token: (Jt == null ? void 0 : Jt.token) || R.visit.token || R.visit.visitToken,
               billingMode: "Corporate",
               paidAmount: 0,
               timestamp: (/* @__PURE__ */ new Date()).toLocaleTimeString([], {
@@ -41527,8 +41519,8 @@ Details: ${A.inner}`);
                 minute: "2-digit"
               })
             }), Ue("thermal");
-          } catch (Yt) {
-            G(Yt.message);
+          } catch (Jt) {
+            G(Jt.message);
           } finally {
             _(false), En(false);
           }
@@ -41537,12 +41529,12 @@ Details: ${A.inner}`);
         if (xt && !R.billing.isLocked) {
           _(true), En(true), G(null);
           try {
-            const ot = Number(He), Yt = _e && ot > 0 && ot < Ye ? ot : Ye, In = await Xt.collectPayment(R.visit.visitId, Yt, B), tr = ((_e3 = R == null ? void 0 : R.billing) == null ? void 0 : _e3.totalPaid) || 0;
+            const ot = Number(He), Jt = _e && ot > 0 && ot < Ye ? ot : Ye, In = await Xt.collectPayment(R.visit.visitId, Jt, B), tr = ((_e3 = R == null ? void 0 : R.billing) == null ? void 0 : _e3.totalPaid) || 0;
             await Ve(), me(false), Xe(""), ct({
               visitId: R.visit.visitId,
               token: (In == null ? void 0 : In.token) || R.visit.token || R.visit.visitToken,
               billingMode: "Standard",
-              paidAmount: tr + Yt,
+              paidAmount: tr + Jt,
               timestamp: (/* @__PURE__ */ new Date()).toLocaleTimeString([], {
                 hour: "2-digit",
                 minute: "2-digit"
@@ -41577,18 +41569,18 @@ Details: ${A.inner}`);
       }
     }, Oa = (ot) => {
       const kt = ot.testCode || ot.code;
-      ie.some((Yt) => {
+      ie.some((Jt) => {
         var _a2;
-        return ((_a2 = Yt.testCode || Yt.code) == null ? void 0 : _a2.toLowerCase()) === (kt == null ? void 0 : kt.toLowerCase());
-      }) || ne((Yt) => [
-        ...Yt,
+        return ((_a2 = Jt.testCode || Jt.code) == null ? void 0 : _a2.toLowerCase()) === (kt == null ? void 0 : kt.toLowerCase());
+      }) || ne((Jt) => [
+        ...Jt,
         ot
       ]);
     }, Ea = (ot) => {
-      ne((kt) => kt.filter((Yt, In) => In !== ot));
+      ne((kt) => kt.filter((Jt, In) => In !== ot));
     }, la = (ot, kt) => {
-      ot && Z((Yt) => Yt.includes(ot) ? Yt.filter((In) => In !== ot) : [
-        ...Yt,
+      ot && Z((Jt) => Jt.includes(ot) ? Jt.filter((In) => In !== ot) : [
+        ...Jt,
         ot
       ]);
     }, xs = () => {
@@ -41660,7 +41652,7 @@ Details: ${A.inner}`);
           settlementDifference: Va,
           paymentMethod: B,
           reason: tt.trim()
-        }, Yt = await Xt.batchEditVisit(ot, kt);
+        }, Jt = await Xt.batchEditVisit(ot, kt);
         ne([]), Z([]), oe(null), Se(null), De(void 0), We(void 0), Qe(false), ke(""), It(null), await Ve(), ct({
           visitId: ot,
           token: ((_f3 = R == null ? void 0 : R.visit) == null ? void 0 : _f3.token) || ((_g3 = R == null ? void 0 : R.visit) == null ? void 0 : _g3.visitToken),
@@ -41678,7 +41670,19 @@ Details: ${A.inner}`);
       }
     }, Ci = !!(R == null ? void 0 : R.patient), yi = !!(R == null ? void 0 : R.visit), La = ((_j2 = R == null ? void 0 : R.billing) == null ? void 0 : _j2.netAmount) || 0, Le = ((_k2 = R == null ? void 0 : R.billing) == null ? void 0 : _k2.totalPaid) || 0, Ye = Math.max(0, La - Le), rt = !!(((_l = R == null ? void 0 : R.visit) == null ? void 0 : _l.tests) && ((_m2 = R == null ? void 0 : R.visit) == null ? void 0 : _m2.tests.length) > 0 || ((_n = R == null ? void 0 : R.billing) == null ? void 0 : _n.items) && ((_o2 = R == null ? void 0 : R.billing) == null ? void 0 : _o2.items.length) > 0 || ((_p2 = R == null ? void 0 : R.billing) == null ? void 0 : _p2.grossAmount) > 0 || ie && ie.length > 0);
     rt || ie && ie.length > 0 || xe !== void 0 || ((_q2 = R == null ? void 0 : R.visit) == null ? void 0 : _q2.referralPartnerId) || ((_r2 = R == null ? void 0 : R.visit) == null ? void 0 : _r2.id) || ((_s = R == null ? void 0 : R.visit) == null ? void 0 : _s.visitId);
-    const at = rt && Ye === 0, xt = (((_t2 = R == null ? void 0 : R.billing) == null ? void 0 : _t2.paymentStatus) === "PendingPayment" || ((_u2 = R == null ? void 0 : R.billing) == null ? void 0 : _u2.paymentStatus) === "PartialPayment") && (Ye > 0 || at), Ct = (u || f === "PrepaidPartner") && !((_v = R == null ? void 0 : R.billing) == null ? void 0 : _v.isLocked), Vt = ((_w2 = R == null ? void 0 : R.billing) == null ? void 0 : _w2.paymentStatus) === "Paid" || Ye <= 0 && La > 0 || !!((_x2 = R == null ? void 0 : R.billing) == null ? void 0 : _x2.isLocked), St = Ne !== null ? !Ne : !!Vt, Ht = !!pt || Vt && !g, Gt = xe !== void 0 ? xe ? Ke.find((ot) => (ot.referralPartnerId || ot.id) === xe) || ((_y = R == null ? void 0 : R.visit) == null ? void 0 : _y.referralPartner) || ((_A2 = (_z2 = R == null ? void 0 : R.billing) == null ? void 0 : _z2.referral) == null ? void 0 : _A2.partner) : null : ((_B = R == null ? void 0 : R.visit) == null ? void 0 : _B.referralPartner) || ((_D2 = (_C = R == null ? void 0 : R.billing) == null ? void 0 : _C.referral) == null ? void 0 : _D2.partner), Sn = Te !== void 0 ? Te ? Ke.find((ot) => (ot.referralPartnerId || ot.id) === Te) || ((_E2 = R == null ? void 0 : R.visit) == null ? void 0 : _E2.secondaryReferralPartner) || ((_G2 = (_F2 = R == null ? void 0 : R.billing) == null ? void 0 : _F2.referral) == null ? void 0 : _G2.secondaryPartner) : null : ((_H2 = R == null ? void 0 : R.visit) == null ? void 0 : _H2.secondaryReferralPartner) || ((_J2 = (_I = R == null ? void 0 : R.billing) == null ? void 0 : _I.referral) == null ? void 0 : _J2.secondaryPartner), Kn = Gt ? Gt.displayName || Gt.name : ((_L2 = (_K2 = R == null ? void 0 : R.billing) == null ? void 0 : _K2.referral) == null ? void 0 : _L2.referrerText) || ((_M2 = R == null ? void 0 : R.visit) == null ? void 0 : _M2.referringDoctorName) || "Direct / Self", Fn = Sn ? Sn.displayName || Sn.name : null, Gn = j.useRef(null), [st, wt] = j.useState(1.35);
+    const at = rt && Ye === 0, xt = (((_t2 = R == null ? void 0 : R.billing) == null ? void 0 : _t2.paymentStatus) === "PendingPayment" || ((_u2 = R == null ? void 0 : R.billing) == null ? void 0 : _u2.paymentStatus) === "PartialPayment") && (Ye > 0 || at), Ct = (u || f === "PrepaidPartner") && !((_v = R == null ? void 0 : R.billing) == null ? void 0 : _v.isLocked), Vt = ((_w2 = R == null ? void 0 : R.billing) == null ? void 0 : _w2.paymentStatus) === "Paid" || Ye <= 0 && La > 0 || !!((_x2 = R == null ? void 0 : R.billing) == null ? void 0 : _x2.isLocked), St = Ne !== null ? !Ne : !!Vt, Ht = !!pt || Vt && !g;
+    j.useEffect(() => {
+      if (!n || !Ht) return;
+      const ot = setTimeout(() => {
+        const kt = document.getElementById("btn-doc-format-thermal");
+        kt && kt.focus();
+      }, 80);
+      return () => clearTimeout(ot);
+    }, [
+      n,
+      Ht
+    ]);
+    const Gt = xe !== void 0 ? xe ? Ke.find((ot) => (ot.referralPartnerId || ot.id) === xe) || ((_y = R == null ? void 0 : R.visit) == null ? void 0 : _y.referralPartner) || ((_A2 = (_z2 = R == null ? void 0 : R.billing) == null ? void 0 : _z2.referral) == null ? void 0 : _A2.partner) : null : ((_B = R == null ? void 0 : R.visit) == null ? void 0 : _B.referralPartner) || ((_D2 = (_C = R == null ? void 0 : R.billing) == null ? void 0 : _C.referral) == null ? void 0 : _D2.partner), Sn = Te !== void 0 ? Te ? Ke.find((ot) => (ot.referralPartnerId || ot.id) === Te) || ((_E2 = R == null ? void 0 : R.visit) == null ? void 0 : _E2.secondaryReferralPartner) || ((_G2 = (_F2 = R == null ? void 0 : R.billing) == null ? void 0 : _F2.referral) == null ? void 0 : _G2.secondaryPartner) : null : ((_H2 = R == null ? void 0 : R.visit) == null ? void 0 : _H2.secondaryReferralPartner) || ((_J2 = (_I = R == null ? void 0 : R.billing) == null ? void 0 : _I.referral) == null ? void 0 : _J2.secondaryPartner), Kn = Gt ? Gt.displayName || Gt.name : ((_L2 = (_K2 = R == null ? void 0 : R.billing) == null ? void 0 : _K2.referral) == null ? void 0 : _L2.referrerText) || ((_M2 = R == null ? void 0 : R.visit) == null ? void 0 : _M2.referringDoctorName) || "Direct / Self", Fn = Sn ? Sn.displayName || Sn.name : null, Gn = j.useRef(null), [st, wt] = j.useState(1.35);
     j.useEffect(() => {
       if (!n || !Ht) return;
       const ot = () => {
@@ -41687,9 +41691,9 @@ Details: ${A.inner}`);
         wt(Number(Ir.toFixed(2)));
       };
       ot();
-      const kt = setTimeout(ot, 60), Yt = new ResizeObserver(ot);
-      return Gn.current && Yt.observe(Gn.current), () => {
-        clearTimeout(kt), Yt.disconnect();
+      const kt = setTimeout(ot, 60), Jt = new ResizeObserver(ot);
+      return Gn.current && Jt.observe(Gn.current), () => {
+        clearTimeout(kt), Jt.disconnect();
       };
     }, [
       n,
@@ -41729,8 +41733,8 @@ Details: ${A.inner}`);
     else if (Ct) yn = "Confirm Corporate B2B Bill (\u20B90)", er = rt;
     else if (xt) if (at) yn = "Confirm & Complete Visit (\u20B90)", er = true;
     else {
-      const ot = Number(He), kt = _e && ot > 0 && ot < Ye, Yt = kt ? ot : Ye, In = Ye - Yt;
-      yn = kt ? `Accept Partial (\u20B9${Yt.toLocaleString()}) \u2022 Due \u20B9${In.toLocaleString()}` : `Accept Payment (\u20B9${Ye.toLocaleString()})`, er = true;
+      const ot = Number(He), kt = _e && ot > 0 && ot < Ye, Jt = kt ? ot : Ye, In = Ye - Jt;
+      yn = kt ? `Accept Partial (\u20B9${Jt.toLocaleString()}) \u2022 Due \u20B9${In.toLocaleString()}` : `Accept Payment (\u20B9${Ye.toLocaleString()})`, er = true;
     }
     else yn = rt ? "Visit Complete (Close)" : "Add Tests to Proceed", er = rt;
     let Qr = "Registration";
@@ -42370,7 +42374,7 @@ Details: ${A.inner}`);
                                       const ot = [
                                         ...Vi,
                                         ...ie
-                                      ], kt = ot.length > 2, Yt = ot.length > 6;
+                                      ], kt = ot.length > 2, Jt = ot.length > 6;
                                       return r.jsxs("div", {
                                         className: "space-y-2",
                                         children: [
@@ -42383,7 +42387,7 @@ Details: ${A.inner}`);
                                             ]
                                           }),
                                           r.jsx("div", {
-                                            className: ve(kt ? "grid grid-cols-1 sm:grid-cols-2 gap-2" : "space-y-2", Yt ? "max-h-[260px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-zinc-700" : "overflow-visible"),
+                                            className: ve(kt ? "grid grid-cols-1 sm:grid-cols-2 gap-2" : "space-y-2", Jt ? "max-h-[260px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-zinc-700" : "overflow-visible"),
                                             children: ot.map((In, tr) => r.jsxs("div", {
                                               className: "group flex items-center justify-between p-2.5 sm:p-3 rounded-xl bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] dark:bg-zinc-900 border border-[#CCDCE8] dark:border-zinc-800 shadow-[inset_0_1px_2px_rgba(15,35,60,0.04),0_1px_0_rgba(255,255,255,0.7)] min-w-0",
                                               children: [
@@ -42938,9 +42942,9 @@ Details: ${A.inner}`);
                         className: "space-y-2.5 pt-2 border-t border-black/5 dark:border-white/5 animate-in fade-in duration-200",
                         children: R.correctionHistory.map((ot, kt) => {
                           var _a2, _b3, _c2, _d3;
-                          let Yt = null;
+                          let Jt = null;
                           try {
-                            ot.payloadJson && (Yt = JSON.parse(ot.payloadJson));
+                            ot.payloadJson && (Jt = JSON.parse(ot.payloadJson));
                           } catch {
                           }
                           const In = ot.newAmount - ot.previousAmount;
@@ -43009,30 +43013,30 @@ Details: ${A.inner}`);
                                   })
                                 ]
                               }),
-                              Yt && r.jsxs("div", {
+                              Jt && r.jsxs("div", {
                                 className: "flex flex-wrap gap-1.5 pt-1 text-xs",
                                 children: [
-                                  ((_c2 = Yt.addTestCodes) == null ? void 0 : _c2.length) > 0 && r.jsxs("span", {
+                                  ((_c2 = Jt.addTestCodes) == null ? void 0 : _c2.length) > 0 && r.jsxs("span", {
                                     className: "px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 font-medium",
                                     children: [
                                       "+Added: ",
-                                      Yt.addTestCodes.join(", ")
+                                      Jt.addTestCodes.join(", ")
                                     ]
                                   }),
-                                  ((_d3 = Yt.removeOrderIds) == null ? void 0 : _d3.length) > 0 && r.jsxs("span", {
+                                  ((_d3 = Jt.removeOrderIds) == null ? void 0 : _d3.length) > 0 && r.jsxs("span", {
                                     className: "px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20 font-medium",
                                     children: [
                                       "-Removed ",
-                                      Yt.removeOrderIds.length,
+                                      Jt.removeOrderIds.length,
                                       " ",
-                                      Yt.removeOrderIds.length === 1 ? "test" : "tests"
+                                      Jt.removeOrderIds.length === 1 ? "test" : "tests"
                                     ]
                                   }),
-                                  Yt.settlementAction && Yt.settlementAction !== "None" && r.jsxs("span", {
+                                  Jt.settlementAction && Jt.settlementAction !== "None" && r.jsxs("span", {
                                     className: "px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 font-medium",
                                     children: [
                                       "Settlement: ",
-                                      Yt.settlementAction === "RefundIssued" ? "Refund Cash Disbursed" : "Additional Payment Collected"
+                                      Jt.settlementAction === "RefundIssued" ? "Refund Cash Disbursed" : "Additional Payment Collected"
                                     ]
                                   })
                                 ]
@@ -43330,9 +43334,9 @@ Details: ${A.inner}`);
           isDark: Vn,
           onSuccess: async (ot) => {
             var _a2, _b3;
-            const kt = ot.referralPartnerId || ot.id, Yt = le || ((_a2 = R == null ? void 0 : R.visit) == null ? void 0 : _a2.visitId) || ((_b3 = R == null ? void 0 : R.visit) == null ? void 0 : _b3.id);
-            if (Yt && kt) try {
-              await Xt.applyReferralToVisit(Yt, kt);
+            const kt = ot.referralPartnerId || ot.id, Jt = le || ((_a2 = R == null ? void 0 : R.visit) == null ? void 0 : _a2.visitId) || ((_b3 = R == null ? void 0 : R.visit) == null ? void 0 : _b3.id);
+            if (Jt && kt) try {
+              await Xt.applyReferralToVisit(Jt, kt);
             } catch (In) {
               console.error("Failed to auto-apply referral partner to visit:", In);
             }
@@ -43348,9 +43352,9 @@ Details: ${A.inner}`);
           isDark: Vn,
           onSuccess: async (ot) => {
             var _a2, _b3;
-            const kt = ot.referralPartnerId || ot.id, Yt = le || ((_a2 = R == null ? void 0 : R.visit) == null ? void 0 : _a2.visitId) || ((_b3 = R == null ? void 0 : R.visit) == null ? void 0 : _b3.id);
-            if (Yt && kt) try {
-              await Xt.updateSecondaryReferral(Yt, kt);
+            const kt = ot.referralPartnerId || ot.id, Jt = le || ((_a2 = R == null ? void 0 : R.visit) == null ? void 0 : _a2.visitId) || ((_b3 = R == null ? void 0 : R.visit) == null ? void 0 : _b3.id);
+            if (Jt && kt) try {
+              await Xt.updateSecondaryReferral(Jt, kt);
             } catch (In) {
               console.error("Failed to auto-apply billing doctor to visit:", In);
             }
@@ -43364,9 +43368,9 @@ Details: ${A.inner}`);
           isDark: Vn,
           onSuccess: async (ot) => {
             var _a2, _b3;
-            const kt = ot.id || ot.insuranceCompanyId, Yt = le || ((_a2 = R == null ? void 0 : R.visit) == null ? void 0 : _a2.visitId) || ((_b3 = R == null ? void 0 : R.visit) == null ? void 0 : _b3.id);
-            if (Yt && kt) try {
-              await Xt.updateBillingContext(Yt, {
+            const kt = ot.id || ot.insuranceCompanyId, Jt = le || ((_a2 = R == null ? void 0 : R.visit) == null ? void 0 : _a2.visitId) || ((_b3 = R == null ? void 0 : R.visit) == null ? void 0 : _b3.id);
+            if (Jt && kt) try {
+              await Xt.updateBillingContext(Jt, {
                 insuranceCompanyId: kt
               });
             } catch (In) {
@@ -43381,9 +43385,9 @@ Details: ${A.inner}`);
           isDark: Vn,
           onSuccess: async (ot) => {
             var _a2, _b3;
-            const kt = ot.id || ot.corporateAccountId, Yt = le || ((_a2 = R == null ? void 0 : R.visit) == null ? void 0 : _a2.visitId) || ((_b3 = R == null ? void 0 : R.visit) == null ? void 0 : _b3.id);
-            if (Yt && kt) try {
-              await Xt.updateBillingContext(Yt, {
+            const kt = ot.id || ot.corporateAccountId, Jt = le || ((_a2 = R == null ? void 0 : R.visit) == null ? void 0 : _a2.visitId) || ((_b3 = R == null ? void 0 : R.visit) == null ? void 0 : _b3.id);
+            if (Jt && kt) try {
+              await Xt.updateBillingContext(Jt, {
                 corporateAccountId: kt
               });
             } catch (In) {
@@ -43654,8 +43658,8 @@ Details: ${A.inner}`);
                 children: [
                   (() => {
                     var _a2, _b3, _c2, _d3, _e3;
-                    const ot = ((_b3 = (_a2 = R == null ? void 0 : R.billing) == null ? void 0 : _a2.referral) == null ? void 0 : _b3.partner) || ((_c2 = R == null ? void 0 : R.visit) == null ? void 0 : _c2.referralPartner), kt = (ot == null ? void 0 : ot.name) || (ot == null ? void 0 : ot.displayName) || ((_d3 = R == null ? void 0 : R.visit) == null ? void 0 : _d3.referralPartnerName) || "Self / Direct", Yt = (ot == null ? void 0 : ot.id) || (ot == null ? void 0 : ot.referralPartnerId) || ((_e3 = R == null ? void 0 : R.visit) == null ? void 0 : _e3.referralPartnerId);
-                    if (!(xe !== void 0 && xe !== Yt)) return null;
+                    const ot = ((_b3 = (_a2 = R == null ? void 0 : R.billing) == null ? void 0 : _a2.referral) == null ? void 0 : _b3.partner) || ((_c2 = R == null ? void 0 : R.visit) == null ? void 0 : _c2.referralPartner), kt = (ot == null ? void 0 : ot.name) || (ot == null ? void 0 : ot.displayName) || ((_d3 = R == null ? void 0 : R.visit) == null ? void 0 : _d3.referralPartnerName) || "Self / Direct", Jt = (ot == null ? void 0 : ot.id) || (ot == null ? void 0 : ot.referralPartnerId) || ((_e3 = R == null ? void 0 : R.visit) == null ? void 0 : _e3.referralPartnerId);
+                    if (!(xe !== void 0 && xe !== Jt)) return null;
                     let tr = kt;
                     if (xe) {
                       const Ir = Ke.find((qr) => (qr.referralPartnerId || qr.id) === xe);
@@ -43764,7 +43768,7 @@ Details: ${A.inner}`);
                         className: "space-y-1.5",
                         children: ie.map((ot, kt) => {
                           var _a2;
-                          const Yt = ot.specimenTypeCode, In = (((_a2 = R == null ? void 0 : R.visit) == null ? void 0 : _a2.specimens) || []).find((Ir) => Ir.specimenTypeCode === Yt && Ir.status !== "Cancelled"), tr = !!In;
+                          const Jt = ot.specimenTypeCode, In = (((_a2 = R == null ? void 0 : R.visit) == null ? void 0 : _a2.specimens) || []).find((Ir) => Ir.specimenTypeCode === Jt && Ir.status !== "Cancelled"), tr = !!In;
                           return r.jsxs("div", {
                             className: "flex flex-col gap-0.5 p-2 rounded-lg bg-white/60 dark:bg-zinc-800/60 border border-emerald-500/20",
                             children: [
@@ -43794,14 +43798,14 @@ Details: ${A.inner}`);
                                   className: "text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1",
                                   children: [
                                     "\u2713 Reusing collected ",
-                                    In.tubeName || Yt || "Specimen",
+                                    In.tubeName || Jt || "Specimen",
                                     " container (No new pricking)"
                                   ]
                                 }) : r.jsxs("span", {
                                   className: "text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-1",
                                   children: [
                                     "\u26A0\uFE0F Phlebotomy alert: New ",
-                                    Yt || "sample",
+                                    Jt || "sample",
                                     " tube queued for collection"
                                   ]
                                 })
@@ -43827,16 +43831,16 @@ Details: ${A.inner}`);
                         className: "space-y-1",
                         children: q.map((ot, kt) => {
                           var _a2;
-                          const Yt = (((_a2 = R == null ? void 0 : R.visit) == null ? void 0 : _a2.tests) || []).find((In) => (In.orderId || In.OrderId || In.TestId || In.testId) === ot);
+                          const Jt = (((_a2 = R == null ? void 0 : R.visit) == null ? void 0 : _a2.tests) || []).find((In) => (In.orderId || In.OrderId || In.TestId || In.testId) === ot);
                           return r.jsxs("div", {
                             className: "flex justify-between text-xs p-1.5 rounded bg-white/50 dark:bg-zinc-800/50",
                             children: [
                               r.jsxs("span", {
                                 className: "line-through text-zinc-600 dark:text-zinc-400",
                                 children: [
-                                  (Yt == null ? void 0 : Yt.testName) || (Yt == null ? void 0 : Yt.name) || "Test Order",
+                                  (Jt == null ? void 0 : Jt.testName) || (Jt == null ? void 0 : Jt.name) || "Test Order",
                                   " (",
-                                  (Yt == null ? void 0 : Yt.testCode) || (Yt == null ? void 0 : Yt.code),
+                                  (Jt == null ? void 0 : Jt.testCode) || (Jt == null ? void 0 : Jt.code),
                                   ")"
                                 ]
                               }),
@@ -43844,7 +43848,7 @@ Details: ${A.inner}`);
                                 className: "font-mono text-red-500",
                                 children: [
                                   "- \u20B9",
-                                  (Yt == null ? void 0 : Yt.basePrice) || (Yt == null ? void 0 : Yt.price) || 0
+                                  (Jt == null ? void 0 : Jt.basePrice) || (Jt == null ? void 0 : Jt.price) || 0
                                 ]
                               })
                             ]
@@ -43871,13 +43875,13 @@ Details: ${A.inner}`);
                   (() => {
                     var _a2, _b3, _c2, _d3, _e3, _f3, _g3, _h2;
                     if (Gr) {
-                      const ot = _x(R), kt = ((_a2 = R == null ? void 0 : R.billing) == null ? void 0 : _a2.grossAmount) || 0, Yt = ot.rawAmount || 0, In = Math.max(0, kt - Yt), tr = pi !== void 0 ? pi : kt;
+                      const ot = _x(R), kt = ((_a2 = R == null ? void 0 : R.billing) == null ? void 0 : _a2.grossAmount) || 0, Jt = ot.rawAmount || 0, In = Math.max(0, kt - Jt), tr = pi !== void 0 ? pi : kt;
                       let Ir = 0;
                       if (Wi !== void 0) Ir = Wi;
                       else if (ee) {
                         const lr = Number(ee.value) || 0;
                         ee.type === "Percentage" ? Ir = Math.round(tr * (lr / 100) * 100) / 100 : Ir = Math.min(tr, lr);
-                      } else Ir = Yt;
+                      } else Ir = Jt;
                       const qr = Math.max(0, tr - Ir), pr = qr - In;
                       let bi = ((_d3 = (_c2 = (_b3 = R == null ? void 0 : R.billing) == null ? void 0 : _b3.referral) == null ? void 0 : _c2.partner) == null ? void 0 : _d3.name) || ((_f3 = (_e3 = R == null ? void 0 : R.visit) == null ? void 0 : _e3.referralPartner) == null ? void 0 : _f3.name) || ((_h2 = (_g3 = R == null ? void 0 : R.visit) == null ? void 0 : _g3.secondaryReferralPartner) == null ? void 0 : _h2.name) || "Doctor / Partner";
                       if (xe !== void 0) if (xe) {
@@ -87039,7 +87043,7 @@ ${n}
         });
       };
       document.addEventListener("pointermove", ar), document.addEventListener("pointerup", xi);
-    }, [_t, Rn] = j.useState((i == null ? void 0 : i.name) || ""), [fr, Nr] = j.useState((i == null ? void 0 : i.code) || ""), [yr, Mn] = j.useState((i == null ? void 0 : i.department) || ""), [Wn, hr] = j.useState((i == null ? void 0 : i.isProfile) || false), [ti, Er] = j.useState((i == null ? void 0 : i.specimenTypeCode) || "SERUM"), [Qt, Pt] = j.useState((i == null ? void 0 : i.category) || "General"), [qt, gn] = j.useState((i == null ? void 0 : i.modalityId) || ""), [mn, Fr] = j.useState(false), [Li, Vi] = j.useState("formula"), [Ar, di] = j.useState(""), [pi, Gr] = j.useState(""), [Wi, Ii] = j.useState(false), [$s, Va] = j.useState(""), [Kt, ja] = j.useState(false), [zt, xn] = j.useState(""), [Yn, cr] = j.useState(""), [Sr, Wr] = j.useState(false), [va, Qi] = j.useState(""), [Oa, Ea] = j.useState(""), [la, xs] = j.useState(false), [Ur, Or] = j.useState(""), [Ci, yi] = j.useState(""), [La, Le] = j.useState(false), [Ye, rt] = j.useState(""), [at, xt] = j.useState(""), [Ct, Vt] = j.useState(false), [St, Ht] = j.useState(""), [Gt, Sn] = j.useState(""), [Kn, Fn] = j.useState(""), [Gn, st] = j.useState(""), [wt, on] = j.useState(""), [yn, er] = j.useState(false), [Qr, ot] = j.useState(""), [kt, Yt] = j.useState(""), [In, tr] = j.useState(""), [Ir, qr] = j.useState(false), [pr, bi] = j.useState(""), [lr, ir] = j.useState(""), [zi, _a] = j.useState(""), [ca, dA] = j.useState(false), [da, il] = j.useState(""), [TA, $d] = j.useState(""), [Ro, Dc] = j.useState(""), [VA, eg] = j.useState(false), [al, id] = j.useState(""), [vl, Nl] = j.useState(""), [ad, vA] = j.useState(""), [Dl, Sc] = j.useState(false), [Oi, ou] = j.useState(""), [Mo, I0] = j.useState(""), [sd, lo] = j.useState(""), [Sl, lu] = j.useState(false), [sl, cu] = j.useState(""), [Ad, Re] = j.useState(""), [vn, Ji] = j.useState(""), [sa, gA] = j.useState(false), [Jr, Es] = j.useState(""), [kl, od] = j.useState(""), [$p, du] = j.useState(""), [Rl, gu] = j.useState(false), [kc, uu] = j.useState(""), [co, _h] = j.useState(""), [hu, Hh] = j.useState(""), Yh = (Ze) => {
+    }, [_t, Rn] = j.useState((i == null ? void 0 : i.name) || ""), [fr, Nr] = j.useState((i == null ? void 0 : i.code) || ""), [yr, Mn] = j.useState((i == null ? void 0 : i.department) || ""), [Wn, hr] = j.useState((i == null ? void 0 : i.isProfile) || false), [ti, Er] = j.useState((i == null ? void 0 : i.specimenTypeCode) || "SERUM"), [Qt, Pt] = j.useState((i == null ? void 0 : i.category) || "General"), [qt, gn] = j.useState((i == null ? void 0 : i.modalityId) || ""), [mn, Fr] = j.useState(false), [Li, Vi] = j.useState("formula"), [Ar, di] = j.useState(""), [pi, Gr] = j.useState(""), [Wi, Ii] = j.useState(false), [$s, Va] = j.useState(""), [Kt, ja] = j.useState(false), [zt, xn] = j.useState(""), [Yn, cr] = j.useState(""), [Sr, Wr] = j.useState(false), [va, Qi] = j.useState(""), [Oa, Ea] = j.useState(""), [la, xs] = j.useState(false), [Ur, Or] = j.useState(""), [Ci, yi] = j.useState(""), [La, Le] = j.useState(false), [Ye, rt] = j.useState(""), [at, xt] = j.useState(""), [Ct, Vt] = j.useState(false), [St, Ht] = j.useState(""), [Gt, Sn] = j.useState(""), [Kn, Fn] = j.useState(""), [Gn, st] = j.useState(""), [wt, on] = j.useState(""), [yn, er] = j.useState(false), [Qr, ot] = j.useState(""), [kt, Jt] = j.useState(""), [In, tr] = j.useState(""), [Ir, qr] = j.useState(false), [pr, bi] = j.useState(""), [lr, ir] = j.useState(""), [zi, _a] = j.useState(""), [ca, dA] = j.useState(false), [da, il] = j.useState(""), [TA, $d] = j.useState(""), [Ro, Dc] = j.useState(""), [VA, eg] = j.useState(false), [al, id] = j.useState(""), [vl, Nl] = j.useState(""), [ad, vA] = j.useState(""), [Dl, Sc] = j.useState(false), [Oi, ou] = j.useState(""), [Mo, I0] = j.useState(""), [sd, lo] = j.useState(""), [Sl, lu] = j.useState(false), [sl, cu] = j.useState(""), [Ad, Re] = j.useState(""), [vn, Ji] = j.useState(""), [sa, gA] = j.useState(false), [Jr, Es] = j.useState(""), [kl, od] = j.useState(""), [$p, du] = j.useState(""), [Rl, gu] = j.useState(false), [kc, uu] = j.useState(""), [co, _h] = j.useState(""), [hu, Hh] = j.useState(""), Yh = (Ze) => {
       a(Ze), localStorage.setItem("synos_selected_test_id", Ze.id), Rn(Ze.name), Nr(Ze.code), Mn(Ze.department), hr(Ze.isProfile), Er(Ze.specimenTypeCode || "SERUM"), Pt(Ze.category || "General"), gn(Ze.modalityId || ""), Pr(false), Fr(false), !Ze.isProfile && Lt === "profile-builder" && fn("parameters");
     }, _C = () => {
       const Ze = re.find((bn) => bn.name === yr), Mt = Ze ? Ze.macroDepartment === "Radiology" : yr === "Radiology" || yr === "RAD";
@@ -87269,7 +87273,7 @@ IMPRESSION:`,
       const ar = ht.childMin !== void 0 && ht.childMin !== null ? ht.childMin : "", xi = ht.childMax !== void 0 && ht.childMax !== null ? ht.childMax : "";
       ht.useAdult;
       const Aa = ht.adultMin !== void 0 && ht.adultMin !== null ? ht.adultMin : "", Gi = ht.adultMax !== void 0 && ht.adultMax !== null ? ht.adultMax : "";
-      er(ht.useNewbornMale ?? false), ot(ht.newbornMaleMin !== void 0 && ht.newbornMaleMin !== null ? ht.newbornMaleMin : ""), Yt(ht.newbornMaleMax !== void 0 && ht.newbornMaleMax !== null ? ht.newbornMaleMax : ""), tr(ht.newbornMaleText || ""), qr(ht.useNewbornFemale ?? false), bi(ht.newbornFemaleMin !== void 0 && ht.newbornFemaleMin !== null ? ht.newbornFemaleMin : ""), ir(ht.newbornFemaleMax !== void 0 && ht.newbornFemaleMax !== null ? ht.newbornFemaleMax : ""), _a(ht.newbornFemaleText || ""), dA(ht.useInfantMale ?? (ht.useInfant ? true : Un)), il(ht.infantMaleMin !== void 0 && ht.infantMaleMin !== null ? ht.infantMaleMin : gi || bn), $d(ht.infantMaleMax !== void 0 && ht.infantMaleMax !== null ? ht.infantMaleMax : Bi || wn), Dc(ht.infantMaleText || ""), eg(ht.useInfantFemale ?? (ht.useInfant ? true : Zn)), id(ht.infantFemaleMin !== void 0 && ht.infantFemaleMin !== null ? ht.infantFemaleMin : gi || kn), Nl(ht.infantFemaleMax !== void 0 && ht.infantFemaleMax !== null ? ht.infantFemaleMax : Bi || Ai), vA(ht.infantFemaleText || ""), Sc(ht.useChildMale ?? (ht.useChild ? true : Un)), ou(ht.childMaleMin !== void 0 && ht.childMaleMin !== null ? ht.childMaleMin : ar || bn), I0(ht.childMaleMax !== void 0 && ht.childMaleMax !== null ? ht.childMaleMax : xi || wn), lo(ht.childMaleText || ""), lu(ht.useChildFemale ?? (ht.useChild ? true : Zn)), cu(ht.childFemaleMin !== void 0 && ht.childFemaleMin !== null ? ht.childFemaleMin : ar || kn), Re(ht.childFemaleMax !== void 0 && ht.childFemaleMax !== null ? ht.childFemaleMax : xi || Ai), Ji(ht.childFemaleText || ""), gA(ht.useAdultMale ?? (ht.useAdult ? true : Un)), Es(ht.adultMaleMin !== void 0 && ht.adultMaleMin !== null ? ht.adultMaleMin : Aa || bn), od(ht.adultMaleMax !== void 0 && ht.adultMaleMax !== null ? ht.adultMaleMax : Gi || wn), du(ht.adultMaleText || ""), gu(ht.useAdultFemale ?? (ht.useAdult ? true : Zn)), uu(ht.adultFemaleMin !== void 0 && ht.adultFemaleMin !== null ? ht.adultFemaleMin : Aa || kn), _h(ht.adultFemaleMax !== void 0 && ht.adultFemaleMax !== null ? ht.adultFemaleMax : Gi || Ai), Hh(ht.adultFemaleText || ""), Fr(true);
+      er(ht.useNewbornMale ?? false), ot(ht.newbornMaleMin !== void 0 && ht.newbornMaleMin !== null ? ht.newbornMaleMin : ""), Jt(ht.newbornMaleMax !== void 0 && ht.newbornMaleMax !== null ? ht.newbornMaleMax : ""), tr(ht.newbornMaleText || ""), qr(ht.useNewbornFemale ?? false), bi(ht.newbornFemaleMin !== void 0 && ht.newbornFemaleMin !== null ? ht.newbornFemaleMin : ""), ir(ht.newbornFemaleMax !== void 0 && ht.newbornFemaleMax !== null ? ht.newbornFemaleMax : ""), _a(ht.newbornFemaleText || ""), dA(ht.useInfantMale ?? (ht.useInfant ? true : Un)), il(ht.infantMaleMin !== void 0 && ht.infantMaleMin !== null ? ht.infantMaleMin : gi || bn), $d(ht.infantMaleMax !== void 0 && ht.infantMaleMax !== null ? ht.infantMaleMax : Bi || wn), Dc(ht.infantMaleText || ""), eg(ht.useInfantFemale ?? (ht.useInfant ? true : Zn)), id(ht.infantFemaleMin !== void 0 && ht.infantFemaleMin !== null ? ht.infantFemaleMin : gi || kn), Nl(ht.infantFemaleMax !== void 0 && ht.infantFemaleMax !== null ? ht.infantFemaleMax : Bi || Ai), vA(ht.infantFemaleText || ""), Sc(ht.useChildMale ?? (ht.useChild ? true : Un)), ou(ht.childMaleMin !== void 0 && ht.childMaleMin !== null ? ht.childMaleMin : ar || bn), I0(ht.childMaleMax !== void 0 && ht.childMaleMax !== null ? ht.childMaleMax : xi || wn), lo(ht.childMaleText || ""), lu(ht.useChildFemale ?? (ht.useChild ? true : Zn)), cu(ht.childFemaleMin !== void 0 && ht.childFemaleMin !== null ? ht.childFemaleMin : ar || kn), Re(ht.childFemaleMax !== void 0 && ht.childFemaleMax !== null ? ht.childFemaleMax : xi || Ai), Ji(ht.childFemaleText || ""), gA(ht.useAdultMale ?? (ht.useAdult ? true : Un)), Es(ht.adultMaleMin !== void 0 && ht.adultMaleMin !== null ? ht.adultMaleMin : Aa || bn), od(ht.adultMaleMax !== void 0 && ht.adultMaleMax !== null ? ht.adultMaleMax : Gi || wn), du(ht.adultMaleText || ""), gu(ht.useAdultFemale ?? (ht.useAdult ? true : Zn)), uu(ht.adultFemaleMin !== void 0 && ht.adultFemaleMin !== null ? ht.adultFemaleMin : Aa || kn), _h(ht.adultFemaleMax !== void 0 && ht.adultFemaleMax !== null ? ht.adultFemaleMax : Gi || Ai), Hh(ht.adultFemaleText || ""), Fr(true);
     }, Wh = () => {
       const Ze = i.parameters.map((Un) => Un.code === Ar ? {
         ...Un,
@@ -90347,7 +90351,7 @@ Would you like to switch to "${wn.childTestName}" now?`) && Yh(gi) : alert(`Chil
                         maleMin: Qr,
                         setMaleMin: ot,
                         maleMax: kt,
-                        setMaleMax: Yt,
+                        setMaleMax: Jt,
                         maleText: In,
                         setMaleText: tr,
                         useFemale: Ir,
@@ -98723,7 +98727,7 @@ Would you like to switch to "${wn.childTestName}" now?`) && Yh(gi) : alert(`Chil
       yr.current && Nr.current && (yr.current.scrollLeft = Nr.current.scrollLeft);
     }, Er = () => {
       yr.current && Nr.current && (Nr.current.scrollLeft = yr.current.scrollLeft);
-    }, [Qt, Pt] = j.useState([]), [qt, gn] = j.useState([]), [mn, Fr] = j.useState(null), [Li, Vi] = j.useState(false), [Ar, di] = j.useState(null), [pi, Gr] = j.useState(false), [Wi, Ii] = j.useState([]), [$s, Va] = j.useState([]), [Kt, ja] = j.useState(null), [zt, xn] = j.useState(false), [Yn, cr] = j.useState(null), [Sr, Wr] = j.useState(false), [va, Qi] = j.useState([]), [Oa, Ea] = j.useState(0), [la] = j.useState(15), [xs, Ur] = j.useState(0), [Or, Ci] = j.useState([]), [yi, La] = j.useState(""), [Le, Ye] = j.useState(""), [rt, at] = j.useState(""), [xt, Ct] = j.useState(""), [Vt, St] = j.useState(""), [Ht, Gt] = j.useState(null), [Sn, Kn] = j.useState([]), [Fn, Gn] = j.useState([]), [st, wt] = j.useState(null), [on, yn] = j.useState(false), [er, Qr] = j.useState(null), [ot, kt] = j.useState(false), Yt = async () => {
+    }, [Qt, Pt] = j.useState([]), [qt, gn] = j.useState([]), [mn, Fr] = j.useState(null), [Li, Vi] = j.useState(false), [Ar, di] = j.useState(null), [pi, Gr] = j.useState(false), [Wi, Ii] = j.useState([]), [$s, Va] = j.useState([]), [Kt, ja] = j.useState(null), [zt, xn] = j.useState(false), [Yn, cr] = j.useState(null), [Sr, Wr] = j.useState(false), [va, Qi] = j.useState([]), [Oa, Ea] = j.useState(0), [la] = j.useState(15), [xs, Ur] = j.useState(0), [Or, Ci] = j.useState([]), [yi, La] = j.useState(""), [Le, Ye] = j.useState(""), [rt, at] = j.useState(""), [xt, Ct] = j.useState(""), [Vt, St] = j.useState(""), [Ht, Gt] = j.useState(null), [Sn, Kn] = j.useState([]), [Fn, Gn] = j.useState([]), [st, wt] = j.useState(null), [on, yn] = j.useState(false), [er, Qr] = j.useState(null), [ot, kt] = j.useState(false), Jt = async () => {
       h(true);
       try {
         const [Re, vn, Ji] = await Promise.all([
@@ -98753,7 +98757,7 @@ Would you like to switch to "${wn.childTestName}" now?`) && Yh(gi) : alert(`Chil
           printerType: st.printerType || "Thermal80mm",
           isActive: st.isActive ?? true,
           branchId: st.branchId
-        }), I("New branch printer registered successfully.")), yn(false), wt(null), await Yt();
+        }), I("New branch printer registered successfully.")), yn(false), wt(null), await Jt();
       } catch (vn) {
         B(vn.message || "Failed to save printer.");
       } finally {
@@ -98763,7 +98767,7 @@ Would you like to switch to "${wn.childTestName}" now?`) && Yh(gi) : alert(`Chil
       if (window.confirm("Are you sure you want to delete this branch printer?")) {
         h(true), B(null), I(null);
         try {
-          await rr.deleteBranchPrinter(Re), I("Printer deleted successfully."), await Yt();
+          await rr.deleteBranchPrinter(Re), I("Printer deleted successfully."), await Jt();
         } catch (vn) {
           B(vn.message || "Failed to delete printer.");
         } finally {
@@ -98782,7 +98786,7 @@ Would you like to switch to "${wn.childTestName}" now?`) && Yh(gi) : alert(`Chil
           isLeadPrintTerminal: er.isLeadPrintTerminal ?? false,
           specificReceiptPrinterId: er.specificReceiptPrinterId || null
         };
-        Fn.some((sa) => sa.terminalIdentifier === er.terminalIdentifier) ? (await rr.updateTerminalPrinterConfig(er.terminalIdentifier, vn), I("Terminal printer configuration updated successfully.")) : (await rr.createTerminalPrinterConfig(vn), I("Terminal printer configuration registered successfully.")), kt(false), Qr(null), await Yt();
+        Fn.some((sa) => sa.terminalIdentifier === er.terminalIdentifier) ? (await rr.updateTerminalPrinterConfig(er.terminalIdentifier, vn), I("Terminal printer configuration updated successfully.")) : (await rr.createTerminalPrinterConfig(vn), I("Terminal printer configuration registered successfully.")), kt(false), Qr(null), await Jt();
       } catch (vn) {
         B(vn.message || "Failed to save terminal configuration.");
       } finally {
@@ -98792,7 +98796,7 @@ Would you like to switch to "${wn.childTestName}" now?`) && Yh(gi) : alert(`Chil
       if (window.confirm("Are you sure you want to remove this terminal authorization?")) {
         h(true), B(null), I(null);
         try {
-          await rr.deleteTerminalPrinterConfig(Re), I("Terminal authorization removed successfully."), await Yt();
+          await rr.deleteTerminalPrinterConfig(Re), I("Terminal authorization removed successfully."), await Jt();
         } catch (vn) {
           B(vn.message || "Failed to delete terminal configuration.");
         } finally {
@@ -99141,7 +99145,7 @@ Backup ID: ${Ji == null ? void 0 : Ji.backupId}`);
       }
     };
     j.useEffect(() => {
-      B(null), I(null), A === "settings" && pr(), A === "permissions" && lr(), A === "departments" && ir(), A === "pricing" && zi(), A === "branches" && ca(), A === "workspaces" && il(), A === "printing" && Yt(), A === "audit" && _a(), A === "backup" && Ro(), A === "advanced" && bi(), A === "about" && (Nl(), pr());
+      B(null), I(null), A === "settings" && pr(), A === "permissions" && lr(), A === "departments" && ir(), A === "pricing" && zi(), A === "branches" && ca(), A === "workspaces" && il(), A === "printing" && Jt(), A === "audit" && _a(), A === "backup" && Ro(), A === "advanced" && bi(), A === "about" && (Nl(), pr());
     }, [
       A,
       xs
@@ -185406,8 +185410,8 @@ fn main(
         var kt;
         if (yn && (kt = Qr ? yn(st, er, Qr, ot) : yn(st)), kt !== void 0) return kt;
         if (!Gt(st)) return st;
-        var Yt = at(st);
-        if (Yt) {
+        var Jt = at(st);
+        if (Jt) {
           if (kt = Ea(st), !wt) return xn(st, kt);
         } else {
           var In = Oa(st), tr = In == g || In == d;
@@ -185423,7 +185427,7 @@ fn main(
         ot || (ot = new Mn());
         var Ir = ot.get(st);
         if (Ir) return Ir;
-        if (ot.set(st, kt), !Yt) var qr = on ? Sr(st) : Kn(st);
+        if (ot.set(st, kt), !Jt) var qr = on ? Sr(st) : Kn(st);
         return Ke(qr || st, function(pr, bi) {
           qr && (bi = pr, pr = st[bi]), qt(kt, bi, Fr(pr, wt, on, yn, bi, st, ot));
         }), kt;
@@ -235315,7 +235319,7 @@ Input: ` + this.err.str);
             getHoveredContourSegmentationAnnotation: () => YB,
             getSegmentAtLabelmapBorder: () => HB,
             getSegmentAtWorldPoint: () => OI,
-            getUniqueSegmentIndices: () => Yt,
+            getUniqueSegmentIndices: () => Jt,
             invalidateBrushCursor: () => kB,
             isValidRepresentationConfig: () => yy,
             rectangleROIThresholdVolumeByRange: () => UB,
@@ -236316,7 +236320,7 @@ Input: ` + this.err.str);
             const p = ot.get(k);
             p && (p.isDirty = true);
           };
-          function Yt(k) {
+          function Jt(k) {
             const p = (function(v) {
               const S = ot.get(v);
               return S && !S.isDirty ? S.indices : null;
@@ -237452,7 +237456,7 @@ Input: ` + this.err.str);
             if (!y) return;
             const v = y.find(((z) => z.segmentationRepresentationUID === p));
             if (!v) return;
-            const { segmentsHidden: S, segmentationId: M } = v, F = Yt(M);
+            const { segmentsHidden: S, segmentationId: M } = v, F = Jt(M);
             x ? S.clear() : F.forEach(((z) => {
               S.add(z);
             })), Ir(k, v.segmentationRepresentationUID);
@@ -237460,7 +237464,7 @@ Input: ` + this.err.str);
           function JC(k, p) {
             const x = ca(k).find(((F) => F.segmentationRepresentationUID === p));
             if (!x) return;
-            const { segmentsHidden: y, segmentationId: v } = x, S = Yt(v), M = new Set(S);
+            const { segmentsHidden: y, segmentationId: v } = x, S = Jt(v), M = new Set(S);
             return y.forEach(((F) => M.delete(F))), !!M.size;
           }
           function aI(k, p, x, y) {
@@ -238054,7 +238058,7 @@ Input: ` + this.err.str);
             return mu(k, Gt.Labelmap, (() => (async function(x) {
               var y;
               let v = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
-              const S = (y = v.segmentIndices) !== null && y !== void 0 && y.length ? v.segmentIndices : Yt(x);
+              const S = (y = v.segmentIndices) !== null && y !== void 0 && y.length ? v.segmentIndices : Jt(x);
               let M;
               const F = ir(x), z = F.representationData;
               try {
@@ -238063,7 +238067,7 @@ Input: ` + this.err.str);
                   let W = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
                   const te = (Y = W.viewport instanceof se.VolumeViewport) === null || Y === void 0 || Y;
                   if (te && !W.viewport) throw new Error("Cannot compute labelmap from contour segmentation without providing the viewport");
-                  const Ae = (V = W.segmentIndices) !== null && V !== void 0 && V.length ? W.segmentIndices : Yt(O), ge = ir(O).representationData.CONTOUR;
+                  const Ae = (V = W.segmentIndices) !== null && V !== void 0 && V.length ? W.segmentIndices : Jt(O), ge = ir(O).representationData.CONTOUR;
                   return await (te ? wv : Bu)(ge, {
                     segmentIndices: Ae,
                     segmentationRepresentationUID: W.segmentationRepresentationUID,
@@ -238075,7 +238079,7 @@ Input: ` + this.err.str);
                 }) : z.SURFACE && (M = await (async function(O) {
                   var Y, V;
                   let W = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
-                  const te = (Y = W.viewport instanceof se.VolumeViewport) === null || Y === void 0 || Y, Ae = (V = W.segmentIndices) !== null && V !== void 0 && V.length ? W.segmentIndices : Yt(O), ge = ir(O), Ce = /* @__PURE__ */ new Map();
+                  const te = (Y = W.viewport instanceof se.VolumeViewport) === null || Y === void 0 || Y, Ae = (V = W.segmentIndices) !== null && V !== void 0 && V.length ? W.segmentIndices : Jt(O), ge = ir(O), Ce = /* @__PURE__ */ new Map();
                   if (ge.representationData.SURFACE.geometryIds.forEach(((Me, ze) => {
                     Ae.includes(ze) && Ce.set(ze, Me);
                   })), te && !W.viewport) throw new Error("Cannot compute labelmap from surface segmentation without providing the viewport");
@@ -238096,9 +238100,9 @@ Input: ` + this.err.str);
                     if (Oe == null || !Oe.size) throw new Error("No geometry IDs found for surface representation");
                     const et = /* @__PURE__ */ new Map();
                     Oe.forEach(((Ft, Bt) => {
-                      const Dt = se.cache.getGeometry(Ft).data, Jt = Dt.getPoints(), Cn = Dt.getPolys();
+                      const Dt = se.cache.getGeometry(Ft).data, Yt = Dt.getPoints(), Cn = Dt.getPolys();
                       et.set(Bt, {
-                        points: Jt,
+                        points: Yt,
                         polys: Cn
                       });
                     }));
@@ -238256,10 +238260,10 @@ Input: ` + this.err.str);
               if (!V) return;
               const { cfun: te, ofun: Ae } = z, ge = x.renderInactiveSegmentations;
               (function(Ce, Be, ye, Me, ze, Oe, et, nt, gt, mt) {
-                const { segmentSpecificConfig: bt, segmentationRepresentationSpecificConfig: Et } = et, Ft = Et[Gt.Labelmap], Bt = Mo(ze), Dt = Math.min(256, Bt.length), { uid: Jt } = Be, { outlineWidth: Cn, renderOutline: un, outlineOpacity: On } = NQ(Oe, Ft, nt);
+                const { segmentSpecificConfig: bt, segmentationRepresentationSpecificConfig: Et } = et, Ft = Et[Gt.Labelmap], Bt = Mo(ze), Dt = Math.min(256, Bt.length), { uid: Yt } = Be, { outlineWidth: Cn, renderOutline: un, outlineOpacity: On } = NQ(Oe, Ft, nt);
                 for (let vr = 0; vr < Dt; vr++) {
                   var _n;
-                  const gr = vr, Mr = Bt[gr], Ni = (_n = bt[gr]) === null || _n === void 0 ? void 0 : _n[Gt.Labelmap], { fillAlpha: oi, outlineWidth: ia, renderFill: oa, renderOutline: aA } = NQ(Oe, Ft, nt, Ni), { forceOpacityUpdate: Eo, forceColorUpdate: Hl } = of(Ce, Jt, gr, {
+                  const gr = vr, Mr = Bt[gr], Ni = (_n = bt[gr]) === null || _n === void 0 ? void 0 : _n[Gt.Labelmap], { fillAlpha: oi, outlineWidth: ia, renderFill: oa, renderOutline: aA } = NQ(Oe, Ft, nt, Ni), { forceOpacityUpdate: Eo, forceColorUpdate: Hl } = of(Ce, Yt, gr, {
                     fillAlpha: oi,
                     renderFill: oa,
                     renderOutline: aA,
@@ -240067,7 +240071,7 @@ Input: ` + this.err.str);
             let x = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
             const y = ir(k);
             if (y == null || (p = y.representationData) === null || p === void 0 || !p.LABELMAP) return void console.warn("Only support surface update from labelmaps");
-            const v = Qr(y.representationData.LABELMAP), S = y.representationData.LABELMAP, M = x.segmentIndices || Yt(k), F = M.map(((Y) => (async function(W, te) {
+            const v = Qr(y.representationData.LABELMAP), S = y.representationData.LABELMAP, M = x.segmentIndices || Jt(k), F = M.map(((Y) => (async function(W, te) {
               let Ae;
               if (arguments.length > 2 && arguments[2] !== void 0 && !arguments[2]) {
                 const { imageIdReferenceMap: et } = W;
@@ -240106,13 +240110,13 @@ Input: ` + this.err.str);
             return mu(k, Gt.Surface, (() => (async function(x) {
               var y;
               let v = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
-              const S = (y = v.segmentIndices) !== null && y !== void 0 && y.length ? v.segmentIndices : Yt(x);
+              const S = (y = v.segmentIndices) !== null && y !== void 0 && y.length ? v.segmentIndices : Jt(x);
               let M;
               const F = ir(x), z = F.representationData;
               try {
                 z.CONTOUR ? M = await (async function(O) {
                   let Y = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
-                  const V = ir(O).representationData.CONTOUR, W = (Y.segmentIndices || Yt(O)).map((async (te) => {
+                  const V = ir(O).representationData.CONTOUR, W = (Y.segmentIndices || Jt(O)).map((async (te) => {
                     const Ae = await (async function(ge, Ce) {
                       const { annotationUIDsMap: Be } = ge, ye = [], Me = [], ze = Be.get(Ce);
                       for (const et of ze) {
@@ -240153,7 +240157,7 @@ Input: ` + this.err.str);
             })(k, p)), (() => (async function(x) {
               const y = await Eu(x);
               if (!y) return;
-              const v = ir(x), S = Yt(x);
+              const v = ir(x), S = Jt(x);
               if (!S.length) return v.representationData.SURFACE.geometryIds.forEach(((F) => {
                 const z = se.cache.getGeometry(F).data;
                 z.setPoints([]), z.setPolys([]);
@@ -240204,10 +240208,10 @@ Input: ` + this.err.str);
                     return "".concat(Bt, "_").concat(Dt);
                   })(Ce, ge.id), Me = (0, se.getEnabledElement)(Ae), { viewport: ze } = Me, Oe = (Be = ze.getActor(ye)) === null || Be === void 0 ? void 0 : Be.actor;
                   if (Oe) {
-                    const Bt = Oe.getMapper(), Dt = Bt.getInputData(), Jt = ge.getPoints(), Cn = ge.getPolys(), un = Dt.getPoints().getData(), On = Dt.getPolys().getData();
-                    if (Jt.length === un.length && Cn.length === On.length) return;
+                    const Bt = Oe.getMapper(), Dt = Bt.getInputData(), Yt = ge.getPoints(), Cn = ge.getPolys(), un = Dt.getPoints().getData(), On = Dt.getPolys().getData();
+                    if (Yt.length === un.length && Cn.length === On.length) return;
                     const _n = DA().newInstance();
-                    _n.getPoints().setData(Jt, 3);
+                    _n.getPoints().setData(Yt, 3);
                     const Hn = xQ().newInstance({
                       values: Float32Array.from(Cn)
                     });
@@ -240535,7 +240539,7 @@ Input: ` + this.err.str);
             const W = k.getDimensions();
             y ? [[v, S], [M, F], [z, O]] = y : (v = 0, S = W[0], M = 0, F = W[1], z = 0, O = W[2]);
             const te = Ge.vec3.fromValues(v, M, z), Ae = k.getDirection(), ge = Ae.slice(0, 3), Ce = Ae.slice(3, 6), Be = Ae.slice(6, 9), ye = k.getSpacing(), [Me, ze, Oe] = ye, et = k.indexToWorld(te), nt = Ge.vec3.fromValues(ge[0] * Me, ge[1] * Me, ge[2] * Me), gt = Ge.vec3.fromValues(Ce[0] * ze, Ce[1] * ze, Ce[2] * ze), mt = Ge.vec3.fromValues(Be[0] * Oe, Be[1] * Oe, Be[2] * Oe), bt = V || Y.length / W[2] / W[1] / W[0], Et = W[0] * bt, Ft = W[1] * Et, Bt = [], Dt = Ge.vec3.clone(et);
-            for (let Jt = z; Jt <= O; Jt++) {
+            for (let Yt = z; Yt <= O; Yt++) {
               const Cn = Ge.vec3.clone(Dt);
               for (let un = M; un <= F; un++) {
                 const On = Ge.vec3.clone(Dt);
@@ -240543,10 +240547,10 @@ Input: ` + this.err.str);
                   const Hn = [
                     _n,
                     un,
-                    Jt
+                    Yt
                   ];
                   if (p(Dt, Hn)) {
-                    const Xn = Jt * Ft + un * Et + _n * bt;
+                    const Xn = Yt * Ft + un * Et + _n * bt;
                     let Dr;
                     Dr = bt > 2 ? [
                       Y[Xn],
@@ -241643,8 +241647,8 @@ Input: ` + this.err.str);
                   for (let _n = 0; _n < Bt; _n++) On += (Et.x[un] - Ft.x[_n]) ** 2 + (Et.y[un] - Ft.y[_n]) ** 2 + (Et.z[un] - Ft.z[_n]) ** 2, un++, un === Bt && (un = 0);
                   On < Dt.totalSquaredXYLengths && (Dt.totalSquaredXYLengths = On, Dt.startingNode = Cn);
                 }
-                const Jt = Dt.startingNode;
-                U0(Et.x, Jt), U0(Et.y, Jt), U0(Et.z, Jt), U0(Et.I, Jt);
+                const Yt = Dt.startingNode;
+                U0(Et.x, Yt), U0(Et.y, Yt), U0(Et.z, Yt), U0(Et.I, Yt);
               })(mt, bt), (function(Et, Ft) {
                 const Bt = {
                   x: [],
@@ -241657,7 +241661,7 @@ Input: ` + this.err.str);
                   z: [],
                   I: []
                 };
-                for (let Jt = 0; Jt < Et.x.length; Jt++) (Et.I[Jt] || Ft.I[Jt]) && (Bt.x.push(Et.x[Jt]), Bt.y.push(Et.y[Jt]), Bt.z.push(Et.z[Jt]), Bt.I.push(Et.I[Jt]), Dt.x.push(Ft.x[Jt]), Dt.y.push(Ft.y[Jt]), Dt.z.push(Ft.z[Jt]), Dt.I.push(Ft.I[Jt]));
+                for (let Yt = 0; Yt < Et.x.length; Yt++) (Et.I[Yt] || Ft.I[Yt]) && (Bt.x.push(Et.x[Yt]), Bt.y.push(Et.y[Yt]), Bt.z.push(Et.z[Yt]), Bt.I.push(Et.I[Yt]), Dt.x.push(Ft.x[Yt]), Dt.y.push(Ft.y[Yt]), Dt.z.push(Ft.z[Yt]), Dt.I.push(Ft.I[Yt]));
                 return {
                   c1Interp: Bt,
                   c2Interp: Dt
@@ -241667,12 +241671,12 @@ Input: ` + this.err.str);
             z.kIndex = p[0], O.kIndex = p[1], k.forEach((function(Y) {
               (function(V, W, te, Ae, ge, Ce, Be) {
                 const [ye, Me] = Ae, ze = (te - ye) / (Me - ye), Oe = ge.get(ye)[0], et = ge.get(Me)[0], nt = (function(bt, Et, Ft, Bt) {
-                  const Dt = Bt ? bt.I : Et.I, Jt = jl.fromXYZ(bt), Cn = jl.fromXYZ(Et), { length: un } = Jt, On = jl.create3(un), _n = Ge.vec3.create(), Hn = Ge.vec3.create(), Xn = jl.create3(un);
+                  const Dt = Bt ? bt.I : Et.I, Yt = jl.fromXYZ(bt), Cn = jl.fromXYZ(Et), { length: un } = Yt, On = jl.create3(un), _n = Ge.vec3.create(), Hn = Ge.vec3.create(), Xn = jl.create3(un);
                   Xn.kIndex = bt.kIndex;
                   const Dr = jl.create3(un);
                   Dr.kIndex = Et.kIndex;
                   for (let Br = 0; Br < bt.x.length; Br++) if (Dt[Br]) {
-                    const vr = Jt.getPoint(Br), gr = Cn.getPoint(Br);
+                    const vr = Yt.getPoint(Br), gr = Cn.getPoint(Br);
                     Xn.push(vr), Dr.push(gr), Ge.vec3.sub(_n, gr, vr), On.push(Ge.vec3.scaleAndAdd(Hn, vr, _n, Ft));
                   }
                   return On.sources = [
@@ -241683,10 +241687,10 @@ Input: ` + this.err.str);
                   let Et = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : 12;
                   const Ft = IB.create3(Et);
                   Ft.sources = [];
-                  const { sources: Bt } = Ft, { length: Dt, sources: Jt = [] } = bt;
+                  const { sources: Bt } = Ft, { length: Dt, sources: Yt = [] } = bt;
                   if (Dt < 15) return bt.subselect(Et);
                   const Cn = Math.floor(Math.max(2 * Dt / Et, 10));
-                  Jt.forEach((() => Bt.push(IB.create3(Et))));
+                  Yt.forEach((() => Bt.push(IB.create3(Et))));
                   const un = (function(Hn) {
                     let Xn = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : 6;
                     const { length: Dr } = Hn, Br = Ge.vec3.create(), vr = Ge.vec3.create(), gr = new Float32Array(Dr);
@@ -241746,22 +241750,22 @@ Input: ` + this.err.str);
                   }
                   return _n.forEach(((Hn) => {
                     const Xn = bt.getPointArray(Hn);
-                    Ft.push(Xn), Jt.forEach(((Dr, Br) => Bt[Br].push(Dr.getPoint(Hn))));
+                    Ft.push(Xn), Yt.forEach(((Dr, Br) => Bt[Br].push(Dr.getPoint(Hn))));
                   })), Ft;
                 })(nt);
                 ge.has(te) ? (function(bt, Et, Ft, Bt, Dt) {
-                  const Jt = oy(Bt, Ft, Dt), Cn = df(bt.points, Et, Jt);
-                  Object.assign(Jt, {
+                  const Yt = oy(Bt, Ft, Dt), Cn = df(bt.points, Et, Yt);
+                  Object.assign(Yt, {
                     metadata: Cn.metadata,
                     data: Cn.data
                   });
                 })(nt, mt, te, gt, Be) : (function(bt, Et, Ft, Bt, Dt) {
-                  var Jt;
+                  var Yt;
                   const Cn = bt.points, { viewport: un } = Dt, On = df(Cn, Et, Bt), _n = un.getViewReference({
                     sliceIndex: Ft
                   });
                   if (!_n) throw new Error("Can't find slice ".concat(Ft));
-                  Object.assign(On.metadata, _n), Ye(On, un.element), (Jt = Bt.onInterpolationComplete) === null || Jt === void 0 || Jt.call(Bt, On, Bt);
+                  Object.assign(On.metadata, _n), Ye(On, un.element), (Yt = Bt.onInterpolationComplete) === null || Yt === void 0 || Yt.call(Bt, On, Bt);
                   const { parentAnnotationUID: Hn } = Bt;
                   Hn && sy(un, oy(xt(Hn), Ft, Dt), On);
                 })(nt, mt, te, gt, Be);
@@ -243579,8 +243583,8 @@ Input: ` + this.err.str);
                 const et = document.createElementNS("http://www.w3.org/2000/svg", "g");
                 et.setAttribute("transform", "translate(".concat(ye, " ").concat(Me, ")"));
                 const nt = (function(gt, mt) {
-                  const { color: bt, fontFamily: Et, fontSize: Ft } = mt, Bt = document.createElementNS("http://www.w3.org/2000/svg", "text"), Dt = "filter:url(#shadow-".concat(gt.svgLayerElement.id, ");"), Jt = "".concat("user-select: none; pointer-events: none; -webkit-tap-highlight-color:  rgba(255, 255, 255, 0);").concat(Dt);
-                  return Bt.setAttribute("x", "0"), Bt.setAttribute("y", "0"), Bt.setAttribute("fill", bt), Bt.setAttribute("font-family", Et), Bt.setAttribute("font-size", Ft), Bt.setAttribute("style", Jt), Bt;
+                  const { color: bt, fontFamily: Et, fontSize: Ft } = mt, Bt = document.createElementNS("http://www.w3.org/2000/svg", "text"), Dt = "filter:url(#shadow-".concat(gt.svgLayerElement.id, ");"), Yt = "".concat("user-select: none; pointer-events: none; -webkit-tap-highlight-color:  rgba(255, 255, 255, 0);").concat(Dt);
+                  return Bt.setAttribute("x", "0"), Bt.setAttribute("y", "0"), Bt.setAttribute("fill", bt), Bt.setAttribute("font-family", Et), Bt.setAttribute("font-size", Ft), Bt.setAttribute("style", Yt), Bt;
                 })(M, V);
                 for (let gt = 0; gt < O.length; gt++) {
                   const mt = xg(O[gt]);
@@ -244173,14 +244177,14 @@ Input: ` + this.err.str);
                     const un = xo(ye);
                     ge.handles.textBox.worldPosition = M.canvasToWorld(un);
                   }
-                  const Et = M.worldToCanvas(ge.handles.textBox.worldPosition), Ft = ZA(x, Ae, "1", bt, Et, ye, {}, mt), { x: Bt, y: Dt, width: Jt, height: Cn } = Ft;
+                  const Et = M.worldToCanvas(ge.handles.textBox.worldPosition), Ft = ZA(x, Ae, "1", bt, Et, ye, {}, mt), { x: Bt, y: Dt, width: Yt, height: Cn } = Ft;
                   ge.handles.textBox.worldBoundingBox = {
                     topLeft: M.canvasToWorld([
                       Bt,
                       Dt
                     ]),
                     topRight: M.canvasToWorld([
-                      Bt + Jt,
+                      Bt + Yt,
                       Dt
                     ]),
                     bottomLeft: M.canvasToWorld([
@@ -244188,7 +244192,7 @@ Input: ` + this.err.str);
                       Dt + Cn
                     ]),
                     bottomRight: M.canvasToWorld([
-                      Bt + Jt,
+                      Bt + Yt,
                       Dt + Cn
                     ])
                   };
@@ -244229,10 +244233,10 @@ Input: ` + this.err.str);
                     ], { worldWidth: mt, worldHeight: bt } = Qf(x, y, O, Y), Et = [
                       et,
                       nt
-                    ], { scale: Ft, areaUnits: Bt } = po(ye, Et), Dt = Math.abs(mt * bt) / (Ft * Ft), Jt = {
+                    ], { scale: Ft, areaUnits: Bt } = po(ye, Et), Dt = Math.abs(mt * bt) / (Ft * Ft), Yt = {
                       isPreScaled: Ed(F, Be),
                       isSuvScaled: this.isSuvScaled(F, Be, p.metadata.referencedImageId)
-                    }, Cn = K0(Oe.Modality, p.metadata.referencedImageId, Jt), un = Io(ze, (() => true), this.configuration.statsCalculator.statsCallback, gt), On = this.configuration.statsCalculator.getStatistics();
+                    }, Cn = K0(Oe.Modality, p.metadata.referencedImageId, Yt), un = Io(ze, (() => true), this.configuration.statsCalculator.statsCallback, gt), On = this.configuration.statsCalculator.getStatistics();
                     V[Be] = {
                       Modality: Oe.Modality,
                       area: Dt,
@@ -244509,7 +244513,7 @@ Input: ` + this.err.str);
                   viewportId: p.viewport.id
                 };
                 for (let z = 0; z < M.length; z++) {
-                  const O = M[z], { annotationUID: Y, data: V } = O, { startCoordinate: W, endCoordinate: te } = V, { points: Ae, activeHandleIndex: ge } = V.handles, Ce = Ae.map(((Jt) => S.worldToCanvas(Jt)));
+                  const O = M[z], { annotationUID: Y, data: V } = O, { startCoordinate: W, endCoordinate: te } = V, { points: Ae, activeHandleIndex: ge } = V.handles, Ce = Ae.map(((Yt) => S.worldToCanvas(Yt)));
                   F.annotationUID = Y;
                   const Be = this.getStyle("lineWidth", F, O), ye = this.getStyle("lineDash", F, O), Me = this.getStyle("color", F, O), ze = S.getCamera().focalPoint, Oe = S.getCamera().viewPlaneNormal;
                   let et = W, nt = te;
@@ -244531,8 +244535,8 @@ Input: ` + this.err.str);
                     lineDash: Dt,
                     lineWidth: Be
                   }), v = true, this.configuration.showTextBox && this.configuration.calculatePointsInsideVolume) {
-                    const Jt = this.getLinkedTextBoxStyle(F, O);
-                    if (!Jt.visibility) {
+                    const Yt = this.getLinkedTextBoxStyle(F, O);
+                    if (!Yt.visibility) {
                       V.handles.textBox = {
                         hasMoved: false,
                         worldPosition: [
@@ -244571,7 +244575,7 @@ Input: ` + this.err.str);
                       const Br = xo(Ce);
                       V.handles.textBox.worldPosition = S.canvasToWorld(Br);
                     }
-                    const un = S.worldToCanvas(V.handles.textBox.worldPosition), On = ZA(x, Y, "1", Cn, un, Ce, {}, Jt), { x: _n, y: Hn, width: Xn, height: Dr } = On;
+                    const un = S.worldToCanvas(V.handles.textBox.worldPosition), On = ZA(x, Y, "1", Cn, un, Ce, {}, Yt), { x: _n, y: Hn, width: Xn, height: Dr } = On;
                     V.handles.textBox.worldBoundingBox = {
                       topLeft: S.canvasToWorld([
                         _n,
@@ -244619,10 +244623,10 @@ Input: ` + this.err.str);
               }, gt = K0(O.Modality, p.metadata.referencedImageId, nt);
               for (let bt = 0; bt < Ae.length; bt++) {
                 if (!y) continue;
-                const Et = Ae[bt][0], { dimensions: Ft, imageData: Bt } = y, Dt = W0(Bt, Be), Jt = W0(Bt, Et), Cn = this._getIndexOfCoordinatesForViewplaneNormal(Y);
-                Dt[0] = Math.floor(Dt[0]), Dt[1] = Math.floor(Dt[1]), Dt[2] = Math.floor(Dt[2]), Dt[Cn] = Jt[Cn];
+                const Et = Ae[bt][0], { dimensions: Ft, imageData: Bt } = y, Dt = W0(Bt, Be), Yt = W0(Bt, Et), Cn = this._getIndexOfCoordinatesForViewplaneNormal(Y);
+                Dt[0] = Math.floor(Dt[0]), Dt[1] = Math.floor(Dt[1]), Dt[2] = Math.floor(Dt[2]), Dt[Cn] = Yt[Cn];
                 const un = W0(Bt, ye);
-                if (un[0] = Math.floor(un[0]), un[1] = Math.floor(un[1]), un[2] = Math.floor(un[2]), un[Cn] = Jt[Cn], this._isInsideVolume(Dt, un, Ft)) {
+                if (un[0] = Math.floor(un[0]), un[1] = Math.floor(un[1]), un[2] = Math.floor(un[2]), un[Cn] = Yt[Cn], this._isInsideVolume(Dt, un, Ft)) {
                   this.isHandleOutsideImage = false;
                   const On = [
                     [
@@ -245232,11 +245236,11 @@ Input: ` + this.err.str);
                   const Dt = M.canvasToWorld([
                     et,
                     nt
-                  ]), Jt = M.canvasToWorld([
+                  ]), Yt = M.canvasToWorld([
                     gt,
                     mt
                   ]);
-                  O.handles.points[z] = Ae, O.handles.points[2] = Dt, O.handles.points[3] = Jt;
+                  O.handles.points[z] = Ae, O.handles.points[2] = Dt, O.handles.points[3] = Yt;
                 } else {
                   const Ce = z === 2 ? 3 : 2, Be = {
                     longLineSegment: {
@@ -245392,22 +245396,22 @@ Input: ` + this.err.str);
                   if (!Et || Et.length === 0) continue;
                   let Ft;
                   ge.handles.textBox.hasMoved || (Ft = xo(ye), ge.handles.textBox.worldPosition = M.canvasToWorld(Ft));
-                  const Bt = M.worldToCanvas(ge.handles.textBox.worldPosition), Dt = ZA(x, Ae, "1", Et, Bt, ye, {}, bt), { x: Jt, y: Cn, width: un, height: On } = Dt;
+                  const Bt = M.worldToCanvas(ge.handles.textBox.worldPosition), Dt = ZA(x, Ae, "1", Et, Bt, ye, {}, bt), { x: Yt, y: Cn, width: un, height: On } = Dt;
                   ge.handles.textBox.worldBoundingBox = {
                     topLeft: M.canvasToWorld([
-                      Jt,
+                      Yt,
                       Cn
                     ]),
                     topRight: M.canvasToWorld([
-                      Jt + un,
+                      Yt + un,
                       Cn
                     ]),
                     bottomLeft: M.canvasToWorld([
-                      Jt,
+                      Yt,
                       Cn + On
                     ]),
                     bottomRight: M.canvasToWorld([
-                      Jt + un,
+                      Yt + un,
                       Cn + On
                     ])
                   };
@@ -245450,12 +245454,12 @@ Input: ` + this.err.str);
                   ], et = [
                     Me,
                     ze
-                  ], { scale: nt, units: gt } = po(Ae, Oe), { scale: mt, units: bt } = po(Ae, et), Et = this._calculateLength(M, F) / nt, Ft = this._calculateLength(z, O) / mt, Bt = Et > Ft ? Et : Ft, Dt = Et > Ft ? Ft : Et, Jt = Et > Ft ? gt : bt, Cn = Et > Ft ? bt : gt;
+                  ], { scale: nt, units: gt } = po(Ae, Oe), { scale: mt, units: bt } = po(Ae, et), Et = this._calculateLength(M, F) / nt, Ft = this._calculateLength(z, O) / mt, Bt = Et > Ft ? Et : Ft, Dt = Et > Ft ? Ft : Et, Yt = Et > Ft ? gt : bt, Cn = Et > Ft ? bt : gt;
                   this._isInsideVolume(Be, ye, Me, ze, Ce) ? this.isHandleOutsideImage = false : this.isHandleOutsideImage = true, Y[te] = {
                     length: Bt,
                     width: Dt,
                     unit: gt,
-                    lengthUnit: Jt,
+                    lengthUnit: Yt,
                     widthUnit: Cn
                   };
                 }
@@ -245695,10 +245699,10 @@ Input: ` + this.err.str);
               const Oe = ze.imageData, et = Oe.getScalarValueFromWorld(p);
               return (function(gt, mt, bt, Et, Ft) {
                 return Dy(((Bt, Dt) => {
-                  const Jt = [
+                  const Yt = [
                     gt[0] + Bt,
                     gt[1] + Dt
-                  ], Cn = bt.canvasToWorld(Jt);
+                  ], Cn = bt.canvasToWorld(Yt);
                   return Et.getScalarValueFromWorld(Cn);
                 }), mt, Ft);
               })(y.worldToCanvas(p), et, y, Oe, v) ? et : void 0;
@@ -248507,8 +248511,8 @@ Input: ` + this.err.str);
               if (!te) return {};
               const { segmentationRepresentationUID: Ae } = te, { active: ge } = te, { autoGenerated: Ce } = O, Be = Ul(Y).includes(V), ye = Lo(z, Ae, V), Me = JC(z, Ae), ze = Wa(), Oe = jo(z), et = ag(z, Ae), nt = mQ(z, Ae, V), gt = pu(z, Ae, V), mt = Object.assign({}, (x = ze == null || (y = ze.representations) === null || y === void 0 ? void 0 : y.CONTOUR) !== null && x !== void 0 ? x : {}, (v = Oe == null || (S = Oe.representations) === null || S === void 0 ? void 0 : S.CONTOUR) !== null && v !== void 0 ? v : {}, (M = et == null ? void 0 : et.CONTOUR) !== null && M !== void 0 ? M : {}, (F = nt == null ? void 0 : nt.CONTOUR) !== null && F !== void 0 ? F : {});
               let bt, Et = 1, Ft = 1, Bt = 0;
-              var Dt, Jt, Cn, un;
-              if (Ce) Et = (Dt = mt.outlineWidthAutoGenerated) !== null && Dt !== void 0 ? Dt : Et, bt = (Jt = mt.outlineDashAutoGenerated) !== null && Jt !== void 0 ? Jt : bt, Ft = (Cn = mt.outlineOpacity) !== null && Cn !== void 0 ? Cn : Ft, Bt = (un = mt.fillAlphaAutoGenerated) !== null && un !== void 0 ? un : Bt;
+              var Dt, Yt, Cn, un;
+              if (Ce) Et = (Dt = mt.outlineWidthAutoGenerated) !== null && Dt !== void 0 ? Dt : Et, bt = (Yt = mt.outlineDashAutoGenerated) !== null && Yt !== void 0 ? Yt : bt, Ft = (Cn = mt.outlineOpacity) !== null && Cn !== void 0 ? Cn : Ft, Bt = (un = mt.fillAlphaAutoGenerated) !== null && un !== void 0 ? un : Bt;
               else if (ge) {
                 var On, _n, Hn, Xn;
                 Et = (On = mt.outlineWidthActive) !== null && On !== void 0 ? On : Et, bt = (_n = mt.outlineDashActive) !== null && _n !== void 0 ? _n : bt, Ft = (Hn = mt.outlineOpacity) !== null && Hn !== void 0 ? Hn : Ft, Bt = (Xn = mt.fillAlpha) !== null && Xn !== void 0 ? Xn : Bt;
@@ -248785,8 +248789,8 @@ Input: ` + this.err.str);
               }
               const Dt = se.utilities.transformWorldToIndex(F, M[1]);
               Dt[0] = Math.floor(Dt[0]), Dt[1] = Math.floor(Dt[1]), Dt[2] = Math.floor(Dt[2]);
-              let Jt = _I(W) / Ae / Ae;
-              Jt *= Oe * et;
+              let Yt = _I(W) / Ae / Ae;
+              Yt *= Oe * et;
               const Cn = 0.01 * (mt - gt), un = 0.01 * (Et - bt), On = 0.01 * (Bt - Ft);
               gt = Math.floor(gt - Cn), mt = Math.ceil(mt + Cn), bt = Math.floor(bt - un), Et = Math.ceil(Et + un), Ft = Math.floor(Ft - On), Bt = Math.ceil(Bt + On);
               const _n = [
@@ -248820,7 +248824,7 @@ Input: ` + this.err.str);
               }), this.configuration.statsCalculator.statsCallback, _n), Mr = this.configuration.statsCalculator.getStatistics();
               O[Y] = {
                 Modality: z.Modality,
-                area: Jt,
+                area: Yt,
                 perimeter: wB(W, closed) / Ae,
                 mean: (x = Mr.mean) === null || x === void 0 ? void 0 : x.value,
                 max: (y = Mr.max) === null || y === void 0 ? void 0 : y.value,
@@ -248891,7 +248895,7 @@ Input: ` + this.err.str);
             return mu(k, Gt.Contour, (() => (async function(x) {
               var y, v;
               let S = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
-              const M = (y = S.segmentIndices) !== null && y !== void 0 && y.length ? S.segmentIndices : Yt(x);
+              const M = (y = S.segmentIndices) !== null && y !== void 0 && y.length ? S.segmentIndices : Jt(x);
               let F;
               const z = ir(x).representationData;
               try {
@@ -248899,7 +248903,7 @@ Input: ` + this.err.str);
                   var te;
                   let Ae = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
                   if (!Ae.viewport) throw new Error("Viewport is required to compute contour from surface");
-                  const { viewport: ge, segmentationRepresentationUID: Ce } = Ae, Be = (te = Ae.segmentIndices) !== null && te !== void 0 && te.length ? Ae.segmentIndices : Yt(W), ye = /* @__PURE__ */ new Map(), Me = /* @__PURE__ */ new Map(), ze = ir(W).representationData.SURFACE, Oe = [];
+                  const { viewport: ge, segmentationRepresentationUID: Ce } = Ae, Be = (te = Ae.segmentIndices) !== null && te !== void 0 && te.length ? Ae.segmentIndices : Jt(W), ye = /* @__PURE__ */ new Map(), Me = /* @__PURE__ */ new Map(), ze = ir(W).representationData.SURFACE, Oe = [];
                   return ze.geometryIds.forEach(((et, nt) => {
                     if (Be.includes(nt)) {
                       var gt;
@@ -249455,8 +249459,8 @@ Input: ` + this.err.str);
                 if (!gt) return Oe;
                 const mt = Object.keys(gt.toolOptions), bt = gt.getDefaultMousePrimary(), Et = ye.detail.event, Ft = (ze = Et == null ? void 0 : Et.buttons) !== null && ze !== void 0 ? ze : bt, Bt = _l(Et) || hA.getModifierKey();
                 for (let Cn = 0; Cn < mt.length; Cn++) {
-                  var Dt, Jt;
-                  const un = mt[Cn], On = gt.getToolInstance(un), _n = (Dt = (Jt = On.configuration) === null || Jt === void 0 ? void 0 : Jt.actions) !== null && Dt !== void 0 ? Dt : {}, Hn = Object.values(_n);
+                  var Dt, Yt;
+                  const un = mt[Cn], On = gt.getToolInstance(un), _n = (Dt = (Yt = On.configuration) === null || Yt === void 0 ? void 0 : Yt.actions) !== null && Dt !== void 0 ? Dt : {}, Hn = Object.values(_n);
                   if (Hn == null || !Hn.length || !Me.includes(On.mode)) continue;
                   const Xn = Hn.find(((Dr) => Dr.bindings.length && Dr.bindings.some(((Br) => Br.mouseButton === Ft && Br.modifierKey === Bt))));
                   Xn && Oe.set(On, Xn);
@@ -249726,13 +249730,13 @@ Input: ` + this.err.str);
                 })(XI)) return void console.warn("".concat(XI.toolName, " is not registered in cornerstone"));
                 if (!QB(Y)) return;
                 const ge = pg(W, Ae[0]), Ce = (function(Bt, Dt) {
-                  return Le(Dt).map(((Jt) => ({
-                    annotation: Jt,
-                    polyline: yB(Jt.data.contour.polyline, Bt)
+                  return Le(Dt).map(((Yt) => ({
+                    annotation: Yt,
+                    polyline: yB(Yt.data.contour.polyline, Bt)
                   })));
                 })(Y, V), Be = new Set(Ce), ye = /* @__PURE__ */ new Map(), Me = (Bt, Dt) => {
-                  let Jt = ye.get(Bt);
-                  Jt || (Jt = [], ye.set(Bt, Jt)), Jt.push(Dt), Be.delete(Dt);
+                  let Yt = ye.get(Bt);
+                  Yt || (Yt = [], ye.set(Bt, Yt)), Yt.push(Dt), Be.delete(Dt);
                 }, ze = [];
                 if (ge) {
                   const Bt = ty(W, Ae);
@@ -249747,7 +249751,7 @@ Input: ` + this.err.str);
                 at(te.annotationUID), at(V.annotationUID);
                 for (let Bt = 0; Bt < ze.length; Bt++) {
                   var Ft;
-                  const Dt = ze[Bt], Jt = Y.canvasToWorld(Dt[0]), Cn = Y.canvasToWorld(Dt[Dt.length - 1]), un = {
+                  const Dt = ze[Bt], Yt = Y.canvasToWorld(Dt[0]), Cn = Y.canvasToWorld(Dt[Dt.length - 1]), un = {
                     metadata: {
                       ...nt,
                       toolName: Gc,
@@ -249757,7 +249761,7 @@ Input: ` + this.err.str);
                       cachedStats: {},
                       handles: {
                         points: [
-                          Jt,
+                          Yt,
                           Cn
                         ],
                         textBox: Et ? {
@@ -249787,11 +249791,11 @@ Input: ` + this.err.str);
                     targetWindingDirection: G0.Clockwise
                   }, Y), Ye(un, Oe), bu(un), Sr(un, Y.element), (Ft = ye.get(Dt)) === null || Ft === void 0 || Ft.forEach(((On) => yi(un, On.annotation)));
                 }
-                (function(Bt, Dt, Jt) {
+                (function(Bt, Dt, Yt) {
                   const { viewport: Cn } = Bt, { element: un } = Cn, { renderingEngine: On } = Bt, _n = /* @__PURE__ */ new Set([
                     Gc,
                     Dt.metadata.toolName,
-                    Jt.metadata.toolName
+                    Yt.metadata.toolName
                   ]);
                   for (const Hn of _n.values()) {
                     const Xn = kr(un, Hn);
@@ -251276,12 +251280,12 @@ Input: ` + this.err.str);
                   0,
                   0,
                   0
-                ], Jt = [
+                ], Yt = [
                   0,
                   0,
                   0
                 ];
-                Ti().cross(Ft, Bt, Dt), Ti().normalize(Dt), Ti().cross(Bt, Dt, Jt), Ti().normalize(Jt), Ti().normalize(Ft), this.rotateCamera(O, Ce, Jt, Et);
+                Ti().cross(Ft, Bt, Dt), Ti().normalize(Dt), Ti().cross(Bt, Dt, Yt), Ti().normalize(Yt), Ti().normalize(Ft), this.rotateCamera(O, Ce, Yt, Et);
                 const Cn = (Ae[1] - te[1]) * F;
                 this.rotateCamera(O, Ce, Dt, Cn), O.render();
               }
@@ -252372,14 +252376,14 @@ Input: ` + this.err.str);
                     const un = xo(et);
                     ge.handles.textBox.worldPosition = M.canvasToWorld(un);
                   }
-                  const Et = M.worldToCanvas(ge.handles.textBox.worldPosition), Ft = ZA(x, Ae, "1", bt, Et, et, {}, mt), { x: Bt, y: Dt, width: Jt, height: Cn } = Ft;
+                  const Et = M.worldToCanvas(ge.handles.textBox.worldPosition), Ft = ZA(x, Ae, "1", bt, Et, et, {}, mt), { x: Bt, y: Dt, width: Yt, height: Cn } = Ft;
                   ge.handles.textBox.worldBoundingBox = {
                     topLeft: M.canvasToWorld([
                       Bt,
                       Dt
                     ]),
                     topRight: M.canvasToWorld([
-                      Bt + Jt,
+                      Bt + Yt,
                       Dt
                     ]),
                     bottomLeft: M.canvasToWorld([
@@ -252387,7 +252391,7 @@ Input: ` + this.err.str);
                       Dt + Cn
                     ]),
                     bottomRight: M.canvasToWorld([
-                      Bt + Jt,
+                      Bt + Yt,
                       Dt + Cn
                     ])
                   };
@@ -252675,7 +252679,7 @@ Input: ` + this.err.str);
                     const Cn = xo(et);
                     ge.handles.textBox.worldPosition = M.canvasToWorld(Cn);
                   }
-                  const bt = M.worldToCanvas(ge.handles.textBox.worldPosition), Et = ZA(x, Ae, "1", mt, bt, et, {}, gt), { x: Ft, y: Bt, width: Dt, height: Jt } = Et;
+                  const bt = M.worldToCanvas(ge.handles.textBox.worldPosition), Et = ZA(x, Ae, "1", mt, bt, et, {}, gt), { x: Ft, y: Bt, width: Dt, height: Yt } = Et;
                   ge.handles.textBox.worldBoundingBox = {
                     topLeft: M.canvasToWorld([
                       Ft,
@@ -252687,11 +252691,11 @@ Input: ` + this.err.str);
                     ]),
                     bottomLeft: M.canvasToWorld([
                       Ft,
-                      Bt + Jt
+                      Bt + Yt
                     ]),
                     bottomRight: M.canvasToWorld([
                       Ft + Dt,
-                      Bt + Jt
+                      Bt + Yt
                     ])
                   };
                 }
@@ -252939,10 +252943,10 @@ Input: ` + this.err.str);
                 et.forEach(((Bt) => {
                   const { data: Dt } = Bt;
                   Dt.handles.toolCenter = this.toolCenter;
-                  const Jt = Y.getViewport(Dt.viewportId), Cn = Jt.getCamera(), un = this._getReferenceLineControllable(Jt.id), On = this._getReferenceLineDraggableRotatable(Jt.id), _n = this._getReferenceLineSlabThicknessControlsOn(Jt.id), { clientWidth: Hn, clientHeight: Xn } = Jt.canvas, Dr = Math.sqrt(Hn * Hn + Xn * Xn), Br = [
+                  const Yt = Y.getViewport(Dt.viewportId), Cn = Yt.getCamera(), un = this._getReferenceLineControllable(Yt.id), On = this._getReferenceLineDraggableRotatable(Yt.id), _n = this._getReferenceLineSlabThicknessControlsOn(Yt.id), { clientWidth: Hn, clientHeight: Xn } = Yt.canvas, Dr = Math.sqrt(Hn * Hn + Xn * Xn), Br = [
                     0.5 * Hn,
                     0.5 * Xn
-                  ], vr = Jt.canvasToWorld(Br), gr = [
+                  ], vr = Yt.canvasToWorld(Br), gr = [
                     0,
                     0,
                     0
@@ -252997,7 +253001,7 @@ Input: ` + this.err.str);
                     0
                   ];
                   Ge.vec3.transformMat4(om, Am, l4);
-                  const ab = Jt.getSlabThickness(), _2 = [
+                  const ab = Yt.getSlabThickness(), _2 = [
                     ...om
                   ];
                   Ti().multiplyScalar(_2, ab);
@@ -253019,7 +253023,7 @@ Input: ` + this.err.str);
                   Ge.vec2.subtract(ob, Ic, aA), Ge.vec2.subtract(ob, ob, Ng), vf(Ab, ob, gt);
                   const Y2 = Ge.vec2.create(), J2 = Ge.vec2.create(), K2 = Ge.vec2.create(), V2 = Ge.vec2.create();
                   Ge.vec2.subtract(Y2, Ic, Hl), Ge.vec2.add(Y2, Y2, Ng), Ge.vec2.add(J2, Ic, Hl), Ge.vec2.add(J2, J2, Ng), Ge.vec2.subtract(K2, Ic, Hl), Ge.vec2.subtract(K2, K2, Ng), Ge.vec2.add(V2, Ic, Hl), Ge.vec2.subtract(V2, V2, Ng), nt.push([
-                    Jt,
+                    Yt,
                     Yl,
                     pc,
                     am,
@@ -253038,8 +253042,8 @@ Input: ` + this.err.str);
                 }));
                 const mt = [], bt = [], Et = this._getReferenceLineColor(O.id), Ft = Et !== void 0 ? Et : "rgb(200, 200, 200)";
                 if (nt.forEach(((Bt, Dt) => {
-                  var Jt, Cn;
-                  const un = Bt[0], On = this._getReferenceLineColor(un.id), _n = this._getReferenceLineControllable(un.id), Hn = this._getReferenceLineDraggableRotatable(un.id) || ((Jt = this.configuration.mobile) === null || Jt === void 0 ? void 0 : Jt.enabled), Xn = this._getReferenceLineSlabThicknessControlsOn(un.id) || ((Cn = this.configuration.mobile) === null || Cn === void 0 ? void 0 : Cn.enabled), Dr = ze.activeViewportIds.find(((nh) => nh === un.id));
+                  var Yt, Cn;
+                  const un = Bt[0], On = this._getReferenceLineColor(un.id), _n = this._getReferenceLineControllable(un.id), Hn = this._getReferenceLineDraggableRotatable(un.id) || ((Yt = this.configuration.mobile) === null || Yt === void 0 ? void 0 : Yt.enabled), Xn = this._getReferenceLineSlabThicknessControlsOn(un.id) || ((Cn = this.configuration.mobile) === null || Cn === void 0 ? void 0 : Cn.enabled), Dr = ze.activeViewportIds.find(((nh) => nh === un.id));
                   let Br = On !== void 0 ? On : "rgb(200, 200, 200)", vr = 1;
                   const gr = ze.handles.activeOperation !== null && ze.handles.activeOperation === 1 && Dr;
                   gr && (vr = 2.5);
@@ -253163,8 +253167,8 @@ Input: ` + this.err.str);
                   const { viewportIndicatorsConfig: Bt } = this.configuration, Dt = [
                     Ce * ((Bt == null ? void 0 : Bt.xOffset) || 0.95),
                     Be * ((Bt == null ? void 0 : Bt.yOffset) || 0.05)
-                  ], Jt = (Bt == null ? void 0 : Bt.circleRadius) || 0.01 * ye;
-                  ol(F, ge, "0", Dt, Jt, {
+                  ], Yt = (Bt == null ? void 0 : Bt.circleRadius) || 0.01 * ye;
+                  ol(F, ge, "0", Dt, Yt, {
                     color: Ft,
                     fill: Ft
                   });
@@ -253299,7 +253303,7 @@ Input: ` + this.err.str);
                   this._applyDeltaShiftToSelectedViewportCameras(V, ye, z);
                 } else if (ge.activeOperation === 2) {
                   const ye = this._getAnnotationsForViewportsWithDifferentCameras(Y, te).filter(((Bt) => {
-                    const { data: Dt } = Bt, Jt = V.getViewport(Dt.viewportId), Cn = this._getReferenceLineControllable(Jt.id), un = this._getReferenceLineDraggableRotatable(Jt.id);
+                    const { data: Dt } = Bt, Yt = V.getViewport(Dt.viewportId), Cn = this._getReferenceLineControllable(Yt.id), un = this._getReferenceLineDraggableRotatable(Yt.id);
                     return Cn === true && un === true;
                   })), Me = Ge.vec2.create(), ze = Ge.vec2.create(), Oe = [
                     this.toolCenter[0],
@@ -253313,12 +253317,12 @@ Input: ` + this.err.str);
                   ye.forEach(((Bt) => {
                     const { data: Dt } = Bt;
                     Dt.handles.toolCenter = Oe;
-                    const Jt = V.getViewport(Dt.viewportId), Cn = Jt.getCamera(), { viewUp: un, position: On, focalPoint: _n } = Cn;
-                    un[0] += On[0], un[1] += On[1], un[2] += On[2], Ge.vec3.transformMat4(_n, _n, Et), Ge.vec3.transformMat4(On, On, Et), Ge.vec3.transformMat4(un, un, Et), un[0] -= On[0], un[1] -= On[1], un[2] -= On[2], Jt.setCamera({
+                    const Yt = V.getViewport(Dt.viewportId), Cn = Yt.getCamera(), { viewUp: un, position: On, focalPoint: _n } = Cn;
+                    un[0] += On[0], un[1] += On[1], un[2] += On[2], Ge.vec3.transformMat4(_n, _n, Et), Ge.vec3.transformMat4(On, On, Et), Ge.vec3.transformMat4(un, un, Et), un[0] -= On[0], un[1] -= On[1], un[2] -= On[2], Yt.setCamera({
                       position: On,
                       viewUp: un,
                       focalPoint: _n
-                    }), Ft.push(Jt.id);
+                    }), Ft.push(Yt.id);
                   })), V.renderViewports(Ft);
                 } else if (ge.activeOperation === 3) {
                   const ye = this._getAnnotationsForViewportsWithDifferentCameras(Y, te).filter(((Oe) => {
@@ -253349,10 +253353,10 @@ Input: ` + this.err.str);
                         }
                       }
                       Ti().subtract(Ft, Dt, Bt);
-                      const Jt = Ti().dot(Bt, gt), Cn = [
+                      const Yt = Ti().dot(Bt, gt), Cn = [
                         ...gt
                       ];
-                      Ti().multiplyScalar(Cn, Jt);
+                      Ti().multiplyScalar(Cn, Yt);
                       const un = [
                         Cn[0],
                         Cn[1],
@@ -253739,7 +253743,7 @@ Input: ` + this.err.str);
                 this.isPerpendicular(et, ge) && (Oe = ze);
                 const mt = se.utilities.planar.linePlaneIntersection(Oe[0], Oe[1], ye), bt = se.utilities.planar.linePlaneIntersection(Oe[2], Oe[3], ye), { annotationUID: Et } = S;
                 O.annotationUID = Et;
-                const Ft = this.getStyle("lineWidth", O, S), Bt = this.getStyle("lineDash", O, S), Dt = this.getStyle("color", O, S), Jt = this.getStyle("shadow", O, S);
+                const Ft = this.getStyle("lineWidth", O, S), Bt = this.getStyle("lineDash", O, S), Dt = this.getStyle("color", O, S), Yt = this.getStyle("shadow", O, S);
                 let Cn = [
                   mt,
                   bt
@@ -253750,7 +253754,7 @@ Input: ` + this.err.str);
                   color: Dt,
                   width: Ft,
                   lineDash: Bt,
-                  shadow: Jt
+                  shadow: Yt
                 }, un), F = true, F;
               })), ce(this, "isPerpendicular", ((p, x) => {
                 const y = Ge.vec3.dot(p, x);
@@ -254403,7 +254407,7 @@ Input: ` + this.err.str);
                   if (!Bt || Bt.length === 0) continue;
                   let Dt;
                   ge.handles.textBox.hasMoved || (Dt = xo(nt), ge.handles.textBox.worldPosition = M.canvasToWorld(Dt));
-                  const Jt = M.worldToCanvas(ge.handles.textBox.worldPosition), Cn = ZA(x, Ae, "1", Bt, Jt, et, {}, Ft), { x: un, y: On, width: _n, height: Hn } = Cn;
+                  const Yt = M.worldToCanvas(ge.handles.textBox.worldPosition), Cn = ZA(x, Ae, "1", Bt, Yt, et, {}, Ft), { x: un, y: On, width: _n, height: Hn } = Cn;
                   ge.handles.textBox.worldBoundingBox = {
                     topLeft: M.canvasToWorld([
                       un,
@@ -254456,10 +254460,10 @@ Input: ` + this.err.str);
                     xRadius: Math.abs(W[0] - te[0]) / 2,
                     yRadius: Math.abs(W[1] - te[1]) / 2,
                     zRadius: Math.abs(W[2] - te[2]) / 2
-                  }, { worldWidth: Jt, worldHeight: Cn } = z2(z, O, Ce, Be), un = Jt === 0 && Cn === 0, On = [
+                  }, { worldWidth: Yt, worldHeight: Cn } = z2(z, O, Ce, Be), un = Yt === 0 && Cn === 0, On = [
                     Et,
                     Ft
-                  ], { scale: _n, areaUnits: Hn } = po(nt, On), Xn = Math.abs(Math.PI * (Jt / 2) * (Cn / 2)) / _n / _n, Dr = {
+                  ], { scale: _n, areaUnits: Hn } = po(nt, On), Xn = Math.abs(Math.PI * (Yt / 2) * (Cn / 2)) / _n / _n, Dr = {
                     isPreScaled: Ed(x, et),
                     isSuvScaled: this.isSuvScaled(x, et, p.metadata.referencedImageId)
                   }, Br = K0(bt.Modality, p.metadata.referencedImageId, Dr), vr = Io(mt, ((Mr) => P0(Dt, Mr, {
@@ -254803,11 +254807,11 @@ Input: ` + this.err.str);
                     };
                     continue;
                   }
-                  const Jt = this.configuration.getTextLines(ge, O);
-                  if (!Jt || Jt.length === 0) continue;
+                  const Yt = this.configuration.getTextLines(ge, O);
+                  if (!Yt || Yt.length === 0) continue;
                   let Cn;
                   ge.handles.textBox.hasMoved || (Cn = xo(mt), ge.handles.textBox.worldPosition = M.canvasToWorld(Cn));
-                  const un = M.worldToCanvas(ge.handles.textBox.worldPosition), On = ZA(x, Ae, "1", Jt, un, et, {}, Dt), { x: _n, y: Hn, width: Xn, height: Dr } = On;
+                  const un = M.worldToCanvas(ge.handles.textBox.worldPosition), On = ZA(x, Ae, "1", Yt, un, et, {}, Dt), { x: _n, y: Hn, width: Xn, height: Dr } = On;
                   ge.handles.textBox.worldBoundingBox = {
                     topLeft: M.canvasToWorld([
                       _n,
@@ -254838,7 +254842,7 @@ Input: ` + this.err.str);
                   const Dt = j6(bt, ye);
                   if (Dt[0] = Math.floor(Dt[0]), Dt[1] = Math.floor(Dt[1]), Dt[2] = Math.floor(Dt[2]), this._isInsideVolume(Bt, Dt, mt)) {
                     var Me, ze, Oe;
-                    const Jt = [
+                    const Yt = [
                       [
                         Math.min(Bt[0], Dt[0]),
                         Math.max(Bt[0], Dt[0])
@@ -254868,7 +254872,7 @@ Input: ` + this.err.str);
                       isSuvScaled: this.isSuvScaled(x, nt, p.metadata.referencedImageId)
                     }, Ni = K0(Et.Modality, p.metadata.referencedImageId, Mr), oi = Io(bt, ((oa) => P0(Cn, oa, {
                       fast: true
-                    })), this.configuration.statsCalculator.statsCallback, Jt), ia = this.configuration.statsCalculator.getStatistics();
+                    })), this.configuration.statsCalculator.statsCallback, Yt), ia = this.configuration.statsCalculator.getStatistics();
                     ge[nt] = {
                       Modality: Et.Modality,
                       area: gr,
@@ -255606,12 +255610,12 @@ Input: ` + this.err.str);
                     const { maxX: bt, maxY: Et, minX: Ft, minY: Bt } = gg(ge), Dt = M.canvasToWorld([
                       Ft,
                       Bt
-                    ]), Jt = se.utilities.transformWorldToIndex(et, Dt), Cn = M.canvasToWorld([
+                    ]), Yt = se.utilities.transformWorldToIndex(et, Dt), Cn = M.canvasToWorld([
                       bt,
                       Et
                     ]);
                     return [
-                      Jt,
+                      Yt,
                       se.utilities.transformWorldToIndex(et, Cn)
                     ];
                   }));
@@ -255654,15 +255658,15 @@ Input: ` + this.err.str);
             }
             renderAnnotationInstance(p) {
               var x, y, v;
-              const { enabledElement: S, targetId: M, svgDrawingHelper: F, annotationStyle: z } = p, { viewport: O } = S, { worldToCanvas: Y } = O, { element: V } = O, W = p.annotation, { annotationUID: te, data: Ae, highlighted: ge } = W, { handles: Ce } = Ae, { points: Be, activeHandleIndex: ye } = Ce, Me = (x = this.editData) === null || x === void 0 ? void 0 : x.newAnnotation, { lineWidth: ze, lineDash: Oe, color: et, locked: nt } = z, gt = Be.map(((Jt) => Y(Jt))), { drawPreviewEnabled: mt } = this.configuration.spline, bt = W.data.spline.type, Et = this._getSplineConfig(bt), Ft = W.data.spline.instance, Bt = Le(W);
-              if (Bt.findIndex(((Jt) => !Jt)) !== -1) throw new Error("Can't find annotation for child ".concat(W.childAnnotationUIDs.join()));
+              const { enabledElement: S, targetId: M, svgDrawingHelper: F, annotationStyle: z } = p, { viewport: O } = S, { worldToCanvas: Y } = O, { element: V } = O, W = p.annotation, { annotationUID: te, data: Ae, highlighted: ge } = W, { handles: Ce } = Ae, { points: Be, activeHandleIndex: ye } = Ce, Me = (x = this.editData) === null || x === void 0 ? void 0 : x.newAnnotation, { lineWidth: ze, lineDash: Oe, color: et, locked: nt } = z, gt = Be.map(((Yt) => Y(Yt))), { drawPreviewEnabled: mt } = this.configuration.spline, bt = W.data.spline.type, Et = this._getSplineConfig(bt), Ft = W.data.spline.instance, Bt = Le(W);
+              if (Bt.findIndex(((Yt) => !Yt)) !== -1) throw new Error("Can't find annotation for child ".concat(W.childAnnotationUIDs.join()));
               let Dt;
               if ([
                 W,
                 ...Bt
-              ].filter(((Jt) => this._isSplineROIAnnotation(Jt))).forEach(((Jt) => {
-                const Cn = this._updateSplineInstance(V, Jt).getPolylinePoints();
-                this.updateContourPolyline(Jt, {
+              ].filter(((Yt) => this._isSplineROIAnnotation(Yt))).forEach(((Yt) => {
+                const Cn = this._updateSplineInstance(V, Yt).getPolylinePoints();
+                this.updateContourPolyline(Yt, {
                   points: Cn,
                   closed: Ae.contour.closed,
                   targetWindingDirection: G0.Clockwise
@@ -255678,18 +255682,18 @@ Input: ` + this.err.str);
                 lineWidth: Math.max(1, ze),
                 handleRadius: "3"
               }), mt && Ft.numControlPoints > 1 && (y = this.editData) !== null && y !== void 0 && y.lastCanvasPoint && !Ft.closed) {
-                const { lastCanvasPoint: Jt } = this.editData;
-                Lu(F, te, "previewSplineChange", Ft.getPreviewPolylinePoints(Jt, 10), {
+                const { lastCanvasPoint: Yt } = this.editData;
+                Lu(F, te, "previewSplineChange", Ft.getPreviewPolylinePoints(Yt, 10), {
                   color: "#9EA0CA",
                   lineDash: Oe,
                   lineWidth: 1
                 });
               }
               if (Et.showControlPointsConnectors) {
-                const Jt = [
+                const Yt = [
                   ...gt
                 ];
-                Ft.closed && Jt.push(gt[0]), Lu(F, te, "controlPointsConnectors", Jt, {
+                Ft.closed && Yt.push(gt[0]), Lu(F, te, "controlPointsConnectors", Yt, {
                   color: "rgba(255, 255, 255, 0.5)",
                   lineWidth: 1
                 });
@@ -256178,12 +256182,12 @@ Input: ` + this.err.str);
                     const { maxX: bt, maxY: Et, minX: Ft, minY: Bt } = gg(ge), Dt = M.canvasToWorld([
                       Ft,
                       Bt
-                    ]), Jt = se.utilities.transformWorldToIndex(et, Dt), Cn = M.canvasToWorld([
+                    ]), Yt = se.utilities.transformWorldToIndex(et, Dt), Cn = M.canvasToWorld([
                       bt,
                       Et
                     ]);
                     return [
-                      Jt,
+                      Yt,
                       se.utilities.transformWorldToIndex(et, Cn)
                     ];
                   }));
@@ -256249,14 +256253,14 @@ Input: ` + this.err.str);
                 {
                   const bt = se.utilities.getCurrentVolumeViewportSlice(Y), { sliceToIndexMatrix: Et, indexToSliceMatrix: Ft } = bt;
                   te = (Bt) => {
-                    const Dt = se.utilities.transformWorldToIndex(W, Bt), Jt = Ge.vec3.transformMat4([
+                    const Dt = se.utilities.transformWorldToIndex(W, Bt), Yt = Ge.vec3.transformMat4([
                       0,
                       0,
                       0
                     ], Dt, Ft);
                     return [
-                      Jt[0],
-                      Jt[1]
+                      Yt[0],
+                      Yt[1]
                     ];
                   }, Ae = (Bt) => {
                     const Dt = Ge.vec3.transformMat4([
@@ -256645,7 +256649,7 @@ Input: ` + this.err.str);
                   const { color: ye, lineWidth: Me, lineDash: ze } = this.getAnnotationStyle({
                     annotation: V,
                     styleSpecifier: O
-                  }), Oe = Ce.map(((Jt) => M.worldToCanvas(Jt)));
+                  }), Oe = Ce.map(((Yt) => M.worldToCanvas(Yt)));
                   let et;
                   $t(V) || this.editData || Be === null || (et = [
                     Oe[Be]
@@ -256699,8 +256703,8 @@ Input: ` + this.err.str);
                     continue;
                   }
                   if (!te.handles.textBox.hasMoved) {
-                    const Jt = Oe[1];
-                    te.handles.textBox.worldPosition = M.canvasToWorld(Jt);
+                    const Yt = Oe[1];
+                    te.handles.textBox.worldPosition = M.canvasToWorld(Yt);
                   }
                   const mt = M.worldToCanvas(te.handles.textBox.worldPosition), bt = ZA(x, W, "1", [
                     ge
@@ -257027,14 +257031,14 @@ Input: ` + this.err.str);
                     const un = et[1];
                     Ce.handles.textBox.worldPosition = M.canvasToWorld(un);
                   }
-                  const Et = M.worldToCanvas(Ce.handles.textBox.worldPosition), Ft = ZA(x, ge, "1", bt, Et, et, {}, mt), { x: Bt, y: Dt, width: Jt, height: Cn } = Ft;
+                  const Et = M.worldToCanvas(Ce.handles.textBox.worldPosition), Ft = ZA(x, ge, "1", bt, Et, et, {}, mt), { x: Bt, y: Dt, width: Yt, height: Cn } = Ft;
                   Ce.handles.textBox.worldBoundingBox = {
                     topLeft: M.canvasToWorld([
                       Bt,
                       Dt
                     ]),
                     topRight: M.canvasToWorld([
-                      Bt + Jt,
+                      Bt + Yt,
                       Dt
                     ]),
                     bottomLeft: M.canvasToWorld([
@@ -257042,7 +257046,7 @@ Input: ` + this.err.str);
                       Dt + Cn
                     ]),
                     bottomRight: M.canvasToWorld([
-                      Bt + Jt,
+                      Bt + Yt,
                       Dt + Cn
                     ])
                   };
@@ -257356,11 +257360,11 @@ Input: ` + this.err.str);
                     lineWidth: "1",
                     lineDash: "1,4"
                   });
-                  const { arc1Start: Ft, arc1End: Bt, arc2End: Dt, arc2Start: Jt } = Be.cachedStats[Y].points.canvas, { arc1Angle: Cn, arc2Angle: un } = Be.cachedStats[Y];
+                  const { arc1Start: Ft, arc1End: Bt, arc2End: Dt, arc2Start: Yt } = Be.cachedStats[Y].points.canvas, { arc1Angle: Cn, arc2Angle: un } = Be.cachedStats[Y];
                   if (this.configuration.showArcLines && (Et = "arc1", Zi(y, Ce, Et, Ft, Bt, {
                     color: ze,
                     lineWidth: "1"
-                  }), Et = "arc2", Zi(y, Ce, Et, Jt, Dt, {
+                  }), Et = "arc2", Zi(y, Ce, Et, Yt, Dt, {
                     color: ze,
                     lineWidth: "1"
                   })), (te = Be.cachedStats[Y]) === null || te === void 0 || !te.angle) continue;
@@ -257431,7 +257435,7 @@ Input: ` + this.err.str);
                     });
                     const ia = "arcAngle2", oa = [
                       "".concat(un.toFixed(2), " ").concat("\xB0")
-                    ], aA = eh(Jt, Dt);
+                    ], aA = eh(Yt, Dt);
                     Eg(y, Ce, ia, oa, aA, {
                       ...On,
                       padding: 3
@@ -257520,7 +257524,7 @@ Input: ` + this.err.str);
                 ], Bt = [
                   W[0] - M[0],
                   W[1] - M[1]
-                ], Dt = Math.sqrt(Bt[0] ** 2 + Bt[1] ** 2), Jt = [
+                ], Dt = Math.sqrt(Bt[0] ** 2 + Bt[1] ** 2), Yt = [
                   Bt[0] / Dt,
                   Bt[1] / Dt
                 ];
@@ -257529,8 +257533,8 @@ Input: ` + this.err.str);
                   arc1End: gt,
                   arc2Start: Ft,
                   arc2End: [
-                    M[0] + Jt[0] * te * Ae,
-                    M[1] + Jt[1] * te * Ae
+                    M[0] + Yt[0] * te * Ae,
+                    M[1] + Yt[1] * te * Ae
                   ],
                   arc1Angle: z > 90 ? 180 - z : z,
                   arc2Angle: O > 90 ? 180 - O : O
@@ -257787,13 +257791,13 @@ Input: ` + this.err.str);
                       shadow: this.configuration.shadow
                     }, Ft);
                   } else {
-                    const Ft = ye[0], Bt = ye[1], Dt = Bt[1] - Ft[1], Jt = Bt[0] - Ft[0];
+                    const Ft = ye[0], Bt = ye[1], Dt = Bt[1] - Ft[1], Yt = Bt[0] - Ft[0];
                     let Cn = [
                       0,
                       0
                     ];
                     Cn = ge.cachedStats[O].isHorizontal ? [
-                      Ft[0] + Jt,
+                      Ft[0] + Yt,
                       Ft[1]
                     ] : [
                       Ft[0],
@@ -259349,7 +259353,7 @@ Input: ` + this.err.str);
                 lineDash: mt,
                 shadow: Et
               }, Dt);
-              const Jt = {
+              const Yt = {
                 bottom: [
                   -10,
                   -42
@@ -259367,8 +259371,8 @@ Input: ` + this.err.str);
                   -20
                 ]
               }, Cn = [
-                Oe[0][0] + Jt[y][0],
-                Oe[0][1] + Jt[y][1]
+                Oe[0][0] + Yt[y][0],
+                Oe[0][1] + Yt[y][1]
               ], un = this._getTextLines(Me), { tickIds: On, tickUIDs: _n, tickCoordinates: Hn } = this.computeInnerScaleTicks(Me, y, nt, et.endTick1, et.endTick2);
               for (let Xn = 0; Xn < _n.length; Xn++) Zi(x, nt, _n[Xn], Hn[Xn][0], Hn[Xn][1], {
                 color: bt,
@@ -260237,11 +260241,11 @@ Input: ` + this.err.str);
                   const Ce = this.getStyle("lineWidth", F, O), Be = this.getStyle("lineDash", F, O), ye = this.getStyle("color", F, O), Me = Ae.map(((Dr) => S.worldToCanvas(Dr))), ze = Me[0], Oe = mx(Me), { centerPointRadius: et } = this.configuration, nt = eb(Me), gt = S.getCamera().focalPoint, mt = S.getCamera().viewPlaneNormal;
                   let bt = W, Et = te;
                   Array.isArray(W) && (bt = this._getCoordinateForViewplaneNormal(bt, mt), V.startCoordinate = bt), Array.isArray(te) && (Et = this._getCoordinateForViewplaneNormal(Et, mt), V.endCoordinate = Et);
-                  const Ft = se.utilities.roundToPrecision(V.startCoordinate), Bt = se.utilities.roundToPrecision(V.endCoordinate), Dt = this._getCoordinateForViewplaneNormal(gt, mt), Jt = se.utilities.roundToPrecision(Dt);
-                  if (Jt < Math.min(Ft, Bt) || Jt > Math.max(Ft, Bt)) continue;
+                  const Ft = se.utilities.roundToPrecision(V.startCoordinate), Bt = se.utilities.roundToPrecision(V.endCoordinate), Dt = this._getCoordinateForViewplaneNormal(gt, mt), Yt = se.utilities.roundToPrecision(Dt);
+                  if (Yt < Math.min(Ft, Bt) || Yt > Math.max(Ft, Bt)) continue;
                   const Cn = se.utilities.roundToPrecision((V.startCoordinate + V.endCoordinate) / 2);
                   let un, On = false;
-                  if (Jt === Cn && (On = true), V.handles.points[0][this._getIndexOfCoordinatesForViewplaneNormal(mt)] = Cn, O.invalidated && this._throttledCalculateCachedStats(O, p), !S.getRenderingEngine()) return console.warn("Rendering Engine has been destroyed"), v;
+                  if (Yt === Cn && (On = true), V.handles.points[0][this._getIndexOfCoordinatesForViewplaneNormal(mt)] = Cn, O.invalidated && this._throttledCalculateCachedStats(O, p), !S.getRenderingEngine()) return console.warn("Rendering Engine has been destroyed"), v;
                   if (!qt(Y)) continue;
                   $t(O) || this.editData || ge === null || !On || (un = [
                     Me[ge]
@@ -260349,7 +260353,7 @@ Input: ` + this.err.str);
               }, Ft = K0(O.Modality, p.metadata.referencedImageId, Et);
               for (let Dt = 0; Dt < Ae.length; Dt++) {
                 if (!x) continue;
-                const Jt = Ae[Dt][0], Cn = Ae[Dt].map(((ia) => W.worldToCanvas(ia))), [un, On] = eb(Cn), _n = W.canvasToWorld(un), Hn = W.canvasToWorld(On), Xn = _n, Dr = Hn, { dimensions: Br, imageData: vr } = x, gr = ib(vr, Xn), Mr = ib(vr, Jt), Ni = this._getIndexOfCoordinatesForViewplaneNormal(Y);
+                const Yt = Ae[Dt][0], Cn = Ae[Dt].map(((ia) => W.worldToCanvas(ia))), [un, On] = eb(Cn), _n = W.canvasToWorld(un), Hn = W.canvasToWorld(On), Xn = _n, Dr = Hn, { dimensions: Br, imageData: vr } = x, gr = ib(vr, Xn), Mr = ib(vr, Yt), Ni = this._getIndexOfCoordinatesForViewplaneNormal(Y);
                 gr[0] = Math.floor(gr[0]), gr[1] = Math.floor(gr[1]), gr[2] = Math.floor(gr[2]), gr[Ni] = Mr[Ni];
                 const oi = ib(vr, Dr);
                 if (oi[0] = Math.floor(oi[0]), oi[1] = Math.floor(oi[1]), oi[2] = Math.floor(oi[2]), oi[Ni] = Mr[Ni], this._isInsideVolume(gr, oi, Br)) {
@@ -260367,7 +260371,7 @@ Input: ` + this.err.str);
                       Math.max(gr[2], oi[2])
                     ]
                   ], oa = {
-                    center: Jt,
+                    center: Yt,
                     xRadius: Math.abs(_n[0] - Hn[0]) / 2,
                     yRadius: Math.abs(_n[1] - Hn[1]) / 2,
                     zRadius: Math.abs(_n[2] - Hn[2]) / 2
@@ -260678,10 +260682,10 @@ Input: ` + this.err.str);
                 const { segmentationId: W, type: te } = V, Ae = Pl(W), ge = Ul(W), { representationData: Ce } = ir(W), Be = Ce[Gt.Labelmap];
                 let ye, Me, ze, Oe;
                 if (Qr(Be, z)) {
-                  const { volumeId: Jt } = Ce[te], Cn = se.cache.getVolume(Jt);
+                  const { volumeId: Yt } = Ce[te], Cn = se.cache.getVolume(Yt);
                   ({ dimensions: ye, direction: Me } = Cn), ze = Cn.getScalarData(), Oe = X6(Cn.imageData, M);
                 } else {
-                  const { imageIdReferenceMap: Jt } = Be, Cn = F.viewport.getCurrentImageId(), un = Jt.get(Cn);
+                  const { imageIdReferenceMap: Yt } = Be, Cn = F.viewport.getCurrentImageId(), un = Yt.get(Cn);
                   if (!un) throw new Error("No active segmentation imageId detected, create one before using scissors tool");
                   ze = se.cache.getImage(un).getPixelData();
                   const { imageData: _n } = z.getImageData();
@@ -260694,8 +260698,8 @@ Input: ` + this.err.str);
                 const Ft = gt(Oe[0], Oe[1], Oe[2]);
                 if (ge.includes(Ft)) return;
                 const Bt = DI(nt, bt), { flooded: Dt } = Bt;
-                return Dt.forEach(((Jt) => {
-                  const Cn = mt(Jt[0], Jt[1]);
+                return Dt.forEach(((Yt) => {
+                  const Cn = mt(Yt[0], Yt[1]);
                   ze[Cn] = Ae;
                 })), pr(W, this.getFramesModified(et, Et, Bt)), true;
               })), ce(this, "getFramesModified", ((x, y, v) => {
@@ -261009,12 +261013,12 @@ Input: ` + this.err.str);
                   const ye = Ae[Be], { imageVolume: Me } = this._getImageVolumeFromTargetUID(ye, S), { dimensions: ze, scalarData: Oe, vtkImageData: et, metadata: nt } = Me, gt = Ge.vec3.fromValues(0, 0, 0), mt = Ge.vec3.fromValues(0, 0, 0);
                   if (et.worldToIndexVec3(V, gt), gt[0] = Math.floor(gt[0]), gt[1] = Math.floor(gt[1]), gt[2] = Math.floor(gt[2]), et.worldToIndexVec3(W, mt), mt[0] = Math.floor(mt[0]), mt[1] = Math.floor(mt[1]), mt[2] = Math.floor(mt[2]), this._isInsideVolume(gt, mt, ze)) {
                     this.isHandleOutsideImage = false;
-                    const bt = Math.min(gt[0], mt[0]), Et = Math.max(gt[0], mt[0]), Ft = Math.min(gt[1], mt[1]), Bt = Math.max(gt[1], mt[1]), Dt = Math.min(gt[2], mt[2]), Jt = Math.max(gt[2], mt[2]), { worldWidth: Cn, worldHeight: un } = z2(y, v, V, W), On = Cn * un;
+                    const bt = Math.min(gt[0], mt[0]), Et = Math.max(gt[0], mt[0]), Ft = Math.min(gt[1], mt[1]), Bt = Math.max(gt[1], mt[1]), Dt = Math.min(gt[2], mt[2]), Yt = Math.max(gt[2], mt[2]), { worldWidth: Cn, worldHeight: un } = z2(y, v, V, W), On = Cn * un;
                     let _n = 0, Hn = 0, Xn = 0;
                     const Dr = ze[0], Br = ze[0] * ze[1];
-                    for (let vr = Dt; vr <= Jt; vr++) for (let gr = Ft; gr <= Bt; gr++) for (let Mr = bt; Mr <= Et; Mr++) _n++, Hn += Oe[vr * Br + gr * Dr + Mr];
+                    for (let vr = Dt; vr <= Yt; vr++) for (let gr = Ft; gr <= Bt; gr++) for (let Mr = bt; Mr <= Et; Mr++) _n++, Hn += Oe[vr * Br + gr * Dr + Mr];
                     Hn /= _n;
-                    for (let vr = Dt; vr <= Jt; vr++) for (let gr = Ft; gr <= Bt; gr++) for (let Mr = bt; Mr <= Et; Mr++) {
+                    for (let vr = Dt; vr <= Yt; vr++) for (let gr = Ft; gr <= Bt; gr++) for (let Mr = bt; Mr <= Et; Mr++) {
                       const Ni = Oe[vr * Br + gr * Dr + Mr] - Hn;
                       Xn += Ni * Ni;
                     }
@@ -263619,8 +263623,8 @@ Input: ` + this.err.str);
                 const st = Gn.body.getReader(), wt = Gn.headers, on = wt.get("content-type"), yn = Number(wt.get("Content-Length"));
                 let er = false, Qr = Vt.encodedData, ot = Vt.lastSize || 0;
                 for (Vt.isPartial = true; !er; ) {
-                  const { done: kt, value: Yt } = await st.read();
-                  if (Qr = At(Qr, Yt), !Qr) {
+                  const { done: kt, value: Jt } = await st.read();
+                  if (Qr = At(Qr, Jt), !Qr) {
                     if (er) throw new Error(`Done but no image frame available ${Ye}`);
                     continue;
                   }
@@ -263667,8 +263671,8 @@ Input: ` + this.err.str);
               try {
                 Vt.encodedData || (Vt.chunkSize = St, Vt.rangesFetched = 0);
                 const Fn = (function(ot, kt) {
-                  const { totalBytes: Yt, encodedData: In, chunkSize: tr = 65536 } = ot, { rangeIndex: Ir = 0 } = kt;
-                  return Ir !== -1 || Yt && In ? Ir === -1 || (In == null ? void 0 : In.byteLength) > Yt - tr ? [
+                  const { totalBytes: Jt, encodedData: In, chunkSize: tr = 65536 } = ot, { rangeIndex: Ir = 0 } = kt;
+                  return Ir !== -1 || Jt && In ? Ir === -1 || (In == null ? void 0 : In.byteLength) > Jt - tr ? [
                     (In == null ? void 0 : In.byteLength) || 0,
                     ""
                   ] : [
@@ -263678,12 +263682,12 @@ Input: ` + this.err.str);
                     0,
                     ""
                   ];
-                })(Vt, Ct), { encodedData: Gn, responseHeaders: st } = await (async function(ot, kt, Yt, In) {
-                  Yt && (kt = Object.assign(kt, {
-                    Range: `bytes=${Yt[0]}-${Yt[1]}`
+                })(Vt, Ct), { encodedData: Gn, responseHeaders: st } = await (async function(ot, kt, Jt, In) {
+                  Jt && (kt = Object.assign(kt, {
+                    Range: `bytes=${Jt[0]}-${Jt[1]}`
                   }));
                   let { encodedData: tr } = In;
-                  if (Yt[1] && (tr == null ? void 0 : tr.byteLength) > Yt[1]) return In;
+                  if (Jt[1] && (tr == null ? void 0 : tr.byteLength) > Jt[1]) return In;
                   const Ir = await fetch(ot, {
                     headers: kt,
                     signal: void 0
@@ -263691,7 +263695,7 @@ Input: ` + this.err.str);
                   let lr;
                   tr ? (lr = new Uint8Array(tr.length + pr.length), lr.set(tr, 0), lr.set(pr, tr.length), In.rangesFetched = 1) : (lr = new Uint8Array(pr.length), lr.set(pr, 0), In.rangesFetched++), In.encodedData = tr = lr, In.responseHeaders = Ir.headers;
                   const ir = Ir.headers.get("Content-Range");
-                  return ir ? In.totalBytes = Number(ir.split("/")[1]) : bi === 206 && Yt ? Yt[1] === "" || (tr == null ? void 0 : tr.length) < Yt[1] ? In.totalBytes = tr.byteLength : In.totalBytes = Number.MAX_SAFE_INTEGER : In.totalBytes = tr == null ? void 0 : tr.byteLength, In;
+                  return ir ? In.totalBytes = Number(ir.split("/")[1]) : bi === 206 && Jt ? Jt[1] === "" || (tr == null ? void 0 : tr.length) < Jt[1] ? In.totalBytes = tr.byteLength : In.totalBytes = Number.MAX_SAFE_INTEGER : In.totalBytes = tr == null ? void 0 : tr.byteLength, In;
                 })(Le, Kn, Fn, Vt), wt = st.get("content-type"), { totalBytes: on } = Vt, yn = on === Gn.byteLength, er = we(wt, Gn, {
                   isPartial: true
                 }), Qr = Qe(Ct, yn || er.extractDone);
@@ -264062,7 +264066,7 @@ Input: ` + this.err.str);
                   wt.pixelData = da, on = true;
                 }
                 on || fn(wt);
-                const yn = Ct.metaData.get(Vt.IMAGE_PLANE, Le) || {}, er = Ct.metaData.get(Vt.VOI_LUT, Le) || {}, Qr = Ct.metaData.get(Vt.MODALITY_LUT, Le) || {}, ot = Ct.metaData.get(Vt.SOP_COMMON, Le) || {}, kt = Ct.metaData.get(Vt.CALIBRATION, Le) || {}, { rows: Yt, columns: In } = wt;
+                const yn = Ct.metaData.get(Vt.IMAGE_PLANE, Le) || {}, er = Ct.metaData.get(Vt.VOI_LUT, Le) || {}, Qr = Ct.metaData.get(Vt.MODALITY_LUT, Le) || {}, ot = Ct.metaData.get(Vt.SOP_COMMON, Le) || {}, kt = Ct.metaData.get(Vt.CALIBRATION, Le) || {}, { rows: Jt, columns: In } = wt;
                 if (Fn) {
                   if ((function(pr) {
                     if (pr === void 0) return false;
@@ -264075,7 +264079,7 @@ Input: ` + this.err.str);
                       ...pr,
                       data: new Uint8ClampedArray(3 * wt.columns * wt.rows)
                     }), me(wt, pr.data, xt), wt.imageData = pr, wt.pixelData = pr.data, wt.pixelDataLength = pr.data.length;
-                  } else if (!xt && wt.pixelDataLength === 4 * Yt * In) {
+                  } else if (!xt && wt.pixelDataLength === 4 * Jt * In) {
                     const pr = new Uint8Array(wt.pixelData.length / 4 * 3);
                     wt.pixelData = (function(bi, lr) {
                       const ir = bi.length / 4;
@@ -264176,15 +264180,15 @@ Input: ` + this.err.str);
                 const st = Vn.as(pe(Sn, Kn, Fn, Ye));
                 let wt = 10;
                 for await (const on of st) {
-                  const { pixelData: yn, imageQualityStatus: er = Lr.FULL_RESOLUTION, percentComplete: Qr, done: ot = true, extractDone: kt = true } = on, Yt = Nt(on.contentType);
-                  if (!kt && !Ve.has(Yt)) continue;
+                  const { pixelData: yn, imageQualityStatus: er = Lr.FULL_RESOLUTION, percentComplete: Qr, done: ot = true, extractDone: kt = true } = on, Jt = Nt(on.contentType);
+                  if (!kt && !Ve.has(Jt)) continue;
                   const In = on.decodeLevel ?? (er === Lr.FULL_RESOLUTION ? 0 : $t(Qr, (_a = Ye.retrieveOptions) == null ? void 0 : _a.decodeLevel));
                   if (ot || !(wt <= In)) try {
                     const tr = {
                       ...Ye,
                       decodeLevel: In
-                    }, Ir = await be(Kn, yn, Yt, tr), qr = (/* @__PURE__ */ new Date()).getTime();
-                    Ir.loadTimeInMS = qr - at, Ir.transferSyntaxUID = Yt, Ir.imageQualityStatus = er, Gn.add(Ir, ot), wt = In;
+                    }, Ir = await be(Kn, yn, Jt, tr), qr = (/* @__PURE__ */ new Date()).getTime();
+                    Ir.loadTimeInMS = qr - at, Ir.transferSyntaxUID = Jt, Ir.imageQualityStatus = er, Gn.add(Ir, ot), wt = In;
                   } catch (tr) {
                     if (kt) throw console.warn("Couldn't decode", tr), tr;
                   }

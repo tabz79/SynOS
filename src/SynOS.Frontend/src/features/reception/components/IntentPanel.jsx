@@ -589,17 +589,6 @@ export function IntentPanel({ onVisitUpdated }) {
     useEffect(() => {
         if (!isOpen) return;
 
-        // In Visit Summary view, initial focus MUST land on Thermal (80mm)
-        if (isPostProcessingView) {
-            const timer = setTimeout(() => {
-                const thermalBtn = document.getElementById('btn-doc-format-thermal');
-                if (thermalBtn) {
-                    thermalBtn.focus();
-                }
-            }, 80);
-            return () => clearTimeout(timer);
-        }
-
         const patientPresent = Boolean(
             displayedPatient?.id || 
             displayedPatient?.patientId || 
@@ -622,7 +611,6 @@ export function IntentPanel({ onVisitUpdated }) {
         }
     }, [
         isOpen, 
-        isPostProcessingView,
         displayedPatient?.id, 
         displayedPatient?.patientId, 
         displayedPatient?.fullName, 
@@ -1338,6 +1326,18 @@ export function IntentPanel({ onVisitUpdated }) {
         ? !userPayerExpandedState
         : Boolean(isVisitFinalized);
     const isPostProcessingView = Boolean(postProcessingSession) || (isVisitFinalized && !isCorrectionIntent);
+
+    // Auto-focus Thermal (80mm) format switcher when entering Visit Summary view
+    useEffect(() => {
+        if (!isOpen || !isPostProcessingView) return;
+        const timer = setTimeout(() => {
+            const thermalBtn = document.getElementById('btn-doc-format-thermal');
+            if (thermalBtn) {
+                thermalBtn.focus();
+            }
+        }, 80);
+        return () => clearTimeout(timer);
+    }, [isOpen, isPostProcessingView]);
 
     const effectivePartner = stagedReferralPartnerId !== undefined
         ? (stagedReferralPartnerId ? (referralPartners.find(p => (p.referralPartnerId || p.id) === stagedReferralPartnerId) || snapshot?.visit?.referralPartner || snapshot?.billing?.referral?.partner) : null)
