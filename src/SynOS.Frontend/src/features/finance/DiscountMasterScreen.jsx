@@ -706,9 +706,10 @@ export function DiscountMasterScreen() {
         ? paramTab 
         : 'intelligence';
 
-    // 0. Concession Intelligence State (Tab: intelligence)
+    // 0. Concession Intelligence State with Instant Horizon Caching & Smooth In-Place Updates
+    const dynamicCacheRef = useRef({});
     const [intelligence, setIntelligence] = useState(DEFAULT_CONCESSION_INTELLIGENCE);
-    const [loadingIntelligence, setLoadingIntelligence] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
 
     // 1. Discount Codes State (Tab 1)
     const [discounts, setDiscounts] = useState([]);
@@ -745,25 +746,36 @@ export function DiscountMasterScreen() {
         { id: 'codes', label: 'Discount Codes', icon: Tag }
     ];
 
-    // Load Concession Intelligence
+    // Load Concession Intelligence with Instant Horizon Caching & Smooth Transition (Zero Reload)
     const loadIntelligence = useCallback(async () => {
+        const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
+        const isCons = isConsolidated && isAdmin;
+        const start = presetRange === 'custom' ? customDates?.start : null;
+        const end = presetRange === 'custom' ? customDates?.end : null;
+        const cacheKey = `intel_${bId || 'consolidated'}_${presetRange}_${start || ''}_${end || ''}`;
+
+        // Instant Cache Hit: 0ms UI latency, zero flash
+        if (dynamicCacheRef.current[cacheKey]) {
+            setIntelligence(dynamicCacheRef.current[cacheKey]);
+            return;
+        }
+
         try {
-            setLoadingIntelligence(true);
-            const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
-            const isCons = isConsolidated && isAdmin;
+            setIsUpdating(true);
             const data = await FinanceApi.getConcessionIntelligence({
                 preset: presetRange,
-                fromDate: presetRange === 'custom' ? customDates?.start : undefined,
-                toDate: presetRange === 'custom' ? customDates?.end : undefined,
+                fromDate: start || undefined,
+                toDate: end || undefined,
                 branchId: bId,
                 isConsolidated: isCons
             });
-            setIntelligence(data || DEFAULT_CONCESSION_INTELLIGENCE);
+            const finalData = data || DEFAULT_CONCESSION_INTELLIGENCE;
+            dynamicCacheRef.current[cacheKey] = finalData;
+            setIntelligence(finalData);
         } catch (err) {
             console.error("Failed to load concession intelligence, using baseline:", err);
-            setIntelligence(DEFAULT_CONCESSION_INTELLIGENCE);
         } finally {
-            setLoadingIntelligence(false);
+            setIsUpdating(false);
         }
     }, [presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin]);
 
@@ -803,25 +815,37 @@ export function DiscountMasterScreen() {
         }
     }, [reasonActiveFilter, reasonSearch]);
 
-    // Load discount history
+    // Load discount history with instant cache
     const loadHistory = useCallback(async () => {
+        const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
+        const isCons = isConsolidated && isAdmin;
+        const start = presetRange === 'custom' ? customDates?.start : null;
+        const end = presetRange === 'custom' ? customDates?.end : null;
+        const cacheKey = `hist_${historySource}_${historySearch.trim()}_${bId || 'consolidated'}_${presetRange}_${start || ''}_${end || ''}`;
+
+        if (dynamicCacheRef.current[cacheKey]) {
+            setHistory(dynamicCacheRef.current[cacheKey]);
+            return;
+        }
+
         try {
-            setLoadingHistory(true);
-            const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
-            const isCons = isConsolidated && isAdmin;
+            setIsUpdating(true);
             const data = await FinanceApi.getDiscountHistory({
                 source: historySource,
                 search: historySearch.trim() || undefined,
                 preset: presetRange,
-                fromDate: presetRange === 'custom' ? customDates?.start : undefined,
-                toDate: presetRange === 'custom' ? customDates?.end : undefined,
+                fromDate: start || undefined,
+                toDate: end || undefined,
                 branchId: bId,
                 isConsolidated: isCons
             });
-            setHistory(Array.isArray(data) ? data : []);
+            const finalHist = Array.isArray(data) ? data : [];
+            dynamicCacheRef.current[cacheKey] = finalHist;
+            setHistory(finalHist);
         } catch (err) {
             console.error("Failed to load discount history:", err);
         } finally {
+            setIsUpdating(false);
             setLoadingHistory(false);
         }
     }, [historySource, historySearch, presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin]);
@@ -1032,7 +1056,7 @@ export function DiscountMasterScreen() {
                             Manage discount codes, view discounts given, and track staff discounts
                         </p>
                     </div>
-                    {loadingIntelligence && (
+                    {isUpdating && (
                         <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-synos-primary/10 border border-synos-primary/25 text-synos-primary shadow-xs animate-in fade-in duration-150">
                             <div className="relative flex items-center justify-center w-3 h-3">
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-synos-primary opacity-75"></span>
@@ -1114,17 +1138,10 @@ export function DiscountMasterScreen() {
             </div>
 
             {/* 0. CONCESSION CONTROL DECK (INTELLIGENCE) */}
-            {tab === 'intelligence' && (
-                    <div className="space-y-5 animate-in fade-in duration-300">
-                        {loadingIntelligence ? (
-                            <div className="flex flex-col items-center justify-center p-20 gap-2.5 text-zinc-400">
-                                <Loader2 className="w-6 h-6 animate-spin text-synos-primary" />
-                                <span className="text-xs font-medium">Loading Concession Intelligence Deck...</span>
-                            </div>
-                        ) : intelligence ? (
-                            <>
-                                {/* SECTION 1: HERO CONTROL DECK (CARD 1) */}
-                                <div className="p-4 sm:p-5 lg:p-6 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-center">
+            {tab === 'intelligence' && intelligence && (
+                <div className="flex-1 min-h-0 flex flex-col justify-start gap-3 sm:gap-3.5 lg:gap-4 animate-in fade-in duration-300">
+                    {/* SECTION 1: HERO CONTROL DECK (CARD 1) */}
+                    <div className="flex-1 min-h-[105px] p-4 sm:p-5 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-center">
                                     {/* Left Column: Total Concessions Granted */}
                                     <div className="lg:col-span-5 flex items-center gap-4 min-w-0 pr-0 lg:pr-2">
                                         {/* 3D Tactile Coupon Tag Icon Squircle */}
@@ -1223,8 +1240,8 @@ export function DiscountMasterScreen() {
                                     </div>
                                 </div>
 
-                                {/* SECTION 2: 3-CARD MIDDLE ROW (CARDS 2, 3, 4) */}
-                                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-12 gap-3 sm:gap-3.5 lg:gap-4 items-stretch">
+                    {/* SECTION 2: 3-CARD MIDDLE ROW (CARDS 2, 3, 4) */}
+                    <div className="flex-[1.45] min-h-[195px] grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-12 gap-3 sm:gap-3.5 lg:gap-4 items-stretch">
                                     {/* CARD 2: PATIENT WALK-IN PRESETS */}
                                     <div className="col-span-1 lg:col-span-1 xl:col-span-4 h-full">
                                         <AdaptiveBreakdownCard
@@ -1446,8 +1463,8 @@ export function DiscountMasterScreen() {
                                     </div>
                                 </div>
 
-                                {/* SECTION 3: BOTTOM ROW (CARDS 5, 6 & 7) */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-3 sm:gap-3.5 lg:gap-4 items-stretch">
+                    {/* SECTION 3: BOTTOM ROW (CARDS 5, 6 & 7) */}
+                    <div className="flex-1 min-h-[105px] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-3 sm:gap-3.5 lg:gap-4 items-stretch">
                                     {/* CARD 5: DEPARTMENT CONCESSION SPLIT */}
                                     <div className="col-span-1 md:col-span-1 lg:col-span-3 p-4 sm:p-5 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex flex-col justify-between space-y-4 h-full overflow-hidden">
                                         <div className="flex items-center gap-2.5 pb-2.5 border-b border-slate-200 dark:border-zinc-800 shrink-0">
@@ -1760,11 +1777,9 @@ export function DiscountMasterScreen() {
                                             );
                                         })()}
                                     </div>
-                                </div>
-                            </>
-                        ) : null}
                     </div>
-                )}
+                </div>
+            )}
 
                 {/* 1. DISCOUNT CODES TAB */}
                 {tab === 'codes' && (
