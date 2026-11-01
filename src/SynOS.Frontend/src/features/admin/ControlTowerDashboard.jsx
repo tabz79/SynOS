@@ -50,7 +50,7 @@ export function ControlTowerDashboard() {
     const { theme } = useTheme();
     const isDark = theme === 'dark';
     const { user } = useAuth();
-    const { isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
+    const { isConsolidated, effectiveBranchId, currentBranchName, isAdmin } = useGlobalFilter();
 
     const [summary, setSummary] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -178,9 +178,7 @@ export function ControlTowerDashboard() {
         { title: "Radiologist", subtitle: "Clinical Reporting", icon: Eye, watermark: RadiologistWatermark, data: summary?.radiologist, path: "/radiologist", btnText: "Open Radiologist" },
     ];
 
-    const activeBranchName = isConsolidated 
-        ? "All Branches" 
-        : (branches.find(b => (b.branchId || b.id) === activeOversightBranchId)?.name || user?.branchName || "Selected Branch");
+    const activeBranchName = currentBranchName;
 
     return (
         <div className="p-8 space-y-8 pb-16 relative z-10">

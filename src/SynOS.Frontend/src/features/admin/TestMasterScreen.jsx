@@ -1104,10 +1104,18 @@ export function TestMasterScreen() {
     try {
       const dbTests = await AdminApi.getTests();
       setOriginalDbTests(dbTests || []);
-      const merged = mergeDbTestsWithLocal(INITIAL_TEST_CATALOG, dbTests || []);
-      setCatalog(merged);
-      if (merged.length > 0) {
-        setSelectedTest(merged[0]);
+      const normalized = (dbTests || []).map(normalizeDbTest).filter(Boolean);
+      normalized.forEach(item => {
+        if (item.dbIncludedTestCodes && item.dbIncludedTestCodes.length > 0) {
+          item.includedTestIds = item.dbIncludedTestCodes.map(code => {
+            const found = normalized.find(t => t.code && t.code.toLowerCase() === code.toLowerCase());
+            return found ? found.id : null;
+          }).filter(Boolean);
+        }
+      });
+      setCatalog(normalized);
+      if (normalized.length > 0) {
+        setSelectedTest(normalized[0]);
       }
     } catch (err) {
       console.error("Failed to reload tests:", err);

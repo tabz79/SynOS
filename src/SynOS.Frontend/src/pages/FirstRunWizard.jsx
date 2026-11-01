@@ -129,7 +129,6 @@ export function FirstRunWizard() {
                     if (data.databaseServer) setDbServer(data.databaseServer);
                     if (data.databaseName) {
                         setDbName(data.databaseName);
-                        setSelectedExistingDb(data.databaseName);
                     }
                     if (data.adminUsername) {
                         setAdminUsername(data.adminUsername);

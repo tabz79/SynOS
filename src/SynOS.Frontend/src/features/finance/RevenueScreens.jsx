@@ -317,7 +317,7 @@ export const RevenueTerminal = () => {
   const dynamicCacheRef = React.useRef({});
   const tabsRef = React.useRef(null);
 
-  const loadStats = useCallback(async () => {
+  const loadStats = React.useCallback(async () => {
     const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
     const isCons = isConsolidated && isAdmin;
     const start = presetRange === 'custom' ? customDates?.start : null;
@@ -491,10 +491,8 @@ export const BillsCollectionsScreen = () => {
     // Read pre-filtered parameters from URL query params (e.g. from FinanceOverview clicks)
     const initialDept = searchParams.get('department') || 'All';
     const initialMod = searchParams.get('modality') || 'All';
-    const initialBranch = searchParams.get('branchId') || 'All';
 
     const [bills, setBills] = useState([]);
-    const [branches, setBranches] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedBill, setSelectedBill] = useState(null);
@@ -510,31 +508,17 @@ export const BillsCollectionsScreen = () => {
     const [categoryFilter, setCategoryFilter] = useState('All');
     const [departmentFilter, setDepartmentFilter] = useState(initialDept);
     const [modalityFilter, setModalityFilter] = useState(initialMod);
-    const [branchFilter, setBranchFilter] = useState(initialBranch);
     const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
-        loadBranches();
-    }, []);
-
-    useEffect(() => {
         loadBills();
-    }, [branchFilter, departmentFilter, modalityFilter, globalPreset, globalCustomDates?.start, globalCustomDates?.end, isConsolidated, effectiveBranchId]);
-
-    const loadBranches = async () => {
-        try {
-            const data = await AdminApi.getBranches();
-            setBranches(data || []);
-        } catch (e) {
-            console.error("Failed to load branches for Bills & Collections", e);
-        }
-    };
+    }, [departmentFilter, modalityFilter, globalPreset, globalCustomDates?.start, globalCustomDates?.end, isConsolidated, effectiveBranchId]);
 
     const loadBills = async () => {
         try {
             setLoading(true);
             const params = {};
-            const bId = branchFilter !== 'All' ? branchFilter : (isConsolidated && isAdmin ? null : effectiveBranchId);
+            const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
             if (bId) params.branchId = bId;
             if (departmentFilter !== 'All') params.department = departmentFilter;
             if (modalityFilter !== 'All') params.modality = modalityFilter;
@@ -649,50 +633,13 @@ export const BillsCollectionsScreen = () => {
             if (!bMod.includes(targetMod)) return false;
         }
 
-        // 5. Branch Filter
-        if (branchFilter !== 'All') {
-            if (b.branchId && b.branchId !== branchFilter) return false;
-        }
-
-        // 6. Search Query
+        // 5. Search Query
         if (searchQuery.trim()) {
             const query = searchQuery.toLowerCase();
             const matchName = (b.patientName || '').toLowerCase().includes(query);
             const matchBill = (b.billNumber || '').toLowerCase().includes(query);
             const matchPartner = (b.partnerName || '').toLowerCase().includes(query);
             if (!matchName && !matchBill && !matchPartner) return false;
-        }
-
-        // 7. Date Filter (client-side safety check)
-        const billDate = new Date(b.date);
-        const today = new Date();
-        today.setHours(0,0,0,0);
-
-        if (dateRange === 'Today') {
-            if (billDate < today) return false;
-        } else if (dateRange === 'Yesterday') {
-            const yesterday = new Date(today);
-            yesterday.setDate(yesterday.getDate() - 1);
-            if (billDate < yesterday || billDate >= today) return false;
-        } else if (dateRange === 'This Week') {
-            const weekAgo = new Date(today);
-            weekAgo.setDate(weekAgo.getDate() - 7);
-            if (billDate < weekAgo) return false;
-        } else if (dateRange === 'This Month') {
-            const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-            if (billDate < monthStart) return false;
-        } else if (dateRange === 'This Quarter') {
-            const currentQuarter = Math.floor(today.getMonth() / 3);
-            const quarterStart = new Date(today.getFullYear(), currentQuarter * 3, 1);
-            if (billDate < quarterStart) return false;
-        } else if (dateRange === 'This Year') {
-            const yearStart = new Date(today.getFullYear(), 0, 1);
-            if (billDate < yearStart) return false;
-        } else if (dateRange === 'Custom Range' && customDates.start && customDates.end) {
-            const start = new Date(customDates.start);
-            const end = new Date(customDates.end);
-            end.setHours(23,59,59,999);
-            if (billDate < start || billDate > end) return false;
         }
 
         return true;
@@ -757,7 +704,7 @@ export const BillsCollectionsScreen = () => {
         const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
         const encodedUri = encodeURI(csvContent);
         const link = document.createElement("a");
-        const dateTag = dateRange.toLowerCase().replace(/\s+/g, '_');
+        const dateTag = (globalPreset === 'custom' ? `${globalCustomDates?.start || ''}_to_${globalCustomDates?.end || ''}` : globalPreset).toLowerCase().replace(/\s+/g, '_');
         link.setAttribute("href", encodedUri);
         link.setAttribute("download", `synos_bills_summary_${dateTag}_${new Date().toISOString().slice(0, 10)}.csv`);
         document.body.appendChild(link);
@@ -875,23 +822,8 @@ export const BillsCollectionsScreen = () => {
                     </div>
                 </div>
 
-                {/* Bottom Row: Branch, Department, Modality & Date Selectors */}
+                {/* Bottom Row: Department & Modality Selectors */}
                 <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-zinc-200/60 dark:border-zinc-800/60">
-                    {/* Branch Selector */}
-                    <div className="flex items-center gap-1.5 bg-white dark:bg-zinc-950 px-2 py-1 rounded-xl border border-zinc-200 dark:border-zinc-800">
-                        <Building2 size={13} className="text-zinc-400" />
-                        <select
-                            value={branchFilter}
-                            onChange={(e) => setBranchFilter(e.target.value)}
-                            className="bg-transparent text-xs font-semibold text-zinc-700 dark:text-zinc-300 outline-none cursor-pointer"
-                        >
-                            <option value="All">All Branches</option>
-                            {branches.map(b => (
-                                <option key={b.branchId} value={b.branchId}>{b.name}</option>
-                            ))}
-                        </select>
-                    </div>
-
                     {/* Department Selector */}
                     <div className="flex items-center gap-1.5 bg-white dark:bg-zinc-950 px-2 py-1 rounded-xl border border-zinc-200 dark:border-zinc-800">
                         <Beaker size={13} className="text-zinc-400" />
@@ -934,41 +866,6 @@ export const BillsCollectionsScreen = () => {
                                     <option value="MRI">MRI</option>
                                 </optgroup>
                             )}
-                        </select>
-                    </div>
-
-                    {/* Date Range Selector */}
-                    <div className="flex items-center gap-2 ml-auto">
-                        {dateRange === 'Custom Range' && (
-                            <div className="flex items-center gap-2 animate-in slide-in-from-right-2 duration-300">
-                                <input 
-                                    type="date" 
-                                    value={customDates.start}
-                                    onChange={(e) => setCustomDates({...customDates, start: e.target.value})}
-                                    className="bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-lg px-2 py-1 text-[10px] font-bold text-synos-primary"
-                                />
-                                <span className="text-zinc-400 text-[10px]">to</span>
-                                <input 
-                                    type="date" 
-                                    value={customDates.end}
-                                    onChange={(e) => setCustomDates({...customDates, end: e.target.value})}
-                                    className="bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-lg px-2 py-1 text-[10px] font-bold text-synos-primary"
-                                />
-                            </div>
-                        )}
-                        <select 
-                            value={dateRange}
-                            onChange={(e) => handleDateRangeChange(e.target.value)}
-                            className="bg-white dark:bg-zinc-950 border dark:border-zinc-800 border-zinc-200 rounded-xl px-3 py-1.5 text-xs font-semibold dark:text-zinc-300 outline-none focus:border-synos-primary transition-all cursor-pointer"
-                        >
-                            <option>Today</option>
-                            <option>Yesterday</option>
-                            <option>This Week</option>
-                            <option>This Month</option>
-                            <option>This Quarter</option>
-                            <option>This Year</option>
-                            <option>All Time</option>
-                            <option>Custom Range</option>
                         </select>
                     </div>
                 </div>
@@ -1157,10 +1054,9 @@ export const BillsCollectionsScreen = () => {
                 slotId="summary_bills_daybook"
                 title="Bills & Collections Revenue Ledger"
                 subtitle="Operational ledger with branch, department, and modality transaction breakdowns"
-                dateRangeText={dateRange === 'Custom Range' ? `${customDates.start} to ${customDates.end}` : dateRange}
+                dateRangeText={globalPreset === 'custom' ? `${globalCustomDates?.start || ''} to ${globalCustomDates?.end || ''}` : globalPreset}
                 categoryLabel="REVENUE LEDGER AUDIT"
                 filterTags={[
-                    branchFilter !== 'All' ? `Branch: ${branches.find(b => (b.branchId || b.id) === branchFilter)?.name || branchFilter}` : null,
                     departmentFilter !== 'All' ? `Dept: ${departmentFilter}` : null,
                     modalityFilter !== 'All' ? `Modality: ${modalityFilter}` : null,
                     statusFilter !== 'All' ? `Status: ${statusFilter}` : null,
@@ -1207,12 +1103,10 @@ export const DueBillsScreen = () => {
     const { user } = useAuth();
     const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
     const [dueBills, setDueBills] = useState([]);
-    const [branches, setBranches] = useState([]);
     const [loading, setLoading] = useState(true);
 
     // Filters
     const [searchQuery, setSearchQuery] = useState('');
-    const [branchFilter, setBranchFilter] = useState('All');
     const [statusFilter, setStatusFilter] = useState('All'); // 'All' | 'Partial' | 'Pending'
 
     // Collection Modal State
@@ -1232,13 +1126,12 @@ export const DueBillsScreen = () => {
 
     useEffect(() => {
         loadData();
-        AdminApi.getBranches().then(b => setBranches(b || [])).catch(() => {});
-    }, [presetRange, isConsolidated, effectiveBranchId, branchFilter, customDates?.start, customDates?.end]);
+    }, [presetRange, isConsolidated, effectiveBranchId, customDates?.start, customDates?.end]);
 
     const loadData = async () => {
         try {
             setLoading(true);
-            const bId = branchFilter !== 'All' ? branchFilter : (isConsolidated && isAdmin ? null : effectiveBranchId);
+            const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
             const params = {
                 preset: presetRange,
                 branchId: bId || undefined
@@ -1304,7 +1197,6 @@ export const DueBillsScreen = () => {
     // Filter Logic
     const filteredBills = useMemo(() => {
         return dueBills.filter(b => {
-            if (branchFilter !== 'All' && b.branchId && b.branchId !== branchFilter) return false;
             if (statusFilter === 'Partial' && b.status !== 'Partial') return false;
             if (statusFilter === 'Pending' && b.status !== 'Pending') return false;
 
@@ -1320,7 +1212,7 @@ export const DueBillsScreen = () => {
 
             return true;
         });
-    }, [dueBills, branchFilter, statusFilter, searchQuery]);
+    }, [dueBills, statusFilter, searchQuery]);
 
     const totalDue = filteredBills.reduce((sum, b) => sum + (Number(b.balanceDue) || 0), 0);
     const totalPaid = filteredBills.reduce((sum, b) => sum + (Number(b.totalPaid) || 0), 0);
@@ -1438,20 +1330,6 @@ export const DueBillsScreen = () => {
                     </div>
 
                     <div className="flex items-center gap-3">
-                        {/* Branch Selector */}
-                        <div className="relative min-w-[160px]">
-                            <select
-                                value={branchFilter}
-                                onChange={(e) => setBranchFilter(e.target.value)}
-                                className="w-full pl-3 pr-8 py-2 text-xs font-bold rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 outline-none cursor-pointer"
-                            >
-                                <option value="All">All Facilities / Branches</option>
-                                {branches.map(b => (
-                                    <option key={b.branchId || b.id} value={b.branchId || b.id}>{b.name}</option>
-                                ))}
-                            </select>
-                        </div>
-
                         {/* Search Input */}
                         <div className="relative min-w-[220px]">
                             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
@@ -1723,6 +1601,7 @@ export const DueBillsScreen = () => {
                 onClose={() => setIsPrintSummaryOpen(false)}
                 title="Patient Due Bills & Balances Report"
                 timeRange={presetRange}
+                dateRangeText={presetRange === 'custom' ? `${customDates?.start || ''} to ${customDates?.end || ''}` : presetRange}
                 columns={[
                     { key: 'token', label: 'Token' },
                     { key: 'patientName', label: 'Patient Name' },
@@ -1750,7 +1629,6 @@ export const PendingReceivablesScreen = () => {
     const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
     const [partnerSummaries, setPartnerSummaries] = useState([]);
     const [allBills, setAllBills] = useState([]);
-    const [branches, setBranches] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedPartner, setSelectedPartner] = useState(null);
     const [selectedBillIds, setSelectedBillIds] = useState([]);
@@ -1767,21 +1645,19 @@ export const PendingReceivablesScreen = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
     const [doctorFilter, setDoctorFilter] = useState('All');
-    const [dateRange, setDateRange] = useState('All Time');
-    const [branchFilter, setBranchFilter] = useState('All');
     const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
 
     useEffect(() => {
         loadData();
-        AdminApi.getBranches().then(b => setBranches(b || [])).catch(() => {});
     }, [presetRange, isConsolidated, effectiveBranchId, customDates?.start, customDates?.end]);
 
     const loadData = async () => {
         try {
             setLoading(true);
+            const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
             const [summaries, bills] = await Promise.all([
-                FinanceApi.getPartnerReceivablesSummary(),
-                FinanceApi.getReceivables('partner')
+                FinanceApi.getPartnerReceivablesSummary(bId),
+                FinanceApi.getReceivables('partner', bId)
             ]);
             setPartnerSummaries(summaries || []);
             setAllBills(bills || []);
@@ -2011,7 +1887,7 @@ export const PendingReceivablesScreen = () => {
                 </div>
             </div>
 
-            {/* Comprehensive Multi-Dimensional Filters Bar */}
+            {/* Multi-Dimensional Filters Bar */}
             <FinanceFilterBar
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
@@ -2022,13 +1898,6 @@ export const PendingReceivablesScreen = () => {
                 doctorFilter={doctorFilter}
                 onDoctorChange={setDoctorFilter}
                 doctorOptions={doctorOptions}
-                branchFilter={branchFilter}
-                onBranchChange={setBranchFilter}
-                branches={branches}
-                dateRange={dateRange}
-                onDateRangeChange={setDateRange}
-                customDates={customDates}
-                onCustomDatesChange={setCustomDates}
             />
 
             <div className="synos-dept-card rounded-2xl overflow-hidden">
@@ -2263,12 +2132,11 @@ export const PendingReceivablesScreen = () => {
                 slotId="summary_bills_daybook"
                 title="Institutional & Referral Partner Receivables Ledger"
                 subtitle="B2B credit balances, aging distribution, and recovery liabilities"
-                dateRangeText={dateRange === 'Custom Range' ? `${customDates.start} to ${customDates.end}` : dateRange}
+                dateRangeText={presetRange === 'custom' ? `${customDates?.start || ''} to ${customDates?.end || ''}` : presetRange}
                 categoryLabel="RECEIVABLES LEDGER AUDIT"
                 filterTags={[
                     statusFilter !== 'All' ? `Status: ${statusFilter}` : null,
                     doctorFilter !== 'All' ? `Doctor / Referrer: ${doctorFilter}` : null,
-                    branchFilter !== 'All' ? `Branch: ${branches.find(b => (b.branchId || b.id) === branchFilter)?.name || branchFilter}` : null,
                     searchQuery ? `Search: "${searchQuery}"` : null
                 ].filter(Boolean)}
                 kpis={[
@@ -2319,12 +2187,10 @@ export const VisitCorrectionsScreen = () => {
     const { user } = useAuth();
     const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
     const [corrections, setCorrections] = useState([]);
-    const [branches, setBranches] = useState([]);
     const [loading, setLoading] = useState(true);
 
     // Filters
     const [searchQuery, setSearchQuery] = useState('');
-    const [branchFilter, setBranchFilter] = useState('All');
     const [shiftFilter, setShiftFilter] = useState('All'); // 'All' | 'Upward' | 'Downward' | 'Zero'
 
     // Details Modal State
@@ -2339,13 +2205,12 @@ export const VisitCorrectionsScreen = () => {
 
     useEffect(() => {
         loadData();
-        AdminApi.getBranches().then(b => setBranches(b || [])).catch(() => {});
-    }, [presetRange, isConsolidated, effectiveBranchId, branchFilter, customDates?.start, customDates?.end]);
+    }, [presetRange, isConsolidated, effectiveBranchId, customDates?.start, customDates?.end]);
 
     const loadData = async () => {
         try {
             setLoading(true);
-            const bId = branchFilter !== 'All' ? branchFilter : (isConsolidated && isAdmin ? null : effectiveBranchId);
+            const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
             const params = {
                 preset: presetRange,
                 branchId: bId || undefined
@@ -2381,8 +2246,6 @@ export const VisitCorrectionsScreen = () => {
     // Filter Logic
     const filteredCorrections = useMemo(() => {
         return corrections.filter(c => {
-            if (branchFilter !== 'All' && c.branchId && c.branchId !== branchFilter) return false;
-            
             const diff = Number(c.differenceAmount || 0);
             if (shiftFilter === 'Upward' && diff <= 0) return false;
             if (shiftFilter === 'Downward' && diff >= 0) return false;
@@ -2400,7 +2263,7 @@ export const VisitCorrectionsScreen = () => {
 
             return true;
         });
-    }, [corrections, branchFilter, shiftFilter, searchQuery]);
+    }, [corrections, shiftFilter, searchQuery]);
 
     const totalAmendments = filteredCorrections.length;
     const netShift = filteredCorrections.reduce((sum, c) => sum + (Number(c.differenceAmount) || 0), 0);
@@ -2529,20 +2392,6 @@ export const VisitCorrectionsScreen = () => {
                     </div>
 
                     <div className="flex items-center gap-3">
-                        {/* Branch Selector */}
-                        <div className="relative min-w-[160px]">
-                            <select
-                                value={branchFilter}
-                                onChange={(e) => setBranchFilter(e.target.value)}
-                                className="w-full pl-3 pr-8 py-2 text-xs font-bold rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 outline-none cursor-pointer"
-                            >
-                                <option value="All">All Facilities / Branches</option>
-                                {branches.map(b => (
-                                    <option key={b.branchId || b.id} value={b.branchId || b.id}>{b.name}</option>
-                                ))}
-                            </select>
-                        </div>
-
                         {/* Search Input */}
                         <div className="relative min-w-[240px]">
                             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
@@ -2955,6 +2804,7 @@ export const VisitCorrectionsScreen = () => {
                 onClose={() => setIsPrintSummaryOpen(false)}
                 title="Visit Revision & Correction Audit Report"
                 timeRange={presetRange}
+                dateRangeText={presetRange === 'custom' ? `${customDates?.start || ''} to ${customDates?.end || ''}` : presetRange}
                 columns={[
                     { key: 'visitToken', label: 'Token' },
                     { key: 'patientName', label: 'Patient Name' },
@@ -2977,7 +2827,7 @@ export const VisitCorrectionsScreen = () => {
 };
 
 export const CollectionHistoryScreen = () => {
-    const { presetRange, isConsolidated, effectiveBranchId } = useGlobalFilter();
+    const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -2993,18 +2843,17 @@ export const CollectionHistoryScreen = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [paymentModeFilter, setPaymentModeFilter] = useState('All');
     const [sourceFilter, setSourceFilter] = useState('All');
-    const [dateRange, setDateRange] = useState(() => presetToLabel[presetRange] || 'This Month');
-    const [customDates, setCustomDates] = useState({ start: '', end: '' });
     const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
 
     useEffect(() => {
         loadHistory();
-    }, [isConsolidated, effectiveBranchId, presetRange]);
+    }, [isConsolidated, effectiveBranchId, presetRange, customDates?.start, customDates?.end]);
 
     const loadHistory = async () => {
         try {
             setLoading(true);
-            const data = await FinanceApi.getRevenueHistory();
+            const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
+            const data = await FinanceApi.getRevenueHistory(bId);
             setHistory(data || []);
         } catch (err) {
             console.error("Failed to load collection history:", err);
@@ -3031,39 +2880,6 @@ export const CollectionHistoryScreen = () => {
             if (sourceFilter === 'Counter' && (src.includes('partner') || src.includes('corporate') || src.includes('insurance'))) return false;
             if (sourceFilter === 'Corporate' && !src.includes('corporate')) return false;
             if (sourceFilter === 'Insurance' && !src.includes('insurance')) return false;
-        }
-        if (dateRange !== 'All Time') {
-            const d = new Date(row.occurredAt);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            if (dateRange === 'Today' && d < today) return false;
-            if (dateRange === 'Yesterday') {
-                const y = new Date(today); y.setDate(y.getDate() - 1);
-                if (d < y || d >= today) return false;
-            }
-            if (dateRange === 'This Week') {
-                const w = new Date(today); w.setDate(w.getDate() - 7);
-                if (d < w) return false;
-            }
-            if (dateRange === 'This Month') {
-                const m = new Date(today.getFullYear(), today.getMonth(), 1);
-                if (d < m) return false;
-            }
-            if (dateRange === 'This Quarter') {
-                const currentQuarter = Math.floor(today.getMonth() / 3);
-                const quarterStart = new Date(today.getFullYear(), currentQuarter * 3, 1);
-                if (d < quarterStart) return false;
-            }
-            if (dateRange === 'This Year') {
-                const yearStart = new Date(today.getFullYear(), 0, 1);
-                if (d < yearStart) return false;
-            }
-            if (dateRange === 'Custom Range' && customDates.start && customDates.end) {
-                const start = new Date(customDates.start);
-                const end = new Date(customDates.end);
-                end.setHours(23, 59, 59, 999);
-                if (d < start || d > end) return false;
-            }
         }
         return true;
     });
@@ -3148,7 +2964,7 @@ export const CollectionHistoryScreen = () => {
                 </div>
             </div>
 
-            {/* Comprehensive Multi-Dimensional Filters Bar */}
+            {/* Multi-Dimensional Filters Bar */}
             <FinanceFilterBar
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
@@ -3159,10 +2975,6 @@ export const CollectionHistoryScreen = () => {
                 categoryFilter={paymentModeFilter}
                 onCategoryChange={setPaymentModeFilter}
                 categoryOptions={['All', 'Cash', 'UPI', 'BankTransfer', 'Card']}
-                dateRange={dateRange}
-                onDateRangeChange={handleDateRangeChange}
-                customDates={customDates}
-                onCustomDatesChange={setCustomDates}
             />
 
             {/* Collection History Table */}
@@ -3217,7 +3029,7 @@ export const CollectionHistoryScreen = () => {
                 slotId="summary_bills_daybook"
                 title="Revenue Collection & Cashier Receipts Ledger"
                 subtitle="Itemized settlement audit trail across counter, digital, and institutional receipts"
-                dateRangeText={dateRange === 'Custom Range' ? `${customDates.start} to ${customDates.end}` : dateRange}
+                dateRangeText={presetRange === 'custom' ? `${customDates?.start || ''} to ${customDates?.end || ''}` : presetRange}
                 categoryLabel="COLLECTION AUDIT TRAIL"
                 filterTags={[
                     sourceFilter !== 'All' ? `Source: ${sourceFilter}` : null,
@@ -3252,12 +3064,10 @@ export const CancellationsRefundsScreen = () => {
     const { user } = useAuth();
     const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
     const [cancellations, setCancellations] = useState([]);
-    const [branches, setBranches] = useState([]);
     const [loading, setLoading] = useState(true);
 
     // Filters
     const [searchQuery, setSearchQuery] = useState('');
-    const [branchFilter, setBranchFilter] = useState('All');
     const [refundFilter, setRefundFilter] = useState('All'); // 'All' | 'WithRefund' | 'WithoutRefund'
 
     // Details Modal State
@@ -3267,13 +3077,12 @@ export const CancellationsRefundsScreen = () => {
 
     useEffect(() => {
         loadData();
-        AdminApi.getBranches().then(b => setBranches(b || [])).catch(() => {});
-    }, [presetRange, isConsolidated, effectiveBranchId, branchFilter, customDates?.start, customDates?.end]);
+    }, [presetRange, isConsolidated, effectiveBranchId, customDates?.start, customDates?.end]);
 
     const loadData = async () => {
         try {
             setLoading(true);
-            const bId = branchFilter !== 'All' ? branchFilter : (isConsolidated && isAdmin ? null : effectiveBranchId);
+            const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
             const params = {
                 preset: presetRange,
                 branchId: bId || undefined
@@ -3295,8 +3104,6 @@ export const CancellationsRefundsScreen = () => {
     // Filter Logic
     const filteredCancellations = useMemo(() => {
         return cancellations.filter(c => {
-            if (branchFilter !== 'All' && c.branchId && c.branchId !== branchFilter) return false;
-
             const hasRef = Number(c.refundedAmount || 0) > 0;
             if (refundFilter === 'WithRefund' && !hasRef) return false;
             if (refundFilter === 'WithoutRefund' && hasRef) return false;
@@ -3314,7 +3121,7 @@ export const CancellationsRefundsScreen = () => {
 
             return true;
         });
-    }, [cancellations, branchFilter, refundFilter, searchQuery]);
+    }, [cancellations, refundFilter, searchQuery]);
 
     const totalCancelled = filteredCancellations.length;
     const totalRefunded = filteredCancellations.reduce((sum, c) => sum + (Number(c.refundedAmount) || 0), 0);
@@ -3434,22 +3241,6 @@ export const CancellationsRefundsScreen = () => {
                     </div>
 
                     <div className="flex items-center gap-2">
-                        {branches.length > 0 && (
-                            <div className="shrink-0">
-                                <select
-                                    value={branchFilter}
-                                    onChange={(e) => setBranchFilter(e.target.value)}
-                                    aria-label="Filter cancellations by facility branch"
-                                    className="px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white outline-none focus:border-synos-primary transition-all shadow-xs"
-                                >
-                                    <option value="All">All Facilities</option>
-                                    {branches.map(b => (
-                                        <option key={b.branchId || b.id} value={b.branchId || b.id}>{b.name}</option>
-                                    ))}
-                                </select>
-                            </div>
-                        )}
-
                         <div className="relative flex-1 sm:w-64">
                             <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                             <input
@@ -3667,10 +3458,9 @@ export const CancellationsRefundsScreen = () => {
                 slotId="summary_cancellations_daybook"
                 title="Cancelled Visits & Customer Refunds Ledger"
                 subtitle="Forensic settlement ledger of all revoked orders, visit voidings, and cash/digital refunds"
-                dateRangeText={presetRange}
+                dateRangeText={presetRange === 'custom' ? `${customDates?.start || ''} to ${customDates?.end || ''}` : presetRange}
                 categoryLabel="CANCELLATION & REFUND AUDIT"
                 filterTags={[
-                    branchFilter !== 'All' ? `Branch: ${branchFilter}` : null,
                     refundFilter !== 'All' ? `Refunds: ${refundFilter}` : null,
                     searchQuery ? `Search: "${searchQuery}"` : null
                 ].filter(Boolean)}
