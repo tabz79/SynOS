@@ -81,7 +81,7 @@ export const DepartmentBreakdownCard = ({
                     </div>
                 </div>
                 <div className="flex items-baseline gap-1.5 shrink-0">
-                    <span className="text-xl sm:text-2xl lg:text-[26px] font-black text-slate-900 dark:text-white tabular-nums tracking-tight leading-none inline-block transform scale-y-[1.1] origin-right">
+                    <span className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
                         ₹{formatInr(totalAmount)}
                     </span>
                     <span className="text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-zinc-400 tabular-nums">
@@ -96,7 +96,7 @@ export const DepartmentBreakdownCard = ({
                 <div className="flex items-center text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-zinc-500 pb-1 border-b border-slate-100 dark:border-zinc-800 shrink-0">
                     <div className="w-[180px] sm:w-[210px] lg:w-[230px] pl-0.5 shrink-0">{colHeader}</div>
                     <div className="flex-1 px-4 text-left">Volume Share & Workload</div>
-                    <div className="w-[90px] sm:w-[110px] text-right pr-1 shrink-0">Billed</div>
+                    <div className="w-[110px] sm:w-[130px] lg:w-[145px] text-right pr-2 shrink-0">Billed</div>
                 </div>
 
                 {/* 4 Rows: Each is flex-1 with min-h-0 so all 4 fit mathematically */}
@@ -144,9 +144,9 @@ export const DepartmentBreakdownCard = ({
                                     </span>
                                 </div>
 
-                                {/* Column 3: Billed Currency (Anchored cleanly on Right) */}
-                                <div className="w-[90px] sm:w-[110px] text-right pr-1 shrink-0 min-w-0 truncate">
-                                    <span className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm lg:text-base tabular-nums tracking-normal">
+                                {/* Column 3: Billed Currency (BOLD, LARGE, PROMINENT NUMBERS!) */}
+                                <div className="w-[110px] sm:w-[130px] lg:w-[145px] text-right pr-2 shrink-0 min-w-0">
+                                    <span className="font-extrabold text-slate-900 dark:text-white text-base sm:text-lg lg:text-xl tabular-nums tracking-tight">
                                         ₹{formatInr(billed)}
                                     </span>
                                 </div>
@@ -194,7 +194,7 @@ export const ActualCashCard = ({
                             Actual Cash (Desk Collections)
                         </h3>
                     </div>
-                    <p className="text-3xl sm:text-4xl lg:text-[40px] xl:text-[44px] font-black text-slate-900 dark:text-white tracking-tight leading-none my-1 tabular-nums inline-block transform scale-y-[1.12] origin-left">
+                    <p className="text-3xl sm:text-4xl lg:text-[40px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-1 tabular-nums">
                         ₹{formatInr(total)}
                     </p>
                     <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400">
@@ -202,7 +202,7 @@ export const ActualCashCard = ({
                     </span>
                 </div>
 
-                {/* Right Part: Fluid Cash & Online Channels (STRETCHES ACROSS ENTIRE WIDTH - CLOSES MARKER 5) */}
+                {/* Right Part: Fluid Cash & Online Channels (PROMINENT LARGE AMOUNTS & CLEAR HIERARCHY!) */}
                 <div className="flex-1 md:border-l md:border-slate-100 dark:md:border-zinc-800 md:pl-5 lg:pl-7 flex flex-col justify-center space-y-2.5 min-w-0">
                     {/* Row 1: Cash (Physical Desk) */}
                     <div className="flex items-center gap-3 w-full">
@@ -220,11 +220,11 @@ export const ActualCashCard = ({
                                 style={{ width: `${Math.min(100, Math.max(cashAmt > 0 ? 5 : 0, cashPct))}%` }}
                             />
                         </div>
-                        <div className="w-[110px] sm:w-[130px] shrink-0 text-right flex items-baseline justify-end gap-1.5">
-                            <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white tabular-nums tracking-normal">
+                        <div className="w-[150px] sm:w-[180px] shrink-0 text-right flex items-baseline justify-end gap-2">
+                            <span className="text-base sm:text-lg lg:text-xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
                                 ₹{formatInr(cashAmt)}
                             </span>
-                            <span className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 tabular-nums">
+                            <span className="text-xs sm:text-sm font-bold text-slate-500 dark:text-zinc-400 tabular-nums">
                                 ({cashPct.toFixed(1)}%)
                             </span>
                         </div>
@@ -246,11 +246,11 @@ export const ActualCashCard = ({
                                 style={{ width: `${Math.min(100, Math.max(onlineAmt > 0 ? 5 : 0, onlinePct))}%` }}
                             />
                         </div>
-                        <div className="w-[110px] sm:w-[130px] shrink-0 text-right flex items-baseline justify-end gap-1.5">
-                            <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white tabular-nums tracking-normal">
+                        <div className="w-[150px] sm:w-[180px] shrink-0 text-right flex items-baseline justify-end gap-2">
+                            <span className="text-base sm:text-lg lg:text-xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
                                 ₹{formatInr(onlineAmt)}
                             </span>
-                            <span className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 tabular-nums">
+                            <span className="text-xs sm:text-sm font-bold text-slate-500 dark:text-zinc-400 tabular-nums">
                                 ({onlinePct.toFixed(1)}%)
                             </span>
                         </div>
@@ -270,60 +270,74 @@ export const ConcessionsCard = ({
     const amt = Number(concessionsAmount) || 0;
     const rate = amt > 0 ? (Number(concessionsRate) || 0) : 0;
 
-    const statusConfig = rate <= 15 
-        ? { label: "Standard (<15%)", bg: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60" }
-        : rate <= 25 
-            ? { label: "Moderate (15-25%)", bg: "bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 border-amber-200 dark:border-amber-800/60" }
-            : { label: "Elevated (>25%)", bg: "bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300 border-rose-200 dark:border-rose-800/60" };
+    const radius = 36;
+    const circumference = 2 * Math.PI * radius;
+    const strokeDashoffset = circumference * (1 - Math.min(100, Math.max(0, rate)) / 100);
 
     return (
         <div 
             onClick={onNavigate}
-            className="p-4 sm:p-4.5 rounded-[22px] bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-[0_4px_20px_rgba(15,35,60,0.06)] flex items-center cursor-pointer hover:border-synos-primary/60 transition-all group h-full"
+            className="p-4 sm:p-4.5 rounded-[22px] bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-[0_4px_20px_rgba(15,35,60,0.06)] flex items-center justify-between cursor-pointer hover:border-synos-primary/60 transition-all group h-full"
         >
-            <div className="flex items-center w-full gap-4">
-                {/* Left side: Icon, Title, and Big Amount */}
-                <div className="w-[160px] sm:w-[180px] shrink-0 flex flex-col justify-center space-y-1">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-[10px] bg-[#FFF1F2] text-[#E11D48] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                            <Percent size={18} strokeWidth={2.4} />
-                        </div>
-                        <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal">
-                            Concessions Given
-                        </h3>
+            {/* Left Column: Icon + Title + Numeral + Subtitle */}
+            <div className="flex flex-col justify-center space-y-1.5 flex-1 min-w-0 pr-3">
+                <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-[10px] bg-[#FFF1F2] text-[#E11D48] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                        <Percent size={18} strokeWidth={2.4} />
                     </div>
-                    <p className="text-3xl sm:text-4xl lg:text-[40px] xl:text-[44px] font-black text-slate-900 dark:text-white tracking-tight leading-none my-1 tabular-nums inline-block transform scale-y-[1.12] origin-left">
-                        ₹{formatInr(amt)}
-                    </p>
-                    <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400">
-                        Total tariff concessions given
-                    </span>
+                    <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal">
+                        Concessions Given
+                    </h3>
                 </div>
 
-                {/* Right side: Fluid Concession Impact Meter (STRETCHES ACROSS ENTIRE WIDTH - CLOSES MARKER 6) */}
-                <div className="flex-1 border-l border-slate-100 dark:border-zinc-800 pl-4 sm:pl-5 flex flex-col justify-center space-y-2 min-w-0">
-                    <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs font-bold text-slate-700 dark:text-zinc-300">
-                            Concession Burden
-                        </span>
-                        <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", statusConfig.bg)}>
-                            {statusConfig.label}
-                        </span>
-                    </div>
+                <div>
+                    <p className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-1 tabular-nums">
+                        ₹{formatInr(amt)}
+                    </p>
+                    <p className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400 mt-0.5">
+                        Total tariff concessions given
+                    </p>
+                </div>
+            </div>
 
-                    <div className="h-[18px] sm:h-[20px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner w-full">
-                        <div 
-                            className="h-full rounded-full bg-gradient-to-r from-[#FCA5A5] via-[#FDA4AF] to-[#FECDD3] transition-all duration-500 shadow-[0_2px_8px_rgba(251,113,133,0.25)]"
-                            style={{ width: `${Math.min(100, Math.max(5, rate))}%` }}
-                        />
-                    </div>
-
-                    <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-zinc-400">
-                        <span>Tariff Impact</span>
-                        <span className="text-sm font-black text-rose-600 dark:text-rose-400 tabular-nums">
-                            {rate.toFixed(1)}% Discounted
-                        </span>
-                    </div>
+            {/* Right Side: Chunkier, Fatter Circular Donut Ring Gauge (matches Payroll) */}
+            <div className="relative w-[92px] h-[92px] sm:w-[102px] sm:h-[102px] flex items-center justify-center shrink-0">
+                <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                    <defs>
+                        <linearGradient id="concessionDonutGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stopColor="#FCA5A5" />
+                            <stop offset="100%" stopColor="#FB7185" />
+                        </linearGradient>
+                    </defs>
+                    <circle
+                        cx="50"
+                        cy="50"
+                        r={radius}
+                        stroke="#FFE4E6"
+                        className="dark:stroke-rose-950/40"
+                        strokeWidth="12"
+                        fill="none"
+                    />
+                    <circle
+                        cx="50"
+                        cy="50"
+                        r={radius}
+                        stroke="url(#concessionDonutGrad)"
+                        strokeWidth="12"
+                        strokeDasharray={circumference}
+                        strokeDashoffset={strokeDashoffset}
+                        strokeLinecap="round"
+                        fill="none"
+                        className="transition-all duration-700"
+                    />
+                </svg>
+                <div className="absolute flex flex-col items-center justify-center text-center">
+                    <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none">
+                        {rate.toFixed(1)}%
+                    </span>
+                    <span className="text-[9px] font-bold text-rose-500 dark:text-rose-400 uppercase tracking-tighter mt-0.5">
+                        Concession
+                    </span>
                 </div>
             </div>
         </div>
@@ -672,52 +686,42 @@ export const FinanceOverviewDeck = ({
 
     return (
         <div className="flex-1 min-h-0 flex flex-col justify-start gap-3 sm:gap-3.5 lg:gap-4">
-            {/* ROW 1: HERO CONTROL DECK: 2 BALANCED PODS (IOS INSPIRED SPLIT SLIDER & SEPARATED TALL NUMERAL) */}
+            {/* ROW 1: HERO CONTROL DECK: 2 BALANCED PODS (IOS INSPIRED SPLIT SLIDER & CLEAN TOTAL BILLED) */}
             <div className="flex-1 min-h-[105px] p-4 sm:p-5 rounded-[22px] bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-[0_4px_20px_rgba(15,35,60,0.06)] grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-center">
                 
-                {/* Section 1 (5 Cols): The Herd on Left + Separated TALL Numeral Occupying Vertical & Horizontal Space */}
-                <div className="lg:col-span-5 flex items-center justify-between gap-4 min-w-0 pr-0 lg:pr-4">
-                    {/* The Herd: 3D Squircle Icon + Title + Bills Processed + Net formula */}
-                    <div className="flex items-center gap-3.5 sm:gap-4 shrink-0 min-w-0">
-                        <div className="w-[56px] h-[56px] sm:w-[62px] sm:h-[62px] rounded-[18px] bg-gradient-to-b from-[#EBF5FF] to-[#D6EBFE] border border-white/90 dark:border-white/10 shadow-[0_6px_16px_rgba(37,99,235,0.14),inset_0_2px_2px_#FFFFFF] flex items-center justify-center text-[#1C6CF2] dark:text-sky-400 shrink-0">
-                            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                                <rect x="2" y="4" width="20" height="16" rx="3" />
-                                <line x1="2" y1="10" x2="22" y2="10" />
-                                <line x1="6" y1="15" x2="10" y2="15" />
-                                <circle cx="17" cy="15" r="1.5" fill="currentColor" />
-                            </svg>
-                        </div>
-
-                        <div className="space-y-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                                <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-normal">
-                                    Total Amount Billed
-                                </h3>
-                                <span className="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]/70 dark:bg-emerald-950/50 dark:text-emerald-400 dark:border-emerald-800/60 shadow-2xs">
-                                    {totalBillsCount} Bills Processed
-                                </span>
-                            </div>
-                            <p className="text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-zinc-400 truncate">
-                                {concessionsAmount > 0 
-                                    ? `Net Billed (₹${formatInr(billedRevenue + concessionsAmount)} - ₹${formatInr(concessionsAmount)})`
-                                    : 'Net Clinical Tariff Billed'}
-                            </p>
-                        </div>
+                {/* Section 1 (4 Cols): Total Amount Billed Hero Metric */}
+                <div className="lg:col-span-4 flex items-center gap-4 min-w-0 pr-0 lg:pr-2">
+                    <div className="w-[64px] h-[64px] sm:w-[72px] sm:h-[72px] rounded-[18px] bg-gradient-to-b from-[#EBF5FF] to-[#D6EBFE] border border-white/90 dark:border-white/10 shadow-[0_6px_16px_rgba(37,99,235,0.14)] flex items-center justify-center text-[#1C6CF2] dark:text-sky-400 shrink-0">
+                        <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="2" y="4" width="20" height="16" rx="3" />
+                            <line x1="2" y1="10" x2="22" y2="10" />
+                            <line x1="6" y1="15" x2="10" y2="15" />
+                            <circle cx="17" cy="15" r="1.5" fill="currentColor" />
+                        </svg>
                     </div>
 
-                    {/* Separated 29452 Numeral: TALL, NOT Extra Bold, Occupying Vertical & Horizontal Space */}
-                    <div className="flex-1 flex flex-col items-end justify-center min-w-0 pl-3">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 block mb-0.5">
-                            Total Billed
-                        </span>
-                        <div className="text-4xl sm:text-5xl lg:text-[56px] xl:text-[64px] font-normal sm:font-medium tracking-tight text-slate-900 dark:text-white tabular-nums leading-none inline-block transform scale-y-[1.25] origin-right">
-                            ₹{formatInr(billedRevenue)}
+                    <div className="space-y-1 min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal">
+                                Total Amount Billed
+                            </h3>
+                            <span className="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]/70 dark:bg-emerald-950/50 dark:text-emerald-400 shadow-2xs">
+                                {totalBillsCount} Bills Processed
+                            </span>
                         </div>
+                        <p className="text-3xl sm:text-4xl lg:text-[42px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-1 tabular-nums">
+                            ₹{formatInr(billedRevenue)}
+                        </p>
+                        <p className="text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-zinc-400 truncate">
+                            {concessionsAmount > 0 
+                                ? `Net Billed (₹${formatInr(billedRevenue + concessionsAmount)} Gross - ₹${formatInr(concessionsAmount)} Concessions)`
+                                : 'Net Clinical Tariff Billed'}
+                        </p>
                     </div>
                 </div>
 
-                {/* Section 2 (7 Cols): Doctor Payouts vs Receivables & Dues (Reclaims Full Space, Fatter Scaled Slider, Clear Hierarchy) */}
-                <div className="lg:col-span-7 lg:border-l lg:border-slate-100 dark:lg:border-zinc-800 lg:pl-6 xl:pl-8 flex flex-col justify-center space-y-3 min-w-0">
+                {/* Section 2 (8 Cols): Doctor Payouts vs Receivables & Dues (Chunky Fatter Slider, Zero Text Inside!) */}
+                <div className="lg:col-span-8 lg:border-l lg:border-slate-100 dark:lg:border-zinc-800 lg:pl-6 xl:pl-8 flex flex-col justify-center space-y-3 min-w-0">
                     <div className="flex items-center justify-between">
                         <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal">
                             Doctor Payouts vs Receivables & Dues
@@ -730,37 +734,25 @@ export const FinanceOverviewDeck = ({
                         </div>
                     </div>
 
-                    {/* Fatter, Scaled iOS Split Slider with Elevated Circular Knob & Pastel Gradients */}
-                    <div className="relative h-[26px] sm:h-[30px] lg:h-[32px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 flex items-center overflow-visible shadow-inner">
+                    {/* Chunkier, Fatter iOS Split Slider with Elevated Circular Knob - ZERO TEXT INSIDE */}
+                    <div className="relative h-[34px] sm:h-[38px] lg:h-[40px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 flex items-center overflow-visible shadow-inner">
                         <div 
-                            className="h-full bg-gradient-to-r from-[#60A5FA] via-[#7BB3F0] to-[#93C5FD] rounded-l-full transition-all duration-500 flex items-center pl-3 overflow-hidden shadow-[0_2px_8px_rgba(96,165,250,0.25)]"
+                            className="h-full bg-gradient-to-r from-[#60A5FA] via-[#7BB3F0] to-[#93C5FD] rounded-l-full transition-all duration-500 shadow-[0_2px_8px_rgba(96,165,250,0.25)]"
                             style={{ width: `${totalSplitSum > 0 ? payoutsShare : 0}%` }}
-                        >
-                            {payoutsShare > 15 && (
-                                <span className="text-[11px] font-bold text-slate-800 dark:text-slate-900 drop-shadow-xs truncate select-none">
-                                    Commissions ({payoutsShare}%)
-                                </span>
-                            )}
-                        </div>
+                        />
                         <div 
-                            className="h-full bg-gradient-to-r from-[#FCA5A5] via-[#FDA4AF] to-[#FECDD3] rounded-r-full transition-all duration-500 flex items-center justify-end pr-3 overflow-hidden shadow-[0_2px_8px_rgba(253,164,175,0.25)]"
+                            className="h-full bg-gradient-to-r from-[#FCA5A5] via-[#FDA4AF] to-[#FECDD3] rounded-r-full transition-all duration-500 shadow-[0_2px_8px_rgba(253,164,175,0.25)]"
                             style={{ width: `${totalSplitSum > 0 ? duesShare : 100}%` }}
-                        >
-                            {duesShare > 15 && (
-                                <span className="text-[11px] font-bold text-slate-800 dark:text-slate-900 drop-shadow-xs truncate select-none">
-                                    Receivables & Dues ({duesShare}%)
-                                </span>
-                            )}
-                        </div>
+                        />
                         <div 
-                            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white dark:bg-zinc-100 shadow-[0_3px_12px_rgba(15,35,60,0.2),0_0_0_2.5px_#FFFFFF] border border-slate-100 pointer-events-none transition-all duration-500 z-10 flex items-center justify-center"
+                            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white dark:bg-zinc-100 shadow-[0_3px_10px_rgba(15,35,60,0.18),0_0_0_2px_#FFFFFF] border border-slate-100 pointer-events-none transition-all duration-500 z-10 flex items-center justify-center"
                             style={{ left: `${totalSplitSum > 0 ? payoutsShare : (doctorPayoutsVal > 0 ? 50 : 0)}%` }}
                         >
-                            <div className="w-2 h-2 rounded-full bg-slate-300"></div>
+                            <div className="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
                         </div>
                     </div>
 
-                    {/* Two Channel Stat Pods Below: Vertically Scaled Tall Numerals (Taller, Not Extra Bold) Aligned Under Each Side */}
+                    {/* Two Channel Stat Pods Below: Bold Numerical Hierarchy Aligned Under Each Side */}
                     <div className="flex items-center justify-between pt-0.5">
                         {/* Left Stat Pod: Doctor Payouts */}
                         <div className="flex items-center gap-3">
@@ -769,7 +761,7 @@ export const FinanceOverviewDeck = ({
                             </div>
                             <div>
                                 <div className="flex items-baseline gap-2">
-                                    <span className="text-2xl sm:text-3xl lg:text-[32px] xl:text-[36px] font-normal sm:font-medium text-slate-900 dark:text-white tabular-nums tracking-tight leading-none inline-block transform scale-y-[1.2] origin-left">
+                                    <span className="text-xl sm:text-2xl lg:text-[26px] font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
                                         ₹{formatInr(doctorPayoutsVal)}
                                     </span>
                                     <span className="text-xs sm:text-sm font-bold text-[#1C6CF2] dark:text-sky-400 bg-[#EBF5FF] dark:bg-sky-950/60 px-2 py-0.5 rounded-md border border-sky-100 dark:border-sky-800/40 tabular-nums">
@@ -777,7 +769,7 @@ export const FinanceOverviewDeck = ({
                                     </span>
                                 </div>
                                 <span className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 font-bold block mt-0.5">
-                                    Doctor Commissions (Referral Payouts)
+                                    Doctor Commissions
                                 </span>
                             </div>
                         </div>
@@ -789,12 +781,12 @@ export const FinanceOverviewDeck = ({
                                     <span className="text-xs sm:text-sm font-bold text-[#E11D48] dark:text-rose-400 bg-[#FFF1F2] dark:bg-rose-950/60 px-2 py-0.5 rounded-md border border-rose-100 dark:border-rose-800/40 tabular-nums">
                                         {totalSplitSum > 0 ? duesShare : 0}%
                                     </span>
-                                    <span className="text-2xl sm:text-3xl lg:text-[32px] xl:text-[36px] font-normal sm:font-medium text-slate-900 dark:text-white tabular-nums tracking-tight leading-none inline-block transform scale-y-[1.2] origin-right">
+                                    <span className="text-xl sm:text-2xl lg:text-[26px] font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
                                         ₹{formatInr(totalReceivablesAndDues)}
                                     </span>
                                 </div>
                                 <span className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 font-bold block mt-0.5">
-                                    Receivables & Desk Dues (Outstanding)
+                                    Receivables & Desk Dues
                                 </span>
                             </div>
                             <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-[14px] bg-[#FFF1F2] text-[#FB7185] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs">

@@ -109927,7 +109927,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
               className: "flex items-baseline gap-1.5 shrink-0",
               children: [
                 r.jsxs("span", {
-                  className: "text-xl sm:text-2xl lg:text-[26px] font-black text-slate-900 dark:text-white tabular-nums tracking-tight leading-none inline-block transform scale-y-[1.1] origin-right",
+                  className: "text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight",
                   children: [
                     "\u20B9",
                     g(a)
@@ -109962,7 +109962,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                   children: "Volume Share & Workload"
                 }),
                 r.jsx("div", {
-                  className: "w-[90px] sm:w-[110px] text-right pr-1 shrink-0",
+                  className: "w-[110px] sm:w-[130px] lg:w-[145px] text-right pr-2 shrink-0",
                   children: "Billed"
                 })
               ]
@@ -110023,9 +110023,9 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                       ]
                     }),
                     r.jsx("div", {
-                      className: "w-[90px] sm:w-[110px] text-right pr-1 shrink-0 min-w-0 truncate",
+                      className: "w-[110px] sm:w-[130px] lg:w-[145px] text-right pr-2 shrink-0 min-w-0",
                       children: r.jsxs("span", {
-                        className: "font-bold text-slate-900 dark:text-white text-xs sm:text-sm lg:text-base tabular-nums tracking-normal",
+                        className: "font-extrabold text-slate-900 dark:text-white text-base sm:text-lg lg:text-xl tabular-nums tracking-tight",
                         children: [
                           "\u20B9",
                           g(m)
@@ -110069,7 +110069,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                 ]
               }),
               r.jsxs("p", {
-                className: "text-3xl sm:text-4xl lg:text-[40px] xl:text-[44px] font-black text-slate-900 dark:text-white tracking-tight leading-none my-1 tabular-nums inline-block transform scale-y-[1.12] origin-left",
+                className: "text-3xl sm:text-4xl lg:text-[40px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-1 tabular-nums",
                 children: [
                   "\u20B9",
                   a(o)
@@ -110113,17 +110113,17 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                     })
                   }),
                   r.jsxs("div", {
-                    className: "w-[110px] sm:w-[130px] shrink-0 text-right flex items-baseline justify-end gap-1.5",
+                    className: "w-[150px] sm:w-[180px] shrink-0 text-right flex items-baseline justify-end gap-2",
                     children: [
                       r.jsxs("span", {
-                        className: "text-xs sm:text-sm font-bold text-slate-900 dark:text-white tabular-nums tracking-normal",
+                        className: "text-base sm:text-lg lg:text-xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight",
                         children: [
                           "\u20B9",
                           a(s)
                         ]
                       }),
                       r.jsxs("span", {
-                        className: "text-[11px] font-bold text-slate-500 dark:text-zinc-400 tabular-nums",
+                        className: "text-xs sm:text-sm font-bold text-slate-500 dark:text-zinc-400 tabular-nums",
                         children: [
                           "(",
                           c.toFixed(1),
@@ -110163,17 +110163,17 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                     })
                   }),
                   r.jsxs("div", {
-                    className: "w-[110px] sm:w-[130px] shrink-0 text-right flex items-baseline justify-end gap-1.5",
+                    className: "w-[150px] sm:w-[180px] shrink-0 text-right flex items-baseline justify-end gap-2",
                     children: [
                       r.jsxs("span", {
-                        className: "text-xs sm:text-sm font-bold text-slate-900 dark:text-white tabular-nums tracking-normal",
+                        className: "text-base sm:text-lg lg:text-xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight",
                         children: [
                           "\u20B9",
                           a(A)
                         ]
                       }),
                       r.jsxs("span", {
-                        className: "text-[11px] font-bold text-slate-500 dark:text-zinc-400 tabular-nums",
+                        className: "text-xs sm:text-sm font-bold text-slate-500 dark:text-zinc-400 tabular-nums",
                         children: [
                           "(",
                           g.toFixed(1),
@@ -110191,98 +110191,115 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
     });
   }, UMe = ({ concessionsAmount: t = 0, concessionsRate: e = 0, onNavigate: n = () => {
   } }) => {
-    const i = (o) => Math.round(Number(o) || 0).toLocaleString("en-IN"), a = Number(t) || 0, s = a > 0 && Number(e) || 0, A = s <= 15 ? {
-      label: "Standard (<15%)",
-      bg: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60"
-    } : s <= 25 ? {
-      label: "Moderate (15-25%)",
-      bg: "bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 border-amber-200 dark:border-amber-800/60"
-    } : {
-      label: "Elevated (>25%)",
-      bg: "bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300 border-rose-200 dark:border-rose-800/60"
-    };
-    return r.jsx("div", {
+    const i = (c) => Math.round(Number(c) || 0).toLocaleString("en-IN"), a = Number(t) || 0, s = a > 0 && Number(e) || 0, A = 36, o = 2 * Math.PI * A, l = o * (1 - Math.min(100, Math.max(0, s)) / 100);
+    return r.jsxs("div", {
       onClick: n,
-      className: "p-4 sm:p-4.5 rounded-[22px] bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-[0_4px_20px_rgba(15,35,60,0.06)] flex items-center cursor-pointer hover:border-synos-primary/60 transition-all group h-full",
-      children: r.jsxs("div", {
-        className: "flex items-center w-full gap-4",
-        children: [
-          r.jsxs("div", {
-            className: "w-[160px] sm:w-[180px] shrink-0 flex flex-col justify-center space-y-1",
-            children: [
-              r.jsxs("div", {
-                className: "flex items-center gap-2",
-                children: [
-                  r.jsx("div", {
-                    className: "w-8 h-8 sm:w-9 sm:h-9 rounded-[10px] bg-[#FFF1F2] text-[#E11D48] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs",
-                    children: r.jsx(eC, {
-                      size: 18,
-                      strokeWidth: 2.4
-                    })
-                  }),
-                  r.jsx("h3", {
-                    className: "text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal",
-                    children: "Concessions Given"
+      className: "p-4 sm:p-4.5 rounded-[22px] bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-[0_4px_20px_rgba(15,35,60,0.06)] flex items-center justify-between cursor-pointer hover:border-synos-primary/60 transition-all group h-full",
+      children: [
+        r.jsxs("div", {
+          className: "flex flex-col justify-center space-y-1.5 flex-1 min-w-0 pr-3",
+          children: [
+            r.jsxs("div", {
+              className: "flex items-center gap-2",
+              children: [
+                r.jsx("div", {
+                  className: "w-8 h-8 sm:w-9 sm:h-9 rounded-[10px] bg-[#FFF1F2] text-[#E11D48] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs",
+                  children: r.jsx(eC, {
+                    size: 18,
+                    strokeWidth: 2.4
                   })
-                ]
-              }),
-              r.jsxs("p", {
-                className: "text-3xl sm:text-4xl lg:text-[40px] xl:text-[44px] font-black text-slate-900 dark:text-white tracking-tight leading-none my-1 tabular-nums inline-block transform scale-y-[1.12] origin-left",
-                children: [
-                  "\u20B9",
-                  i(a)
-                ]
-              }),
-              r.jsx("span", {
-                className: "text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400",
-                children: "Total tariff concessions given"
-              })
-            ]
-          }),
-          r.jsxs("div", {
-            className: "flex-1 border-l border-slate-100 dark:border-zinc-800 pl-4 sm:pl-5 flex flex-col justify-center space-y-2 min-w-0",
-            children: [
-              r.jsxs("div", {
-                className: "flex items-center justify-between gap-2",
-                children: [
-                  r.jsx("span", {
-                    className: "text-xs font-bold text-slate-700 dark:text-zinc-300",
-                    children: "Concession Burden"
-                  }),
-                  r.jsx("span", {
-                    className: ve("text-[10px] font-bold px-2 py-0.5 rounded-full border", A.bg),
-                    children: A.label
-                  })
-                ]
-              }),
-              r.jsx("div", {
-                className: "h-[18px] sm:h-[20px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner w-full",
-                children: r.jsx("div", {
-                  className: "h-full rounded-full bg-gradient-to-r from-[#FCA5A5] via-[#FDA4AF] to-[#FECDD3] transition-all duration-500 shadow-[0_2px_8px_rgba(251,113,133,0.25)]",
-                  style: {
-                    width: `${Math.min(100, Math.max(5, s))}%`
-                  }
+                }),
+                r.jsx("h3", {
+                  className: "text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal",
+                  children: "Concessions Given"
                 })
-              }),
-              r.jsxs("div", {
-                className: "flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-zinc-400",
-                children: [
-                  r.jsx("span", {
-                    children: "Tariff Impact"
-                  }),
-                  r.jsxs("span", {
-                    className: "text-sm font-black text-rose-600 dark:text-rose-400 tabular-nums",
+              ]
+            }),
+            r.jsxs("div", {
+              children: [
+                r.jsxs("p", {
+                  className: "text-2xl sm:text-3xl lg:text-[34px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-1 tabular-nums",
+                  children: [
+                    "\u20B9",
+                    i(a)
+                  ]
+                }),
+                r.jsx("p", {
+                  className: "text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400 mt-0.5",
+                  children: "Total tariff concessions given"
+                })
+              ]
+            })
+          ]
+        }),
+        r.jsxs("div", {
+          className: "relative w-[92px] h-[92px] sm:w-[102px] sm:h-[102px] flex items-center justify-center shrink-0",
+          children: [
+            r.jsxs("svg", {
+              className: "w-full h-full -rotate-90",
+              viewBox: "0 0 100 100",
+              children: [
+                r.jsx("defs", {
+                  children: r.jsxs("linearGradient", {
+                    id: "concessionDonutGrad",
+                    x1: "0%",
+                    y1: "0%",
+                    x2: "100%",
+                    y2: "100%",
                     children: [
-                      s.toFixed(1),
-                      "% Discounted"
+                      r.jsx("stop", {
+                        offset: "0%",
+                        stopColor: "#FCA5A5"
+                      }),
+                      r.jsx("stop", {
+                        offset: "100%",
+                        stopColor: "#FB7185"
+                      })
                     ]
                   })
-                ]
-              })
-            ]
-          })
-        ]
-      })
+                }),
+                r.jsx("circle", {
+                  cx: "50",
+                  cy: "50",
+                  r: A,
+                  stroke: "#FFE4E6",
+                  className: "dark:stroke-rose-950/40",
+                  strokeWidth: "12",
+                  fill: "none"
+                }),
+                r.jsx("circle", {
+                  cx: "50",
+                  cy: "50",
+                  r: A,
+                  stroke: "url(#concessionDonutGrad)",
+                  strokeWidth: "12",
+                  strokeDasharray: o,
+                  strokeDashoffset: l,
+                  strokeLinecap: "round",
+                  fill: "none",
+                  className: "transition-all duration-700"
+                })
+              ]
+            }),
+            r.jsxs("div", {
+              className: "absolute flex flex-col items-center justify-center text-center",
+              children: [
+                r.jsxs("span", {
+                  className: "text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none",
+                  children: [
+                    s.toFixed(1),
+                    "%"
+                  ]
+                }),
+                r.jsx("span", {
+                  className: "text-[9px] font-bold text-rose-500 dark:text-rose-400 uppercase tracking-tighter mt-0.5",
+                  children: "Concession"
+                })
+              ]
+            })
+          ]
+        })
+      ]
     });
   }, PMe = ({ amount: t = 0, rate: e = 0, onNavigate: n = () => {
   } }) => {
@@ -110619,98 +110636,84 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
           className: "flex-1 min-h-[105px] p-4 sm:p-5 rounded-[22px] bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-[0_4px_20px_rgba(15,35,60,0.06)] grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-center",
           children: [
             r.jsxs("div", {
-              className: "lg:col-span-5 flex items-center justify-between gap-4 min-w-0 pr-0 lg:pr-4",
+              className: "lg:col-span-4 flex items-center gap-4 min-w-0 pr-0 lg:pr-2",
               children: [
-                r.jsxs("div", {
-                  className: "flex items-center gap-3.5 sm:gap-4 shrink-0 min-w-0",
-                  children: [
-                    r.jsx("div", {
-                      className: "w-[56px] h-[56px] sm:w-[62px] sm:h-[62px] rounded-[18px] bg-gradient-to-b from-[#EBF5FF] to-[#D6EBFE] border border-white/90 dark:border-white/10 shadow-[0_6px_16px_rgba(37,99,235,0.14),inset_0_2px_2px_#FFFFFF] flex items-center justify-center text-[#1C6CF2] dark:text-sky-400 shrink-0",
-                      children: r.jsxs("svg", {
-                        viewBox: "0 0 24 24",
-                        width: "28",
-                        height: "28",
-                        fill: "none",
-                        stroke: "currentColor",
-                        strokeWidth: "2.2",
-                        strokeLinecap: "round",
-                        strokeLinejoin: "round",
-                        children: [
-                          r.jsx("rect", {
-                            x: "2",
-                            y: "4",
-                            width: "20",
-                            height: "16",
-                            rx: "3"
-                          }),
-                          r.jsx("line", {
-                            x1: "2",
-                            y1: "10",
-                            x2: "22",
-                            y2: "10"
-                          }),
-                          r.jsx("line", {
-                            x1: "6",
-                            y1: "15",
-                            x2: "10",
-                            y2: "15"
-                          }),
-                          r.jsx("circle", {
-                            cx: "17",
-                            cy: "15",
-                            r: "1.5",
-                            fill: "currentColor"
-                          })
-                        ]
+                r.jsx("div", {
+                  className: "w-[64px] h-[64px] sm:w-[72px] sm:h-[72px] rounded-[18px] bg-gradient-to-b from-[#EBF5FF] to-[#D6EBFE] border border-white/90 dark:border-white/10 shadow-[0_6px_16px_rgba(37,99,235,0.14)] flex items-center justify-center text-[#1C6CF2] dark:text-sky-400 shrink-0",
+                  children: r.jsxs("svg", {
+                    viewBox: "0 0 24 24",
+                    width: "32",
+                    height: "32",
+                    fill: "none",
+                    stroke: "currentColor",
+                    strokeWidth: "2.2",
+                    strokeLinecap: "round",
+                    strokeLinejoin: "round",
+                    children: [
+                      r.jsx("rect", {
+                        x: "2",
+                        y: "4",
+                        width: "20",
+                        height: "16",
+                        rx: "3"
+                      }),
+                      r.jsx("line", {
+                        x1: "2",
+                        y1: "10",
+                        x2: "22",
+                        y2: "10"
+                      }),
+                      r.jsx("line", {
+                        x1: "6",
+                        y1: "15",
+                        x2: "10",
+                        y2: "15"
+                      }),
+                      r.jsx("circle", {
+                        cx: "17",
+                        cy: "15",
+                        r: "1.5",
+                        fill: "currentColor"
                       })
-                    }),
-                    r.jsxs("div", {
-                      className: "space-y-1 min-w-0",
-                      children: [
-                        r.jsxs("div", {
-                          className: "flex items-center gap-2 flex-wrap",
-                          children: [
-                            r.jsx("h3", {
-                              className: "text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-normal",
-                              children: "Total Amount Billed"
-                            }),
-                            r.jsxs("span", {
-                              className: "text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]/70 dark:bg-emerald-950/50 dark:text-emerald-400 dark:border-emerald-800/60 shadow-2xs",
-                              children: [
-                                e,
-                                " Bills Processed"
-                              ]
-                            })
-                          ]
-                        }),
-                        r.jsx("p", {
-                          className: "text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-zinc-400 truncate",
-                          children: c > 0 ? `Net Billed (\u20B9${T(t + c)} - \u20B9${T(c)})` : "Net Clinical Tariff Billed"
-                        })
-                      ]
-                    })
-                  ]
+                    ]
+                  })
                 }),
                 r.jsxs("div", {
-                  className: "flex-1 flex flex-col items-end justify-center min-w-0 pl-3",
+                  className: "space-y-1 min-w-0 flex-1",
                   children: [
-                    r.jsx("span", {
-                      className: "text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 block mb-0.5",
-                      children: "Total Billed"
-                    }),
                     r.jsxs("div", {
-                      className: "text-4xl sm:text-5xl lg:text-[56px] xl:text-[64px] font-normal sm:font-medium tracking-tight text-slate-900 dark:text-white tabular-nums leading-none inline-block transform scale-y-[1.25] origin-right",
+                      className: "flex items-center gap-2 flex-wrap",
+                      children: [
+                        r.jsx("h3", {
+                          className: "text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal",
+                          children: "Total Amount Billed"
+                        }),
+                        r.jsxs("span", {
+                          className: "text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]/70 dark:bg-emerald-950/50 dark:text-emerald-400 shadow-2xs",
+                          children: [
+                            e,
+                            " Bills Processed"
+                          ]
+                        })
+                      ]
+                    }),
+                    r.jsxs("p", {
+                      className: "text-3xl sm:text-4xl lg:text-[42px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-1 tabular-nums",
                       children: [
                         "\u20B9",
                         T(t)
                       ]
+                    }),
+                    r.jsx("p", {
+                      className: "text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-zinc-400 truncate",
+                      children: c > 0 ? `Net Billed (\u20B9${T(t + c)} Gross - \u20B9${T(c)} Concessions)` : "Net Clinical Tariff Billed"
                     })
                   ]
                 })
               ]
             }),
             r.jsxs("div", {
-              className: "lg:col-span-7 lg:border-l lg:border-slate-100 dark:lg:border-zinc-800 lg:pl-6 xl:pl-8 flex flex-col justify-center space-y-3 min-w-0",
+              className: "lg:col-span-8 lg:border-l lg:border-slate-100 dark:lg:border-zinc-800 lg:pl-6 xl:pl-8 flex flex-col justify-center space-y-3 min-w-0",
               children: [
                 r.jsxs("div", {
                   className: "flex items-center justify-between",
@@ -110738,43 +110741,27 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                   ]
                 }),
                 r.jsxs("div", {
-                  className: "relative h-[26px] sm:h-[30px] lg:h-[32px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 flex items-center overflow-visible shadow-inner",
+                  className: "relative h-[34px] sm:h-[38px] lg:h-[40px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 flex items-center overflow-visible shadow-inner",
                   children: [
                     r.jsx("div", {
-                      className: "h-full bg-gradient-to-r from-[#60A5FA] via-[#7BB3F0] to-[#93C5FD] rounded-l-full transition-all duration-500 flex items-center pl-3 overflow-hidden shadow-[0_2px_8px_rgba(96,165,250,0.25)]",
+                      className: "h-full bg-gradient-to-r from-[#60A5FA] via-[#7BB3F0] to-[#93C5FD] rounded-l-full transition-all duration-500 shadow-[0_2px_8px_rgba(96,165,250,0.25)]",
                       style: {
                         width: `${P > 0 ? G : 0}%`
-                      },
-                      children: G > 15 && r.jsxs("span", {
-                        className: "text-[11px] font-bold text-slate-800 dark:text-slate-900 drop-shadow-xs truncate select-none",
-                        children: [
-                          "Commissions (",
-                          G,
-                          "%)"
-                        ]
-                      })
+                      }
                     }),
                     r.jsx("div", {
-                      className: "h-full bg-gradient-to-r from-[#FCA5A5] via-[#FDA4AF] to-[#FECDD3] rounded-r-full transition-all duration-500 flex items-center justify-end pr-3 overflow-hidden shadow-[0_2px_8px_rgba(253,164,175,0.25)]",
+                      className: "h-full bg-gradient-to-r from-[#FCA5A5] via-[#FDA4AF] to-[#FECDD3] rounded-r-full transition-all duration-500 shadow-[0_2px_8px_rgba(253,164,175,0.25)]",
                       style: {
                         width: `${P > 0 ? H : 100}%`
-                      },
-                      children: H > 15 && r.jsxs("span", {
-                        className: "text-[11px] font-bold text-slate-800 dark:text-slate-900 drop-shadow-xs truncate select-none",
-                        children: [
-                          "Receivables & Dues (",
-                          H,
-                          "%)"
-                        ]
-                      })
+                      }
                     }),
                     r.jsx("div", {
-                      className: "absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white dark:bg-zinc-100 shadow-[0_3px_12px_rgba(15,35,60,0.2),0_0_0_2.5px_#FFFFFF] border border-slate-100 pointer-events-none transition-all duration-500 z-10 flex items-center justify-center",
+                      className: "absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white dark:bg-zinc-100 shadow-[0_3px_10px_rgba(15,35,60,0.18),0_0_0_2px_#FFFFFF] border border-slate-100 pointer-events-none transition-all duration-500 z-10 flex items-center justify-center",
                       style: {
                         left: `${P > 0 ? G : _ > 0 ? 50 : 0}%`
                       },
                       children: r.jsx("div", {
-                        className: "w-2 h-2 rounded-full bg-slate-300"
+                        className: "w-2.5 h-2.5 rounded-full bg-slate-300"
                       })
                     })
                   ]
@@ -110798,7 +110785,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                               className: "flex items-baseline gap-2",
                               children: [
                                 r.jsxs("span", {
-                                  className: "text-2xl sm:text-3xl lg:text-[32px] xl:text-[36px] font-normal sm:font-medium text-slate-900 dark:text-white tabular-nums tracking-tight leading-none inline-block transform scale-y-[1.2] origin-left",
+                                  className: "text-xl sm:text-2xl lg:text-[26px] font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight",
                                   children: [
                                     "\u20B9",
                                     T(_)
@@ -110815,7 +110802,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                             }),
                             r.jsx("span", {
                               className: "text-xs sm:text-sm text-slate-600 dark:text-zinc-400 font-bold block mt-0.5",
-                              children: "Doctor Commissions (Referral Payouts)"
+                              children: "Doctor Commissions"
                             })
                           ]
                         })
@@ -110837,7 +110824,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                                   ]
                                 }),
                                 r.jsxs("span", {
-                                  className: "text-2xl sm:text-3xl lg:text-[32px] xl:text-[36px] font-normal sm:font-medium text-slate-900 dark:text-white tabular-nums tracking-tight leading-none inline-block transform scale-y-[1.2] origin-right",
+                                  className: "text-xl sm:text-2xl lg:text-[26px] font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight",
                                   children: [
                                     "\u20B9",
                                     T(U)
@@ -110847,7 +110834,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                             }),
                             r.jsx("span", {
                               className: "text-xs sm:text-sm text-slate-600 dark:text-zinc-400 font-bold block mt-0.5",
-                              children: "Receivables & Desk Dues (Outstanding)"
+                              children: "Receivables & Desk Dues"
                             })
                           ]
                         }),
