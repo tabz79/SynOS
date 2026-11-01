@@ -1118,23 +1118,6 @@ export function DiscountMasterScreen() {
                 </div>
             </div>
 
-            {/* Zero-Concession Branch Awareness Notice */}
-            {!isConsolidated && (Number(intelligence.totalDiscountAmount) || 0) === 0 && tab === 'intelligence' && (
-                <div className="flex items-center justify-between px-4 py-2 rounded-xl bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/25 text-amber-800 dark:text-amber-200 text-xs font-semibold animate-in fade-in duration-200">
-                    <div className="flex items-center gap-2">
-                        <Building2 className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
-                        <span>Currently viewing <strong>{currentBranchName}</strong> — 0 concessions recorded for this horizon.</span>
-                    </div>
-                    <button 
-                        type="button" 
-                        onClick={() => setIsConsolidated(true)}
-                        className="px-3 py-1 bg-white dark:bg-zinc-800 text-amber-800 dark:text-amber-200 rounded-lg text-xs font-bold border border-amber-300 dark:border-amber-700 hover:bg-amber-50 dark:hover:bg-zinc-700 shadow-2xs transition-all cursor-pointer"
-                    >
-                        Switch to All Branches
-                    </button>
-                </div>
-            )}
-
             {/* TAB NAVIGATION (SEGMENTED PILL MATCHING REFERENCE A) */}
             <div className="flex items-center gap-1 overflow-x-auto scrollbar-thin">
                 <div className="flex items-center bg-[#D6E3EF] dark:bg-zinc-800/80 p-1.5 rounded-[14px] shadow-[inset_0_1px_2px_rgba(15,35,60,0.12)] border border-white/60 dark:border-zinc-700">
