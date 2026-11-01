@@ -112519,7 +112519,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
       ]
     });
   }, aY = () => {
-    const { tab: t = "overview" } = su(), e = tA(), { presetRange: n, customDates: i, isConsolidated: a, effectiveBranchId: s, isAdmin: A } = lo(), [o, l] = j.useState(null), [c, g] = j.useState(true), [d, u] = j.useState(false), h = eA.useRef({}), f = eA.useRef(null), I = useCallback(async () => {
+    const { tab: t = "overview" } = su(), e = tA(), { presetRange: n, customDates: i, isConsolidated: a, effectiveBranchId: s, isAdmin: A } = lo(), [o, l] = j.useState(null), [c, g] = j.useState(true), [d, u] = j.useState(false), h = eA.useRef({}), f = eA.useRef(null), I = j.useCallback(async () => {
       const B = a && A ? null : s, C = a && A, E = n === "custom" ? i == null ? void 0 : i.start : null, b = n === "custom" ? i == null ? void 0 : i.end : null, N = `${B || "consolidated"}_${n}_${E || ""}_${b || ""}`;
       if (h.current[N]) {
         l(h.current[N]);
