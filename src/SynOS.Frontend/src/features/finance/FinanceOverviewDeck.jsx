@@ -81,7 +81,7 @@ export const DepartmentBreakdownCard = ({
                     </div>
                 </div>
                 <div className="flex items-baseline gap-1.5 shrink-0">
-                    <span className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
+                    <span className="text-xl sm:text-2xl lg:text-[26px] font-black text-slate-900 dark:text-white tabular-nums tracking-tight leading-none inline-block transform scale-y-[1.1] origin-right">
                         ₹{formatInr(totalAmount)}
                     </span>
                     <span className="text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-zinc-400 tabular-nums">
@@ -194,7 +194,7 @@ export const ActualCashCard = ({
                             Actual Cash (Desk Collections)
                         </h3>
                     </div>
-                    <p className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums">
+                    <p className="text-3xl sm:text-4xl lg:text-[40px] xl:text-[44px] font-black text-slate-900 dark:text-white tracking-tight leading-none my-1 tabular-nums inline-block transform scale-y-[1.12] origin-left">
                         ₹{formatInr(total)}
                     </p>
                     <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400">
@@ -216,7 +216,7 @@ export const ActualCashCard = ({
                         </div>
                         <div className="flex-1 h-[18px] sm:h-[20px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner min-w-0">
                             <div 
-                                className="h-full rounded-full bg-gradient-to-r from-[#60A5FA] via-[#3B82F6] to-[#2563EB] transition-all duration-500 shadow-[0_2px_8px_rgba(37,99,235,0.35)]"
+                                className="h-full rounded-full bg-gradient-to-r from-[#60A5FA] via-[#7BB3F0] to-[#93C5FD] transition-all duration-500 shadow-[0_2px_8px_rgba(59,130,246,0.25)]"
                                 style={{ width: `${Math.min(100, Math.max(cashAmt > 0 ? 5 : 0, cashPct))}%` }}
                             />
                         </div>
@@ -242,7 +242,7 @@ export const ActualCashCard = ({
                         </div>
                         <div className="flex-1 h-[18px] sm:h-[20px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner min-w-0">
                             <div 
-                                className="h-full rounded-full bg-gradient-to-r from-[#C084FC] via-[#A855F7] to-[#9333EA] transition-all duration-500 shadow-[0_2px_8px_rgba(147,51,234,0.35)]"
+                                className="h-full rounded-full bg-gradient-to-r from-[#C084FC] via-[#D8B4FE] to-[#E9D5FF] transition-all duration-500 shadow-[0_2px_8px_rgba(168,85,247,0.25)]"
                                 style={{ width: `${Math.min(100, Math.max(onlineAmt > 0 ? 5 : 0, onlinePct))}%` }}
                             />
                         </div>
@@ -292,7 +292,7 @@ export const ConcessionsCard = ({
                             Concessions Given
                         </h3>
                     </div>
-                    <p className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums">
+                    <p className="text-3xl sm:text-4xl lg:text-[40px] xl:text-[44px] font-black text-slate-900 dark:text-white tracking-tight leading-none my-1 tabular-nums inline-block transform scale-y-[1.12] origin-left">
                         ₹{formatInr(amt)}
                     </p>
                     <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400">
@@ -313,8 +313,8 @@ export const ConcessionsCard = ({
 
                     <div className="h-[18px] sm:h-[20px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner w-full">
                         <div 
-                            className="h-full rounded-full bg-gradient-to-r from-[#FDA4AF] via-[#FB7185] to-[#E11D48] transition-all duration-700 shadow-[0_2px_8px_rgba(251,113,133,0.35)]"
-                            style={{ width: `${amt > 0 ? Math.min(100, Math.max(8, rate)) : 0}%` }}
+                            className="h-full rounded-full bg-gradient-to-r from-[#FCA5A5] via-[#FDA4AF] to-[#FECDD3] transition-all duration-500 shadow-[0_2px_8px_rgba(251,113,133,0.25)]"
+                            style={{ width: `${Math.min(100, Math.max(5, rate))}%` }}
                         />
                     </div>
 
@@ -672,43 +672,52 @@ export const FinanceOverviewDeck = ({
 
     return (
         <div className="flex-1 min-h-0 flex flex-col justify-start gap-3 sm:gap-3.5 lg:gap-4">
-            {/* ROW 1: HERO CONTROL DECK: 2 BALANCED PODS (IOS INSPIRED SPLIT SLIDER & SCALED HERO METRIC) */}
+            {/* ROW 1: HERO CONTROL DECK: 2 BALANCED PODS (IOS INSPIRED SPLIT SLIDER & SEPARATED TALL NUMERAL) */}
             <div className="flex-1 min-h-[105px] p-4 sm:p-5 rounded-[22px] bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-[0_4px_20px_rgba(15,35,60,0.06)] grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-center">
                 
-                {/* Section 1 (4 Cols): Total Amount Billed Hero Metric (Scaled to Adapt to Card Height/Width) */}
-                <div className="lg:col-span-4 flex items-center gap-4 sm:gap-4.5 min-w-0 pr-0 lg:pr-2">
-                    {/* 3D Tactile Squircle Icon */}
-                    <div className="w-[68px] h-[68px] sm:w-[76px] sm:h-[76px] rounded-[20px] bg-gradient-to-b from-[#EBF5FF] to-[#D6EBFE] border border-white/90 dark:border-white/10 shadow-[0_8px_18px_rgba(37,99,235,0.18),inset_0_2px_2px_#FFFFFF] flex items-center justify-center text-[#1C6CF2] dark:text-sky-400 shrink-0">
-                        <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                            <rect x="2" y="4" width="20" height="16" rx="3" />
-                            <line x1="2" y1="10" x2="22" y2="10" />
-                            <line x1="6" y1="15" x2="10" y2="15" />
-                            <circle cx="17" cy="15" r="1.5" fill="currentColor" />
-                        </svg>
+                {/* Section 1 (5 Cols): The Herd on Left + Separated TALL Numeral Occupying Vertical & Horizontal Space */}
+                <div className="lg:col-span-5 flex items-center justify-between gap-4 min-w-0 pr-0 lg:pr-4">
+                    {/* The Herd: 3D Squircle Icon + Title + Bills Processed + Net formula */}
+                    <div className="flex items-center gap-3.5 sm:gap-4 shrink-0 min-w-0">
+                        <div className="w-[56px] h-[56px] sm:w-[62px] sm:h-[62px] rounded-[18px] bg-gradient-to-b from-[#EBF5FF] to-[#D6EBFE] border border-white/90 dark:border-white/10 shadow-[0_6px_16px_rgba(37,99,235,0.14),inset_0_2px_2px_#FFFFFF] flex items-center justify-center text-[#1C6CF2] dark:text-sky-400 shrink-0">
+                            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="2" y="4" width="20" height="16" rx="3" />
+                                <line x1="2" y1="10" x2="22" y2="10" />
+                                <line x1="6" y1="15" x2="10" y2="15" />
+                                <circle cx="17" cy="15" r="1.5" fill="currentColor" />
+                            </svg>
+                        </div>
+
+                        <div className="space-y-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-normal">
+                                    Total Amount Billed
+                                </h3>
+                                <span className="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]/70 dark:bg-emerald-950/50 dark:text-emerald-400 dark:border-emerald-800/60 shadow-2xs">
+                                    {totalBillsCount} Bills Processed
+                                </span>
+                            </div>
+                            <p className="text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-zinc-400 truncate">
+                                {concessionsAmount > 0 
+                                    ? `Net Billed (₹${formatInr(billedRevenue + concessionsAmount)} - ₹${formatInr(concessionsAmount)})`
+                                    : 'Net Clinical Tariff Billed'}
+                            </p>
+                        </div>
                     </div>
 
-                    <div className="space-y-1 min-w-0 flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tracking-normal">
-                                Total Amount Billed
-                            </h3>
-                            <span className="text-[11px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]/70 dark:bg-emerald-950/50 dark:text-emerald-400 dark:border-emerald-800/60 shadow-2xs">
-                                {totalBillsCount} Bills Processed
-                            </span>
-                        </div>
-                        <p className="text-2xl sm:text-3xl lg:text-[38px] xl:text-[42px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-1 tabular-nums">
+                    {/* Separated 29452 Numeral: TALL, NOT Extra Bold, Occupying Vertical & Horizontal Space */}
+                    <div className="flex-1 flex flex-col items-end justify-center min-w-0 pl-3">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 block mb-0.5">
+                            Total Billed
+                        </span>
+                        <div className="text-4xl sm:text-5xl lg:text-[56px] xl:text-[64px] font-normal sm:font-medium tracking-tight text-slate-900 dark:text-white tabular-nums leading-none inline-block transform scale-y-[1.25] origin-right">
                             ₹{formatInr(billedRevenue)}
-                        </p>
-                        <p className="text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-zinc-400 truncate">
-                            {concessionsAmount > 0 
-                                ? `Net Billed (₹${formatInr(billedRevenue + concessionsAmount)} Gross - ₹${formatInr(concessionsAmount)} Concessions)`
-                                : 'Net Clinical Tariff Billed'}
-                        </p>
+                        </div>
                     </div>
                 </div>
 
-                {/* Section 2 (8 Cols): Doctor Payouts vs Receivables & Dues (Reclaims Full Space, Fatter Scaled Slider, Clear Hierarchy) */}
-                <div className="lg:col-span-8 lg:border-l lg:border-slate-100 dark:lg:border-zinc-800 lg:pl-6 xl:pl-8 flex flex-col justify-center space-y-3 min-w-0">
+                {/* Section 2 (7 Cols): Doctor Payouts vs Receivables & Dues (Reclaims Full Space, Fatter Scaled Slider, Clear Hierarchy) */}
+                <div className="lg:col-span-7 lg:border-l lg:border-slate-100 dark:lg:border-zinc-800 lg:pl-6 xl:pl-8 flex flex-col justify-center space-y-3 min-w-0">
                     <div className="flex items-center justify-between">
                         <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal">
                             Doctor Payouts vs Receivables & Dues
@@ -721,37 +730,37 @@ export const FinanceOverviewDeck = ({
                         </div>
                     </div>
 
-                    {/* Fatter, Scaled iOS Split Slider with Elevated Circular Knob */}
+                    {/* Fatter, Scaled iOS Split Slider with Elevated Circular Knob & Pastel Gradients */}
                     <div className="relative h-[26px] sm:h-[30px] lg:h-[32px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 flex items-center overflow-visible shadow-inner">
                         <div 
-                            className="h-full bg-gradient-to-r from-[#60A5FA] via-[#3B82F6] to-[#2563EB] rounded-l-full transition-all duration-500 flex items-center pl-3 overflow-hidden shadow-[0_2px_8px_rgba(37,99,235,0.25)]"
+                            className="h-full bg-gradient-to-r from-[#60A5FA] via-[#7BB3F0] to-[#93C5FD] rounded-l-full transition-all duration-500 flex items-center pl-3 overflow-hidden shadow-[0_2px_8px_rgba(96,165,250,0.25)]"
                             style={{ width: `${totalSplitSum > 0 ? payoutsShare : 0}%` }}
                         >
                             {payoutsShare > 15 && (
-                                <span className="text-[11px] font-bold text-white drop-shadow-xs truncate select-none">
+                                <span className="text-[11px] font-bold text-slate-800 dark:text-slate-900 drop-shadow-xs truncate select-none">
                                     Commissions ({payoutsShare}%)
                                 </span>
                             )}
                         </div>
                         <div 
-                            className="h-full bg-gradient-to-r from-[#FDA4AF] via-[#FB7185] to-[#F43F5E] rounded-r-full transition-all duration-500 flex items-center justify-end pr-3 overflow-hidden shadow-[0_2px_8px_rgba(244,63,94,0.25)]"
+                            className="h-full bg-gradient-to-r from-[#FCA5A5] via-[#FDA4AF] to-[#FECDD3] rounded-r-full transition-all duration-500 flex items-center justify-end pr-3 overflow-hidden shadow-[0_2px_8px_rgba(253,164,175,0.25)]"
                             style={{ width: `${totalSplitSum > 0 ? duesShare : 100}%` }}
                         >
                             {duesShare > 15 && (
-                                <span className="text-[11px] font-bold text-white drop-shadow-xs truncate select-none">
+                                <span className="text-[11px] font-bold text-slate-800 dark:text-slate-900 drop-shadow-xs truncate select-none">
                                     Receivables & Dues ({duesShare}%)
                                 </span>
                             )}
                         </div>
                         <div 
-                            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white dark:bg-zinc-100 shadow-[0_3px_12px_rgba(15,35,60,0.25),0_0_0_2.5px_#FFFFFF] border border-slate-100 pointer-events-none transition-all duration-500 z-10 flex items-center justify-center"
+                            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white dark:bg-zinc-100 shadow-[0_3px_12px_rgba(15,35,60,0.2),0_0_0_2.5px_#FFFFFF] border border-slate-100 pointer-events-none transition-all duration-500 z-10 flex items-center justify-center"
                             style={{ left: `${totalSplitSum > 0 ? payoutsShare : (doctorPayoutsVal > 0 ? 50 : 0)}%` }}
                         >
-                            <div className="w-2 h-2 rounded-full bg-slate-400/80"></div>
+                            <div className="w-2 h-2 rounded-full bg-slate-300"></div>
                         </div>
                     </div>
 
-                    {/* Two Channel Stat Pods Below: Bold Numerical Hierarchy Aligned Under Each Side */}
+                    {/* Two Channel Stat Pods Below: Vertically Scaled Tall Numerals (Taller, Not Extra Bold) Aligned Under Each Side */}
                     <div className="flex items-center justify-between pt-0.5">
                         {/* Left Stat Pod: Doctor Payouts */}
                         <div className="flex items-center gap-3">
@@ -760,10 +769,10 @@ export const FinanceOverviewDeck = ({
                             </div>
                             <div>
                                 <div className="flex items-baseline gap-2">
-                                    <span className="text-xl sm:text-2xl lg:text-[26px] font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-tight">
+                                    <span className="text-2xl sm:text-3xl lg:text-[32px] xl:text-[36px] font-normal sm:font-medium text-slate-900 dark:text-white tabular-nums tracking-tight leading-none inline-block transform scale-y-[1.2] origin-left">
                                         ₹{formatInr(doctorPayoutsVal)}
                                     </span>
-                                    <span className="text-xs sm:text-sm font-bold text-[#1C6CF2] dark:text-sky-400 bg-sky-50 dark:bg-sky-950/60 px-2 py-0.5 rounded-md border border-sky-100 dark:border-sky-800/40 tabular-nums">
+                                    <span className="text-xs sm:text-sm font-bold text-[#1C6CF2] dark:text-sky-400 bg-[#EBF5FF] dark:bg-sky-950/60 px-2 py-0.5 rounded-md border border-sky-100 dark:border-sky-800/40 tabular-nums">
                                         {totalSplitSum > 0 ? payoutsShare : 0}%
                                     </span>
                                 </div>
@@ -777,10 +786,10 @@ export const FinanceOverviewDeck = ({
                         <div className="flex items-center gap-3 text-right">
                             <div>
                                 <div className="flex items-baseline gap-2 justify-end">
-                                    <span className="text-xs sm:text-sm font-bold text-[#E11D48] dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 px-2 py-0.5 rounded-md border border-rose-100 dark:border-rose-800/40 tabular-nums">
+                                    <span className="text-xs sm:text-sm font-bold text-[#E11D48] dark:text-rose-400 bg-[#FFF1F2] dark:bg-rose-950/60 px-2 py-0.5 rounded-md border border-rose-100 dark:border-rose-800/40 tabular-nums">
                                         {totalSplitSum > 0 ? duesShare : 0}%
                                     </span>
-                                    <span className="text-xl sm:text-2xl lg:text-[26px] font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-tight">
+                                    <span className="text-2xl sm:text-3xl lg:text-[32px] xl:text-[36px] font-normal sm:font-medium text-slate-900 dark:text-white tabular-nums tracking-tight leading-none inline-block transform scale-y-[1.2] origin-right">
                                         ₹{formatInr(totalReceivablesAndDues)}
                                     </span>
                                 </div>
