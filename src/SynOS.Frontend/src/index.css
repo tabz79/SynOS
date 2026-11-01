@@ -353,9 +353,9 @@
     @apply text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white;
   }
 
-  /* Role: Section Dividers & Block Headers (e.g., Referring Doctor, Test Selection, Operations) */
+  /* Role: Section Dividers & Block Headers (e.g., Referring Doctor, Test Selection) */
   .type-section-header {
-    @apply text-sm sm:text-base font-extrabold uppercase tracking-wider text-slate-800 dark:text-zinc-200;
+    @apply text-xs sm:text-sm font-bold tracking-wide text-slate-800 dark:text-zinc-200;
   }
 
   /* Role: Form Labels, Input Hints */

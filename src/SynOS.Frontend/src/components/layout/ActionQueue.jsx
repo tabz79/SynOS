@@ -53,8 +53,8 @@ export function ActionQueue({ columns, data, onAction }) {
             ? "bg-zinc-800 border-b border-white/5"
             : "border-b border-black/[0.08]",
         headerText: isDark
-            ? "type-section-header text-zinc-400"
-            : "type-section-header text-zinc-800",
+            ? "text-xs font-semibold uppercase tracking-wider text-zinc-400 select-none whitespace-nowrap"
+            : "text-xs font-semibold uppercase tracking-wider text-zinc-500 select-none whitespace-nowrap",
         row: (isHistory, isFocused) => isDark
             ? cn(
                 "transition-all duration-200 outline-none border border-transparent min-h-[72px]",
@@ -91,7 +91,7 @@ export function ActionQueue({ columns, data, onAction }) {
                     background: `linear-gradient(to bottom, rgba(248, 253, 255, 0.98) 0%, rgba(238, 245, 248, 0.98) 50%, rgba(228, 235, 238, 0.98) 100%)`
                 } : {}}
             >
-                <div className="grid flex-1 grid-cols-[1fr_2fr_1fr_1fr_minmax(100px,auto)] gap-4">
+                <div className="grid flex-1 grid-cols-[1fr_2fr_1fr_1fr_minmax(100px,auto)] gap-4 items-center">
                     {columns.map((col, idx) => (
                         <div key={idx} className={cn(ui.headerText, col.className)}>
                             {col.header}

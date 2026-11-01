@@ -304,7 +304,7 @@ export function ReceptionScreen() {
             }
         },
         {
-            header: "Operational Assignment",
+            header: "Status",
             accessor: "operationalStatus",
             className: "w-40",
             render: (row) => <StatusCell row={row} />

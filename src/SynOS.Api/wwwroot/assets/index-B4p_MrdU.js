@@ -29865,7 +29865,7 @@ Details: ${A.inner}`);
     }, l = i === "dark", c = {
       container: l ? "bg-zinc-900 border-white/5 shadow-2xl" : "bg-white border-black/[0.1] shadow-[0_4px_20px_rgba(0,0,0,0.05)]",
       headerRow: l ? "bg-zinc-800 border-b border-white/5" : "border-b border-black/[0.08]",
-      headerText: l ? "type-section-header text-zinc-400" : "type-section-header text-zinc-800",
+      headerText: l ? "text-xs font-semibold uppercase tracking-wider text-zinc-400 select-none whitespace-nowrap" : "text-xs font-semibold uppercase tracking-wider text-zinc-500 select-none whitespace-nowrap",
       row: (g, d) => l ? Ne("transition-all duration-200 outline-none border border-transparent min-h-[72px]", "focus:bg-zinc-800 hover:bg-zinc-800", g ? "bg-black/10 opacity-40 grayscale" : "bg-zinc-950/40") : Ne("border border-black/[0.1] transition-all duration-200 outline-none min-h-[72px]", "focus:bg-blue-100/30 hover:bg-zinc-100/80", g ? "bg-zinc-100/30 opacity-60 grayscale" : "bg-white shadow-[0_4px_12px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,1)]")
     };
     return r.jsxs("div", {
@@ -29882,7 +29882,7 @@ Details: ${A.inner}`);
             background: "linear-gradient(to bottom, rgba(248, 253, 255, 0.98) 0%, rgba(238, 245, 248, 0.98) 50%, rgba(228, 235, 238, 0.98) 100%)"
           },
           children: r.jsx("div", {
-            className: "grid flex-1 grid-cols-[1fr_2fr_1fr_1fr_minmax(100px,auto)] gap-4",
+            className: "grid flex-1 grid-cols-[1fr_2fr_1fr_1fr_minmax(100px,auto)] gap-4 items-center",
             children: t.map((g, d) => r.jsx("div", {
               className: Ne(c.headerText, g.className),
               children: g.header
@@ -46247,7 +46247,7 @@ Details: ${A.inner}`);
         }
       },
       {
-        header: "Operational Assignment",
+        header: "Status",
         accessor: "operationalStatus",
         className: "w-40",
         render: (ne) => r.jsx(gL, {
