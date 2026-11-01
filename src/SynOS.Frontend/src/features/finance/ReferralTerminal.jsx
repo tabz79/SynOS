@@ -25,6 +25,8 @@ import { CommissionRulesTab } from './components/referral/CommissionRulesTab';
 import { ReferralOverviewTab } from './components/referral/ReferralOverviewTab';
 import { ReferralRateQueueTab } from './components/referral/ReferralRateQueueTab';
 import { Printer, Download, Loader2 } from 'lucide-react';
+import { useGlobalFilter } from '@/context/GlobalFilterContext';
+import { StandardFilterBar } from '@/components/layout/StandardFilterBar';
 
 /**
  * Referral Terminal
@@ -33,8 +35,10 @@ import { Printer, Download, Loader2 } from 'lucide-react';
 export const ReferralTerminal = () => {
     const { tab = 'overview' } = useParams();
     const navigate = useNavigate();
+    const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
     const [summary, setSummary] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [isUpdating, setIsUpdating] = useState(false);
     const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
     const [unmappedQueueCount, setUnmappedQueueCount] = useState(0);
     const [tabData, setTabData] = useState({
@@ -57,10 +61,29 @@ export const ReferralTerminal = () => {
         { id: 'rules', label: 'Commission Rules', icon: Settings },
     ];
 
+    const loadSummary = async () => {
+        const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
+        const isCons = isConsolidated && isAdmin;
+        try {
+            if (summary) {
+                setIsUpdating(true);
+            } else {
+                setLoading(true);
+            }
+            const data = await FinanceApi.getReferralSummary(bId, isCons);
+            setSummary(data);
+        } catch (err) {
+            console.error("Failed to load referral summary", err);
+        } finally {
+            setLoading(false);
+            setIsUpdating(false);
+        }
+    };
+
     useEffect(() => {
         loadSummary();
         loadUnmappedCount();
-    }, []);
+    }, [isConsolidated, effectiveBranchId, presetRange, customDates?.start, customDates?.end]);
 
     const loadUnmappedCount = async () => {
         try {
@@ -80,19 +103,7 @@ export const ReferralTerminal = () => {
             }
         }
         ensureTabData(tab);
-    }, [tab]);
-
-    const loadSummary = async () => {
-        try {
-            setLoading(true);
-            const data = await FinanceApi.getReferralSummary();
-            setSummary(data);
-        } catch (err) {
-            console.error("Failed to load referral summary", err);
-        } finally {
-            setLoading(false);
-        }
-    };
+    }, [tab, isConsolidated, effectiveBranchId, presetRange]);
 
     const ensureTabData = async (targetTab = tab) => {
         try {
@@ -428,12 +439,27 @@ export const ReferralTerminal = () => {
         <div className="flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-500">
             {/* TERMINAL HEADER (UNBOXED NATIVE CANVAS STYLE) */}
             <div className="px-8 pt-8 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">Referral Terminal</h1>
-                    <p className="text-xs text-zinc-500 font-medium mt-1">Doctor Relationship Finance Infrastructure</p>
+                <div className="flex items-center gap-3.5">
+                    <div>
+                        <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">Referral Terminal</h1>
+                        <p className="text-xs text-zinc-500 font-medium mt-1">Doctor Relationship Finance Infrastructure</p>
+                    </div>
+
+                    {isUpdating && (
+                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-synos-primary/10 border border-synos-primary/25 text-synos-primary shadow-xs animate-in fade-in duration-150">
+                            <div className="relative flex items-center justify-center w-3 h-3">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-synos-primary opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-synos-primary"></span>
+                            </div>
+                            <span className="text-xs font-bold tracking-wide uppercase">Updating...</span>
+                        </div>
+                    )}
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 flex-wrap">
+                    {/* Unified Standard Filter Bar (Today, Month, Quarter, Year, Custom Range & Branch Selectors) */}
+                    <StandardFilterBar />
+
                     {summary && (
                         <div className="flex items-center gap-3 bg-slate-200/50 dark:bg-zinc-800/60 p-1.5 px-3 rounded-xl border border-slate-300/40 dark:border-zinc-700/40">
                             <div className="text-right">
@@ -450,7 +476,7 @@ export const ReferralTerminal = () => {
                     <div className="flex items-center gap-2">
                         <button 
                             onClick={handleDownloadTabSummary}
-                            className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl text-xs font-bold transition-all border border-slate-200 dark:border-zinc-700 shadow-sm"
+                            className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl text-xs font-bold transition-all border border-slate-200 dark:border-zinc-700 shadow-sm cursor-pointer"
                             title={`Download ${tab.toUpperCase()} Summary (CSV)`}
                         >
                             <Download size={14} className="text-zinc-500" />
@@ -458,13 +484,13 @@ export const ReferralTerminal = () => {
                         </button>
                         <button 
                             onClick={() => setIsPrintSummaryOpen(true)}
-                            className="flex items-center gap-1.5 px-3 py-2 bg-synos-primary text-white rounded-xl text-xs font-bold transition-all shadow-sm hover:brightness-105"
+                            className="flex items-center gap-1.5 px-3 py-2 bg-synos-primary text-white rounded-xl text-xs font-bold transition-all shadow-sm hover:brightness-105 cursor-pointer"
                             title={`Print Printable ${tab.toUpperCase()} Statement`}
                         >
                             <Printer size={14} />
                             <span>Print Summary</span>
                         </button>
-                        <button onClick={loadSummary} className="p-2 border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 rounded-xl transition-all" title="Refresh Summary">
+                        <button onClick={loadSummary} className="p-2 border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 rounded-xl transition-all cursor-pointer" title="Refresh Summary">
                             <History size={16} className="text-zinc-500" />
                         </button>
                     </div>

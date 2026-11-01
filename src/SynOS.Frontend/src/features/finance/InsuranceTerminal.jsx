@@ -32,6 +32,8 @@ import { FinancePrintableSummaryModal } from './components/FinancePrintableSumma
 import { CommercialDocumentViewer } from './components/documents/CommercialDocumentViewer';
 import { DynamicDocumentRenderer } from './components/documents/DynamicDocumentRenderer';
 import { CorporateTerminal } from './CorporateTerminal';
+import { useGlobalFilter } from '@/context/GlobalFilterContext';
+import { StandardFilterBar } from '@/components/layout/StandardFilterBar';
 
 export function InsuranceTerminal({ forcedTab }) {
     const { tab: paramTab = 'overview' } = useParams();
@@ -39,10 +41,12 @@ export function InsuranceTerminal({ forcedTab }) {
     const navigate = useNavigate();
     const { theme } = useTheme();
     const isDark = theme === 'dark';
+    const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
 
     const [companies, setCompanies] = useState([]);
     const [claims, setClaims] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isUpdating, setIsUpdating] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCompanyFilter, setSelectedCompanyFilter] = useState('ALL');
 
@@ -60,12 +64,12 @@ export function InsuranceTerminal({ forcedTab }) {
         { id: 'settlements', label: 'Settlements', icon: History }
     ];
 
-    useEffect(() => {
-        loadData();
-    }, []);
-
     const loadData = async () => {
-        setIsLoading(true);
+        if (companies.length > 0 || claims.length > 0) {
+            setIsUpdating(true);
+        } else {
+            setIsLoading(true);
+        }
         try {
             const [compsRes, claimsRes] = await Promise.allSettled([
                 ReceptionApi.getInsuranceCompanies(),
@@ -80,8 +84,13 @@ export function InsuranceTerminal({ forcedTab }) {
             console.error("Failed to load insurance terminal data", err);
         } finally {
             setIsLoading(false);
+            setIsUpdating(false);
         }
     };
+
+    useEffect(() => {
+        loadData();
+    }, [isConsolidated, effectiveBranchId, presetRange, customDates?.start, customDates?.end]);
 
     const totalClaimsAmount = claims.reduce((sum, c) => sum + (c.claimAmount || 0), 0);
     const totalCoPayCollected = claims.reduce((sum, c) => sum + (c.coPayAmount || 0), 0);
@@ -245,7 +254,7 @@ export function InsuranceTerminal({ forcedTab }) {
         <div className="flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-500">
             {/* TERMINAL HEADER (UNBOXED NATIVE CANVAS STYLE) */}
             <div className="px-8 pt-8 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3.5">
                     <div className="p-2.5 bg-blue-500/10 text-blue-500 rounded-xl">
                         <ShieldCheck size={24} />
                     </div>
@@ -257,9 +266,22 @@ export function InsuranceTerminal({ forcedTab }) {
                             Insurance companies, packages, claims, and settlements
                         </p>
                     </div>
+
+                    {isUpdating && (
+                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-synos-primary/10 border border-synos-primary/25 text-synos-primary shadow-xs animate-in fade-in duration-150">
+                            <div className="relative flex items-center justify-center w-3 h-3">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-synos-primary opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-synos-primary"></span>
+                            </div>
+                            <span className="text-xs font-bold tracking-wide uppercase">Updating...</span>
+                        </div>
+                    )}
                 </div>
 
                 <div className="flex items-center gap-4 flex-wrap">
+                    {/* Unified Standard Filter Bar (Today, Month, Quarter, Year, Custom Range & Branch Selectors) */}
+                    <StandardFilterBar />
+
                     <div className="flex items-center gap-3 bg-slate-200/50 dark:bg-zinc-800/60 p-1.5 px-3 rounded-xl border border-slate-300/40 dark:border-zinc-700/40">
                         <div className="text-right">
                             <p className="text-[9px] text-zinc-500 uppercase font-black tracking-wider block">Total Claims</p>

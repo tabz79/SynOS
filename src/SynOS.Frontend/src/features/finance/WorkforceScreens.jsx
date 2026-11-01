@@ -42,6 +42,8 @@ import { StatutoryConfigModal } from './components/workforce/StatutoryConfigModa
 import { AttendanceExceptionModal } from './components/workforce/AttendanceExceptionModal';
 import { WorkforcePolicyModal } from './components/workforce/WorkforcePolicyModal';
 import { cn } from '@/lib/utils';
+import { useGlobalFilter } from '@/context/GlobalFilterContext';
+import { StandardFilterBar } from '@/components/layout/StandardFilterBar';
 
 const { WorkforceApi } = FinanceApi;
 
@@ -3627,6 +3629,8 @@ export const WorkforceTerminal = () => {
     const { tab = 'overview' } = useParams();
     const navigate = useNavigate();
     const tabsRef = useRef(null);
+    const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
+    const [isUpdating, setIsUpdating] = useState(false);
     const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
     const [staffList, setStaffList] = useState([]);
     const [advancesList, setAdvancesList] = useState([]);
@@ -3644,19 +3648,13 @@ export const WorkforceTerminal = () => {
         { id: 'adjustments', label: 'Advances & Deductions', icon: CreditCard }
     ];
 
-    useEffect(() => {
-        if (tabsRef.current) {
-            const activeTabEl = tabsRef.current.querySelector('[data-active-tab="true"]');
-            if (activeTabEl) {
-                activeTabEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-            }
-        }
-        loadData();
-    }, [tab]);
-
     const loadData = async () => {
         try {
-            setLoadingData(true);
+            if (staffList.length > 0) {
+                setIsUpdating(true);
+            } else {
+                setLoadingData(true);
+            }
             const [staff, advances, periods, leaves] = await Promise.all([
                 WorkforceApi.getStaff().catch(() => []),
                 WorkforceApi.getAdvances().catch(() => []),
@@ -3671,8 +3669,19 @@ export const WorkforceTerminal = () => {
             console.error("Failed to load workforce terminal data", err);
         } finally {
             setLoadingData(false);
+            setIsUpdating(false);
         }
     };
+
+    useEffect(() => {
+        if (tabsRef.current) {
+            const activeTabEl = tabsRef.current.querySelector('[data-active-tab="true"]');
+            if (activeTabEl) {
+                activeTabEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        }
+        loadData();
+    }, [tab, isConsolidated, effectiveBranchId, presetRange, customDates?.start, customDates?.end]);
 
     const handleDownloadTabSummary = () => {
         let headers = [];
@@ -3909,7 +3918,7 @@ export const WorkforceTerminal = () => {
         <div className="flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-500">
             {/* TERMINAL HEADER (UNBOXED NATIVE CANVAS STYLE) */}
             <div className="px-8 pt-8 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3.5">
                     <div className="p-2.5 bg-synos-primary/10 text-synos-primary rounded-xl">
                         <Users size={24} />
                     </div>
@@ -3921,9 +3930,22 @@ export const WorkforceTerminal = () => {
                             Coordinate employee rosters, system provisioning, attendance tracking, and monthly payroll calculation.
                         </p>
                     </div>
+
+                    {isUpdating && (
+                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-synos-primary/10 border border-synos-primary/25 text-synos-primary shadow-xs animate-in fade-in duration-150">
+                            <div className="relative flex items-center justify-center w-3 h-3">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-synos-primary opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-synos-primary"></span>
+                            </div>
+                            <span className="text-xs font-bold tracking-wide uppercase">Updating...</span>
+                        </div>
+                    )}
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3 flex-wrap">
+                    {/* Unified Standard Filter Bar (Today, Month, Quarter, Year, Custom Range & Branch Selectors) */}
+                    <StandardFilterBar />
+
                     <button 
                         onClick={handleDownloadTabSummary}
                         className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl text-xs font-bold transition-all border border-slate-200 dark:border-zinc-700 shadow-sm cursor-pointer"

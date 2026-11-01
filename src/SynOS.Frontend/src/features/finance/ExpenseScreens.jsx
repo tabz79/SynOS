@@ -42,6 +42,8 @@ import { DynamicDocumentRenderer } from './components/documents/DynamicDocumentR
 import { cn } from '@/lib/utils';
 import { VendorMasterScreen } from './VendorMasterScreen';
 import { OverheadExpensesScreen } from './OverheadScreens';
+import { useGlobalFilter } from '@/context/GlobalFilterContext';
+import { StandardFilterBar } from '@/components/layout/StandardFilterBar';
 
 // --- SHARED COMPONENTS (Finance Screens Pattern) ---
 
@@ -1872,16 +1874,21 @@ const ReferenceLabPartnerModal = ({ onClose, onSave, lab }) => {
 // --- UNIFIED EXPENSES TERMINAL & OVERVIEW TAB ---
 
 export const ExpenseOverviewTab = () => {
+    const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
     const [stats, setStats] = useState(null);
     const [recentExpenses, setRecentExpenses] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const load = async () => {
+            const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
+            const isCons = isConsolidated && isAdmin;
+            const start = presetRange === 'custom' ? customDates?.start : null;
+            const end = presetRange === 'custom' ? customDates?.end : null;
             try {
-                setLoading(true);
+                if (!stats) setLoading(true);
                 const [prof, payablesSum, overheads, feed] = await Promise.all([
-                    FinanceApi.getProfitabilitySummary().catch(() => ({})),
+                    FinanceApi.getProfitabilitySummary(start, end, bId, isCons, presetRange).catch(() => ({})),
                     FinanceApi.getVendorPayablesSummary().catch(() => ({})),
                     FinanceApi.getOverheadExpenses().catch(() => []),
                     FinanceApi.getExpenseFeed().catch(() => [])
@@ -1904,9 +1911,9 @@ export const ExpenseOverviewTab = () => {
             }
         };
         load();
-    }, []);
+    }, [presetRange, customDates?.start, customDates?.end, isConsolidated, effectiveBranchId]);
 
-    if (loading || !stats) return <div className="py-20 text-center animate-pulse text-zinc-500 font-bold uppercase tracking-widest text-[10px]">Syncing expense ledger...</div>;
+    if (loading && !stats) return <div className="py-20 text-center animate-pulse text-zinc-500 font-bold uppercase tracking-widest text-[10px]">Syncing expense ledger...</div>;
 
     const cards = [
         { title: "Total Paid Out", value: `₹${stats.totalPaid.toLocaleString()}`, description: "Cash outflow (30 days)" },
@@ -2424,6 +2431,14 @@ export const ExpenseTerminal = () => {
     const { tab = 'overview' } = useParams();
     const navigate = useNavigate();
     const tabsRef = React.useRef(null);
+    const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
+    const [isUpdating, setIsUpdating] = useState(false);
+
+    useEffect(() => {
+        setIsUpdating(true);
+        const timer = setTimeout(() => setIsUpdating(false), 350);
+        return () => clearTimeout(timer);
+    }, [presetRange, customDates?.start, customDates?.end, isConsolidated, effectiveBranchId]);
 
     const tabs = [
         { id: 'overview', label: 'Overview', icon: Settings },
@@ -2449,13 +2464,28 @@ export const ExpenseTerminal = () => {
         <div className="flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-500">
             {/* TERMINAL HEADER (UNBOXED NATIVE CANVAS STYLE) */}
             <div className="px-8 pt-8 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div className="flex flex-col gap-1">
-                    <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight flex items-center gap-2">
-                        <TrendingDown className="w-6 h-6 text-synos-primary animate-none" />
-                        Expenses Command Center
-                    </h1>
-                    <p className="text-xs text-zinc-500 font-medium mt-0.5">Audit and register daily spending, vendor payouts, and recurring overheads.</p>
+                <div className="flex items-center gap-3.5">
+                    <div className="flex flex-col gap-1">
+                        <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight flex items-center gap-2">
+                            <TrendingDown className="w-6 h-6 text-synos-primary animate-none" />
+                            Expenses Command Center
+                        </h1>
+                        <p className="text-xs text-zinc-500 font-medium mt-0.5">Audit and register daily spending, vendor payouts, and recurring overheads.</p>
+                    </div>
+
+                    {isUpdating && (
+                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-synos-primary/10 border border-synos-primary/25 text-synos-primary shadow-xs animate-in fade-in duration-150">
+                            <div className="relative flex items-center justify-center w-3 h-3">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-synos-primary opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-synos-primary"></span>
+                            </div>
+                            <span className="text-xs font-bold tracking-wide uppercase">Updating...</span>
+                        </div>
+                    )}
                 </div>
+
+                {/* Unified Standard Filter Bar (Today, Month, Quarter, Year, Custom Range & Branch Selectors) */}
+                <StandardFilterBar />
             </div>
 
             {/* TAB NAVIGATION (SEGMENTED PILL ON NATIVE CANVAS) */}
@@ -2593,6 +2623,8 @@ export const OutsourcingTerminal = () => {
     const { tab = 'overview' } = useParams();
     const navigate = useNavigate();
     const tabsRef = React.useRef(null);
+    const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
+    const [isUpdating, setIsUpdating] = useState(false);
     const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
     const [payablesData, setPayablesData] = useState([]);
     const [labsData, setLabsData] = useState([]);
@@ -2614,11 +2646,15 @@ export const OutsourcingTerminal = () => {
             }
         }
         loadData();
-    }, [tab]);
+    }, [tab, presetRange, customDates?.start, customDates?.end, isConsolidated, effectiveBranchId]);
 
     const loadData = async () => {
         try {
-            setLoadingData(true);
+            if (payablesData.length > 0) {
+                setIsUpdating(true);
+            } else {
+                setLoadingData(true);
+            }
             const [payables, labs] = await Promise.all([
                 FinanceApi.getOutsourcedPayables().catch(() => []),
                 FinanceApi.getReferenceLabs().catch(() => [])
@@ -2629,6 +2665,7 @@ export const OutsourcingTerminal = () => {
             console.error("Failed to load outsourcing data", err);
         } finally {
             setLoadingData(false);
+            setIsUpdating(false);
         }
     };
 
@@ -2836,15 +2873,28 @@ export const OutsourcingTerminal = () => {
         <div className="flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-500">
             {/* TERMINAL HEADER (UNBOXED NATIVE CANVAS STYLE) */}
             <div className="px-8 pt-8 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div className="flex flex-col gap-1">
-                    <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight flex items-center gap-2">
-                        <Beaker className="w-6 h-6 text-synos-primary animate-none" />
-                        Outsourced Lab Payables
-                    </h1>
-                    <p className="text-xs text-zinc-500 font-medium mt-0.5">Reference lab reconciliation and external test settlement management.</p>
+                <div className="flex items-center gap-3.5">
+                    <div className="flex flex-col gap-1">
+                        <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight flex items-center gap-2">
+                            <Beaker className="w-6 h-6 text-synos-primary animate-none" />
+                            Outsourced Lab Payables
+                        </h1>
+                        <p className="text-xs text-zinc-500 font-medium mt-0.5">Reference lab reconciliation and external test settlement management.</p>
+                    </div>
+
+                    {isUpdating && (
+                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-synos-primary/10 border border-synos-primary/25 text-synos-primary shadow-xs animate-in fade-in duration-150">
+                            <div className="relative flex items-center justify-center w-3 h-3">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-synos-primary opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-synos-primary"></span>
+                            </div>
+                            <span className="text-xs font-bold tracking-wide uppercase">Updating...</span>
+                        </div>
+                    )}
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3 flex-wrap">
+                    <StandardFilterBar />
                     <button 
                         onClick={handleDownloadTabSummary}
                         className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl text-xs font-bold transition-all border border-slate-200 dark:border-zinc-700 shadow-sm cursor-pointer"

@@ -39,6 +39,8 @@ import { CommercialDocumentViewer } from './components/documents/CommercialDocum
 import { DynamicDocumentRenderer } from './components/documents/DynamicDocumentRenderer';
 import { FinancePrintableSummaryModal } from './components/FinancePrintableSummaryModal';
 import { FinanceFilterBar } from './components/FinanceFilterBar';
+import { useGlobalFilter } from '@/context/GlobalFilterContext';
+import { StandardFilterBar } from '@/components/layout/StandardFilterBar';
 
 import { cn, formatDateCompact } from '@/lib/utils';
 
@@ -308,14 +310,44 @@ export const RevenueOverviewTab = ({ stats, onRefresh, presetRange, setPresetRan
 export const RevenueTerminal = () => {
   const { tab = 'overview' } = useParams();
   const navigate = useNavigate();
+  const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
   const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [presetRange, setPresetRange] = useState('month');
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const dynamicCacheRef = React.useRef({});
   const tabsRef = React.useRef(null);
 
+  const loadStats = useCallback(async () => {
+    const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
+    const isCons = isConsolidated && isAdmin;
+    const start = presetRange === 'custom' ? customDates?.start : null;
+    const end = presetRange === 'custom' ? customDates?.end : null;
+    const cacheKey = `${bId || 'consolidated'}_${presetRange}_${start || ''}_${end || ''}`;
+
+    if (dynamicCacheRef.current[cacheKey]) {
+      setStats(dynamicCacheRef.current[cacheKey]);
+      return;
+    }
+
+    if (!isInitialLoading) {
+      setIsUpdating(true);
+    }
+
+    try {
+      const data = await FinanceApi.getProfitabilitySummary(start, end, bId, isCons, presetRange);
+      dynamicCacheRef.current[cacheKey] = data;
+      setStats(data);
+    } catch (err) {
+      console.error("Failed to load revenue overview:", err);
+    } finally {
+      setIsInitialLoading(false);
+      setIsUpdating(false);
+    }
+  }, [isConsolidated, effectiveBranchId, presetRange, customDates, isAdmin, isInitialLoading]);
+
   useEffect(() => {
-    loadStats(presetRange);
-  }, [presetRange]);
+    loadStats();
+  }, [presetRange, customDates?.start, customDates?.end, isConsolidated, effectiveBranchId, isAdmin]);
 
   useEffect(() => {
     if (tabsRef.current) {
@@ -325,18 +357,6 @@ export const RevenueTerminal = () => {
       }
     }
   }, [tab]);
-
-  const loadStats = async (preset = presetRange) => {
-    try {
-      setLoading(true);
-      const data = await FinanceApi.getProfitabilitySummary(null, null, null, true, preset);
-      setStats(data);
-    } catch (err) {
-      console.error("Failed to load revenue overview:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
@@ -348,7 +368,7 @@ export const RevenueTerminal = () => {
     { id: 'history', label: 'Collection History', icon: History }
   ];
 
-  if (loading) return (
+  if (isInitialLoading && !stats) return (
     <div className="p-20 text-center animate-pulse text-zinc-500 font-bold uppercase tracking-widest text-xs flex flex-col items-center gap-3">
       <div className="w-8 h-8 border-3 border-synos-primary border-t-transparent rounded-full animate-spin" />
       <span>Synchronizing revenue intelligence...</span>
@@ -362,7 +382,7 @@ export const RevenueTerminal = () => {
         </div>
         <p className="text-sm font-bold text-rose-500 uppercase tracking-widest">Economic Position Unavailable</p>
         <p className="text-xs text-zinc-500 max-w-xs mx-auto">The system could not retrieve the revenue summary. Please try reconnecting.</p>
-        <button onClick={() => loadStats(presetRange)} className="text-[10px] font-bold text-synos-primary hover:underline uppercase tracking-widest cursor-pointer">Retry Synchronization</button>
+        <button onClick={() => loadStats()} className="text-[10px] font-bold text-synos-primary hover:underline uppercase tracking-widest cursor-pointer">Retry Synchronization</button>
     </div>
   );
 
@@ -370,34 +390,26 @@ export const RevenueTerminal = () => {
     <div className="flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-500">
       {/* TERMINAL HEADER (UNBOXED NATIVE CANVAS STYLE) */}
       <div className="px-8 pt-8 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">Revenue Command Center</h1>
-          <p className="text-xs text-zinc-500 font-medium mt-0.5">Monitor incoming payments, receivables, and drawer balances.</p>
+        <div className="flex items-center gap-3.5">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">Revenue Command Center</h1>
+            <p className="text-xs text-zinc-500 font-medium mt-0.5">Monitor incoming payments, receivables, and drawer balances.</p>
+          </div>
+
+          {/* Minimal Pulsing Radar Loading Badge */}
+          {isUpdating && (
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-synos-primary/10 border border-synos-primary/25 text-synos-primary shadow-xs animate-in fade-in duration-150">
+              <div className="relative flex items-center justify-center w-3 h-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-synos-primary opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-synos-primary"></span>
+              </div>
+              <span className="text-xs font-bold tracking-wide uppercase">Updating...</span>
+            </div>
+          )}
         </div>
 
-        {/* Time Horizon Selector */}
-        <div className="flex items-center gap-1 bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl shrink-0 self-start sm:self-auto">
-          {[
-            { id: 'today', label: 'Today' },
-            { id: 'month', label: 'This Month' },
-            { id: 'quarter', label: 'This Quarter' },
-            { id: 'year', label: 'This Year' },
-            { id: 'all', label: 'All Time' }
-          ].map(t => (
-            <button
-              key={t.id}
-              onClick={() => setPresetRange(t.id)}
-              className={cn(
-                "px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
-                presetRange === t.id 
-                  ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs" 
-                  : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
-              )}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
+        {/* Unified Standard Filter Bar (Today, Month, Quarter, Year, Custom Range & Branch Selectors) */}
+        <StandardFilterBar />
       </div>
 
       {/* TAB NAVIGATION (SEGMENTED PILL ON NATIVE CANVAS) */}
@@ -428,16 +440,15 @@ export const RevenueTerminal = () => {
           <RevenueOverviewTab 
             stats={stats} 
             presetRange={presetRange}
-            setPresetRange={setPresetRange}
-            onRefresh={() => loadStats(presetRange)} 
+            onRefresh={() => loadStats()} 
           />
         )}
-        {tab === 'bills' && <BillsCollectionsScreen presetRange={presetRange} setPresetRange={setPresetRange} />}
-        {tab === 'dues' && <DueBillsScreen presetRange={presetRange} setPresetRange={setPresetRange} />}
-        {tab === 'receivables' && <PendingReceivablesScreen presetRange={presetRange} setPresetRange={setPresetRange} />}
-        {tab === 'corrections' && <VisitCorrectionsScreen presetRange={presetRange} setPresetRange={setPresetRange} />}
-        {tab === 'cancellations' && <CancellationsRefundsScreen presetRange={presetRange} setPresetRange={setPresetRange} />}
-        {tab === 'history' && <CollectionHistoryScreen presetRange={presetRange} setPresetRange={setPresetRange} />}
+        {tab === 'bills' && <BillsCollectionsScreen />}
+        {tab === 'dues' && <DueBillsScreen />}
+        {tab === 'receivables' && <PendingReceivablesScreen />}
+        {tab === 'corrections' && <VisitCorrectionsScreen />}
+        {tab === 'cancellations' && <CancellationsRefundsScreen />}
+        {tab === 'history' && <CollectionHistoryScreen />}
       </div>
     </div>
   );
@@ -472,8 +483,9 @@ const FilterTab = ({ label, count, isActive, onClick }) => (
 
 // --- SCREENS ---
 
-export const BillsCollectionsScreen = ({ presetRange = 'month', setPresetRange }) => {
+export const BillsCollectionsScreen = () => {
     const { user } = useAuth();
+    const { presetRange: globalPreset, customDates: globalCustomDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
     const [searchParams, setSearchParams] = useSearchParams();
     
     // Read pre-filtered parameters from URL query params (e.g. from FinanceOverview clicks)
@@ -492,23 +504,6 @@ export const BillsCollectionsScreen = ({ presetRange = 'month', setPresetRange }
     const [docData, setDocData] = useState(null);
     const [loadingDoc, setLoadingDoc] = useState(false);
     const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
-    
-    // Preset range mapping
-    const presetToLabel = useMemo(() => ({
-        today: 'Today',
-        month: 'This Month',
-        quarter: 'This Quarter',
-        year: 'This Year',
-        all: 'All Time'
-    }), []);
-
-    const labelToPreset = useMemo(() => ({
-        'Today': 'today',
-        'This Month': 'month',
-        'This Quarter': 'quarter',
-        'This Year': 'year',
-        'All Time': 'all'
-    }), []);
 
     // Filter states
     const [statusFilter, setStatusFilter] = useState('All');
@@ -516,23 +511,7 @@ export const BillsCollectionsScreen = ({ presetRange = 'month', setPresetRange }
     const [departmentFilter, setDepartmentFilter] = useState(initialDept);
     const [modalityFilter, setModalityFilter] = useState(initialMod);
     const [branchFilter, setBranchFilter] = useState(initialBranch);
-    const [dateRange, setDateRange] = useState(() => presetToLabel[presetRange] || 'This Month');
-    const [customDates, setCustomDates] = useState({ start: '', end: '' });
     const [searchQuery, setSearchQuery] = useState('');
-
-    // Keep dateRange in sync with header presetRange
-    useEffect(() => {
-        if (presetRange && presetToLabel[presetRange] && dateRange !== presetToLabel[presetRange]) {
-            setDateRange(presetToLabel[presetRange]);
-        }
-    }, [presetRange, presetToLabel]);
-
-    const handleDateRangeChange = (newVal) => {
-        setDateRange(newVal);
-        if (setPresetRange && labelToPreset[newVal]) {
-            setPresetRange(labelToPreset[newVal]);
-        }
-    };
 
     useEffect(() => {
         loadBranches();
@@ -540,7 +519,7 @@ export const BillsCollectionsScreen = ({ presetRange = 'month', setPresetRange }
 
     useEffect(() => {
         loadBills();
-    }, [branchFilter, departmentFilter, modalityFilter, dateRange, customDates]);
+    }, [branchFilter, departmentFilter, modalityFilter, globalPreset, globalCustomDates?.start, globalCustomDates?.end, isConsolidated, effectiveBranchId]);
 
     const loadBranches = async () => {
         try {
@@ -555,13 +534,15 @@ export const BillsCollectionsScreen = ({ presetRange = 'month', setPresetRange }
         try {
             setLoading(true);
             const params = {};
-            if (branchFilter !== 'All') params.branchId = branchFilter;
+            const bId = branchFilter !== 'All' ? branchFilter : (isConsolidated && isAdmin ? null : effectiveBranchId);
+            if (bId) params.branchId = bId;
             if (departmentFilter !== 'All') params.department = departmentFilter;
             if (modalityFilter !== 'All') params.modality = modalityFilter;
-            if (dateRange !== 'All Time' && dateRange !== 'Custom Range') params.preset = dateRange;
-            if (dateRange === 'Custom Range' && customDates.start && customDates.end) {
-                params.startDate = customDates.start;
-                params.endDate = customDates.end;
+            if (globalPreset && globalPreset !== 'all' && globalPreset !== 'custom') {
+                params.preset = globalPreset;
+            } else if (globalPreset === 'custom' && globalCustomDates?.start && globalCustomDates?.end) {
+                params.startDate = globalCustomDates.start;
+                params.endDate = globalCustomDates.end;
             }
             const data = await FinanceApi.getFinanceBills(params);
             setBills(Array.isArray(data) ? data : (data?.bills || []));
@@ -1222,8 +1203,9 @@ export const BillsCollectionsScreen = ({ presetRange = 'month', setPresetRange }
     );
 };
 
-export const DueBillsScreen = ({ presetRange = 'month', setPresetRange }) => {
+export const DueBillsScreen = () => {
     const { user } = useAuth();
+    const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
     const [dueBills, setDueBills] = useState([]);
     const [branches, setBranches] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -1251,12 +1233,21 @@ export const DueBillsScreen = ({ presetRange = 'month', setPresetRange }) => {
     useEffect(() => {
         loadData();
         AdminApi.getBranches().then(b => setBranches(b || [])).catch(() => {});
-    }, [presetRange]);
+    }, [presetRange, isConsolidated, effectiveBranchId, branchFilter, customDates?.start, customDates?.end]);
 
     const loadData = async () => {
         try {
             setLoading(true);
-            const data = await FinanceApi.getDueBills({ preset: presetRange });
+            const bId = branchFilter !== 'All' ? branchFilter : (isConsolidated && isAdmin ? null : effectiveBranchId);
+            const params = {
+                preset: presetRange,
+                branchId: bId || undefined
+            };
+            if (presetRange === 'custom' && customDates?.start && customDates?.end) {
+                params.startDate = customDates.start;
+                params.endDate = customDates.end;
+            }
+            const data = await FinanceApi.getDueBills(params);
             setDueBills(Array.isArray(data) ? data : []);
         } catch (err) {
             console.error("Failed to load patient due bills:", err);
@@ -1754,8 +1745,9 @@ export const DueBillsScreen = ({ presetRange = 'month', setPresetRange }) => {
     );
 };
 
-export const PendingReceivablesScreen = ({ presetRange = 'month', setPresetRange }) => {
+export const PendingReceivablesScreen = () => {
     const { user } = useAuth();
+    const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
     const [partnerSummaries, setPartnerSummaries] = useState([]);
     const [allBills, setAllBills] = useState([]);
     const [branches, setBranches] = useState([]);
@@ -1776,14 +1768,13 @@ export const PendingReceivablesScreen = ({ presetRange = 'month', setPresetRange
     const [statusFilter, setStatusFilter] = useState('All');
     const [doctorFilter, setDoctorFilter] = useState('All');
     const [dateRange, setDateRange] = useState('All Time');
-    const [customDates, setCustomDates] = useState({ start: '', end: '' });
     const [branchFilter, setBranchFilter] = useState('All');
     const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
 
     useEffect(() => {
         loadData();
         AdminApi.getBranches().then(b => setBranches(b || [])).catch(() => {});
-    }, []);
+    }, [presetRange, isConsolidated, effectiveBranchId, customDates?.start, customDates?.end]);
 
     const loadData = async () => {
         try {
@@ -2324,8 +2315,9 @@ export const PendingReceivablesScreen = ({ presetRange = 'month', setPresetRange
     );
 };
 
-export const VisitCorrectionsScreen = ({ presetRange = 'month', setPresetRange }) => {
+export const VisitCorrectionsScreen = () => {
     const { user } = useAuth();
+    const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
     const [corrections, setCorrections] = useState([]);
     const [branches, setBranches] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -2348,12 +2340,21 @@ export const VisitCorrectionsScreen = ({ presetRange = 'month', setPresetRange }
     useEffect(() => {
         loadData();
         AdminApi.getBranches().then(b => setBranches(b || [])).catch(() => {});
-    }, [presetRange]);
+    }, [presetRange, isConsolidated, effectiveBranchId, branchFilter, customDates?.start, customDates?.end]);
 
     const loadData = async () => {
         try {
             setLoading(true);
-            const data = await FinanceApi.getVisitCorrections({ preset: presetRange });
+            const bId = branchFilter !== 'All' ? branchFilter : (isConsolidated && isAdmin ? null : effectiveBranchId);
+            const params = {
+                preset: presetRange,
+                branchId: bId || undefined
+            };
+            if (presetRange === 'custom' && customDates?.start && customDates?.end) {
+                params.startDate = customDates.start;
+                params.endDate = customDates.end;
+            }
+            const data = await FinanceApi.getVisitCorrections(params);
             setCorrections(Array.isArray(data) ? data : []);
         } catch (err) {
             console.error("Failed to load visit correction audit trail:", err);
@@ -2975,7 +2976,8 @@ export const VisitCorrectionsScreen = ({ presetRange = 'month', setPresetRange }
     );
 };
 
-export const CollectionHistoryScreen = ({ presetRange = 'month', setPresetRange }) => {
+export const CollectionHistoryScreen = () => {
+    const { presetRange, isConsolidated, effectiveBranchId } = useGlobalFilter();
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -2987,14 +2989,6 @@ export const CollectionHistoryScreen = ({ presetRange = 'month', setPresetRange 
         all: 'All Time'
     }), []);
 
-    const labelToPreset = useMemo(() => ({
-        'Today': 'today',
-        'This Month': 'month',
-        'This Quarter': 'quarter',
-        'This Year': 'year',
-        'All Time': 'all'
-    }), []);
-
     // Multi-dimensional filters
     const [searchQuery, setSearchQuery] = useState('');
     const [paymentModeFilter, setPaymentModeFilter] = useState('All');
@@ -3004,21 +2998,8 @@ export const CollectionHistoryScreen = ({ presetRange = 'month', setPresetRange 
     const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
 
     useEffect(() => {
-        if (presetRange && presetToLabel[presetRange] && dateRange !== presetToLabel[presetRange]) {
-            setDateRange(presetToLabel[presetRange]);
-        }
-    }, [presetRange, presetToLabel]);
-
-    const handleDateRangeChange = (newVal) => {
-        setDateRange(newVal);
-        if (setPresetRange && labelToPreset[newVal]) {
-            setPresetRange(labelToPreset[newVal]);
-        }
-    };
-
-    useEffect(() => {
         loadHistory();
-    }, []);
+    }, [isConsolidated, effectiveBranchId, presetRange]);
 
     const loadHistory = async () => {
         try {
@@ -3267,8 +3248,9 @@ export const CollectionHistoryScreen = ({ presetRange = 'month', setPresetRange 
     );
 };
 
-export const CancellationsRefundsScreen = ({ presetRange = 'month', setPresetRange }) => {
+export const CancellationsRefundsScreen = () => {
     const { user } = useAuth();
+    const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
     const [cancellations, setCancellations] = useState([]);
     const [branches, setBranches] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -3286,12 +3268,21 @@ export const CancellationsRefundsScreen = ({ presetRange = 'month', setPresetRan
     useEffect(() => {
         loadData();
         AdminApi.getBranches().then(b => setBranches(b || [])).catch(() => {});
-    }, [presetRange]);
+    }, [presetRange, isConsolidated, effectiveBranchId, branchFilter, customDates?.start, customDates?.end]);
 
     const loadData = async () => {
         try {
             setLoading(true);
-            const data = await FinanceApi.getVisitCancellations({ preset: presetRange });
+            const bId = branchFilter !== 'All' ? branchFilter : (isConsolidated && isAdmin ? null : effectiveBranchId);
+            const params = {
+                preset: presetRange,
+                branchId: bId || undefined
+            };
+            if (presetRange === 'custom' && customDates?.start && customDates?.end) {
+                params.startDate = customDates.start;
+                params.endDate = customDates.end;
+            }
+            const data = await FinanceApi.getVisitCancellations(params);
             setCancellations(Array.isArray(data) ? data : []);
         } catch (err) {
             console.error("Failed to load visit cancellations audit feed:", err);

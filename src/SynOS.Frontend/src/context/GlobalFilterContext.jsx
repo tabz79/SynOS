@@ -123,6 +123,15 @@ export const GlobalFilterProvider = ({ children }) => {
         return activeBranchId || activeOversightBranchId || user?.branchId || null;
     }, [isConsolidated, isAdmin, activeBranchId, activeOversightBranchId, user?.branchId]);
 
+    // Keep activeBranchId in localStorage synchronized for withBranchId API calls
+    useEffect(() => {
+        if (isConsolidated && isAdmin) {
+            localStorage.removeItem('activeBranchId');
+        } else if (effectiveBranchId) {
+            localStorage.setItem('activeBranchId', effectiveBranchId);
+        }
+    }, [isConsolidated, isAdmin, effectiveBranchId]);
+
     const currentBranchName = useMemo(() => {
         if (isConsolidated && isAdmin) return "All Branches";
         const found = branches.find(b => (b.branchId || b.id) === effectiveBranchId);

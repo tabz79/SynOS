@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { FinanceApi } from '@/api/finance';
+import { useGlobalFilter } from '@/context/GlobalFilterContext';
+import { StandardFilterBar } from '@/components/layout/StandardFilterBar';
 
 // --- SHARED COMPONENTS ---
 
@@ -41,45 +43,55 @@ const MetricCard = ({ title, value, subtext, icon: Icon, trend, isPositive }) =>
 // --- SCREENS ---
 
 export const IntelligenceDashboard = () => {
-    const { user, activeOversightBranchId } = useAuth();
+    const { user } = useAuth();
+    const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [dateRange, setDateRange] = useState('month');
+    const [isUpdating, setIsUpdating] = useState(false);
 
     useEffect(() => {
         const load = async () => {
+            const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
+            const isCons = isConsolidated && isAdmin;
+            const start = presetRange === 'custom' ? customDates?.start : null;
+            const end = presetRange === 'custom' ? customDates?.end : null;
             try {
-                setLoading(true);
-                const bId = activeOversightBranchId || user?.branchId;
-                const isCons = !bId;
-                const data = await FinanceApi.getProfitabilitySummary(null, null, bId, isCons, dateRange);
+                if (stats) {
+                    setIsUpdating(true);
+                } else {
+                    setLoading(true);
+                }
+                const data = await FinanceApi.getProfitabilitySummary(start, end, bId, isCons, presetRange);
                 setStats(data);
             } catch (err) {
                 console.error(err);
             } finally {
                 setLoading(false);
+                setIsUpdating(false);
             }
         };
         load();
-    }, [dateRange, activeOversightBranchId, user?.branchId]);
+    }, [presetRange, customDates?.start, customDates?.end, isConsolidated, effectiveBranchId, isAdmin]);
 
-    if (loading || !stats) return <LoadingState />;
+    if (loading && !stats) return <LoadingState />;
 
-    const totalBilled = Math.round(Number(stats.totalRevenueAccrual ?? stats.billedRevenue ?? 0));
-    const cashCollected = Math.round(Number(stats.totalRevenueCash ?? stats.cashInflow ?? stats.cashCollected ?? stats.moneyCollectedCash ?? 0));
-    const materialCosts = Math.round(Number(stats.consumableCashOutflow ?? stats.materialCost ?? 0));
-    const doctorPayouts = Math.round(Number(stats.referralCashOutflow ?? stats.doctorPayouts ?? 0));
-    const payrollCosts = Math.round(Number(stats.payrollCashOutflow ?? stats.payrollSalary ?? 0));
-    const overheadCosts = Math.round(Number(stats.overheadCashOutflow ?? stats.monthlyOverheads ?? 0));
-    const outsourcedCosts = Math.round(Number(stats.outsourcedTestCashOutflow ?? 0));
-    const totalExpenses = Math.round(Number(stats.totalExpensesCash ?? (materialCosts + doctorPayouts + payrollCosts + overheadCosts + outsourcedCosts)));
-    const actualProfit = Math.round(Number(stats.netCashPosition ?? stats.netCashProfit ?? (cashCollected - totalExpenses)));
+    const totalBilled = Math.round(Number(stats?.totalRevenueAccrual ?? stats?.billedRevenue ?? 0));
+    const cashCollected = Math.round(Number(stats?.totalRevenueCash ?? stats?.cashInflow ?? stats?.cashCollected ?? stats?.moneyCollectedCash ?? 0));
+    const materialCosts = Math.round(Number(stats?.consumableCashOutflow ?? stats?.materialCost ?? 0));
+    const doctorPayouts = Math.round(Number(stats?.referralCashOutflow ?? stats?.doctorPayouts ?? 0));
+    const payrollCosts = Math.round(Number(stats?.payrollCashOutflow ?? stats?.payrollSalary ?? 0));
+    const overheadCosts = Math.round(Number(stats?.overheadCashOutflow ?? stats?.monthlyOverheads ?? 0));
+    const outsourcedCosts = Math.round(Number(stats?.outsourcedTestCashOutflow ?? 0));
+    const totalExpenses = Math.round(Number(stats?.totalExpensesCash ?? (materialCosts + doctorPayouts + payrollCosts + overheadCosts + outsourcedCosts)));
+    const actualProfit = Math.round(Number(stats?.netCashPosition ?? stats?.netCashProfit ?? (cashCollected - totalExpenses)));
 
     const handleExportPnl = async () => {
         try {
-            const bId = activeOversightBranchId || user?.branchId;
-            const isCons = !bId;
-            await FinanceApi.exportProfitabilityPnl(dateRange, isCons, bId);
+            const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
+            const isCons = isConsolidated && isAdmin;
+            const start = presetRange === 'custom' ? customDates?.start : '';
+            const end = presetRange === 'custom' ? customDates?.end : '';
+            await FinanceApi.exportProfitabilityPnl(presetRange, isCons, bId, start, end);
         } catch {
             alert("Failed to download P&L Statement");
         }
@@ -90,26 +102,27 @@ export const IntelligenceDashboard = () => {
             
             {/* TOP HEADER / ACTION BAR */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div className="flex flex-col gap-1">
-                    <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">Economics Intelligence</h1>
-                    <p className="text-xs text-zinc-500 font-medium">Real-time profitability, test margins, and operational expense breakdowns.</p>
-                </div>
-                <div className="flex flex-wrap items-center gap-3">
-                    <div className="flex items-center gap-1 bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
-                        {[
-                            { id: 'today', label: 'Today' },
-                            { id: 'month', label: 'This Month' },
-                            { id: 'quarter', label: 'This Quarter' },
-                            { id: 'year', label: 'This Year' }
-                        ].map(r => (
-                            <button 
-                                key={r.id} onClick={() => setDateRange(r.id)}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${dateRange === r.id ? 'bg-white dark:bg-zinc-900 shadow-xs text-synos-primary' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300'}`}
-                            >
-                                {r.label}
-                            </button>
-                        ))}
+                <div className="flex items-center gap-3.5">
+                    <div className="flex flex-col gap-1">
+                        <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">Economics Intelligence</h1>
+                        <p className="text-xs text-zinc-500 font-medium">Real-time profitability, test margins, and operational expense breakdowns.</p>
                     </div>
+
+                    {isUpdating && (
+                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-synos-primary/10 border border-synos-primary/25 text-synos-primary shadow-xs animate-in fade-in duration-150">
+                            <div className="relative flex items-center justify-center w-3 h-3">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-synos-primary opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-synos-primary"></span>
+                            </div>
+                            <span className="text-xs font-bold tracking-wide uppercase">Updating...</span>
+                        </div>
+                    )}
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3">
+                    {/* Unified Standard Filter Bar (Today, Month, Quarter, Year, Custom Range & Branch Selectors) */}
+                    <StandardFilterBar />
+
                     <button
                         onClick={handleExportPnl}
                         className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl text-xs font-bold transition-all border border-slate-200 dark:border-zinc-700 shadow-sm cursor-pointer"
@@ -124,10 +137,10 @@ export const IntelligenceDashboard = () => {
             <div className="p-6 rounded-2xl synos-dept-card space-y-2">
                 <div className="flex items-center gap-2">
                     <Zap className="w-4 h-4 text-synos-primary" />
-                    <h2 className="text-xs font-bold uppercase tracking-wider text-synos-primary">Owner Executive Briefing ({dateRange === 'today' ? 'Today' : dateRange === 'year' ? 'This Year' : dateRange === 'quarter' ? 'This Quarter' : 'This Month'})</h2>
+                    <h2 className="text-xs font-bold uppercase tracking-wider text-synos-primary">Owner Executive Briefing ({presetRange === 'today' ? 'Today' : presetRange === 'year' ? 'This Year' : presetRange === 'quarter' ? 'This Quarter' : presetRange === 'custom' ? 'Custom Range' : 'This Month'})</h2>
                 </div>
                 <p className="text-sm font-medium text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                    {dateRange === 'today' ? (
+                    {presetRange === 'today' ? (
                         <>Today your lab collected <strong className="text-emerald-600 dark:text-emerald-400">₹{cashCollected.toLocaleString('en-IN')}</strong> in cash. Doctor payouts owed today stand at <strong className="text-synos-primary">₹{doctorPayouts.toLocaleString('en-IN')}</strong>, leaving <strong className="text-emerald-600 dark:text-emerald-400">₹{(cashCollected - doctorPayouts).toLocaleString('en-IN')}</strong> Actual Cash Profit for today's settlement.</>
                     ) : (
                         <>Your lab collected <strong className="text-emerald-600 dark:text-emerald-400">₹{cashCollected.toLocaleString('en-IN')}</strong> in cash against <strong className="text-zinc-900 dark:text-white">₹{totalBilled.toLocaleString('en-IN')}</strong> total bills created. You spent <strong className="text-zinc-700 dark:text-zinc-300 font-bold">₹{materialCosts.toLocaleString('en-IN')}</strong> on reagents/materials, <strong className="text-synos-primary">₹{doctorPayouts.toLocaleString('en-IN')}</strong> on doctor payouts, and <strong className="text-zinc-700 dark:text-zinc-300 font-bold">₹{payrollCosts.toLocaleString('en-IN')}</strong> on staff salaries, leaving <strong className="text-emerald-600 dark:text-emerald-400">₹{actualProfit.toLocaleString('en-IN')}</strong> Actual Cash Profit.</>

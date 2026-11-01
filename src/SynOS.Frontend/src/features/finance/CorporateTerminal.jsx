@@ -37,6 +37,8 @@ import { ReceptionApi, fetchTestCatalogCached } from '@/api/reception';
 import { FinancePrintableSummaryModal } from './components/FinancePrintableSummaryModal';
 import { CommercialDocumentViewer } from './components/documents/CommercialDocumentViewer';
 import { DynamicDocumentRenderer } from './components/documents/DynamicDocumentRenderer';
+import { useGlobalFilter } from '@/context/GlobalFilterContext';
+import { StandardFilterBar } from '@/components/layout/StandardFilterBar';
 
 export function CorporateTerminal({ forcedTab, hideHeader = false }) {
     const { tab: paramTab = 'overview' } = useParams();
@@ -44,11 +46,13 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
     const navigate = useNavigate();
     const { theme } = useTheme();
     const isDark = theme === 'dark';
+    const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
 
     const [accounts, setAccounts] = useState([]);
     const [visits, setVisits] = useState([]);
     const [testCatalog, setTestCatalog] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isUpdating, setIsUpdating] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedAccountId, setSelectedAccountId] = useState('');
     const [rateRules, setRateRules] = useState([]);
@@ -82,12 +86,12 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
         { id: 'settlements', label: 'Corporate Settlements', icon: History }
     ];
 
-    useEffect(() => {
-        loadData();
-    }, []);
-
     const loadData = async () => {
-        setIsLoading(true);
+        if (accounts.length > 0 || visits.length > 0) {
+            setIsUpdating(true);
+        } else {
+            setIsLoading(true);
+        }
         try {
             const [accsRes, visitsRes, catRes] = await Promise.allSettled([
                 ReceptionApi.getCorporateAccounts(),
@@ -110,8 +114,13 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
             console.error("Failed to load corporate terminal data", err);
         } finally {
             setIsLoading(false);
+            setIsUpdating(false);
         }
     };
+
+    useEffect(() => {
+        loadData();
+    }, [isConsolidated, effectiveBranchId, presetRange, customDates?.start, customDates?.end]);
 
     // Load rate rules / packages when selectedAccountId changes
     useEffect(() => {
@@ -442,7 +451,7 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
                 <>
                     {/* TERMINAL HEADER (UNBOXED NATIVE CANVAS STYLE) */}
                     <div className="px-8 pt-8 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3.5">
                             <div className="p-2.5 bg-indigo-500/10 text-indigo-500 rounded-xl">
                                 <Briefcase size={24} />
                             </div>
@@ -454,9 +463,22 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
                                     Client Directory, Contracted Rates & Corporate Package Infrastructure
                                 </p>
                             </div>
+
+                            {isUpdating && (
+                                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-synos-primary/10 border border-synos-primary/25 text-synos-primary shadow-xs animate-in fade-in duration-150">
+                                    <div className="relative flex items-center justify-center w-3 h-3">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-synos-primary opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-synos-primary"></span>
+                                    </div>
+                                    <span className="text-xs font-bold tracking-wide uppercase">Updating...</span>
+                                </div>
+                            )}
                         </div>
 
                         <div className="flex items-center gap-4 flex-wrap">
+                            {/* Unified Standard Filter Bar (Today, Month, Quarter, Year, Custom Range & Branch Selectors) */}
+                            <StandardFilterBar />
+
                             <div className="flex items-center gap-3 bg-slate-200/50 dark:bg-zinc-800/60 p-1.5 px-3 rounded-xl border border-slate-300/40 dark:border-zinc-700/40">
                                 <div className="text-right">
                                     <p className="text-[9px] text-zinc-500 uppercase font-black tracking-wider block">Total B2B Invoiced</p>
