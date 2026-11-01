@@ -110616,17 +110616,17 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
       className: "flex-1 min-h-0 flex flex-col justify-start gap-3 sm:gap-3.5 lg:gap-4",
       children: [
         r.jsxs("div", {
-          className: "flex-1 min-h-[105px] p-4 sm:p-4.5 rounded-[22px] bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-[0_4px_20px_rgba(15,35,60,0.06)] grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 items-center",
+          className: "flex-1 min-h-[105px] p-4 sm:p-5 rounded-[22px] bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-[0_4px_20px_rgba(15,35,60,0.06)] grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-center",
           children: [
             r.jsxs("div", {
-              className: "lg:col-span-4 flex items-center gap-3.5 sm:gap-4 min-w-0",
+              className: "lg:col-span-4 flex items-center gap-4 sm:gap-4.5 min-w-0 pr-0 lg:pr-2",
               children: [
                 r.jsx("div", {
-                  className: "w-[64px] h-[64px] sm:w-[72px] sm:h-[72px] rounded-[18px] bg-gradient-to-b from-[#EBF5FF] to-[#D6EBFE] border border-white/90 dark:border-white/10 shadow-[0_8px_18px_rgba(37,99,235,0.18),inset_0_2px_2px_#FFFFFF] flex items-center justify-center text-[#1C6CF2] dark:text-sky-400 shrink-0",
+                  className: "w-[68px] h-[68px] sm:w-[76px] sm:h-[76px] rounded-[20px] bg-gradient-to-b from-[#EBF5FF] to-[#D6EBFE] border border-white/90 dark:border-white/10 shadow-[0_8px_18px_rgba(37,99,235,0.18),inset_0_2px_2px_#FFFFFF] flex items-center justify-center text-[#1C6CF2] dark:text-sky-400 shrink-0",
                   children: r.jsxs("svg", {
                     viewBox: "0 0 24 24",
-                    width: "34",
-                    height: "34",
+                    width: "36",
+                    height: "36",
                     fill: "none",
                     stroke: "currentColor",
                     strokeWidth: "2.2",
@@ -110681,7 +110681,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                       ]
                     }),
                     r.jsxs("p", {
-                      className: "text-2xl sm:text-3xl lg:text-[38px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums",
+                      className: "text-2xl sm:text-3xl lg:text-[38px] xl:text-[42px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-1 tabular-nums",
                       children: [
                         "\u20B9",
                         T(t)
@@ -110696,74 +110696,72 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
               ]
             }),
             r.jsxs("div", {
-              className: "lg:col-span-3 lg:border-x lg:border-slate-100 dark:lg:border-zinc-800 lg:px-4 xl:px-5 flex flex-col justify-center space-y-2",
+              className: "lg:col-span-8 lg:border-l lg:border-slate-100 dark:lg:border-zinc-800 lg:pl-6 xl:pl-8 flex flex-col justify-center space-y-3 min-w-0",
               children: [
                 r.jsxs("div", {
                   className: "flex items-center justify-between",
                   children: [
-                    r.jsx("span", {
-                      className: "text-xs font-bold text-slate-700 dark:text-zinc-300",
-                      children: "Net Realization Rate"
+                    r.jsx("h3", {
+                      className: "text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal",
+                      children: "Doctor Payouts vs Receivables & Dues"
                     }),
-                    r.jsx("span", {
-                      className: "text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60",
-                      children: t + c > 0 ? `${(t / (t + c) * 100).toFixed(1)}% Yield` : "100% Yield"
-                    })
-                  ]
-                }),
-                r.jsx("div", {
-                  className: "h-[18px] sm:h-[20px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner",
-                  children: r.jsx("div", {
-                    className: "h-full rounded-full bg-gradient-to-r from-[#38BDF8] via-[#3B82F6] to-[#2563EB] transition-all duration-500 shadow-[0_2px_8px_rgba(37,99,235,0.35)]",
-                    style: {
-                      width: `${t + c > 0 ? Math.min(100, Math.max(5, t / (t + c) * 100)) : 100}%`
-                    }
-                  })
-                }),
-                r.jsxs("div", {
-                  className: "flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-zinc-400",
-                  children: [
-                    r.jsx("span", {
-                      children: "Avg Revenue / Bill (ARPB)"
-                    }),
-                    r.jsxs("span", {
-                      className: "font-bold text-slate-800 dark:text-zinc-200 tabular-nums",
+                    r.jsxs("div", {
+                      className: "hidden sm:flex items-center gap-2 text-xs font-bold",
                       children: [
-                        "\u20B9",
-                        T(e > 0 ? Math.round(t / e) : t)
+                        r.jsx("span", {
+                          className: "text-slate-500 dark:text-zinc-400",
+                          children: "Total Obligations:"
+                        }),
+                        r.jsxs("span", {
+                          className: "text-slate-900 dark:text-white tabular-nums font-extrabold",
+                          children: [
+                            "\u20B9",
+                            T(P)
+                          ]
+                        })
                       ]
                     })
                   ]
-                })
-              ]
-            }),
-            r.jsxs("div", {
-              className: "lg:col-span-5 flex flex-col justify-center space-y-2.5",
-              children: [
-                r.jsx("h3", {
-                  className: "text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal",
-                  children: "Doctor Payouts vs Receivables & Dues"
                 }),
                 r.jsxs("div", {
-                  className: "relative h-[20px] sm:h-[22px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 flex items-center overflow-visible shadow-inner",
+                  className: "relative h-[26px] sm:h-[30px] lg:h-[32px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 flex items-center overflow-visible shadow-inner",
                   children: [
                     r.jsx("div", {
-                      className: "h-full bg-gradient-to-r from-[#60A5FA] via-[#7BB3F0] to-[#93C5FD] rounded-l-full transition-all duration-500",
+                      className: "h-full bg-gradient-to-r from-[#60A5FA] via-[#3B82F6] to-[#2563EB] rounded-l-full transition-all duration-500 flex items-center pl-3 overflow-hidden shadow-[0_2px_8px_rgba(37,99,235,0.25)]",
                       style: {
                         width: `${P > 0 ? G : 0}%`
-                      }
+                      },
+                      children: G > 15 && r.jsxs("span", {
+                        className: "text-[11px] font-bold text-white drop-shadow-xs truncate select-none",
+                        children: [
+                          "Commissions (",
+                          G,
+                          "%)"
+                        ]
+                      })
                     }),
                     r.jsx("div", {
-                      className: "h-full bg-gradient-to-r from-[#FCA5A5] via-[#FDA4AF] to-[#FECDD3] rounded-r-full transition-all duration-500",
+                      className: "h-full bg-gradient-to-r from-[#FDA4AF] via-[#FB7185] to-[#F43F5E] rounded-r-full transition-all duration-500 flex items-center justify-end pr-3 overflow-hidden shadow-[0_2px_8px_rgba(244,63,94,0.25)]",
                       style: {
                         width: `${P > 0 ? H : 100}%`
-                      }
+                      },
+                      children: H > 15 && r.jsxs("span", {
+                        className: "text-[11px] font-bold text-white drop-shadow-xs truncate select-none",
+                        children: [
+                          "Receivables & Dues (",
+                          H,
+                          "%)"
+                        ]
+                      })
                     }),
                     r.jsx("div", {
-                      className: "absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white shadow-[0_3px_10px_rgba(15,35,60,0.25),0_0_0_2px_#FFFFFF] border border-white/80 pointer-events-none transition-all duration-500 z-10",
+                      className: "absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white dark:bg-zinc-100 shadow-[0_3px_12px_rgba(15,35,60,0.25),0_0_0_2.5px_#FFFFFF] border border-slate-100 pointer-events-none transition-all duration-500 z-10 flex items-center justify-center",
                       style: {
                         left: `${P > 0 ? G : _ > 0 ? 50 : 0}%`
-                      }
+                      },
+                      children: r.jsx("div", {
+                        className: "w-2 h-2 rounded-full bg-slate-400/80"
+                      })
                     })
                   ]
                 }),
@@ -110771,81 +110769,79 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                   className: "flex items-center justify-between pt-0.5",
                   children: [
                     r.jsxs("div", {
-                      className: "flex items-center gap-2.5",
+                      className: "flex items-center gap-3",
                       children: [
                         r.jsx("div", {
-                          className: "w-9 h-9 sm:w-10 sm:h-10 rounded-[12px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs",
+                          className: "w-10 h-10 sm:w-11 sm:h-11 rounded-[14px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs",
                           children: r.jsx(TC, {
-                            size: 20,
-                            strokeWidth: 2.2
+                            size: 22,
+                            strokeWidth: 2.3
                           })
                         }),
                         r.jsxs("div", {
                           children: [
                             r.jsxs("div", {
-                              className: "flex items-baseline gap-1.5",
+                              className: "flex items-baseline gap-2",
                               children: [
                                 r.jsxs("span", {
-                                  className: "text-lg sm:text-xl lg:text-[22px] font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight",
+                                  className: "text-xl sm:text-2xl lg:text-[26px] font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-tight",
                                   children: [
                                     "\u20B9",
                                     T(_)
                                   ]
                                 }),
                                 r.jsxs("span", {
-                                  className: "text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-zinc-400 tabular-nums",
+                                  className: "text-xs sm:text-sm font-bold text-[#1C6CF2] dark:text-sky-400 bg-sky-50 dark:bg-sky-950/60 px-2 py-0.5 rounded-md border border-sky-100 dark:border-sky-800/40 tabular-nums",
                                   children: [
-                                    "(",
                                     P > 0 ? G : 0,
-                                    "%)"
+                                    "%"
                                   ]
                                 })
                               ]
                             }),
                             r.jsx("span", {
-                              className: "text-[11px] sm:text-xs text-slate-600 dark:text-zinc-400 font-bold block",
-                              children: "Doctor Commissions"
+                              className: "text-xs sm:text-sm text-slate-600 dark:text-zinc-400 font-bold block mt-0.5",
+                              children: "Doctor Commissions (Referral Payouts)"
                             })
                           ]
                         })
                       ]
                     }),
                     r.jsxs("div", {
-                      className: "flex items-center gap-2.5 text-right",
+                      className: "flex items-center gap-3 text-right",
                       children: [
                         r.jsxs("div", {
                           children: [
                             r.jsxs("div", {
-                              className: "flex items-baseline gap-1.5 justify-end",
+                              className: "flex items-baseline gap-2 justify-end",
                               children: [
                                 r.jsxs("span", {
-                                  className: "text-lg sm:text-xl lg:text-[22px] font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight",
+                                  className: "text-xs sm:text-sm font-bold text-[#E11D48] dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 px-2 py-0.5 rounded-md border border-rose-100 dark:border-rose-800/40 tabular-nums",
                                   children: [
-                                    "\u20B9",
-                                    T(U)
+                                    P > 0 ? H : 0,
+                                    "%"
                                   ]
                                 }),
                                 r.jsxs("span", {
-                                  className: "text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-zinc-400 tabular-nums",
+                                  className: "text-xl sm:text-2xl lg:text-[26px] font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-tight",
                                   children: [
-                                    "(",
-                                    P > 0 ? H : 0,
-                                    "%)"
+                                    "\u20B9",
+                                    T(U)
                                   ]
                                 })
                               ]
                             }),
                             r.jsx("span", {
-                              className: "text-[11px] sm:text-xs text-slate-600 dark:text-zinc-400 font-bold block",
-                              children: "Receivables & Desk Dues"
+                              className: "text-xs sm:text-sm text-slate-600 dark:text-zinc-400 font-bold block mt-0.5",
+                              children: "Receivables & Desk Dues (Outstanding)"
                             })
                           ]
                         }),
                         r.jsx("div", {
-                          className: "w-9 h-9 sm:w-10 sm:h-10 rounded-[12px] bg-[#FFF1F2] text-[#FB7185] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs",
+                          className: "w-10 h-10 sm:w-11 sm:h-11 rounded-[14px] bg-[#FFF1F2] text-[#FB7185] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs",
                           children: r.jsx(la, {
-                            size: 20,
-                            strokeWidth: 2.2
+                            size: 22,
+                            strokeWidth: 2.3
                           })
                         })
                       ]

@@ -672,14 +672,14 @@ export const FinanceOverviewDeck = ({
 
     return (
         <div className="flex-1 min-h-0 flex flex-col justify-start gap-3 sm:gap-3.5 lg:gap-4">
-            {/* ROW 1: HERO CONTROL DECK: 3 MATHEMATICALLY BALANCED PODS (CLOSES MARKER 2) */}
-            <div className="flex-1 min-h-[105px] p-4 sm:p-4.5 rounded-[22px] bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-[0_4px_20px_rgba(15,35,60,0.06)] grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 items-center">
+            {/* ROW 1: HERO CONTROL DECK: 2 BALANCED PODS (IOS INSPIRED SPLIT SLIDER & SCALED HERO METRIC) */}
+            <div className="flex-1 min-h-[105px] p-4 sm:p-5 rounded-[22px] bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-[0_4px_20px_rgba(15,35,60,0.06)] grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-center">
                 
-                {/* Pod 1 (4 Cols): Total Amount Billed Hero Metric */}
-                <div className="lg:col-span-4 flex items-center gap-3.5 sm:gap-4 min-w-0">
+                {/* Section 1 (4 Cols): Total Amount Billed Hero Metric (Scaled to Adapt to Card Height/Width) */}
+                <div className="lg:col-span-4 flex items-center gap-4 sm:gap-4.5 min-w-0 pr-0 lg:pr-2">
                     {/* 3D Tactile Squircle Icon */}
-                    <div className="w-[64px] h-[64px] sm:w-[72px] sm:h-[72px] rounded-[18px] bg-gradient-to-b from-[#EBF5FF] to-[#D6EBFE] border border-white/90 dark:border-white/10 shadow-[0_8px_18px_rgba(37,99,235,0.18),inset_0_2px_2px_#FFFFFF] flex items-center justify-center text-[#1C6CF2] dark:text-sky-400 shrink-0">
-                        <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <div className="w-[68px] h-[68px] sm:w-[76px] sm:h-[76px] rounded-[20px] bg-gradient-to-b from-[#EBF5FF] to-[#D6EBFE] border border-white/90 dark:border-white/10 shadow-[0_8px_18px_rgba(37,99,235,0.18),inset_0_2px_2px_#FFFFFF] flex items-center justify-center text-[#1C6CF2] dark:text-sky-400 shrink-0">
+                        <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                             <rect x="2" y="4" width="20" height="16" rx="3" />
                             <line x1="2" y1="10" x2="22" y2="10" />
                             <line x1="6" y1="15" x2="10" y2="15" />
@@ -696,7 +696,7 @@ export const FinanceOverviewDeck = ({
                                 {totalBillsCount} Bills Processed
                             </span>
                         </div>
-                        <p className="text-2xl sm:text-3xl lg:text-[38px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums">
+                        <p className="text-2xl sm:text-3xl lg:text-[38px] xl:text-[42px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-1 tabular-nums">
                             ₹{formatInr(billedRevenue)}
                         </p>
                         <p className="text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-zinc-400 truncate">
@@ -707,99 +707,89 @@ export const FinanceOverviewDeck = ({
                     </div>
                 </div>
 
-                {/* Pod 2 (3 Cols): Executive Bridge - Realization Rate & ARPB (OBLITERATES MARKER 2 DEAD SPACE!) */}
-                <div className="lg:col-span-3 lg:border-x lg:border-slate-100 dark:lg:border-zinc-800 lg:px-4 xl:px-5 flex flex-col justify-center space-y-2">
+                {/* Section 2 (8 Cols): Doctor Payouts vs Receivables & Dues (Reclaims Full Space, Fatter Scaled Slider, Clear Hierarchy) */}
+                <div className="lg:col-span-8 lg:border-l lg:border-slate-100 dark:lg:border-zinc-800 lg:pl-6 xl:pl-8 flex flex-col justify-center space-y-3 min-w-0">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-slate-700 dark:text-zinc-300">
-                            Net Realization Rate
-                        </span>
-                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60">
-                            {billedRevenue + concessionsAmount > 0 
-                                ? `${((billedRevenue / (billedRevenue + concessionsAmount)) * 100).toFixed(1)}% Yield` 
-                                : '100% Yield'}
-                        </span>
+                        <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal">
+                            Doctor Payouts vs Receivables & Dues
+                        </h3>
+                        <div className="hidden sm:flex items-center gap-2 text-xs font-bold">
+                            <span className="text-slate-500 dark:text-zinc-400">Total Obligations:</span>
+                            <span className="text-slate-900 dark:text-white tabular-nums font-extrabold">
+                                ₹{formatInr(totalSplitSum)}
+                            </span>
+                        </div>
                     </div>
 
-                    <div className="h-[18px] sm:h-[20px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner">
+                    {/* Fatter, Scaled iOS Split Slider with Elevated Circular Knob */}
+                    <div className="relative h-[26px] sm:h-[30px] lg:h-[32px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 flex items-center overflow-visible shadow-inner">
                         <div 
-                            className="h-full rounded-full bg-gradient-to-r from-[#38BDF8] via-[#3B82F6] to-[#2563EB] transition-all duration-500 shadow-[0_2px_8px_rgba(37,99,235,0.35)]"
-                            style={{ 
-                                width: `${billedRevenue + concessionsAmount > 0 
-                                    ? Math.min(100, Math.max(5, (billedRevenue / (billedRevenue + concessionsAmount)) * 100)) 
-                                    : 100}%` 
-                            }}
-                        />
-                    </div>
-
-                    <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 dark:text-zinc-400">
-                        <span>Avg Revenue / Bill (ARPB)</span>
-                        <span className="font-bold text-slate-800 dark:text-zinc-200 tabular-nums">
-                            ₹{formatInr(totalBillsCount > 0 ? Math.round(billedRevenue / totalBillsCount) : billedRevenue)}
-                        </span>
-                    </div>
-                </div>
-
-                {/* Pod 3 (5 Cols): Payouts vs Receivables & Dues Split Slider */}
-                <div className="lg:col-span-5 flex flex-col justify-center space-y-2.5">
-                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal">
-                        Doctor Payouts vs Receivables & Dues
-                    </h3>
-
-                    {/* Fatter iOS Split Slider with Elevated Circular Knob */}
-                    <div className="relative h-[20px] sm:h-[22px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 flex items-center overflow-visible shadow-inner">
-                        <div 
-                            className="h-full bg-gradient-to-r from-[#60A5FA] via-[#7BB3F0] to-[#93C5FD] rounded-l-full transition-all duration-500"
+                            className="h-full bg-gradient-to-r from-[#60A5FA] via-[#3B82F6] to-[#2563EB] rounded-l-full transition-all duration-500 flex items-center pl-3 overflow-hidden shadow-[0_2px_8px_rgba(37,99,235,0.25)]"
                             style={{ width: `${totalSplitSum > 0 ? payoutsShare : 0}%` }}
-                        />
+                        >
+                            {payoutsShare > 15 && (
+                                <span className="text-[11px] font-bold text-white drop-shadow-xs truncate select-none">
+                                    Commissions ({payoutsShare}%)
+                                </span>
+                            )}
+                        </div>
                         <div 
-                            className="h-full bg-gradient-to-r from-[#FCA5A5] via-[#FDA4AF] to-[#FECDD3] rounded-r-full transition-all duration-500"
+                            className="h-full bg-gradient-to-r from-[#FDA4AF] via-[#FB7185] to-[#F43F5E] rounded-r-full transition-all duration-500 flex items-center justify-end pr-3 overflow-hidden shadow-[0_2px_8px_rgba(244,63,94,0.25)]"
                             style={{ width: `${totalSplitSum > 0 ? duesShare : 100}%` }}
-                        />
+                        >
+                            {duesShare > 15 && (
+                                <span className="text-[11px] font-bold text-white drop-shadow-xs truncate select-none">
+                                    Receivables & Dues ({duesShare}%)
+                                </span>
+                            )}
+                        </div>
                         <div 
-                            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white shadow-[0_3px_10px_rgba(15,35,60,0.25),0_0_0_2px_#FFFFFF] border border-white/80 pointer-events-none transition-all duration-500 z-10"
+                            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white dark:bg-zinc-100 shadow-[0_3px_12px_rgba(15,35,60,0.25),0_0_0_2.5px_#FFFFFF] border border-slate-100 pointer-events-none transition-all duration-500 z-10 flex items-center justify-center"
                             style={{ left: `${totalSplitSum > 0 ? payoutsShare : (doctorPayoutsVal > 0 ? 50 : 0)}%` }}
-                        />
+                        >
+                            <div className="w-2 h-2 rounded-full bg-slate-400/80"></div>
+                        </div>
                     </div>
 
-                    {/* Two Channel Stat Pods Below */}
+                    {/* Two Channel Stat Pods Below: Bold Numerical Hierarchy Aligned Under Each Side */}
                     <div className="flex items-center justify-between pt-0.5">
                         {/* Left Stat Pod: Doctor Payouts */}
-                        <div className="flex items-center gap-2.5">
-                            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[12px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                                <Stethoscope size={20} strokeWidth={2.2} />
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-[14px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                                <Stethoscope size={22} strokeWidth={2.3} />
                             </div>
                             <div>
-                                <div className="flex items-baseline gap-1.5">
-                                    <span className="text-lg sm:text-xl lg:text-[22px] font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-xl sm:text-2xl lg:text-[26px] font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-tight">
                                         ₹{formatInr(doctorPayoutsVal)}
                                     </span>
-                                    <span className="text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-zinc-400 tabular-nums">
-                                        ({totalSplitSum > 0 ? payoutsShare : 0}%)
+                                    <span className="text-xs sm:text-sm font-bold text-[#1C6CF2] dark:text-sky-400 bg-sky-50 dark:bg-sky-950/60 px-2 py-0.5 rounded-md border border-sky-100 dark:border-sky-800/40 tabular-nums">
+                                        {totalSplitSum > 0 ? payoutsShare : 0}%
                                     </span>
                                 </div>
-                                <span className="text-[11px] sm:text-xs text-slate-600 dark:text-zinc-400 font-bold block">
-                                    Doctor Commissions
+                                <span className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 font-bold block mt-0.5">
+                                    Doctor Commissions (Referral Payouts)
                                 </span>
                             </div>
                         </div>
 
                         {/* Right Stat Pod: Receivables & Dues */}
-                        <div className="flex items-center gap-2.5 text-right">
+                        <div className="flex items-center gap-3 text-right">
                             <div>
-                                <div className="flex items-baseline gap-1.5 justify-end">
-                                    <span className="text-lg sm:text-xl lg:text-[22px] font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
+                                <div className="flex items-baseline gap-2 justify-end">
+                                    <span className="text-xs sm:text-sm font-bold text-[#E11D48] dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 px-2 py-0.5 rounded-md border border-rose-100 dark:border-rose-800/40 tabular-nums">
+                                        {totalSplitSum > 0 ? duesShare : 0}%
+                                    </span>
+                                    <span className="text-xl sm:text-2xl lg:text-[26px] font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-tight">
                                         ₹{formatInr(totalReceivablesAndDues)}
                                     </span>
-                                    <span className="text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-zinc-400 tabular-nums">
-                                        ({totalSplitSum > 0 ? duesShare : 0}%)
-                                    </span>
                                 </div>
-                                <span className="text-[11px] sm:text-xs text-slate-600 dark:text-zinc-400 font-bold block">
-                                    Receivables & Desk Dues
+                                <span className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 font-bold block mt-0.5">
+                                    Receivables & Desk Dues (Outstanding)
                                 </span>
                             </div>
-                            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[12px] bg-[#FFF1F2] text-[#FB7185] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                                <Building2 size={20} strokeWidth={2.2} />
+                            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-[14px] bg-[#FFF1F2] text-[#FB7185] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                                <Building2 size={22} strokeWidth={2.3} />
                             </div>
                         </div>
                     </div>
