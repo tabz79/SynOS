@@ -1,5 +1,5 @@
 
-import { X, Loader2, ArrowRight, AlertCircle, CheckCircle2, Printer, FileText, Building2, ScrollText, Pencil, Save, History, ChevronDown, ChevronUp, Ban, Check, SlidersHorizontal, RefreshCw, Lock } from 'lucide-react'
+import { X, Loader2, ArrowRight, AlertCircle, CheckCircle2, Printer, FileText, Building2, ScrollText, Pencil, Save, History, ChevronDown, ChevronUp, Ban, Check, SlidersHorizontal, RefreshCw, Lock, Trash2 } from 'lucide-react'
 import { useReceptionDrawer } from '../hooks/useReceptionPanelUI'
 import { PatientIdentification } from './PatientIdentification'
 import { RichPatientCard } from '@/components/patient/RichPatientCard'
@@ -464,6 +464,105 @@ export function IntentPanel({ onVisitUpdated }) {
         } finally {
             setIsCancelling(false);
         }
+    };
+
+    // Delete / Discard Draft Visit Handler (Draft Visits Only)
+    const [isDeletingDraft, setIsDeletingDraft] = useState(false);
+    const handleDeleteDraftVisit = async () => {
+        const visitId = currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id;
+        if (!visitId) {
+            handleCloseAndReset();
+            return;
+        }
+
+        if (!window.confirm("Are you sure you want to permanently delete this draft visit? This action cannot be undone.")) {
+            return;
+        }
+
+        setIsDeletingDraft(true);
+        try {
+            await ReceptionApi.deleteVisit(visitId);
+            window.dispatchEvent(new CustomEvent('synos:visit-deleted', { detail: { visitId } }));
+            if (onVisitUpdated) onVisitUpdated(visitId, 'deleted');
+            handleCloseAndReset();
+        } catch (err) {
+            console.error("Failed to delete draft visit:", err);
+            alert("Failed to delete draft visit: " + (err.message || 'Unknown error'));
+        } finally {
+            setIsDeletingDraft(false);
+        }
+    };
+
+    // Optimistic Test Management: 0ms UI reaction time
+    const handleOptimisticAddTest = (test) => {
+        setSnapshot(prev => {
+            if (!prev || !prev.visit) return prev;
+            const existingTests = prev.visit.tests || [];
+            const code = test.testCode || test.code;
+            if (existingTests.some(t => (t.testCode || t.code) === code)) return prev;
+
+            const tempOrderId = 'opt-' + Date.now();
+            const newTest = {
+                ...test,
+                orderId: tempOrderId,
+                OrderId: tempOrderId,
+                testCode: code,
+                code: code,
+                testName: test.testName || test.name,
+                name: test.testName || test.name,
+                basePrice: test.price || test.basePrice || 0,
+                price: test.price || test.basePrice || 0,
+                dept: test.dept || test.department || 'GENERAL',
+                isOptimistic: true
+            };
+            const updatedTests = [...existingTests, newTest];
+            const newGross = updatedTests.reduce((sum, t) => sum + (Number(t.price || t.basePrice) || 0), 0);
+            const existingDiscount = prev.billing?.discountAmount || 0;
+            const newNet = Math.max(0, newGross - existingDiscount);
+
+            return {
+                ...prev,
+                visit: {
+                    ...prev.visit,
+                    tests: updatedTests
+                },
+                billing: {
+                    ...prev.billing,
+                    grossAmount: newGross,
+                    netAmount: newNet,
+                    totalAmount: newNet
+                }
+            };
+        });
+    };
+
+    const handleOptimisticRemoveTest = (testCode, orderId) => {
+        setSnapshot(prev => {
+            if (!prev || !prev.visit) return prev;
+            const existingTests = prev.visit.tests || [];
+            const updatedTests = existingTests.filter(t => {
+                const matchesCode = (t.testCode || t.code) === testCode;
+                const matchesOrder = orderId && (t.orderId === orderId || t.OrderId === orderId);
+                return !(matchesOrder || matchesCode);
+            });
+            const newGross = updatedTests.reduce((sum, t) => sum + (Number(t.price || t.basePrice) || 0), 0);
+            const existingDiscount = prev.billing?.discountAmount || 0;
+            const newNet = Math.max(0, newGross - existingDiscount);
+
+            return {
+                ...prev,
+                visit: {
+                    ...prev.visit,
+                    tests: updatedTests
+                },
+                billing: {
+                    ...prev.billing,
+                    grossAmount: newGross,
+                    netAmount: newNet,
+                    totalAmount: newNet
+                }
+            };
+        });
     };
 
     // Derived Modified Patient Identity
@@ -2074,6 +2173,8 @@ export function IntentPanel({ onVisitUpdated }) {
                                                 snapshot={snapshot}
                                                 visitId={currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id || snapshot?.visit?.VisitId}
                                                 onVisitUpdated={handleVisitDetailsUpdated}
+                                                onOptimisticAddTest={handleOptimisticAddTest}
+                                                onOptimisticRemoveTest={handleOptimisticRemoveTest}
                                                 setIsPrepaidIntent={setIsPrepaidIntent}
                                                 isCorrectionIntent={isCorrectionIntent}
                                                 billingMode={billingMode}
@@ -2452,12 +2553,14 @@ export function IntentPanel({ onVisitUpdated }) {
                                     {snapshot?.visit?.visitId && (
                                         <button
                                             type="button"
-                                            onClick={() => setIsCancelModalOpen(true)}
-                                            className="py-3.5 px-4 rounded-2xl border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 font-bold text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn"
-                                            title="Cancel this visit"
+                                            id="btn-delete-draft"
+                                            onClick={handleDeleteDraftVisit}
+                                            disabled={isDeletingDraft || isLoading || isActionSubmitting}
+                                            className="py-3.5 px-4 rounded-2xl border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 font-bold text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn disabled:opacity-50"
+                                            title="Permanently discard and delete this draft visit"
                                         >
-                                            <Ban className="w-4 h-4" />
-                                            <span>Cancel</span>
+                                            {isDeletingDraft ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                                            <span>Delete Draft</span>
                                         </button>
                                     )}
                                     <button

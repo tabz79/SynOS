@@ -327,6 +327,19 @@ export function BillingSummary({
         }
     }, [reasonSelectedIndex]);
 
+    // Enterprise keyboard navigation helper: smoothly advance focus to Settlement Terms or Payment
+    const advanceFocusToSettlementOrPayment = () => {
+        setTimeout(() => {
+            const target = document.getElementById('btn-settlement-full') ||
+                           document.getElementById('btn-settlement-partial') ||
+                           document.querySelector('[data-payment-method="true"]') ||
+                           document.getElementById('btn-unified-action');
+            if (target) {
+                target.focus();
+            }
+        }, 50);
+    };
+
     const handleReasonKeyDown = (e) => {
         if (!showReasonDropdown) {
             if (e.key === 'ArrowDown' || e.key === 'Enter') {
@@ -346,6 +359,9 @@ export function BillingSummary({
                 e.preventDefault();
                 setCustomDiscountReason(filteredReasonSuggestions[reasonSelectedIndex].reasonText);
                 setShowReasonDropdown(false);
+                setTimeout(() => {
+                    document.getElementById('btn-apply-custom-discount')?.focus();
+                }, 40);
             }
         } else if (e.key === 'Escape') {
             setShowReasonDropdown(false);
@@ -371,6 +387,7 @@ export function BillingSummary({
                     reason: discount.name
                 });
                 setIsDiscountExpanded(false);
+                advanceFocusToSettlementOrPayment();
                 return;
             }
 
@@ -395,6 +412,7 @@ export function BillingSummary({
             setIsDiscountExpanded(false);
             // Notify parent to refresh snapshot
             if (onVisitUpdated) onVisitUpdated();
+            advanceFocusToSettlementOrPayment();
         } catch (err) {
             console.error("Failed to apply discount", err);
             alert("Failed to apply discount: " + err.message);
@@ -429,6 +447,7 @@ export function BillingSummary({
                 reason: customDiscountReason.trim()
             });
             setIsDiscountExpanded(false);
+            advanceFocusToSettlementOrPayment();
             return;
         }
 
@@ -441,6 +460,7 @@ export function BillingSummary({
             });
             setIsDiscountExpanded(false);
             if (onVisitUpdated) onVisitUpdated();
+            advanceFocusToSettlementOrPayment();
         } catch (err) {
             console.error("Failed to apply custom discount", err);
             alert("Failed to apply custom discount: " + err.message);
@@ -1108,9 +1128,10 @@ export function BillingSummary({
 
                                                     <button
                                                         type="button"
+                                                        id="btn-apply-custom-discount"
                                                         disabled={!customDiscountValue || !customDiscountReason?.trim() || isProcessing}
                                                         onClick={handleApplyCustomDiscount}
-                                                        className="h-12 px-5 rounded-xl bg-[#506A85] hover:bg-[#435970] text-white text-sm font-bold disabled:opacity-50 transition-all shrink-0 cursor-pointer shadow-xs active:scale-95 flex items-center gap-1.5"
+                                                        className="h-12 px-5 rounded-xl bg-[#506A85] hover:bg-[#435970] text-white text-sm font-bold disabled:opacity-50 transition-all shrink-0 cursor-pointer shadow-xs active:scale-95 flex items-center gap-1.5 synos-focus-btn"
                                                     >
                                                         {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : "Apply"}
                                                     </button>

@@ -44,11 +44,9 @@ export function MultiPayerSelector({
     const advanceToDoctor = () => {
         // 1. Ensure Referring Doctor section is expanded
         window.dispatchEvent(new CustomEvent('synos:expand-doctor-section'));
-        // 2. Set focus on Delete Draft (if present) OR prescribing doctor search input / partner card / add button
+        // 2. Set focus on prescribing doctor search input / partner card / add button
         setTimeout(() => {
-            const deleteDraftBtn = document.getElementById('btn-delete-draft');
-            const target = deleteDraftBtn ||
-                           document.getElementById('card-prescribing-doctor') ||
+            const target = document.getElementById('card-prescribing-doctor') ||
                            document.getElementById('input-prescribing-doctor') ||
                            document.querySelector('[data-doctor-input="true"]') ||
                            document.querySelector('input[placeholder*="Search Doctor"]') ||

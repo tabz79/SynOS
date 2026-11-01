@@ -15,6 +15,8 @@ export function VisitDetails({
     snapshot, 
     visitId, 
     onVisitUpdated, 
+    onOptimisticAddTest,
+    onOptimisticRemoveTest,
     setIsPrepaidIntent, 
     isCorrectionIntent,
     billingMode = 'Standard',
@@ -58,24 +60,7 @@ export function VisitDetails({
         }
     }, [testSelectedIndex]);
 
-    const handleDeleteDraft = async () => {
-        if (!visitId) return;
-        if (!window.confirm("Are you sure you want to permanently delete this draft visit? This action cannot be undone.")) return;
 
-        setIsProcessing(true);
-        try {
-            await ReceptionApi.deleteVisit(visitId);
-            // INSTANT EVENT & CALLBACK: Evict from Action Queues immediately across all listeners
-            window.dispatchEvent(new CustomEvent('synos:visit-deleted', { detail: { visitId } }));
-            if (onVisitUpdated) onVisitUpdated(visitId, 'deleted');
-            closePanel();
-        } catch (err) {
-            console.error("Failed to delete draft visit:", err);
-            alert("Failed to delete draft visit: " + err.message);
-        } finally {
-            setIsProcessing(false);
-        }
-    };
 
     // Referral Draft UI State
     const [isDraftFormVisible, setIsDraftFormVisible] = useState(false);
@@ -568,7 +553,7 @@ export function VisitDetails({
 
     // COMMAND: Add Test (Intent Aware & Keyboard Loop Optimized)
     const handleAddTest = async (test) => {
-        if (!visitId || isProcessing) return;
+        if (!visitId) return;
 
         // 1. CORRECTION INTENT (Paid/Finalized)
         if (isCorrectionIntent) {
@@ -594,8 +579,16 @@ export function VisitDetails({
         // 2. STANDARD INTENT (Create/Resume)
         if (isReadOnly) return; // Block if read-only and not correcting
 
-        setIsProcessing(true);
+        // Optimistic Instant Addition: 0ms reaction time
+        if (onOptimisticAddTest) {
+            onOptimisticAddTest(test);
+        }
         setFilter("");
+        setIsSearchFocused(true);
+        setTimeout(() => {
+            testSearchInputRef.current?.focus();
+        }, 30);
+
         try {
             const code = test.testCode || test.code;
             await ReceptionApi.addTestToVisit(visitId, code);
@@ -603,18 +596,16 @@ export function VisitDetails({
         } catch (err) {
             console.error("Failed to add test", err);
             alert("Failed to add test: " + err.message);
+            if (onVisitUpdated) await onVisitUpdated();
         } finally {
-            setIsProcessing(false);
-            // Enterprise multi-test keyboard loop: immediately refocus search input for consecutive test additions
             setTimeout(() => {
                 testSearchInputRef.current?.focus();
-                setIsSearchFocused(true);
-            }, 50);
+            }, 30);
         }
     };
 
 
-    // COMMAND: Remove Test (Intent Aware)
+    // COMMAND: Remove Test (Intent Aware & Keyboard Focus Preserved)
     const handleRemoveTest = async (testCode, orderId) => {
         if (!visitId) return;
 
@@ -636,15 +627,39 @@ export function VisitDetails({
         // 2. STANDARD INTENT
         if (isReadOnly) return;
 
-        setIsProcessing(true);
+        // Identify current button index among all test remove buttons before deletion
+        const allTestButtons = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]'));
+        const currentBtn = document.getElementById(`btn-remove-test-${testCode}`) || document.getElementById(`btn-undo-test-${testCode}`);
+        const currentIndex = currentBtn ? allTestButtons.indexOf(currentBtn) : -1;
+
+        // Optimistically remove from snapshot
+        if (onOptimisticRemoveTest) {
+            onOptimisticRemoveTest(testCode, orderId);
+        }
+
+        // Focus preservation helper: runs immediately after DOM update
+        const preserveFocus = () => {
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    const remainingButtons = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]'));
+                    if (remainingButtons.length > 0) {
+                        const targetIdx = Math.min(Math.max(0, currentIndex), remainingButtons.length - 1);
+                        remainingButtons[targetIdx]?.focus();
+                    } else {
+                        testSearchInputRef.current?.focus();
+                    }
+                }, 30);
+            });
+        };
+
         try {
             await ReceptionApi.removeTestFromVisit(visitId, testCode);
-            if (onVisitUpdated) onVisitUpdated();
+            if (onVisitUpdated) await onVisitUpdated();
+            preserveFocus();
         } catch (err) {
             console.error("Failed to remove test", err);
             alert("Failed to remove test: " + err.message);
-        } finally {
-            setIsProcessing(false);
+            if (onVisitUpdated) await onVisitUpdated();
         }
     };
 
@@ -732,39 +747,11 @@ export function VisitDetails({
                     <h3 className={ui.headerText}>Visit Details</h3>
                     {isProcessing && <Loader2 className="w-4 h-4 animate-spin text-synos-primary" />}
                 </div>
-                {isReadOnly ? (
+                {isReadOnly && (
                     <div className={cn("flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs sm:text-sm font-bold tracking-normal", isDark ? "bg-zinc-800/80 border-zinc-700 text-zinc-300" : "bg-emerald-50 border-emerald-200 text-emerald-700")}>
                         <Lock className="w-3.5 h-3.5 text-emerald-600" />
                         <span>{readOnlyReason || "PAID"}</span>
                     </div>
-                ) : (
-                    <button
-                        type="button"
-                        id="btn-delete-draft"
-                        onClick={handleDeleteDraft}
-                        disabled={isProcessing}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Tab' && !e.shiftKey) {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                const docTarget = document.getElementById('card-prescribing-doctor') ||
-                                                  document.getElementById('input-prescribing-doctor') ||
-                                                  document.getElementById('btn-add-prescribing-doctor');
-                                if (docTarget) docTarget.focus();
-                            } else if (e.key === 'Tab' && e.shiftKey) {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                window.dispatchEvent(new CustomEvent('synos:expand-payer-mode'));
-                                const payerBtn = document.getElementById('btn-payer-mode-active') ||
-                                                 document.querySelector('[data-payer-mode-btn="true"][data-selected="true"]') ||
-                                                 document.querySelector('[data-payer-mode-btn="true"]');
-                                if (payerBtn) payerBtn.focus();
-                            }
-                        }}
-                        className="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold tracking-normal bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition-all active:scale-95 flex items-center gap-1.5 shadow-2xs disabled:opacity-50 cursor-pointer synos-focus-btn"
-                    >
-                        {isProcessing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Delete Draft"}
-                    </button>
                 )}
             </div>
 
@@ -972,15 +959,10 @@ export function VisitDetails({
                                             } else if (e.key === 'Tab' && e.shiftKey) {
                                                 e.preventDefault();
                                                 e.stopPropagation();
-                                                const deleteDraftBtn = document.getElementById('btn-delete-draft');
-                                                if (deleteDraftBtn) {
-                                                    deleteDraftBtn.focus();
-                                                } else {
-                                                    window.dispatchEvent(new CustomEvent('synos:expand-payer-mode'));
-                                                    const payerBtn = document.getElementById('btn-payer-mode-active') ||
-                                                                     document.querySelector('[data-payer-mode-btn="true"]');
-                                                    if (payerBtn) payerBtn.focus();
-                                                }
+                                                window.dispatchEvent(new CustomEvent('synos:expand-payer-mode'));
+                                                const payerBtn = document.getElementById('btn-payer-mode-active') ||
+                                                                 document.querySelector('[data-payer-mode-btn="true"]');
+                                                if (payerBtn) payerBtn.focus();
                                             }
                                         }}
                                         className={cn("flex items-center gap-3 font-bold p-3.5 rounded-xl border cursor-pointer synos-focus-card focus:outline-none",
@@ -1281,15 +1263,10 @@ export function VisitDetails({
                                         } else if (e.key === 'Tab' && e.shiftKey) {
                                             e.preventDefault();
                                             e.stopPropagation();
-                                            const deleteDraftBtn = document.getElementById('btn-delete-draft');
-                                            if (deleteDraftBtn) {
-                                                deleteDraftBtn.focus();
-                                            } else {
-                                                window.dispatchEvent(new CustomEvent('synos:expand-payer-mode'));
-                                                const payerBtn = document.getElementById('btn-payer-mode-active') ||
-                                                                 document.querySelector('[data-payer-mode-btn="true"]');
-                                                if (payerBtn) payerBtn.focus();
-                                            }
+                                            window.dispatchEvent(new CustomEvent('synos:expand-payer-mode'));
+                                            const payerBtn = document.getElementById('btn-payer-mode-active') ||
+                                                             document.querySelector('[data-payer-mode-btn="true"]');
+                                            if (payerBtn) payerBtn.focus();
                                         }
                                     }}
                                     className={cn("flex items-center gap-2 font-semibold p-3 rounded-xl border cursor-pointer synos-focus-card focus:outline-none",
@@ -1570,7 +1547,12 @@ export function VisitDetails({
                                             key={test.testCode || test.code}
                                             type="button"
                                             onMouseEnter={() => setTestSelectedIndex(idx)}
-                                            onClick={() => {
+                                            onMouseDown={(e) => {
+                                                e.preventDefault();
+                                                handleAddTest({ ...test, price: pricing.price });
+                                            }}
+                                            onClick={(e) => {
+                                                e.preventDefault();
                                                 handleAddTest({ ...test, price: pricing.price });
                                             }}
                                             className={cn(
