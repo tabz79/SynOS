@@ -62,30 +62,14 @@ export const DepartmentBreakdownCard = ({
     unitLabel = "Tests",
     items = [],
     barGradient,
-    cardBg,
-    headerBorder,
-    rowHover,
     onItemClick = () => {}
 }) => {
     const formatInr = (val) => Math.round(Number(val) || 0).toLocaleString('en-IN');
-    const isRadiology = title.toLowerCase().includes('radiology');
-
-    const defaultCardBg = isRadiology
-        ? "bg-gradient-to-br from-[#F5EFFD] via-[#FAF5FE] to-[#ECE1FB] dark:from-zinc-900 dark:via-zinc-900 dark:to-purple-950/50 border border-purple-200/90 dark:border-purple-900/50 shadow-[0_6px_24px_rgba(147,51,234,0.08)]"
-        : "bg-gradient-to-br from-[#EBF5FB] via-[#F2F8FD] to-[#DCF0FA] dark:from-zinc-900 dark:via-zinc-900 dark:to-sky-950/50 border border-sky-200/90 dark:border-sky-900/50 shadow-[0_6px_24px_rgba(2,132,199,0.08)]";
-
-    const defaultHeaderBorder = isRadiology
-        ? "border-purple-200/70 dark:border-purple-900/40"
-        : "border-sky-200/70 dark:border-sky-900/40";
-
-    const defaultRowHover = isRadiology
-        ? "hover:bg-purple-100/60 dark:hover:bg-purple-950/30"
-        : "hover:bg-sky-100/60 dark:hover:bg-sky-950/30";
 
     return (
-        <div className={cn("flex-1 min-w-0 p-4 sm:p-4.5 rounded-[22px] flex flex-col justify-between overflow-hidden transition-all", cardBg || defaultCardBg)}>
+        <div className="flex-1 min-w-0 p-4 sm:p-4.5 rounded-[22px] bg-gradient-to-br from-[#D8E8F8] via-[#E0EEFA] to-[#CEE2F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-blue-950/40 border border-[#A8CDEE] dark:border-blue-900/50 shadow-[0_4px_20px_rgba(20,55,95,0.06)] flex flex-col justify-between overflow-hidden">
             {/* Header */}
-            <div className={cn("flex items-center justify-between pb-1.5 border-b shrink-0", headerBorder || defaultHeaderBorder)}>
+            <div className="flex items-center justify-between pb-1.5 border-b border-[#BFD9F2] dark:border-zinc-800 shrink-0">
                 <div className="flex items-center gap-2.5">
                     <div className={cn("w-7 h-7 sm:w-8 sm:h-8 rounded-[9px] flex items-center justify-center shrink-0 shadow-2xs", iconBg)}>
                         <CardIcon size={16} strokeWidth={2.4} />
@@ -109,14 +93,14 @@ export const DepartmentBreakdownCard = ({
             {/* Department Breakdown with ZERO SCROLL and Fluid Width Progress Tracks (CLOSES MARKERS 8 & 9) */}
             <div className="flex-1 min-h-0 flex flex-col justify-between pt-1">
                 {/* Column Headers */}
-                <div className={cn("flex items-center text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-zinc-500 pb-1 border-b shrink-0", headerBorder || defaultHeaderBorder)}>
+                <div className="flex items-center text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-zinc-500 pb-1 border-b border-[#BFD9F2] dark:border-zinc-800 shrink-0">
                     <div className="w-[180px] sm:w-[210px] lg:w-[230px] pl-0.5 shrink-0">{colHeader}</div>
                     <div className="flex-1 px-4 text-left">Volume Share & Workload</div>
-                    <div className="w-[110px] sm:w-[130px] lg:w-[145px] text-right pr-2 shrink-0">Billed</div>
+                    <div className="w-[120px] sm:w-[140px] lg:w-[160px] text-right pr-2 shrink-0">Billed</div>
                 </div>
 
                 {/* 4 Rows: Each is flex-1 with min-h-0 so all 4 fit mathematically */}
-                <div className={cn("flex-1 min-h-0 flex flex-col justify-between divide-y", isRadiology ? "divide-purple-100/50 dark:divide-zinc-800/50" : "divide-sky-100/50 dark:divide-zinc-800/50")}>
+                <div className="flex-1 min-h-0 flex flex-col justify-between divide-y divide-[#BFD9F2]/70 dark:divide-zinc-800/50">
                     {items.map((item, idx) => {
                         const name = item.departmentName || item.modality || 'General';
                         const key = name.toLowerCase();
@@ -130,7 +114,7 @@ export const DepartmentBreakdownCard = ({
                             <div 
                                 key={idx}
                                 onClick={() => onItemClick(item)}
-                                className={cn("flex-1 min-h-0 flex items-center py-1 pl-0.5 group transition-colors cursor-pointer rounded-lg", rowHover || defaultRowHover)}
+                                className="flex-1 min-h-0 flex items-center py-1 pl-0.5 group hover:bg-[#C8DEF2]/50 dark:hover:bg-zinc-800/40 transition-colors cursor-pointer rounded-lg"
                             >
                                 {/* Column 1: Icon + Name + Count (Fixed compact width, NO DEAD SPACE!) */}
                                 <div className="w-[180px] sm:w-[210px] lg:w-[230px] flex items-center gap-2.5 min-w-0 pr-3 shrink-0">
@@ -197,7 +181,7 @@ export const ActualCashCard = ({
     return (
         <div 
             onClick={onNavigate}
-            className="p-4 sm:p-5 lg:p-6 rounded-[22px] bg-gradient-to-br from-[#EBF3FC] via-[#F1F6FD] to-[#DFEDFB] dark:from-zinc-900 dark:via-zinc-900 dark:to-blue-950/50 border border-blue-200/90 dark:border-blue-900/50 shadow-[0_6px_24px_rgba(37,99,235,0.08)] flex items-center cursor-pointer hover:border-blue-300 hover:shadow-[0_8px_28px_rgba(37,99,235,0.14)] transition-all group h-full"
+            className="p-4 sm:p-5 lg:p-6 rounded-[22px] bg-gradient-to-br from-[#D8E8F8] via-[#E0EEFA] to-[#CEE2F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-blue-950/40 border border-[#A8CDEE] dark:border-blue-900/50 shadow-[0_4px_20px_rgba(20,55,95,0.06)] flex items-center cursor-pointer hover:border-[#8EC0EB] hover:shadow-[0_6px_24px_rgba(20,55,95,0.1)] transition-all group h-full"
         >
             <div className="flex flex-col md:flex-row md:items-center w-full gap-5 sm:gap-7">
                 {/* Left Part: Icon, Title, and Big Total Numeral */}
@@ -219,7 +203,7 @@ export const ActualCashCard = ({
                 </div>
 
                 {/* Right Part: Fluid Cash & Online Channels (PROMINENT LARGE AMOUNTS & CLEAR HIERARCHY!) */}
-                <div className="flex-1 md:border-l md:border-blue-200/80 dark:md:border-zinc-800 md:pl-6 lg:pl-8 flex flex-col justify-center space-y-5 sm:space-y-6 min-w-0">
+                <div className="flex-1 md:border-l md:border-[#BFD9F2] dark:md:border-zinc-800 md:pl-6 lg:pl-8 flex flex-col justify-center space-y-5 sm:space-y-6 min-w-0">
                     {/* Row 1: Cash */}
                     <div className="flex items-center gap-3.5 w-full">
                         <div className="w-[100px] sm:w-[110px] shrink-0 flex items-center gap-2.5">
@@ -293,7 +277,7 @@ export const ConcessionsCard = ({
     return (
         <div 
             onClick={onNavigate}
-            className="p-4 sm:p-5 lg:p-6 rounded-[22px] bg-gradient-to-br from-[#FFF0F2] via-[#FFF6F7] to-[#FFE2E6] dark:from-zinc-900 dark:via-zinc-900 dark:to-rose-950/50 border border-rose-200/90 dark:border-rose-900/50 shadow-[0_6px_24px_rgba(225,29,72,0.08)] flex items-center justify-between cursor-pointer hover:border-rose-300 dark:hover:border-rose-800/80 hover:shadow-[0_8px_28px_rgba(225,29,72,0.14)] transition-all group h-full"
+            className="p-4 sm:p-5 lg:p-6 rounded-[22px] bg-gradient-to-br from-[#D8E8F8] via-[#E0EEFA] to-[#CEE2F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-blue-950/40 border border-[#A8CDEE] dark:border-blue-900/50 shadow-[0_4px_20px_rgba(20,55,95,0.06)] flex items-center justify-between cursor-pointer hover:border-[#8EC0EB] hover:shadow-[0_6px_24px_rgba(20,55,95,0.1)] transition-all group h-full"
         >
             {/* Left Column: Icon + Title + Numeral + Subtitle */}
             <div className="flex flex-col justify-center space-y-1.5 flex-1 min-w-0 pr-2 sm:pr-4">
@@ -375,7 +359,7 @@ export const OperatingExpensesCard = ({
     return (
         <div 
             onClick={onNavigate}
-            className="p-4 sm:p-5 rounded-[22px] bg-gradient-to-br from-[#EAF4FB] via-[#F1F8FD] to-[#DEEFF9] dark:from-zinc-900 dark:via-zinc-900 dark:to-sky-950/50 border border-sky-200/90 dark:border-sky-900/50 shadow-[0_6px_24px_rgba(14,165,233,0.08)] flex items-center justify-between cursor-pointer hover:border-sky-300 hover:shadow-[0_8px_28px_rgba(14,165,233,0.14)] transition-all group h-full"
+            className="p-4 sm:p-5 rounded-[22px] bg-gradient-to-br from-[#D8E8F8] via-[#E0EEFA] to-[#CEE2F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-blue-950/40 border border-[#A8CDEE] dark:border-blue-900/50 shadow-[0_4px_20px_rgba(20,55,95,0.06)] flex items-center justify-between cursor-pointer hover:border-[#8EC0EB] hover:shadow-[0_6px_24px_rgba(20,55,95,0.1)] transition-all group h-full"
         >
             {/* Left Column: Icon + Title + Numeral + Burn Context (COHESIVE STACK - CLOSES MARKER 10) */}
             <div className="flex flex-col justify-center space-y-1.5 flex-1 min-w-0 pr-2 sm:pr-4">
@@ -461,7 +445,7 @@ export const PayrollCard = ({
     return (
         <div 
             onClick={onNavigate}
-            className="p-4 sm:p-5 rounded-[22px] bg-gradient-to-br from-[#F5EEFD] via-[#FAF4FE] to-[#ECE0FB] dark:from-zinc-900 dark:via-zinc-900 dark:to-purple-950/50 border border-purple-200/90 dark:border-purple-900/50 shadow-[0_6px_24px_rgba(168,85,247,0.08)] flex items-center justify-between cursor-pointer hover:border-purple-300 dark:hover:border-purple-800/80 hover:shadow-[0_8px_28px_rgba(168,85,247,0.14)] transition-all group h-full"
+            className="p-4 sm:p-5 rounded-[22px] bg-gradient-to-br from-[#D8E8F8] via-[#E0EEFA] to-[#CEE2F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-blue-950/40 border border-[#A8CDEE] dark:border-blue-900/50 shadow-[0_4px_20px_rgba(20,55,95,0.06)] flex items-center justify-between cursor-pointer hover:border-[#8EC0EB] hover:shadow-[0_6px_24px_rgba(20,55,95,0.1)] transition-all group h-full"
         >
             {/* Left Column: Icon + Title + Staff Badge + Numeral + Burn Subtitle (COHESIVE STACK - CLOSES MARKER 12) */}
             <div className="flex flex-col justify-center space-y-1.5 flex-1 min-w-0 pr-2 sm:pr-4">
@@ -585,7 +569,7 @@ export const CollectionTrendCard = ({
     return (
         <div 
             onClick={onNavigate}
-            className="p-3.5 sm:p-4 rounded-[22px] bg-gradient-to-br from-[#EBF3FC] via-[#F2F7FD] to-[#DEEEFB] dark:from-zinc-900 dark:via-zinc-900 dark:to-blue-950/50 border border-blue-200/90 dark:border-blue-900/50 shadow-[0_6px_24px_rgba(37,99,235,0.08)] flex flex-col justify-between cursor-pointer hover:border-blue-300 hover:shadow-[0_8px_28px_rgba(37,99,235,0.14)] transition-all group h-full"
+            className="p-3.5 sm:p-4 rounded-[22px] bg-gradient-to-br from-[#D8E8F8] via-[#E0EEFA] to-[#CEE2F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-blue-950/40 border border-[#A8CDEE] dark:border-blue-900/50 shadow-[0_4px_20px_rgba(20,55,95,0.06)] flex flex-col justify-between cursor-pointer hover:border-[#8EC0EB] hover:shadow-[0_6px_24px_rgba(20,55,95,0.1)] transition-all group h-full"
         >
             {/* Header: Icon + Title */}
             <div className="flex items-center justify-between pb-0.5">
@@ -703,7 +687,7 @@ export const FinanceOverviewDeck = ({
     return (
         <div className="flex-1 min-h-0 flex flex-col justify-start gap-3 sm:gap-3.5 lg:gap-4">
             {/* ROW 1: HERO CONTROL DECK: 2 BALANCED PODS (IOS INSPIRED SPLIT SLIDER & CLEAN TOTAL BILLED) */}
-            <div className="flex-1 min-h-[105px] p-4 sm:p-5 rounded-[22px] bg-gradient-to-br from-[#EDF4FC] via-[#F3F8FD] to-[#E3F0FB] dark:from-zinc-900 dark:via-zinc-900 dark:to-blue-950/40 border border-blue-200/90 dark:border-zinc-800 shadow-[0_6px_24px_rgba(30,58,138,0.08)] grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-center">
+            <div className="flex-1 min-h-[105px] p-4 sm:p-5 rounded-[22px] bg-gradient-to-br from-[#D8E8F8] via-[#E0EEFA] to-[#CEE2F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-blue-950/40 border border-[#A8CDEE] dark:border-blue-900/50 shadow-[0_4px_20px_rgba(20,55,95,0.06)] grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-center">
                 
                 {/* Section 1 (4 Cols): Total Amount Billed Hero Metric */}
                 <div className="lg:col-span-4 flex items-center gap-4 min-w-0 pr-0 lg:pr-2">
@@ -737,7 +721,7 @@ export const FinanceOverviewDeck = ({
                 </div>
 
                 {/* Section 2 (8 Cols): Doctor Payouts vs Receivables & Dues (Chunky Fatter Slider, Zero Text Inside!) */}
-                <div className="lg:col-span-8 lg:border-l lg:border-blue-200/80 dark:lg:border-zinc-800 lg:pl-6 xl:pl-8 flex flex-col justify-between py-1 min-w-0">
+                <div className="lg:col-span-8 lg:border-l lg:border-[#BFD9F2] dark:lg:border-zinc-800 lg:pl-6 xl:pl-8 flex flex-col justify-between py-1 min-w-0">
                     <div className="flex items-center justify-between pb-2">
                         <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal">
                             Doctor Payouts vs Receivables & Dues

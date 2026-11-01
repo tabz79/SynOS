@@ -191,7 +191,7 @@ export function FinanceLayout() {
                     </div>
                 </aside>
 
-                <main className="flex-1 min-h-0 overflow-y-auto bg-transparent flex flex-col">
+                <main className="flex-1 min-h-0 overflow-y-auto bg-[#F4F7FB] dark:bg-zinc-950 flex flex-col">
                     <Outlet />
                 </main>
             </div>
