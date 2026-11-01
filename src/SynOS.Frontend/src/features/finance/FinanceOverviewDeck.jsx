@@ -264,6 +264,8 @@ export const ActualCashCard = ({
 export const ConcessionsCard = ({
     concessionsAmount = 0,
     concessionsRate = 0,
+    pathologyDiscount = 0,
+    radiologyDiscount = 0,
     onNavigate = () => {}
 }) => {
     const formatInr = (val) => Math.round(Number(val) || 0).toLocaleString('en-IN');
@@ -279,7 +281,7 @@ export const ConcessionsCard = ({
             onClick={onNavigate}
             className="p-4 sm:p-5 lg:p-6 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex items-center justify-between cursor-pointer hover:border-white hover:shadow-[0_12px_32px_rgba(15,23,42,0.14)] transition-all group h-full"
         >
-            {/* Left Column: Icon + Title + Numeral + Subtitle */}
+            {/* Left Column: Icon + Title + Numeral + Subtitle + Pathology/Radiology Breakdown */}
             <div className="flex flex-col justify-center space-y-1.5 flex-1 min-w-0 pr-2 sm:pr-4">
                 <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-[10px] bg-[#FFF1F2] text-[#E11D48] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs">
@@ -294,9 +296,23 @@ export const ConcessionsCard = ({
                     <p className="text-3xl sm:text-4xl lg:text-[40px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-1.5 tabular-nums">
                         ₹{formatInr(amt)}
                     </p>
-                    <p className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400 mt-1">
+                    <p className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400 mt-0.5">
                         Total tariff discount given
                     </p>
+                </div>
+
+                {/* Pathology & Radiology Discount Breakdown (CLOSES REQUEST 3) */}
+                <div className="pt-1.5 flex items-center gap-3 text-[11px] sm:text-xs font-semibold">
+                    <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-sky-500 shrink-0"></span>
+                        <span className="text-slate-500 dark:text-zinc-400">Pathology:</span>
+                        <span className="font-bold text-slate-800 dark:text-zinc-200 tabular-nums">₹{formatInr(pathologyDiscount)}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
+                        <span className="text-slate-500 dark:text-zinc-400">Radiology:</span>
+                        <span className="font-bold text-slate-800 dark:text-zinc-200 tabular-nums">₹{formatInr(radiologyDiscount)}</span>
+                    </div>
                 </div>
             </div>
 
@@ -625,11 +641,14 @@ export const FinanceOverviewDeck = ({
     pendingCollectionsVal = 0,
     totalCorporateReceivables = 0,
     totalInsuranceReceivables = 0,
+    totalPartnerReceivables = 0,
     cashCollected = 15045,
     onlineCollected = 10760,
     totalCollected = 25805,
     concessionsAmount = 19682,
     concessionsRate = 34.4,
+    pathologyDiscount = 0,
+    radiologyDiscount = 0,
     finalPathology = [],
     finalRadiology = [],
     expensesAmount = 7380,
@@ -646,12 +665,13 @@ export const FinanceOverviewDeck = ({
 }) => {
     const formatInr = (val) => Math.round(Number(val) || 0).toLocaleString('en-IN');
 
-    // Receivables & Dues: Patient Desk Dues + Corporate B2B Pending + Insurance Cashless Claims
+    // Due Receivables: Patient Desk Dues + Corporate B2B Pending + Insurance Cashless Claims + Partner Receivables
     const totalReceivablesAndDues = presetRange === 'today'
-        ? (Number(pendingCollectionsVal || 0) + Number(totalCorporateReceivables || 0))
+        ? (Number(pendingCollectionsVal || 0) + Number(totalCorporateReceivables || 0) + Number(totalPartnerReceivables || 0))
         : (Number(pendingCollectionsVal || 0) + 
            Number(totalCorporateReceivables || 0) + 
-           Number(totalInsuranceReceivables || 0));
+           Number(totalInsuranceReceivables || 0) +
+           Number(totalPartnerReceivables || 0));
 
     // Doctor payouts (strictly doctor commissions; excludes vendor payables & overheads)
     const doctorPayoutsVal = Number(activeDoctorPayouts || 0);
@@ -724,7 +744,7 @@ export const FinanceOverviewDeck = ({
                 <div className="lg:col-span-8 lg:border-l lg:border-slate-200 dark:lg:border-zinc-800 lg:pl-6 xl:pl-8 flex flex-col justify-between py-1 min-w-0">
                     <div className="flex items-center justify-between pb-2">
                         <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal">
-                            Doctor Payouts vs Receivables & Dues
+                            Doctor Payouts vs Due Receivables
                         </h3>
                         <div className="hidden sm:flex items-center gap-2 text-xs font-bold">
                             <span className="text-slate-500 dark:text-zinc-400">Total Obligations:</span>
@@ -786,7 +806,7 @@ export const FinanceOverviewDeck = ({
                                     </span>
                                 </div>
                                 <span className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 font-bold block mt-1">
-                                    Receivables & Desk Dues
+                                    Due Receivables
                                 </span>
                             </div>
                             <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-[14px] bg-[#FFF1F2] text-[#FB7185] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs">
@@ -811,7 +831,9 @@ export const FinanceOverviewDeck = ({
                     <ConcessionsCard 
                         concessionsAmount={concessionsAmount}
                         concessionsRate={concessionsRate}
-                        onNavigate={() => navigate('/finance/discount-master')}
+                        pathologyDiscount={pathologyDiscount}
+                        radiologyDiscount={radiologyDiscount}
+                        onNavigate={() => navigate('/finance/discounts')}
                     />
                 </div>
             </div>

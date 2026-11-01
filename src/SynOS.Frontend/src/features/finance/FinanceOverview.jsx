@@ -165,7 +165,8 @@ export const FinanceOverview = () => {
                         branchId: bId, 
                         isConsolidated: isCons 
                     }).catch(() => null),
-                    FinanceApi.getReferralSummary(bId, isCons).catch(() => null)
+                    FinanceApi.getReferralSummary(bId, isCons).catch(() => null),
+                    FinanceApi.getReceivables().catch(() => [])
                 ];
 
                 if (presetRange === 'today') {
@@ -179,18 +180,21 @@ export const FinanceOverview = () => {
                 const profitRes = results[0];
                 const concessionRes = results[1];
                 const referralRes = results[2];
-                const receptionRes = presetRange === 'today' ? results[3] : null;
-                const queueRes = presetRange === 'today' ? results[4] : null;
+                const receivablesRes = results[3];
+                const receptionRes = presetRange === 'today' ? results[4] : null;
+                const queueRes = presetRange === 'today' ? results[5] : null;
 
                 const freshProfit = profitRes.status === 'fulfilled' ? profitRes.value : null;
                 const freshConcession = concessionRes.status === 'fulfilled' && concessionRes.value ? concessionRes.value : null;
                 const freshReferral = referralRes.status === 'fulfilled' ? referralRes.value : null;
+                const freshReceivables = receivablesRes.status === 'fulfilled' && Array.isArray(receivablesRes.value) ? receivablesRes.value : [];
                 const freshReception = receptionRes?.status === 'fulfilled' && receptionRes.value ? receptionRes.value : null;
                 const freshQueue = queueRes?.status === 'fulfilled' && Array.isArray(queueRes.value) ? queueRes.value : [];
 
                 if (freshProfit) setProfitability(freshProfit);
                 if (freshConcession) setConcessionData(freshConcession);
                 if (freshReferral) setReferrals(freshReferral);
+                if (freshReceivables.length > 0) setReceivables(freshReceivables);
                 if (freshReception) setReceptionSummary(freshReception);
                 if (freshQueue.length > 0) setTodayActionQueue(freshQueue);
 
@@ -199,6 +203,7 @@ export const FinanceOverview = () => {
                     profitability: freshProfit,
                     concessionData: freshConcession,
                     referrals: freshReferral,
+                    receivables: freshReceivables,
                     receptionSummary: freshReception,
                     todayActionQueue: freshQueue
                 };
@@ -297,6 +302,11 @@ export const FinanceOverview = () => {
         ? 0
         : pendingInsuranceClaims.reduce((sum, c) => sum + (Number(c.claimAmount || 0)), 0);
 
+    // Referral partner receivables (e.g. Dr. Khaleel or other referring partners in Pending Receivables ledger)
+    const totalPartnerReceivables = (receivables || [])
+        .filter(r => (r.debtorType === 'Partner' || r.debtorType === '1') && (!r.settledAt && r.status !== 'Settled'))
+        .reduce((sum, r) => sum + Math.max(0, Number(r.amount || 0) - Number(r.amountReceived || 0)), 0);
+
     const rawDeptList = profitability?.departmentProfitability || [];
 
     // Fallback baseline departments with zero test counts
@@ -347,8 +357,26 @@ export const FinanceOverview = () => {
     const radSum = sanitizedRadiology.reduce((sum, d) => sum + (Number(d.billedRevenue) || 0), 0);
     const totalDeptsSum = pathSum + radSum;
 
-    let finalPathology = sanitizedPathology;
-    let finalRadiology = sanitizedRadiology;
+    // Scale pathology and radiology to net billed revenue proportionally so departments match the Top Card Net Billed
+    const pathShare = totalDeptsSum > 0 ? (pathSum / totalDeptsSum) : 0.5;
+    const netPathologyTarget = totalDeptsSum > 0 && billedRevenue > 0 
+        ? Math.round(billedRevenue * pathShare) 
+        : pathSum;
+    const netRadiologyTarget = totalDeptsSum > 0 && billedRevenue > 0 
+        ? Math.max(0, billedRevenue - netPathologyTarget) 
+        : radSum;
+
+    let finalPathology = (totalDeptsSum > 0 && billedRevenue > 0 && totalDeptsSum !== billedRevenue)
+        ? adjustDeptRevenueToNet(sanitizedPathology, netPathologyTarget)
+        : sanitizedPathology;
+    let finalRadiology = (totalDeptsSum > 0 && billedRevenue > 0 && totalDeptsSum !== billedRevenue)
+        ? adjustDeptRevenueToNet(sanitizedRadiology, netRadiologyTarget)
+        : sanitizedRadiology;
+
+    // Pathology & Radiology Discount Breakdown (sums up to total discount)
+    const totalDiscountAmt = Number(concessionData?.totalDiscountAmount) || totalConcessions || 0;
+    const pathDiscount = totalDeptsSum > 0 ? Math.round(totalDiscountAmt * pathShare) : 0;
+    const radDiscount = Math.max(0, totalDiscountAmt - pathDiscount);
 
     if (presetRange === 'today') {
         const todayVisits = (todayActionQueue || []).filter(r => r.dateGroup === 'Today' || !r.isFinalized);
@@ -550,11 +578,14 @@ export const FinanceOverview = () => {
                 pendingCollectionsVal={pendingCollectionsVal}
                 totalCorporateReceivables={totalCorporateReceivables}
                 totalInsuranceReceivables={totalInsuranceReceivables}
+                totalPartnerReceivables={totalPartnerReceivables}
                 cashCollected={cashCollected}
                 onlineCollected={onlineCollected}
                 totalCollected={cashInflow}
                 concessionsAmount={concessionData?.totalDiscountAmount ?? 0}
                 concessionsRate={concessionData?.overallDiscountPercentage ?? 0}
+                pathologyDiscount={pathDiscount}
+                radiologyDiscount={radDiscount}
                 finalPathology={finalPathology}
                 finalRadiology={finalRadiology}
                 expensesAmount={totalOperatingExpenses}
