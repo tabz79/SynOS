@@ -156,7 +156,7 @@ export function FinanceLayout() {
 
             <SystemBar syncStatus="Synced" />
 
-            <div className="flex flex-1 overflow-hidden relative z-10">
+            <div className="flex flex-1 min-h-0 overflow-hidden relative z-10">
                 {/* Sidebar - Frosted Light Mode Model */}
                 <aside 
                     style={{
@@ -191,7 +191,7 @@ export function FinanceLayout() {
                     </div>
                 </aside>
 
-                <main className="flex-1 overflow-y-auto bg-transparent">
+                <main className="flex-1 min-h-0 overflow-y-auto bg-transparent flex flex-col">
                     <Outlet />
                 </main>
             </div>
