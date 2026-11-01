@@ -104,9 +104,11 @@ namespace SynOS.Api.Controllers.Admin
         public async Task<IActionResult> GetConcessionIntelligence(
             [FromQuery] string? preset,
             [FromQuery] DateTime? fromDate,
-            [FromQuery] DateTime? toDate)
+            [FromQuery] DateTime? toDate,
+            [FromQuery] Guid? branchId,
+            [FromQuery] bool isConsolidated = false)
         {
-            var result = await _service.GetConcessionIntelligenceAsync(preset, fromDate, toDate);
+            var result = await _service.GetConcessionIntelligenceAsync(preset, fromDate, toDate, branchId, isConsolidated);
             return Ok(result);
         }
 

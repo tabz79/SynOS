@@ -224,9 +224,6 @@ export const StandardFilterBar = ({
                         <button
                             type="button"
                             onClick={() => {
-                                if (isConsolidated) {
-                                    setIsConsolidated(false);
-                                }
                                 setIsBranchDropdownOpen(!isBranchDropdownOpen);
                             }}
                             className={cn(

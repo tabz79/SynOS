@@ -1422,9 +1422,7 @@ export const FinanceApi = {
         if (params.isConsolidated) queryParams.append('isConsolidated', 'true');
 
         const qs = queryParams.toString() ? `?${queryParams.toString()}` : '';
-        const url = (params.branchId && !params.isConsolidated)
-            ? FinanceApi.withBranchId(`/api/v1/admin/discounts/intelligence${qs}`)
-            : `/api/v1/admin/discounts/intelligence${qs}`;
+        const url = `/api/v1/admin/discounts/intelligence${qs}`;
         const response = await fetch(url, {
             headers: FinanceApi.getHeaders()
         });

@@ -1116,6 +1116,23 @@ export function DiscountMasterScreen() {
                 </div>
             </div>
 
+            {/* Zero-Concession Branch Awareness Notice */}
+            {!isConsolidated && (Number(intelligence.totalDiscountAmount) || 0) === 0 && tab === 'intelligence' && (
+                <div className="flex items-center justify-between px-4 py-2 rounded-xl bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/25 text-amber-800 dark:text-amber-200 text-xs font-semibold animate-in fade-in duration-200">
+                    <div className="flex items-center gap-2">
+                        <Building2 className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                        <span>Currently viewing <strong>{currentBranchName}</strong> — 0 concessions recorded for this horizon.</span>
+                    </div>
+                    <button 
+                        type="button" 
+                        onClick={() => setIsConsolidated(true)}
+                        className="px-3 py-1 bg-white dark:bg-zinc-800 text-amber-800 dark:text-amber-200 rounded-lg text-xs font-bold border border-amber-300 dark:border-amber-700 hover:bg-amber-50 dark:hover:bg-zinc-700 shadow-2xs transition-all cursor-pointer"
+                    >
+                        Switch to All Branches
+                    </button>
+                </div>
+            )}
+
             {/* TAB NAVIGATION (SEGMENTED PILL MATCHING REFERENCE A) */}
             <div className="flex items-center gap-1 overflow-x-auto scrollbar-thin">
                 <div className="flex items-center bg-[#D6E3EF] dark:bg-zinc-800/80 p-1.5 rounded-[14px] shadow-[inset_0_1px_2px_rgba(15,35,60,0.12)] border border-white/60 dark:border-zinc-700">
@@ -1287,23 +1304,27 @@ export function DiscountMasterScreen() {
 
                                             {/* 2-Arc Donut & Side-by-Side Legend Stack - Mathematical Fit with Zero Dead Space */}
                                             {(() => {
-                                                const mechanisms = intelligence.mechanismMix && intelligence.mechanismMix.length > 0 
+                                                const isZero = (Number(intelligence.totalDiscountAmount) || 0) === 0;
+                                                const mechanisms = (intelligence.mechanismMix && intelligence.mechanismMix.length > 0)
                                                     ? intelligence.mechanismMix 
-                                                    : [
+                                                    : (isZero ? [
+                                                        { mechanism: "Flat Rupee (₹)", totalAmount: 0, percentage: 0, count: 0, color: "#75B6E5" },
+                                                        { mechanism: "Percentage (%)", totalAmount: 0, percentage: 0, count: 0, color: "#BD98FC" }
+                                                    ] : [
                                                         { mechanism: "Flat Rupee (₹)", totalAmount: 8240, percentage: 69.5, count: 18, color: "#75B6E5", patientAmount: 4430, partnerAmount: 3810 },
                                                         { mechanism: "Percentage (%)", totalAmount: 3622, percentage: 30.5, count: 9, color: "#BD98FC", patientAmount: 1951, partnerAmount: 1671 }
-                                                    ];
+                                                    ]);
 
-                                                const flatItem = mechanisms.find(m => m.mechanism?.includes("Flat")) || mechanisms[0] || { totalAmount: 8240, percentage: 69.5, count: 18, patientAmount: 4430, partnerAmount: 3810 };
-                                                const pctItem = mechanisms.find(m => m.mechanism?.includes("Percentage")) || mechanisms[1] || { totalAmount: 3622, percentage: 30.5, count: 9, patientAmount: 1951, partnerAmount: 1671 };
+                                                const flatItem = isZero ? { totalAmount: 0, percentage: 0, count: 0 } : (mechanisms.find(m => m.mechanism?.includes("Flat")) || mechanisms[0]);
+                                                const pctItem = isZero ? { totalAmount: 0, percentage: 0, count: 0 } : (mechanisms.find(m => m.mechanism?.includes("Percentage")) || mechanisms[1]);
 
-                                                const totalAmount = (flatItem.totalAmount || 0) + (pctItem.totalAmount || 0);
+                                                const totalAmount = (Number(flatItem.totalAmount) || 0) + (Number(pctItem.totalAmount) || 0);
                                                 const share1 = totalAmount > 0 
                                                     ? Number(flatItem.percentage) || Math.round((flatItem.totalAmount / totalAmount) * 1000) / 10 
-                                                    : 50;
+                                                    : 0;
                                                 const share2 = totalAmount > 0 
                                                     ? Math.round((100 - share1) * 10) / 10 
-                                                    : 50;
+                                                    : 0;
 
                                                 // 2-Arc Donut Geometry: r=74, strokeWidth=22 => outer diameter 170px, inner hole 126px
                                                 const r = 74;
@@ -1479,11 +1500,12 @@ export function DiscountMasterScreen() {
                                         <div className="space-y-4 my-auto">
                                             {/* Department 1: Pathology Diagnostics */}
                                             {(() => {
+                                                const isZero = (Number(intelligence.totalDiscountAmount) || 0) === 0;
                                                 const d = intelligence.departmentSplit || DEFAULT_CONCESSION_INTELLIGENCE.departmentSplit;
-                                                const pathAmount = d.pathologyAmount ?? 7430;
-                                                const pathPct = Number(d.pathologyPercentage) || 62.7;
-                                                const pathBills = d.pathologyBillsCount ?? 21;
-                                                const pathInvs = d.pathologyInvestigationsCount ?? 142;
+                                                const pathAmount = isZero ? 0 : (d.pathologyAmount ?? 7430);
+                                                const pathPct = isZero ? 0 : (Number(d.pathologyPercentage) || 62.7);
+                                                const pathBills = isZero ? 0 : (d.pathologyBillsCount ?? 21);
+                                                const pathInvs = isZero ? 0 : (d.pathologyInvestigationsCount ?? 142);
 
                                                 return (
                                                     <div className="flex items-center gap-2.5">
@@ -1508,7 +1530,7 @@ export function DiscountMasterScreen() {
                                                             <div className="h-[20px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 overflow-hidden flex shadow-inner">
                                                                 <div 
                                                                     className="h-full rounded-full bg-gradient-to-r from-[#60A5FA] to-[#38BDF8] shadow-[0_2px_8px_rgba(56,189,248,0.35)] transition-all duration-700" 
-                                                                    style={{ width: `${Math.min(100, Math.max(6, pathPct))}%` }} 
+                                                                    style={{ width: `${isZero ? 0 : Math.min(100, Math.max(6, pathPct))}%` }} 
                                                                 />
                                                             </div>
 
@@ -1522,11 +1544,12 @@ export function DiscountMasterScreen() {
 
                                             {/* Department 2: Radiology & Imaging */}
                                             {(() => {
+                                                const isZero = (Number(intelligence.totalDiscountAmount) || 0) === 0;
                                                 const d = intelligence.departmentSplit || DEFAULT_CONCESSION_INTELLIGENCE.departmentSplit;
-                                                const radAmount = d.radiologyAmount ?? 4432;
-                                                const radPct = Number(d.radiologyPercentage) || 37.3;
-                                                const radBills = d.radiologyBillsCount ?? 13;
-                                                const radInvs = d.radiologyInvestigationsCount ?? 48;
+                                                const radAmount = isZero ? 0 : (d.radiologyAmount ?? 4432);
+                                                const radPct = isZero ? 0 : (Number(d.radiologyPercentage) || 37.3);
+                                                const radBills = isZero ? 0 : (d.radiologyBillsCount ?? 13);
+                                                const radInvs = isZero ? 0 : (d.radiologyInvestigationsCount ?? 48);
 
                                                 return (
                                                     <div className="flex items-center gap-2.5">
@@ -1551,7 +1574,7 @@ export function DiscountMasterScreen() {
                                                             <div className="h-[20px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 overflow-hidden flex shadow-inner">
                                                                 <div 
                                                                     className="h-full rounded-full bg-gradient-to-r from-[#C084FC] to-[#A855F7] shadow-[0_2px_8px_rgba(168,85,247,0.35)] transition-all duration-700" 
-                                                                    style={{ width: `${Math.min(100, Math.max(6, radPct))}%` }} 
+                                                                    style={{ width: `${isZero ? 0 : Math.min(100, Math.max(6, radPct))}%` }} 
                                                                 />
                                                             </div>
 
@@ -1620,26 +1643,28 @@ export function DiscountMasterScreen() {
 
                                         {/* Chart Container */}
                                         {(() => {
+                                            const isZero = (Number(intelligence.totalDiscountAmount) || 0) === 0;
                                             const rawTrends = (intelligence.dailyTrends && intelligence.dailyTrends.length === 7)
                                                 ? intelligence.dailyTrends
                                                 : DEFAULT_CONCESSION_INTELLIGENCE.dailyTrends;
                                             
-                                            // If all past days (indices 0..5) are 0 because the backend filtered the query with preset=today,
-                                            // preserve the historical baseline for past days so yesterday is NEVER zero!
+                                            // If zero concessions recorded for this branch/horizon, all days are cleanly zero!
                                             const pastAllZero = rawTrends.slice(0, 6).every(t => (Number(t.totalAmount) || 0) === 0);
                                             const baselinePast = [6240, 8125, 7430, 9862, 8560, 10012];
 
-                                            const trends = rawTrends.map((t, idx) => {
-                                                let amt = Number(t.totalAmount) || 0;
-                                                if (idx === 6 || t.isToday) {
-                                                    amt = Number(intelligence.totalDiscountAmount) > 0 ? Number(intelligence.totalDiscountAmount) : (amt > 0 ? amt : 1540);
-                                                    return { ...t, totalAmount: amt, isToday: true };
-                                                }
-                                                if (pastAllZero && amt === 0 && idx < baselinePast.length) {
-                                                    amt = baselinePast[idx];
-                                                }
-                                                return { ...t, totalAmount: amt };
-                                            });
+                                            const trends = isZero
+                                                ? rawTrends.map(t => ({ ...t, totalAmount: 0, billsCount: 0 }))
+                                                : rawTrends.map((t, idx) => {
+                                                    let amt = Number(t.totalAmount) || 0;
+                                                    if (idx === 6 || t.isToday) {
+                                                        amt = Number(intelligence.totalDiscountAmount) > 0 ? Number(intelligence.totalDiscountAmount) : (amt > 0 ? amt : 1540);
+                                                        return { ...t, totalAmount: amt, isToday: true };
+                                                    }
+                                                    if (pastAllZero && amt === 0 && idx < baselinePast.length) {
+                                                        amt = baselinePast[idx];
+                                                    }
+                                                    return { ...t, totalAmount: amt };
+                                                });
 
                                             const maxScale = 15000;
                                             const yTicks = [

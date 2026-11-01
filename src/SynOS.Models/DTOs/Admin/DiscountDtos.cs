@@ -118,6 +118,42 @@ namespace SynOS.Models.DTOs.Admin
         public int DormantPresetsCount { get; set; }
 
         public System.Collections.Generic.List<StaffConcessionContributionDto> StaffContributions { get; set; } = new();
+        public System.Collections.Generic.List<ConcessionMechanismDto> MechanismMix { get; set; } = new();
+        public DepartmentConcessionSplitDto DepartmentSplit { get; set; } = new();
+        public System.Collections.Generic.List<DailyConcessionTrendDto> DailyTrends { get; set; } = new();
+    }
+
+    public class ConcessionMechanismDto
+    {
+        public string Mechanism { get; set; } = string.Empty;
+        public decimal TotalAmount { get; set; }
+        public decimal Percentage { get; set; }
+        public int Count { get; set; }
+        public string Color { get; set; } = "#75B6E5";
+        public decimal PatientAmount { get; set; }
+        public decimal PartnerAmount { get; set; }
+    }
+
+    public class DepartmentConcessionSplitDto
+    {
+        public decimal PathologyAmount { get; set; }
+        public decimal PathologyPercentage { get; set; }
+        public int PathologyBillsCount { get; set; }
+        public int PathologyInvestigationsCount { get; set; }
+
+        public decimal RadiologyAmount { get; set; }
+        public decimal RadiologyPercentage { get; set; }
+        public int RadiologyBillsCount { get; set; }
+        public int RadiologyInvestigationsCount { get; set; }
+    }
+
+    public class DailyConcessionTrendDto
+    {
+        public string DayOfWeek { get; set; } = string.Empty;
+        public string FormattedDate { get; set; } = string.Empty;
+        public decimal TotalAmount { get; set; }
+        public int BillsCount { get; set; }
+        public bool IsToday { get; set; }
     }
 
     public class PresetReasonContributionDto
