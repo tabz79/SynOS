@@ -517,12 +517,21 @@ export function BillingSummary({
     const handleRemoveDiscount = async () => {
         if (!canPerformActions || !visitId) return;
 
+        // Preserve keyboard focus: return focus to Concession trigger after removal
+        const refocusTrigger = () => {
+            setTimeout(() => {
+                const trigger = document.querySelector('[data-concession-trigger="true"]');
+                if (trigger) trigger.focus();
+            }, 60);
+        };
+
         // CORRECTION INTENT (Staged Batch Edit)
         if (isCorrectionIntent) {
             if (onStageDiscount) {
                 onStageDiscount({ mode: 'remove', remove: true });
                 setCustomDiscountReason('');
                 setCustomDiscountValue('');
+                refocusTrigger();
                 return;
             }
             setCorrectionState({
@@ -541,6 +550,7 @@ export function BillingSummary({
             setCustomDiscountValue('');
             // Notify parent to refresh snapshot
             if (onVisitUpdated) onVisitUpdated();
+            refocusTrigger();
         } catch (err) {
             console.error("Failed to remove discount", err);
         } finally {
@@ -723,18 +733,26 @@ export function BillingSummary({
                                         type="button"
                                         onClick={() => setIsDiscountExpanded(prev => !prev)}
                                         onKeyDown={(e) => {
-                                            if (e.key === 'Tab' && e.shiftKey) {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                const outsourceBtn = document.getElementById('btn-outsource-test');
-                                                if (outsourceBtn) outsourceBtn.focus();
-                                                else {
-                                                    const allTestButtons = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]'));
-                                                    if (allTestButtons.length > 0) {
-                                                        allTestButtons[allTestButtons.length - 1].focus();
-                                                    } else {
-                                                        const testInput = document.getElementById('input-test-search');
-                                                        if (testInput) testInput.focus();
+                                            if (e.key === 'Tab') {
+                                                if (!e.shiftKey) {
+                                                    if (hasDiscountApplied) {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        document.getElementById('btn-remove-discount')?.focus();
+                                                    }
+                                                } else {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    const outsourceBtn = document.getElementById('btn-outsource-test');
+                                                    if (outsourceBtn) outsourceBtn.focus();
+                                                    else {
+                                                        const allTestButtons = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]'));
+                                                        if (allTestButtons.length > 0) {
+                                                            allTestButtons[allTestButtons.length - 1].focus();
+                                                        } else {
+                                                            const testInput = document.getElementById('input-test-search');
+                                                            if (testInput) testInput.focus();
+                                                        }
                                                     }
                                                 }
                                             }
@@ -779,10 +797,36 @@ export function BillingSummary({
                                             {canPerformActions && (
                                                 <button
                                                     type="button"
+                                                    id="btn-remove-discount"
+                                                    data-remove-discount="true"
+                                                    tabIndex={0}
                                                     onClick={handleRemoveDiscount}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Tab') {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            if (e.shiftKey) {
+                                                                const trigger = document.querySelector('[data-concession-trigger="true"]');
+                                                                if (trigger) trigger.focus();
+                                                            } else {
+                                                                if (isDiscountExpanded) {
+                                                                    const drawerTarget = document.getElementById('input-flat-concession') ||
+                                                                                         document.getElementById('btn-minimize-concession');
+                                                                    if (drawerTarget) drawerTarget.focus();
+                                                                    else document.getElementById('btn-settlement-full')?.focus();
+                                                                } else {
+                                                                    document.getElementById('btn-settlement-full')?.focus();
+                                                                }
+                                                            }
+                                                        }
+                                                    }}
                                                     disabled={isProcessing}
-                                                    className={cn("p-1 rounded-full transition-colors cursor-pointer",
-                                                        isDark ? "hover:bg-zinc-800 text-zinc-500 hover:text-red-400" : "hover:bg-red-50 text-zinc-400 hover:text-red-600")}
+                                                    className={cn(
+                                                        "p-1.5 rounded-lg border transition-all cursor-pointer synos-focus-btn flex items-center justify-center",
+                                                        isDark 
+                                                            ? "bg-zinc-800/80 border-zinc-700 hover:bg-rose-950/40 hover:border-rose-800 text-zinc-400 hover:text-rose-400 focus:ring-2 focus:ring-rose-500" 
+                                                            : "bg-white border-rose-200 hover:bg-rose-50 hover:border-rose-300 text-rose-500 hover:text-rose-600 shadow-2xs focus:ring-2 focus:ring-rose-500"
+                                                    )}
                                                     title="Remove Discount"
                                                 >
                                                     <X className="w-3.5 h-3.5" />
@@ -860,8 +904,20 @@ export function BillingSummary({
                                         <div className="flex items-center gap-2 text-sm">
                                             <button
                                                 type="button"
+                                                id="btn-minimize-concession"
                                                 onClick={() => setIsDiscountExpanded(false)}
-                                                className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-all cursor-pointer active:scale-95"
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Tab' && e.shiftKey) {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        if (hasDiscountApplied) {
+                                                            document.getElementById('btn-remove-discount')?.focus();
+                                                        } else {
+                                                            document.querySelector('[data-concession-trigger="true"]')?.focus();
+                                                        }
+                                                    }
+                                                }}
+                                                className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-all cursor-pointer active:scale-95 synos-focus-btn"
                                                 title="Minimize Concession"
                                             >
                                                 <span>Minimize</span>
@@ -942,6 +998,13 @@ export function BillingSummary({
                                                             if (e.key === 'Tab' && e.shiftKey) {
                                                                 e.preventDefault();
                                                                 e.stopPropagation();
+                                                                if (hasDiscountApplied) {
+                                                                    const removeBtn = document.getElementById('btn-remove-discount');
+                                                                    if (removeBtn) {
+                                                                        removeBtn.focus();
+                                                                        return;
+                                                                    }
+                                                                }
                                                                 const trigger = document.querySelector('[data-concession-trigger="true"]');
                                                                 if (trigger) trigger.focus();
                                                                 else {
@@ -1651,6 +1714,23 @@ export function BillingSummary({
                                 onClick={() => {
                                     setIsPartialPayment?.(false);
                                     setCustomPaymentAmount?.('');
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Tab' && e.shiftKey) {
+                                        if (!isDiscountExpanded) {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            if (hasDiscountApplied) {
+                                                const removeBtn = document.getElementById('btn-remove-discount');
+                                                if (removeBtn) {
+                                                    removeBtn.focus();
+                                                    return;
+                                                }
+                                            }
+                                            const trigger = document.querySelector('[data-concession-trigger="true"]');
+                                            if (trigger) trigger.focus();
+                                        }
+                                    }
                                 }}
                                 className={cn(
                                     "flex-1 py-2 px-3 rounded-lg text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 synos-focus-btn",
