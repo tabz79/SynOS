@@ -109898,7 +109898,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
     bg: "bg-slate-100 text-slate-700 dark:bg-zinc-800 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700"
   }, nY = ({ title: t, icon: e, iconBg: n, colHeader: i = "Discipline", totalAmount: a = 0, totalUnits: s = 0, unitLabel: A = "Tests", items: o = [], barGradient: l, cardBg: c, headerBorder: g, rowHover: d, onItemClick: u = () => {
   } }) => {
-    const h = (C) => Math.round(Number(C) || 0).toLocaleString("en-IN"), f = t.toLowerCase().includes("radiology"), I = f ? "bg-gradient-to-br from-white via-[#FAF8FF] to-[#F5F3FF] dark:from-zinc-900 dark:via-zinc-900 dark:to-purple-950/30 border border-purple-100/90 dark:border-purple-900/40 shadow-[0_4px_22px_rgba(147,51,234,0.05)]" : "bg-gradient-to-br from-white via-[#F8FBFF] to-[#EFF8FF] dark:from-zinc-900 dark:via-zinc-900 dark:to-sky-950/30 border border-sky-100/90 dark:border-sky-900/40 shadow-[0_4px_22px_rgba(2,132,199,0.05)]", m = f ? "border-purple-100/70 dark:border-zinc-800" : "border-sky-100/70 dark:border-zinc-800", B = f ? "hover:bg-purple-50/50 dark:hover:bg-zinc-800/50" : "hover:bg-sky-50/50 dark:hover:bg-zinc-800/50";
+    const h = (C) => Math.round(Number(C) || 0).toLocaleString("en-IN"), f = t.toLowerCase().includes("radiology"), I = f ? "bg-gradient-to-br from-[#F5EFFD] via-[#FAF5FE] to-[#ECE1FB] dark:from-zinc-900 dark:via-zinc-900 dark:to-purple-950/50 border border-purple-200/90 dark:border-purple-900/50 shadow-[0_6px_24px_rgba(147,51,234,0.08)]" : "bg-gradient-to-br from-[#EBF5FB] via-[#F2F8FD] to-[#DCF0FA] dark:from-zinc-900 dark:via-zinc-900 dark:to-sky-950/50 border border-sky-200/90 dark:border-sky-900/50 shadow-[0_6px_24px_rgba(2,132,199,0.08)]", m = f ? "border-purple-200/70 dark:border-purple-900/40" : "border-sky-200/70 dark:border-sky-900/40", B = f ? "hover:bg-purple-100/60 dark:hover:bg-purple-950/30" : "hover:bg-sky-100/60 dark:hover:bg-sky-950/30";
     return r.jsxs("div", {
       className: we("flex-1 min-w-0 p-4 sm:p-4.5 rounded-[22px] flex flex-col justify-between overflow-hidden transition-all", c || I),
       children: [
@@ -110045,7 +110045,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
     const a = (d) => Math.round(Number(d) || 0).toLocaleString("en-IN"), s = Number(t) || 0, A = Number(e) || 0, o = Number(n) > 0 ? Number(n) : s + A, l = s + A, c = l > 0 ? Math.round(s / l * 1e3) / 10 : 0, g = l > 0 ? Math.round((100 - c) * 10) / 10 : 0;
     return r.jsx("div", {
       onClick: i,
-      className: "p-4 sm:p-5 lg:p-6 rounded-[22px] bg-gradient-to-br from-white via-[#F8FAFD] to-[#EFF6FF] dark:from-zinc-900 dark:via-zinc-900 dark:to-blue-950/25 border border-sky-100/90 dark:border-sky-900/40 shadow-[0_4px_22px_rgba(37,99,235,0.05)] flex items-center cursor-pointer hover:border-synos-primary/60 hover:shadow-[0_6px_26px_rgba(37,99,235,0.09)] transition-all group h-full",
+      className: "p-4 sm:p-5 lg:p-6 rounded-[22px] bg-gradient-to-br from-[#EBF3FC] via-[#F1F6FD] to-[#DFEDFB] dark:from-zinc-900 dark:via-zinc-900 dark:to-blue-950/50 border border-blue-200/90 dark:border-blue-900/50 shadow-[0_6px_24px_rgba(37,99,235,0.08)] flex items-center cursor-pointer hover:border-blue-300 hover:shadow-[0_8px_28px_rgba(37,99,235,0.14)] transition-all group h-full",
       children: r.jsxs("div", {
         className: "flex flex-col md:flex-row md:items-center w-full gap-5 sm:gap-7",
         children: [
@@ -110082,7 +110082,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
             ]
           }),
           r.jsxs("div", {
-            className: "flex-1 md:border-l md:border-sky-100/80 dark:md:border-zinc-800 md:pl-6 lg:pl-8 flex flex-col justify-center space-y-5 sm:space-y-6 min-w-0",
+            className: "flex-1 md:border-l md:border-blue-200/80 dark:md:border-zinc-800 md:pl-6 lg:pl-8 flex flex-col justify-center space-y-5 sm:space-y-6 min-w-0",
             children: [
               r.jsxs("div", {
                 className: "flex items-center gap-3.5 w-full",
@@ -110194,7 +110194,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
     const i = (c) => Math.round(Number(c) || 0).toLocaleString("en-IN"), a = Number(t) || 0, s = a > 0 && Number(e) || 0, A = 42, o = 2 * Math.PI * A, l = o * (1 - Math.min(100, Math.max(0, s)) / 100);
     return r.jsxs("div", {
       onClick: n,
-      className: "p-4 sm:p-5 lg:p-6 rounded-[22px] bg-gradient-to-br from-white via-[#FFF9FA] to-[#FFF1F2] dark:from-zinc-900 dark:via-zinc-900 dark:to-rose-950/25 border border-rose-100/90 dark:border-rose-900/40 shadow-[0_4px_22px_rgba(225,29,72,0.05)] flex items-center justify-between cursor-pointer hover:border-rose-300 dark:hover:border-rose-800/80 hover:shadow-[0_6px_26px_rgba(225,29,72,0.09)] transition-all group h-full",
+      className: "p-4 sm:p-5 lg:p-6 rounded-[22px] bg-gradient-to-br from-[#FFF0F2] via-[#FFF6F7] to-[#FFE2E6] dark:from-zinc-900 dark:via-zinc-900 dark:to-rose-950/50 border border-rose-200/90 dark:border-rose-900/50 shadow-[0_6px_24px_rgba(225,29,72,0.08)] flex items-center justify-between cursor-pointer hover:border-rose-300 dark:hover:border-rose-800/80 hover:shadow-[0_8px_28px_rgba(225,29,72,0.14)] transition-all group h-full",
       children: [
         r.jsxs("div", {
           className: "flex flex-col justify-center space-y-1.5 flex-1 min-w-0 pr-2 sm:pr-4",
@@ -110306,7 +110306,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
     const i = (c) => Math.round(Number(c) || 0).toLocaleString("en-IN"), s = 2 * Math.PI * 42, A = Number(t) || 0, o = A > 0 && Number(e) || 0, l = s * (1 - Math.min(100, Math.max(0, o)) / 100);
     return r.jsxs("div", {
       onClick: n,
-      className: "p-4 sm:p-5 rounded-[22px] bg-gradient-to-br from-white via-[#F8FAFD] to-[#F0F7FF] dark:from-zinc-900 dark:via-zinc-900 dark:to-sky-950/25 border border-sky-100/90 dark:border-sky-900/40 shadow-[0_4px_22px_rgba(14,165,233,0.05)] flex items-center justify-between cursor-pointer hover:border-synos-primary/60 hover:shadow-[0_6px_26px_rgba(14,165,233,0.09)] transition-all group h-full",
+      className: "p-4 sm:p-5 rounded-[22px] bg-gradient-to-br from-[#EAF4FB] via-[#F1F8FD] to-[#DEEFF9] dark:from-zinc-900 dark:via-zinc-900 dark:to-sky-950/50 border border-sky-200/90 dark:border-sky-900/50 shadow-[0_6px_24px_rgba(14,165,233,0.08)] flex items-center justify-between cursor-pointer hover:border-sky-300 hover:shadow-[0_8px_28px_rgba(14,165,233,0.14)] transition-all group h-full",
       children: [
         r.jsxs("div", {
           className: "flex flex-col justify-center space-y-1.5 flex-1 min-w-0 pr-2 sm:pr-4",
@@ -110418,7 +110418,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
     const o = (u) => Math.round(Number(u) || 0).toLocaleString("en-IN"), c = 2 * Math.PI * 42, g = c * (1 - Math.min(100, Math.max(0, a)) / 100), d = i ? n : t || e;
     return r.jsxs("div", {
       onClick: A,
-      className: "p-4 sm:p-5 rounded-[22px] bg-gradient-to-br from-white via-[#FCF9FF] to-[#FAF5FF] dark:from-zinc-900 dark:via-zinc-900 dark:to-purple-950/25 border border-purple-100/90 dark:border-purple-900/40 shadow-[0_4px_22px_rgba(168,85,247,0.05)] flex items-center justify-between cursor-pointer hover:border-purple-300 dark:hover:border-purple-800/80 hover:shadow-[0_6px_26px_rgba(168,85,247,0.09)] transition-all group h-full",
+      className: "p-4 sm:p-5 rounded-[22px] bg-gradient-to-br from-[#F5EEFD] via-[#FAF4FE] to-[#ECE0FB] dark:from-zinc-900 dark:via-zinc-900 dark:to-purple-950/50 border border-purple-200/90 dark:border-purple-900/50 shadow-[0_6px_24px_rgba(168,85,247,0.08)] flex items-center justify-between cursor-pointer hover:border-purple-300 dark:hover:border-purple-800/80 hover:shadow-[0_8px_28px_rgba(168,85,247,0.14)] transition-all group h-full",
       children: [
         r.jsxs("div", {
           className: "flex flex-col justify-center space-y-1.5 flex-1 min-w-0 pr-2 sm:pr-4",
@@ -110571,7 +110571,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
     };
     return r.jsxs("div", {
       onClick: n,
-      className: "p-3.5 sm:p-4 rounded-[22px] bg-gradient-to-br from-white via-[#F8FAFD] to-[#EFF6FF] dark:from-zinc-900 dark:via-zinc-900 dark:to-blue-950/25 border border-sky-100/90 dark:border-sky-900/40 shadow-[0_4px_22px_rgba(37,99,235,0.05)] flex flex-col justify-between cursor-pointer hover:border-synos-primary/60 hover:shadow-[0_6px_26px_rgba(37,99,235,0.09)] transition-all group h-full",
+      className: "p-3.5 sm:p-4 rounded-[22px] bg-gradient-to-br from-[#EBF3FC] via-[#F2F7FD] to-[#DEEEFB] dark:from-zinc-900 dark:via-zinc-900 dark:to-blue-950/50 border border-blue-200/90 dark:border-blue-900/50 shadow-[0_6px_24px_rgba(37,99,235,0.08)] flex flex-col justify-between cursor-pointer hover:border-blue-300 hover:shadow-[0_8px_28px_rgba(37,99,235,0.14)] transition-all group h-full",
       children: [
         r.jsx("div", {
           className: "flex items-center justify-between pb-0.5",
@@ -110633,7 +110633,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
       className: "flex-1 min-h-0 flex flex-col justify-start gap-3 sm:gap-3.5 lg:gap-4",
       children: [
         r.jsxs("div", {
-          className: "flex-1 min-h-[105px] p-4 sm:p-5 rounded-[22px] bg-gradient-to-br from-white via-[#F8FAFD] to-[#F1F6FE] dark:from-zinc-900 dark:via-zinc-900 dark:to-blue-950/20 border border-slate-200/90 dark:border-zinc-800 shadow-[0_4px_24px_rgba(15,35,60,0.06)] grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-center",
+          className: "flex-1 min-h-[105px] p-4 sm:p-5 rounded-[22px] bg-gradient-to-br from-[#EDF4FC] via-[#F3F8FD] to-[#E3F0FB] dark:from-zinc-900 dark:via-zinc-900 dark:to-blue-950/40 border border-blue-200/90 dark:border-zinc-800 shadow-[0_6px_24px_rgba(30,58,138,0.08)] grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-center",
           children: [
             r.jsxs("div", {
               className: "lg:col-span-4 flex items-center gap-4 min-w-0 pr-0 lg:pr-2",
@@ -110713,7 +110713,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
               ]
             }),
             r.jsxs("div", {
-              className: "lg:col-span-8 lg:border-l lg:border-slate-200/80 dark:lg:border-zinc-800 lg:pl-6 xl:pl-8 flex flex-col justify-between py-1 min-w-0",
+              className: "lg:col-span-8 lg:border-l lg:border-blue-200/80 dark:lg:border-zinc-800 lg:pl-6 xl:pl-8 flex flex-col justify-between py-1 min-w-0",
               children: [
                 r.jsxs("div", {
                   className: "flex items-center justify-between pb-2",
