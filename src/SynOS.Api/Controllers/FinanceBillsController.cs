@@ -49,6 +49,199 @@ namespace SynOS.Api.Controllers
             };
         }
 
+        public class ClassifiedOrderTest
+        {
+            public string Name { get; set; } = string.Empty;
+            public string Code { get; set; } = string.Empty;
+            public string Department { get; set; } = "Pathology"; // Macro: Pathology, Radiology, General
+            public string Modality { get; set; } = "General"; // Modality or Discipline: Biochemistry, Hematology, etc.
+        }
+
+        public static ClassifiedOrderTest ClassifyOrder(Order ord)
+        {
+            var result = new ClassifiedOrderTest();
+            var tName = ord.Test?.TestName?.Trim() ?? ord.TestCode?.Trim() ?? "Investigation";
+            var tCode = ord.Test?.TestCode?.Trim() ?? ord.TestCode?.Trim() ?? "";
+            result.Name = tName;
+            result.Code = tCode;
+
+            // 1. Relational Authority: Check Test's ModalityMaster & DepartmentMaster
+            var modMaster = ord.Test?.ModalityMaster;
+            var deptMaster = ord.Test?.DepartmentMaster;
+
+            if (modMaster != null && !string.IsNullOrWhiteSpace(modMaster.Name))
+            {
+                result.Department = "Radiology";
+                result.Modality = modMaster.Name.Trim();
+                return result;
+            }
+
+            if (deptMaster != null)
+            {
+                var macro = deptMaster.MacroDepartment?.Trim();
+                var dName = deptMaster.Name?.Trim() ?? "General";
+
+                if (macro != null && macro.Equals("Radiology", StringComparison.OrdinalIgnoreCase))
+                {
+                    result.Department = "Radiology";
+                    result.Modality = modMaster?.Name?.Trim() ?? ResolveRadiologyModality(tName, tCode);
+                    return result;
+                }
+
+                if (macro != null && macro.Equals("Pathology", StringComparison.OrdinalIgnoreCase))
+                {
+                    result.Department = "Pathology";
+                    result.Modality = dName;
+                    return result;
+                }
+            }
+
+            // 2. Order-level Department fallback
+            var ordDept = (ord.Department ?? "").Trim();
+            if (ordDept.Equals("RAD", StringComparison.OrdinalIgnoreCase) ||
+                ordDept.Equals("Radiology", StringComparison.OrdinalIgnoreCase) ||
+                ordDept.Equals("XRY", StringComparison.OrdinalIgnoreCase) ||
+                ordDept.Equals("MRI", StringComparison.OrdinalIgnoreCase) ||
+                ordDept.Equals("CT", StringComparison.OrdinalIgnoreCase) ||
+                ordDept.Equals("USG", StringComparison.OrdinalIgnoreCase))
+            {
+                result.Department = "Radiology";
+                result.Modality = ResolveRadiologyModality(tName, ordDept);
+                return result;
+            }
+
+            if (ordDept.Equals("BIO", StringComparison.OrdinalIgnoreCase) || ordDept.Equals("Biochemistry", StringComparison.OrdinalIgnoreCase))
+            {
+                result.Department = "Pathology";
+                result.Modality = "Biochemistry";
+                return result;
+            }
+
+            if (ordDept.Equals("HEM", StringComparison.OrdinalIgnoreCase) || ordDept.Equals("Hematology", StringComparison.OrdinalIgnoreCase))
+            {
+                result.Department = "Pathology";
+                result.Modality = "Hematology";
+                return result;
+            }
+
+            if (ordDept.Equals("MICRO", StringComparison.OrdinalIgnoreCase) || ordDept.Equals("Microbiology", StringComparison.OrdinalIgnoreCase))
+            {
+                result.Department = "Pathology";
+                result.Modality = "Microbiology";
+                return result;
+            }
+
+            if (ordDept.Equals("HISTO", StringComparison.OrdinalIgnoreCase) || ordDept.Equals("Histopathology", StringComparison.OrdinalIgnoreCase))
+            {
+                result.Department = "Pathology";
+                result.Modality = "Histopathology";
+                return result;
+            }
+
+            // 3. Clinical Dictionary Classification based on Test Name/Code
+            var lower = $"{tName} {tCode}".ToLower();
+
+            // Radiology Modalities
+            if (lower.Contains("mri") || lower.Contains("magnetic") || lower.Contains("brain plain") || lower.Contains("angiogram") || lower.Contains("cervical spine"))
+            {
+                result.Department = "Radiology";
+                result.Modality = "MRI";
+                return result;
+            }
+            if (lower.Contains("ct scan") || lower.Contains("computed") || lower.Contains("hrct") || lower.Contains("ct "))
+            {
+                result.Department = "Radiology";
+                result.Modality = "CT Scan";
+                return result;
+            }
+            if (lower.Contains("ultrasound") || lower.Contains("usg") || lower.Contains("u/s") || lower.Contains("echo") || lower.Contains("sonography") || lower.Contains("doppler"))
+            {
+                result.Department = "Radiology";
+                result.Modality = "Ultrasound";
+                return result;
+            }
+            if (lower.Contains("x-ray") || lower.Contains("xray") || lower.Contains("radiograph") || lower.Contains("chest pa") || lower.Contains("c.spine") || lower.Contains("views") || lower.Contains("routine xray"))
+            {
+                result.Department = "Radiology";
+                result.Modality = "X-Ray";
+                return result;
+            }
+
+            // Pathology Disciplines
+            if (lower.Contains("cbp") || lower.Contains("cbc") || lower.Contains("blood count") || lower.Contains("hemogram") ||
+                lower.Contains("haemogram") || lower.Contains("haemoglobin") || lower.Contains("hemoglobin") || lower.Contains("platelet") ||
+                lower.Contains("esr") || lower.Contains("aec") || lower.Contains("blood group") || lower.Contains("rh typing") ||
+                lower.Contains("wbc") || lower.Contains("rbc") || lower.Contains("peripheral smear") || lower.Contains("reticulocyte") ||
+                lower.Contains("pt/inr") || lower.Contains("prothrombin") || lower.Contains("tc,dc") || lower.Contains("tc dc"))
+            {
+                result.Department = "Pathology";
+                result.Modality = "Hematology";
+                return result;
+            }
+
+            if (lower.Contains("culture") || lower.Contains("sensitivity") || lower.Contains("c/s") || lower.Contains("fungal") ||
+                lower.Contains("afb") || lower.Contains("sputum") || lower.Contains("gram stain") || lower.Contains("mantoux") ||
+                lower.Contains("pyogenic"))
+            {
+                result.Department = "Pathology";
+                result.Modality = "Microbiology";
+                return result;
+            }
+
+            if (lower.Contains("biopsy") || lower.Contains("fnac") || lower.Contains("pap smear") || lower.Contains("histopath") || lower.Contains("cytology"))
+            {
+                result.Department = "Pathology";
+                result.Modality = "Histopathology";
+                return result;
+            }
+
+            if (lower.Contains("stool") || lower.Contains("urine routine") || lower.Contains("r.u.a") || lower.Contains("occult") ||
+                lower.Contains("widal") || lower.Contains("typhoid") || lower.Contains("dengue") || lower.Contains("malaria") ||
+                lower.Contains("hiv") || lower.Contains("hbsag") || lower.Contains("hcv") || lower.Contains("vdrl") ||
+                lower.Contains("crp") || lower.Contains("aso") || lower.Contains("streptolysin") || lower.Contains("ra factor") || lower.Contains("rafactor"))
+            {
+                result.Department = "Pathology";
+                result.Modality = "Clinical Pathology";
+                return result;
+            }
+
+            if (lower.Contains("lft") || lower.Contains("liver") || lower.Contains("bilirubin") || lower.Contains("sgot") ||
+                lower.Contains("sgpt") || lower.Contains("kft") || lower.Contains("rft") || lower.Contains("renal") ||
+                lower.Contains("urea") || lower.Contains("creatinine") || lower.Contains("uric acid") || lower.Contains("lipid") ||
+                lower.Contains("cholesterol") || lower.Contains("triglyceride") || lower.Contains("glucose") || lower.Contains("fbs") ||
+                lower.Contains("ppbs") || lower.Contains("rbs") || lower.Contains("hba1c") || lower.Contains("thyroid") ||
+                lower.Contains("t3") || lower.Contains("t4") || lower.Contains("tsh") || lower.Contains("calcium") ||
+                lower.Contains("electrolytes") || lower.Contains("sodium") || lower.Contains("potassium") || lower.Contains("amylase") ||
+                lower.Contains("lipase") || lower.Contains("vitamin") || lower.Contains("b12") || lower.Contains("d3") ||
+                lower.Contains("ferritin") || lower.Contains("iron") || lower.Contains("bun") || lower.Contains("biochem"))
+            {
+                result.Department = "Pathology";
+                result.Modality = "Biochemistry";
+                return result;
+            }
+
+            // Cardiology
+            if (lower.Contains("ecg") || lower.Contains("tmt") || lower.Contains("echo"))
+            {
+                result.Department = "Diagnostics";
+                result.Modality = "Cardiology";
+                return result;
+            }
+
+            result.Department = "Pathology";
+            result.Modality = "General";
+            return result;
+        }
+
+        private static string ResolveRadiologyModality(string testName, string? hint)
+        {
+            var combined = $"{testName} {hint}".ToLower();
+            if (combined.Contains("mri") || combined.Contains("magnetic") || combined.Contains("brain plain") || combined.Contains("angiogram") || combined.Contains("cervical spine")) return "MRI";
+            if (combined.Contains("ct") || combined.Contains("computed")) return "CT Scan";
+            if (combined.Contains("usg") || combined.Contains("ultra") || combined.Contains("u/s") || combined.Contains("echo")) return "Ultrasound";
+            return "X-Ray";
+        }
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<object>>> GetFinanceBills(
             [FromQuery] Guid? branchId = null,
@@ -116,7 +309,12 @@ namespace SynOS.Api.Controllers
                 .Include(i => i.Visit)
                     .ThenInclude(v => v!.Orders)
                         .ThenInclude(o => o.Test)
+                            .ThenInclude(t => t.DepartmentMaster)
+                .Include(i => i.Visit)
+                    .ThenInclude(v => v!.Orders)
+                        .ThenInclude(o => o.Test)
                             .ThenInclude(t => t.ModalityMaster)
+                                .ThenInclude(m => m.DepartmentMaster)
                 .Include(i => i.Payments)
                 .AsNoTracking();
 
@@ -150,6 +348,15 @@ namespace SynOS.Api.Controllers
                 .Select(g => new { VisitId = g.Key, Commission = g.Sum(x => x.Amount) })
                 .ToDictionaryAsync(x => x.VisitId, x => x.Commission);
 
+            // Fetch B2B partner receivables for matched visits (SSOT authority)
+            var receivableVisitIds = await _context.ReceivableFacts
+                .AsNoTracking()
+                .Where(r => visitIds.Contains(r.SourceVisitId))
+                .Select(r => r.SourceVisitId)
+                .Distinct()
+                .ToListAsync();
+            var receivableVisitSet = new HashSet<Guid>(receivableVisitIds);
+
             var result = new List<object>();
 
             foreach (var inv in rawInvoices)
@@ -180,21 +387,14 @@ namespace SynOS.Api.Controllers
                     }
                 }
 
-                // If collected > 0 but payments table had no explicit methods, classify residual as cash/online
+                // Payment method residual classification
                 if (totalCollected > (cashAmount + onlineAmount + prepaidAmount))
                 {
                     var residual = totalCollected - (cashAmount + onlineAmount + prepaidAmount);
                     onlineAmount += residual;
                 }
 
-                // Referral commission cut
-                decimal referralCut = 0;
-                if (referralFacts.TryGetValue(inv.VisitId, out var comm))
-                {
-                    referralCut = comm;
-                }
-
-                // Determine primary department and modality from orders
+                // Determine orders and classify each test with relational authority
                 var allOrders = inv.Visit?.Orders ?? new List<SynOS.Models.Entities.Order>();
                 
                 // Track only billable/root test orders. If an order has a ParentOrderId, it is a sub-component of a panel.
@@ -202,127 +402,143 @@ namespace SynOS.Api.Controllers
                     ? allOrders.Where(o => o.ParentOrderId == null).ToList()
                     : (allOrders.Any(o => o.Price > 0) ? allOrders.Where(o => o.Price > 0).ToList() : allOrders);
 
-                var deptSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                var modalitySet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                var rawTestNames = new List<string>();
+                var classifiedOrders = orders.Select(ClassifyOrder).ToList();
 
-                foreach (var ord in orders)
-                {
-                    if (!string.IsNullOrEmpty(ord.Department)) deptSet.Add(ord.Department);
-                    if (ord.Test != null)
-                    {
-                        var tName = ord.Test.TestName?.Trim();
-                        if (!string.IsNullOrEmpty(tName) && !rawTestNames.Contains(tName, StringComparer.OrdinalIgnoreCase))
-                        {
-                            rawTestNames.Add(tName);
-                        }
-                        if (!string.IsNullOrEmpty(ord.Test.Category)) deptSet.Add(ord.Test.Category);
-                        if (ord.Test.ModalityMaster != null && !string.IsNullOrEmpty(ord.Test.ModalityMaster.Name))
-                        {
-                            modalitySet.Add(ord.Test.ModalityMaster.Name);
-                        }
-                    }
-                    else if (!string.IsNullOrEmpty(ord.TestCode))
-                    {
-                        var code = ord.TestCode.Trim();
-                        if (!rawTestNames.Contains(code, StringComparer.OrdinalIgnoreCase))
-                        {
-                            rawTestNames.Add(code);
-                        }
-                    }
-                }
-
-                // If any test is a panel/profile (e.g. LFT, Lipid, CBC, KFT), suppress known component parameters
+                // If any test is a panel/profile (e.g. LFT, Lipid, CBC, KFT), suppress known component parameters from display
+                var rawTestNames = classifiedOrders.Select(t => t.Name).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
                 var hasLft = rawTestNames.Any(t => t.Contains("LFT", StringComparison.OrdinalIgnoreCase) || t.Contains("Liver", StringComparison.OrdinalIgnoreCase));
                 var hasLipid = rawTestNames.Any(t => t.Contains("Lipid", StringComparison.OrdinalIgnoreCase));
                 var hasCbc = rawTestNames.Any(t => t.Contains("CBC", StringComparison.OrdinalIgnoreCase) || t.Contains("Blood Count", StringComparison.OrdinalIgnoreCase) || t.Contains("Hemogram", StringComparison.OrdinalIgnoreCase));
                 var hasKft = rawTestNames.Any(t => t.Contains("KFT", StringComparison.OrdinalIgnoreCase) || t.Contains("RFT", StringComparison.OrdinalIgnoreCase) || t.Contains("Renal", StringComparison.OrdinalIgnoreCase) || t.Contains("Kidney", StringComparison.OrdinalIgnoreCase));
 
-                var testNames = rawTestNames.Where(t =>
+                var testDetails = classifiedOrders.Where(t =>
                 {
-                    if (hasLft && (t.Contains("Albumin", StringComparison.OrdinalIgnoreCase) || t.Contains("Globulin", StringComparison.OrdinalIgnoreCase) || t.Contains("Bilirubin", StringComparison.OrdinalIgnoreCase) || t.Contains("SGOT", StringComparison.OrdinalIgnoreCase) || t.Contains("SGPT", StringComparison.OrdinalIgnoreCase) || t.Contains("Alkaline Phos", StringComparison.OrdinalIgnoreCase) || t.Contains("Total Protein", StringComparison.OrdinalIgnoreCase)))
+                    var name = t.Name;
+                    if (hasLft && (name.Contains("Albumin", StringComparison.OrdinalIgnoreCase) || name.Contains("Globulin", StringComparison.OrdinalIgnoreCase) || name.Contains("Bilirubin", StringComparison.OrdinalIgnoreCase) || name.Contains("SGOT", StringComparison.OrdinalIgnoreCase) || name.Contains("SGPT", StringComparison.OrdinalIgnoreCase) || name.Contains("Alkaline Phos", StringComparison.OrdinalIgnoreCase) || name.Contains("Total Protein", StringComparison.OrdinalIgnoreCase)))
                     {
                         return false;
                     }
-                    if (hasLipid && (t.Contains("Cholesterol", StringComparison.OrdinalIgnoreCase) || t.Contains("Triglyceride", StringComparison.OrdinalIgnoreCase) || t.Contains("HDL", StringComparison.OrdinalIgnoreCase) || t.Contains("LDL", StringComparison.OrdinalIgnoreCase) || t.Contains("VLDL", StringComparison.OrdinalIgnoreCase)))
+                    if (hasLipid && (name.Contains("Cholesterol", StringComparison.OrdinalIgnoreCase) || name.Contains("Triglyceride", StringComparison.OrdinalIgnoreCase) || name.Contains("HDL", StringComparison.OrdinalIgnoreCase) || name.Contains("LDL", StringComparison.OrdinalIgnoreCase) || name.Contains("VLDL", StringComparison.OrdinalIgnoreCase)))
                     {
                         return false;
                     }
-                    if (hasCbc && (t.Contains("Hemoglobin", StringComparison.OrdinalIgnoreCase) || t.Contains("Platelet", StringComparison.OrdinalIgnoreCase) || t.Contains("WBC", StringComparison.OrdinalIgnoreCase) || t.Contains("RBC", StringComparison.OrdinalIgnoreCase) || t.Contains("PCV", StringComparison.OrdinalIgnoreCase) || t.Contains("MCV", StringComparison.OrdinalIgnoreCase) || t.Contains("ESR", StringComparison.OrdinalIgnoreCase)))
+                    if (hasCbc && (name.Contains("Hemoglobin", StringComparison.OrdinalIgnoreCase) || name.Contains("Platelet", StringComparison.OrdinalIgnoreCase) || name.Contains("WBC", StringComparison.OrdinalIgnoreCase) || name.Contains("RBC", StringComparison.OrdinalIgnoreCase) || name.Contains("PCV", StringComparison.OrdinalIgnoreCase) || name.Contains("MCV", StringComparison.OrdinalIgnoreCase) || name.Contains("ESR", StringComparison.OrdinalIgnoreCase)))
                     {
                         return false;
                     }
-                    if (hasKft && (t.Contains("Urea", StringComparison.OrdinalIgnoreCase) || t.Contains("Creatinine", StringComparison.OrdinalIgnoreCase) || t.Contains("Uric Acid", StringComparison.OrdinalIgnoreCase)))
+                    if (hasKft && (name.Contains("Urea", StringComparison.OrdinalIgnoreCase) || name.Contains("Creatinine", StringComparison.OrdinalIgnoreCase) || name.Contains("Uric Acid", StringComparison.OrdinalIgnoreCase)))
                     {
                         return false;
                     }
                     return true;
                 }).ToList();
 
-                if (testNames.Count == 0) testNames = rawTestNames;
+                if (testDetails.Count == 0) testDetails = classifiedOrders;
 
-                // Synthesize department classification
-                var isRadiology = deptSet.Any(d => d.Contains("Radiology", StringComparison.OrdinalIgnoreCase)) 
-                                  || modalitySet.Any(m => m.Contains("XR", StringComparison.OrdinalIgnoreCase) || m.Contains("CT", StringComparison.OrdinalIgnoreCase) || m.Contains("MR", StringComparison.OrdinalIgnoreCase) || m.Contains("US", StringComparison.OrdinalIgnoreCase));
+                var testNames = testDetails.Select(t => t.Name).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+                var departments = testDetails.Select(t => t.Department).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+                var modalities = testDetails.Select(t => t.Modality).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 
-                var deptClass = isRadiology ? "Radiology" : "Pathology";
+                var deptClass = departments.Contains("Pathology", StringComparer.OrdinalIgnoreCase) ? "Pathology" : (departments.FirstOrDefault() ?? "Pathology");
+                var modalityClass = modalities.FirstOrDefault() ?? "General";
 
-                // Synthesize primary modality
-                string modalityClass = "General";
-                if (isRadiology)
-                {
-                    var combinedRad = $"{string.Join(" ", deptSet)} {string.Join(" ", modalitySet)} {string.Join(" ", testNames)}".ToLower();
-                    if (combinedRad.Contains("mri") || combinedRad.Contains("magnetic") || combinedRad.Contains(" mr ")) modalityClass = "MRI";
-                    else if (combinedRad.Contains("ct") || combinedRad.Contains("computed")) modalityClass = "CT Scan";
-                    else if (combinedRad.Contains("usg") || combinedRad.Contains("ultra") || combinedRad.Contains("echo")) modalityClass = "Ultrasound";
-                    else if (combinedRad.Contains("x-ray") || combinedRad.Contains("xray") || combinedRad.Contains("xr")) modalityClass = "X-Ray";
-                    else modalityClass = "X-Ray";
-                }
-                else
-                {
-                    var combinedPath = $"{string.Join(" ", deptSet)} {string.Join(" ", modalitySet)} {string.Join(" ", testNames)}".ToLower();
-                    if (combinedPath.Contains("biochem")) modalityClass = "Biochemistry";
-                    else if (combinedPath.Contains("hemat") || combinedPath.Contains("haemat") || combinedPath.Contains("cbc")) modalityClass = "Hematology";
-                    else if (combinedPath.Contains("microbio") || combinedPath.Contains("culture")) modalityClass = "Microbiology";
-                    else if (combinedPath.Contains("histo") || combinedPath.Contains("biopsy")) modalityClass = "Histopathology";
-                    else modalityClass = "Biochemistry";
-                }
-
-                // Department filter evaluation
+                // Department filter evaluation: Does ANY order on this bill belong to the requested department?
                 if (!string.IsNullOrEmpty(department) && !department.Equals("All", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (!deptClass.Equals(department, StringComparison.OrdinalIgnoreCase) && 
-                        !deptSet.Any(d => d.Contains(department, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        continue;
-                    }
+                    var matchesDept = testDetails.Any(t => t.Department.Equals(department, StringComparison.OrdinalIgnoreCase));
+                    if (!matchesDept) continue;
                 }
 
-                // Modality filter evaluation
+                // Modality filter evaluation: Does ANY order on this bill belong to the requested modality?
                 if (!string.IsNullOrEmpty(modality) && !modality.Equals("All", StringComparison.OrdinalIgnoreCase))
                 {
-                    var mTarget = modality.ToLower();
-                    var matchMod = modalityClass.ToLower().Contains(mTarget) || 
-                                   modalitySet.Any(m => m.ToLower().Contains(mTarget)) ||
-                                   deptSet.Any(d => d.ToLower().Contains(mTarget));
-                    if (!matchMod) continue;
+                    var matchesMod = testDetails.Any(t => t.Modality.Equals(modality, StringComparison.OrdinalIgnoreCase) ||
+                                                          t.Modality.IndexOf(modality, StringComparison.OrdinalIgnoreCase) >= 0);
+                    if (!matchesMod) continue;
                 }
 
-                // Partner category classification
-                var partnerName = inv.Visit?.ReferralPartner != null ? inv.Visit.ReferralPartner.Name : "Direct Patient";
-                var partnerCategory = "Direct";
-                if (inv.Visit?.ReferralPartner != null) partnerCategory = "Partner";
-                if ((inv.Visit?.PaymentCollectionModel ?? "").Contains("Insurance", StringComparison.OrdinalIgnoreCase) || partnerName.Contains("Insur", StringComparison.OrdinalIgnoreCase)) partnerCategory = "Insurance";
-                if ((inv.Visit?.PaymentCollectionModel ?? "").Contains("Corporate", StringComparison.OrdinalIgnoreCase) || partnerName.Contains("Corp", StringComparison.OrdinalIgnoreCase)) partnerCategory = "Corporate";
+                // Canonical Bill Type / Payer Classification (SSOT Authority)
+                var v = inv.Visit;
+                var rp = v?.ReferralPartner;
+                var pcm = v?.PaymentCollectionModel ?? "";
+                var bt = v?.BillingType;
+                var partnerName = rp != null ? rp.Name : "Direct Patient";
+                bool hasCounterDeskPayment = totalCollected > 0;
+
+                bool isInsurance = false;
+                bool isCorporateB2B = false;
+
+                if (bt == BillingType.Insurance || 
+                    pcm.Contains("Insurance", StringComparison.OrdinalIgnoreCase) || 
+                    partnerName.Contains("Insur", StringComparison.OrdinalIgnoreCase))
+                {
+                    isInsurance = true;
+                }
+                else if (!hasCounterDeskPayment && 
+                         (bt == BillingType.PrepaidPartner || 
+                          bt == BillingType.Corporate || 
+                          pcm.Equals("PartnerCollects", StringComparison.OrdinalIgnoreCase) || 
+                          pcm.Equals("CorporateB2B", StringComparison.OrdinalIgnoreCase) || 
+                          pcm.Equals("PartnerMonthlyBilling", StringComparison.OrdinalIgnoreCase) ||
+                          receivableVisitSet.Contains(inv.VisitId) ||
+                          (v?.B2BDiscountAmount != null && v.B2BDiscountAmount > 0 && v.ReferralPartnerId != null) ||
+                          (rp != null && (rp.PartnerType == SynOS.Models.Enums.Referral.PartnerType.Hospital || 
+                                          rp.PartnerType == SynOS.Models.Enums.Referral.PartnerType.Clinic || 
+                                          string.Equals(rp.PaymentCollectionModel, "PartnerCollects", StringComparison.OrdinalIgnoreCase) ||
+                                          rp.Name.Contains("Hospital", StringComparison.OrdinalIgnoreCase) ||
+                                          rp.Name.Contains("Clinic", StringComparison.OrdinalIgnoreCase)))))
+                {
+                    isCorporateB2B = true;
+                }
+
+                string partnerCategory = isCorporateB2B ? "Corporate" : (isInsurance ? "Insurance" : "Direct");
+                string canonicalPayerMode = isCorporateB2B ? "Corporate B2B" : (isInsurance ? "Insurance" : "Standard / Direct");
+
+                // Cancellation check: In ERP standards, a cancelled visit has strictly zero outstanding claim.
+                bool isCancelled = string.Equals(inv.Status, "Cancelled", StringComparison.OrdinalIgnoreCase) || 
+                                   (inv.Visit != null && inv.Visit.Status == VisitStatus.Cancelled);
+
+                if (isCancelled)
+                {
+                    totalDue = 0m;
+                }
+
+                // Strict invariant: Referral cut applies ONLY to Standard / Direct bills where patient pays at counter.
+                // Corporate B2B, Insurance, Cancelled, and SELF bills have strictly ₹0 referral cut.
+                decimal referralCut = 0;
+                if (!isCancelled && !isCorporateB2B && !isInsurance && 
+                    !string.Equals(partnerName, "SELF", StringComparison.OrdinalIgnoreCase) &&
+                    referralFacts.TryGetValue(inv.VisitId, out var comm))
+                {
+                    referralCut = comm;
+                }
 
                 if (!string.IsNullOrEmpty(category) && !category.Equals("All", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (!partnerCategory.Equals(category, StringComparison.OrdinalIgnoreCase)) continue;
+                    if (category.Equals("Standard", StringComparison.OrdinalIgnoreCase) || 
+                        category.Equals("Direct", StringComparison.OrdinalIgnoreCase) || 
+                        category.Equals("Standard/Direct", StringComparison.OrdinalIgnoreCase) ||
+                        category.Equals("Standard / Direct", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (isCorporateB2B || isInsurance) continue;
+                    }
+                    else if (category.Equals("Corporate", StringComparison.OrdinalIgnoreCase) || 
+                             category.Equals("Partner", StringComparison.OrdinalIgnoreCase) || 
+                             category.Equals("Corporate B2B", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (!isCorporateB2B) continue;
+                    }
+                    else if (category.Equals("Insurance", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (!isInsurance) continue;
+                    }
+                    else if (!partnerCategory.Equals(category, StringComparison.OrdinalIgnoreCase)) continue;
                 }
 
                 // Status classification
-                var normalizedStatus = inv.Status?.ToUpper() ?? "PENDING";
-                if (totalDue <= 0) normalizedStatus = "PAID";
+                var normalizedStatus = "PENDINGPAYMENT";
+                if (isCancelled) normalizedStatus = "CANCELLED";
+                else if (totalDue <= 0) normalizedStatus = "PAID";
                 else if (totalCollected > 0) normalizedStatus = "PARTIALLYPAID";
                 else normalizedStatus = "PENDINGPAYMENT";
 
@@ -331,7 +547,8 @@ namespace SynOS.Api.Controllers
                     var sMap = status.ToUpper();
                     if (sMap == "SETTLED" && normalizedStatus != "PAID") continue;
                     if (sMap == "PARTIAL" && normalizedStatus != "PARTIALLYPAID") continue;
-                    if (sMap == "PENDING" && normalizedStatus != "PENDINGPAYMENT") continue;
+                    if (sMap == "PENDING" && (normalizedStatus != "PENDINGPAYMENT" || isCancelled)) continue;
+                    if (sMap == "CANCELLED" && !isCancelled) continue;
                 }
 
                 var patientName = inv.Visit?.Patient != null 
@@ -353,8 +570,15 @@ namespace SynOS.Api.Controllers
                     PartnerId = inv.Visit?.ReferralPartnerId ?? inv.Visit?.ReferralPartner?.ReferralPartnerId,
                     PartnerName = partnerName,
                     PartnerCategory = partnerCategory,
+                    BillingType = canonicalPayerMode,
+                    PayerMode = canonicalPayerMode,
+                    DebtorType = isCorporateB2B ? "InstitutionalPartner" : (isInsurance ? "InsuranceTPA" : "PatientCounter"),
+                    DebtorName = isCorporateB2B || isInsurance ? partnerName : "Direct Patient",
+                    PaymentCollectionModel = pcm,
                     Department = deptClass,
                     Modality = modalityClass,
+                    Departments = departments,
+                    Modalities = modalities,
                     TotalAmount = inv.Total,
                     CollectedAmount = totalCollected,
                     PendingAmount = totalDue,
@@ -362,9 +586,16 @@ namespace SynOS.Api.Controllers
                     OnlineAmount = onlineAmount,
                     PrepaidAmount = prepaidAmount,
                     ReferralCommissionCut = referralCut,
-                    Status = normalizedStatus == "PAID" ? "Settled" : (normalizedStatus == "PARTIALLYPAID" ? "Partial" : "Pending"),
+                    IsCancelled = isCancelled,
+                    Status = isCancelled ? "Cancelled" : (normalizedStatus == "PAID" ? "Settled" : (normalizedStatus == "PARTIALLYPAID" ? "Partial" : "Pending")),
                     Date = inv.CreatedAt,
-                    TestItems = testNames
+                    TestItems = testNames,
+                    TestDetails = testDetails.Select(t => new {
+                        Name = t.Name,
+                        Code = t.Code,
+                        Department = t.Department,
+                        Modality = t.Modality
+                    }).ToList()
                 });
             }
 
