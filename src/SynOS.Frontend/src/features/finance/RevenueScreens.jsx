@@ -715,19 +715,22 @@ export const BillsCollectionsScreen = () => {
         window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
     };
 
-    const confirmCollection = async (amount) => {
+    const confirmCollection = async (amount, paymentMethod = 'BankTransfer', notes = '') => {
         if (!selectedBill) return;
         const response = await fetch(`/api/v1/visits/${selectedBill.visitId}/payment`, {
             method: 'POST',
             headers: FinanceApi.getHeaders(),
             body: JSON.stringify({ 
                 amount, 
-                paymentMethod: 'BankTransfer',
-                notes: `Institutional settlement from Finance Hub`
+                paymentMethod: paymentMethod || 'BankTransfer',
+                notes: notes || `Settlement from Finance Hub (${selectedBill.patientName || 'Visit'})`
             })
         });
 
-        if (!response.ok) throw new Error("Failed to record payment");
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.message || "Failed to record payment");
+        }
         await loadBills();
     };
 

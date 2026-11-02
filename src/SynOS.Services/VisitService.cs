@@ -1363,6 +1363,21 @@ namespace SynOS.Services
                         ReceivedByUserId = cancelDto.CancelledByUserId
                     };
                     _context.Payments.Add(refundPayment);
+
+                    // Declare Outflow RevenueFact for Cash/Online drawer truth
+                    await _revenueFactWriter.DeclareRevenueFactAsync(new SynOS.Models.DTOs.Revenue.DeclareRevenueFactCommand
+                    {
+                        OccurredAt = DateTimeOffset.UtcNow,
+                        Amount = totalRefunded,
+                        Currency = "INR",
+                        Direction = RevenueDirection.Reversal,
+                        SourceType = RevenueSourceType.Patient,
+                        SourceReferenceId = cancellation.CancelId.ToString(),
+                        PaymentMode = refundMethod.IndexOf("Cash", StringComparison.OrdinalIgnoreCase) >= 0 ? PaymentMode.Cash : PaymentMode.UPI,
+                        DeclaredByUserId = cancelDto.CancelledByUserId,
+                        Notes = $"Refund for cancelled visit {visit.Token}: {cancelDto.Reason}",
+                        ExternalTransactionId = $"REF-CAN-{DateTime.UtcNow:yyyyMMdd}-{visit.Token}"
+                    });
                 }
 
                 // If B2B partner receivable existed for this visit, settle/void it

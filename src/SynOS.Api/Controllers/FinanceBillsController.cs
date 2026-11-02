@@ -11,6 +11,7 @@ using SynOS.Models.Entities;
 using SynOS.Models.Entities.Payments;
 using SynOS.Models.Entities.Revenue;
 using SynOS.Models.Enums;
+using SynOS.Services.Revenue;
 
 namespace SynOS.Api.Controllers
 {
@@ -19,10 +20,33 @@ namespace SynOS.Api.Controllers
     public class FinanceBillsController : ControllerBase
     {
         private readonly SynOSDbContext _context;
+        private readonly IRevenueFactWriter _revenueFactWriter;
 
-        public FinanceBillsController(SynOSDbContext context)
+        public FinanceBillsController(SynOSDbContext context, IRevenueFactWriter revenueFactWriter)
         {
             _context = context;
+            _revenueFactWriter = revenueFactWriter;
+        }
+
+        public static string FormatBillNumber(string? token, string? branchCode, DateTime date)
+        {
+            var cleanToken = !string.IsNullOrWhiteSpace(token)
+                ? token.Replace("-", "").Trim().ToUpper()
+                : $"{(string.IsNullOrWhiteSpace(branchCode) ? "MAI" : branchCode.Trim().ToUpper())}000";
+            return $"{cleanToken}-{date:yyMMdd}";
+        }
+
+        private static PaymentMode MapPaymentMethod(string method)
+        {
+            var m = (method ?? "").ToLower().Trim();
+            return m switch
+            {
+                "cash" => PaymentMode.Cash,
+                "upi" => PaymentMode.UPI,
+                "card" => PaymentMode.Card,
+                "banktransfer" or "bank" or "neft" or "rtgs" or "cheque" => PaymentMode.BankTransfer,
+                _ => PaymentMode.Other
+            };
         }
 
         [HttpGet]
@@ -314,10 +338,7 @@ namespace SynOS.Api.Controllers
                     ? $"{inv.Visit.Patient.FirstName} {inv.Visit.Patient.LastName}".Trim() 
                     : "Walk-in Patient";
 
-                var cleanToken = !string.IsNullOrWhiteSpace(inv.Visit?.Token)
-                    ? inv.Visit.Token.Replace("-", "").Trim().ToUpper()
-                    : $"{inv.Visit?.Branch?.Code?.Trim().ToUpper() ?? "MAI"}000";
-                var billNo = $"{cleanToken}-{inv.CreatedAt:yyMMdd}";
+                var billNo = FormatBillNumber(inv.Visit?.Token, inv.Visit?.Branch?.Code, inv.CreatedAt);
 
                 result.Add(new
                 {
@@ -400,6 +421,14 @@ namespace SynOS.Api.Controllers
                 }
             }
 
+            // Institutional / Partner receivables must NEVER spam patient due bills.
+            // Due Bills is strictly for patient walk-in bills with partial payments (TotalPaid > 0 && BalanceDue > 0).
+            var partnerVisitIdsWithReceivables = await _context.ReceivableFacts
+                .Where(r => r.SettledAt == null)
+                .Select(r => r.SourceVisitId)
+                .Distinct()
+                .ToListAsync();
+
             var query = _context.Invoices
                 .Include(i => i.Visit).ThenInclude(v => v!.Patient)
                 .Include(i => i.Visit).ThenInclude(v => v!.Branch)
@@ -409,7 +438,12 @@ namespace SynOS.Api.Controllers
                 .Include(i => i.PartialPayments)
                 .Where(i => i.Visit != null && 
                             i.Status != "Cancelled" && 
-                            i.Visit.PaymentCollectionModel != "PartnerMonthlyBilling")
+                            i.Visit.PaymentCollectionModel != "PartnerMonthlyBilling" &&
+                            i.Visit.PaymentCollectionModel != "PrepaidPartner" &&
+                            i.Visit.PaymentCollectionModel != "PartnerCollects" &&
+                            i.Visit.BillingType != BillingType.PrepaidPartner &&
+                            i.Visit.BillingType != BillingType.Insurance &&
+                            !partnerVisitIdsWithReceivables.Contains(i.VisitId))
                 .AsNoTracking();
 
             if (branchId.HasValue && branchId.Value != Guid.Empty)
@@ -443,9 +477,10 @@ namespace SynOS.Api.Controllers
                         LastPayment = lastPayment
                     };
                 })
-                .Where(x => x.BalanceDue > 0)
+                .Where(x => x.TotalPaid > 0 && x.BalanceDue > 0)
                 .Select(x => new {
                     InvoiceId = x.Invoice.InvoiceId,
+                    BillNumber = FormatBillNumber(x.Invoice.Visit?.Token, x.Invoice.Visit?.Branch?.Code, x.Invoice.CreatedAt),
                     VisitId = x.Invoice.VisitId,
                     Token = x.Invoice.Visit?.Token ?? "UNKNOWN",
                     PatientName = x.Invoice.Visit?.Patient != null ? $"{x.Invoice.Visit.Patient.FirstName} {x.Invoice.Visit.Patient.LastName}".Trim() : "Walk-in Patient",
@@ -463,7 +498,7 @@ namespace SynOS.Api.Controllers
                     TotalAmount = x.Invoice.Total,
                     TotalPaid = x.TotalPaid,
                     BalanceDue = x.BalanceDue,
-                    Status = x.TotalPaid > 0 ? "Partial" : "Pending",
+                    Status = "Partial",
                     LastPaymentDate = x.LastPayment?.ReceivedAt,
                     LastPaymentMethod = x.LastPayment?.Method ?? "N/A",
                     Tests = x.Invoice.Visit?.Orders?.Select(o => o.Test?.TestName ?? o.TestCode).Where(t => !string.IsNullOrEmpty(t)).ToList() ?? new List<string>()
@@ -576,7 +611,36 @@ namespace SynOS.Api.Controllers
             );
             _context.PaymentConfirmedFacts.Add(fact);
 
+            // Synchronize with AR.ReceivableFacts if an open receivable exists
+            var openReceivable = await _context.ReceivableFacts
+                .FirstOrDefaultAsync(r => r.SourceVisitId == invoice.VisitId && r.SettledAt == null);
+            if (openReceivable != null)
+            {
+                openReceivable.AmountReceived += amountToRecord;
+                if (openReceivable.AmountReceived >= openReceivable.Amount)
+                {
+                    openReceivable.SettledAt = DateTimeOffset.UtcNow;
+                    openReceivable.ClaimReference = payment.ReceiptNo;
+                }
+                _context.ReceivableFacts.Update(openReceivable);
+            }
+
             await _context.SaveChangesAsync();
+
+            // Declare Truth Revenue Fact for Cash / Digital Drawer
+            await _revenueFactWriter.DeclareRevenueFactAsync(new SynOS.Models.DTOs.Revenue.DeclareRevenueFactCommand
+            {
+                OccurredAt = payment.ReceivedAt,
+                Amount = payment.Amount,
+                Currency = "INR",
+                Direction = RevenueDirection.Inflow,
+                SourceType = RevenueSourceType.Patient,
+                SourceReferenceId = payment.PaymentId.ToString(),
+                PaymentMode = MapPaymentMethod(payment.Method),
+                DeclaredByUserId = userId,
+                Notes = $"Due bill collection for Invoice {invoice.InvoiceId}",
+                ExternalTransactionId = payment.ReceiptNo
+            });
 
             return Ok(new
             {
@@ -759,6 +823,7 @@ namespace SynOS.Api.Controllers
                 return new
                 {
                     CorrectionId = c.CorrectionId,
+                    BillNumber = FormatBillNumber(visit?.Token, visit?.Branch?.Code, c.CreatedAt),
                     VisitId = c.VisitId,
                     InvoiceId = c.InvoiceId,
                     CreatedAt = c.CreatedAt,
@@ -886,6 +951,7 @@ namespace SynOS.Api.Controllers
                 return new
                 {
                     CancelId = c.CancelId,
+                    BillNumber = FormatBillNumber(visit?.Token, visit?.Branch?.Code, c.CancelledAt),
                     VisitId = c.VisitId,
                     CancelledAt = c.CancelledAt,
                     Reason = c.Reason,

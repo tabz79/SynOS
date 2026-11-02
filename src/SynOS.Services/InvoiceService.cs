@@ -256,6 +256,21 @@ namespace SynOS.Services
 
             // Resolve demographics and referral dimensions for event
             var visit = await _context.Visits.FindAsync(invoice.VisitId);
+
+            // Synchronize with AR.ReceivableFacts if an open partner or institutional receivable exists for this visit
+            var pendingReceivable = await _context.ReceivableFacts
+                .FirstOrDefaultAsync(r => r.SourceVisitId == invoice.VisitId && r.SettledAt == null);
+            if (pendingReceivable != null)
+            {
+                pendingReceivable.AmountReceived += recordedAmount;
+                if (pendingReceivable.AmountReceived >= pendingReceivable.Amount)
+                {
+                    pendingReceivable.SettledAt = DateTimeOffset.UtcNow;
+                    pendingReceivable.ClaimReference = payment.ReceiptNo;
+                }
+                _context.ReceivableFacts.Update(pendingReceivable);
+            }
+
             Guid? patientId = visit?.PatientId;
             string? gender = null;
             DateTime? dob = null;
