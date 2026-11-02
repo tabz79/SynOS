@@ -171,17 +171,27 @@ namespace SynOS.Api.Controllers
                 }
 
                 // Determine primary department and modality from orders
-                var orders = inv.Visit?.Orders ?? new List<SynOS.Models.Entities.Order>();
+                var allOrders = inv.Visit?.Orders ?? new List<SynOS.Models.Entities.Order>();
+                
+                // Track only billable/root test orders. If an order has a ParentOrderId, it is a sub-component of a panel.
+                var orders = allOrders.Any(o => o.ParentOrderId != null)
+                    ? allOrders.Where(o => o.ParentOrderId == null).ToList()
+                    : (allOrders.Any(o => o.Price > 0) ? allOrders.Where(o => o.Price > 0).ToList() : allOrders);
+
                 var deptSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                 var modalitySet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                var testNames = new List<string>();
+                var rawTestNames = new List<string>();
 
                 foreach (var ord in orders)
                 {
                     if (!string.IsNullOrEmpty(ord.Department)) deptSet.Add(ord.Department);
                     if (ord.Test != null)
                     {
-                        testNames.Add(ord.Test.TestName);
+                        var tName = ord.Test.TestName?.Trim();
+                        if (!string.IsNullOrEmpty(tName) && !rawTestNames.Contains(tName, StringComparer.OrdinalIgnoreCase))
+                        {
+                            rawTestNames.Add(tName);
+                        }
                         if (!string.IsNullOrEmpty(ord.Test.Category)) deptSet.Add(ord.Test.Category);
                         if (ord.Test.ModalityMaster != null && !string.IsNullOrEmpty(ord.Test.ModalityMaster.Name))
                         {
@@ -190,9 +200,42 @@ namespace SynOS.Api.Controllers
                     }
                     else if (!string.IsNullOrEmpty(ord.TestCode))
                     {
-                        testNames.Add(ord.TestCode);
+                        var code = ord.TestCode.Trim();
+                        if (!rawTestNames.Contains(code, StringComparer.OrdinalIgnoreCase))
+                        {
+                            rawTestNames.Add(code);
+                        }
                     }
                 }
+
+                // If any test is a panel/profile (e.g. LFT, Lipid, CBC, KFT), suppress known component parameters
+                var hasLft = rawTestNames.Any(t => t.Contains("LFT", StringComparison.OrdinalIgnoreCase) || t.Contains("Liver", StringComparison.OrdinalIgnoreCase));
+                var hasLipid = rawTestNames.Any(t => t.Contains("Lipid", StringComparison.OrdinalIgnoreCase));
+                var hasCbc = rawTestNames.Any(t => t.Contains("CBC", StringComparison.OrdinalIgnoreCase) || t.Contains("Blood Count", StringComparison.OrdinalIgnoreCase) || t.Contains("Hemogram", StringComparison.OrdinalIgnoreCase));
+                var hasKft = rawTestNames.Any(t => t.Contains("KFT", StringComparison.OrdinalIgnoreCase) || t.Contains("RFT", StringComparison.OrdinalIgnoreCase) || t.Contains("Renal", StringComparison.OrdinalIgnoreCase) || t.Contains("Kidney", StringComparison.OrdinalIgnoreCase));
+
+                var testNames = rawTestNames.Where(t =>
+                {
+                    if (hasLft && (t.Contains("Albumin", StringComparison.OrdinalIgnoreCase) || t.Contains("Globulin", StringComparison.OrdinalIgnoreCase) || t.Contains("Bilirubin", StringComparison.OrdinalIgnoreCase) || t.Contains("SGOT", StringComparison.OrdinalIgnoreCase) || t.Contains("SGPT", StringComparison.OrdinalIgnoreCase) || t.Contains("Alkaline Phos", StringComparison.OrdinalIgnoreCase) || t.Contains("Total Protein", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        return false;
+                    }
+                    if (hasLipid && (t.Contains("Cholesterol", StringComparison.OrdinalIgnoreCase) || t.Contains("Triglyceride", StringComparison.OrdinalIgnoreCase) || t.Contains("HDL", StringComparison.OrdinalIgnoreCase) || t.Contains("LDL", StringComparison.OrdinalIgnoreCase) || t.Contains("VLDL", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        return false;
+                    }
+                    if (hasCbc && (t.Contains("Hemoglobin", StringComparison.OrdinalIgnoreCase) || t.Contains("Platelet", StringComparison.OrdinalIgnoreCase) || t.Contains("WBC", StringComparison.OrdinalIgnoreCase) || t.Contains("RBC", StringComparison.OrdinalIgnoreCase) || t.Contains("PCV", StringComparison.OrdinalIgnoreCase) || t.Contains("MCV", StringComparison.OrdinalIgnoreCase) || t.Contains("ESR", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        return false;
+                    }
+                    if (hasKft && (t.Contains("Urea", StringComparison.OrdinalIgnoreCase) || t.Contains("Creatinine", StringComparison.OrdinalIgnoreCase) || t.Contains("Uric Acid", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        return false;
+                    }
+                    return true;
+                }).ToList();
+
+                if (testNames.Count == 0) testNames = rawTestNames;
 
                 // Synthesize department classification
                 var isRadiology = deptSet.Any(d => d.Contains("Radiology", StringComparison.OrdinalIgnoreCase)) 

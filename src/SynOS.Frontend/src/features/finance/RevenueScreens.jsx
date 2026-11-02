@@ -481,6 +481,108 @@ const FilterTab = ({ label, count, isActive, onClick }) => (
     </button>
 );
 
+// --- CANONICAL IDENTIFIER & INVESTIGATION SANITIZERS ---
+
+const formatCanonicalBillNo = (bill) => {
+    if (!bill) return 'MAI000-000000';
+    
+    // If already in MAI001-261102 format (letters + digits - digits), return as is
+    if (bill.billNumber && /^[A-Za-z]{2,5}\d{3,4}-\d{6}$/.test(bill.billNumber)) {
+        return bill.billNumber;
+    }
+
+    // Extract token (e.g. "MAI-001" -> "MAI001")
+    const rawToken = bill.token || bill.tokenNumber || '';
+    let cleanToken = rawToken ? rawToken.replace(/[^a-zA-Z0-9]/g, '').toUpperCase() : '';
+    
+    // If no token, fallback to branch code + 000
+    if (!cleanToken) {
+        const bCode = (bill.branchCode || bill.branchName || 'MAI').replace(/[^a-zA-Z]/g, '').slice(0, 3).toUpperCase() || 'MAI';
+        cleanToken = `${bCode}000`;
+    }
+
+    // Extract YYMMDD from bill.date (e.g. 2026-11-02 -> 261102)
+    let dateStr = '';
+    if (bill.date) {
+        const d = new Date(bill.date);
+        if (!isNaN(d.getTime())) {
+            const yy = String(d.getFullYear()).slice(-2);
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            dateStr = `${yy}${mm}${dd}`;
+        }
+    }
+    if (!dateStr) {
+        const now = new Date();
+        dateStr = `${String(now.getFullYear()).slice(-2)}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+    }
+
+    return `${cleanToken}-${dateStr}`;
+};
+
+const PANEL_CHILDREN_MAP = {
+    // Liver Function Test
+    'lft': ['albumin', 'globulin', 'a:g ratio', 'albumin : globulin', 'albumin:globulin', 'bilirubin', 'serum bilirubin', 'sgot', 'sgpt', 'alkaline phosphatase', 'ast', 'alt', 'total protein', 'ggtp', 'gamma gt', 'aspartate aminotransferase', 'alanine aminotransferase'],
+    'liver': ['albumin', 'globulin', 'a:g ratio', 'albumin : globulin', 'albumin:globulin', 'bilirubin', 'serum bilirubin', 'sgot', 'sgpt', 'alkaline phosphatase', 'ast', 'alt', 'total protein', 'ggtp', 'gamma gt', 'aspartate aminotransferase', 'alanine aminotransferase'],
+    // Lipid Profile
+    'lipid': ['cholesterol', 'triglycerides', 'hdl', 'ldl', 'vldl', 'ratio'],
+    // Complete Blood Count
+    'cbc': ['hemoglobin', 'haemoglobin', 'rbc', 'wbc', 'platelet', 'pcv', 'hematocrit', 'mcv', 'mch', 'mchc', 'rdw', 'neutrophil', 'lymphocyte', 'monocyte', 'eosinophil', 'basophil', 'esr'],
+    'complete blood': ['hemoglobin', 'haemoglobin', 'rbc', 'wbc', 'platelet', 'pcv', 'hematocrit', 'mcv', 'mch', 'mchc', 'rdw', 'neutrophil', 'lymphocyte', 'monocyte', 'eosinophil', 'basophil', 'esr'],
+    'hemogram': ['hemoglobin', 'haemoglobin', 'rbc', 'wbc', 'platelet', 'pcv', 'hematocrit', 'mcv', 'mch', 'mchc', 'rdw', 'neutrophil', 'lymphocyte', 'monocyte', 'eosinophil', 'basophil', 'esr'],
+    // Renal / Kidney Function Test
+    'kft': ['urea', 'bun', 'creatinine', 'uric acid', 'sodium', 'potassium', 'chloride'],
+    'rft': ['urea', 'bun', 'creatinine', 'uric acid', 'sodium', 'potassium', 'chloride'],
+    'renal': ['urea', 'bun', 'creatinine', 'uric acid', 'sodium', 'potassium', 'chloride'],
+    'kidney': ['urea', 'bun', 'creatinine', 'uric acid', 'sodium', 'potassium', 'chloride'],
+    // Thyroid Profile
+    'tft': ['triiodothyronine', 't3', 'thyroxine', 't4', 'tsh', 'thyroid stimulating'],
+    'thyroid': ['triiodothyronine', 't3', 'thyroxine', 't4', 'tsh', 'thyroid stimulating']
+};
+
+const sanitizeInvestigationItems = (rawItems) => {
+    if (!Array.isArray(rawItems) || rawItems.length === 0) return [];
+
+    // Deduplicate and trim
+    const items = Array.from(new Set(rawItems.map(t => (typeof t === 'string' ? t.trim() : '')).filter(Boolean)));
+    if (items.length <= 1) return items;
+
+    // Detect which panels are present in this invoice
+    const activePanelKeys = [];
+    items.forEach(item => {
+        const lower = item.toLowerCase();
+        for (const panelKey of Object.keys(PANEL_CHILDREN_MAP)) {
+            if (lower.includes(panelKey)) {
+                activePanelKeys.push(panelKey);
+            }
+        }
+    });
+
+    if (activePanelKeys.length === 0) return items;
+
+    // Build the set of child terms to suppress because their parent panel is present
+    const suppressTerms = [];
+    activePanelKeys.forEach(pKey => {
+        (PANEL_CHILDREN_MAP[pKey] || []).forEach(term => suppressTerms.push(term));
+    });
+
+    // Filter out items that are sub-components of an active panel
+    const filtered = items.filter(item => {
+        const lower = item.toLowerCase();
+        // Always retain the panel test itself
+        for (const pKey of activePanelKeys) {
+            if (lower.includes(pKey)) return true;
+        }
+        // If it matches a sub-component term of an active panel, suppress it
+        for (const term of suppressTerms) {
+            if (lower.includes(term)) return false;
+        }
+        return true;
+    });
+
+    return filtered.length > 0 ? filtered : items;
+};
+
 // --- SCREENS ---
 
 export const BillsCollectionsScreen = () => {
@@ -530,7 +632,13 @@ export const BillsCollectionsScreen = () => {
                 params.endDate = globalCustomDates.end;
             }
             const data = await FinanceApi.getFinanceBills(params);
-            setBills(Array.isArray(data) ? data : (data?.bills || []));
+            const rawBills = Array.isArray(data) ? data : (data?.bills || []);
+            const normalizedBills = rawBills.map(b => ({
+                ...b,
+                billNumber: formatCanonicalBillNo(b),
+                testItems: sanitizeInvestigationItems(b.testItems)
+            }));
+            setBills(normalizedBills);
         } catch (err) {
             console.error("Failed to load bills:", err);
         } finally {
@@ -1238,7 +1346,12 @@ export const DueBillsScreen = () => {
                 params.endDate = customDates.end;
             }
             const data = await FinanceApi.getDueBills(params);
-            setDueBills(Array.isArray(data) ? data : []);
+            const list = Array.isArray(data) ? data : [];
+            const sanitized = list.map(b => ({
+                ...b,
+                tests: sanitizeInvestigationItems(b.tests)
+            }));
+            setDueBills(sanitized);
         } catch (err) {
             console.error("Failed to load patient due bills:", err);
             setDueBills([]);
@@ -1757,7 +1870,10 @@ export const PendingReceivablesScreen = () => {
                 FinanceApi.getReceivables('partner', bId)
             ]);
             setPartnerSummaries(summaries || []);
-            setAllBills(bills || []);
+            setAllBills((bills || []).map(b => ({
+                ...b,
+                billNumber: formatCanonicalBillNo(b)
+            })));
         } catch (err) {
             console.error("Failed to load receivables:", err);
         } finally {
