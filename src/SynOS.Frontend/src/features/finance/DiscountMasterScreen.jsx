@@ -230,16 +230,16 @@ function AdaptiveBreakdownCard({
 
             {/* CASE 0: EMPTY STATE */}
             {itemCount === 0 && (
-                <div className="flex-1 flex flex-col items-center justify-center p-4 text-center my-auto min-h-[130px]">
-                    <div className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-zinc-800/60 text-slate-400 flex items-center justify-center mb-2">
-                        <CardIcon size={20} />
+                <div className="flex-1 flex flex-col items-center justify-center p-3 text-center my-auto min-h-[90px]">
+                    <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-zinc-800/60 text-slate-400 flex items-center justify-center mb-1.5">
+                        <CardIcon size={16} />
                     </div>
-                    <p className="text-sm font-bold text-slate-700 dark:text-zinc-300">No concessions recorded</p>
-                    <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">No concessions active for the selected horizon.</p>
+                    <p className="text-xs font-bold text-slate-700 dark:text-zinc-300">No concessions recorded</p>
+                    <p className="text-[10px] text-slate-400 dark:text-zinc-500 mt-0.5">No concessions active for the selected horizon.</p>
                 </div>
             )}
 
-            {/* CASE 1: 1 ROW -> DEDICATED HERO SHOWCASE POD */}
+            {/* CASE 1: 1 ROW -> STREAMLINED HERO LEDGER ROW */}
             {itemCount === 1 && (() => {
                 const item = items[0];
                 const name = item.reasonText || item.partnerName || "Direct Concession";
@@ -248,57 +248,51 @@ function AdaptiveBreakdownCard({
                 const bills = item.usageCount || item.billsCount || totalBills;
 
                 return (
-                    <div className="flex-1 flex flex-col justify-center my-auto min-h-[130px] p-3.5 sm:p-4 rounded-2xl bg-white/70 dark:bg-zinc-800/70 border border-slate-200/80 dark:border-zinc-700/80 space-y-2.5 shadow-2xs">
+                    <div className="flex-1 flex flex-col justify-center space-y-1.5 py-1">
                         <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2.5 min-w-0">
-                                <div className={cn("w-9 h-9 rounded-[12px] flex items-center justify-center shrink-0 shadow-2xs", iconObj.bg)}>
+                            <div className="flex items-center gap-2 min-w-0">
+                                <div className={cn("w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center shrink-0 shadow-2xs", iconObj.bg)}>
                                     {iconObj.icon}
                                 </div>
                                 <div className="min-w-0">
-                                    <h5 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate" title={name}>
+                                    <h5 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate" title={name}>
                                         {name}
                                     </h5>
-                                    <span className="text-xs font-medium text-slate-600 dark:text-zinc-400">
-                                        {type === 'patient' ? "Sole Walk-In Reason Today" : "Exclusive Partner Concession Today"}
+                                    <span className="text-[10px] sm:text-[11px] font-medium text-slate-500 dark:text-zinc-400">
+                                        {type === 'patient' ? "Sole Walk-In Reason Today" : "Exclusive Partner Concession"}
                                     </span>
                                 </div>
                             </div>
-                            <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-400 shrink-0">
+                            <span className="px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-400 shrink-0">
                                 100% Share
                             </span>
                         </div>
 
-                        <div className="flex items-baseline justify-between pt-1 border-t border-slate-200/80 dark:border-zinc-800">
+                        <div className="flex items-baseline justify-between pt-1">
                             <div>
-                                <span className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 block">Total Concession</span>
-                                <span className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
+                                <span className="text-[10px] font-semibold text-slate-400 dark:text-zinc-500 block">Total Concession</span>
+                                <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
                                     ₹{amt.toLocaleString()}
                                 </span>
                             </div>
                             <div className="text-right">
-                                <span className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 block">Bills Recorded</span>
-                                <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-200 tabular-nums">
+                                <span className="text-[10px] font-semibold text-slate-400 dark:text-zinc-500 block">Bills Recorded</span>
+                                <span className="text-xs font-bold text-slate-700 dark:text-zinc-300 tabular-nums">
                                     {bills} {bills === 1 ? 'Bill' : 'Bills'}
                                 </span>
                             </div>
                         </div>
 
-                        <div className="space-y-1">
-                            <div className="flex justify-between text-[11px] font-semibold text-slate-500 dark:text-zinc-400">
-                                <span>Volume Saturation</span>
-                                <span>100.0%</span>
-                            </div>
-                            <div className="w-full h-[14px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner">
-                                <div className={cn("h-full rounded-full transition-all duration-500 w-full", barGradient)} />
-                            </div>
+                        <div className="w-full h-[8px] sm:h-[10px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner">
+                            <div className={cn("h-full rounded-full transition-all duration-500 w-full", barGradient)} />
                         </div>
                     </div>
                 );
             })()}
 
-            {/* CASE 2: 2 ROWS -> DUAL COMPARATIVE PODS (ELIMINATES DEAD SPACE) */}
-            {itemCount === 2 && (
-                <div className="flex-1 flex flex-col justify-between space-y-2 my-auto min-h-[130px]">
+            {/* CASE 2 & 3: 2-3 ROWS -> SLEEK DIVIDED LEDGER ROWS (NO BULKY CARD-IN-CARD BOXES) */}
+            {(itemCount === 2 || itemCount === 3) && (
+                <div className="flex-1 flex flex-col justify-around divide-y divide-slate-200/60 dark:divide-zinc-800/60 my-auto">
                     {items.map((item, idx) => {
                         const name = item.reasonText || item.partnerName || `Preset ${idx + 1}`;
                         const pct = Number(item.percentageOfPatientDiscounts || item.percentageOfPartnerDiscounts) || (idx === 0 ? 58.8 : 41.2);
@@ -307,95 +301,39 @@ function AdaptiveBreakdownCard({
                         const isLead = idx === 0;
 
                         return (
-                            <div 
-                                key={idx} 
-                                className="p-3.5 sm:p-4 rounded-2xl bg-white/70 dark:bg-zinc-800/70 border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs flex flex-col justify-between space-y-2.5"
-                            >
+                            <div key={idx} className="py-1.5 sm:py-2 first:pt-0 last:pb-0 flex flex-col justify-between space-y-1">
                                 <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2.5 min-w-0">
-                                        <div className={cn("w-9 h-9 sm:w-10 sm:h-10 rounded-[12px] flex items-center justify-center shrink-0 shadow-2xs", iconObj.bg)}>
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <div className={cn("w-6 h-6 sm:w-7 sm:h-7 rounded-[7px] flex items-center justify-center shrink-0 shadow-2xs", iconObj.bg)}>
                                             {iconObj.icon}
                                         </div>
                                         <div className="min-w-0">
-                                            <h5 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate" title={name}>
+                                            <h5 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate" title={name}>
                                                 {name}
                                             </h5>
-                                            <span className="text-[11px] sm:text-xs font-medium text-slate-600 dark:text-zinc-400">
-                                                {isLead ? (type === 'patient' ? "Primary Walk-In Preset" : "Primary B2B Partner") : (type === 'patient' ? "Secondary Walk-In Preset" : "Secondary B2B Partner")}
+                                            <span className="text-[10px] font-medium text-slate-500 dark:text-zinc-400">
+                                                {isLead ? (type === 'patient' ? "Primary Walk-In" : "Primary B2B") : (type === 'patient' ? "Secondary Walk-In" : "Secondary B2B")}
                                             </span>
                                         </div>
                                     </div>
                                     <div className="text-right shrink-0">
-                                        <div className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white tabular-nums tracking-tight">
+                                        <div className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
                                             ₹{Number(item.totalAmount).toLocaleString()}
                                         </div>
-                                        <span className="text-[11px] sm:text-xs font-semibold text-slate-600 dark:text-zinc-400">
+                                        <span className="text-[10px] font-semibold text-slate-500 dark:text-zinc-400">
                                             {bills} {bills === 1 ? 'Bill' : 'Bills'}
                                         </span>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-2.5">
-                                    <div className="flex-1 h-[20px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner">
+                                <div className="flex items-center gap-2">
+                                    <div className="flex-1 h-[8px] sm:h-[10px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner">
                                         <div 
                                             className={cn("h-full rounded-full transition-all duration-500", barGradient)}
                                             style={{ width: `${Math.min(100, Math.max(10, pct))}%` }}
                                         />
                                     </div>
-                                    <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-200 tabular-nums w-12 text-right shrink-0">
-                                        {pct.toFixed(1)}%
-                                    </span>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
-
-            {/* CASE 3: 3 ROWS -> TRIO RANKED CARDS */}
-            {itemCount === 3 && (
-                <div className="flex-1 flex flex-col justify-between space-y-1.5 my-auto min-h-[130px]">
-                    {items.map((item, idx) => {
-                        const name = item.reasonText || item.partnerName || `Item ${idx + 1}`;
-                        const pct = Number(item.percentageOfPatientDiscounts || item.percentageOfPartnerDiscounts) || (idx === 0 ? 50 : 25);
-                        const iconObj = icons[idx % icons.length];
-
-                        return (
-                            <div 
-                                key={idx}
-                                className={cn(
-                                    "p-2.5 sm:p-3 rounded-xl border flex items-center justify-between gap-2.5 transition-colors",
-                                    idx === 0 
-                                        ? "bg-white/90 dark:bg-zinc-800/90 border-blue-200/80 dark:border-blue-900/40 shadow-xs" 
-                                        : "bg-white/60 dark:bg-zinc-800/50 border-slate-200/70 dark:border-zinc-800"
-                                )}
-                            >
-                                <div className="flex items-center gap-2 min-w-0 w-[42%]">
-                                    <div className={cn("w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] flex items-center justify-center shrink-0 shadow-2xs", iconObj.bg)}>
-                                        {iconObj.icon}
-                                    </div>
-                                    <div className="min-w-0 truncate">
-                                        <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate block" title={name}>
-                                            {name}
-                                        </span>
-                                        <span className="text-[10px] font-medium text-slate-500 dark:text-zinc-400">
-                                            #{idx + 1} Rank
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div className="text-right tabular-nums text-xs sm:text-sm font-bold text-slate-900 dark:text-white shrink-0 pr-1">
-                                    ₹{Number(item.totalAmount).toLocaleString()}
-                                </div>
-
-                                <div className="flex items-center gap-2 w-[38%]">
-                                    <div className="flex-1 h-[18px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner">
-                                        <div 
-                                            className={cn("h-full rounded-full transition-all duration-500", barGradient)}
-                                            style={{ width: `${Math.min(100, Math.max(10, pct))}%` }}
-                                        />
-                                    </div>
-                                    <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 tabular-nums w-10 text-right shrink-0">
+                                    <span className="text-[11px] sm:text-xs font-bold text-slate-700 dark:text-zinc-300 tabular-nums w-11 text-right shrink-0">
                                         {pct.toFixed(1)}%
                                     </span>
                                 </div>
@@ -551,42 +489,42 @@ function AdaptiveStaffLeaderboard({
         const avgTicket = bills > 0 ? Math.round(Number(s.totalAmount) / bills) : Number(s.totalAmount);
 
         return (
-            <div className="flex-1 flex flex-col justify-center my-auto p-4 rounded-2xl bg-white/70 dark:bg-zinc-800/70 border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs space-y-3">
+            <div className="flex-1 flex flex-col justify-center my-auto p-2.5 sm:p-3 rounded-xl bg-white/70 dark:bg-zinc-800/70 border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs space-y-2">
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                        <div className={cn("w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center font-bold text-sm shrink-0 shadow-2xs border", style.bg, style.text, style.border)}>
+                    <div className="flex items-center gap-2 min-w-0">
+                        <div className={cn("w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs border", style.bg, style.text, style.border)}>
                             {s.initials}
                         </div>
                         <div className="min-w-0">
-                            <h5 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">
+                            <h5 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
                                 {s.displayName}
                             </h5>
-                            <span className="px-2 py-0.5 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]/70 text-[11px] font-semibold shadow-2xs inline-block mt-0.5">
+                            <span className="px-1.5 py-0.2 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]/70 text-[10px] font-semibold shadow-2xs inline-block">
                                 {s.resolvedRole}
                             </span>
                         </div>
                     </div>
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200/80 dark:bg-blue-950/40 dark:text-blue-400">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200/80 dark:bg-blue-950/40 dark:text-blue-400">
                         100.0% Authority
                     </span>
                 </div>
 
                 <div className="flex items-baseline justify-between pt-1 border-t border-slate-200/80 dark:border-zinc-800">
                     <div>
-                        <span className="text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-zinc-400 block">Total Authorized</span>
-                        <span className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
+                        <span className="text-[10px] font-semibold text-slate-500 dark:text-zinc-400 block">Total Authorized</span>
+                        <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
                             ₹{Number(s.totalAmount).toLocaleString()}
                         </span>
                     </div>
                     <div className="text-right">
-                        <span className="text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-zinc-400 block">Activity</span>
-                        <span className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-zinc-300">
+                        <span className="text-[10px] font-semibold text-slate-500 dark:text-zinc-400 block">Activity</span>
+                        <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
                             {bills} {bills === 1 ? 'Bill' : 'Bills'} • ₹{avgTicket} avg
                         </span>
                     </div>
                 </div>
 
-                <div className="w-full h-[20px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner">
+                <div className="w-full h-[8px] sm:h-[10px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner">
                     <div className="h-full rounded-full bg-gradient-to-r from-[#60A5FA] to-[#38BDF8] shadow-[0_2px_8px_rgba(56,189,248,0.35)] w-full transition-all duration-500" />
                 </div>
             </div>
@@ -596,36 +534,36 @@ function AdaptiveStaffLeaderboard({
     // CASE 2: 2 STAFF MEMBERS (DUAL COMPARISON PODS)
     if (count === 2) {
         return (
-            <div className="flex-1 flex flex-col justify-between space-y-2.5 my-auto">
+            <div className="flex-1 flex flex-col justify-between space-y-1.5 my-auto">
                 {finalStaff.map((s, idx) => {
                     const style = avatarStyles[idx % avatarStyles.length];
                     const pct = totalSum > 0 ? ((Number(s.totalAmount) || 0) / totalSum) * 100 : (idx === 0 ? 60 : 40);
                     return (
-                        <div key={idx} className="p-3 rounded-xl bg-white/70 dark:bg-zinc-800/70 border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs space-y-2">
+                        <div key={idx} className="p-2 sm:p-2.5 rounded-xl bg-white/70 dark:bg-zinc-800/70 border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs space-y-1.5">
                             <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2.5 min-w-0">
-                                    <div className={cn("w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs border", style.bg, style.text, style.border)}>
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <div className={cn("w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs border", style.bg, style.text, style.border)}>
                                         {s.initials}
                                     </div>
                                     <div className="min-w-0">
-                                        <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate block">
+                                        <span className="text-xs font-bold text-slate-900 dark:text-white truncate block">
                                             {s.displayName}
                                         </span>
-                                        <span className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">
+                                        <span className="text-[10px] font-medium text-slate-500 dark:text-zinc-400">
                                             {s.resolvedRole} • {s.billsCount || 1} Bills
                                         </span>
                                     </div>
                                 </div>
                                 <div className="text-right shrink-0">
-                                    <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tabular-nums tracking-tight">
+                                    <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white tabular-nums tracking-tight">
                                         ₹{Number(s.totalAmount).toLocaleString()}
                                     </span>
-                                    <span className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 block">
+                                    <span className="text-[10px] font-semibold text-slate-500 dark:text-zinc-400 block">
                                         {pct.toFixed(1)}%
                                     </span>
                                 </div>
                             </div>
-                            <div className="w-full h-[18px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner">
+                            <div className="w-full h-[8px] sm:h-[10px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner">
                                 <div 
                                     className={cn("h-full rounded-full transition-all duration-500", idx === 0 ? "bg-gradient-to-r from-[#60A5FA] to-[#38BDF8]" : "bg-gradient-to-r from-[#C084FC] to-[#A855F7]")}
                                     style={{ width: `${Math.min(100, Math.max(8, pct))}%` }}
@@ -640,38 +578,30 @@ function AdaptiveStaffLeaderboard({
 
     // CASE 3 or 4: 3-4 STAFF MEMBERS (STACKED LIST)
     return (
-        <div className="flex-1 space-y-3 pt-1">
+        <div className="flex-1 space-y-2 pt-0.5">
             {finalStaff.slice(0, 4).map((s, idx) => {
                 const style = avatarStyles[idx % avatarStyles.length];
                 const pct = totalSum > 0 ? ((Number(s.totalAmount) || 0) / totalSum) * 100 : 0;
                 return (
-                    <div key={idx} className="flex items-center gap-3">
-                        <div className={cn("w-[40px] h-[40px] rounded-full flex items-center justify-center font-bold text-sm shrink-0 shadow-2xs border", style.bg, style.text, style.border)}>
+                    <div key={idx} className="flex items-center gap-2.5">
+                        <div className={cn("w-[32px] h-[32px] rounded-full flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs border", style.bg, style.text, style.border)}>
                             {s.initials}
                         </div>
-                        <div className="flex-1 min-w-0 space-y-1">
-                            <div className="flex items-baseline justify-between gap-2">
-                                <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">
+                        <div className="flex-1 min-w-0 space-y-0.5">
+                            <div className="flex items-baseline justify-between gap-1.5">
+                                <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
                                     {s.displayName}
                                 </span>
-                                <div className="flex items-baseline gap-2 shrink-0">
-                                    <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tabular-nums tracking-normal">
+                                <div className="flex items-baseline gap-1.5 shrink-0">
+                                    <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white tabular-nums tracking-normal">
                                         ₹{Number(s.totalAmount).toLocaleString()}
                                     </span>
-                                    <span className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-zinc-400 tabular-nums w-12 text-right">
+                                    <span className="text-[11px] font-semibold text-slate-600 dark:text-zinc-400 tabular-nums w-10 text-right">
                                         {pct.toFixed(1)}%
                                     </span>
                                 </div>
                             </div>
-                            <div className="flex items-center justify-between gap-2">
-                                <span className="px-2 py-0.5 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]/70 text-xs font-semibold shadow-2xs">
-                                    {s.resolvedRole}
-                                </span>
-                                <span className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-zinc-400 tabular-nums">
-                                    {s.billsCount || 1} Bills
-                                </span>
-                            </div>
-                            <div className="w-full h-[20px] bg-[#EAF1F8] dark:bg-zinc-800 rounded-full overflow-hidden flex">
+                            <div className="w-full h-[8px] sm:h-[10px] bg-[#EAF1F8] dark:bg-zinc-800 rounded-full overflow-hidden flex">
                                 <div 
                                     className={cn("h-full rounded-full transition-all duration-500", idx === 0 ? "bg-gradient-to-r from-[#60A5FA] to-[#38BDF8]" : "bg-[#C084FC]")}
                                     style={{ width: `${Math.min(100, Math.max(5, pct))}%` }}
@@ -1143,12 +1073,12 @@ export function DiscountMasterScreen() {
             {tab === 'intelligence' && intelligence && (
                 <div className="w-full space-y-3 sm:space-y-3.5 pb-8 animate-in fade-in duration-300">
                     {/* SECTION 1: HERO CONTROL DECK (CARD 1) */}
-                    <div className="min-h-[115px] p-3.5 sm:p-4.5 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 items-center">
+                    <div className="min-h-[95px] p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] grid grid-cols-1 lg:grid-cols-12 gap-3.5 lg:gap-4 items-center">
                                     {/* Left Column: Total Concessions Granted */}
-                                    <div className="lg:col-span-5 flex items-center gap-3.5 min-w-0 pr-0 lg:pr-2">
-                                        {/* 3D Tactile Coupon Tag Icon Squircle */}
-                                        <div className="w-[56px] h-[56px] sm:w-[64px] sm:h-[64px] rounded-[16px] bg-gradient-to-b from-[#EBF5FF] to-[#D6EBFE] border border-white/90 dark:border-white/10 shadow-[0_6px_16px_rgba(37,99,235,0.14)] flex items-center justify-center text-[#1C6CF2] dark:text-sky-400 shrink-0">
-                                            <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                    <div className="lg:col-span-5 flex items-center gap-3 min-w-0 pr-0 lg:pr-2">
+                                        {/* Sleek Tactile Coupon Tag Icon Badge */}
+                                        <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-b from-[#EBF5FF] to-[#D6EBFE] border border-white/90 dark:border-white/10 shadow-[0_4px_12px_rgba(37,99,235,0.12)] flex items-center justify-center text-[#1C6CF2] dark:text-sky-400 shrink-0">
+                                            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                                                 <path d="M2.5 12.5l9-9a2.12 2.12 0 0 1 3 0l7 7a2.12 2.12 0 0 1 0 3l-9 9a2.12 2.12 0 0 1-3 0l-7-7a2.12 2.12 0 0 1 0-3z"/>
                                                 <circle cx="8" cy="8" r="1.5" fill="currentColor"/>
                                                 <line x1="12" y1="16" x2="16" y2="12"/>
@@ -1158,32 +1088,32 @@ export function DiscountMasterScreen() {
                                         </div>
                                         <div className="space-y-0.5 min-w-0 flex-1">
                                             <div className="flex items-center gap-2 flex-wrap">
-                                                <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal">
+                                                <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal">
                                                     Total Concessions Granted
                                                 </h3>
-                                                <span className="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]/70 dark:bg-emerald-950/50 dark:text-emerald-400 shadow-2xs">
+                                                <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]/70 dark:bg-emerald-950/50 dark:text-emerald-400 shadow-2xs">
                                                     {intelligence.overallDiscountPercentage}% Discount Rate
                                                 </span>
                                             </div>
-                                            <p className="text-2xl sm:text-3xl lg:text-[36px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums">
+                                            <p className="text-xl sm:text-2xl lg:text-[28px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums">
                                                 ₹{intelligence.totalDiscountAmount.toLocaleString()}
                                             </p>
-                                            <p className="text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-zinc-400 truncate">
+                                            <p className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400 truncate">
                                                 Total Lab Tariff Billed: ₹{intelligence.totalGrossBilled.toLocaleString()}
                                             </p>
                                         </div>
                                     </div>
 
                                     {/* Right Column: Channel Concession Split */}
-                                    <div className="lg:col-span-7 lg:border-l lg:border-slate-200 dark:lg:border-zinc-800 lg:pl-5 xl:pl-6 flex flex-col justify-between py-1 min-w-0">
-                                        <div className="flex items-center justify-between pb-1.5">
-                                            <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal">
+                                    <div className="lg:col-span-7 lg:border-l lg:border-slate-200 dark:lg:border-zinc-800 lg:pl-4 xl:pl-5 flex flex-col justify-between py-0.5 min-w-0 space-y-1.5">
+                                        <div className="flex items-center justify-between">
+                                            <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal">
                                                 Channel Concession Split (Patient vs B2B Wholesale)
                                             </h3>
                                         </div>
 
-                                        {/* Fat iOS Split Slider with Floating Knob */}
-                                        <div className="relative h-[36px] sm:h-[40px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 flex items-center overflow-visible shadow-inner">
+                                        {/* Sleek iOS Split Slider with Floating Knob */}
+                                        <div className="relative h-[12px] sm:h-[14px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 flex items-center overflow-visible shadow-inner">
                                             <div 
                                                 className="h-full bg-gradient-to-r from-[#60A5FA] via-[#7BB3F0] to-[#93C5FD] rounded-l-full transition-all duration-500 shadow-[0_2px_8px_rgba(96,165,250,0.25)]"
                                                 style={{ width: `${Math.max(5, Math.min(95, intelligence.patientSharePercentage))}%` }}
@@ -1192,50 +1122,50 @@ export function DiscountMasterScreen() {
                                                 className="h-full bg-gradient-to-r from-[#FCA5A5] via-[#FDA4AF] to-[#FECDD3] rounded-r-full transition-all duration-500 shadow-[0_2px_8px_rgba(251,113,133,0.25)]"
                                                 style={{ width: `${Math.max(5, Math.min(95, intelligence.partnerSharePercentage))}%` }}
                                             />
-                                            {/* Prominent White Elevated Knob */}
+                                            {/* Crisp Elevated White Knob */}
                                             <div 
-                                                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white shadow-[0_3px_12px_rgba(15,35,60,0.25),0_0_0_2px_#FFFFFF] border border-white/80 pointer-events-none transition-all duration-500 z-10"
+                                                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-full bg-white shadow-[0_2px_8px_rgba(15,35,60,0.25),0_0_0_2px_#FFFFFF] border border-white/80 pointer-events-none transition-all duration-500 z-10"
                                                 style={{ left: `${Math.max(5, Math.min(95, intelligence.patientSharePercentage))}%` }}
                                             />
                                         </div>
 
                                         {/* Two Channel Stat Pods Below */}
-                                        <div className="flex items-center justify-between pt-1.5">
-                                            <div className="flex items-center gap-2.5">
-                                                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-[12px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                                                    <User size={18} strokeWidth={2.3} />
+                                        <div className="flex items-center justify-between pt-0.5">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-[8px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                                                    <User size={14} strokeWidth={2.3} />
                                                 </div>
                                                 <div>
                                                     <div className="flex items-baseline gap-1.5">
-                                                        <span className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
+                                                        <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
                                                             ₹{intelligence.patientDiscountAmount.toLocaleString()}
                                                         </span>
-                                                        <span className="text-xs font-bold text-slate-500 dark:text-zinc-400 tabular-nums">
+                                                        <span className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 tabular-nums">
                                                             ({intelligence.patientSharePercentage}%)
                                                         </span>
                                                     </div>
-                                                    <span className="text-[11px] sm:text-xs text-slate-600 dark:text-zinc-400 font-bold block">
+                                                    <span className="text-[10px] sm:text-[11px] text-slate-600 dark:text-zinc-400 font-bold block">
                                                         Patient Walk-In
                                                     </span>
                                                 </div>
                                             </div>
 
-                                            <div className="flex items-center gap-2.5 text-right">
+                                            <div className="flex items-center gap-2 text-right">
                                                 <div>
                                                     <div className="flex items-baseline gap-1.5 justify-end">
-                                                        <span className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
+                                                        <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
                                                             ₹{intelligence.partnerDiscountAmount.toLocaleString()}
                                                         </span>
-                                                        <span className="text-xs font-bold text-slate-500 dark:text-zinc-400 tabular-nums">
+                                                        <span className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 tabular-nums">
                                                             ({intelligence.partnerSharePercentage}%)
                                                         </span>
                                                     </div>
-                                                    <span className="text-[11px] sm:text-xs text-slate-600 dark:text-zinc-400 font-bold block">
+                                                    <span className="text-[10px] sm:text-[11px] text-slate-600 dark:text-zinc-400 font-bold block">
                                                         B2B Wholesale
                                                     </span>
                                                 </div>
-                                                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-[12px] bg-[#FFF1F2] text-[#FB7185] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                                                    <Building2 size={18} strokeWidth={2.3} />
+                                                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-[8px] bg-[#FFF1F2] text-[#FB7185] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                                                    <Building2 size={14} strokeWidth={2.3} />
                                                 </div>
                                             </div>
                                         </div>
@@ -1326,15 +1256,15 @@ export function DiscountMasterScreen() {
                                                 const offset2 = -(dashGap / 2 + len1 + dashGap);
 
                                                 return (
-                                                    <div className="space-y-2.5 my-auto">
+                                                    <div className="space-y-2 my-auto">
                                                         <div className="flex items-center justify-between gap-2.5 sm:gap-3 py-0.5">
                                                             {/* Donut Ring with Inset Center Symbol Only */}
-                                                            <div className="relative w-[90px] h-[90px] sm:w-[100px] sm:h-[100px] xl:w-[115px] xl:h-[115px] shrink-0 flex items-center justify-center">
+                                                            <div className="relative w-[80px] h-[80px] sm:w-[90px] sm:h-[90px] xl:w-[100px] xl:h-[100px] shrink-0 flex items-center justify-center">
                                                                 <svg 
                                                                     className="w-full h-full -rotate-90 shrink-0" 
                                                                     viewBox="0 0 200 200"
                                                                     style={{
-                                                                        filter: 'drop-shadow(0px 8px 16px rgba(117, 182, 229, 0.28)) drop-shadow(0px 8px 16px rgba(189, 152, 252, 0.24))'
+                                                                        filter: 'drop-shadow(0px 6px 12px rgba(117, 182, 229, 0.22)) drop-shadow(0px 6px 12px rgba(189, 152, 252, 0.20))'
                                                                     }}
                                                                 >
                                                                     <defs>
@@ -1394,49 +1324,49 @@ export function DiscountMasterScreen() {
 
                                                                 {/* Center Symbol Only in Donut */}
                                                                 <div className="absolute inset-0 flex flex-col items-center justify-center select-none pointer-events-none text-center">
-                                                                    <div className="w-9 h-9 rounded-full bg-slate-100/90 dark:bg-zinc-800/90 flex items-center justify-center shadow-inner text-[#1C6CF2] dark:text-sky-400">
-                                                                        <Percent size={16} strokeWidth={2.4} />
+                                                                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-100/90 dark:bg-zinc-800/90 flex items-center justify-center shadow-inner text-[#1C6CF2] dark:text-sky-400">
+                                                                        <Percent size={14} strokeWidth={2.4} />
                                                                     </div>
-                                                                    <span className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 mt-0.5 uppercase tracking-wider">
+                                                                    <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
                                                                         Mix
                                                                     </span>
                                                                 </div>
                                                             </div>
 
                                                             {/* Right Side: Clean Unboxed Legend matching Target Image */}
-                                                            <div className="flex flex-col justify-center space-y-3 flex-1 min-w-0">
+                                                            <div className="flex flex-col justify-center space-y-2 flex-1 min-w-0">
                                                                 {/* Item 1: Flat Rupee */}
                                                                 <div className="space-y-0.5">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <span className="w-3 h-3 rounded-full bg-[#75B6E5] shrink-0 shadow-2xs" />
-                                                                        <span className="text-sm font-bold text-slate-900 dark:text-white">
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <span className="w-2.5 h-2.5 rounded-full bg-[#75B6E5] shrink-0 shadow-2xs" />
+                                                                        <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
                                                                             Flat Rupee (₹)
                                                                         </span>
                                                                     </div>
-                                                                    <div className="pl-5">
-                                                                        <div className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
+                                                                    <div className="pl-4">
+                                                                        <div className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
                                                                             ₹{flatItem.totalAmount?.toLocaleString()}
                                                                         </div>
-                                                                        <div className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-zinc-300 tabular-nums">
-                                                                            {share1.toFixed(1)}% <span className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">({flatItem.count ?? 0} Bills)</span>
+                                                                        <div className="text-[11px] sm:text-xs font-semibold text-slate-600 dark:text-zinc-300 tabular-nums">
+                                                                            {share1.toFixed(1)}% <span className="text-[10px] font-medium text-slate-500 dark:text-zinc-400">({flatItem.count ?? 0} Bills)</span>
                                                                         </div>
                                                                     </div>
                                                                 </div>
 
                                                                 {/* Item 2: Percentage */}
                                                                 <div className="space-y-0.5">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <span className="w-3 h-3 rounded-full bg-[#BD98FC] shrink-0 shadow-2xs" />
-                                                                        <span className="text-sm font-bold text-slate-900 dark:text-white">
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <span className="w-2.5 h-2.5 rounded-full bg-[#BD98FC] shrink-0 shadow-2xs" />
+                                                                        <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
                                                                             Percentage (%)
                                                                         </span>
                                                                     </div>
-                                                                    <div className="pl-5">
-                                                                        <div className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
+                                                                    <div className="pl-4">
+                                                                        <div className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
                                                                             ₹{pctItem.totalAmount?.toLocaleString()}
                                                                         </div>
-                                                                        <div className="text-xs sm:text-sm font-semibold text-slate-600 dark:text-zinc-300 tabular-nums">
-                                                                            {share2.toFixed(1)}% <span className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">({pctItem.count ?? 0} Bills)</span>
+                                                                        <div className="text-[11px] sm:text-xs font-semibold text-slate-600 dark:text-zinc-300 tabular-nums">
+                                                                            {share2.toFixed(1)}% <span className="text-[10px] font-medium text-slate-500 dark:text-zinc-400">({pctItem.count ?? 0} Bills)</span>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -1444,14 +1374,14 @@ export function DiscountMasterScreen() {
                                                         </div>
 
                                                         {/* Bottom Anchor: Dual-Segment Mechanism Progress Bar */}
-                                                        <div className="pt-2 border-t border-slate-200/80 dark:border-zinc-800 space-y-1.5 shrink-0">
-                                                            <div className="flex items-center justify-between text-xs font-semibold text-slate-600 dark:text-zinc-300">
+                                                        <div className="pt-1.5 border-t border-slate-200/80 dark:border-zinc-800 space-y-1 shrink-0">
+                                                            <div className="flex items-center justify-between text-[11px] font-semibold text-slate-600 dark:text-zinc-300">
                                                                 <span>Mechanism Allocation</span>
                                                                 <span className="tabular-nums font-bold text-slate-900 dark:text-white">
                                                                     Flat {share1.toFixed(1)}% • Pct {share2.toFixed(1)}%
                                                                 </span>
                                                             </div>
-                                                            <div className="h-[20px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 overflow-hidden flex shadow-inner">
+                                                            <div className="h-[10px] sm:h-[12px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 overflow-hidden flex shadow-inner">
                                                                 <div 
                                                                     className="h-full rounded-l-full bg-gradient-to-r from-[#60A5FA] to-[#38BDF8] shadow-[0_2px_8px_rgba(56,189,248,0.35)] transition-all duration-500" 
                                                                     style={{ width: `${share1}%` }} 
@@ -1470,19 +1400,19 @@ export function DiscountMasterScreen() {
                                 </div>
 
                     {/* SECTION 3: BOTTOM ROW (CARDS 5, 6 & 7) */}
-                    <div className="min-h-[130px] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-2.5 sm:gap-3 lg:gap-3.5 items-stretch">
+                    <div className="min-h-[120px] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-2.5 sm:gap-3 lg:gap-3.5 items-stretch">
                                     {/* CARD 5: DEPARTMENT CONCESSION SPLIT */}
-                                    <div className="col-span-1 md:col-span-1 lg:col-span-3 p-3.5 sm:p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex flex-col justify-between space-y-3 h-full overflow-hidden">
-                                        <div className="flex items-center gap-2.5 pb-2.5 border-b border-slate-200 dark:border-zinc-800 shrink-0">
-                                            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-[10px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/80 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                                                <Share2 size={18} strokeWidth={2.4} />
+                                    <div className="col-span-1 md:col-span-1 lg:col-span-3 p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex flex-col justify-between space-y-2 h-full overflow-hidden">
+                                        <div className="flex items-center gap-2 pb-1.5 border-b border-slate-200 dark:border-zinc-800 shrink-0">
+                                            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/80 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                                                <Share2 size={16} strokeWidth={2.4} />
                                             </div>
-                                            <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal">
+                                            <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal">
                                                 Department Concession Split
                                             </h3>
                                         </div>
 
-                                        <div className="space-y-4 my-auto">
+                                        <div className="space-y-2.5 my-auto">
                                             {/* Department 1: Pathology Diagnostics */}
                                             {(() => {
                                                 const isZero = (Number(intelligence.totalDiscountAmount) || 0) === 0;
@@ -1493,33 +1423,33 @@ export function DiscountMasterScreen() {
                                                 const pathInvs = isZero ? 0 : (d.pathologyInvestigationsCount ?? 142);
 
                                                 return (
-                                                    <div className="flex items-center gap-2.5">
-                                                        <div className="w-9 h-9 rounded-[11px] bg-[#EFF6FF] text-[#2563EB] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                                                            <FlaskConical size={18} strokeWidth={2.2} />
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[9px] bg-[#EFF6FF] text-[#2563EB] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                                                            <FlaskConical size={15} strokeWidth={2.2} />
                                                         </div>
-                                                        <div className="flex-1 min-w-0 space-y-1">
+                                                        <div className="flex-1 min-w-0 space-y-0.5">
                                                             <div className="flex items-baseline justify-between gap-1">
-                                                                <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
+                                                                <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
                                                                     Pathology Diagnostics
                                                                 </span>
                                                                 <div className="flex items-baseline gap-1 shrink-0">
-                                                                    <span className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tabular-nums tracking-normal">
+                                                                    <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tabular-nums tracking-normal">
                                                                         ₹{pathAmount.toLocaleString()}
                                                                     </span>
-                                                                    <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400 tabular-nums">
+                                                                    <span className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 tabular-nums">
                                                                         ({pathPct.toFixed(1)}%)
                                                                     </span>
                                                                 </div>
                                                             </div>
 
-                                                            <div className="h-[20px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 overflow-hidden flex shadow-inner">
+                                                            <div className="h-[8px] sm:h-[10px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 overflow-hidden flex shadow-inner">
                                                                 <div 
                                                                     className="h-full rounded-full bg-gradient-to-r from-[#60A5FA] to-[#38BDF8] shadow-[0_2px_8px_rgba(56,189,248,0.35)] transition-all duration-700" 
                                                                     style={{ width: `${isZero ? 0 : Math.min(100, Math.max(6, pathPct))}%` }} 
                                                                 />
                                                             </div>
 
-                                                            <div className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 tabular-nums">
+                                                            <div className="text-[10px] font-semibold text-slate-500 dark:text-zinc-400 tabular-nums">
                                                                 {pathBills} Bills • {pathInvs} Investigations
                                                             </div>
                                                         </div>
@@ -1537,33 +1467,33 @@ export function DiscountMasterScreen() {
                                                 const radInvs = isZero ? 0 : (d.radiologyInvestigationsCount ?? 48);
 
                                                 return (
-                                                    <div className="flex items-center gap-2.5">
-                                                        <div className="w-9 h-9 rounded-[11px] bg-[#FAF5FF] text-[#9333EA] dark:bg-purple-950/40 dark:text-purple-400 border border-purple-100/90 dark:border-purple-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                                                            <Activity size={18} strokeWidth={2.2} />
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[9px] bg-[#FAF5FF] text-[#9333EA] dark:bg-purple-950/40 dark:text-purple-400 border border-purple-100/90 dark:border-purple-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                                                            <Activity size={15} strokeWidth={2.2} />
                                                         </div>
-                                                        <div className="flex-1 min-w-0 space-y-1">
+                                                        <div className="flex-1 min-w-0 space-y-0.5">
                                                             <div className="flex items-baseline justify-between gap-1">
-                                                                <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
+                                                                <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
                                                                     Radiology & Imaging
                                                                 </span>
                                                                 <div className="flex items-baseline gap-1 shrink-0">
-                                                                    <span className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tabular-nums tracking-normal">
+                                                                    <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tabular-nums tracking-normal">
                                                                         ₹{radAmount.toLocaleString()}
                                                                     </span>
-                                                                    <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400 tabular-nums">
+                                                                    <span className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 tabular-nums">
                                                                         ({radPct.toFixed(1)}%)
                                                                     </span>
                                                                 </div>
                                                             </div>
 
-                                                            <div className="h-[20px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 overflow-hidden flex shadow-inner">
+                                                            <div className="h-[8px] sm:h-[10px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 overflow-hidden flex shadow-inner">
                                                                 <div 
                                                                     className="h-full rounded-full bg-gradient-to-r from-[#C084FC] to-[#A855F7] shadow-[0_2px_8px_rgba(168,85,247,0.35)] transition-all duration-700" 
                                                                     style={{ width: `${isZero ? 0 : Math.min(100, Math.max(6, radPct))}%` }} 
                                                                 />
                                                             </div>
 
-                                                            <div className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 tabular-nums">
+                                                            <div className="text-[10px] font-semibold text-slate-500 dark:text-zinc-400 tabular-nums">
                                                                 {radBills} Bills • {radInvs} Investigations
                                                             </div>
                                                         </div>
@@ -1574,12 +1504,12 @@ export function DiscountMasterScreen() {
                                     </div>
 
                                     {/* CARD 6: STAFF AUTHORIZATION LEADERBOARD */}
-                                    <div className="col-span-1 md:col-span-1 lg:col-span-3 p-3.5 sm:p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex flex-col justify-between space-y-3 h-full overflow-hidden">
-                                        <div className="flex items-center gap-2 pb-2 border-b border-slate-200 dark:border-zinc-800 shrink-0">
-                                            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[9px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/80 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                                    <div className="col-span-1 md:col-span-1 lg:col-span-3 p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex flex-col justify-between space-y-2 h-full overflow-hidden">
+                                        <div className="flex items-center gap-2 pb-1.5 border-b border-slate-200 dark:border-zinc-800 shrink-0">
+                                            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/80 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
                                                 <Users size={16} strokeWidth={2.4} />
                                             </div>
-                                            <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal">
+                                            <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal">
                                                 Staff Authorization Leaderboard
                                             </h3>
                                         </div>
@@ -1591,18 +1521,18 @@ export function DiscountMasterScreen() {
                                     </div>
 
                                     {/* CARD 7: 7-DAY CONCESSION TREND */}
-                                    <div className="col-span-1 md:col-span-2 lg:col-span-6 p-3.5 sm:p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex flex-col justify-between space-y-3 h-full overflow-hidden">
+                                    <div className="col-span-1 md:col-span-2 lg:col-span-6 p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex flex-col justify-between space-y-2.5 h-full overflow-hidden">
                                         {/* Header */}
-                                        <div className="flex flex-wrap items-center justify-between gap-3 pb-2.5 border-b border-slate-200 dark:border-zinc-800 shrink-0">
-                                            <div className="flex items-center gap-2.5">
-                                                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-[10px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/80 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                                                    <TrendingUp size={18} strokeWidth={2.4} />
+                                        <div className="flex flex-wrap items-center justify-between gap-3 pb-1.5 border-b border-slate-200 dark:border-zinc-800 shrink-0">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/80 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                                                    <TrendingUp size={16} strokeWidth={2.4} />
                                                 </div>
                                                 <div>
-                                                    <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal">
+                                                    <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal">
                                                         7-Day Concession Trend
                                                     </h3>
-                                                    <p className="text-xs font-semibold text-slate-500 dark:text-zinc-400">
+                                                    <p className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400">
                                                         Daily concessions granted • Last 7 days
                                                     </p>
                                                 </div>

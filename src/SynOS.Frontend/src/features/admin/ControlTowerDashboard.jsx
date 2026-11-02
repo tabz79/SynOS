@@ -181,12 +181,12 @@ export function ControlTowerDashboard() {
     const activeBranchName = currentBranchName;
 
     return (
-        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 pb-16 relative z-10">
+        <div className="p-3 sm:p-4 md:p-5 space-y-3 sm:space-y-4 pb-10 relative z-10">
             {/* HEADER WITH SWITCHER */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <div>
-                    <h1 className="text-3xl font-black dark:text-white text-zinc-900 tracking-tight">Control Tower</h1>
-                    <p className="text-sm text-zinc-600 dark:text-zinc-400 font-medium mt-1">Real-time oversight of operations, phlebotomy collections, test flows, and financials.</p>
+                    <h1 className="text-2xl sm:text-3xl font-black dark:text-white text-zinc-900 tracking-tight">Control Tower</h1>
+                    <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 font-medium mt-0.5">Real-time oversight of operations, phlebotomy collections, test flows, and financials.</p>
                 </div>
 
                 {/* Clean Subscription Reminder Card */}
@@ -322,50 +322,50 @@ function DepartmentCard({ title, subtitle, icon: Icon, watermark: Watermark, dat
         <div 
             style={cardStyle}
             className={cn(
-                "rounded-xl flex flex-col transition-all duration-200 group overflow-hidden relative min-h-[175px]", 
+                "rounded-xl flex flex-col transition-all duration-200 group overflow-hidden relative min-h-[145px] sm:min-h-[155px]", 
                 cardClasses, 
                 "hover:-translate-y-0.5 hover:shadow-xl"
             )}
         >
             {/* Background Architectural Vector Watermark */}
             {Watermark && (
-                <div className="absolute right-0 top-2 bottom-8 w-[45%] max-w-[180px] pointer-events-none select-none flex items-center justify-end z-0 opacity-40 dark:opacity-20 transition-opacity pr-2">
+                <div className="absolute right-0 top-2 bottom-8 w-[45%] max-w-[170px] pointer-events-none select-none flex items-center justify-end z-0 opacity-40 dark:opacity-20 transition-opacity pr-2">
                     <Watermark className="w-full h-full object-contain object-right" />
                 </div>
             )}
 
-            <div className="p-3 sm:p-3.5 flex-1 flex flex-col justify-between relative z-10">
-                <div className="space-y-2">
+            <div className="p-2.5 sm:p-3 flex-1 flex flex-col justify-between relative z-10">
+                <div className="space-y-1.5">
                     <div className="flex items-start justify-between">
-                        <div className="flex gap-2.5 items-center">
+                        <div className="flex gap-2 items-center">
                             <Icon className="w-4 h-4 text-zinc-500 group-hover:text-synos-primary transition-colors" />
                             <div>
-                                <h3 className="text-sm sm:text-base leading-tight mb-0.5 font-bold text-zinc-900 dark:text-white">{title}</h3>
-                                <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-medium">{data?.secondaryText || subtitle}</p>
+                                <h3 className="text-xs sm:text-sm leading-tight mb-0.5 font-bold text-zinc-900 dark:text-white">{title}</h3>
+                                <p className="text-[10px] sm:text-[11px] text-zinc-500 dark:text-zinc-400 font-medium">{data?.secondaryText || subtitle}</p>
                             </div>
                         </div>
                         {data?.status && (
                             <div className="flex items-center gap-1 shrink-0 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xs px-2 py-0.5 rounded-full border border-black/5 dark:border-white/5">
                                 <div className={cn("w-1.5 h-1.5 rounded-full", data.status === 'On Track' ? 'bg-cyan-500' : 'bg-rose-500')} />
-                                <span className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-200">{data.status}</span>
+                                <span className="text-[10px] sm:text-[11px] font-semibold text-zinc-700 dark:text-zinc-200">{data.status}</span>
                             </div>
                         )}
                     </div>
                     <div className="flex items-baseline gap-2 pt-0.5">
-                        <span className="text-3xl sm:text-4xl leading-none font-black text-zinc-900 dark:text-white tabular-nums">{data?.count || 0}</span>
-                        <span className="text-xs sm:text-sm font-semibold text-zinc-500 dark:text-zinc-400">{data?.primaryText || 'items pending'}</span>
+                        <span className="text-2xl sm:text-3xl leading-none font-black text-zinc-900 dark:text-white tabular-nums">{data?.count || 0}</span>
+                        <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">{data?.primaryText || 'items pending'}</span>
                     </div>
                 </div>
 
                 {/* Queue or Standby */}
-                <div className="mt-2 pt-1">
+                <div className="mt-1.5 pt-0.5">
                     {data?.items && data.items.length > 0 ? (
                         <div className="space-y-1 max-w-[75%]">
                             {data.items.slice(0, 2).map((item, idx) => (
-                                <div key={idx} className="flex flex-col text-xs group/item bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xs py-1 px-2.5 rounded-md shadow-2xs border border-slate-200/80 dark:border-white/10">
+                                <div key={idx} className="flex flex-col text-xs group/item bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xs py-0.5 px-2 rounded-md shadow-2xs border border-slate-200/80 dark:border-white/10">
                                     <span className="font-bold text-xs text-zinc-900 dark:text-white truncate">{item.name}</span>
                                     <div className="flex items-center justify-between gap-1.5 mt-0.5">
-                                        <span className="italic opacity-80 truncate text-[11px] text-zinc-500 dark:text-zinc-400">{item.detail}</span>
+                                        <span className="italic opacity-80 truncate text-[10px] text-zinc-500 dark:text-zinc-400">{item.detail}</span>
                                         <div className="flex items-center gap-1 shrink-0">
                                             <div className={cn("w-1.5 h-1.5 rounded-full", item.statusBadge === 'Critical' ? 'bg-rose-500' : 'bg-cyan-500')} />
                                             <span className="text-[10px] font-bold opacity-90">{item.statusBadge}</span>
@@ -375,13 +375,13 @@ function DepartmentCard({ title, subtitle, icon: Icon, watermark: Watermark, dat
                             ))}
                         </div>
                     ) : (
-                        <div className="py-1">
+                        <div className="py-0.5">
                             <span className="text-xs font-bold text-zinc-400 dark:text-zinc-500 tracking-wide">Standby</span>
                         </div>
                     )}
                 </div>
             </div>
-            <button onClick={onAction} className="w-full py-2 border-t dark:border-white/5 border-slate-200/80 hover:text-white hover:bg-synos-primary transition-[background-color,color] flex items-center justify-center gap-1.5 relative z-10 text-xs sm:text-sm font-bold text-zinc-700 dark:text-zinc-200">
+            <button onClick={onAction} className="w-full py-1.5 border-t dark:border-white/5 border-slate-200/80 hover:text-white hover:bg-synos-primary transition-[background-color,color] flex items-center justify-center gap-1.5 relative z-10 text-xs sm:text-sm font-bold text-zinc-700 dark:text-zinc-200">
                 {btnText}
                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
             </button>

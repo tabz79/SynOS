@@ -82821,19 +82821,19 @@ ${n}
       }
     ];
     return r.jsxs("div", {
-      className: "p-4 sm:p-6 space-y-4 sm:space-y-6 pb-16 relative z-10",
+      className: "p-3 sm:p-4 md:p-5 space-y-3 sm:space-y-4 pb-10 relative z-10",
       children: [
         r.jsxs("div", {
-          className: "flex flex-col md:flex-row md:items-center md:justify-between gap-4",
+          className: "flex flex-col md:flex-row md:items-center md:justify-between gap-3",
           children: [
             r.jsxs("div", {
               children: [
                 r.jsx("h1", {
-                  className: "text-3xl font-black dark:text-white text-zinc-900 tracking-tight",
+                  className: "text-2xl sm:text-3xl font-black dark:text-white text-zinc-900 tracking-tight",
                   children: "Control Tower"
                 }),
                 r.jsx("p", {
-                  className: "text-sm text-zinc-600 dark:text-zinc-400 font-medium mt-1",
+                  className: "text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 font-medium mt-0.5",
                   children: "Real-time oversight of operations, phlebotomy collections, test flows, and financials."
                 })
               ]
@@ -83124,25 +83124,25 @@ ${n}
   function $M({ title: t, subtitle: e, icon: n, watermark: i, data: a, btnText: s, onAction: A, cardStyle: o, cardClasses: l }) {
     return r.jsxs("div", {
       style: o,
-      className: ve("rounded-xl flex flex-col transition-all duration-200 group overflow-hidden relative min-h-[175px]", l, "hover:-translate-y-0.5 hover:shadow-xl"),
+      className: ve("rounded-xl flex flex-col transition-all duration-200 group overflow-hidden relative min-h-[145px] sm:min-h-[155px]", l, "hover:-translate-y-0.5 hover:shadow-xl"),
       children: [
         i && r.jsx("div", {
-          className: "absolute right-0 top-2 bottom-8 w-[45%] max-w-[180px] pointer-events-none select-none flex items-center justify-end z-0 opacity-40 dark:opacity-20 transition-opacity pr-2",
+          className: "absolute right-0 top-2 bottom-8 w-[45%] max-w-[170px] pointer-events-none select-none flex items-center justify-end z-0 opacity-40 dark:opacity-20 transition-opacity pr-2",
           children: r.jsx(i, {
             className: "w-full h-full object-contain object-right"
           })
         }),
         r.jsxs("div", {
-          className: "p-3 sm:p-3.5 flex-1 flex flex-col justify-between relative z-10",
+          className: "p-2.5 sm:p-3 flex-1 flex flex-col justify-between relative z-10",
           children: [
             r.jsxs("div", {
-              className: "space-y-2",
+              className: "space-y-1.5",
               children: [
                 r.jsxs("div", {
                   className: "flex items-start justify-between",
                   children: [
                     r.jsxs("div", {
-                      className: "flex gap-2.5 items-center",
+                      className: "flex gap-2 items-center",
                       children: [
                         r.jsx(n, {
                           className: "w-4 h-4 text-zinc-500 group-hover:text-synos-primary transition-colors"
@@ -83150,11 +83150,11 @@ ${n}
                         r.jsxs("div", {
                           children: [
                             r.jsx("h3", {
-                              className: "text-sm sm:text-base leading-tight mb-0.5 font-bold text-zinc-900 dark:text-white",
+                              className: "text-xs sm:text-sm leading-tight mb-0.5 font-bold text-zinc-900 dark:text-white",
                               children: t
                             }),
                             r.jsx("p", {
-                              className: "text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-medium",
+                              className: "text-[10px] sm:text-[11px] text-zinc-500 dark:text-zinc-400 font-medium",
                               children: (a == null ? void 0 : a.secondaryText) || e
                             })
                           ]
@@ -83168,7 +83168,7 @@ ${n}
                           className: ve("w-1.5 h-1.5 rounded-full", a.status === "On Track" ? "bg-cyan-500" : "bg-rose-500")
                         }),
                         r.jsx("span", {
-                          className: "text-[11px] font-semibold text-zinc-700 dark:text-zinc-200",
+                          className: "text-[10px] sm:text-[11px] font-semibold text-zinc-700 dark:text-zinc-200",
                           children: a.status
                         })
                       ]
@@ -83179,11 +83179,11 @@ ${n}
                   className: "flex items-baseline gap-2 pt-0.5",
                   children: [
                     r.jsx("span", {
-                      className: "text-3xl sm:text-4xl leading-none font-black text-zinc-900 dark:text-white tabular-nums",
+                      className: "text-2xl sm:text-3xl leading-none font-black text-zinc-900 dark:text-white tabular-nums",
                       children: (a == null ? void 0 : a.count) || 0
                     }),
                     r.jsx("span", {
-                      className: "text-xs sm:text-sm font-semibold text-zinc-500 dark:text-zinc-400",
+                      className: "text-xs font-semibold text-zinc-500 dark:text-zinc-400",
                       children: (a == null ? void 0 : a.primaryText) || "items pending"
                     })
                   ]
@@ -83191,11 +83191,11 @@ ${n}
               ]
             }),
             r.jsx("div", {
-              className: "mt-2 pt-1",
+              className: "mt-1.5 pt-0.5",
               children: (a == null ? void 0 : a.items) && a.items.length > 0 ? r.jsx("div", {
                 className: "space-y-1 max-w-[75%]",
                 children: a.items.slice(0, 2).map((c, g) => r.jsxs("div", {
-                  className: "flex flex-col text-xs group/item bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xs py-1 px-2.5 rounded-md shadow-2xs border border-slate-200/80 dark:border-white/10",
+                  className: "flex flex-col text-xs group/item bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xs py-0.5 px-2 rounded-md shadow-2xs border border-slate-200/80 dark:border-white/10",
                   children: [
                     r.jsx("span", {
                       className: "font-bold text-xs text-zinc-900 dark:text-white truncate",
@@ -83205,7 +83205,7 @@ ${n}
                       className: "flex items-center justify-between gap-1.5 mt-0.5",
                       children: [
                         r.jsx("span", {
-                          className: "italic opacity-80 truncate text-[11px] text-zinc-500 dark:text-zinc-400",
+                          className: "italic opacity-80 truncate text-[10px] text-zinc-500 dark:text-zinc-400",
                           children: c.detail
                         }),
                         r.jsxs("div", {
@@ -83225,7 +83225,7 @@ ${n}
                   ]
                 }, g))
               }) : r.jsx("div", {
-                className: "py-1",
+                className: "py-0.5",
                 children: r.jsx("span", {
                   className: "text-xs font-bold text-zinc-400 dark:text-zinc-500 tracking-wide",
                   children: "Standby"
@@ -83236,7 +83236,7 @@ ${n}
         }),
         r.jsxs("button", {
           onClick: A,
-          className: "w-full py-2 border-t dark:border-white/5 border-slate-200/80 hover:text-white hover:bg-synos-primary transition-[background-color,color] flex items-center justify-center gap-1.5 relative z-10 text-xs sm:text-sm font-bold text-zinc-700 dark:text-zinc-200",
+          className: "w-full py-1.5 border-t dark:border-white/5 border-slate-200/80 hover:text-white hover:bg-synos-primary transition-[background-color,color] flex items-center justify-center gap-1.5 relative z-10 text-xs sm:text-sm font-bold text-zinc-700 dark:text-zinc-200",
           children: [
             s,
             r.jsx(xl, {
@@ -110033,13 +110033,13 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                 const h = d.departmentName || d.modality || "General", f = h.toLowerCase(), I = (t.toLowerCase().includes("radiology") ? zMe[f] : LMe[f]) || GMe, m = Number(d.billedRevenue) || 0, B = a > 0 ? m / a * 100 : 0, C = d.totalTestsCompleted || d.testsCompleted || 0;
                 return r.jsxs("div", {
                   onClick: () => c(d),
-                  className: "min-h-[32px] sm:min-h-[36px] py-1 sm:py-1.5 flex items-center pl-0.5 group hover:bg-slate-200/40 dark:hover:bg-zinc-800/40 transition-colors cursor-pointer rounded-lg",
+                  className: "min-h-[28px] sm:min-h-[30px] py-0.5 sm:py-1 flex items-center pl-0.5 group hover:bg-slate-200/40 dark:hover:bg-zinc-800/40 transition-colors cursor-pointer rounded-lg",
                   children: [
                     r.jsxs("div", {
                       className: "w-[140px] sm:w-[170px] lg:w-[190px] flex items-center gap-2 min-w-0 pr-2 shrink-0",
                       children: [
                         r.jsx("div", {
-                          className: ve("w-6 h-6 sm:w-7 sm:h-7 rounded-[7px] flex items-center justify-center shrink-0 shadow-2xs", I.bg),
+                          className: ve("w-5.5 h-5.5 sm:w-6 sm:h-6 rounded-[6px] flex items-center justify-center shrink-0 shadow-2xs", I.bg),
                           children: I.icon
                         }),
                         r.jsxs("div", {
@@ -110062,10 +110062,10 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                       ]
                     }),
                     r.jsxs("div", {
-                      className: "flex-1 px-3 flex items-center gap-2.5 min-w-0",
+                      className: "flex-1 px-3 flex items-center gap-2 min-w-0",
                       children: [
                         r.jsx("div", {
-                          className: "flex-1 h-[14px] sm:h-[16px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner",
+                          className: "flex-1 h-[8px] sm:h-[10px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner",
                           children: r.jsx("div", {
                             className: ve("h-full rounded-full transition-all duration-500", l),
                             style: {
@@ -110074,7 +110074,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                           })
                         }),
                         r.jsxs("span", {
-                          className: "text-xs font-bold text-slate-800 dark:text-zinc-200 tabular-nums w-12 text-right shrink-0",
+                          className: "text-[11px] sm:text-xs font-bold text-slate-800 dark:text-zinc-200 tabular-nums w-11 text-right shrink-0",
                           children: [
                             B.toFixed(1),
                             "%"
@@ -110105,31 +110105,31 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
     const a = (d) => Math.round(Number(d) || 0).toLocaleString("en-IN"), s = Number(t) || 0, A = Number(e) || 0, o = Number(n) > 0 ? Number(n) : s + A, l = s + A, c = l > 0 ? Math.round(s / l * 1e3) / 10 : 0, g = l > 0 ? Math.round((100 - c) * 10) / 10 : 0;
     return r.jsx("div", {
       onClick: i,
-      className: "p-3.5 sm:p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex items-center cursor-pointer hover:border-white hover:shadow-[0_12px_32px_rgba(15,23,42,0.14)] transition-all group h-full",
+      className: "p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex items-center cursor-pointer hover:border-white hover:shadow-[0_12px_32px_rgba(15,23,42,0.14)] transition-all group h-full",
       children: r.jsxs("div", {
-        className: "flex flex-col md:flex-row md:items-center w-full gap-3 sm:gap-4",
+        className: "flex flex-col md:flex-row md:items-center w-full gap-2.5 sm:gap-3.5",
         children: [
           r.jsxs("div", {
-            className: "w-full md:w-[190px] lg:w-[210px] shrink-0 flex flex-col justify-center space-y-0.5 pl-1",
+            className: "w-full md:w-[170px] lg:w-[190px] shrink-0 flex flex-col justify-center space-y-0.5 pl-0.5",
             children: [
               r.jsxs("div", {
-                className: "flex items-center gap-2",
+                className: "flex items-center gap-1.5",
                 children: [
                   r.jsx("div", {
-                    className: "w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs",
+                    className: "w-6 h-6 sm:w-7 sm:h-7 rounded-[7px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs",
                     children: r.jsx(Kd, {
-                      size: 16,
+                      size: 14,
                       strokeWidth: 2.4
                     })
                   }),
                   r.jsx("h3", {
-                    className: "text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal",
+                    className: "text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal truncate",
                     children: "Actual Cash (Desk Collections)"
                   })
                 ]
               }),
               r.jsxs("p", {
-                className: "text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums",
+                className: "text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums",
                 children: [
                   "\u20B9",
                   a(o)
@@ -110142,18 +110142,18 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
             ]
           }),
           r.jsxs("div", {
-            className: "flex-1 md:border-l md:border-slate-200 dark:md:border-zinc-800 md:pl-4 lg:pl-6 flex flex-col justify-center space-y-2.5 min-w-0",
+            className: "flex-1 md:border-l md:border-slate-200 dark:md:border-zinc-800 md:pl-3.5 lg:pl-5 flex flex-col justify-center space-y-2 min-w-0",
             children: [
               r.jsxs("div", {
-                className: "flex items-center gap-2.5 w-full",
+                className: "flex items-center gap-2 w-full",
                 children: [
                   r.jsxs("div", {
-                    className: "w-[80px] sm:w-[95px] shrink-0 flex items-center gap-1.5",
+                    className: "w-[70px] sm:w-[80px] shrink-0 flex items-center gap-1.5",
                     children: [
                       r.jsx("div", {
-                        className: "w-6 h-6 sm:w-7 sm:h-7 rounded-[7px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs",
+                        className: "w-5.5 h-5.5 sm:w-6 sm:h-6 rounded-[6px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs",
                         children: r.jsx(F5, {
-                          size: 14,
+                          size: 13,
                           strokeWidth: 2.3
                         })
                       }),
@@ -110164,7 +110164,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                     ]
                   }),
                   r.jsx("div", {
-                    className: "flex-1 h-[16px] sm:h-[18px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner min-w-0",
+                    className: "flex-1 h-[9px] sm:h-[10px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner min-w-0",
                     children: r.jsx("div", {
                       className: "h-full rounded-full bg-gradient-to-r from-[#60A5FA] via-[#7BB3F0] to-[#93C5FD] transition-all duration-500 shadow-[0_2px_8px_rgba(59,130,246,0.25)]",
                       style: {
@@ -110173,17 +110173,17 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                     })
                   }),
                   r.jsxs("div", {
-                    className: "w-[120px] sm:w-[145px] lg:w-[160px] shrink-0 text-right flex items-baseline justify-end gap-1.5",
+                    className: "w-[110px] sm:w-[130px] lg:w-[145px] shrink-0 text-right flex items-baseline justify-end gap-1.5",
                     children: [
                       r.jsxs("span", {
-                        className: "text-base sm:text-lg lg:text-xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight",
+                        className: "text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight",
                         children: [
                           "\u20B9",
                           a(s)
                         ]
                       }),
                       r.jsxs("span", {
-                        className: "text-[11px] sm:text-xs font-bold text-slate-500 dark:text-zinc-400 tabular-nums",
+                        className: "text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-zinc-400 tabular-nums",
                         children: [
                           "(",
                           c.toFixed(1),
@@ -110195,15 +110195,15 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                 ]
               }),
               r.jsxs("div", {
-                className: "flex items-center gap-2.5 w-full",
+                className: "flex items-center gap-2 w-full",
                 children: [
                   r.jsxs("div", {
-                    className: "w-[80px] sm:w-[95px] shrink-0 flex items-center gap-1.5",
+                    className: "w-[70px] sm:w-[80px] shrink-0 flex items-center gap-1.5",
                     children: [
                       r.jsx("div", {
-                        className: "w-6 h-6 sm:w-7 sm:h-7 rounded-[7px] bg-[#FAF5FF] text-[#A855F7] dark:bg-purple-950/40 dark:text-purple-400 border border-purple-100/90 dark:border-purple-800/40 flex items-center justify-center shrink-0 shadow-2xs",
+                        className: "w-5.5 h-5.5 sm:w-6 sm:h-6 rounded-[6px] bg-[#FAF5FF] text-[#A855F7] dark:bg-purple-950/40 dark:text-purple-400 border border-purple-100/90 dark:border-purple-800/40 flex items-center justify-center shrink-0 shadow-2xs",
                         children: r.jsx(Jd, {
-                          size: 14,
+                          size: 13,
                           strokeWidth: 2.3
                         })
                       }),
@@ -110214,7 +110214,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                     ]
                   }),
                   r.jsx("div", {
-                    className: "flex-1 h-[16px] sm:h-[18px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner min-w-0",
+                    className: "flex-1 h-[9px] sm:h-[10px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner min-w-0",
                     children: r.jsx("div", {
                       className: "h-full rounded-full bg-gradient-to-r from-[#C084FC] via-[#D8B4FE] to-[#E9D5FF] transition-all duration-500 shadow-[0_2px_8px_rgba(168,85,247,0.25)]",
                       style: {
@@ -110223,17 +110223,17 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                     })
                   }),
                   r.jsxs("div", {
-                    className: "w-[120px] sm:w-[145px] lg:w-[160px] shrink-0 text-right flex items-baseline justify-end gap-1.5",
+                    className: "w-[110px] sm:w-[130px] lg:w-[145px] shrink-0 text-right flex items-baseline justify-end gap-1.5",
                     children: [
                       r.jsxs("span", {
-                        className: "text-base sm:text-lg lg:text-xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight",
+                        className: "text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight",
                         children: [
                           "\u20B9",
                           a(A)
                         ]
                       }),
                       r.jsxs("span", {
-                        className: "text-[11px] sm:text-xs font-bold text-slate-500 dark:text-zinc-400 tabular-nums",
+                        className: "text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-zinc-400 tabular-nums",
                         children: [
                           "(",
                           g.toFixed(1),
@@ -110251,26 +110251,26 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
     });
   }, PMe = ({ concessionsAmount: t = 0, concessionsRate: e = 0, pathologyDiscount: n = 0, radiologyDiscount: i = 0, onNavigate: a = () => {
   } }) => {
-    const s = (d) => Math.round(Number(d) || 0).toLocaleString("en-IN"), A = Number(t) || 0, o = A > 0 && Number(e) || 0, l = 36, c = 2 * Math.PI * l, g = c * (1 - Math.min(100, Math.max(0, o)) / 100);
+    const s = (d) => Math.round(Number(d) || 0).toLocaleString("en-IN"), A = Number(t) || 0, o = A > 0 && Number(e) || 0, l = 34, c = 2 * Math.PI * l, g = c * (1 - Math.min(100, Math.max(0, o)) / 100);
     return r.jsxs("div", {
       onClick: a,
-      className: "p-3.5 sm:p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex items-center justify-between cursor-pointer hover:border-white hover:shadow-[0_12px_32px_rgba(15,23,42,0.14)] transition-all group h-full",
+      className: "p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex items-center justify-between cursor-pointer hover:border-white hover:shadow-[0_12px_32px_rgba(15,23,42,0.14)] transition-all group h-full",
       children: [
         r.jsxs("div", {
-          className: "flex flex-col justify-center space-y-1 flex-1 min-w-0 pr-2 sm:pr-3",
+          className: "flex flex-col justify-center space-y-0.5 flex-1 min-w-0 pr-2",
           children: [
             r.jsxs("div", {
-              className: "flex items-center gap-2",
+              className: "flex items-center gap-1.5",
               children: [
                 r.jsx("div", {
-                  className: "w-7 h-7 sm:w-8 sm:h-8 rounded-[9px] bg-[#FFF1F2] text-[#E11D48] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs",
+                  className: "w-6 h-6 sm:w-7 sm:h-7 rounded-[7px] bg-[#FFF1F2] text-[#E11D48] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs",
                   children: r.jsx(bh, {
-                    size: 16,
+                    size: 14,
                     strokeWidth: 2.4
                   })
                 }),
                 r.jsx("h3", {
-                  className: "text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal",
+                  className: "text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal truncate",
                   children: "Discount Given"
                 })
               ]
@@ -110278,20 +110278,20 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
             r.jsxs("div", {
               children: [
                 r.jsxs("p", {
-                  className: "text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-1 tabular-nums",
+                  className: "text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums",
                   children: [
                     "\u20B9",
                     s(A)
                   ]
                 }),
                 r.jsx("p", {
-                  className: "text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400 mt-0.5",
+                  className: "text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400",
                   children: "Total tariff discount given"
                 })
               ]
             }),
             r.jsxs("div", {
-              className: "pt-1 flex items-center gap-2.5 text-[10px] sm:text-[11px] font-semibold",
+              className: "pt-0.5 flex items-center gap-2 text-[10px] font-semibold",
               children: [
                 r.jsxs("div", {
                   className: "flex items-center gap-1",
@@ -110336,7 +110336,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
           ]
         }),
         r.jsxs("div", {
-          className: "relative w-[95px] h-[95px] sm:w-[105px] sm:h-[105px] lg:w-[115px] lg:h-[115px] flex items-center justify-center shrink-0",
+          className: "relative w-[80px] h-[80px] sm:w-[88px] sm:h-[88px] flex items-center justify-center shrink-0",
           children: [
             r.jsxs("svg", {
               className: "w-full h-full -rotate-90",
@@ -110367,7 +110367,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                   r: l,
                   stroke: "#FFE4E6",
                   className: "dark:stroke-rose-950/40",
-                  strokeWidth: "11",
+                  strokeWidth: "10",
                   fill: "none"
                 }),
                 r.jsx("circle", {
@@ -110375,7 +110375,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                   cy: "50",
                   r: l,
                   stroke: "url(#concessionDonutGrad)",
-                  strokeWidth: "11",
+                  strokeWidth: "10",
                   strokeDasharray: c,
                   strokeDashoffset: g,
                   strokeLinecap: "round",
@@ -110388,7 +110388,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
               className: "absolute flex flex-col items-center justify-center text-center",
               children: [
                 r.jsxs("span", {
-                  className: "text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none",
+                  className: "text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none",
                   children: [
                     o.toFixed(1),
                     "%"
@@ -110406,26 +110406,26 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
     });
   }, OMe = ({ amount: t = 0, rate: e = 0, onNavigate: n = () => {
   } }) => {
-    const i = (c) => Math.round(Number(c) || 0).toLocaleString("en-IN"), s = 2 * Math.PI * 36, A = Number(t) || 0, o = A > 0 && Number(e) || 0, l = s * (1 - Math.min(100, Math.max(0, o)) / 100);
+    const i = (c) => Math.round(Number(c) || 0).toLocaleString("en-IN"), s = 2 * Math.PI * 34, A = Number(t) || 0, o = A > 0 && Number(e) || 0, l = s * (1 - Math.min(100, Math.max(0, o)) / 100);
     return r.jsxs("div", {
       onClick: n,
-      className: "p-3 sm:p-3.5 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex items-center justify-between cursor-pointer hover:border-white hover:shadow-[0_12px_32px_rgba(15,23,42,0.14)] transition-all group h-full",
+      className: "p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex items-center justify-between cursor-pointer hover:border-white hover:shadow-[0_12px_32px_rgba(15,23,42,0.14)] transition-all group h-full",
       children: [
         r.jsxs("div", {
-          className: "flex flex-col justify-center space-y-1 flex-1 min-w-0 pr-2 sm:pr-3",
+          className: "flex flex-col justify-center space-y-0.5 flex-1 min-w-0 pr-2",
           children: [
             r.jsxs("div", {
-              className: "flex items-center gap-2",
+              className: "flex items-center gap-1.5",
               children: [
                 r.jsx("div", {
-                  className: "w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs",
+                  className: "w-6 h-6 sm:w-7 sm:h-7 rounded-[7px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs",
                   children: r.jsx(_A, {
-                    size: 16,
+                    size: 14,
                     strokeWidth: 2.3
                   })
                 }),
                 r.jsx("h3", {
-                  className: "text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal",
+                  className: "text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal truncate",
                   children: "Operating Expenses"
                 })
               ]
@@ -110433,7 +110433,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
             r.jsxs("div", {
               children: [
                 r.jsxs("p", {
-                  className: "text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums",
+                  className: "text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums",
                   children: [
                     "\u20B9",
                     i(A)
@@ -110448,7 +110448,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
           ]
         }),
         r.jsxs("div", {
-          className: "relative w-[85px] h-[85px] sm:w-[95px] sm:h-[95px] lg:w-[105px] lg:h-[105px] flex items-center justify-center shrink-0",
+          className: "relative w-[75px] h-[75px] sm:w-[82px] sm:h-[82px] flex items-center justify-center shrink-0",
           children: [
             r.jsxs("svg", {
               className: "w-full h-full -rotate-90",
@@ -110476,18 +110476,18 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                 r.jsx("circle", {
                   cx: "50",
                   cy: "50",
-                  r: 36,
+                  r: 34,
                   stroke: "#E2ECF6",
                   className: "dark:stroke-zinc-800",
-                  strokeWidth: "11",
+                  strokeWidth: "10",
                   fill: "none"
                 }),
                 r.jsx("circle", {
                   cx: "50",
                   cy: "50",
-                  r: 36,
+                  r: 34,
                   stroke: "url(#opExpensesDonutGrad)",
-                  strokeWidth: "11",
+                  strokeWidth: "10",
                   strokeDasharray: s,
                   strokeDashoffset: l,
                   strokeLinecap: "round",
@@ -110500,7 +110500,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
               className: "absolute flex flex-col items-center justify-center text-center",
               children: [
                 r.jsxs("span", {
-                  className: "text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none",
+                  className: "text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none",
                   children: [
                     o.toFixed(1),
                     "%"
@@ -110518,37 +110518,37 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
     });
   }, _Me = ({ amount: t = 682e3, monthlyAmount: e = 682e3, dailyAmount: n = 22733, isToday: i = false, rate: a = 34.1, employeeCount: s = 22, onNavigate: A = () => {
   } }) => {
-    const o = (u) => Math.round(Number(u) || 0).toLocaleString("en-IN"), c = 2 * Math.PI * 36, g = c * (1 - Math.min(100, Math.max(0, a)) / 100), d = i ? n : t || e;
+    const o = (u) => Math.round(Number(u) || 0).toLocaleString("en-IN"), c = 2 * Math.PI * 34, g = c * (1 - Math.min(100, Math.max(0, a)) / 100), d = i ? n : t || e;
     return r.jsxs("div", {
       onClick: A,
-      className: "p-3 sm:p-3.5 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex items-center justify-between cursor-pointer hover:border-white hover:shadow-[0_12px_32px_rgba(15,23,42,0.14)] transition-all group h-full",
+      className: "p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex items-center justify-between cursor-pointer hover:border-white hover:shadow-[0_12px_32px_rgba(15,23,42,0.14)] transition-all group h-full",
       children: [
         r.jsxs("div", {
-          className: "flex flex-col justify-center space-y-1 flex-1 min-w-0 pr-2 sm:pr-3",
+          className: "flex flex-col justify-center space-y-0.5 flex-1 min-w-0 pr-2",
           children: [
             r.jsxs("div", {
               className: "flex items-center gap-1.5 flex-wrap",
               children: [
                 r.jsx("div", {
-                  className: "w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] bg-[#FAF5FF] text-[#A855F7] dark:bg-purple-950/40 dark:text-purple-400 border border-purple-100/90 dark:border-purple-800/40 flex items-center justify-center shrink-0 shadow-2xs",
+                  className: "w-6 h-6 sm:w-7 sm:h-7 rounded-[7px] bg-[#FAF5FF] text-[#A855F7] dark:bg-purple-950/40 dark:text-purple-400 border border-purple-100/90 dark:border-purple-800/40 flex items-center justify-center shrink-0 shadow-2xs",
                   children: r.jsx(ps, {
-                    size: 16,
+                    size: 14,
                     strokeWidth: 2.3
                   })
                 }),
                 r.jsx("h3", {
-                  className: "text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal",
+                  className: "text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal truncate",
                   children: "Payroll"
                 }),
                 r.jsxs("span", {
-                  className: "text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300 border border-purple-100 dark:border-purple-800/60 tabular-nums",
+                  className: "text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300 border border-purple-100 dark:border-purple-800/60 tabular-nums",
                   children: [
                     s,
                     " Staff"
                   ]
                 }),
                 i && r.jsx("span", {
-                  className: "text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800/60 tabular-nums",
+                  className: "text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800/60 tabular-nums",
                   children: "Today"
                 })
               ]
@@ -110556,7 +110556,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
             r.jsxs("div", {
               children: [
                 r.jsxs("p", {
-                  className: "text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums",
+                  className: "text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums",
                   children: [
                     "\u20B9",
                     o(d)
@@ -110571,7 +110571,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
           ]
         }),
         r.jsxs("div", {
-          className: "relative w-[85px] h-[85px] sm:w-[95px] sm:h-[95px] lg:w-[105px] lg:h-[105px] flex items-center justify-center shrink-0",
+          className: "relative w-[75px] h-[75px] sm:w-[82px] sm:h-[82px] flex items-center justify-center shrink-0",
           children: [
             r.jsxs("svg", {
               className: "w-full h-full -rotate-90",
@@ -110599,18 +110599,18 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                 r.jsx("circle", {
                   cx: "50",
                   cy: "50",
-                  r: 36,
+                  r: 34,
                   stroke: "#E2ECF6",
                   className: "dark:stroke-zinc-800",
-                  strokeWidth: "11",
+                  strokeWidth: "10",
                   fill: "none"
                 }),
                 r.jsx("circle", {
                   cx: "50",
                   cy: "50",
-                  r: 36,
+                  r: 34,
                   stroke: "url(#payrollDonutGrad)",
-                  strokeWidth: "11",
+                  strokeWidth: "10",
                   strokeDasharray: c,
                   strokeDashoffset: g,
                   strokeLinecap: "round",
@@ -110623,7 +110623,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
               className: "absolute flex flex-col items-center justify-center text-center",
               children: [
                 r.jsxs("span", {
-                  className: "text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none",
+                  className: "text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none",
                   children: [
                     Number(a || 0).toFixed(1),
                     "%"
@@ -110674,17 +110674,17 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
     };
     return r.jsxs("div", {
       onClick: n,
-      className: "p-3.5 sm:p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex flex-col justify-between cursor-pointer hover:border-white hover:shadow-[0_12px_32px_rgba(15,23,42,0.14)] transition-all group h-full",
+      className: "p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex flex-col justify-between cursor-pointer hover:border-white hover:shadow-[0_12px_32px_rgba(15,23,42,0.14)] transition-all group h-full",
       children: [
         r.jsx("div", {
           className: "flex items-center justify-between pb-0.5",
           children: r.jsxs("div", {
-            className: "flex items-center gap-2",
+            className: "flex items-center gap-1.5",
             children: [
               r.jsx("div", {
-                className: "w-8 h-8 sm:w-9 sm:h-9 rounded-[10px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs",
+                className: "w-6 h-6 sm:w-7 sm:h-7 rounded-[7px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs",
                 children: r.jsx(d0, {
-                  size: 18,
+                  size: 14,
                   strokeWidth: 2.3
                 })
               }),
@@ -110696,27 +110696,27 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
           })
         }),
         r.jsx("div", {
-          className: "grid grid-cols-7 gap-2 sm:gap-2.5 items-end pt-1 flex-1 min-h-[60px] max-h-[105px]",
+          className: "grid grid-cols-7 gap-1.5 sm:gap-2 items-end pt-0.5 flex-1 min-h-[50px] max-h-[90px]",
           children: a.map((o, l) => {
             const c = o.amount, g = o.date, d = s > 0 && c > 0 ? Math.max(25, Math.round(c / s * 100)) : 10;
             return r.jsxs("div", {
               className: "flex flex-col items-center justify-end h-full group/bar",
               children: [
                 r.jsx("span", {
-                  className: "text-[10px] sm:text-[11px] font-bold text-slate-700 dark:text-zinc-300 tabular-nums mb-0.5 opacity-90 group-hover/bar:opacity-100 group-hover/bar:text-synos-primary transition-colors",
+                  className: "text-[10px] font-bold text-slate-700 dark:text-zinc-300 tabular-nums mb-0.5 opacity-90 group-hover/bar:opacity-100 group-hover/bar:text-synos-primary transition-colors",
                   children: A(c)
                 }),
                 r.jsx("div", {
                   className: "w-full flex-1 flex items-end",
                   children: r.jsx("div", {
-                    className: "w-full rounded-t-[8px] bg-gradient-to-t from-[#60A5FA] via-[#7BB3F0] to-[#93C5FD] dark:from-blue-600 dark:to-sky-400 transition-all duration-500 shadow-2xs group-hover/bar:brightness-105",
+                    className: "w-full rounded-t-[6px] bg-gradient-to-t from-[#60A5FA] via-[#7BB3F0] to-[#93C5FD] dark:from-blue-600 dark:to-sky-400 transition-all duration-500 shadow-2xs group-hover/bar:brightness-105",
                     style: {
                       height: `${d}%`
                     }
                   })
                 }),
                 r.jsx("span", {
-                  className: `text-[10px] sm:text-[11px] font-semibold mt-1 truncate w-full text-center ${o.isToday ? "text-synos-primary font-bold" : "text-slate-400 dark:text-zinc-500"}`,
+                  className: `text-[10px] font-semibold mt-0.5 truncate w-full text-center ${o.isToday ? "text-synos-primary font-bold" : "text-slate-400 dark:text-zinc-500"}`,
                   children: g
                 })
               ]
@@ -110736,17 +110736,17 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
       className: "flex flex-col justify-start gap-2.5 sm:gap-3 lg:gap-3.5 pb-6",
       children: [
         r.jsxs("div", {
-          className: "min-h-[105px] p-3.5 sm:p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 items-center",
+          className: "min-h-[95px] p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] grid grid-cols-1 lg:grid-cols-12 gap-3.5 lg:gap-4 items-center",
           children: [
             r.jsxs("div", {
-              className: "lg:col-span-4 flex items-center gap-3.5 min-w-0 pr-0 lg:pr-2",
+              className: "lg:col-span-4 flex items-center gap-3 min-w-0 pr-0 lg:pr-2",
               children: [
                 r.jsx("div", {
-                  className: "w-[56px] h-[56px] sm:w-[64px] sm:h-[64px] rounded-[16px] bg-gradient-to-b from-[#EBF5FF] to-[#D6EBFE] border border-white/90 dark:border-white/10 shadow-[0_6px_16px_rgba(37,99,235,0.14)] flex items-center justify-center text-[#1C6CF2] dark:text-sky-400 shrink-0",
+                  className: "w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-b from-[#EBF5FF] to-[#D6EBFE] border border-white/90 dark:border-white/10 shadow-[0_4px_12px_rgba(37,99,235,0.12)] flex items-center justify-center text-[#1C6CF2] dark:text-sky-400 shrink-0",
                   children: r.jsxs("svg", {
                     viewBox: "0 0 24 24",
-                    width: "30",
-                    height: "30",
+                    width: "22",
+                    height: "22",
                     fill: "none",
                     stroke: "currentColor",
                     strokeWidth: "2.2",
@@ -110788,11 +110788,11 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                       className: "flex items-center gap-2 flex-wrap",
                       children: [
                         r.jsx("h3", {
-                          className: "text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal",
+                          className: "text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal",
                           children: "Total Amount Billed"
                         }),
                         r.jsxs("span", {
-                          className: "text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]/70 dark:bg-emerald-950/50 dark:text-emerald-400 shadow-2xs",
+                          className: "text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]/70 dark:bg-emerald-950/50 dark:text-emerald-400 shadow-2xs",
                           children: [
                             e,
                             " Bills Processed"
@@ -110801,14 +110801,14 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                       ]
                     }),
                     r.jsxs("p", {
-                      className: "text-2xl sm:text-3xl lg:text-[36px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums",
+                      className: "text-xl sm:text-2xl lg:text-[28px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums",
                       children: [
                         "\u20B9",
                         G(t)
                       ]
                     }),
                     r.jsx("p", {
-                      className: "text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-zinc-400 truncate",
+                      className: "text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400 truncate",
                       children: g > 0 ? `Net Billed (\u20B9${G(t + g)} Gross - \u20B9${G(g)} Discount)` : "Net Clinical Tariff Billed"
                     })
                   ]
@@ -110816,17 +110816,17 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
               ]
             }),
             r.jsxs("div", {
-              className: "lg:col-span-8 lg:border-l lg:border-slate-200 dark:lg:border-zinc-800 lg:pl-5 xl:pl-6 flex flex-col justify-between py-1 min-w-0",
+              className: "lg:col-span-8 lg:border-l lg:border-slate-200 dark:lg:border-zinc-800 lg:pl-4 xl:pl-5 flex flex-col justify-between py-0.5 min-w-0 space-y-1.5",
               children: [
                 r.jsxs("div", {
-                  className: "flex items-center justify-between pb-1.5",
+                  className: "flex items-center justify-between",
                   children: [
                     r.jsx("h3", {
-                      className: "text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal",
+                      className: "text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal",
                       children: "Doctor Payouts vs Due Receivables"
                     }),
                     r.jsxs("div", {
-                      className: "hidden sm:flex items-center gap-2 text-xs font-bold",
+                      className: "hidden sm:flex items-center gap-1.5 text-[11px] font-bold",
                       children: [
                         r.jsx("span", {
                           className: "text-slate-500 dark:text-zinc-400",
@@ -110844,7 +110844,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                   ]
                 }),
                 r.jsxs("div", {
-                  className: "relative h-[36px] sm:h-[40px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 flex items-center overflow-visible shadow-inner",
+                  className: "relative h-[12px] sm:h-[14px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 flex items-center overflow-visible shadow-inner",
                   children: [
                     r.jsx("div", {
                       className: "h-full bg-gradient-to-r from-[#60A5FA] via-[#7BB3F0] to-[#93C5FD] rounded-l-full transition-all duration-500 shadow-[0_2px_8px_rgba(96,165,250,0.25)]",
@@ -110859,26 +110859,26 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                       }
                     }),
                     r.jsx("div", {
-                      className: "absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white dark:bg-zinc-100 shadow-[0_3px_12px_rgba(15,35,60,0.22),0_0_0_2px_#FFFFFF] border border-slate-100 pointer-events-none transition-all duration-500 z-10 flex items-center justify-center",
+                      className: "absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-full bg-white dark:bg-zinc-100 shadow-[0_2px_8px_rgba(15,35,60,0.22),0_0_0_2px_#FFFFFF] border border-slate-100 pointer-events-none transition-all duration-500 z-10 flex items-center justify-center",
                       style: {
                         left: `${Y > 0 ? ae : H > 0 ? 50 : 0}%`
                       },
                       children: r.jsx("div", {
-                        className: "w-2.5 h-2.5 rounded-full bg-slate-300"
+                        className: "w-1.5 h-1.5 rounded-full bg-slate-400"
                       })
                     })
                   ]
                 }),
                 r.jsxs("div", {
-                  className: "flex items-center justify-between pt-2",
+                  className: "flex items-center justify-between pt-0.5",
                   children: [
                     r.jsxs("div", {
-                      className: "flex items-center gap-2.5",
+                      className: "flex items-center gap-2",
                       children: [
                         r.jsx("div", {
-                          className: "w-8 h-8 sm:w-10 sm:h-10 rounded-[12px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs",
+                          className: "w-6 h-6 sm:w-7 sm:h-7 rounded-[8px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs",
                           children: r.jsx(jC, {
-                            size: 18,
+                            size: 14,
                             strokeWidth: 2.3
                           })
                         }),
@@ -110888,14 +110888,14 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                               className: "flex items-baseline gap-1.5",
                               children: [
                                 r.jsxs("span", {
-                                  className: "text-xl sm:text-2xl lg:text-[28px] font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none",
+                                  className: "text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none",
                                   children: [
                                     "\u20B9",
                                     G(H)
                                   ]
                                 }),
                                 r.jsxs("span", {
-                                  className: "text-xs sm:text-sm font-bold text-[#1C6CF2] dark:text-sky-400 bg-[#EBF5FF] dark:bg-sky-950/60 px-1.5 py-0.5 rounded-md border border-sky-100 dark:border-sky-800/40 tabular-nums",
+                                  className: "text-[10px] font-bold text-[#1C6CF2] dark:text-sky-400 bg-[#EBF5FF] dark:bg-sky-950/60 px-1 py-0.2 rounded-md border border-sky-100 dark:border-sky-800/40 tabular-nums",
                                   children: [
                                     Y > 0 ? ae : 0,
                                     "%"
@@ -110904,7 +110904,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                               ]
                             }),
                             r.jsx("span", {
-                              className: "text-[11px] sm:text-xs text-slate-600 dark:text-zinc-400 font-bold block",
+                              className: "text-[10px] sm:text-[11px] text-slate-600 dark:text-zinc-400 font-bold block",
                               children: "Doctor Commissions"
                             })
                           ]
@@ -110912,7 +110912,7 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                       ]
                     }),
                     r.jsxs("div", {
-                      className: "flex items-center gap-2.5 text-right",
+                      className: "flex items-center gap-2 text-right",
                       children: [
                         r.jsxs("div", {
                           children: [
@@ -110920,14 +110920,14 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                               className: "flex items-baseline gap-1.5 justify-end",
                               children: [
                                 r.jsxs("span", {
-                                  className: "text-xs sm:text-sm font-bold text-[#E11D48] dark:text-rose-400 bg-[#FFF1F2] dark:bg-rose-950/60 px-1.5 py-0.5 rounded-md border border-rose-100 dark:border-rose-800/40 tabular-nums",
+                                  className: "text-[10px] font-bold text-[#E11D48] dark:text-rose-400 bg-[#FFF1F2] dark:bg-rose-950/60 px-1 py-0.2 rounded-md border border-rose-100 dark:border-rose-800/40 tabular-nums",
                                   children: [
                                     Y > 0 ? re : 0,
                                     "%"
                                   ]
                                 }),
                                 r.jsxs("span", {
-                                  className: "text-xl sm:text-2xl lg:text-[28px] font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none",
+                                  className: "text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none",
                                   children: [
                                     "\u20B9",
                                     G(P)
@@ -110936,15 +110936,15 @@ Inventory Dept.`, R = `https://wa.me/${((_b3 = n.supplier) == null ? void 0 : _b
                               ]
                             }),
                             r.jsx("span", {
-                              className: "text-[11px] sm:text-xs text-slate-600 dark:text-zinc-400 font-bold block",
+                              className: "text-[10px] sm:text-[11px] text-slate-600 dark:text-zinc-400 font-bold block",
                               children: "Due Receivables"
                             })
                           ]
                         }),
                         r.jsx("div", {
-                          className: "w-8 h-8 sm:w-10 sm:h-10 rounded-[12px] bg-[#FFF1F2] text-[#FB7185] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs",
+                          className: "w-6 h-6 sm:w-7 sm:h-7 rounded-[8px] bg-[#FFF1F2] text-[#FB7185] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs",
                           children: r.jsx(aa, {
-                            size: 18,
+                            size: 14,
                             strokeWidth: 2.3
                           })
                         })
@@ -135505,20 +135505,20 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
           ]
         }),
         c === 0 && r.jsxs("div", {
-          className: "flex-1 flex flex-col items-center justify-center p-4 text-center my-auto min-h-[130px]",
+          className: "flex-1 flex flex-col items-center justify-center p-3 text-center my-auto min-h-[90px]",
           children: [
             r.jsx("div", {
-              className: "w-10 h-10 rounded-2xl bg-slate-100 dark:bg-zinc-800/60 text-slate-400 flex items-center justify-center mb-2",
+              className: "w-8 h-8 rounded-xl bg-slate-100 dark:bg-zinc-800/60 text-slate-400 flex items-center justify-center mb-1.5",
               children: r.jsx(e, {
-                size: 20
+                size: 16
               })
             }),
             r.jsx("p", {
-              className: "text-sm font-bold text-slate-700 dark:text-zinc-300",
+              className: "text-xs font-bold text-slate-700 dark:text-zinc-300",
               children: "No concessions recorded"
             }),
             r.jsx("p", {
-              className: "text-xs text-slate-400 dark:text-zinc-500 mt-0.5",
+              className: "text-[10px] text-slate-400 dark:text-zinc-500 mt-0.5",
               children: "No concessions active for the selected horizon."
             })
           ]
@@ -135526,51 +135526,51 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
         c === 1 && (() => {
           const g = s[0], d = g.reasonText || g.partnerName || "Direct Concession", u = o[0], h = Number(g.totalAmount) || i, f = g.usageCount || g.billsCount || a;
           return r.jsxs("div", {
-            className: "flex-1 flex flex-col justify-center my-auto min-h-[130px] p-3.5 sm:p-4 rounded-2xl bg-white/70 dark:bg-zinc-800/70 border border-slate-200/80 dark:border-zinc-700/80 space-y-2.5 shadow-2xs",
+            className: "flex-1 flex flex-col justify-center space-y-1.5 py-1",
             children: [
               r.jsxs("div", {
                 className: "flex items-center justify-between",
                 children: [
                   r.jsxs("div", {
-                    className: "flex items-center gap-2.5 min-w-0",
+                    className: "flex items-center gap-2 min-w-0",
                     children: [
                       r.jsx("div", {
-                        className: ve("w-9 h-9 rounded-[12px] flex items-center justify-center shrink-0 shadow-2xs", u.bg),
+                        className: ve("w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center shrink-0 shadow-2xs", u.bg),
                         children: u.icon
                       }),
                       r.jsxs("div", {
                         className: "min-w-0",
                         children: [
                           r.jsx("h5", {
-                            className: "text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate",
+                            className: "text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate",
                             title: d,
                             children: d
                           }),
                           r.jsx("span", {
-                            className: "text-xs font-medium text-slate-600 dark:text-zinc-400",
-                            children: A === "patient" ? "Sole Walk-In Reason Today" : "Exclusive Partner Concession Today"
+                            className: "text-[10px] sm:text-[11px] font-medium text-slate-500 dark:text-zinc-400",
+                            children: A === "patient" ? "Sole Walk-In Reason Today" : "Exclusive Partner Concession"
                           })
                         ]
                       })
                     ]
                   }),
                   r.jsx("span", {
-                    className: "px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-400 shrink-0",
+                    className: "px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-400 shrink-0",
                     children: "100% Share"
                   })
                 ]
               }),
               r.jsxs("div", {
-                className: "flex items-baseline justify-between pt-1 border-t border-slate-200/80 dark:border-zinc-800",
+                className: "flex items-baseline justify-between pt-1",
                 children: [
                   r.jsxs("div", {
                     children: [
                       r.jsx("span", {
-                        className: "text-[11px] font-semibold text-slate-500 dark:text-zinc-400 block",
+                        className: "text-[10px] font-semibold text-slate-400 dark:text-zinc-500 block",
                         children: "Total Concession"
                       }),
                       r.jsxs("span", {
-                        className: "text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight",
+                        className: "text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight",
                         children: [
                           "\u20B9",
                           h.toLocaleString()
@@ -135582,11 +135582,11 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                     className: "text-right",
                     children: [
                       r.jsx("span", {
-                        className: "text-[11px] font-semibold text-slate-500 dark:text-zinc-400 block",
+                        className: "text-[10px] font-semibold text-slate-400 dark:text-zinc-500 block",
                         children: "Bills Recorded"
                       }),
                       r.jsxs("span", {
-                        className: "text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-200 tabular-nums",
+                        className: "text-xs font-bold text-slate-700 dark:text-zinc-300 tabular-nums",
                         children: [
                           f,
                           " ",
@@ -135597,59 +135597,43 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                   })
                 ]
               }),
-              r.jsxs("div", {
-                className: "space-y-1",
-                children: [
-                  r.jsxs("div", {
-                    className: "flex justify-between text-[11px] font-semibold text-slate-500 dark:text-zinc-400",
-                    children: [
-                      r.jsx("span", {
-                        children: "Volume Saturation"
-                      }),
-                      r.jsx("span", {
-                        children: "100.0%"
-                      })
-                    ]
-                  }),
-                  r.jsx("div", {
-                    className: "w-full h-[14px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner",
-                    children: r.jsx("div", {
-                      className: ve("h-full rounded-full transition-all duration-500 w-full", l)
-                    })
-                  })
-                ]
+              r.jsx("div", {
+                className: "w-full h-[8px] sm:h-[10px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner",
+                children: r.jsx("div", {
+                  className: ve("h-full rounded-full transition-all duration-500 w-full", l)
+                })
               })
             ]
           });
         })(),
-        c === 2 && r.jsx("div", {
-          className: "flex-1 flex flex-col justify-between space-y-2 my-auto min-h-[130px]",
+        (c === 2 || c === 3) && r.jsx("div", {
+          className: "flex-1 flex flex-col justify-around divide-y divide-slate-200/60 dark:divide-zinc-800/60 my-auto",
           children: s.map((g, d) => {
             const u = g.reasonText || g.partnerName || `Preset ${d + 1}`, h = Number(g.percentageOfPatientDiscounts || g.percentageOfPartnerDiscounts) || (d === 0 ? 58.8 : 41.2), f = g.usageCount || g.billsCount || (d === 0 ? Math.ceil(a * 0.6) : Math.floor(a * 0.4)), I = o[d % o.length], m = d === 0;
             return r.jsxs("div", {
-              className: "p-3.5 sm:p-4 rounded-2xl bg-white/70 dark:bg-zinc-800/70 border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs flex flex-col justify-between space-y-2.5",
+              className: "py-1.5 sm:py-2 first:pt-0 last:pb-0 flex flex-col justify-between space-y-1",
               children: [
                 r.jsxs("div", {
                   className: "flex items-center justify-between",
                   children: [
                     r.jsxs("div", {
-                      className: "flex items-center gap-2.5 min-w-0",
+                      className: "flex items-center gap-2 min-w-0",
                       children: [
                         r.jsx("div", {
-                          className: ve("w-9 h-9 sm:w-10 sm:h-10 rounded-[12px] flex items-center justify-center shrink-0 shadow-2xs", I.bg),
+                          className: ve("w-6 h-6 sm:w-7 sm:h-7 rounded-[7px] flex items-center justify-center shrink-0 shadow-2xs", I.bg),
                           children: I.icon
                         }),
                         r.jsxs("div", {
                           className: "min-w-0",
                           children: [
                             r.jsx("h5", {
-                              className: "text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate",
+                              className: "text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate",
                               title: u,
                               children: u
                             }),
                             r.jsx("span", {
-                              className: "text-[11px] sm:text-xs font-medium text-slate-600 dark:text-zinc-400",
-                              children: m ? A === "patient" ? "Primary Walk-In Preset" : "Primary B2B Partner" : A === "patient" ? "Secondary Walk-In Preset" : "Secondary B2B Partner"
+                              className: "text-[10px] font-medium text-slate-500 dark:text-zinc-400",
+                              children: m ? A === "patient" ? "Primary Walk-In" : "Primary B2B" : A === "patient" ? "Secondary Walk-In" : "Secondary B2B"
                             })
                           ]
                         })
@@ -135659,14 +135643,14 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                       className: "text-right shrink-0",
                       children: [
                         r.jsxs("div", {
-                          className: "text-lg sm:text-xl font-bold text-slate-900 dark:text-white tabular-nums tracking-tight",
+                          className: "text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight",
                           children: [
                             "\u20B9",
                             Number(g.totalAmount).toLocaleString()
                           ]
                         }),
                         r.jsxs("span", {
-                          className: "text-[11px] sm:text-xs font-semibold text-slate-600 dark:text-zinc-400",
+                          className: "text-[10px] font-semibold text-slate-500 dark:text-zinc-400",
                           children: [
                             f,
                             " ",
@@ -135678,10 +135662,10 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                   ]
                 }),
                 r.jsxs("div", {
-                  className: "flex items-center gap-2.5",
+                  className: "flex items-center gap-2",
                   children: [
                     r.jsx("div", {
-                      className: "flex-1 h-[20px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner",
+                      className: "flex-1 h-[8px] sm:h-[10px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner",
                       children: r.jsx("div", {
                         className: ve("h-full rounded-full transition-all duration-500", l),
                         style: {
@@ -135690,73 +135674,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                       })
                     }),
                     r.jsxs("span", {
-                      className: "text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-200 tabular-nums w-12 text-right shrink-0",
-                      children: [
-                        h.toFixed(1),
-                        "%"
-                      ]
-                    })
-                  ]
-                })
-              ]
-            }, d);
-          })
-        }),
-        c === 3 && r.jsx("div", {
-          className: "flex-1 flex flex-col justify-between space-y-1.5 my-auto min-h-[130px]",
-          children: s.map((g, d) => {
-            const u = g.reasonText || g.partnerName || `Item ${d + 1}`, h = Number(g.percentageOfPatientDiscounts || g.percentageOfPartnerDiscounts) || (d === 0 ? 50 : 25), f = o[d % o.length];
-            return r.jsxs("div", {
-              className: ve("p-2.5 sm:p-3 rounded-xl border flex items-center justify-between gap-2.5 transition-colors", d === 0 ? "bg-white/90 dark:bg-zinc-800/90 border-blue-200/80 dark:border-blue-900/40 shadow-xs" : "bg-white/60 dark:bg-zinc-800/50 border-slate-200/70 dark:border-zinc-800"),
-              children: [
-                r.jsxs("div", {
-                  className: "flex items-center gap-2 min-w-0 w-[42%]",
-                  children: [
-                    r.jsx("div", {
-                      className: ve("w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] flex items-center justify-center shrink-0 shadow-2xs", f.bg),
-                      children: f.icon
-                    }),
-                    r.jsxs("div", {
-                      className: "min-w-0 truncate",
-                      children: [
-                        r.jsx("span", {
-                          className: "text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate block",
-                          title: u,
-                          children: u
-                        }),
-                        r.jsxs("span", {
-                          className: "text-[10px] font-medium text-slate-500 dark:text-zinc-400",
-                          children: [
-                            "#",
-                            d + 1,
-                            " Rank"
-                          ]
-                        })
-                      ]
-                    })
-                  ]
-                }),
-                r.jsxs("div", {
-                  className: "text-right tabular-nums text-xs sm:text-sm font-bold text-slate-900 dark:text-white shrink-0 pr-1",
-                  children: [
-                    "\u20B9",
-                    Number(g.totalAmount).toLocaleString()
-                  ]
-                }),
-                r.jsxs("div", {
-                  className: "flex items-center gap-2 w-[38%]",
-                  children: [
-                    r.jsx("div", {
-                      className: "flex-1 h-[18px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner",
-                      children: r.jsx("div", {
-                        className: ve("h-full rounded-full transition-all duration-500", l),
-                        style: {
-                          width: `${Math.min(100, Math.max(10, h))}%`
-                        }
-                      })
-                    }),
-                    r.jsxs("span", {
-                      className: "text-xs font-bold text-slate-800 dark:text-zinc-200 tabular-nums w-10 text-right shrink-0",
+                      className: "text-[11px] sm:text-xs font-bold text-slate-700 dark:text-zinc-300 tabular-nums w-11 text-right shrink-0",
                       children: [
                         h.toFixed(1),
                         "%"
@@ -135938,27 +135856,27 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
     if (A === 1) {
       const l = a[0], c = o[0], g = l.billsCount || 1, d = g > 0 ? Math.round(Number(l.totalAmount) / g) : Number(l.totalAmount);
       return r.jsxs("div", {
-        className: "flex-1 flex flex-col justify-center my-auto p-4 rounded-2xl bg-white/70 dark:bg-zinc-800/70 border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs space-y-3",
+        className: "flex-1 flex flex-col justify-center my-auto p-2.5 sm:p-3 rounded-xl bg-white/70 dark:bg-zinc-800/70 border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs space-y-2",
         children: [
           r.jsxs("div", {
             className: "flex items-center justify-between",
             children: [
               r.jsxs("div", {
-                className: "flex items-center gap-2.5 min-w-0",
+                className: "flex items-center gap-2 min-w-0",
                 children: [
                   r.jsx("div", {
-                    className: ve("w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center font-bold text-sm shrink-0 shadow-2xs border", c.bg, c.text, c.border),
+                    className: ve("w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs border", c.bg, c.text, c.border),
                     children: l.initials
                   }),
                   r.jsxs("div", {
                     className: "min-w-0",
                     children: [
                       r.jsx("h5", {
-                        className: "text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate",
+                        className: "text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate",
                         children: l.displayName
                       }),
                       r.jsx("span", {
-                        className: "px-2 py-0.5 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]/70 text-[11px] font-semibold shadow-2xs inline-block mt-0.5",
+                        className: "px-1.5 py-0.2 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]/70 text-[10px] font-semibold shadow-2xs inline-block",
                         children: l.resolvedRole
                       })
                     ]
@@ -135966,7 +135884,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                 ]
               }),
               r.jsx("span", {
-                className: "px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200/80 dark:bg-blue-950/40 dark:text-blue-400",
+                className: "px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200/80 dark:bg-blue-950/40 dark:text-blue-400",
                 children: "100.0% Authority"
               })
             ]
@@ -135977,11 +135895,11 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
               r.jsxs("div", {
                 children: [
                   r.jsx("span", {
-                    className: "text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-zinc-400 block",
+                    className: "text-[10px] font-semibold text-slate-500 dark:text-zinc-400 block",
                     children: "Total Authorized"
                   }),
                   r.jsxs("span", {
-                    className: "text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight",
+                    className: "text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight",
                     children: [
                       "\u20B9",
                       Number(l.totalAmount).toLocaleString()
@@ -135993,11 +135911,11 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                 className: "text-right",
                 children: [
                   r.jsx("span", {
-                    className: "text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-zinc-400 block",
+                    className: "text-[10px] font-semibold text-slate-500 dark:text-zinc-400 block",
                     children: "Activity"
                   }),
                   r.jsxs("span", {
-                    className: "text-xs sm:text-sm font-semibold text-slate-700 dark:text-zinc-300",
+                    className: "text-xs font-semibold text-slate-700 dark:text-zinc-300",
                     children: [
                       g,
                       " ",
@@ -136012,7 +135930,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
             ]
           }),
           r.jsx("div", {
-            className: "w-full h-[20px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner",
+            className: "w-full h-[8px] sm:h-[10px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner",
             children: r.jsx("div", {
               className: "h-full rounded-full bg-gradient-to-r from-[#60A5FA] to-[#38BDF8] shadow-[0_2px_8px_rgba(56,189,248,0.35)] w-full transition-all duration-500"
             })
@@ -136021,31 +135939,31 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
       });
     }
     return A === 2 ? r.jsx("div", {
-      className: "flex-1 flex flex-col justify-between space-y-2.5 my-auto",
+      className: "flex-1 flex flex-col justify-between space-y-1.5 my-auto",
       children: a.map((l, c) => {
         const g = o[c % o.length], d = s > 0 ? (Number(l.totalAmount) || 0) / s * 100 : c === 0 ? 60 : 40;
         return r.jsxs("div", {
-          className: "p-3 rounded-xl bg-white/70 dark:bg-zinc-800/70 border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs space-y-2",
+          className: "p-2 sm:p-2.5 rounded-xl bg-white/70 dark:bg-zinc-800/70 border border-slate-200/80 dark:border-zinc-700/80 shadow-2xs space-y-1.5",
           children: [
             r.jsxs("div", {
               className: "flex items-center justify-between",
               children: [
                 r.jsxs("div", {
-                  className: "flex items-center gap-2.5 min-w-0",
+                  className: "flex items-center gap-2 min-w-0",
                   children: [
                     r.jsx("div", {
-                      className: ve("w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs border", g.bg, g.text, g.border),
+                      className: ve("w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs border", g.bg, g.text, g.border),
                       children: l.initials
                     }),
                     r.jsxs("div", {
                       className: "min-w-0",
                       children: [
                         r.jsx("span", {
-                          className: "text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate block",
+                          className: "text-xs font-bold text-slate-900 dark:text-white truncate block",
                           children: l.displayName
                         }),
                         r.jsxs("span", {
-                          className: "text-[11px] font-medium text-slate-500 dark:text-zinc-400",
+                          className: "text-[10px] font-medium text-slate-500 dark:text-zinc-400",
                           children: [
                             l.resolvedRole,
                             " \u2022 ",
@@ -136061,14 +135979,14 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                   className: "text-right shrink-0",
                   children: [
                     r.jsxs("span", {
-                      className: "text-sm sm:text-base font-bold text-slate-900 dark:text-white tabular-nums tracking-tight",
+                      className: "text-xs sm:text-sm font-bold text-slate-900 dark:text-white tabular-nums tracking-tight",
                       children: [
                         "\u20B9",
                         Number(l.totalAmount).toLocaleString()
                       ]
                     }),
                     r.jsxs("span", {
-                      className: "text-[11px] font-semibold text-slate-500 dark:text-zinc-400 block",
+                      className: "text-[10px] font-semibold text-slate-500 dark:text-zinc-400 block",
                       children: [
                         d.toFixed(1),
                         "%"
@@ -136079,7 +135997,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
               ]
             }),
             r.jsx("div", {
-              className: "w-full h-[18px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner",
+              className: "w-full h-[8px] sm:h-[10px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner",
               children: r.jsx("div", {
                 className: ve("h-full rounded-full transition-all duration-500", c === 0 ? "bg-gradient-to-r from-[#60A5FA] to-[#38BDF8]" : "bg-gradient-to-r from-[#C084FC] to-[#A855F7]"),
                 style: {
@@ -136091,38 +136009,38 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
         }, c);
       })
     }) : r.jsx("div", {
-      className: "flex-1 space-y-3 pt-1",
+      className: "flex-1 space-y-2 pt-0.5",
       children: a.slice(0, 4).map((l, c) => {
         const g = o[c % o.length], d = s > 0 ? (Number(l.totalAmount) || 0) / s * 100 : 0;
         return r.jsxs("div", {
-          className: "flex items-center gap-3",
+          className: "flex items-center gap-2.5",
           children: [
             r.jsx("div", {
-              className: ve("w-[40px] h-[40px] rounded-full flex items-center justify-center font-bold text-sm shrink-0 shadow-2xs border", g.bg, g.text, g.border),
+              className: ve("w-[32px] h-[32px] rounded-full flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs border", g.bg, g.text, g.border),
               children: l.initials
             }),
             r.jsxs("div", {
-              className: "flex-1 min-w-0 space-y-1",
+              className: "flex-1 min-w-0 space-y-0.5",
               children: [
                 r.jsxs("div", {
-                  className: "flex items-baseline justify-between gap-2",
+                  className: "flex items-baseline justify-between gap-1.5",
                   children: [
                     r.jsx("span", {
-                      className: "text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate",
+                      className: "text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate",
                       children: l.displayName
                     }),
                     r.jsxs("div", {
-                      className: "flex items-baseline gap-2 shrink-0",
+                      className: "flex items-baseline gap-1.5 shrink-0",
                       children: [
                         r.jsxs("span", {
-                          className: "text-sm sm:text-base font-bold text-slate-900 dark:text-white tabular-nums tracking-normal",
+                          className: "text-xs sm:text-sm font-bold text-slate-900 dark:text-white tabular-nums tracking-normal",
                           children: [
                             "\u20B9",
                             Number(l.totalAmount).toLocaleString()
                           ]
                         }),
                         r.jsxs("span", {
-                          className: "text-xs sm:text-sm font-semibold text-slate-600 dark:text-zinc-400 tabular-nums w-12 text-right",
+                          className: "text-[11px] font-semibold text-slate-600 dark:text-zinc-400 tabular-nums w-10 text-right",
                           children: [
                             d.toFixed(1),
                             "%"
@@ -136132,24 +136050,8 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                     })
                   ]
                 }),
-                r.jsxs("div", {
-                  className: "flex items-center justify-between gap-2",
-                  children: [
-                    r.jsx("span", {
-                      className: "px-2 py-0.5 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]/70 text-xs font-semibold shadow-2xs",
-                      children: l.resolvedRole
-                    }),
-                    r.jsxs("span", {
-                      className: "text-xs sm:text-sm font-semibold text-slate-600 dark:text-zinc-400 tabular-nums",
-                      children: [
-                        l.billsCount || 1,
-                        " Bills"
-                      ]
-                    })
-                  ]
-                }),
                 r.jsx("div", {
-                  className: "w-full h-[20px] bg-[#EAF1F8] dark:bg-zinc-800 rounded-full overflow-hidden flex",
+                  className: "w-full h-[8px] sm:h-[10px] bg-[#EAF1F8] dark:bg-zinc-800 rounded-full overflow-hidden flex",
                   children: r.jsx("div", {
                     className: ve("h-full rounded-full transition-all duration-500", c === 0 ? "bg-gradient-to-r from-[#60A5FA] to-[#38BDF8]" : "bg-[#C084FC]"),
                     style: {
@@ -136561,17 +136463,17 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
           className: "w-full space-y-3 sm:space-y-3.5 pb-8 animate-in fade-in duration-300",
           children: [
             r.jsxs("div", {
-              className: "min-h-[115px] p-3.5 sm:p-4.5 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 items-center",
+              className: "min-h-[95px] p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] grid grid-cols-1 lg:grid-cols-12 gap-3.5 lg:gap-4 items-center",
               children: [
                 r.jsxs("div", {
-                  className: "lg:col-span-5 flex items-center gap-3.5 min-w-0 pr-0 lg:pr-2",
+                  className: "lg:col-span-5 flex items-center gap-3 min-w-0 pr-0 lg:pr-2",
                   children: [
                     r.jsx("div", {
-                      className: "w-[56px] h-[56px] sm:w-[64px] sm:h-[64px] rounded-[16px] bg-gradient-to-b from-[#EBF5FF] to-[#D6EBFE] border border-white/90 dark:border-white/10 shadow-[0_6px_16px_rgba(37,99,235,0.14)] flex items-center justify-center text-[#1C6CF2] dark:text-sky-400 shrink-0",
+                      className: "w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-b from-[#EBF5FF] to-[#D6EBFE] border border-white/90 dark:border-white/10 shadow-[0_4px_12px_rgba(37,99,235,0.12)] flex items-center justify-center text-[#1C6CF2] dark:text-sky-400 shrink-0",
                       children: r.jsxs("svg", {
                         viewBox: "0 0 24 24",
-                        width: "30",
-                        height: "30",
+                        width: "22",
+                        height: "22",
                         fill: "none",
                         stroke: "currentColor",
                         strokeWidth: "2.2",
@@ -136615,11 +136517,11 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                           className: "flex items-center gap-2 flex-wrap",
                           children: [
                             r.jsx("h3", {
-                              className: "text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal",
+                              className: "text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal",
                               children: "Total Concessions Granted"
                             }),
                             r.jsxs("span", {
-                              className: "text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]/70 dark:bg-emerald-950/50 dark:text-emerald-400 shadow-2xs",
+                              className: "text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]/70 dark:bg-emerald-950/50 dark:text-emerald-400 shadow-2xs",
                               children: [
                                 f.overallDiscountPercentage,
                                 "% Discount Rate"
@@ -136628,14 +136530,14 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                           ]
                         }),
                         r.jsxs("p", {
-                          className: "text-2xl sm:text-3xl lg:text-[36px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums",
+                          className: "text-xl sm:text-2xl lg:text-[28px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums",
                           children: [
                             "\u20B9",
                             f.totalDiscountAmount.toLocaleString()
                           ]
                         }),
                         r.jsxs("p", {
-                          className: "text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-zinc-400 truncate",
+                          className: "text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400 truncate",
                           children: [
                             "Total Lab Tariff Billed: \u20B9",
                             f.totalGrossBilled.toLocaleString()
@@ -136646,17 +136548,17 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                   ]
                 }),
                 r.jsxs("div", {
-                  className: "lg:col-span-7 lg:border-l lg:border-slate-200 dark:lg:border-zinc-800 lg:pl-5 xl:pl-6 flex flex-col justify-between py-1 min-w-0",
+                  className: "lg:col-span-7 lg:border-l lg:border-slate-200 dark:lg:border-zinc-800 lg:pl-4 xl:pl-5 flex flex-col justify-between py-0.5 min-w-0 space-y-1.5",
                   children: [
                     r.jsx("div", {
-                      className: "flex items-center justify-between pb-1.5",
+                      className: "flex items-center justify-between",
                       children: r.jsx("h3", {
-                        className: "text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal",
+                        className: "text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal",
                         children: "Channel Concession Split (Patient vs B2B Wholesale)"
                       })
                     }),
                     r.jsxs("div", {
-                      className: "relative h-[36px] sm:h-[40px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 flex items-center overflow-visible shadow-inner",
+                      className: "relative h-[12px] sm:h-[14px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 flex items-center overflow-visible shadow-inner",
                       children: [
                         r.jsx("div", {
                           className: "h-full bg-gradient-to-r from-[#60A5FA] via-[#7BB3F0] to-[#93C5FD] rounded-l-full transition-all duration-500 shadow-[0_2px_8px_rgba(96,165,250,0.25)]",
@@ -136671,7 +136573,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                           }
                         }),
                         r.jsx("div", {
-                          className: "absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white shadow-[0_3px_12px_rgba(15,35,60,0.25),0_0_0_2px_#FFFFFF] border border-white/80 pointer-events-none transition-all duration-500 z-10",
+                          className: "absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-full bg-white shadow-[0_2px_8px_rgba(15,35,60,0.25),0_0_0_2px_#FFFFFF] border border-white/80 pointer-events-none transition-all duration-500 z-10",
                           style: {
                             left: `${Math.max(5, Math.min(95, f.patientSharePercentage))}%`
                           }
@@ -136679,15 +136581,15 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                       ]
                     }),
                     r.jsxs("div", {
-                      className: "flex items-center justify-between pt-1.5",
+                      className: "flex items-center justify-between pt-0.5",
                       children: [
                         r.jsxs("div", {
-                          className: "flex items-center gap-2.5",
+                          className: "flex items-center gap-2",
                           children: [
                             r.jsx("div", {
-                              className: "w-8 h-8 sm:w-10 sm:h-10 rounded-[12px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs",
+                              className: "w-6 h-6 sm:w-7 sm:h-7 rounded-[8px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs",
                               children: r.jsx(Zs, {
-                                size: 18,
+                                size: 14,
                                 strokeWidth: 2.3
                               })
                             }),
@@ -136697,14 +136599,14 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                   className: "flex items-baseline gap-1.5",
                                   children: [
                                     r.jsxs("span", {
-                                      className: "text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight",
+                                      className: "text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight",
                                       children: [
                                         "\u20B9",
                                         f.patientDiscountAmount.toLocaleString()
                                       ]
                                     }),
                                     r.jsxs("span", {
-                                      className: "text-xs font-bold text-slate-500 dark:text-zinc-400 tabular-nums",
+                                      className: "text-[11px] font-bold text-slate-500 dark:text-zinc-400 tabular-nums",
                                       children: [
                                         "(",
                                         f.patientSharePercentage,
@@ -136714,7 +136616,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                   ]
                                 }),
                                 r.jsx("span", {
-                                  className: "text-[11px] sm:text-xs text-slate-600 dark:text-zinc-400 font-bold block",
+                                  className: "text-[10px] sm:text-[11px] text-slate-600 dark:text-zinc-400 font-bold block",
                                   children: "Patient Walk-In"
                                 })
                               ]
@@ -136722,7 +136624,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                           ]
                         }),
                         r.jsxs("div", {
-                          className: "flex items-center gap-2.5 text-right",
+                          className: "flex items-center gap-2 text-right",
                           children: [
                             r.jsxs("div", {
                               children: [
@@ -136730,14 +136632,14 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                   className: "flex items-baseline gap-1.5 justify-end",
                                   children: [
                                     r.jsxs("span", {
-                                      className: "text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight",
+                                      className: "text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight",
                                       children: [
                                         "\u20B9",
                                         f.partnerDiscountAmount.toLocaleString()
                                       ]
                                     }),
                                     r.jsxs("span", {
-                                      className: "text-xs font-bold text-slate-500 dark:text-zinc-400 tabular-nums",
+                                      className: "text-[11px] font-bold text-slate-500 dark:text-zinc-400 tabular-nums",
                                       children: [
                                         "(",
                                         f.partnerSharePercentage,
@@ -136747,15 +136649,15 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                   ]
                                 }),
                                 r.jsx("span", {
-                                  className: "text-[11px] sm:text-xs text-slate-600 dark:text-zinc-400 font-bold block",
+                                  className: "text-[10px] sm:text-[11px] text-slate-600 dark:text-zinc-400 font-bold block",
                                   children: "B2B Wholesale"
                                 })
                               ]
                             }),
                             r.jsx("div", {
-                              className: "w-8 h-8 sm:w-10 sm:h-10 rounded-[12px] bg-[#FFF1F2] text-[#FB7185] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs",
+                              className: "w-6 h-6 sm:w-7 sm:h-7 rounded-[8px] bg-[#FFF1F2] text-[#FB7185] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs",
                               children: r.jsx(aa, {
-                                size: 18,
+                                size: 14,
                                 strokeWidth: 2.3
                               })
                             })
@@ -136870,19 +136772,19 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                           return (_a3 = hn.mechanism) == null ? void 0 : _a3.includes("Percentage");
                         }) || un[1], _t = (Number(_e.totalAmount) || 0) + (Number(yt.totalAmount) || 0), an = _t > 0 ? Number(_e.percentage) || Math.round(_e.totalAmount / _t * 1e3) / 10 : 0, Yt = _t > 0 ? Math.round((100 - an) * 10) / 10 : 0, zn = 74, Rn = 22, sn = 2 * Math.PI * zn, $r = 2 * (Rn / 2) + 6, Vn = sn - 2 * $r, Ht = Math.max(Vn * an / 100, 2), Mn = Math.max(Vn * Yt / 100, 2), wr = -14, zr = -($r / 2 + Ht + $r);
                         return r.jsxs("div", {
-                          className: "space-y-2.5 my-auto",
+                          className: "space-y-2 my-auto",
                           children: [
                             r.jsxs("div", {
                               className: "flex items-center justify-between gap-2.5 sm:gap-3 py-0.5",
                               children: [
                                 r.jsxs("div", {
-                                  className: "relative w-[90px] h-[90px] sm:w-[100px] sm:h-[100px] xl:w-[115px] xl:h-[115px] shrink-0 flex items-center justify-center",
+                                  className: "relative w-[80px] h-[80px] sm:w-[90px] sm:h-[90px] xl:w-[100px] xl:h-[100px] shrink-0 flex items-center justify-center",
                                   children: [
                                     r.jsxs("svg", {
                                       className: "w-full h-full -rotate-90 shrink-0",
                                       viewBox: "0 0 200 200",
                                       style: {
-                                        filter: "drop-shadow(0px 8px 16px rgba(117, 182, 229, 0.28)) drop-shadow(0px 8px 16px rgba(189, 152, 252, 0.24))"
+                                        filter: "drop-shadow(0px 6px 12px rgba(117, 182, 229, 0.22)) drop-shadow(0px 6px 12px rgba(189, 152, 252, 0.20))"
                                       },
                                       children: [
                                         r.jsxs("defs", {
@@ -136962,14 +136864,14 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                       className: "absolute inset-0 flex flex-col items-center justify-center select-none pointer-events-none text-center",
                                       children: [
                                         r.jsx("div", {
-                                          className: "w-9 h-9 rounded-full bg-slate-100/90 dark:bg-zinc-800/90 flex items-center justify-center shadow-inner text-[#1C6CF2] dark:text-sky-400",
+                                          className: "w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-100/90 dark:bg-zinc-800/90 flex items-center justify-center shadow-inner text-[#1C6CF2] dark:text-sky-400",
                                           children: r.jsx(bh, {
-                                            size: 16,
+                                            size: 14,
                                             strokeWidth: 2.4
                                           })
                                         }),
                                         r.jsx("span", {
-                                          className: "text-[11px] font-bold text-slate-500 dark:text-zinc-400 mt-0.5 uppercase tracking-wider",
+                                          className: "text-[10px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider",
                                           children: "Mix"
                                         })
                                       ]
@@ -136977,40 +136879,40 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                   ]
                                 }),
                                 r.jsxs("div", {
-                                  className: "flex flex-col justify-center space-y-3 flex-1 min-w-0",
+                                  className: "flex flex-col justify-center space-y-2 flex-1 min-w-0",
                                   children: [
                                     r.jsxs("div", {
                                       className: "space-y-0.5",
                                       children: [
                                         r.jsxs("div", {
-                                          className: "flex items-center gap-2",
+                                          className: "flex items-center gap-1.5",
                                           children: [
                                             r.jsx("span", {
-                                              className: "w-3 h-3 rounded-full bg-[#75B6E5] shrink-0 shadow-2xs"
+                                              className: "w-2.5 h-2.5 rounded-full bg-[#75B6E5] shrink-0 shadow-2xs"
                                             }),
                                             r.jsx("span", {
-                                              className: "text-sm font-bold text-slate-900 dark:text-white",
+                                              className: "text-xs sm:text-sm font-bold text-slate-900 dark:text-white",
                                               children: "Flat Rupee (\u20B9)"
                                             })
                                           ]
                                         }),
                                         r.jsxs("div", {
-                                          className: "pl-5",
+                                          className: "pl-4",
                                           children: [
                                             r.jsxs("div", {
-                                              className: "text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight",
+                                              className: "text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight",
                                               children: [
                                                 "\u20B9",
                                                 (_a2 = _e.totalAmount) == null ? void 0 : _a2.toLocaleString()
                                               ]
                                             }),
                                             r.jsxs("div", {
-                                              className: "text-xs sm:text-sm font-semibold text-slate-600 dark:text-zinc-300 tabular-nums",
+                                              className: "text-[11px] sm:text-xs font-semibold text-slate-600 dark:text-zinc-300 tabular-nums",
                                               children: [
                                                 an.toFixed(1),
                                                 "% ",
                                                 r.jsxs("span", {
-                                                  className: "text-[11px] font-medium text-slate-500 dark:text-zinc-400",
+                                                  className: "text-[10px] font-medium text-slate-500 dark:text-zinc-400",
                                                   children: [
                                                     "(",
                                                     _e.count ?? 0,
@@ -137027,34 +136929,34 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                       className: "space-y-0.5",
                                       children: [
                                         r.jsxs("div", {
-                                          className: "flex items-center gap-2",
+                                          className: "flex items-center gap-1.5",
                                           children: [
                                             r.jsx("span", {
-                                              className: "w-3 h-3 rounded-full bg-[#BD98FC] shrink-0 shadow-2xs"
+                                              className: "w-2.5 h-2.5 rounded-full bg-[#BD98FC] shrink-0 shadow-2xs"
                                             }),
                                             r.jsx("span", {
-                                              className: "text-sm font-bold text-slate-900 dark:text-white",
+                                              className: "text-xs sm:text-sm font-bold text-slate-900 dark:text-white",
                                               children: "Percentage (%)"
                                             })
                                           ]
                                         }),
                                         r.jsxs("div", {
-                                          className: "pl-5",
+                                          className: "pl-4",
                                           children: [
                                             r.jsxs("div", {
-                                              className: "text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight",
+                                              className: "text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight",
                                               children: [
                                                 "\u20B9",
                                                 (_b2 = yt.totalAmount) == null ? void 0 : _b2.toLocaleString()
                                               ]
                                             }),
                                             r.jsxs("div", {
-                                              className: "text-xs sm:text-sm font-semibold text-slate-600 dark:text-zinc-300 tabular-nums",
+                                              className: "text-[11px] sm:text-xs font-semibold text-slate-600 dark:text-zinc-300 tabular-nums",
                                               children: [
                                                 Yt.toFixed(1),
                                                 "% ",
                                                 r.jsxs("span", {
-                                                  className: "text-[11px] font-medium text-slate-500 dark:text-zinc-400",
+                                                  className: "text-[10px] font-medium text-slate-500 dark:text-zinc-400",
                                                   children: [
                                                     "(",
                                                     yt.count ?? 0,
@@ -137072,10 +136974,10 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                               ]
                             }),
                             r.jsxs("div", {
-                              className: "pt-2 border-t border-slate-200/80 dark:border-zinc-800 space-y-1.5 shrink-0",
+                              className: "pt-1.5 border-t border-slate-200/80 dark:border-zinc-800 space-y-1 shrink-0",
                               children: [
                                 r.jsxs("div", {
-                                  className: "flex items-center justify-between text-xs font-semibold text-slate-600 dark:text-zinc-300",
+                                  className: "flex items-center justify-between text-[11px] font-semibold text-slate-600 dark:text-zinc-300",
                                   children: [
                                     r.jsx("span", {
                                       children: "Mechanism Allocation"
@@ -137093,7 +136995,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                   ]
                                 }),
                                 r.jsxs("div", {
-                                  className: "h-[20px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 overflow-hidden flex shadow-inner",
+                                  className: "h-[10px] sm:h-[12px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 overflow-hidden flex shadow-inner",
                                   children: [
                                     r.jsx("div", {
                                       className: "h-full rounded-l-full bg-gradient-to-r from-[#60A5FA] to-[#38BDF8] shadow-[0_2px_8px_rgba(56,189,248,0.35)] transition-all duration-500",
@@ -137120,64 +137022,64 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
               ]
             }),
             r.jsxs("div", {
-              className: "min-h-[130px] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-2.5 sm:gap-3 lg:gap-3.5 items-stretch",
+              className: "min-h-[120px] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-2.5 sm:gap-3 lg:gap-3.5 items-stretch",
               children: [
                 r.jsxs("div", {
-                  className: "col-span-1 md:col-span-1 lg:col-span-3 p-3.5 sm:p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex flex-col justify-between space-y-3 h-full overflow-hidden",
+                  className: "col-span-1 md:col-span-1 lg:col-span-3 p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex flex-col justify-between space-y-2 h-full overflow-hidden",
                   children: [
                     r.jsxs("div", {
-                      className: "flex items-center gap-2.5 pb-2.5 border-b border-slate-200 dark:border-zinc-800 shrink-0",
+                      className: "flex items-center gap-2 pb-1.5 border-b border-slate-200 dark:border-zinc-800 shrink-0",
                       children: [
                         r.jsx("div", {
-                          className: "w-8 h-8 sm:w-9 sm:h-9 rounded-[10px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/80 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs",
+                          className: "w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/80 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs",
                           children: r.jsx(Xme, {
-                            size: 18,
+                            size: 16,
                             strokeWidth: 2.4
                           })
                         }),
                         r.jsx("h3", {
-                          className: "text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal",
+                          className: "text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal",
                           children: "Department Concession Split"
                         })
                       ]
                     }),
                     r.jsxs("div", {
-                      className: "space-y-4 my-auto",
+                      className: "space-y-2.5 my-auto",
                       children: [
                         (() => {
                           const it = (Number(f.totalDiscountAmount) || 0) === 0, un = f.departmentSplit || Nx.departmentSplit, _e = it ? 0 : un.pathologyAmount ?? 7430, yt = it ? 0 : Number(un.pathologyPercentage) || 62.7, _t = it ? 0 : un.pathologyBillsCount ?? 21, an = it ? 0 : un.pathologyInvestigationsCount ?? 142;
                           return r.jsxs("div", {
-                            className: "flex items-center gap-2.5",
+                            className: "flex items-center gap-2",
                             children: [
                               r.jsx("div", {
-                                className: "w-9 h-9 rounded-[11px] bg-[#EFF6FF] text-[#2563EB] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs",
+                                className: "w-7 h-7 sm:w-8 sm:h-8 rounded-[9px] bg-[#EFF6FF] text-[#2563EB] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs",
                                 children: r.jsx(W1, {
-                                  size: 18,
+                                  size: 15,
                                   strokeWidth: 2.2
                                 })
                               }),
                               r.jsxs("div", {
-                                className: "flex-1 min-w-0 space-y-1",
+                                className: "flex-1 min-w-0 space-y-0.5",
                                 children: [
                                   r.jsxs("div", {
                                     className: "flex items-baseline justify-between gap-1",
                                     children: [
                                       r.jsx("span", {
-                                        className: "text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate",
+                                        className: "text-xs font-bold text-slate-900 dark:text-white truncate",
                                         children: "Pathology Diagnostics"
                                       }),
                                       r.jsxs("div", {
                                         className: "flex items-baseline gap-1 shrink-0",
                                         children: [
                                           r.jsxs("span", {
-                                            className: "text-base sm:text-lg font-bold text-slate-900 dark:text-white tabular-nums tracking-normal",
+                                            className: "text-sm sm:text-base font-bold text-slate-900 dark:text-white tabular-nums tracking-normal",
                                             children: [
                                               "\u20B9",
                                               _e.toLocaleString()
                                             ]
                                           }),
                                           r.jsxs("span", {
-                                            className: "text-xs font-semibold text-slate-500 dark:text-zinc-400 tabular-nums",
+                                            className: "text-[11px] font-semibold text-slate-500 dark:text-zinc-400 tabular-nums",
                                             children: [
                                               "(",
                                               yt.toFixed(1),
@@ -137189,7 +137091,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                     ]
                                   }),
                                   r.jsx("div", {
-                                    className: "h-[20px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 overflow-hidden flex shadow-inner",
+                                    className: "h-[8px] sm:h-[10px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 overflow-hidden flex shadow-inner",
                                     children: r.jsx("div", {
                                       className: "h-full rounded-full bg-gradient-to-r from-[#60A5FA] to-[#38BDF8] shadow-[0_2px_8px_rgba(56,189,248,0.35)] transition-all duration-700",
                                       style: {
@@ -137198,7 +137100,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                     })
                                   }),
                                   r.jsxs("div", {
-                                    className: "text-[11px] font-semibold text-slate-500 dark:text-zinc-400 tabular-nums",
+                                    className: "text-[10px] font-semibold text-slate-500 dark:text-zinc-400 tabular-nums",
                                     children: [
                                       _t,
                                       " Bills \u2022 ",
@@ -137214,37 +137116,37 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                         (() => {
                           const it = (Number(f.totalDiscountAmount) || 0) === 0, un = f.departmentSplit || Nx.departmentSplit, _e = it ? 0 : un.radiologyAmount ?? 4432, yt = it ? 0 : Number(un.radiologyPercentage) || 37.3, _t = it ? 0 : un.radiologyBillsCount ?? 13, an = it ? 0 : un.radiologyInvestigationsCount ?? 48;
                           return r.jsxs("div", {
-                            className: "flex items-center gap-2.5",
+                            className: "flex items-center gap-2",
                             children: [
                               r.jsx("div", {
-                                className: "w-9 h-9 rounded-[11px] bg-[#FAF5FF] text-[#9333EA] dark:bg-purple-950/40 dark:text-purple-400 border border-purple-100/90 dark:border-purple-800/40 flex items-center justify-center shrink-0 shadow-2xs",
+                                className: "w-7 h-7 sm:w-8 sm:h-8 rounded-[9px] bg-[#FAF5FF] text-[#9333EA] dark:bg-purple-950/40 dark:text-purple-400 border border-purple-100/90 dark:border-purple-800/40 flex items-center justify-center shrink-0 shadow-2xs",
                                 children: r.jsx(fs, {
-                                  size: 18,
+                                  size: 15,
                                   strokeWidth: 2.2
                                 })
                               }),
                               r.jsxs("div", {
-                                className: "flex-1 min-w-0 space-y-1",
+                                className: "flex-1 min-w-0 space-y-0.5",
                                 children: [
                                   r.jsxs("div", {
                                     className: "flex items-baseline justify-between gap-1",
                                     children: [
                                       r.jsx("span", {
-                                        className: "text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate",
+                                        className: "text-xs font-bold text-slate-900 dark:text-white truncate",
                                         children: "Radiology & Imaging"
                                       }),
                                       r.jsxs("div", {
                                         className: "flex items-baseline gap-1 shrink-0",
                                         children: [
                                           r.jsxs("span", {
-                                            className: "text-base sm:text-lg font-bold text-slate-900 dark:text-white tabular-nums tracking-normal",
+                                            className: "text-sm sm:text-base font-bold text-slate-900 dark:text-white tabular-nums tracking-normal",
                                             children: [
                                               "\u20B9",
                                               _e.toLocaleString()
                                             ]
                                           }),
                                           r.jsxs("span", {
-                                            className: "text-xs font-semibold text-slate-500 dark:text-zinc-400 tabular-nums",
+                                            className: "text-[11px] font-semibold text-slate-500 dark:text-zinc-400 tabular-nums",
                                             children: [
                                               "(",
                                               yt.toFixed(1),
@@ -137256,7 +137158,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                     ]
                                   }),
                                   r.jsx("div", {
-                                    className: "h-[20px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 overflow-hidden flex shadow-inner",
+                                    className: "h-[8px] sm:h-[10px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 overflow-hidden flex shadow-inner",
                                     children: r.jsx("div", {
                                       className: "h-full rounded-full bg-gradient-to-r from-[#C084FC] to-[#A855F7] shadow-[0_2px_8px_rgba(168,85,247,0.35)] transition-all duration-700",
                                       style: {
@@ -137265,7 +137167,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                     })
                                   }),
                                   r.jsxs("div", {
-                                    className: "text-[11px] font-semibold text-slate-500 dark:text-zinc-400 tabular-nums",
+                                    className: "text-[10px] font-semibold text-slate-500 dark:text-zinc-400 tabular-nums",
                                     children: [
                                       _t,
                                       " Bills \u2022 ",
@@ -137283,20 +137185,20 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                   ]
                 }),
                 r.jsxs("div", {
-                  className: "col-span-1 md:col-span-1 lg:col-span-3 p-3.5 sm:p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex flex-col justify-between space-y-3 h-full overflow-hidden",
+                  className: "col-span-1 md:col-span-1 lg:col-span-3 p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex flex-col justify-between space-y-2 h-full overflow-hidden",
                   children: [
                     r.jsxs("div", {
-                      className: "flex items-center gap-2 pb-2 border-b border-slate-200 dark:border-zinc-800 shrink-0",
+                      className: "flex items-center gap-2 pb-1.5 border-b border-slate-200 dark:border-zinc-800 shrink-0",
                       children: [
                         r.jsx("div", {
-                          className: "w-7 h-7 sm:w-8 sm:h-8 rounded-[9px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/80 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs",
+                          className: "w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/80 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs",
                           children: r.jsx(ps, {
                             size: 16,
                             strokeWidth: 2.4
                           })
                         }),
                         r.jsx("h3", {
-                          className: "text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal",
+                          className: "text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal",
                           children: "Staff Authorization Leaderboard"
                         })
                       ]
@@ -137308,29 +137210,29 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                   ]
                 }),
                 r.jsxs("div", {
-                  className: "col-span-1 md:col-span-2 lg:col-span-6 p-3.5 sm:p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex flex-col justify-between space-y-3 h-full overflow-hidden",
+                  className: "col-span-1 md:col-span-2 lg:col-span-6 p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex flex-col justify-between space-y-2.5 h-full overflow-hidden",
                   children: [
                     r.jsxs("div", {
-                      className: "flex flex-wrap items-center justify-between gap-3 pb-2.5 border-b border-slate-200 dark:border-zinc-800 shrink-0",
+                      className: "flex flex-wrap items-center justify-between gap-3 pb-1.5 border-b border-slate-200 dark:border-zinc-800 shrink-0",
                       children: [
                         r.jsxs("div", {
-                          className: "flex items-center gap-2.5",
+                          className: "flex items-center gap-2",
                           children: [
                             r.jsx("div", {
-                              className: "w-8 h-8 sm:w-9 sm:h-9 rounded-[10px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/80 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs",
+                              className: "w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/80 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs",
                               children: r.jsx(d0, {
-                                size: 18,
+                                size: 16,
                                 strokeWidth: 2.4
                               })
                             }),
                             r.jsxs("div", {
                               children: [
                                 r.jsx("h3", {
-                                  className: "text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal",
+                                  className: "text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal",
                                   children: "7-Day Concession Trend"
                                 }),
                                 r.jsx("p", {
-                                  className: "text-xs font-semibold text-slate-500 dark:text-zinc-400",
+                                  className: "text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400",
                                   children: "Daily concessions granted \u2022 Last 7 days"
                                 })
                               ]

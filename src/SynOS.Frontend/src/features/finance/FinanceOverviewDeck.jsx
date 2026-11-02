@@ -114,11 +114,11 @@ export const DepartmentBreakdownCard = ({
                             <div 
                                 key={idx}
                                 onClick={() => onItemClick(item)}
-                                className="min-h-[32px] sm:min-h-[36px] py-1 sm:py-1.5 flex items-center pl-0.5 group hover:bg-slate-200/40 dark:hover:bg-zinc-800/40 transition-colors cursor-pointer rounded-lg"
+                                className="min-h-[28px] sm:min-h-[30px] py-0.5 sm:py-1 flex items-center pl-0.5 group hover:bg-slate-200/40 dark:hover:bg-zinc-800/40 transition-colors cursor-pointer rounded-lg"
                             >
                                 {/* Column 1: Icon + Name + Count */}
                                 <div className="w-[140px] sm:w-[170px] lg:w-[190px] flex items-center gap-2 min-w-0 pr-2 shrink-0">
-                                    <div className={cn("w-6 h-6 sm:w-7 sm:h-7 rounded-[7px] flex items-center justify-center shrink-0 shadow-2xs", iconConfig.bg)}>
+                                    <div className={cn("w-5.5 h-5.5 sm:w-6 sm:h-6 rounded-[6px] flex items-center justify-center shrink-0 shadow-2xs", iconConfig.bg)}>
                                         {iconConfig.icon}
                                     </div>
                                     <div className="min-w-0 truncate">
@@ -131,15 +131,15 @@ export const DepartmentBreakdownCard = ({
                                     </div>
                                 </div>
 
-                                {/* Column 2: Fluid Fatter Progress Bar + Percentage */}
-                                <div className="flex-1 px-3 flex items-center gap-2.5 min-w-0">
-                                    <div className="flex-1 h-[14px] sm:h-[16px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner">
+                                {/* Column 2: Sleek Progress Bar + Percentage */}
+                                <div className="flex-1 px-3 flex items-center gap-2 min-w-0">
+                                    <div className="flex-1 h-[8px] sm:h-[10px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner">
                                         <div 
                                             className={cn("h-full rounded-full transition-all duration-500", barGradient)}
                                             style={{ width: `${Math.min(100, Math.max(share > 0 ? 5 : 0, share))}%` }}
                                         />
                                     </div>
-                                    <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 tabular-nums w-12 text-right shrink-0">
+                                    <span className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-zinc-200 tabular-nums w-11 text-right shrink-0">
                                         {share.toFixed(1)}%
                                     </span>
                                 </div>
@@ -181,20 +181,20 @@ export const ActualCashCard = ({
     return (
         <div 
             onClick={onNavigate}
-            className="p-3.5 sm:p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex items-center cursor-pointer hover:border-white hover:shadow-[0_12px_32px_rgba(15,23,42,0.14)] transition-all group h-full"
+            className="p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex items-center cursor-pointer hover:border-white hover:shadow-[0_12px_32px_rgba(15,23,42,0.14)] transition-all group h-full"
         >
-            <div className="flex flex-col md:flex-row md:items-center w-full gap-3 sm:gap-4">
+            <div className="flex flex-col md:flex-row md:items-center w-full gap-2.5 sm:gap-3.5">
                 {/* Left Part: Icon, Title, and Big Total Numeral */}
-                <div className="w-full md:w-[190px] lg:w-[210px] shrink-0 flex flex-col justify-center space-y-0.5 pl-1">
-                    <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                            <Wallet size={16} strokeWidth={2.4} />
+                <div className="w-full md:w-[170px] lg:w-[190px] shrink-0 flex flex-col justify-center space-y-0.5 pl-0.5">
+                    <div className="flex items-center gap-1.5">
+                        <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-[7px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                            <Wallet size={14} strokeWidth={2.4} />
                         </div>
-                        <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal">
+                        <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal truncate">
                             Actual Cash (Desk Collections)
                         </h3>
                     </div>
-                    <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums">
+                    <p className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums">
                         ₹{formatInr(total)}
                     </p>
                     <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400">
@@ -203,54 +203,54 @@ export const ActualCashCard = ({
                 </div>
 
                 {/* Right Part: Fluid Cash & Online Channels */}
-                <div className="flex-1 md:border-l md:border-slate-200 dark:md:border-zinc-800 md:pl-4 lg:pl-6 flex flex-col justify-center space-y-2.5 min-w-0">
+                <div className="flex-1 md:border-l md:border-slate-200 dark:md:border-zinc-800 md:pl-3.5 lg:pl-5 flex flex-col justify-center space-y-2 min-w-0">
                     {/* Row 1: Cash */}
-                    <div className="flex items-center gap-2.5 w-full">
-                        <div className="w-[80px] sm:w-[95px] shrink-0 flex items-center gap-1.5">
-                            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-[7px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                                <Banknote size={14} strokeWidth={2.3} />
+                    <div className="flex items-center gap-2 w-full">
+                        <div className="w-[70px] sm:w-[80px] shrink-0 flex items-center gap-1.5">
+                            <div className="w-5.5 h-5.5 sm:w-6 sm:h-6 rounded-[6px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                                <Banknote size={13} strokeWidth={2.3} />
                             </div>
                             <span className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white truncate">
                                 Cash
                             </span>
                         </div>
-                        <div className="flex-1 h-[16px] sm:h-[18px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner min-w-0">
+                        <div className="flex-1 h-[9px] sm:h-[10px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner min-w-0">
                             <div 
                                 className="h-full rounded-full bg-gradient-to-r from-[#60A5FA] via-[#7BB3F0] to-[#93C5FD] transition-all duration-500 shadow-[0_2px_8px_rgba(59,130,246,0.25)]"
                                 style={{ width: `${Math.min(100, Math.max(cashAmt > 0 ? 5 : 0, cashPct))}%` }}
                             />
                         </div>
-                        <div className="w-[120px] sm:w-[145px] lg:w-[160px] shrink-0 text-right flex items-baseline justify-end gap-1.5">
-                            <span className="text-base sm:text-lg lg:text-xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
+                        <div className="w-[110px] sm:w-[130px] lg:w-[145px] shrink-0 text-right flex items-baseline justify-end gap-1.5">
+                            <span className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
                                 ₹{formatInr(cashAmt)}
                             </span>
-                            <span className="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-zinc-400 tabular-nums">
+                            <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-zinc-400 tabular-nums">
                                 ({cashPct.toFixed(1)}%)
                             </span>
                         </div>
                     </div>
 
                     {/* Row 2: Online */}
-                    <div className="flex items-center gap-2.5 w-full">
-                        <div className="w-[80px] sm:w-[95px] shrink-0 flex items-center gap-1.5">
-                            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-[7px] bg-[#FAF5FF] text-[#A855F7] dark:bg-purple-950/40 dark:text-purple-400 border border-purple-100/90 dark:border-purple-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                                <CreditCard size={14} strokeWidth={2.3} />
+                    <div className="flex items-center gap-2 w-full">
+                        <div className="w-[70px] sm:w-[80px] shrink-0 flex items-center gap-1.5">
+                            <div className="w-5.5 h-5.5 sm:w-6 sm:h-6 rounded-[6px] bg-[#FAF5FF] text-[#A855F7] dark:bg-purple-950/40 dark:text-purple-400 border border-purple-100/90 dark:border-purple-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                                <CreditCard size={13} strokeWidth={2.3} />
                             </div>
                             <span className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white truncate">
                                 Online
                             </span>
                         </div>
-                        <div className="flex-1 h-[16px] sm:h-[18px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner min-w-0">
+                        <div className="flex-1 h-[9px] sm:h-[10px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner min-w-0">
                             <div 
                                 className="h-full rounded-full bg-gradient-to-r from-[#C084FC] via-[#D8B4FE] to-[#E9D5FF] transition-all duration-500 shadow-[0_2px_8px_rgba(168,85,247,0.25)]"
                                 style={{ width: `${Math.min(100, Math.max(onlineAmt > 0 ? 5 : 0, onlinePct))}%` }}
                             />
                         </div>
-                        <div className="w-[120px] sm:w-[145px] lg:w-[160px] shrink-0 text-right flex items-baseline justify-end gap-1.5">
-                            <span className="text-base sm:text-lg lg:text-xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
+                        <div className="w-[110px] sm:w-[130px] lg:w-[145px] shrink-0 text-right flex items-baseline justify-end gap-1.5">
+                            <span className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
                                 ₹{formatInr(onlineAmt)}
                             </span>
-                            <span className="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-zinc-400 tabular-nums">
+                            <span className="text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-zinc-400 tabular-nums">
                                 ({onlinePct.toFixed(1)}%)
                             </span>
                         </div>
@@ -272,37 +272,37 @@ export const ConcessionsCard = ({
     const amt = Number(concessionsAmount) || 0;
     const rate = amt > 0 ? (Number(concessionsRate) || 0) : 0;
 
-    const radius = 36;
+    const radius = 34;
     const circumference = 2 * Math.PI * radius;
     const strokeDashoffset = circumference * (1 - Math.min(100, Math.max(0, rate)) / 100);
 
     return (
         <div 
             onClick={onNavigate}
-            className="p-3.5 sm:p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex items-center justify-between cursor-pointer hover:border-white hover:shadow-[0_12px_32px_rgba(15,23,42,0.14)] transition-all group h-full"
+            className="p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex items-center justify-between cursor-pointer hover:border-white hover:shadow-[0_12px_32px_rgba(15,23,42,0.14)] transition-all group h-full"
         >
             {/* Left Column: Icon + Title + Numeral + Subtitle + Pathology/Radiology Breakdown */}
-            <div className="flex flex-col justify-center space-y-1 flex-1 min-w-0 pr-2 sm:pr-3">
-                <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[9px] bg-[#FFF1F2] text-[#E11D48] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                        <Percent size={16} strokeWidth={2.4} />
+            <div className="flex flex-col justify-center space-y-0.5 flex-1 min-w-0 pr-2">
+                <div className="flex items-center gap-1.5">
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-[7px] bg-[#FFF1F2] text-[#E11D48] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                        <Percent size={14} strokeWidth={2.4} />
                     </div>
-                    <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal">
+                    <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal truncate">
                         Discount Given
                     </h3>
                 </div>
 
                 <div>
-                    <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-1 tabular-nums">
+                    <p className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums">
                         ₹{formatInr(amt)}
                     </p>
-                    <p className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400 mt-0.5">
+                    <p className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400">
                         Total tariff discount given
                     </p>
                 </div>
 
                 {/* Pathology & Radiology Discount Breakdown */}
-                <div className="pt-1 flex items-center gap-2.5 text-[10px] sm:text-[11px] font-semibold">
+                <div className="pt-0.5 flex items-center gap-2 text-[10px] font-semibold">
                     <div className="flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-sky-500 shrink-0"></span>
                         <span className="text-slate-500 dark:text-zinc-400">Pathology:</span>
@@ -317,7 +317,7 @@ export const ConcessionsCard = ({
             </div>
 
             {/* Right Side: Proportional Circular Donut Ring Gauge */}
-            <div className="relative w-[95px] h-[95px] sm:w-[105px] sm:h-[105px] lg:w-[115px] lg:h-[115px] flex items-center justify-center shrink-0">
+            <div className="relative w-[80px] h-[80px] sm:w-[88px] sm:h-[88px] flex items-center justify-center shrink-0">
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                     <defs>
                         <linearGradient id="concessionDonutGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -331,7 +331,7 @@ export const ConcessionsCard = ({
                         r={radius}
                         stroke="#FFE4E6"
                         className="dark:stroke-rose-950/40"
-                        strokeWidth="11"
+                        strokeWidth="10"
                         fill="none"
                     />
                     <circle
@@ -339,7 +339,7 @@ export const ConcessionsCard = ({
                         cy="50"
                         r={radius}
                         stroke="url(#concessionDonutGrad)"
-                        strokeWidth="11"
+                        strokeWidth="10"
                         strokeDasharray={circumference}
                         strokeDashoffset={strokeDashoffset}
                         strokeLinecap="round"
@@ -348,7 +348,7 @@ export const ConcessionsCard = ({
                     />
                 </svg>
                 <div className="absolute flex flex-col items-center justify-center text-center">
-                    <span className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none">
+                    <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none">
                         {rate.toFixed(1)}%
                     </span>
                     <span className="text-[9px] font-extrabold text-rose-500 dark:text-rose-400 uppercase tracking-wider mt-0.5">
@@ -366,7 +366,7 @@ export const OperatingExpensesCard = ({
     onNavigate = () => {}
 }) => {
     const formatInr = (val) => Math.round(Number(val) || 0).toLocaleString('en-IN');
-    const radius = 36;
+    const radius = 34;
     const circumference = 2 * Math.PI * radius;
     const amt = Number(amount) || 0;
     const numRate = amt > 0 ? (Number(rate) || 0) : 0;
@@ -375,21 +375,21 @@ export const OperatingExpensesCard = ({
     return (
         <div 
             onClick={onNavigate}
-            className="p-3 sm:p-3.5 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex items-center justify-between cursor-pointer hover:border-white hover:shadow-[0_12px_32px_rgba(15,23,42,0.14)] transition-all group h-full"
+            className="p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex items-center justify-between cursor-pointer hover:border-white hover:shadow-[0_12px_32px_rgba(15,23,42,0.14)] transition-all group h-full"
         >
             {/* Left Column: Icon + Title + Numeral + Burn Context */}
-            <div className="flex flex-col justify-center space-y-1 flex-1 min-w-0 pr-2 sm:pr-3">
-                <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                        <Receipt size={16} strokeWidth={2.3} />
+            <div className="flex flex-col justify-center space-y-0.5 flex-1 min-w-0 pr-2">
+                <div className="flex items-center gap-1.5">
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-[7px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                        <Receipt size={14} strokeWidth={2.3} />
                     </div>
-                    <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal">
+                    <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal truncate">
                         Operating Expenses
                     </h3>
                 </div>
 
                 <div>
-                    <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums">
+                    <p className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums">
                         ₹{formatInr(amt)}
                     </p>
                     <p className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400 mt-0.5">
@@ -399,7 +399,7 @@ export const OperatingExpensesCard = ({
             </div>
 
             {/* Right Side: Scaled Proportional Donut Ring Gauge */}
-            <div className="relative w-[85px] h-[85px] sm:w-[95px] sm:h-[95px] lg:w-[105px] lg:h-[105px] flex items-center justify-center shrink-0">
+            <div className="relative w-[75px] h-[75px] sm:w-[82px] sm:h-[82px] flex items-center justify-center shrink-0">
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                     <defs>
                         <linearGradient id="opExpensesDonutGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -413,7 +413,7 @@ export const OperatingExpensesCard = ({
                         r={radius}
                         stroke="#E2ECF6"
                         className="dark:stroke-zinc-800"
-                        strokeWidth="11"
+                        strokeWidth="10"
                         fill="none"
                     />
                     <circle
@@ -421,7 +421,7 @@ export const OperatingExpensesCard = ({
                         cy="50"
                         r={radius}
                         stroke="url(#opExpensesDonutGrad)"
-                        strokeWidth="11"
+                        strokeWidth="10"
                         strokeDasharray={circumference}
                         strokeDashoffset={strokeDashoffset}
                         strokeLinecap="round"
@@ -430,7 +430,7 @@ export const OperatingExpensesCard = ({
                     />
                 </svg>
                 <div className="absolute flex flex-col items-center justify-center text-center">
-                    <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none">
+                    <span className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none">
                         {numRate.toFixed(1)}%
                     </span>
                     <span className="text-[9px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider mt-0.5">
@@ -452,7 +452,7 @@ export const PayrollCard = ({
     onNavigate = () => {}
 }) => {
     const formatInr = (val) => Math.round(Number(val) || 0).toLocaleString('en-IN');
-    const radius = 36;
+    const radius = 34;
     const circumference = 2 * Math.PI * radius;
     const strokeDashoffset = circumference * (1 - Math.min(100, Math.max(0, rate)) / 100);
 
@@ -461,29 +461,29 @@ export const PayrollCard = ({
     return (
         <div 
             onClick={onNavigate}
-            className="p-3 sm:p-3.5 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex items-center justify-between cursor-pointer hover:border-white hover:shadow-[0_12px_32px_rgba(15,23,42,0.14)] transition-all group h-full"
+            className="p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex items-center justify-between cursor-pointer hover:border-white hover:shadow-[0_12px_32px_rgba(15,23,42,0.14)] transition-all group h-full"
         >
             {/* Left Column: Icon + Title + Staff Badge + Numeral + Burn Subtitle */}
-            <div className="flex flex-col justify-center space-y-1 flex-1 min-w-0 pr-2 sm:pr-3">
+            <div className="flex flex-col justify-center space-y-0.5 flex-1 min-w-0 pr-2">
                 <div className="flex items-center gap-1.5 flex-wrap">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] bg-[#FAF5FF] text-[#A855F7] dark:bg-purple-950/40 dark:text-purple-400 border border-purple-100/90 dark:border-purple-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                        <Users size={16} strokeWidth={2.3} />
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-[7px] bg-[#FAF5FF] text-[#A855F7] dark:bg-purple-950/40 dark:text-purple-400 border border-purple-100/90 dark:border-purple-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                        <Users size={14} strokeWidth={2.3} />
                     </div>
-                    <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal">
+                    <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal truncate">
                         Payroll
                     </h3>
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300 border border-purple-100 dark:border-purple-800/60 tabular-nums">
+                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300 border border-purple-100 dark:border-purple-800/60 tabular-nums">
                         {employeeCount} Staff
                     </span>
                     {isToday && (
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800/60 tabular-nums">
+                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800/60 tabular-nums">
                             Today
                         </span>
                     )}
                 </div>
 
                 <div>
-                    <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums">
+                    <p className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums">
                         ₹{formatInr(displayAmount)}
                     </p>
                     <p className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400 mt-0.5 tabular-nums">
@@ -493,7 +493,7 @@ export const PayrollCard = ({
             </div>
 
             {/* Right Side: Scaled Proportional Donut Ring Gauge */}
-            <div className="relative w-[85px] h-[85px] sm:w-[95px] sm:h-[95px] lg:w-[105px] lg:h-[105px] flex items-center justify-center shrink-0">
+            <div className="relative w-[75px] h-[75px] sm:w-[82px] sm:h-[82px] flex items-center justify-center shrink-0">
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                     <defs>
                         <linearGradient id="payrollDonutGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -507,7 +507,7 @@ export const PayrollCard = ({
                         r={radius}
                         stroke="#E2ECF6"
                         className="dark:stroke-zinc-800"
-                        strokeWidth="11"
+                        strokeWidth="10"
                         fill="none"
                     />
                     <circle
@@ -515,7 +515,7 @@ export const PayrollCard = ({
                         cy="50"
                         r={radius}
                         stroke="url(#payrollDonutGrad)"
-                        strokeWidth="11"
+                        strokeWidth="10"
                         strokeDasharray={circumference}
                         strokeDashoffset={strokeDashoffset}
                         strokeLinecap="round"
@@ -524,7 +524,7 @@ export const PayrollCard = ({
                     />
                 </svg>
                 <div className="absolute flex flex-col items-center justify-center text-center">
-                    <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none">
+                    <span className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none">
                         {Number(rate || 0).toFixed(1)}%
                     </span>
                     <span className="text-[9px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider mt-0.5">
@@ -585,13 +585,13 @@ export const CollectionTrendCard = ({
     return (
         <div 
             onClick={onNavigate}
-            className="p-3.5 sm:p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex flex-col justify-between cursor-pointer hover:border-white hover:shadow-[0_12px_32px_rgba(15,23,42,0.14)] transition-all group h-full"
+            className="p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex flex-col justify-between cursor-pointer hover:border-white hover:shadow-[0_12px_32px_rgba(15,23,42,0.14)] transition-all group h-full"
         >
             {/* Header: Icon + Title */}
             <div className="flex items-center justify-between pb-0.5">
-                <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-[10px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                        <TrendingUp size={18} strokeWidth={2.3} />
+                <div className="flex items-center gap-1.5">
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-[7px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                        <TrendingUp size={14} strokeWidth={2.3} />
                     </div>
                     <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal">
                         7-Day Collection Trend
@@ -600,7 +600,7 @@ export const CollectionTrendCard = ({
             </div>
 
             {/* 7 Vertical Pill Bars - Balanced Proportions */}
-            <div className="grid grid-cols-7 gap-2 sm:gap-2.5 items-end pt-1 flex-1 min-h-[60px] max-h-[105px]">
+            <div className="grid grid-cols-7 gap-1.5 sm:gap-2 items-end pt-0.5 flex-1 min-h-[50px] max-h-[90px]">
                 {days.map((item, idx) => {
                     const amt = item.amount;
                     const displayDate = item.date;
@@ -610,20 +610,20 @@ export const CollectionTrendCard = ({
                     return (
                         <div key={idx} className="flex flex-col items-center justify-end h-full group/bar">
                             {/* Value Above Bar */}
-                            <span className="text-[10px] sm:text-[11px] font-bold text-slate-700 dark:text-zinc-300 tabular-nums mb-0.5 opacity-90 group-hover/bar:opacity-100 group-hover/bar:text-synos-primary transition-colors">
+                            <span className="text-[10px] font-bold text-slate-700 dark:text-zinc-300 tabular-nums mb-0.5 opacity-90 group-hover/bar:opacity-100 group-hover/bar:text-synos-primary transition-colors">
                                 {formatShortInr(amt)}
                             </span>
 
                             {/* Bar Column with Soft Blue Gradient and Rounded Top */}
                             <div className="w-full flex-1 flex items-end">
                                 <div 
-                                    className="w-full rounded-t-[8px] bg-gradient-to-t from-[#60A5FA] via-[#7BB3F0] to-[#93C5FD] dark:from-blue-600 dark:to-sky-400 transition-all duration-500 shadow-2xs group-hover/bar:brightness-105"
+                                    className="w-full rounded-t-[6px] bg-gradient-to-t from-[#60A5FA] via-[#7BB3F0] to-[#93C5FD] dark:from-blue-600 dark:to-sky-400 transition-all duration-500 shadow-2xs group-hover/bar:brightness-105"
                                     style={{ height: `${heightPct}%` }}
                                 />
                             </div>
 
                             {/* Date Label Below Bar */}
-                            <span className={`text-[10px] sm:text-[11px] font-semibold mt-1 truncate w-full text-center ${item.isToday ? 'text-synos-primary font-bold' : 'text-slate-400 dark:text-zinc-500'}`}>
+                            <span className={`text-[10px] font-semibold mt-0.5 truncate w-full text-center ${item.isToday ? 'text-synos-primary font-bold' : 'text-slate-400 dark:text-zinc-500'}`}>
                                 {displayDate}
                             </span>
                         </div>
@@ -707,12 +707,12 @@ export const FinanceOverviewDeck = ({
     return (
         <div className="flex flex-col justify-start gap-2.5 sm:gap-3 lg:gap-3.5 pb-6">
             {/* ROW 1: HERO CONTROL DECK: 2 BALANCED PODS (IOS INSPIRED SPLIT SLIDER & CLEAN TOTAL BILLED) */}
-            <div className="min-h-[105px] p-3.5 sm:p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 items-center">
+            <div className="min-h-[95px] p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] grid grid-cols-1 lg:grid-cols-12 gap-3.5 lg:gap-4 items-center">
                 
                 {/* Section 1 (4 Cols): Total Amount Billed Hero Metric */}
-                <div className="lg:col-span-4 flex items-center gap-3.5 min-w-0 pr-0 lg:pr-2">
-                    <div className="w-[56px] h-[56px] sm:w-[64px] sm:h-[64px] rounded-[16px] bg-gradient-to-b from-[#EBF5FF] to-[#D6EBFE] border border-white/90 dark:border-white/10 shadow-[0_6px_16px_rgba(37,99,235,0.14)] flex items-center justify-center text-[#1C6CF2] dark:text-sky-400 shrink-0">
-                        <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <div className="lg:col-span-4 flex items-center gap-3 min-w-0 pr-0 lg:pr-2">
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-b from-[#EBF5FF] to-[#D6EBFE] border border-white/90 dark:border-white/10 shadow-[0_4px_12px_rgba(37,99,235,0.12)] flex items-center justify-center text-[#1C6CF2] dark:text-sky-400 shrink-0">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                             <rect x="2" y="4" width="20" height="16" rx="3" />
                             <line x1="2" y1="10" x2="22" y2="10" />
                             <line x1="6" y1="15" x2="10" y2="15" />
@@ -722,17 +722,17 @@ export const FinanceOverviewDeck = ({
 
                     <div className="space-y-0.5 min-w-0 flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal">
+                            <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal">
                                 Total Amount Billed
                             </h3>
-                            <span className="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]/70 dark:bg-emerald-950/50 dark:text-emerald-400 shadow-2xs">
+                            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]/70 dark:bg-emerald-950/50 dark:text-emerald-400 shadow-2xs">
                                 {totalBillsCount} Bills Processed
                             </span>
                         </div>
-                        <p className="text-2xl sm:text-3xl lg:text-[36px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums">
+                        <p className="text-xl sm:text-2xl lg:text-[28px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums">
                             ₹{formatInr(billedRevenue)}
                         </p>
-                        <p className="text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-zinc-400 truncate">
+                        <p className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400 truncate">
                             {concessionsAmount > 0 
                                 ? `Net Billed (₹${formatInr(billedRevenue + concessionsAmount)} Gross - ₹${formatInr(concessionsAmount)} Discount)`
                                 : 'Net Clinical Tariff Billed'}
@@ -741,12 +741,12 @@ export const FinanceOverviewDeck = ({
                 </div>
 
                 {/* Section 2 (8 Cols): Doctor Payouts vs Receivables & Dues */}
-                <div className="lg:col-span-8 lg:border-l lg:border-slate-200 dark:lg:border-zinc-800 lg:pl-5 xl:pl-6 flex flex-col justify-between py-1 min-w-0">
-                    <div className="flex items-center justify-between pb-1.5">
-                        <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal">
+                <div className="lg:col-span-8 lg:border-l lg:border-slate-200 dark:lg:border-zinc-800 lg:pl-4 xl:pl-5 flex flex-col justify-between py-0.5 min-w-0 space-y-1.5">
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal">
                             Doctor Payouts vs Due Receivables
                         </h3>
-                        <div className="hidden sm:flex items-center gap-2 text-xs font-bold">
+                        <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-bold">
                             <span className="text-slate-500 dark:text-zinc-400">Total Obligations:</span>
                             <span className="text-slate-900 dark:text-white tabular-nums font-extrabold">
                                 ₹{formatInr(totalSplitSum)}
@@ -754,8 +754,8 @@ export const FinanceOverviewDeck = ({
                         </div>
                     </div>
 
-                    {/* Split Slider */}
-                    <div className="relative h-[36px] sm:h-[40px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 flex items-center overflow-visible shadow-inner">
+                    {/* Sleek Split Slider */}
+                    <div className="relative h-[12px] sm:h-[14px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 flex items-center overflow-visible shadow-inner">
                         <div 
                             className="h-full bg-gradient-to-r from-[#60A5FA] via-[#7BB3F0] to-[#93C5FD] rounded-l-full transition-all duration-500 shadow-[0_2px_8px_rgba(96,165,250,0.25)]"
                             style={{ width: `${totalSplitSum > 0 ? payoutsShare : 0}%` }}
@@ -765,52 +765,52 @@ export const FinanceOverviewDeck = ({
                             style={{ width: `${totalSplitSum > 0 ? duesShare : 100}%` }}
                         />
                         <div 
-                            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white dark:bg-zinc-100 shadow-[0_3px_12px_rgba(15,35,60,0.22),0_0_0_2px_#FFFFFF] border border-slate-100 pointer-events-none transition-all duration-500 z-10 flex items-center justify-center"
+                            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-full bg-white dark:bg-zinc-100 shadow-[0_2px_8px_rgba(15,35,60,0.22),0_0_0_2px_#FFFFFF] border border-slate-100 pointer-events-none transition-all duration-500 z-10 flex items-center justify-center"
                             style={{ left: `${totalSplitSum > 0 ? payoutsShare : (doctorPayoutsVal > 0 ? 50 : 0)}%` }}
                         >
-                            <div className="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
+                            <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
                         </div>
                     </div>
 
                     {/* Two Channel Stat Pods Below */}
-                    <div className="flex items-center justify-between pt-2">
+                    <div className="flex items-center justify-between pt-0.5">
                         {/* Left Stat Pod: Doctor Payouts */}
-                        <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-[12px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                                <Stethoscope size={18} strokeWidth={2.3} />
+                        <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-[8px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                                <Stethoscope size={14} strokeWidth={2.3} />
                             </div>
                             <div>
                                 <div className="flex items-baseline gap-1.5">
-                                    <span className="text-xl sm:text-2xl lg:text-[28px] font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none">
+                                    <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none">
                                         ₹{formatInr(doctorPayoutsVal)}
                                     </span>
-                                    <span className="text-xs sm:text-sm font-bold text-[#1C6CF2] dark:text-sky-400 bg-[#EBF5FF] dark:bg-sky-950/60 px-1.5 py-0.5 rounded-md border border-sky-100 dark:border-sky-800/40 tabular-nums">
+                                    <span className="text-[10px] font-bold text-[#1C6CF2] dark:text-sky-400 bg-[#EBF5FF] dark:bg-sky-950/60 px-1 py-0.2 rounded-md border border-sky-100 dark:border-sky-800/40 tabular-nums">
                                         {totalSplitSum > 0 ? payoutsShare : 0}%
                                     </span>
                                 </div>
-                                <span className="text-[11px] sm:text-xs text-slate-600 dark:text-zinc-400 font-bold block">
+                                <span className="text-[10px] sm:text-[11px] text-slate-600 dark:text-zinc-400 font-bold block">
                                     Doctor Commissions
                                 </span>
                             </div>
                         </div>
 
                         {/* Right Stat Pod: Receivables & Dues */}
-                        <div className="flex items-center gap-2.5 text-right">
+                        <div className="flex items-center gap-2 text-right">
                             <div>
                                 <div className="flex items-baseline gap-1.5 justify-end">
-                                    <span className="text-xs sm:text-sm font-bold text-[#E11D48] dark:text-rose-400 bg-[#FFF1F2] dark:bg-rose-950/60 px-1.5 py-0.5 rounded-md border border-rose-100 dark:border-rose-800/40 tabular-nums">
+                                    <span className="text-[10px] font-bold text-[#E11D48] dark:text-rose-400 bg-[#FFF1F2] dark:bg-rose-950/60 px-1 py-0.2 rounded-md border border-rose-100 dark:border-rose-800/40 tabular-nums">
                                         {totalSplitSum > 0 ? duesShare : 0}%
                                     </span>
-                                    <span className="text-xl sm:text-2xl lg:text-[28px] font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none">
+                                    <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none">
                                         ₹{formatInr(totalReceivablesAndDues)}
                                     </span>
                                 </div>
-                                <span className="text-[11px] sm:text-xs text-slate-600 dark:text-zinc-400 font-bold block">
+                                <span className="text-[10px] sm:text-[11px] text-slate-600 dark:text-zinc-400 font-bold block">
                                     Due Receivables
                                 </span>
                             </div>
-                            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-[12px] bg-[#FFF1F2] text-[#FB7185] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                                <Building2 size={18} strokeWidth={2.3} />
+                            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-[8px] bg-[#FFF1F2] text-[#FB7185] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                                <Building2 size={14} strokeWidth={2.3} />
                             </div>
                         </div>
                     </div>
