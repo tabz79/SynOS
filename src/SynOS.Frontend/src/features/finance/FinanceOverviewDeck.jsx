@@ -90,8 +90,8 @@ export const DepartmentBreakdownCard = ({
                 </div>
             </div>
 
-            {/* Department Breakdown with ZERO SCROLL and Fluid Width Progress Tracks (CLOSES MARKERS 8 & 9) */}
-            <div className="flex-1 min-h-0 flex flex-col justify-between pt-1">
+            {/* Department Breakdown with Fluid Width Progress Tracks */}
+            <div className="flex-1 flex flex-col justify-between pt-1">
                 {/* Column Headers */}
                 <div className="flex items-center text-[10px] sm:text-[11px] font-bold text-slate-400 dark:text-zinc-500 pb-1 border-b border-slate-200 dark:border-zinc-800 shrink-0">
                     <div className="w-[180px] sm:w-[210px] lg:w-[230px] pl-0.5 shrink-0">{colHeader}</div>
@@ -99,8 +99,8 @@ export const DepartmentBreakdownCard = ({
                     <div className="w-[120px] sm:w-[140px] lg:w-[160px] text-right pr-2 shrink-0">Billed</div>
                 </div>
 
-                {/* 4 Rows: Each is flex-1 with min-h-0 so all 4 fit mathematically */}
-                <div className="flex-1 min-h-0 flex flex-col justify-between divide-y divide-slate-200/70 dark:divide-zinc-800/50">
+                {/* 4 Rows: Natural vertical rhythm preventing row collapse */}
+                <div className="flex-1 flex flex-col justify-between divide-y divide-slate-200/70 dark:divide-zinc-800/50">
                     {items.map((item, idx) => {
                         const name = item.departmentName || item.modality || 'General';
                         const key = name.toLowerCase();
@@ -114,7 +114,7 @@ export const DepartmentBreakdownCard = ({
                             <div 
                                 key={idx}
                                 onClick={() => onItemClick(item)}
-                                className="flex-1 min-h-0 flex items-center py-1 pl-0.5 group hover:bg-slate-200/40 dark:hover:bg-zinc-800/40 transition-colors cursor-pointer rounded-lg"
+                                className="min-h-[38px] sm:min-h-[42px] py-1.5 sm:py-2 flex items-center pl-0.5 group hover:bg-slate-200/40 dark:hover:bg-zinc-800/40 transition-colors cursor-pointer rounded-lg"
                             >
                                 {/* Column 1: Icon + Name + Count (Fixed compact width, NO DEAD SPACE!) */}
                                 <div className="w-[180px] sm:w-[210px] lg:w-[230px] flex items-center gap-2.5 min-w-0 pr-3 shrink-0">
@@ -183,9 +183,9 @@ export const ActualCashCard = ({
             onClick={onNavigate}
             className="p-4 sm:p-5 lg:p-6 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex items-center cursor-pointer hover:border-white hover:shadow-[0_12px_32px_rgba(15,23,42,0.14)] transition-all group h-full"
         >
-            <div className="flex flex-col md:flex-row md:items-center w-full gap-5 sm:gap-7">
+            <div className="flex flex-col md:flex-row md:items-center w-full gap-4 sm:gap-6">
                 {/* Left Part: Icon, Title, and Big Total Numeral */}
-                <div className="w-[230px] sm:w-[260px] lg:w-[290px] shrink-0 flex flex-col justify-center space-y-1 pl-1 sm:pl-2">
+                <div className="w-full md:w-[210px] lg:w-[240px] shrink-0 flex flex-col justify-center space-y-1 pl-1 sm:pl-2">
                     <div className="flex items-center gap-2.5">
                         <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-[10px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
                             <Wallet size={18} strokeWidth={2.4} />
@@ -194,7 +194,7 @@ export const ActualCashCard = ({
                             Actual Cash (Desk Collections)
                         </h3>
                     </div>
-                    <p className="text-3xl sm:text-4xl lg:text-[40px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-1.5 tabular-nums">
+                    <p className="text-2xl sm:text-3xl lg:text-[36px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-1 tabular-nums">
                         ₹{formatInr(total)}
                     </p>
                     <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400">
@@ -202,26 +202,26 @@ export const ActualCashCard = ({
                     </span>
                 </div>
 
-                {/* Right Part: Fluid Cash & Online Channels (PROMINENT LARGE AMOUNTS & CLEAR HIERARCHY!) */}
-                <div className="flex-1 md:border-l md:border-slate-200 dark:md:border-zinc-800 md:pl-6 lg:pl-8 flex flex-col justify-center space-y-5 sm:space-y-6 min-w-0">
+                {/* Right Part: Fluid Cash & Online Channels */}
+                <div className="flex-1 md:border-l md:border-slate-200 dark:md:border-zinc-800 md:pl-5 lg:pl-7 flex flex-col justify-center space-y-4 sm:space-y-5 min-w-0">
                     {/* Row 1: Cash */}
-                    <div className="flex items-center gap-3.5 w-full">
-                        <div className="w-[100px] sm:w-[110px] shrink-0 flex items-center gap-2.5">
+                    <div className="flex items-center gap-3 w-full">
+                        <div className="w-[90px] sm:w-[105px] shrink-0 flex items-center gap-2">
                             <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
                                 <Banknote size={15} strokeWidth={2.3} />
                             </div>
-                            <span className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">
+                            <span className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white truncate">
                                 Cash
                             </span>
                         </div>
-                        <div className="flex-1 h-[24px] sm:h-[26px] lg:h-[28px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner min-w-0">
+                        <div className="flex-1 h-[22px] sm:h-[24px] lg:h-[26px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner min-w-0">
                             <div 
                                 className="h-full rounded-full bg-gradient-to-r from-[#60A5FA] via-[#7BB3F0] to-[#93C5FD] transition-all duration-500 shadow-[0_2px_8px_rgba(59,130,246,0.25)]"
                                 style={{ width: `${Math.min(100, Math.max(cashAmt > 0 ? 5 : 0, cashPct))}%` }}
                             />
                         </div>
-                        <div className="w-[160px] sm:w-[190px] lg:w-[210px] shrink-0 text-right flex items-baseline justify-end gap-2.5">
-                            <span className="text-xl sm:text-2xl lg:text-[28px] font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
+                        <div className="w-[130px] sm:w-[160px] lg:w-[180px] shrink-0 text-right flex items-baseline justify-end gap-2">
+                            <span className="text-lg sm:text-xl lg:text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
                                 ₹{formatInr(cashAmt)}
                             </span>
                             <span className="text-xs sm:text-sm font-bold text-slate-500 dark:text-zinc-400 tabular-nums">
@@ -231,23 +231,23 @@ export const ActualCashCard = ({
                     </div>
 
                     {/* Row 2: Online */}
-                    <div className="flex items-center gap-3.5 w-full">
-                        <div className="w-[100px] sm:w-[110px] shrink-0 flex items-center gap-2.5">
+                    <div className="flex items-center gap-3 w-full">
+                        <div className="w-[90px] sm:w-[105px] shrink-0 flex items-center gap-2">
                             <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] bg-[#FAF5FF] text-[#A855F7] dark:bg-purple-950/40 dark:text-purple-400 border border-purple-100/90 dark:border-purple-800/40 flex items-center justify-center shrink-0 shadow-2xs">
                                 <CreditCard size={15} strokeWidth={2.3} />
                             </div>
-                            <span className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">
+                            <span className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white truncate">
                                 Online
                             </span>
                         </div>
-                        <div className="flex-1 h-[24px] sm:h-[26px] lg:h-[28px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner min-w-0">
+                        <div className="flex-1 h-[22px] sm:h-[24px] lg:h-[26px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner min-w-0">
                             <div 
                                 className="h-full rounded-full bg-gradient-to-r from-[#C084FC] via-[#D8B4FE] to-[#E9D5FF] transition-all duration-500 shadow-[0_2px_8px_rgba(168,85,247,0.25)]"
                                 style={{ width: `${Math.min(100, Math.max(onlineAmt > 0 ? 5 : 0, onlinePct))}%` }}
                             />
                         </div>
-                        <div className="w-[160px] sm:w-[190px] lg:w-[210px] shrink-0 text-right flex items-baseline justify-end gap-2.5">
-                            <span className="text-xl sm:text-2xl lg:text-[28px] font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
+                        <div className="w-[130px] sm:w-[160px] lg:w-[180px] shrink-0 text-right flex items-baseline justify-end gap-2">
+                            <span className="text-lg sm:text-xl lg:text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
                                 ₹{formatInr(onlineAmt)}
                             </span>
                             <span className="text-xs sm:text-sm font-bold text-slate-500 dark:text-zinc-400 tabular-nums">
@@ -705,9 +705,9 @@ export const FinanceOverviewDeck = ({
     const totalRadiologyScans = finalRadiology.reduce((sum, d) => sum + (Number(d.totalTestsCompleted) || 0), 0);
 
     return (
-        <div className="flex-1 min-h-0 flex flex-col justify-start gap-3 sm:gap-3.5 lg:gap-4">
+        <div className="flex flex-col justify-start gap-3.5 sm:gap-4 lg:gap-4.5 pb-6">
             {/* ROW 1: HERO CONTROL DECK: 2 BALANCED PODS (IOS INSPIRED SPLIT SLIDER & CLEAN TOTAL BILLED) */}
-            <div className="flex-1 min-h-[105px] p-4 sm:p-5 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-center">
+            <div className="min-h-[120px] p-4 sm:p-5 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-center">
                 
                 {/* Section 1 (4 Cols): Total Amount Billed Hero Metric */}
                 <div className="lg:col-span-4 flex items-center gap-4 min-w-0 pr-0 lg:pr-2">
@@ -818,7 +818,7 @@ export const FinanceOverviewDeck = ({
             </div>
 
             {/* ROW 2: ACTUAL CASH (8 COLS) & CONCESSIONS GIVEN (4 COLS) */}
-            <div className="flex-1 min-h-[105px] grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-3.5 lg:gap-4 items-stretch">
+            <div className="min-h-[130px] grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-3.5 lg:gap-4 items-stretch">
                 <div className="lg:col-span-8 h-full">
                     <ActualCashCard 
                         cashCollected={cashCollected}
@@ -839,7 +839,7 @@ export const FinanceOverviewDeck = ({
             </div>
 
             {/* ROW 3: PATHOLOGY & RADIOLOGY BREAKDOWN CARDS */}
-            <div className="flex-[1.45] min-h-[195px] flex flex-col lg:flex-row gap-3 sm:gap-3.5 lg:gap-4">
+            <div className="min-h-[220px] flex flex-col lg:flex-row gap-3 sm:gap-3.5 lg:gap-4">
                 {/* CARD 1: PATHOLOGY DISCIPLINES */}
                 <DepartmentBreakdownCard 
                     title="Pathology Disciplines"

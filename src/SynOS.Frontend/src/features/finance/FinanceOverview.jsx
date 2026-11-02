@@ -294,10 +294,6 @@ export const FinanceOverview = () => {
         ? (isAllPrepaid ? todayUncollected : (prepaidBillsTotal > 0 ? prepaidBillsTotal : 0))
         : pendingCorporateVisits.reduce((sum, v) => sum + (Number(v.totalAmount || v.billAmount || 0) - Number(v.paidAmount || 0)), 0);
 
-    const pendingCollectionsVal = presetRange === 'today'
-        ? (isAllPrepaid ? 0 : Math.max(0, todayUncollected - totalCorporateReceivables))
-        : (Number(profitability?.pendingCollections) || 0);
-
     const totalInsuranceReceivables = presetRange === 'today'
         ? 0
         : pendingInsuranceClaims.reduce((sum, c) => sum + (Number(c.claimAmount || 0)), 0);
@@ -306,6 +302,11 @@ export const FinanceOverview = () => {
     const totalPartnerReceivables = (receivables || [])
         .filter(r => (r.debtorType === 'Partner' || r.debtorType === '1') && (!r.settledAt && r.status !== 'Settled'))
         .reduce((sum, r) => sum + Math.max(0, Number(r.amount || 0) - Number(r.amountReceived || 0)), 0);
+
+    // Pure patient desk dues (excluding B2B partner, corporate and insurance receivables)
+    const pendingCollectionsVal = presetRange === 'today'
+        ? (isAllPrepaid ? 0 : Math.max(0, todayUncollected - totalCorporateReceivables))
+        : Math.max(0, (Number(profitability?.pendingCollections) || 0) - totalCorporateReceivables - totalInsuranceReceivables - totalPartnerReceivables);
 
     const rawDeptList = profitability?.departmentProfitability || [];
 
@@ -537,7 +538,7 @@ export const FinanceOverview = () => {
     const dailyTrends = trendsData?.Daily || [];
 
     return (
-        <div className="px-5 sm:px-6 py-3.5 sm:py-4 w-full flex-1 min-h-0 flex flex-col justify-start gap-3 sm:gap-3.5 animate-in fade-in duration-500 relative bg-[#CBD5E1] dark:bg-zinc-950">
+        <div className="px-5 sm:px-6 py-3.5 sm:py-4 w-full flex-1 flex flex-col justify-start gap-3 sm:gap-3.5 animate-in fade-in duration-500 relative bg-[#CBD5E1] dark:bg-zinc-950">
             {/* HEADER WITH TITLE, MODERN ACTIVITY RADAR & STANDARD GLOBAL FILTER BAR */}
             <div className="shrink-0 flex flex-col md:flex-row md:items-center md:justify-between gap-3 min-h-[44px]">
                 <div className="flex items-center gap-3.5">

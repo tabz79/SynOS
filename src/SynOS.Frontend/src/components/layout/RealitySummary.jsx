@@ -48,7 +48,7 @@ export function RealityTile({ value, label, shortLabel, qualifier, icon: Icon, c
                 ui.card,
                 isHidden && "opacity-0 pointer-events-none",
                 // Grid Height Standardization
-                isCollapsed ? "px-4 py-2.5 gap-0 h-full" : "p-5 h-32 gap-0"
+                isCollapsed ? "px-4 py-2.5 gap-0 h-full" : "p-3.5 sm:p-4 h-24 sm:h-26 gap-0"
             )}
         >
             {/* SLOT 1: HEADER + VALUE (Top Section) */}
@@ -60,10 +60,10 @@ export function RealityTile({ value, label, shortLabel, qualifier, icon: Icon, c
                     "font-bold font-sans tracking-tight group-hover:scale-[1.02] transition-transform duration-300 origin-left block",
                     ui.text,
                     isCollapsed
-                        ? "text-3xl leading-tight pb-0.5"
-                        : value && value.toString().length > 9 ? "text-3xl leading-snug"
-                            : value && value.toString().length > 6 ? "text-4xl leading-snug"
-                                : "text-5xl leading-tight pb-1"
+                        ? "text-2xl sm:text-3xl leading-tight pb-0.5"
+                        : value && value.toString().length > 9 ? "text-2xl sm:text-3xl leading-snug"
+                            : value && value.toString().length > 6 ? "text-3xl leading-snug"
+                                : "text-3xl sm:text-4xl leading-tight pb-1"
                 )}>
                     {value}
                 </span>

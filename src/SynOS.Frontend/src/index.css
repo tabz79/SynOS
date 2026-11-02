@@ -20,23 +20,69 @@
    * 4. User-Governed Scale: Persisted from System Settings (Medium = 16px, Large = 18px, Small = 14.5px).
    */
 
-  /* Default & Medium Scale: Firm 16px baseline */
+  /* Default & Medium Scale: Adaptive Enterprise Baseline */
   html,
   html.font-size-medium,
   html[data-font-size="medium"] {
-    font-size: 16px;
+    font-size: 15px;
   }
 
-  /* Small / Compact Scale: For 27"+ QHD / 4K multi-column setups */
+  @media (min-width: 1537px) and (min-height: 901px) {
+    html,
+    html.font-size-medium,
+    html[data-font-size="medium"] {
+      font-size: 15.5px;
+    }
+  }
+
+  @media (max-width: 1400px), (max-height: 820px) {
+    html,
+    html.font-size-medium,
+    html[data-font-size="medium"] {
+      font-size: 14px;
+    }
+  }
+
+  @media (max-width: 1280px), (max-height: 720px) {
+    html,
+    html.font-size-medium,
+    html[data-font-size="medium"] {
+      font-size: 13.5px;
+    }
+  }
+
+  @media (max-width: 1024px), (max-height: 620px) {
+    html,
+    html.font-size-medium,
+    html[data-font-size="medium"] {
+      font-size: 12.5px;
+    }
+  }
+
+  /* Small / Compact Scale: For dense workstations */
   html.font-size-small,
   html[data-font-size="small"] {
-    font-size: 14.5px;
+    font-size: 13.5px;
+  }
+
+  @media (max-width: 1400px), (max-height: 820px) {
+    html.font-size-small,
+    html[data-font-size="small"] {
+      font-size: 12.5px;
+    }
   }
 
   /* Large / High Legibility Scale: For operators or low-res counter displays */
   html.font-size-large,
   html[data-font-size="large"] {
-    font-size: 18px;
+    font-size: 17px;
+  }
+
+  @media (max-width: 1400px), (max-height: 820px) {
+    html.font-size-large,
+    html[data-font-size="large"] {
+      font-size: 15.5px;
+    }
   }
 
   /* Large / High Legibility Mode Tier Enhancements */
@@ -665,45 +711,6 @@
   }
 }
 
-/* 
- * SYNOS CLINICAL LEGIBILITY ENGINE: ROOT TYPOGRAPHIC ELEVATION (SCREEN ONLY)
- * Clinical software invariant: No text anywhere on-screen shall render below 12.5px.
- * All micro-print utility classes are elevated to crisp, readable clinical baselines.
- * Screen-only: Leaves medical report PDF/print engines (#printable-report) 100% untouched.
- */
-@media screen {
-  .text-\[8px\],
-  .text-\[8\.5px\],
-  .text-\[9px\],
-  .text-\[9\.5px\],
-  .text-\[10px\],
-  .text-\[10\.5px\],
-  .text-xxs {
-    font-size: 0.78125rem !important; /* ~12.5px at 16px base */
-    line-height: 1.15rem !important;
-  }
-
-  .text-\[11px\],
-  .text-\[11\.5px\] {
-    font-size: 0.8125rem !important; /* ~13px at 16px base */
-    line-height: 1.2rem !important;
-  }
-
-  .text-xs {
-    font-size: 0.84375rem !important; /* ~13.5px at 16px base */
-    line-height: 1.25rem !important;
-  }
-
-  .text-sm {
-    font-size: 0.9375rem !important; /* ~15px at 16px base */
-    line-height: 1.375rem !important;
-  }
-
-  .text-base {
-    font-size: 1.03125rem !important; /* ~16.5px at 16px base */
-    line-height: 1.5rem !important;
-  }
-}
 
 @media print {
   /* =========================================================================================

@@ -1432,6 +1432,7 @@ export const DueBillsScreen = () => {
     // CSV Export
     const handleDownloadSummary = () => {
         const headers = [
+            "Bill No",
             "Visit Token",
             "Date",
             "Patient Name",
@@ -1449,6 +1450,7 @@ export const DueBillsScreen = () => {
         ];
 
         const rows = filteredBills.map(b => [
+            `"${b.billNumber || b.token || ''}"`,
             `"${b.token || ''}"`,
             `"${b.createdAt ? new Date(b.createdAt).toLocaleDateString() : ''}"`,
             `"${(b.patientName || '').replace(/"/g, '""')}"`,
@@ -1575,6 +1577,7 @@ export const DueBillsScreen = () => {
                         <table className="w-full text-left text-xs border-collapse">
                             <thead>
                                 <tr className="border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-500 font-bold uppercase tracking-wider text-[10px]">
+                                    <th className="py-3 px-4">Bill No</th>
                                     <th className="py-3 px-4">Date & Time</th>
                                     <th className="py-3 px-4">Token & Patient</th>
                                     <th className="py-3 px-4">Facility</th>
@@ -1589,6 +1592,9 @@ export const DueBillsScreen = () => {
                             <tbody className="divide-y dark:divide-zinc-800 divide-zinc-200">
                                 {filteredBills.map((b) => (
                                     <tr key={b.invoiceId} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
+                                        <td className="py-3.5 px-4 font-mono font-bold text-xs text-synos-primary dark:text-sky-400 whitespace-nowrap">
+                                            {b.billNumber || b.token}
+                                        </td>
                                         <td className="py-3.5 px-4 whitespace-nowrap text-zinc-500 font-mono text-[11px]">
                                             {b.createdAt ? new Date(b.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '—'}
                                         </td>
