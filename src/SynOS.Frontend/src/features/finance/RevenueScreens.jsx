@@ -508,6 +508,7 @@ export const BillsCollectionsScreen = () => {
     const [categoryFilter, setCategoryFilter] = useState('All');
     const [departmentFilter, setDepartmentFilter] = useState(initialDept);
     const [modalityFilter, setModalityFilter] = useState(initialMod);
+    const [testFilter, setTestFilter] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
@@ -536,6 +537,30 @@ export const BillsCollectionsScreen = () => {
             setLoading(false);
         }
     };
+
+    // Dynamic test options: only tests populated in the current dataset matching department & modality
+    const dynamicTestOptions = useMemo(() => {
+        const pool = bills.filter(b => {
+            if (departmentFilter !== 'All') {
+                const bDept = (b.department || '').toLowerCase();
+                if (!bDept.includes(departmentFilter.toLowerCase())) return false;
+            }
+            if (modalityFilter !== 'All') {
+                const bMod = (b.modality || '').toLowerCase();
+                if (!bMod.includes(modalityFilter.toLowerCase())) return false;
+            }
+            return true;
+        });
+
+        const testSet = new Set();
+        pool.forEach(b => {
+            (b.testItems || []).forEach(t => {
+                if (t && typeof t === 'string' && t.trim()) testSet.add(t.trim());
+            });
+        });
+
+        return Array.from(testSet).sort((a, b) => a.localeCompare(b));
+    }, [bills, departmentFilter, modalityFilter]);
 
     const handleRecordCollection = (bill) => {
         setSelectedBill(bill);
@@ -633,13 +658,25 @@ export const BillsCollectionsScreen = () => {
             if (!bMod.includes(targetMod)) return false;
         }
 
-        // 5. Search Query
+        // 5. Dynamic Test-wise Filter (Item 3)
+        if (testFilter !== 'All') {
+            const hasTest = (b.testItems || []).some(t => t && t.toLowerCase() === testFilter.toLowerCase());
+            if (!hasTest) return false;
+        }
+
+        // 6. Omnibox Search Query (Patient Name, Bill No / OG ID, Token, MRN, Partner, or Test Name)
         if (searchQuery.trim()) {
-            const query = searchQuery.toLowerCase();
+            const query = searchQuery.trim().toLowerCase();
+            const queryClean = query.replace(/[^a-z0-9]/g, '');
+
             const matchName = (b.patientName || '').toLowerCase().includes(query);
-            const matchBill = (b.billNumber || '').toLowerCase().includes(query);
+            const matchBill = (b.billNumber || '').toLowerCase().includes(query) || (b.billNumber || '').toLowerCase().replace(/[^a-z0-9]/g, '').includes(queryClean);
+            const matchToken = (b.token || '').toLowerCase().includes(query) || (b.token || '').toLowerCase().replace(/[^a-z0-9]/g, '').includes(queryClean);
+            const matchMrn = (b.mrn || b.uhid || '').toLowerCase().includes(query);
             const matchPartner = (b.partnerName || '').toLowerCase().includes(query);
-            if (!matchName && !matchBill && !matchPartner) return false;
+            const matchTests = (b.testItems || []).some(t => t && t.toLowerCase().includes(query));
+
+            if (!matchName && !matchBill && !matchToken && !matchMrn && !matchPartner && !matchTests) return false;
         }
 
         return true;
@@ -797,32 +834,35 @@ export const BillsCollectionsScreen = () => {
 
             {/* Comprehensive Multi-Dimensional Filters Bar */}
             <div className="space-y-3 p-4 rounded-2xl bg-zinc-100 dark:bg-zinc-900/50 border dark:border-zinc-800 border-zinc-200">
-                {/* Top Row: Primary Category & Status Tabs */}
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-                    <div className="flex items-center gap-1 overflow-x-auto pb-1 lg:pb-0 no-scrollbar">
-                        {['All', 'Pending', 'Partial', 'Settled'].map(f => (
-                            <FilterTab key={f} label={f} isActive={statusFilter === f} onClick={() => setStatusFilter(f)} />
-                        ))}
-                        <div className="w-px h-6 bg-zinc-300 dark:bg-zinc-800 mx-2 hidden lg:block" />
-                        {['All', 'Direct', 'Partner', 'Corporate', 'Insurance'].map(f => (
-                            <FilterTab key={f} label={f} isActive={categoryFilter === f} onClick={() => setCategoryFilter(f)} variant="outline" />
-                        ))}
-                    </div>
+                {/* Top Row: Search on Left (1), Status & Category Pills to the Right (2) */}
+                <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3">
+                    <div className="flex flex-wrap items-center gap-3 flex-1">
+                        {/* Search Input - First on Left */}
+                        <div className="relative min-w-[260px] sm:min-w-[300px]">
+                            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                            <input
+                                type="text"
+                                placeholder="Search patient, bill no (e.g. MAI001-261102), token, MRN..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-9 pr-3 py-1.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 outline-none focus:border-synos-primary transition-all"
+                            />
+                        </div>
 
-                    {/* Search Input */}
-                    <div className="relative min-w-[220px]">
-                        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
-                        <input
-                            type="text"
-                            placeholder="Search patient or bill no..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full pl-9 pr-3 py-1.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 outline-none focus:border-synos-primary transition-all"
-                        />
+                        {/* Status & Category Pills - Immediately After Search Box */}
+                        <div className="flex items-center gap-1 overflow-x-auto pb-1 xl:pb-0 no-scrollbar">
+                            {['All', 'Pending', 'Partial', 'Settled'].map(f => (
+                                <FilterTab key={f} label={f} isActive={statusFilter === f} onClick={() => setStatusFilter(f)} />
+                            ))}
+                            <div className="w-px h-6 bg-zinc-300 dark:bg-zinc-800 mx-2 hidden sm:block" />
+                            {['All', 'Direct', 'Partner', 'Corporate', 'Insurance'].map(f => (
+                                <FilterTab key={f} label={f} isActive={categoryFilter === f} onClick={() => setCategoryFilter(f)} variant="outline" />
+                            ))}
+                        </div>
                     </div>
                 </div>
 
-                {/* Bottom Row: Department & Modality Selectors */}
+                {/* Bottom Row: Department, Modality, & Dynamic Test Selectors */}
                 <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-zinc-200/60 dark:border-zinc-800/60">
                     {/* Department Selector */}
                     <div className="flex items-center gap-1.5 bg-white dark:bg-zinc-950 px-2 py-1 rounded-xl border border-zinc-200 dark:border-zinc-800">
@@ -832,6 +872,7 @@ export const BillsCollectionsScreen = () => {
                             onChange={(e) => {
                                 setDepartmentFilter(e.target.value);
                                 setModalityFilter('All');
+                                setTestFilter('All');
                             }}
                             className="bg-transparent text-xs font-semibold text-zinc-700 dark:text-zinc-300 outline-none cursor-pointer"
                         >
@@ -846,7 +887,10 @@ export const BillsCollectionsScreen = () => {
                         <Activity size={13} className="text-zinc-400" />
                         <select
                             value={modalityFilter}
-                            onChange={(e) => setModalityFilter(e.target.value)}
+                            onChange={(e) => {
+                                setModalityFilter(e.target.value);
+                                setTestFilter('All');
+                            }}
                             className="bg-transparent text-xs font-semibold text-zinc-700 dark:text-zinc-300 outline-none cursor-pointer"
                         >
                             <option value="All">All Modalities / Disciplines</option>
@@ -866,6 +910,23 @@ export const BillsCollectionsScreen = () => {
                                     <option value="MRI">MRI</option>
                                 </optgroup>
                             )}
+                        </select>
+                    </div>
+
+                    {/* Dynamic Test Selector (Item 3) */}
+                    <div className="flex items-center gap-1.5 bg-white dark:bg-zinc-950 px-2 py-1 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                        <FileText size={13} className="text-zinc-400" />
+                        <select
+                            value={testFilter}
+                            onChange={(e) => setTestFilter(e.target.value)}
+                            className="bg-transparent text-xs font-semibold text-zinc-700 dark:text-zinc-300 outline-none cursor-pointer max-w-[220px] truncate"
+                        >
+                            <option value="All">
+                                {dynamicTestOptions.length === 0 ? 'All Tests (0)' : `All Tests (${dynamicTestOptions.length})`}
+                            </option>
+                            {dynamicTestOptions.map(t => (
+                                <option key={t} value={t}>{t}</option>
+                            ))}
                         </select>
                     </div>
                 </div>
@@ -890,7 +951,7 @@ export const BillsCollectionsScreen = () => {
                                 <tr className="bg-slate-50/80 dark:bg-zinc-900/80 border-b border-slate-200 dark:border-zinc-800">
                                     <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Bill No</th>
                                     <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Patient</th>
-                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Dept / Modality</th>
+                                    <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Investigations / Dept</th>
                                     <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Partner / Account</th>
                                     <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Total</th>
                                     <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Payment Breakup</th>
@@ -903,33 +964,69 @@ export const BillsCollectionsScreen = () => {
                             <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80">
                                 {filteredBills.map((bill) => (
                                     <tr key={bill.billId} className="group hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors">
-                                        <td className="p-4 text-xs font-bold dark:text-zinc-200">
-                                            {bill.billNumber}
-                                            {bill.branchName && (
-                                                <p className="text-[10px] font-normal text-zinc-400 mt-0.5">{bill.branchName}</p>
-                                            )}
+                                        <td className="p-4">
+                                            <div className="flex flex-col">
+                                                <span className="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400 block tracking-tight">
+                                                    {bill.billNumber}
+                                                </span>
+                                                {bill.branchName && (
+                                                    <span className="text-[10px] font-normal text-zinc-400 mt-0.5">{bill.branchName}</span>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="p-4">
                                             <div className="flex items-center gap-2.5">
-                                                <div className="w-7 h-7 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-bold text-zinc-400">
+                                                <div className="w-7 h-7 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-[10px] font-bold text-zinc-400 shrink-0">
                                                     {(bill.patientName || 'PA').substring(0, 2).toUpperCase()}
                                                 </div>
                                                 <div>
                                                     <span className="text-xs font-semibold dark:text-zinc-200 block">{bill.patientName}</span>
-                                                    {bill.token && <span className="text-[9px] text-zinc-400 font-mono">Token: {bill.token}</span>}
+                                                    <div className="flex items-center gap-1.5 text-[9px] text-zinc-400 font-mono mt-0.5">
+                                                        {bill.token && <span className="font-bold text-zinc-600 dark:text-zinc-300">Token: {bill.token}</span>}
+                                                        {bill.mrn && <span>• MRN: {bill.mrn}</span>}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="p-4">
-                                            <div className="flex flex-col gap-0.5">
-                                                <span className="text-xs font-semibold dark:text-zinc-200">
-                                                    {bill.department || 'Pathology'}
-                                                </span>
-                                                {bill.modality && bill.modality !== 'General' && bill.modality !== bill.department && (
-                                                    <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400">
-                                                        {bill.modality}
+                                            <div className="flex flex-col gap-1 max-w-[280px]">
+                                                {/* Test / Investigation Names */}
+                                                {bill.testItems && bill.testItems.length > 0 ? (
+                                                    <div className="space-y-0.5">
+                                                        <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 block truncate" title={bill.testItems.join(', ')}>
+                                                            {bill.testItems[0]}
+                                                        </span>
+                                                        {bill.testItems.length > 1 && (
+                                                            <div className="flex items-center gap-1.5 flex-wrap">
+                                                                {bill.testItems.slice(1, 3).map((t, idx) => (
+                                                                    <span key={idx} className="text-[10px] text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800/80 px-1.5 py-0.5 rounded font-medium truncate max-w-[130px]" title={t}>
+                                                                        {t}
+                                                                    </span>
+                                                                ))}
+                                                                {bill.testItems.length > 3 && (
+                                                                    <span className="text-[9px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 px-1.5 py-0.5 rounded" title={bill.testItems.slice(3).join(', ')}>
+                                                                        +{bill.testItems.length - 3} more
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-xs font-semibold dark:text-zinc-200">
+                                                        General Investigation
                                                     </span>
                                                 )}
+
+                                                {/* Dept & Modality Meta Tag */}
+                                                <div className="flex items-center gap-1 text-[10px] text-zinc-400 font-medium">
+                                                    <span>{bill.department || 'Pathology'}</span>
+                                                    {bill.modality && bill.modality !== 'General' && bill.modality !== bill.department && (
+                                                        <>
+                                                            <span>•</span>
+                                                            <span className="font-mono text-zinc-500 dark:text-zinc-400">{bill.modality}</span>
+                                                        </>
+                                                    )}
+                                                </div>
                                             </div>
                                         </td>
                                         <td className="p-4 text-xs text-zinc-500">

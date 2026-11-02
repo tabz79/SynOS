@@ -5,13 +5,13 @@ export const ThermalPosReceipt80mm = ({ data }) => {
     if (!data) return <div className="p-4 text-center font-mono text-xs">Loading receipt...</div>;
 
     const {
-        receiptNumber = "RCPT-202610-0912",
+        receiptNumber = "MAI001-261102",
         dateTime = new Date().toLocaleString(),
         lab = {},
         patient = {},
         items = [],
         financial = {},
-        token = "T-0142",
+        token = "MAI-001",
         cashier = "Counter Desk #1",
         upiQrString
     } = data;
@@ -35,7 +35,7 @@ export const ThermalPosReceipt80mm = ({ data }) => {
             {/* RECEIPT PARTICULARS */}
             <div className="py-1.5 border-b border-dashed border-zinc-400 text-[10px] space-y-0.5">
                 <div className="flex justify-between">
-                    <span>Receipt No:</span>
+                    <span>Bill No:</span>
                     <strong>{receiptNumber}</strong>
                 </div>
                 <div className="flex justify-between">

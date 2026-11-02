@@ -75,8 +75,8 @@ namespace SynOS.Services.Phlebotomy
                 }
             }
 
-            // Format: {branchCode}{yyMMdd}{6-digit-sequence}
-            return $"{branchCode.ToUpper()}{localDate:yyMMdd}{sequence:D6}";
+            // Format: {branchCode}{sequence:D3}-{yyMMdd} (e.g. MAI001-261102)
+            return $"{branchCode.ToUpper()}{sequence:D3}-{localDate:yyMMdd}";
         }
     }
 }

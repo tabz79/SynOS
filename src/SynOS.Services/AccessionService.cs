@@ -83,10 +83,9 @@ namespace SynOS.Services
             // And any other thread trying `SELECT ... WITH (UPDLOCK)` will wait.
             // Perfect.
 
-            // 3. Format
-            // Format: CODE-YYMMDD-XXXX
+            // 3. Format: BRANCHSEQ-YYMMDD (e.g. MAI001-261102)
             var dateStr = date.ToString("yyMMdd");
-            return $"{branchCode}-{dateStr}-{nextSeq:D4}";
+            return $"{branchCode.ToUpper()}{nextSeq:D3}-{dateStr}";
         }
         public async Task<string> GenerateRadiologyAccessionNumberAsync(Guid branchId)
         {

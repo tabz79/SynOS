@@ -271,12 +271,18 @@ namespace SynOS.Api.Controllers
                     ? $"{inv.Visit.Patient.FirstName} {inv.Visit.Patient.LastName}".Trim() 
                     : "Walk-in Patient";
 
+                var cleanToken = !string.IsNullOrWhiteSpace(inv.Visit?.Token)
+                    ? inv.Visit.Token.Replace("-", "").Trim().ToUpper()
+                    : $"{inv.Visit?.Branch?.Code?.Trim().ToUpper() ?? "MAI"}000";
+                var billNo = $"{cleanToken}-{inv.CreatedAt:yyMMdd}";
+
                 result.Add(new
                 {
                     BillId = inv.InvoiceId,
-                    BillNumber = $"BILL-{inv.CreatedAt:yyyyMMdd}-{inv.InvoiceId.ToString().Substring(0, 4).ToUpper()}",
+                    BillNumber = billNo,
                     VisitId = inv.VisitId,
                     Token = inv.Visit?.Token ?? "",
+                    Mrn = inv.Visit?.Patient?.MRN ?? "",
                     PatientName = patientName,
                     BranchId = inv.Visit?.BranchId,
                     BranchName = inv.Visit?.Branch?.Name ?? "Main Facility",
@@ -1556,7 +1562,10 @@ namespace SynOS.Api.Controllers
                 }
             }
 
-            var billNo = $"BILL-{inv.CreatedAt:yyyyMMdd}-{inv.InvoiceId.ToString().Substring(0, 4).ToUpper()}";
+            var cleanToken = !string.IsNullOrWhiteSpace(inv.Visit?.Token)
+                ? inv.Visit.Token.Replace("-", "").Trim().ToUpper()
+                : $"{inv.Visit?.Branch?.Code?.Trim().ToUpper() ?? "MAI"}000";
+            var billNo = $"{cleanToken}-{inv.CreatedAt:yyMMdd}";
             var upiPayload = $"upi://pay?pa={settings.UpiId}&pn={Uri.EscapeDataString(settings.LabLegalName)}&am={balanceDue:F2}&cu=INR&tn={billNo}";
 
             var visit = inv.Visit;
@@ -1804,12 +1813,17 @@ namespace SynOS.Api.Controllers
                     ? visit.Token
                     : (visit != null ? $"T-{visit.VisitId.ToString().Substring(0, 4).ToUpper()}" : fact.ReceivableFactId.ToString().Substring(0, 8).ToUpper());
 
+                var cleanToken = visit != null && !string.IsNullOrWhiteSpace(visit.Token)
+                    ? visit.Token.Replace("-", "").Trim().ToUpper()
+                    : "MAI000";
+                var billNo = visit != null ? $"{cleanToken}-{visit.CreatedAt:yyMMdd}" : fact.ReceivableFactId.ToString().Substring(0, 8).ToUpper();
+
                 items.Add(new
                 {
                     Index = lineIndex++,
                     ReceivableFactId = fact.ReceivableFactId,
                     VisitId = fact.SourceVisitId,
-                    BillNumber = visit != null ? $"BILL-{visit.CreatedAt:yyyyMMdd}-{visit.VisitId.ToString().Substring(0, 4).ToUpper()}" : fact.ReceivableFactId.ToString().Substring(0, 8).ToUpper(),
+                    BillNumber = billNo,
                     Token = displayToken,
                     VisitToken = displayToken,
                     Date = fact.OccurredAt.DateTime,
@@ -1890,12 +1904,17 @@ namespace SynOS.Api.Controllers
                         ? v.Token
                         : $"T-{v.VisitId.ToString().Substring(0, 4).ToUpper()}";
 
+                    var cleanToken = !string.IsNullOrWhiteSpace(v.Token)
+                        ? v.Token.Replace("-", "").Trim().ToUpper()
+                        : "MAI000";
+                    var billNo = $"{cleanToken}-{v.CreatedAt:yyMMdd}";
+
                     items.Add(new
                     {
                         Index = lineIndex++,
                         ReceivableFactId = Guid.NewGuid(),
                         VisitId = v.VisitId,
-                        BillNumber = $"BILL-{v.CreatedAt:yyyyMMdd}-{v.VisitId.ToString().Substring(0, 4).ToUpper()}",
+                        BillNumber = billNo,
                         Token = displayToken,
                         VisitToken = displayToken,
                         Date = v.CreatedAt,

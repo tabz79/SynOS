@@ -144,8 +144,21 @@ export function generateThermalInvoiceHtml(payload = {}) {
         || payload.stagedDiscount?.name 
         || "";
 
+    // Canonical Bill Number: MAI001-261102 (OG tracking identifier)
+    const now = new Date();
+    const dateStr = `${String(now.getFullYear()).slice(-2)}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+    const cleanToken = token ? String(token).replace(/[^a-zA-Z0-9]/g, '').toUpperCase() : 'MAI000';
+    const defaultBillNo = `${cleanToken}-${dateStr}`;
+
+    const canonicalBillNo = (payload.billNumber && !payload.billNumber.startsWith('BILL-') && !payload.billNumber.startsWith('RCPT-'))
+        ? payload.billNumber
+        : (payload.receiptNumber && !payload.receiptNumber.startsWith('BILL-') && !payload.receiptNumber.startsWith('RCPT-')
+            ? payload.receiptNumber
+            : defaultBillNo);
+
     const normalizedData = {
-        receiptNumber: payload.receiptNumber || payload.billNumber || (token ? `RCPT-${token}` : `RCPT-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 9000) + 1000)}`),
+        receiptNumber: canonicalBillNo,
+        billNumber: canonicalBillNo,
         dateTime: payload.dateTime || new Date().toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }),
         token: token || "WAIT",
         patient: {
@@ -233,7 +246,7 @@ export function generateThermalInvoiceHtml(payload = {}) {
                 ` : ''}
                 <div style="display: flex; justify-content: space-between; font-size: 9.5px; font-weight: 700; color: #000000; padding: 0 1px;">
                     ${df.date?.enabled !== false ? `<span>Date: <b>${dateVal}</b></span>` : ''}
-                    ${df.receiptNumber?.enabled !== false ? `<span>Rcpt: <b style="font-family: monospace;">${receiptNo}</b></span>` : ''}
+                    ${df.receiptNumber?.enabled !== false ? `<span>Bill No: <b style="font-family: monospace;">${receiptNo}</b></span>` : ''}
                 </div>
                 ${token && df.tokenNumber?.enabled !== false ? `
                     <div style="margin-top: 5px; padding: 3px 6px; border: 2px solid #000000; text-align: center; background: #ffffff;">
