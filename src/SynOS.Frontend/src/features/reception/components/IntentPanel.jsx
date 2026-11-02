@@ -1355,6 +1355,28 @@ export function IntentPanel({ onVisitUpdated }) {
     const previewContainerRef = useRef(null);
     const [canvasScale, setCanvasScale] = useState(1.35);
 
+    // Enterprise Dynamic Viewport Scaling Engine (Matches Desktop Benchmark onto Laptop screens)
+    const [viewportScale, setViewportScale] = useState(1.0);
+
+    useEffect(() => {
+        const calculateViewportScale = () => {
+            const vh = window.innerHeight;
+            // On desktop monitors (vh >= 900px): native 100% scale (1.0)
+            // On laptop screens (vh < 900px, e.g. 500px - 760px):
+            // Scale proportionally down so 100% of the content fits without cutoffs
+            if (vh < 900) {
+                // Baseline design target height is ~920px (standard monitor height)
+                const scale = Math.max(0.52, Math.min(1.0, (vh - 36) / 910));
+                setViewportScale(Number(scale.toFixed(2)));
+            } else {
+                setViewportScale(1.0);
+            }
+        };
+        calculateViewportScale();
+        window.addEventListener('resize', calculateViewportScale);
+        return () => window.removeEventListener('resize', calculateViewportScale);
+    }, []);
+
     useEffect(() => {
         if (!isOpen || !isPostProcessingView) return;
         const calculateScale = () => {
@@ -1532,7 +1554,10 @@ export function IntentPanel({ onVisitUpdated }) {
                             </div>
                         ) : isPostProcessingView ? (
                             /* 2. POST-PROCESSING SPLIT VIEW: 50% DOCUMENT PREVIEW & PRINTER / 50% CONSOLIDATION OF VISIT */
-                            <div className="p-3.5 sm:p-5 max-w-full mx-auto w-full flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-300">
+                            <div 
+                                className="p-3.5 sm:p-5 max-w-full mx-auto w-full flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-300"
+                                style={viewportScale < 1 ? { zoom: viewportScale } : undefined}
+                            >
                                 {/* Inline Print Stylesheet for In-Panel Document Printing */}
                                 <style>{`
                                     @media print {
@@ -1706,7 +1731,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                             title="Thermal POS Receipt"
                                                             tabIndex={-1}
                                                             srcDoc={thermalHtml}
-                                                            className="w-full flex-1 min-h-[580px] border-0 mx-auto"
+                                                            className="w-full flex-1 min-h-0 border-0 mx-auto"
                                                         />
                                                     </div>
                                                 )}
@@ -2224,7 +2249,10 @@ export function IntentPanel({ onVisitUpdated }) {
                             </div>
                         ) : (
                             /* 3. IDENTIFIED PATIENT WORKFLOW (Strictly following iOS Target Design) */
-                            <div className="p-3.5 sm:p-5 max-w-full mx-auto w-full flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-300">
+                            <div 
+                                className="p-3.5 sm:p-5 max-w-full mx-auto w-full flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-300"
+                                style={viewportScale < 1 ? { zoom: viewportScale } : undefined}
+                            >
                                 {/* 2-COLUMN UNIFIED WORKFLOW (Left 7 cols: Patient Identification -> Visit Details | Right 5 cols: Billing & Payer Mode -> Financials) */}
                                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 xl:gap-6 items-stretch flex-1 min-h-0 overflow-hidden">
                                     {/* LEFT COLUMN: 7 Cols */}
