@@ -55,7 +55,7 @@
     html,
     html.font-size-medium,
     html[data-font-size="medium"] {
-      font-size: 12.5px;
+      font-size: 13px; /* Enterprise floor: never drop below 13px to prevent micro-fonts */
     }
   }
 

@@ -207,22 +207,22 @@ function AdaptiveBreakdownCard({
     const itemCount = items.length;
 
     return (
-        <div className="flex-1 min-w-0 p-4 sm:p-5 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex flex-col justify-between space-y-3.5 h-full overflow-hidden">
+        <div className="flex-1 min-w-0 p-3.5 sm:p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex flex-col justify-between space-y-3 h-full overflow-hidden">
             {/* Unified Single-Row Header */}
-            <div className="flex items-center justify-between pb-2.5 border-b border-slate-200 dark:border-zinc-800 shrink-0">
-                <div className="flex items-center gap-2.5">
-                    <div className={cn("w-8 h-8 sm:w-9 sm:h-9 rounded-[10px] flex items-center justify-center shrink-0 shadow-2xs", iconBg)}>
-                        <CardIcon size={18} strokeWidth={2.4} />
+            <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-zinc-800 shrink-0">
+                <div className="flex items-center gap-2">
+                    <div className={cn("w-7 h-7 sm:w-8 sm:h-8 rounded-[9px] flex items-center justify-center shrink-0 shadow-2xs", iconBg)}>
+                        <CardIcon size={16} strokeWidth={2.4} />
                     </div>
                     <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal">
                         {title}
                     </h3>
                 </div>
                 <div className="flex items-baseline gap-1.5 shrink-0">
-                    <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
+                    <span className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
                         ₹{Number(totalAmount).toLocaleString()}
                     </span>
-                    <span className="text-xs sm:text-sm font-bold text-slate-500 dark:text-zinc-400 tabular-nums">
+                    <span className="text-xs font-bold text-slate-500 dark:text-zinc-400 tabular-nums">
                         ({totalBills} Bills)
                     </span>
                 </div>
@@ -230,9 +230,9 @@ function AdaptiveBreakdownCard({
 
             {/* CASE 0: EMPTY STATE */}
             {itemCount === 0 && (
-                <div className="flex-1 flex flex-col items-center justify-center p-6 text-center my-auto min-h-[200px]">
-                    <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-zinc-800/60 text-slate-400 flex items-center justify-center mb-2.5">
-                        <CardIcon size={22} />
+                <div className="flex-1 flex flex-col items-center justify-center p-4 text-center my-auto min-h-[130px]">
+                    <div className="w-10 h-10 rounded-2xl bg-slate-100 dark:bg-zinc-800/60 text-slate-400 flex items-center justify-center mb-2">
+                        <CardIcon size={20} />
                     </div>
                     <p className="text-sm font-bold text-slate-700 dark:text-zinc-300">No concessions recorded</p>
                     <p className="text-xs text-slate-400 dark:text-zinc-500 mt-0.5">No concessions active for the selected horizon.</p>
@@ -248,47 +248,47 @@ function AdaptiveBreakdownCard({
                 const bills = item.usageCount || item.billsCount || totalBills;
 
                 return (
-                    <div className="flex-1 flex flex-col justify-center my-auto min-h-[200px] p-4 sm:p-5 rounded-2xl bg-white/70 dark:bg-zinc-800/70 border border-slate-200/80 dark:border-zinc-700/80 space-y-3.5 shadow-2xs">
+                    <div className="flex-1 flex flex-col justify-center my-auto min-h-[130px] p-3.5 sm:p-4 rounded-2xl bg-white/70 dark:bg-zinc-800/70 border border-slate-200/80 dark:border-zinc-700/80 space-y-2.5 shadow-2xs">
                         <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3 min-w-0">
-                                <div className={cn("w-10 h-10 sm:w-11 sm:h-11 rounded-[14px] flex items-center justify-center shrink-0 shadow-2xs", iconObj.bg)}>
+                            <div className="flex items-center gap-2.5 min-w-0">
+                                <div className={cn("w-9 h-9 rounded-[12px] flex items-center justify-center shrink-0 shadow-2xs", iconObj.bg)}>
                                     {iconObj.icon}
                                 </div>
                                 <div className="min-w-0">
-                                    <h5 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white truncate" title={name}>
+                                    <h5 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate" title={name}>
                                         {name}
                                     </h5>
-                                    <span className="text-xs sm:text-sm font-medium text-slate-600 dark:text-zinc-400">
+                                    <span className="text-xs font-medium text-slate-600 dark:text-zinc-400">
                                         {type === 'patient' ? "Sole Walk-In Reason Today" : "Exclusive Partner Concession Today"}
                                     </span>
                                 </div>
                             </div>
-                            <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-400 shrink-0">
+                            <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-400 shrink-0">
                                 100% Share
                             </span>
                         </div>
 
                         <div className="flex items-baseline justify-between pt-1 border-t border-slate-200/80 dark:border-zinc-800">
                             <div>
-                                <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400 block">Total Concession</span>
-                                <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
+                                <span className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 block">Total Concession</span>
+                                <span className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
                                     ₹{amt.toLocaleString()}
                                 </span>
                             </div>
                             <div className="text-right">
-                                <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400 block">Bills Recorded</span>
-                                <span className="text-sm sm:text-base font-bold text-slate-800 dark:text-zinc-200 tabular-nums">
+                                <span className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 block">Bills Recorded</span>
+                                <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-200 tabular-nums">
                                     {bills} {bills === 1 ? 'Bill' : 'Bills'}
                                 </span>
                             </div>
                         </div>
 
-                        <div className="space-y-1.5">
-                            <div className="flex justify-between text-xs font-semibold text-slate-500 dark:text-zinc-400">
+                        <div className="space-y-1">
+                            <div className="flex justify-between text-[11px] font-semibold text-slate-500 dark:text-zinc-400">
                                 <span>Volume Saturation</span>
                                 <span>100.0%</span>
                             </div>
-                            <div className="w-full h-[20px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner">
+                            <div className="w-full h-[14px] bg-[#E2ECF6] dark:bg-zinc-800 rounded-full overflow-hidden flex shadow-inner">
                                 <div className={cn("h-full rounded-full transition-all duration-500 w-full", barGradient)} />
                             </div>
                         </div>
@@ -298,7 +298,7 @@ function AdaptiveBreakdownCard({
 
             {/* CASE 2: 2 ROWS -> DUAL COMPARATIVE PODS (ELIMINATES DEAD SPACE) */}
             {itemCount === 2 && (
-                <div className="flex-1 flex flex-col justify-between space-y-3 my-auto min-h-[200px]">
+                <div className="flex-1 flex flex-col justify-between space-y-2 my-auto min-h-[130px]">
                     {items.map((item, idx) => {
                         const name = item.reasonText || item.partnerName || `Preset ${idx + 1}`;
                         const pct = Number(item.percentageOfPatientDiscounts || item.percentageOfPartnerDiscounts) || (idx === 0 ? 58.8 : 41.2);
@@ -354,7 +354,7 @@ function AdaptiveBreakdownCard({
 
             {/* CASE 3: 3 ROWS -> TRIO RANKED CARDS */}
             {itemCount === 3 && (
-                <div className="flex-1 flex flex-col justify-between space-y-2 my-auto min-h-[200px]">
+                <div className="flex-1 flex flex-col justify-between space-y-1.5 my-auto min-h-[130px]">
                     {items.map((item, idx) => {
                         const name = item.reasonText || item.partnerName || `Item ${idx + 1}`;
                         const pct = Number(item.percentageOfPatientDiscounts || item.percentageOfPartnerDiscounts) || (idx === 0 ? 50 : 25);
@@ -407,13 +407,13 @@ function AdaptiveBreakdownCard({
 
             {/* CASE 4 & 5: >= 4 ROWS -> NATURAL STRUCTURED TABLE */}
             {itemCount >= 4 && (
-                <div className="overflow-x-auto flex-1 min-h-[200px]">
+                <div className="overflow-x-auto flex-1 min-h-[130px]">
                     <table className="w-full table-fixed text-left border-collapse">
                         <thead>
                             <tr className="text-xs font-semibold text-slate-400 dark:text-zinc-500 border-b border-slate-200 dark:border-zinc-800">
-                                <th className="pb-2 pl-0.5 font-bold w-[34%]">{type === 'patient' ? "Preset Reason" : "Partner Organization"}</th>
-                                <th className="pb-2 text-right font-bold w-[20%] pr-2">Concession</th>
-                                <th className="pb-2 text-left font-bold pl-3 w-[46%]">Share</th>
+                                <th className="pb-1.5 pl-0.5 font-bold w-[34%]">{type === 'patient' ? "Preset Reason" : "Partner Organization"}</th>
+                                <th className="pb-1.5 text-right font-bold w-[20%] pr-2">Concession</th>
+                                <th className="pb-1.5 text-left font-bold pl-3 w-[46%]">Share</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200/70 dark:divide-zinc-800/70">
@@ -422,8 +422,8 @@ function AdaptiveBreakdownCard({
                                 const pct = Number(r.percentageOfPatientDiscounts || r.percentageOfPartnerDiscounts) || 20;
                                 const iconObj = icons[i % icons.length];
                                 return (
-                                    <tr key={i} className="h-[44px] hover:bg-slate-200/40 dark:hover:bg-zinc-800/40 transition-colors border-b border-slate-200/60 dark:border-zinc-800/60 last:border-b-0">
-                                        <td className="py-1.5 pl-0.5 w-[34%]">
+                                    <tr key={i} className="h-[34px] sm:h-[38px] hover:bg-slate-200/40 dark:hover:bg-zinc-800/40 transition-colors border-b border-slate-200/60 dark:border-zinc-800/60 last:border-b-0">
+                                        <td className="py-1 pl-0.5 w-[34%]">
                                             <div className="flex items-center gap-2 min-w-0">
                                                 <div className={cn("w-7 h-7 sm:w-8 sm:h-8 rounded-[9px] flex items-center justify-center shrink-0 shadow-2xs", iconObj.bg)}>
                                                     {iconObj.icon}
@@ -1141,14 +1141,14 @@ export function DiscountMasterScreen() {
 
             {/* 0. CONCESSION CONTROL DECK (INTELLIGENCE) */}
             {tab === 'intelligence' && intelligence && (
-                <div className="w-full space-y-4 sm:space-y-5 pb-16 animate-in fade-in duration-300">
+                <div className="w-full space-y-3 sm:space-y-3.5 pb-8 animate-in fade-in duration-300">
                     {/* SECTION 1: HERO CONTROL DECK (CARD 1) */}
-                    <div className="min-h-[130px] p-4 sm:p-5 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-center">
+                    <div className="min-h-[115px] p-3.5 sm:p-4.5 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-5 items-center">
                                     {/* Left Column: Total Concessions Granted */}
-                                    <div className="lg:col-span-5 flex items-center gap-4 min-w-0 pr-0 lg:pr-2">
+                                    <div className="lg:col-span-5 flex items-center gap-3.5 min-w-0 pr-0 lg:pr-2">
                                         {/* 3D Tactile Coupon Tag Icon Squircle */}
-                                        <div className="w-[64px] h-[64px] sm:w-[72px] sm:h-[72px] rounded-[18px] bg-gradient-to-b from-[#EBF5FF] to-[#D6EBFE] border border-white/90 dark:border-white/10 shadow-[0_6px_16px_rgba(37,99,235,0.14)] flex items-center justify-center text-[#1C6CF2] dark:text-sky-400 shrink-0">
-                                            <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                                        <div className="w-[56px] h-[56px] sm:w-[64px] sm:h-[64px] rounded-[16px] bg-gradient-to-b from-[#EBF5FF] to-[#D6EBFE] border border-white/90 dark:border-white/10 shadow-[0_6px_16px_rgba(37,99,235,0.14)] flex items-center justify-center text-[#1C6CF2] dark:text-sky-400 shrink-0">
+                                            <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                                                 <path d="M2.5 12.5l9-9a2.12 2.12 0 0 1 3 0l7 7a2.12 2.12 0 0 1 0 3l-9 9a2.12 2.12 0 0 1-3 0l-7-7a2.12 2.12 0 0 1 0-3z"/>
                                                 <circle cx="8" cy="8" r="1.5" fill="currentColor"/>
                                                 <line x1="12" y1="16" x2="16" y2="12"/>
@@ -1156,7 +1156,7 @@ export function DiscountMasterScreen() {
                                                 <circle cx="15" cy="15" r="0.75" fill="currentColor"/>
                                             </svg>
                                         </div>
-                                        <div className="space-y-1 min-w-0 flex-1">
+                                        <div className="space-y-0.5 min-w-0 flex-1">
                                             <div className="flex items-center gap-2 flex-wrap">
                                                 <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal">
                                                     Total Concessions Granted
@@ -1165,7 +1165,7 @@ export function DiscountMasterScreen() {
                                                     {intelligence.overallDiscountPercentage}% Discount Rate
                                                 </span>
                                             </div>
-                                            <p className="text-3xl sm:text-4xl lg:text-[40px] xl:text-[42px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-1 tabular-nums">
+                                            <p className="text-2xl sm:text-3xl lg:text-[36px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums">
                                                 ₹{intelligence.totalDiscountAmount.toLocaleString()}
                                             </p>
                                             <p className="text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-zinc-400 truncate">
@@ -1175,15 +1175,15 @@ export function DiscountMasterScreen() {
                                     </div>
 
                                     {/* Right Column: Channel Concession Split */}
-                                    <div className="lg:col-span-7 lg:border-l lg:border-slate-200 dark:lg:border-zinc-800 lg:pl-6 xl:pl-8 flex flex-col justify-between py-1 min-w-0">
-                                        <div className="flex items-center justify-between pb-2">
+                                    <div className="lg:col-span-7 lg:border-l lg:border-slate-200 dark:lg:border-zinc-800 lg:pl-5 xl:pl-6 flex flex-col justify-between py-1 min-w-0">
+                                        <div className="flex items-center justify-between pb-1.5">
                                             <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal">
                                                 Channel Concession Split (Patient vs B2B Wholesale)
                                             </h3>
                                         </div>
 
                                         {/* Fat iOS Split Slider with Floating Knob */}
-                                        <div className="relative h-[42px] sm:h-[46px] lg:h-[48px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 flex items-center overflow-visible shadow-inner">
+                                        <div className="relative h-[36px] sm:h-[40px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 flex items-center overflow-visible shadow-inner">
                                             <div 
                                                 className="h-full bg-gradient-to-r from-[#60A5FA] via-[#7BB3F0] to-[#93C5FD] rounded-l-full transition-all duration-500 shadow-[0_2px_8px_rgba(96,165,250,0.25)]"
                                                 style={{ width: `${Math.max(5, Math.min(95, intelligence.patientSharePercentage))}%` }}
@@ -1194,58 +1194,58 @@ export function DiscountMasterScreen() {
                                             />
                                             {/* Prominent White Elevated Knob */}
                                             <div 
-                                                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-7 h-7 sm:w-[32px] sm:h-[32px] rounded-full bg-white shadow-[0_3px_12px_rgba(15,35,60,0.25),0_0_0_2px_#FFFFFF] border border-white/80 pointer-events-none transition-all duration-500 z-10"
+                                                className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white shadow-[0_3px_12px_rgba(15,35,60,0.25),0_0_0_2px_#FFFFFF] border border-white/80 pointer-events-none transition-all duration-500 z-10"
                                                 style={{ left: `${Math.max(5, Math.min(95, intelligence.patientSharePercentage))}%` }}
                                             />
                                         </div>
 
                                         {/* Two Channel Stat Pods Below */}
-                                        <div className="flex items-center justify-between pt-2">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-[14px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                                                    <User size={22} strokeWidth={2.3} />
+                                        <div className="flex items-center justify-between pt-1.5">
+                                            <div className="flex items-center gap-2.5">
+                                                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-[12px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                                                    <User size={18} strokeWidth={2.3} />
                                                 </div>
                                                 <div>
                                                     <div className="flex items-baseline gap-1.5">
-                                                        <span className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
+                                                        <span className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
                                                             ₹{intelligence.patientDiscountAmount.toLocaleString()}
                                                         </span>
-                                                        <span className="text-xs sm:text-sm font-bold text-slate-500 dark:text-zinc-400 tabular-nums">
+                                                        <span className="text-xs font-bold text-slate-500 dark:text-zinc-400 tabular-nums">
                                                             ({intelligence.patientSharePercentage}%)
                                                         </span>
                                                     </div>
-                                                    <span className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 font-bold block mt-0.5">
+                                                    <span className="text-[11px] sm:text-xs text-slate-600 dark:text-zinc-400 font-bold block">
                                                         Patient Walk-In
                                                     </span>
                                                 </div>
                                             </div>
 
-                                            <div className="flex items-center gap-3 text-right">
+                                            <div className="flex items-center gap-2.5 text-right">
                                                 <div>
                                                     <div className="flex items-baseline gap-1.5 justify-end">
-                                                        <span className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
+                                                        <span className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
                                                             ₹{intelligence.partnerDiscountAmount.toLocaleString()}
                                                         </span>
-                                                        <span className="text-xs sm:text-sm font-bold text-slate-500 dark:text-zinc-400 tabular-nums">
+                                                        <span className="text-xs font-bold text-slate-500 dark:text-zinc-400 tabular-nums">
                                                             ({intelligence.partnerSharePercentage}%)
                                                         </span>
                                                     </div>
-                                                    <span className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 font-bold block mt-0.5">
+                                                    <span className="text-[11px] sm:text-xs text-slate-600 dark:text-zinc-400 font-bold block">
                                                         B2B Wholesale
                                                     </span>
                                                 </div>
-                                                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-[14px] bg-[#FFF1F2] text-[#FB7185] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                                                    <Building2 size={22} strokeWidth={2.3} />
+                                                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-[12px] bg-[#FFF1F2] text-[#FB7185] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                                                    <Building2 size={18} strokeWidth={2.3} />
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                    {/* SECTION 2: 3-CARD MIDDLE ROW (CARDS 2, 3, 4) */}
-                    <div className="min-h-[220px] grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-12 gap-3 sm:gap-3.5 lg:gap-4 items-stretch">
+                    {/* SECTION 2: 3-CARD MIDDLE ROW (CARDS 2, 3, 4) - PRESERVE 3 COLUMNS ON LAPTOP */}
+                    <div className="min-h-[170px] grid grid-cols-1 md:grid-cols-3 lg:grid-cols-12 gap-2.5 sm:gap-3 lg:gap-3.5 items-stretch">
                                     {/* CARD 2: PATIENT WALK-IN PRESETS */}
-                                    <div className="col-span-1 lg:col-span-1 xl:col-span-4 h-full">
+                                    <div className="col-span-1 md:col-span-1 lg:col-span-4 h-full">
                                         <AdaptiveBreakdownCard
                                             title="Patient Walk-In Presets"
                                             icon={User}
@@ -1260,7 +1260,7 @@ export function DiscountMasterScreen() {
                                     </div>
 
                                     {/* CARD 3: CORPORATE B2B WHOLESALE PARTNERS */}
-                                    <div className="col-span-1 lg:col-span-1 xl:col-span-4 h-full">
+                                    <div className="col-span-1 md:col-span-1 lg:col-span-4 h-full">
                                         <AdaptiveBreakdownCard
                                             title="Corporate B2B Wholesale Partners"
                                             icon={Building2}
@@ -1275,12 +1275,12 @@ export function DiscountMasterScreen() {
                                     </div>
 
                                     {/* CARD 4: CONCESSION MECHANISM MIX */}
-                                    <div className="col-span-1 lg:col-span-2 xl:col-span-4 h-full">
-                                        <div className="p-4 sm:p-5 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex flex-col justify-between space-y-3.5 h-full overflow-hidden">
+                                    <div className="col-span-1 md:col-span-1 lg:col-span-4 h-full">
+                                        <div className="p-3.5 sm:p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex flex-col justify-between space-y-2.5 h-full overflow-hidden">
                                             {/* Clean Single-Row Header (Exact Target Design Sheet) */}
-                                            <div className="flex items-center gap-2.5 pb-2.5 border-b border-slate-200 dark:border-zinc-800 shrink-0">
-                                                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-[10px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/80 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                                                    <Percent size={18} strokeWidth={2.4} />
+                                            <div className="flex items-center gap-2 pb-2 border-b border-slate-200 dark:border-zinc-800 shrink-0">
+                                                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[9px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/80 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                                                    <Percent size={16} strokeWidth={2.4} />
                                                 </div>
                                                 <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal truncate">
                                                     Concession Mechanism Mix
@@ -1311,7 +1311,7 @@ export function DiscountMasterScreen() {
                                                     ? Math.round((100 - share1) * 10) / 10 
                                                     : 0;
 
-                                                // 2-Arc Donut Geometry: r=74, strokeWidth=22 => outer diameter 170px, inner hole 126px
+                                                // 2-Arc Donut Geometry
                                                 const r = 74;
                                                 const strokeWidth = 22;
                                                 const C = 2 * Math.PI * r;
@@ -1326,10 +1326,10 @@ export function DiscountMasterScreen() {
                                                 const offset2 = -(dashGap / 2 + len1 + dashGap);
 
                                                 return (
-                                                    <div className="space-y-3.5 my-auto">
-                                                        <div className="flex items-center justify-between gap-3 sm:gap-4 py-1">
+                                                    <div className="space-y-2.5 my-auto">
+                                                        <div className="flex items-center justify-between gap-2.5 sm:gap-3 py-0.5">
                                                             {/* Donut Ring with Inset Center Symbol Only */}
-                                                            <div className="relative w-[105px] h-[105px] sm:w-[115px] sm:h-[115px] xl:w-[135px] xl:h-[135px] shrink-0 flex items-center justify-center">
+                                                            <div className="relative w-[90px] h-[90px] sm:w-[100px] sm:h-[100px] xl:w-[115px] xl:h-[115px] shrink-0 flex items-center justify-center">
                                                                 <svg 
                                                                     className="w-full h-full -rotate-90 shrink-0" 
                                                                     viewBox="0 0 200 200"
@@ -1470,9 +1470,9 @@ export function DiscountMasterScreen() {
                                 </div>
 
                     {/* SECTION 3: BOTTOM ROW (CARDS 5, 6 & 7) */}
-                    <div className="min-h-[160px] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-3 sm:gap-3.5 lg:gap-4 items-stretch">
+                    <div className="min-h-[130px] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-2.5 sm:gap-3 lg:gap-3.5 items-stretch">
                                     {/* CARD 5: DEPARTMENT CONCESSION SPLIT */}
-                                    <div className="col-span-1 md:col-span-1 lg:col-span-3 p-4 sm:p-5 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex flex-col justify-between space-y-4 h-full overflow-hidden">
+                                    <div className="col-span-1 md:col-span-1 lg:col-span-3 p-3.5 sm:p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex flex-col justify-between space-y-3 h-full overflow-hidden">
                                         <div className="flex items-center gap-2.5 pb-2.5 border-b border-slate-200 dark:border-zinc-800 shrink-0">
                                             <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-[10px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/80 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
                                                 <Share2 size={18} strokeWidth={2.4} />
@@ -1574,10 +1574,10 @@ export function DiscountMasterScreen() {
                                     </div>
 
                                     {/* CARD 6: STAFF AUTHORIZATION LEADERBOARD */}
-                                    <div className="col-span-1 md:col-span-1 lg:col-span-3 p-4 sm:p-5 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex flex-col justify-between space-y-4 h-full overflow-hidden">
-                                        <div className="flex items-center gap-2.5 pb-2.5 border-b border-slate-200 dark:border-zinc-800 shrink-0">
-                                            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-[10px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/80 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
-                                                <Users size={18} strokeWidth={2.4} />
+                                    <div className="col-span-1 md:col-span-1 lg:col-span-3 p-3.5 sm:p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex flex-col justify-between space-y-3 h-full overflow-hidden">
+                                        <div className="flex items-center gap-2 pb-2 border-b border-slate-200 dark:border-zinc-800 shrink-0">
+                                            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[9px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/80 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                                                <Users size={16} strokeWidth={2.4} />
                                             </div>
                                             <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal">
                                                 Staff Authorization Leaderboard
@@ -1591,7 +1591,7 @@ export function DiscountMasterScreen() {
                                     </div>
 
                                     {/* CARD 7: 7-DAY CONCESSION TREND */}
-                                    <div className="col-span-1 md:col-span-2 lg:col-span-6 p-4 sm:p-5 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex flex-col justify-between space-y-4 h-full overflow-hidden">
+                                    <div className="col-span-1 md:col-span-2 lg:col-span-6 p-3.5 sm:p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex flex-col justify-between space-y-3 h-full overflow-hidden">
                                         {/* Header */}
                                         <div className="flex flex-wrap items-center justify-between gap-3 pb-2.5 border-b border-slate-200 dark:border-zinc-800 shrink-0">
                                             <div className="flex items-center gap-2.5">

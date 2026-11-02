@@ -1532,7 +1532,7 @@ export function IntentPanel({ onVisitUpdated }) {
                             </div>
                         ) : isPostProcessingView ? (
                             /* 2. POST-PROCESSING SPLIT VIEW: 50% DOCUMENT PREVIEW & PRINTER / 50% CONSOLIDATION OF VISIT */
-                            <div className="p-4 sm:p-6 max-w-full mx-auto w-full flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-300">
+                            <div className="p-3 sm:p-4 max-w-full mx-auto w-full flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-300">
                                 {/* Inline Print Stylesheet for In-Panel Document Printing */}
                                 <style>{`
                                     @media print {
@@ -1558,17 +1558,17 @@ export function IntentPanel({ onVisitUpdated }) {
                                     }
                                 `}</style>
 
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 xl:gap-6 items-stretch flex-1 min-h-0 overflow-hidden">
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 xl:gap-5 items-stretch flex-1 min-h-0 overflow-hidden">
                                     {/* LEFT HALF (50% Width) - Document Preview & Print Controls */}
                                     <div className="flex flex-col h-full min-h-0 overflow-hidden">
                                         <div className={cn(
-                                            "rounded-[28px] border p-4 sm:p-5 flex flex-col h-full min-h-0 overflow-hidden transition-all",
+                                            "rounded-[22px] border p-3 sm:p-3.5 flex flex-col h-full min-h-0 overflow-hidden transition-all",
                                             isDark
                                                 ? "bg-zinc-950/80 border-zinc-800 shadow-xl"
                                                 : "bg-gradient-to-b from-[#DFEAF3] via-[#D6E4EF] to-[#CCE0EC] border border-[#BACFE0]/80 shadow-[0_14px_40px_rgba(15,35,60,0.08),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_rgba(255,255,255,0.7)]"
                                         )}>
                                             {/* Top Controls Toolbar: Format Switcher & Printer Selector */}
-                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#BACFE0]/80 dark:border-zinc-800 shrink-0">
+                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-[#BACFE0]/80 dark:border-zinc-800 shrink-0">
                                                 {/* Format Switcher Pills */}
                                                 <div className="flex items-center gap-1.5 bg-slate-200/60 dark:bg-zinc-800/60 p-1 rounded-xl border border-slate-300/60 dark:border-zinc-700/60">
                                                     <button
@@ -1853,25 +1853,25 @@ export function IntentPanel({ onVisitUpdated }) {
                                     {/* RIGHT HALF (50% Width) - Visit Consolidation Summary (Three Native Intent Panel Cards) */}
                                     <div className="flex flex-col h-full min-h-0 overflow-hidden">
                                         <div className={cn(
-                                            "rounded-[28px] border p-4 sm:p-5 flex flex-col h-full min-h-0 overflow-hidden transition-all",
+                                            "rounded-[22px] border p-3 sm:p-3.5 flex flex-col h-full min-h-0 overflow-hidden transition-all",
                                             isDark
                                                 ? "bg-zinc-950/80 border-zinc-800 shadow-xl"
                                                 : "bg-gradient-to-b from-[#DFEAF3] via-[#D6E4EF] to-[#CCE0EC] border border-[#BACFE0]/80 shadow-[0_14px_40px_rgba(15,35,60,0.08),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_rgba(255,255,255,0.7)]"
                                         )}>
                                             {/* Header: Check icon, Title, Payer Mode Badge, Token */}
-                                            <div className="flex items-center justify-between pb-3 border-b border-[#BACFE0]/80 dark:border-zinc-800 shrink-0">
-                                                <div className="flex items-center gap-2.5">
-                                                    <div className="w-7 h-7 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-sm shadow-xs">
-                                                        <CheckCircle2 className="w-4 h-4" />
+                                            <div className="flex items-center justify-between pb-2 border-b border-[#BACFE0]/80 dark:border-zinc-800 shrink-0">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-6 h-6 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-xs shadow-xs">
+                                                        <CheckCircle2 className="w-3.5 h-3.5" />
                                                     </div>
-                                                    <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-normal">
+                                                    <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-normal">
                                                         Visit Consolidation Summary
                                                     </h3>
                                                 </div>
 
                                                 <div className="flex items-center gap-2">
                                                     {/* Bill / Token Badge */}
-                                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200/80 dark:border-zinc-700/80 text-xs font-mono font-medium">
+                                                    <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200/80 dark:border-zinc-700/80 text-xs font-mono font-medium">
                                                         <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">Token:</span>
                                                         <span className="font-bold">
                                                             {snapshot?.visit?.visitToken || snapshot?.visit?.token || postProcessingSession?.token || currentVisitId}
@@ -1880,7 +1880,7 @@ export function IntentPanel({ onVisitUpdated }) {
 
                                                     {/* Canonical Payer Mode Pill - Refined, Elegant */}
                                                     <div className={cn(
-                                                        "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border",
+                                                        "flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border",
                                                         billingMode === 'PrepaidPartner'
                                                             ? "bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800"
                                                             : billingMode === 'Insurance'
@@ -1897,10 +1897,10 @@ export function IntentPanel({ onVisitUpdated }) {
                                             </div>
 
                                             {/* Scrollable Summary Cards - Three Native Intent Panel Cards */}
-                                            <div className="flex-1 min-h-0 my-3 overflow-y-auto space-y-4 pr-1.5">
+                                            <div className="flex-1 min-h-0 my-2 overflow-y-auto space-y-2.5 pr-1">
                                                 {/* CARD 1: Patient Identification */}
                                                 <div className={cn(
-                                                    "rounded-[24px] border transition-all p-4 sm:p-5 space-y-3 shrink-0",
+                                                    "rounded-[20px] border transition-all p-3 sm:p-3.5 space-y-2 shrink-0",
                                                     isDark
                                                         ? "bg-zinc-900/90 border-zinc-800 shadow-xl"
                                                         : "bg-gradient-to-b from-[#FFFFFF] via-[#F8FBFE] to-[#F1F6FA] border border-white/95 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.04),inset_0_1px_0_#FFFFFF]"
@@ -2189,10 +2189,10 @@ export function IntentPanel({ onVisitUpdated }) {
                                                             }
                                                         }
                                                     }}
-                                                    className="py-3.5 px-5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 border border-slate-300 dark:border-zinc-700 bg-white/90 dark:bg-zinc-800/90 text-slate-700 dark:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all active:scale-95 shadow-2xs cursor-pointer shrink-0 synos-focus-btn"
+                                                    className="py-2.5 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-slate-300 dark:border-zinc-700 bg-white/90 dark:bg-zinc-800/90 text-slate-700 dark:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all active:scale-95 shadow-2xs cursor-pointer shrink-0 synos-focus-btn"
                                                     title="Enter Visit Correction to amend tests or alter billing"
                                                 >
-                                                    <Pencil className="w-4 h-4 text-synos-primary" />
+                                                    <Pencil className="w-3.5 h-3.5 text-synos-primary" />
                                                     <span>Visit Correction</span>
                                                 </button>
 
@@ -2212,7 +2212,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                             }
                                                         }
                                                     }}
-                                                    className="flex-1 py-3.5 px-6 rounded-2xl font-bold text-base flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 shadow-md active:scale-[0.99] transition-all cursor-pointer synos-focus-btn"
+                                                    className="flex-1 py-2.5 px-5 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 shadow-md active:scale-[0.99] transition-all cursor-pointer synos-focus-btn"
                                                 >
                                                     <span>Done & Back to Queue</span>
                                                     <span className="text-[10px] font-mono opacity-70 bg-white/20 dark:bg-black/20 px-1.5 py-0.5 rounded">Esc</span>

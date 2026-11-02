@@ -266,12 +266,12 @@ export function ControlTowerDashboard() {
             </div>
 
             {/* Operations Section */}
-            <div className="space-y-4">
-                <div className="flex items-center gap-2.5 border-b border-black/[0.06] dark:border-white/[0.06] pb-2.5">
-                    <span className="w-1.5 h-5 bg-synos-primary rounded-full" />
-                    <h2 className="text-sm sm:text-base font-extrabold dark:text-zinc-200 text-zinc-800 tracking-wider uppercase">Operations</h2>
+            <div className="space-y-2.5 sm:space-y-3">
+                <div className="flex items-center gap-2 border-b border-black/[0.06] dark:border-white/[0.06] pb-1.5">
+                    <span className="w-1.5 h-4 bg-synos-primary rounded-full" />
+                    <h2 className="text-xs sm:text-sm font-extrabold dark:text-zinc-200 text-zinc-800 tracking-wider uppercase">Operations</h2>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3 lg:gap-3.5">
                     {operationsCards.map((card) => (
                         <DepartmentCard key={card.title} {...card} onAction={() => navigate(card.path)} cardStyle={cardStyle} cardClasses={cardClasses} />
                     ))}
@@ -279,12 +279,12 @@ export function ControlTowerDashboard() {
             </div>
 
             {/* Pathology Section */}
-            <div className="space-y-4">
-                <div className="flex items-center gap-2.5 border-b border-black/[0.06] dark:border-white/[0.06] pb-2.5">
-                    <span className="w-1.5 h-5 bg-synos-primary rounded-full" />
-                    <h2 className="text-sm sm:text-base font-extrabold dark:text-zinc-200 text-zinc-800 tracking-wider uppercase">Pathology</h2>
+            <div className="space-y-2.5 sm:space-y-3">
+                <div className="flex items-center gap-2 border-b border-black/[0.06] dark:border-white/[0.06] pb-1.5">
+                    <span className="w-1.5 h-4 bg-synos-primary rounded-full" />
+                    <h2 className="text-xs sm:text-sm font-extrabold dark:text-zinc-200 text-zinc-800 tracking-wider uppercase">Pathology</h2>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3 lg:gap-3.5">
                     {pathologyCards.map((card) => (
                         <DepartmentCard key={card.title} {...card} onAction={() => navigate(card.path)} cardStyle={cardStyle} cardClasses={cardClasses} />
                     ))}
@@ -292,12 +292,12 @@ export function ControlTowerDashboard() {
             </div>
 
             {/* Radiology Section */}
-            <div className="space-y-4">
-                <div className="flex items-center gap-2.5 border-b border-black/[0.06] dark:border-white/[0.06] pb-2.5">
-                    <span className="w-1.5 h-5 bg-synos-primary rounded-full" />
-                    <h2 className="text-sm sm:text-base font-extrabold dark:text-zinc-200 text-zinc-800 tracking-wider uppercase">Radiology</h2>
+            <div className="space-y-2.5 sm:space-y-3">
+                <div className="flex items-center gap-2 border-b border-black/[0.06] dark:border-white/[0.06] pb-1.5">
+                    <span className="w-1.5 h-4 bg-synos-primary rounded-full" />
+                    <h2 className="text-xs sm:text-sm font-extrabold dark:text-zinc-200 text-zinc-800 tracking-wider uppercase">Radiology</h2>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3 lg:gap-3.5">
                     {radiologyCards.map((card) => (
                         <DepartmentCard key={card.title} {...card} onAction={() => navigate(card.path)} cardStyle={cardStyle} cardClasses={cardClasses} />
                     ))}
@@ -305,7 +305,7 @@ export function ControlTowerDashboard() {
             </div>
 
             {/* Financial Strip */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
                 <MetricBox label="Total Tests" value={summary?.financials?.totalTestsDone} icon={Activity} watermark={TotalTestsWatermark} cardStyle={cardStyle} cardClasses={cardClasses} />
                 <MetricBox label="Collection" value={`₹ ${summary?.financials?.totalCollectionSales?.toLocaleString()}`} icon={TrendingUp} watermark={CollectionWatermark} isCurrency cardStyle={cardStyle} cardClasses={cardClasses} />
                 <MetricBox label="Referrals" value={`₹ ${summary?.financials?.referralPayouts?.toLocaleString()}`} icon={Wallet} watermark={ReferralsWatermark} isCurrency cardStyle={cardStyle} cardClasses={cardClasses} />
@@ -322,66 +322,66 @@ function DepartmentCard({ title, subtitle, icon: Icon, watermark: Watermark, dat
         <div 
             style={cardStyle}
             className={cn(
-                "rounded-xl flex flex-col transition-all duration-200 group overflow-hidden relative", 
+                "rounded-xl flex flex-col transition-all duration-200 group overflow-hidden relative min-h-[175px]", 
                 cardClasses, 
                 "hover:-translate-y-0.5 hover:shadow-xl"
             )}
         >
             {/* Background Architectural Vector Watermark */}
             {Watermark && (
-                <div className="absolute right-0 top-3 bottom-12 w-[54%] max-w-[270px] pointer-events-none select-none flex items-center justify-end z-0 opacity-95 dark:opacity-45 transition-opacity pr-2">
+                <div className="absolute right-0 top-2 bottom-8 w-[45%] max-w-[180px] pointer-events-none select-none flex items-center justify-end z-0 opacity-40 dark:opacity-20 transition-opacity pr-2">
                     <Watermark className="w-full h-full object-contain object-right" />
                 </div>
             )}
 
-            <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-between relative z-10">
-                <div className="space-y-3">
+            <div className="p-3 sm:p-3.5 flex-1 flex flex-col justify-between relative z-10">
+                <div className="space-y-2">
                     <div className="flex items-start justify-between">
-                        <div className="flex gap-3.5 items-center">
-                            <Icon className="w-5 h-5 text-zinc-500 group-hover:text-synos-primary transition-colors" />
+                        <div className="flex gap-2.5 items-center">
+                            <Icon className="w-4 h-4 text-zinc-500 group-hover:text-synos-primary transition-colors" />
                             <div>
-                                <h3 className="text-base sm:text-lg leading-tight mb-1 font-bold text-zinc-900 dark:text-white">{title}</h3>
-                                <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 font-medium">{data?.secondaryText || subtitle}</p>
+                                <h3 className="text-sm sm:text-base leading-tight mb-0.5 font-bold text-zinc-900 dark:text-white">{title}</h3>
+                                <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400 font-medium">{data?.secondaryText || subtitle}</p>
                             </div>
                         </div>
                         {data?.status && (
-                            <div className="flex items-center gap-1.5 shrink-0 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xs px-2.5 py-1 rounded-full border border-black/5 dark:border-white/5">
+                            <div className="flex items-center gap-1 shrink-0 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xs px-2 py-0.5 rounded-full border border-black/5 dark:border-white/5">
                                 <div className={cn("w-1.5 h-1.5 rounded-full", data.status === 'On Track' ? 'bg-cyan-500' : 'bg-rose-500')} />
-                                <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-200">{data.status}</span>
+                                <span className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-200">{data.status}</span>
                             </div>
                         )}
                     </div>
-                    <div className="flex items-baseline gap-2 pt-1">
-                        <span className="text-4xl sm:text-5xl leading-none font-black text-zinc-900 dark:text-white tabular-nums">{data?.count || 0}</span>
-                        <span className="text-sm font-semibold text-zinc-500 dark:text-zinc-400">{data?.primaryText || 'items pending'}</span>
+                    <div className="flex items-baseline gap-2 pt-0.5">
+                        <span className="text-3xl sm:text-4xl leading-none font-black text-zinc-900 dark:text-white tabular-nums">{data?.count || 0}</span>
+                        <span className="text-xs sm:text-sm font-semibold text-zinc-500 dark:text-zinc-400">{data?.primaryText || 'items pending'}</span>
                     </div>
                 </div>
 
                 {/* Queue or Standby */}
-                <div className="mt-4 pt-2">
+                <div className="mt-2 pt-1">
                     {data?.items && data.items.length > 0 ? (
-                        <div className="space-y-1.5 max-w-[68%]">
-                            {data.items.map((item, idx) => (
-                                <div key={idx} className="flex flex-col text-xs group/item bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xs py-1.5 px-3 rounded-lg shadow-2xs border border-slate-200/80 dark:border-white/10">
-                                    <span className="font-bold text-xs sm:text-sm text-zinc-900 dark:text-white truncate">{item.name}</span>
-                                    <div className="flex items-center justify-between gap-2 mt-0.5">
-                                        <span className="italic opacity-80 truncate text-xs text-zinc-500 dark:text-zinc-400">{item.detail}</span>
+                        <div className="space-y-1 max-w-[75%]">
+                            {data.items.slice(0, 2).map((item, idx) => (
+                                <div key={idx} className="flex flex-col text-xs group/item bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xs py-1 px-2.5 rounded-md shadow-2xs border border-slate-200/80 dark:border-white/10">
+                                    <span className="font-bold text-xs text-zinc-900 dark:text-white truncate">{item.name}</span>
+                                    <div className="flex items-center justify-between gap-1.5 mt-0.5">
+                                        <span className="italic opacity-80 truncate text-[11px] text-zinc-500 dark:text-zinc-400">{item.detail}</span>
                                         <div className="flex items-center gap-1 shrink-0">
                                             <div className={cn("w-1.5 h-1.5 rounded-full", item.statusBadge === 'Critical' ? 'bg-rose-500' : 'bg-cyan-500')} />
-                                            <span className="text-xs font-bold opacity-90">{item.statusBadge}</span>
+                                            <span className="text-[10px] font-bold opacity-90">{item.statusBadge}</span>
                                         </div>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <div className="py-5">
-                            <span className="text-sm font-bold text-zinc-400 dark:text-zinc-500 tracking-wide">Standby</span>
+                        <div className="py-1">
+                            <span className="text-xs font-bold text-zinc-400 dark:text-zinc-500 tracking-wide">Standby</span>
                         </div>
                     )}
                 </div>
             </div>
-            <button onClick={onAction} className="w-full py-3 border-t dark:border-white/5 border-slate-200/80 hover:text-white hover:bg-synos-primary transition-[background-color,color] flex items-center justify-center gap-2 relative z-10 text-sm font-bold text-zinc-700 dark:text-zinc-200">
+            <button onClick={onAction} className="w-full py-2 border-t dark:border-white/5 border-slate-200/80 hover:text-white hover:bg-synos-primary transition-[background-color,color] flex items-center justify-center gap-1.5 relative z-10 text-xs sm:text-sm font-bold text-zinc-700 dark:text-zinc-200">
                 {btnText}
                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
             </button>

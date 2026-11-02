@@ -86,12 +86,12 @@ export function ActionQueue({ columns, data, onAction }) {
         >
             {/* Header Row */}
             <div
-                className={cn("h-12 flex items-center px-4 shrink-0", ui.headerRow)}
+                className={cn("h-9 sm:h-10 flex items-center px-3 sm:px-4 shrink-0", ui.headerRow)}
                 style={!isDark ? {
                     background: `linear-gradient(to bottom, rgba(248, 253, 255, 0.98) 0%, rgba(238, 245, 248, 0.98) 50%, rgba(228, 235, 238, 0.98) 100%)`
                 } : {}}
             >
-                <div className="grid flex-1 grid-cols-[1fr_2fr_1fr_1fr_minmax(100px,auto)] gap-4 items-center">
+                <div className="grid flex-1 grid-cols-[1fr_2fr_1fr_1fr_minmax(100px,auto)] gap-3 sm:gap-4 items-center">
                     {columns.map((col, idx) => (
                         <div key={idx} className={cn(ui.headerText, col.className)}>
                             {col.header}
@@ -101,7 +101,7 @@ export function ActionQueue({ columns, data, onAction }) {
             </div>
 
             {/* Body */}
-            <div className="overflow-auto flex-1 p-2 space-y-2 scrollbar-thin scrollbar-thumb-zinc-800/50 hover:scrollbar-thumb-zinc-700">
+            <div className="overflow-auto flex-1 p-1.5 sm:p-2 space-y-1.5 scrollbar-thin scrollbar-thumb-zinc-800/50 hover:scrollbar-thumb-zinc-700">
                 {data.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-zinc-500/40 space-y-3">
                         <div className="p-6 rounded-full dark:bg-zinc-800/20 bg-black/[0.02] shadow-inner">
@@ -122,7 +122,7 @@ export function ActionQueue({ columns, data, onAction }) {
                                 {/* DATE GROUP HEADER */}
                                 {showHeader && (
                                     <div className={cn(
-                                        "px-3 py-1 type-section-header mt-4 mb-2 flex items-center gap-3",
+                                        "px-3 py-0.5 type-section-header mt-2 mb-1 flex items-center gap-3",
                                         rowIdx === 0 && "mt-0"
                                     )}>
                                         <div className="h-px dark:bg-zinc-800/50 bg-zinc-300/50 flex-1"></div>
@@ -143,7 +143,7 @@ export function ActionQueue({ columns, data, onAction }) {
                                         if (onAction) onAction(row);
                                     }}
                                     className={cn(
-                                        "rounded-lg p-3 grid grid-cols-[1fr_2fr_1fr_1fr_minmax(100px,auto)] gap-4 items-center group cursor-pointer",
+                                        "rounded-lg py-2 px-3 grid grid-cols-[1fr_2fr_1fr_1fr_minmax(100px,auto)] gap-3 sm:gap-4 items-center group cursor-pointer",
                                         ui.row(isHistory, focusedIndex === rowIdx)
                                     )}
                                 >
