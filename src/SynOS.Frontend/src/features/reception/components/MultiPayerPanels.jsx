@@ -144,7 +144,7 @@ export function MultiPayerSelector({
                             }}
                             className={cn(
                                 "relative flex items-center justify-between border text-left transition-all active:scale-[0.99] cursor-pointer synos-focus-card",
-                                isCol ? "p-2.5 sm:p-3 rounded-2xl" : "p-4 rounded-2xl",
+                                isCol ? "p-2 sm:p-2.5 rounded-xl" : "p-3 sm:p-3.5 rounded-xl",
                                 isSelected
                                     ? isDark
                                         ? "bg-blue-950/30 border-blue-500 text-white shadow-xs ring-2 ring-blue-500/20"
@@ -155,27 +155,27 @@ export function MultiPayerSelector({
                                 disabled && "opacity-50 cursor-not-allowed"
                             )}
                         >
-                            <div className="flex items-center gap-3 min-w-0">
+                            <div className="flex items-center gap-2.5 min-w-0">
                                 <div className={cn(
-                                    "rounded-xl flex items-center justify-center shrink-0 transition-colors shadow-xs",
-                                    isCol ? "w-9 h-9 sm:w-10 sm:h-10" : "w-12 h-12",
+                                    "rounded-lg flex items-center justify-center shrink-0 transition-colors shadow-xs",
+                                    isCol ? "w-7 h-7 sm:w-8 sm:h-8" : "w-10 h-10",
                                     isSelected
                                         ? "bg-gradient-to-b from-[#3B82F6] to-[#2563EB] text-white shadow-[0_4px_12px_rgba(37,99,235,0.35)]"
                                         : isDark
                                             ? "bg-zinc-800 text-zinc-400 border border-zinc-700/60"
                                             : "bg-slate-100 text-slate-500 border border-slate-200/60 shadow-2xs"
                                 )}>
-                                    <Icon className={isCol ? "w-4 h-4 sm:w-5 sm:h-5" : "w-6 h-6"} />
+                                    <Icon className={isCol ? "w-3.5 h-3.5 sm:w-4 sm:h-4" : "w-5 h-5"} />
                                 </div>
 
                                 <div className="min-w-0">
                                     <span className={cn(
                                         "truncate leading-tight block text-slate-900 dark:text-white",
-                                        isCol ? "text-sm sm:text-base font-bold" : "text-base font-bold"
+                                        isCol ? "text-xs sm:text-sm font-bold" : "text-sm sm:text-base font-bold"
                                     )}>
                                         {m.title}
                                     </span>
-                                    <p className="text-xs text-slate-500 dark:text-zinc-400 leading-normal mt-0.5 truncate">
+                                    <p className="text-[11px] text-slate-500 dark:text-zinc-400 leading-normal mt-0.5 truncate">
                                         {m.subtitle}
                                     </p>
                                 </div>

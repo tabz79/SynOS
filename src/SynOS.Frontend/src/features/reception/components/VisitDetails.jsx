@@ -144,10 +144,10 @@ export function VisitDetails({
 
     const ui = isDark ? {
         indicator: "bg-slate-600 text-white border-transparent",
-        headerText: "text-xl font-bold text-white tracking-normal",
-        section: "rounded-[24px] bg-zinc-900/90 border border-zinc-800 shadow-xl p-6 sm:p-7 space-y-4",
-        sectionTitle: "text-base font-bold text-white tracking-normal",
-        input: "bg-zinc-950/70 border-zinc-800 text-base focus:border-synos-primary rounded-xl h-12 px-4 tracking-normal",
+        headerText: "text-base sm:text-lg font-bold text-white tracking-normal",
+        section: "rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-xl p-3.5 sm:p-4 space-y-2.5",
+        sectionTitle: "text-xs sm:text-sm font-bold text-white tracking-normal",
+        input: "bg-zinc-950/70 border-zinc-800 text-xs sm:text-sm focus:border-synos-primary rounded-xl h-9 sm:h-10 px-3 tracking-normal",
         suggestionBox: "bg-zinc-900 border-zinc-700 shadow-xl",
         testCard: "bg-zinc-900/60 border-zinc-800 text-zinc-200",
         testCode: "bg-zinc-800 border-zinc-700 text-zinc-300",
@@ -155,13 +155,13 @@ export function VisitDetails({
         modalInput: "bg-black border-zinc-700 text-white focus:border-synos-primary"
     } : {
         indicator: "bg-slate-500 text-white border-transparent shadow-xs",
-        headerText: "text-xl font-bold text-slate-900 tracking-normal",
-        section: "rounded-[24px] bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_12px_36px_rgba(15,35,60,0.07),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF] p-6 sm:p-7 space-y-4",
-        sectionTitle: "text-base font-bold text-slate-900 tracking-normal",
-        input: "bg-white/90 border border-[#D5E2EC] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04)] text-base focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400 rounded-xl h-12 px-4 tracking-normal",
+        headerText: "text-base sm:text-lg font-bold text-slate-900 tracking-normal",
+        section: "rounded-2xl bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF] p-3.5 sm:p-4 space-y-2.5",
+        sectionTitle: "text-xs sm:text-sm font-bold text-slate-900 tracking-normal",
+        input: "bg-white/90 border border-[#D5E2EC] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04)] text-xs sm:text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400 rounded-xl h-9 sm:h-10 px-3 tracking-normal",
         suggestionBox: "bg-white border-slate-200 shadow-xl",
-        testCard: "group flex items-center justify-between p-4 rounded-xl bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] border border-[#CCDCE8] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04),0_1px_0_rgba(255,255,255,0.7)] hover:border-slate-400 transition-all",
-        testCode: "px-3 py-1.5 rounded-lg bg-white text-slate-700 border border-slate-200/90 shadow-[0_1px_2px_rgba(15,35,60,0.06)] font-mono text-xs font-bold",
+        testCard: "group flex items-center justify-between p-2.5 sm:p-3 rounded-xl bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] border border-[#CCDCE8] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04),0_1px_0_rgba(255,255,255,0.7)] hover:border-slate-400 transition-all",
+        testCode: "px-2 py-0.5 rounded-md bg-white text-slate-700 border border-slate-200/90 shadow-[0_1px_2px_rgba(15,35,60,0.06)] font-mono text-xs font-bold",
         modal: "bg-white border-slate-200 text-slate-900",
         modalInput: "bg-slate-50 border-slate-200 text-slate-900 focus:border-blue-500"
     };
@@ -737,7 +737,7 @@ export function VisitDetails({
     if (!visit) return null; // Safety: Should be controlled by parent, but good to have.
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-3 sm:space-y-3.5">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
@@ -1432,9 +1432,9 @@ export function VisitDetails({
                 {(!isReadOnly || isCorrectionIntent) && (
                     <div className="relative z-10">
                         {isProcessing ? (
-                            <Loader2 className="absolute left-4 top-3.5 w-5 h-5 text-synos-primary animate-spin" />
+                            <Loader2 className="absolute left-3 top-2.5 sm:top-3 w-4 h-4 text-synos-primary animate-spin" />
                         ) : (
-                            <Search className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" />
+                            <Search className="absolute left-3 top-2.5 sm:top-3 w-4 h-4 text-slate-400" />
                         )}
                         <input
                             id="input-test-search"
@@ -1524,8 +1524,8 @@ export function VisitDetails({
                                 }
                             }}
                             disabled={isInstitutionalMode && !activeCorporateAccountId}
-                            style={{ paddingLeft: '3rem', paddingRight: '1rem' }}
-                            className={cn(ui.input, "w-full h-12 rounded-xl py-2 focus:outline-none transition-colors disabled:opacity-50 text-base synos-focus-input")}
+                            style={{ paddingLeft: '2.25rem', paddingRight: '0.75rem' }}
+                            className={cn(ui.input, "w-full h-9 sm:h-10 rounded-xl py-1.5 focus:outline-none transition-colors disabled:opacity-50 text-xs sm:text-sm synos-focus-input")}
                         />
 
                         {/* Search Suggestions Dropdown */}
@@ -2186,7 +2186,7 @@ function ReferralCombinedInput({
 
     return (
         <div className="relative">
-            <Search className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" />
+            <Search className="absolute left-3 top-2.5 sm:top-3 w-4 h-4 text-slate-400" />
             <input
                 id={inputId || "input-prescribing-doctor"}
                 data-doctor-input="true"
@@ -2196,8 +2196,8 @@ function ReferralCombinedInput({
                 readOnly={isReadOnly}
                 aria-disabled={isProcessing}
                 placeholder="Search Doctor / Clinic Name..."
-                style={{ paddingLeft: '3rem', paddingRight: '1rem' }}
-                className={cn(ui.input, "w-full h-12 rounded-xl text-base font-medium outline-none transition-colors synos-focus-input", 
+                style={{ paddingLeft: '2.25rem', paddingRight: '0.75rem' }}
+                className={cn(ui.input, "w-full h-9 sm:h-10 rounded-xl text-xs sm:text-sm font-medium outline-none transition-colors synos-focus-input", 
                     isProcessing && "opacity-70 pointer-events-none",
                     isReadOnly && "cursor-default bg-slate-50/80 dark:bg-zinc-850 font-bold text-zinc-900 dark:text-zinc-100 border-slate-300 dark:border-zinc-700 shadow-none")}
                 onFocus={() => {

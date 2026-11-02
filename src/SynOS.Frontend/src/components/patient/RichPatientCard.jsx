@@ -143,7 +143,7 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
                 {/* COL 1: AVATAR (Row Span 3) */}
                 <div className={cn(
                     "row-span-3 self-center rounded-full flex items-center justify-center shrink-0 transition-transform",
-                    isLocked ? "w-14 h-14" : "w-12 h-12",
+                    isLocked ? "w-10 h-10 sm:w-11 sm:h-11" : "w-9 h-9 sm:w-10 sm:h-10",
                     isLocked
                         ? (isDark 
                             ? "bg-sky-950/60 text-sky-400 border-2 border-zinc-800 shadow-md" 
@@ -152,13 +152,13 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
                             ? "bg-zinc-800 text-zinc-300 border border-zinc-700 shadow-xs" 
                             : "bg-slate-100 text-slate-600 border border-slate-200 shadow-xs")
                 )}>
-                    <User className={isLocked ? "w-7 h-7 text-[#0284C7]" : "w-6 h-6"} />
+                    <User className={isLocked ? "w-5 h-5 text-[#0284C7]" : "w-4 h-4"} />
                 </div>
 
                 {/* ROW 1: NAME + SELECT */}
                 <div className="flex items-center pt-0.5">
                     <div className={cn(
-                        "truncate text-xl sm:text-2xl font-bold leading-tight tracking-normal",
+                        "truncate text-base sm:text-lg font-bold leading-tight tracking-normal",
                         cardUi.name
                     )}>
                         {name}
@@ -273,23 +273,23 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
                 </div>
 
                 {/* ROW 2: META + LABEL */}
-                <div className="flex flex-wrap items-center gap-2 leading-none">
+                <div className="flex flex-wrap items-center gap-1.5 leading-none">
                     {/* Age */}
-                    <span className={cn("px-3 py-1.5 rounded-xl font-semibold text-sm", cardUi.badge)}>
+                    <span className={cn("px-2 py-0.5 rounded-md font-semibold text-xs", cardUi.badge)}>
                         Age: {detailedAge.text}
                     </span>
                     {/* Gender */}
-                    <span className={cn("px-3 py-1.5 rounded-xl font-bold text-sm", cardUi.badge)}>
+                    <span className={cn("px-2 py-0.5 rounded-md font-bold text-xs", cardUi.badge)}>
                         {genderInitial}
                     </span>
                     {/* Mobile */}
-                    <span className={cn("px-3 py-1.5 rounded-xl font-mono text-sm font-semibold", cardUi.badge)}>
+                    <span className={cn("px-2 py-0.5 rounded-md font-mono text-xs font-semibold", cardUi.badge)}>
                         {mobile}
                     </span>
                 </div>
                 <div className="justify-self-end leading-none">
                     {lastVisitDate && (
-                        <span className="text-xs uppercase font-bold tracking-wider text-slate-400 dark:text-zinc-500">
+                        <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-zinc-500">
                             LAST VISIT
                         </span>
                     )}
@@ -297,7 +297,7 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
 
                 {/* ROW 3: MRN + DATE */}
                 <div className="flex items-center leading-none">
-                    <div className={cn("px-3 py-1.5 rounded-xl text-sm font-mono tracking-normal inline-flex items-center gap-1.5", cardUi.mrn)}>
+                    <div className={cn("px-2 py-0.5 rounded-md text-xs font-mono tracking-normal inline-flex items-center gap-1.5", cardUi.mrn)}>
                         <span className="font-bold opacity-60 text-xs">MRN:</span>
                         <span className="font-bold">{mrn}</span>
                     </div>

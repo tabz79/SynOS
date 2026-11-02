@@ -1461,20 +1461,20 @@ export function IntentPanel({ onVisitUpdated }) {
         <div 
             ref={panelRef} 
             className={cn(
-                "flex flex-col h-full overflow-hidden rounded-[28px] transition-[width,transform,opacity] duration-300 ease-out z-30", 
+                "flex flex-col h-full overflow-hidden rounded-[24px] transition-[width,transform,opacity] duration-300 ease-out z-30 shadow-2xl", 
                 (hasPatient || isCorrectionIntent) 
-                    ? "absolute right-0 top-0 bottom-0 w-[85vw] max-w-[85vw]" 
-                    : "absolute right-0 top-0 bottom-0 w-[90vw] sm:w-[40vw] max-w-[42vw] min-w-[380px]",
+                    ? "absolute right-0 top-0 bottom-0 w-[96vw] sm:w-[90vw] lg:w-[80vw] xl:w-[75vw] 2xl:w-[70vw] max-w-[1020px]" 
+                    : "absolute right-0 top-0 bottom-0 w-[92vw] sm:w-[42vw] max-w-[44vw] min-w-[360px]",
                 ui.panel
             )}
         >
             {/* Header */}
-            <div className={cn("h-16 flex items-center justify-between px-6 shrink-0", ui.header)}>
-                <div className="flex items-center gap-3">
-                    <h2 className={cn("text-2xl font-bold tracking-normal flex items-baseline gap-2.5", ui.title)}>
+            <div className={cn("h-12 sm:h-13 flex items-center justify-between px-4 sm:px-6 shrink-0 border-b border-black/[0.06] dark:border-white/[0.06]", ui.header)}>
+                <div className="flex items-center gap-2.5">
+                    <h2 className={cn("text-lg sm:text-xl font-bold tracking-normal flex items-baseline gap-2", ui.title)}>
                         {panelTitle}
                         {(snapshot?.visit?.visitToken || snapshot?.visit?.token) && (
-                            <span className="text-xs font-mono font-bold text-slate-500 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800/80 px-2.5 py-0.5 rounded-full border border-slate-200/60 dark:border-zinc-700/60">
+                            <span className="text-xs font-mono font-bold text-slate-500 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800/80 px-2 py-0.5 rounded-full border border-slate-200/60 dark:border-zinc-700/60">
                                 #{snapshot?.visit?.visitToken || snapshot?.visit?.token}
                             </span>
                         )}
@@ -2224,29 +2224,29 @@ export function IntentPanel({ onVisitUpdated }) {
                             </div>
                         ) : (
                             /* 3. IDENTIFIED PATIENT WORKFLOW (Strictly following iOS Target Design) */
-                            <div className="p-4 sm:p-6 max-w-full mx-auto w-full flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-300">
+                            <div className="p-3 sm:p-4 max-w-full mx-auto w-full flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-300">
                                 {/* 2-COLUMN UNIFIED WORKFLOW (Left 7 cols: Patient Identification -> Visit Details | Right 5 cols: Billing & Payer Mode -> Financials) */}
-                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 xl:gap-6 items-stretch flex-1 min-h-0 overflow-hidden">
+                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-3.5 xl:gap-4 items-stretch flex-1 min-h-0 overflow-hidden">
                                     {/* LEFT COLUMN: 7 Cols */}
-                                    <div className="lg:col-span-7 flex flex-col gap-5 h-full min-h-0 overflow-y-auto pr-1.5">
+                                    <div className="lg:col-span-7 flex flex-col gap-3 h-full min-h-0 overflow-y-auto pr-1">
                                         {/* Step 1: Patient Identification (Compressed height, tightly hugs content, collapsible) */}
                                         <div className={cn(
-                                            "rounded-[28px] border transition-all shrink-0",
-                                            isPatientCardCollapsed ? "p-3 sm:p-3.5 space-y-0" : "p-4 sm:p-5 space-y-3",
+                                            "rounded-2xl border transition-all shrink-0",
+                                            isPatientCardCollapsed ? "p-2.5 sm:p-3 space-y-0" : "p-3 sm:p-3.5 space-y-2",
                                             isDark
                                                 ? "bg-zinc-900/90 border-zinc-800 shadow-xl"
-                                                : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_14px_40px_rgba(15,35,60,0.08),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"
+                                                : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"
                                         )}>
                                             <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2.5">
-                                                    <div className="w-7 h-7 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-sm shadow-xs">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-6 h-6 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-xs shadow-xs">
                                                         1
                                                     </div>
-                                                    <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-normal">
+                                                    <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-normal">
                                                         Patient Identification
                                                     </h3>
                                                     {isPatientCardCollapsed && (
-                                                        <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-zinc-300 ml-2">
+                                                        <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-zinc-300 ml-2">
                                                             <span className="font-bold text-slate-900 dark:text-white">{displayedPatient?.fullName || displayedPatient?.name}</span>
                                                             <span>•</span>
                                                             <span>{displayedPatient?.age ? `${displayedPatient.age} Yrs` : ''} {displayedPatient?.gender || ''}</span>
@@ -2259,12 +2259,12 @@ export function IntentPanel({ onVisitUpdated }) {
                                                         </div>
                                                     )}
                                                 </div>
-                                                <div className="flex items-center gap-2">
+                                                <div className="flex items-center gap-1.5">
                                                     {isPatientCardCollapsed ? (
                                                         <button
                                                             type="button"
                                                             onClick={() => setIsPatientCardCollapsed(false)}
-                                                            className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 transition-all cursor-pointer active:scale-95"
+                                                            className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 transition-all cursor-pointer active:scale-95"
                                                             title="Expand Patient Identification"
                                                         >
                                                             <span>Expand</span>
@@ -2274,7 +2274,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                         <button
                                                             type="button"
                                                             onClick={() => setIsPatientCardCollapsed(true)}
-                                                            className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 transition-all cursor-pointer active:scale-95"
+                                                            className="flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 transition-all cursor-pointer active:scale-95"
                                                             title="Minimize"
                                                         >
                                                             <span>Minimize</span>
@@ -2286,7 +2286,7 @@ export function IntentPanel({ onVisitUpdated }) {
 
                                             {/* The Patient Card (Recessed Pod - Compacted) */}
                                             {!isPatientCardCollapsed && (
-                                                <div className="rounded-2xl border border-[#CCDCE8] dark:border-zinc-800 bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] dark:bg-zinc-950/80 p-3.5 sm:p-4 shadow-[inset_0_1px_3px_rgba(15,35,60,0.06),0_1px_0_rgba(255,255,255,0.7)] animate-in fade-in duration-200">
+                                                <div className="rounded-xl border border-[#CCDCE8] dark:border-zinc-800 bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] dark:bg-zinc-950/80 p-2.5 sm:p-3 shadow-[inset_0_1px_3px_rgba(15,35,60,0.06),0_1px_0_rgba(255,255,255,0.7)] animate-in fade-in duration-200">
                                                     <RichPatientCard
                                                         patient={displayedPatient}
                                                         onAction={handleClearPatient}
@@ -2325,21 +2325,21 @@ export function IntentPanel({ onVisitUpdated }) {
                                     </div>
 
                                     {/* RIGHT COLUMN: 5 Cols (Split-scroll: independent smooth scroll for Billing & Financials) */}
-                                    <div className="lg:col-span-5 flex flex-col gap-4 h-full min-h-0 overflow-y-auto pr-1.5">
+                                    <div className="lg:col-span-5 flex flex-col gap-3 h-full min-h-0 overflow-y-auto pr-1">
                                         {/* Billing & Payer Mode */}
                                         <div 
                                             ref={payerModeContainerRef}
                                             className={cn(
-                                                "rounded-[28px] border transition-all flex flex-col justify-between shrink-0",
-                                                isPayerModeCollapsed ? "p-4 sm:p-5 space-y-3" : "p-6 sm:p-7 space-y-4",
+                                                "rounded-2xl border transition-all flex flex-col justify-between shrink-0",
+                                                isPayerModeCollapsed ? "p-3 sm:p-3.5 space-y-2" : "p-3.5 sm:p-4 space-y-2.5",
                                                 isDark
                                                     ? "bg-zinc-900/90 border-zinc-800 shadow-xl"
-                                                    : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_14px_40px_rgba(15,35,60,0.08),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"
+                                                    : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"
                                             )}
                                         >
                                             <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2.5">
-                                                    <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-normal">
+                                                <div className="flex items-center gap-2">
+                                                    <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-normal">
                                                         Billing & Payer Mode
                                                     </h3>
                                                 </div>
@@ -2514,7 +2514,7 @@ export function IntentPanel({ onVisitUpdated }) {
 
             {/* Footer / Status Bar - UNIFIED BUTTON (Hidden during 50/50 Live Preview) */}
             {!isPostProcessingView && (
-                <div className={cn("p-4 flex justify-center shrink-0", ui.footer)}>
+                <div className={cn("py-2.5 px-4 flex justify-center shrink-0 border-t border-black/[0.06] dark:border-white/[0.06]", ui.footer)}>
                     {isCorrectionIntent ? (
                         <div className="flex items-center gap-2 w-full max-w-2xl mx-auto">
                             <button
@@ -2688,10 +2688,10 @@ export function IntentPanel({ onVisitUpdated }) {
                                                 type="button"
                                                 id="btn-cancel-visit"
                                                 onClick={() => setIsCancelModalOpen(true)}
-                                                className="py-3.5 px-4 rounded-2xl border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 font-bold text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn"
+                                                className="py-2.5 px-3.5 rounded-xl border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn"
                                                 title="Cancel this visit with reason and process refund"
                                             >
-                                                <Ban className="w-4 h-4" />
+                                                <Ban className="w-3.5 h-3.5" />
                                                 <span>Cancel Visit</span>
                                             </button>
                                             <button
@@ -2699,7 +2699,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                 id="btn-delete-draft"
                                                 onClick={handleDeleteDraftVisit}
                                                 disabled={isDeletingDraft || isLoading || isActionSubmitting}
-                                                className="py-3.5 px-3 rounded-2xl border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800/60 font-bold text-xs flex items-center justify-center gap-1 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn disabled:opacity-50"
+                                                className="py-2.5 px-3 rounded-xl border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800/60 font-bold text-xs flex items-center justify-center gap-1 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn disabled:opacity-50"
                                                 title="Permanently discard and delete this draft visit"
                                             >
                                                 {isDeletingDraft ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
@@ -2711,7 +2711,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                         onClick={handleUnifiedAction}
                                         disabled={!isActionEnabled || isLoading || isActionSubmitting}
                                         className={cn(
-                                            "w-full py-3.5 px-6 rounded-2xl font-bold text-base flex items-center justify-center gap-2 transition-all active:scale-[0.99] shadow-sm synos-focus-btn",
+                                            "w-full py-2.5 px-5 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition-all active:scale-[0.99] shadow-sm synos-focus-btn",
                                             (isActionEnabled && !isActionSubmitting)
                                                 ? ui.actionBtn.enabled
                                                 : ui.actionBtn.disabled

@@ -225,26 +225,26 @@ export function BillingSummary({
 
     const ui = isDark ? {
         indicator: "bg-slate-600 text-white border-transparent",
-        headerText: "text-xl font-bold text-white tracking-normal",
-        container: "rounded-[24px] bg-zinc-900/90 border border-zinc-800 shadow-xl p-6 sm:p-7 space-y-4",
-        rowLabel: "text-base font-medium text-zinc-400",
-        rowValue: "text-base font-mono font-bold text-zinc-100",
-        netLabel: "text-base font-bold text-white",
-        netValue: "text-xl font-bold text-white font-mono",
-        input: "bg-zinc-950/70 border-zinc-800 text-base focus:border-synos-primary rounded-xl h-12 px-4 tracking-normal",
+        headerText: "text-base sm:text-lg font-bold text-white tracking-normal",
+        container: "rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-xl p-3.5 sm:p-4 space-y-2.5",
+        rowLabel: "text-xs sm:text-sm font-medium text-zinc-400",
+        rowValue: "text-xs sm:text-sm font-mono font-bold text-zinc-100",
+        netLabel: "text-sm sm:text-base font-bold text-white",
+        netValue: "text-lg sm:text-xl font-bold text-white font-mono",
+        input: "bg-zinc-950/70 border-zinc-800 text-xs sm:text-sm focus:border-synos-primary rounded-xl h-9 sm:h-10 px-3 tracking-normal",
         method: {
             active: "bg-zinc-100 text-zinc-900 border-white shadow-md",
             inactive: "bg-zinc-900 text-zinc-400 border-zinc-800 hover:bg-zinc-800"
         }
     } : {
         indicator: "bg-slate-500 text-white border-transparent shadow-xs",
-        headerText: "text-xl font-bold text-slate-900 tracking-normal",
-        container: "rounded-[24px] bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_12px_36px_rgba(15,35,60,0.07),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF] p-6 sm:p-7 space-y-4",
-        rowLabel: "text-base font-medium text-slate-600",
-        rowValue: "text-base font-mono font-bold text-slate-900",
-        netLabel: "text-base font-bold text-slate-900",
-        netValue: "text-xl font-bold text-slate-900 font-mono",
-        input: "bg-white/90 border border-[#D5E2EC] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04)] text-base focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all rounded-xl h-12 px-4 tracking-normal",
+        headerText: "text-base sm:text-lg font-bold text-slate-900 tracking-normal",
+        container: "rounded-2xl bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF] p-3.5 sm:p-4 space-y-2.5",
+        rowLabel: "text-xs sm:text-sm font-medium text-slate-600",
+        rowValue: "text-xs sm:text-sm font-mono font-bold text-slate-900",
+        netLabel: "text-sm sm:text-base font-bold text-slate-900",
+        netValue: "text-lg sm:text-xl font-bold text-slate-900 font-mono",
+        input: "bg-white/90 border border-[#D5E2EC] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04)] text-xs sm:text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all rounded-xl h-9 sm:h-10 px-3 tracking-normal",
         method: {
             active: "bg-slate-900 text-white border-slate-900 shadow-sm",
             inactive: "bg-white border-slate-200/90 text-slate-700 hover:bg-slate-50 shadow-[0_1px_2px_rgba(15,35,60,0.04)]"

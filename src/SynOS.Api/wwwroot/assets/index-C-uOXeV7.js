@@ -30339,16 +30339,16 @@ Details: ${A.inner}`);
       className: ve("flex flex-col h-full rounded-xl border overflow-hidden transition-all duration-300", f.container),
       children: [
         r.jsx("div", {
-          className: ve("h-12 flex items-center px-4 shrink-0", f.headerRow),
+          className: ve("h-9 sm:h-10 flex items-center px-3 shrink-0", f.headerRow),
           style: I,
           children: r.jsxs("div", {
-            className: "flex items-center gap-2",
+            className: "flex items-center gap-1.5",
             children: [
               r.jsx(fs, {
-                className: "h-4 w-4 text-green-600"
+                className: "h-3.5 w-3.5 text-green-600"
               }),
               r.jsx("h2", {
-                className: ve("text-sm font-medium", o ? "text-zinc-200" : "text-zinc-800"),
+                className: ve("text-xs sm:text-sm font-semibold", o ? "text-zinc-200" : "text-zinc-800"),
                 children: "Live Stream"
               })
             ]
@@ -30359,7 +30359,7 @@ Details: ${A.inner}`);
           children: r.jsx(lBe, {
             className: "h-full",
             children: r.jsxs("div", {
-              className: "p-3 space-y-5",
+              className: "p-2 sm:p-2.5 space-y-3.5",
               children: [
                 i && r.jsx("div", {
                   className: "text-center text-xs text-muted-foreground py-4",
@@ -30626,15 +30626,15 @@ Details: ${A.inner}`);
         className: "grid grid-cols-[auto_1fr_auto] gap-x-4 gap-y-1.5 items-center",
         children: [
           r.jsx("div", {
-            className: ve("row-span-3 self-center rounded-full flex items-center justify-center shrink-0 transition-transform", s ? "w-14 h-14" : "w-12 h-12", s ? D ? "bg-sky-950/60 text-sky-400 border-2 border-zinc-800 shadow-md" : "bg-gradient-to-b from-[#E0F2FE] to-[#BAE6FD] text-[#0284C7] border-2 border-white shadow-[0_3px_10px_rgba(2,132,199,0.2)]" : D ? "bg-zinc-800 text-zinc-300 border border-zinc-700 shadow-xs" : "bg-slate-100 text-slate-600 border border-slate-200 shadow-xs"),
+            className: ve("row-span-3 self-center rounded-full flex items-center justify-center shrink-0 transition-transform", s ? "w-10 h-10 sm:w-11 sm:h-11" : "w-9 h-9 sm:w-10 sm:h-10", s ? D ? "bg-sky-950/60 text-sky-400 border-2 border-zinc-800 shadow-md" : "bg-gradient-to-b from-[#E0F2FE] to-[#BAE6FD] text-[#0284C7] border-2 border-white shadow-[0_3px_10px_rgba(2,132,199,0.2)]" : D ? "bg-zinc-800 text-zinc-300 border border-zinc-700 shadow-xs" : "bg-slate-100 text-slate-600 border border-slate-200 shadow-xs"),
             children: r.jsx(Zs, {
-              className: s ? "w-7 h-7 text-[#0284C7]" : "w-6 h-6"
+              className: s ? "w-5 h-5 text-[#0284C7]" : "w-4 h-4"
             })
           }),
           r.jsx("div", {
             className: "flex items-center pt-0.5",
             children: r.jsx("div", {
-              className: ve("truncate text-xl sm:text-2xl font-bold leading-tight tracking-normal", R.name),
+              className: ve("truncate text-base sm:text-lg font-bold leading-tight tracking-normal", R.name),
               children: g
             })
           }),
@@ -30712,21 +30712,21 @@ Details: ${A.inner}`);
             ]
           }),
           r.jsxs("div", {
-            className: "flex flex-wrap items-center gap-2 leading-none",
+            className: "flex flex-wrap items-center gap-1.5 leading-none",
             children: [
               r.jsxs("span", {
-                className: ve("px-3 py-1.5 rounded-xl font-semibold text-sm", R.badge),
+                className: ve("px-2 py-0.5 rounded-md font-semibold text-xs", R.badge),
                 children: [
                   "Age: ",
                   m.text
                 ]
               }),
               r.jsx("span", {
-                className: ve("px-3 py-1.5 rounded-xl font-bold text-sm", R.badge),
+                className: ve("px-2 py-0.5 rounded-md font-bold text-xs", R.badge),
                 children: C
               }),
               r.jsx("span", {
-                className: ve("px-3 py-1.5 rounded-xl font-mono text-sm font-semibold", R.badge),
+                className: ve("px-2 py-0.5 rounded-md font-mono text-xs font-semibold", R.badge),
                 children: d
               })
             ]
@@ -30734,14 +30734,14 @@ Details: ${A.inner}`);
           r.jsx("div", {
             className: "justify-self-end leading-none",
             children: E && r.jsx("span", {
-              className: "text-xs uppercase font-bold tracking-wider text-slate-400 dark:text-zinc-500",
+              className: "text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-zinc-500",
               children: "LAST VISIT"
             })
           }),
           r.jsx("div", {
             className: "flex items-center leading-none",
             children: r.jsxs("div", {
-              className: ve("px-3 py-1.5 rounded-xl text-sm font-mono tracking-normal inline-flex items-center gap-1.5", R.mrn),
+              className: ve("px-2 py-0.5 rounded-md text-xs font-mono tracking-normal inline-flex items-center gap-1.5", R.mrn),
               children: [
                 r.jsx("span", {
                   className: "font-bold opacity-60 text-xs",
@@ -31968,26 +31968,26 @@ Details: ${A.inner}`);
               onClick: () => {
                 A && o ? o() : n || (t !== f.id && e(f.id), u());
               },
-              className: ve("relative flex items-center justify-between border text-left transition-all active:scale-[0.99] cursor-pointer synos-focus-card", c ? "p-2.5 sm:p-3 rounded-2xl" : "p-4 rounded-2xl", B ? i ? "bg-blue-950/30 border-blue-500 text-white shadow-xs ring-2 ring-blue-500/20" : "bg-gradient-to-b from-[#E2F0FD] to-[#D3E8FA] border-2 border-[#3B82F6] text-[#1E3A8A] shadow-[0_6px_20px_rgba(37,99,235,0.18),inset_0_1px_0_#FFFFFF]" : i ? "bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200" : "bg-gradient-to-b from-[#FFFFFF] to-[#F1F6FA] border border-[#D5E2EC] text-slate-700 hover:border-slate-300 hover:shadow-[0_6px_20px_rgba(15,35,60,0.08)] shadow-[0_4px_14px_rgba(15,35,60,0.05),0_1px_2px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]", n && "opacity-50 cursor-not-allowed"),
+              className: ve("relative flex items-center justify-between border text-left transition-all active:scale-[0.99] cursor-pointer synos-focus-card", c ? "p-2 sm:p-2.5 rounded-xl" : "p-3 sm:p-3.5 rounded-xl", B ? i ? "bg-blue-950/30 border-blue-500 text-white shadow-xs ring-2 ring-blue-500/20" : "bg-gradient-to-b from-[#E2F0FD] to-[#D3E8FA] border-2 border-[#3B82F6] text-[#1E3A8A] shadow-[0_6px_20px_rgba(37,99,235,0.18),inset_0_1px_0_#FFFFFF]" : i ? "bg-zinc-900 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200" : "bg-gradient-to-b from-[#FFFFFF] to-[#F1F6FA] border border-[#D5E2EC] text-slate-700 hover:border-slate-300 hover:shadow-[0_6px_20px_rgba(15,35,60,0.08)] shadow-[0_4px_14px_rgba(15,35,60,0.05),0_1px_2px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]", n && "opacity-50 cursor-not-allowed"),
               children: [
                 r.jsxs("div", {
-                  className: "flex items-center gap-3 min-w-0",
+                  className: "flex items-center gap-2.5 min-w-0",
                   children: [
                     r.jsx("div", {
-                      className: ve("rounded-xl flex items-center justify-center shrink-0 transition-colors shadow-xs", c ? "w-9 h-9 sm:w-10 sm:h-10" : "w-12 h-12", B ? "bg-gradient-to-b from-[#3B82F6] to-[#2563EB] text-white shadow-[0_4px_12px_rgba(37,99,235,0.35)]" : i ? "bg-zinc-800 text-zinc-400 border border-zinc-700/60" : "bg-slate-100 text-slate-500 border border-slate-200/60 shadow-2xs"),
+                      className: ve("rounded-lg flex items-center justify-center shrink-0 transition-colors shadow-xs", c ? "w-7 h-7 sm:w-8 sm:h-8" : "w-10 h-10", B ? "bg-gradient-to-b from-[#3B82F6] to-[#2563EB] text-white shadow-[0_4px_12px_rgba(37,99,235,0.35)]" : i ? "bg-zinc-800 text-zinc-400 border border-zinc-700/60" : "bg-slate-100 text-slate-500 border border-slate-200/60 shadow-2xs"),
                       children: r.jsx(m, {
-                        className: c ? "w-4 h-4 sm:w-5 sm:h-5" : "w-6 h-6"
+                        className: c ? "w-3.5 h-3.5 sm:w-4 sm:h-4" : "w-5 h-5"
                       })
                     }),
                     r.jsxs("div", {
                       className: "min-w-0",
                       children: [
                         r.jsx("span", {
-                          className: ve("truncate leading-tight block text-slate-900 dark:text-white", c ? "text-sm sm:text-base font-bold" : "text-base font-bold"),
+                          className: ve("truncate leading-tight block text-slate-900 dark:text-white", c ? "text-xs sm:text-sm font-bold" : "text-sm sm:text-base font-bold"),
                           children: f.title
                         }),
                         r.jsx("p", {
-                          className: "text-xs text-slate-500 dark:text-zinc-400 leading-normal mt-0.5 truncate",
+                          className: "text-[11px] text-slate-500 dark:text-zinc-400 leading-normal mt-0.5 truncate",
                           children: f.subtitle
                         })
                       ]
@@ -33450,10 +33450,10 @@ Details: ${A.inner}`);
     ]);
     const { theme: pt } = is(), ct = pt === "dark", We = ct ? {
       indicator: "bg-slate-600 text-white border-transparent",
-      headerText: "text-xl font-bold text-white tracking-normal",
-      section: "rounded-[24px] bg-zinc-900/90 border border-zinc-800 shadow-xl p-6 sm:p-7 space-y-4",
-      sectionTitle: "text-base font-bold text-white tracking-normal",
-      input: "bg-zinc-950/70 border-zinc-800 text-base focus:border-synos-primary rounded-xl h-12 px-4 tracking-normal",
+      headerText: "text-base sm:text-lg font-bold text-white tracking-normal",
+      section: "rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-xl p-3.5 sm:p-4 space-y-2.5",
+      sectionTitle: "text-xs sm:text-sm font-bold text-white tracking-normal",
+      input: "bg-zinc-950/70 border-zinc-800 text-xs sm:text-sm focus:border-synos-primary rounded-xl h-9 sm:h-10 px-3 tracking-normal",
       suggestionBox: "bg-zinc-900 border-zinc-700 shadow-xl",
       testCard: "bg-zinc-900/60 border-zinc-800 text-zinc-200",
       testCode: "bg-zinc-800 border-zinc-700 text-zinc-300",
@@ -33461,13 +33461,13 @@ Details: ${A.inner}`);
       modalInput: "bg-black border-zinc-700 text-white focus:border-synos-primary"
     } : {
       indicator: "bg-slate-500 text-white border-transparent shadow-xs",
-      headerText: "text-xl font-bold text-slate-900 tracking-normal",
-      section: "rounded-[24px] bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_12px_36px_rgba(15,35,60,0.07),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF] p-6 sm:p-7 space-y-4",
-      sectionTitle: "text-base font-bold text-slate-900 tracking-normal",
-      input: "bg-white/90 border border-[#D5E2EC] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04)] text-base focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400 rounded-xl h-12 px-4 tracking-normal",
+      headerText: "text-base sm:text-lg font-bold text-slate-900 tracking-normal",
+      section: "rounded-2xl bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF] p-3.5 sm:p-4 space-y-2.5",
+      sectionTitle: "text-xs sm:text-sm font-bold text-slate-900 tracking-normal",
+      input: "bg-white/90 border border-[#D5E2EC] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04)] text-xs sm:text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400 rounded-xl h-9 sm:h-10 px-3 tracking-normal",
       suggestionBox: "bg-white border-slate-200 shadow-xl",
-      testCard: "group flex items-center justify-between p-4 rounded-xl bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] border border-[#CCDCE8] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04),0_1px_0_rgba(255,255,255,0.7)] hover:border-slate-400 transition-all",
-      testCode: "px-3 py-1.5 rounded-lg bg-white text-slate-700 border border-slate-200/90 shadow-[0_1px_2px_rgba(15,35,60,0.06)] font-mono text-xs font-bold",
+      testCard: "group flex items-center justify-between p-2.5 sm:p-3 rounded-xl bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] border border-[#CCDCE8] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04),0_1px_0_rgba(255,255,255,0.7)] hover:border-slate-400 transition-all",
+      testCode: "px-2 py-0.5 rounded-md bg-white text-slate-700 border border-slate-200/90 shadow-[0_1px_2px_rgba(15,35,60,0.06)] font-mono text-xs font-bold",
       modal: "bg-white border-slate-200 text-slate-900",
       modalInput: "bg-slate-50 border-slate-200 text-slate-900 focus:border-blue-500"
     }, Pe = ((_p2 = t == null ? void 0 : t.uiHints) == null ? void 0 : _p2.readOnlyReason) || (xe ? we.status.toUpperCase() : et ? "LOCKED" : null);
@@ -33829,7 +33829,7 @@ Details: ${A.inner}`);
       }
     };
     return we ? r.jsxs("div", {
-      className: "space-y-6",
+      className: "space-y-3 sm:space-y-3.5",
       children: [
         r.jsxs("div", {
           className: "flex items-center justify-between",
@@ -34559,9 +34559,9 @@ Details: ${A.inner}`);
               className: "relative z-10",
               children: [
                 Ue ? r.jsx(Zn, {
-                  className: "absolute left-4 top-3.5 w-5 h-5 text-synos-primary animate-spin"
+                  className: "absolute left-3 top-2.5 sm:top-3 w-4 h-4 text-synos-primary animate-spin"
                 }) : r.jsx(Ei, {
-                  className: "absolute left-4 top-3.5 w-5 h-5 text-slate-400"
+                  className: "absolute left-3 top-2.5 sm:top-3 w-4 h-4 text-slate-400"
                 }),
                 r.jsx("input", {
                   id: "input-test-search",
@@ -34607,10 +34607,10 @@ Details: ${A.inner}`);
                   },
                   disabled: se && !st,
                   style: {
-                    paddingLeft: "3rem",
-                    paddingRight: "1rem"
+                    paddingLeft: "2.25rem",
+                    paddingRight: "0.75rem"
                   },
-                  className: ve(We.input, "w-full h-12 rounded-xl py-2 focus:outline-none transition-colors disabled:opacity-50 text-base synos-focus-input")
+                  className: ve(We.input, "w-full h-9 sm:h-10 rounded-xl py-1.5 focus:outline-none transition-colors disabled:opacity-50 text-xs sm:text-sm synos-focus-input")
                 }),
                 tt.length > 0 && E.trim().length > 0 && (N || document.activeElement === (_ == null ? void 0 : _.current)) && r.jsx("div", {
                   ref: U,
@@ -35341,7 +35341,7 @@ Details: ${A.inner}`);
       className: "relative",
       children: [
         r.jsx(Ei, {
-          className: "absolute left-4 top-3.5 w-5 h-5 text-slate-400"
+          className: "absolute left-3 top-2.5 sm:top-3 w-4 h-4 text-slate-400"
         }),
         r.jsx("input", {
           id: c || "input-prescribing-doctor",
@@ -35353,10 +35353,10 @@ Details: ${A.inner}`);
           "aria-disabled": n,
           placeholder: "Search Doctor / Clinic Name...",
           style: {
-            paddingLeft: "3rem",
-            paddingRight: "1rem"
+            paddingLeft: "2.25rem",
+            paddingRight: "0.75rem"
           },
-          className: ve(U.input, "w-full h-12 rounded-xl text-base font-medium outline-none transition-colors synos-focus-input", n && "opacity-70 pointer-events-none", e && "cursor-default bg-slate-50/80 dark:bg-zinc-850 font-bold text-zinc-900 dark:text-zinc-100 border-slate-300 dark:border-zinc-700 shadow-none"),
+          className: ve(U.input, "w-full h-9 sm:h-10 rounded-xl text-xs sm:text-sm font-medium outline-none transition-colors synos-focus-input", n && "opacity-70 pointer-events-none", e && "cursor-default bg-slate-50/80 dark:bg-zinc-850 font-bold text-zinc-900 dark:text-zinc-100 border-slate-300 dark:border-zinc-700 shadow-none"),
           onFocus: () => {
             I(true);
           },
@@ -35521,22 +35521,22 @@ Details: ${A.inner}`);
     ]);
     const { theme: We } = is(), Pe = We === "dark", st = Pe ? {
       indicator: "bg-slate-600 text-white border-transparent",
-      headerText: "text-xl font-bold text-white tracking-normal",
-      container: "rounded-[24px] bg-zinc-900/90 border border-zinc-800 shadow-xl p-6 sm:p-7 space-y-4",
-      rowLabel: "text-base font-medium text-zinc-400",
-      rowValue: "text-base font-mono font-bold text-zinc-100",
-      input: "bg-zinc-950/70 border-zinc-800 text-base focus:border-synos-primary rounded-xl h-12 px-4 tracking-normal",
+      headerText: "text-base sm:text-lg font-bold text-white tracking-normal",
+      container: "rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-xl p-3.5 sm:p-4 space-y-2.5",
+      rowLabel: "text-xs sm:text-sm font-medium text-zinc-400",
+      rowValue: "text-xs sm:text-sm font-mono font-bold text-zinc-100",
+      input: "bg-zinc-950/70 border-zinc-800 text-xs sm:text-sm focus:border-synos-primary rounded-xl h-9 sm:h-10 px-3 tracking-normal",
       method: {
         active: "bg-zinc-100 text-zinc-900 border-white shadow-md",
         inactive: "bg-zinc-900 text-zinc-400 border-zinc-800 hover:bg-zinc-800"
       }
     } : {
       indicator: "bg-slate-500 text-white border-transparent shadow-xs",
-      headerText: "text-xl font-bold text-slate-900 tracking-normal",
-      container: "rounded-[24px] bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_12px_36px_rgba(15,35,60,0.07),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF] p-6 sm:p-7 space-y-4",
-      rowLabel: "text-base font-medium text-slate-600",
-      rowValue: "text-base font-mono font-bold text-slate-900",
-      input: "bg-white/90 border border-[#D5E2EC] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04)] text-base focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all rounded-xl h-12 px-4 tracking-normal",
+      headerText: "text-base sm:text-lg font-bold text-slate-900 tracking-normal",
+      container: "rounded-2xl bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF] p-3.5 sm:p-4 space-y-2.5",
+      rowLabel: "text-xs sm:text-sm font-medium text-slate-600",
+      rowValue: "text-xs sm:text-sm font-mono font-bold text-slate-900",
+      input: "bg-white/90 border border-[#D5E2EC] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04)] text-xs sm:text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all rounded-xl h-9 sm:h-10 px-3 tracking-normal",
       method: {
         active: "bg-slate-900 text-white border-slate-900 shadow-sm",
         inactive: "bg-white border-slate-200/90 text-slate-700 hover:bg-slate-50 shadow-[0_1px_2px_rgba(15,35,60,0.04)]"
@@ -41969,20 +41969,20 @@ Details: ${A.inner}`);
     let vr = "Registration";
     return d && (vr = Wt ? "Visit Finalized & Print Dispatch" : "Resume Visit"), g && (vr = "Visit Correction"), Ot && (vr = "Visit Finalized & Print Dispatch"), r.jsxs("div", {
       ref: o,
-      className: ve("flex flex-col h-full overflow-hidden rounded-[28px] transition-[width,transform,opacity] duration-300 ease-out z-30", Qi || g ? "absolute right-0 top-0 bottom-0 w-[85vw] max-w-[85vw]" : "absolute right-0 top-0 bottom-0 w-[90vw] sm:w-[40vw] max-w-[42vw] min-w-[380px]", un.panel),
+      className: ve("flex flex-col h-full overflow-hidden rounded-[24px] transition-[width,transform,opacity] duration-300 ease-out z-30 shadow-2xl", Qi || g ? "absolute right-0 top-0 bottom-0 w-[96vw] sm:w-[90vw] lg:w-[80vw] xl:w-[75vw] 2xl:w-[70vw] max-w-[1020px]" : "absolute right-0 top-0 bottom-0 w-[92vw] sm:w-[42vw] max-w-[44vw] min-w-[360px]", un.panel),
       children: [
         r.jsxs("div", {
-          className: ve("h-16 flex items-center justify-between px-6 shrink-0", un.header),
+          className: ve("h-12 sm:h-13 flex items-center justify-between px-4 sm:px-6 shrink-0 border-b border-black/[0.06] dark:border-white/[0.06]", un.header),
           children: [
             r.jsxs("div", {
-              className: "flex items-center gap-3",
+              className: "flex items-center gap-2.5",
               children: [
                 r.jsxs("h2", {
-                  className: ve("text-2xl font-bold tracking-normal flex items-baseline gap-2.5", un.title),
+                  className: ve("text-lg sm:text-xl font-bold tracking-normal flex items-baseline gap-2", un.title),
                   children: [
                     vr,
                     (((_U = R == null ? void 0 : R.visit) == null ? void 0 : _U.visitToken) || ((_V2 = R == null ? void 0 : R.visit) == null ? void 0 : _V2.token)) && r.jsxs("span", {
-                      className: "text-xs font-mono font-bold text-slate-500 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800/80 px-2.5 py-0.5 rounded-full border border-slate-200/60 dark:border-zinc-700/60",
+                      className: "text-xs font-mono font-bold text-slate-500 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800/80 px-2 py-0.5 rounded-full border border-slate-200/60 dark:border-zinc-700/60",
                       children: [
                         "#",
                         ((_W2 = R == null ? void 0 : R.visit) == null ? void 0 : _W2.visitToken) || ((_X2 = R == null ? void 0 : R.visit) == null ? void 0 : _X2.token)
@@ -42920,33 +42920,33 @@ Details: ${A.inner}`);
                   })
                 ]
               }) : r.jsxs("div", {
-                className: "p-4 sm:p-6 max-w-full mx-auto w-full flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-300",
+                className: "p-3 sm:p-4 max-w-full mx-auto w-full flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-300",
                 children: [
                   r.jsxs("div", {
-                    className: "grid grid-cols-1 lg:grid-cols-12 gap-5 xl:gap-6 items-stretch flex-1 min-h-0 overflow-hidden",
+                    className: "grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-3.5 xl:gap-4 items-stretch flex-1 min-h-0 overflow-hidden",
                     children: [
                       r.jsxs("div", {
-                        className: "lg:col-span-7 flex flex-col gap-5 h-full min-h-0 overflow-y-auto pr-1.5",
+                        className: "lg:col-span-7 flex flex-col gap-3 h-full min-h-0 overflow-y-auto pr-1",
                         children: [
                           r.jsxs("div", {
-                            className: ve("rounded-[28px] border transition-all shrink-0", jt ? "p-3 sm:p-3.5 space-y-0" : "p-4 sm:p-5 space-y-3", it ? "bg-zinc-900/90 border-zinc-800 shadow-xl" : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_14px_40px_rgba(15,35,60,0.08),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"),
+                            className: ve("rounded-2xl border transition-all shrink-0", jt ? "p-2.5 sm:p-3 space-y-0" : "p-3 sm:p-3.5 space-y-2", it ? "bg-zinc-900/90 border-zinc-800 shadow-xl" : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"),
                             children: [
                               r.jsxs("div", {
                                 className: "flex items-center justify-between",
                                 children: [
                                   r.jsxs("div", {
-                                    className: "flex items-center gap-2.5",
+                                    className: "flex items-center gap-2",
                                     children: [
                                       r.jsx("div", {
-                                        className: "w-7 h-7 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-sm shadow-xs",
+                                        className: "w-6 h-6 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-xs shadow-xs",
                                         children: "1"
                                       }),
                                       r.jsx("h3", {
-                                        className: "text-xl font-bold text-slate-900 dark:text-white tracking-normal",
+                                        className: "text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-normal",
                                         children: "Patient Identification"
                                       }),
                                       jt && r.jsxs("div", {
-                                        className: "flex items-center gap-2 text-xs text-slate-600 dark:text-zinc-300 ml-2",
+                                        className: "flex items-center gap-1.5 text-xs text-slate-600 dark:text-zinc-300 ml-2",
                                         children: [
                                           r.jsx("span", {
                                             className: "font-bold text-slate-900 dark:text-white",
@@ -42978,11 +42978,11 @@ Details: ${A.inner}`);
                                     ]
                                   }),
                                   r.jsx("div", {
-                                    className: "flex items-center gap-2",
+                                    className: "flex items-center gap-1.5",
                                     children: jt ? r.jsxs("button", {
                                       type: "button",
                                       onClick: () => vt(false),
-                                      className: "flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 transition-all cursor-pointer active:scale-95",
+                                      className: "flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 transition-all cursor-pointer active:scale-95",
                                       title: "Expand Patient Identification",
                                       children: [
                                         r.jsx("span", {
@@ -42995,7 +42995,7 @@ Details: ${A.inner}`);
                                     }) : r.jsxs("button", {
                                       type: "button",
                                       onClick: () => vt(true),
-                                      className: "flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 transition-all cursor-pointer active:scale-95",
+                                      className: "flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 transition-all cursor-pointer active:scale-95",
                                       title: "Minimize",
                                       children: [
                                         r.jsx("span", {
@@ -43010,7 +43010,7 @@ Details: ${A.inner}`);
                                 ]
                               }),
                               !jt && r.jsx("div", {
-                                className: "rounded-2xl border border-[#CCDCE8] dark:border-zinc-800 bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] dark:bg-zinc-950/80 p-3.5 sm:p-4 shadow-[inset_0_1px_3px_rgba(15,35,60,0.06),0_1px_0_rgba(255,255,255,0.7)] animate-in fade-in duration-200",
+                                className: "rounded-xl border border-[#CCDCE8] dark:border-zinc-800 bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] dark:bg-zinc-950/80 p-2.5 sm:p-3 shadow-[inset_0_1px_3px_rgba(15,35,60,0.06),0_1px_0_rgba(255,255,255,0.7)] animate-in fade-in duration-200",
                                 children: r.jsx(DE, {
                                   patient: fn,
                                   onAction: _t,
@@ -43048,19 +43048,19 @@ Details: ${A.inner}`);
                         ]
                       }),
                       r.jsxs("div", {
-                        className: "lg:col-span-5 flex flex-col gap-4 h-full min-h-0 overflow-y-auto pr-1.5",
+                        className: "lg:col-span-5 flex flex-col gap-3 h-full min-h-0 overflow-y-auto pr-1",
                         children: [
                           r.jsxs("div", {
                             ref: l,
-                            className: ve("rounded-[28px] border transition-all flex flex-col justify-between shrink-0", St ? "p-4 sm:p-5 space-y-3" : "p-6 sm:p-7 space-y-4", it ? "bg-zinc-900/90 border-zinc-800 shadow-xl" : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_14px_40px_rgba(15,35,60,0.08),0_2px_6px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"),
+                            className: ve("rounded-2xl border transition-all flex flex-col justify-between shrink-0", St ? "p-3 sm:p-3.5 space-y-2" : "p-3.5 sm:p-4 space-y-2.5", it ? "bg-zinc-900/90 border-zinc-800 shadow-xl" : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"),
                             children: [
                               r.jsxs("div", {
                                 className: "flex items-center justify-between",
                                 children: [
                                   r.jsx("div", {
-                                    className: "flex items-center gap-2.5",
+                                    className: "flex items-center gap-2",
                                     children: r.jsx("h3", {
-                                      className: "text-xl font-bold text-slate-900 dark:text-white tracking-normal",
+                                      className: "text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-normal",
                                       children: "Billing & Payer Mode"
                                     })
                                   }),
@@ -43293,7 +43293,7 @@ Details: ${A.inner}`);
           ]
         }),
         !Ot && r.jsx("div", {
-          className: ve("p-4 flex justify-center shrink-0", un.footer),
+          className: ve("py-2.5 px-4 flex justify-center shrink-0 border-t border-black/[0.06] dark:border-white/[0.06]", un.footer),
           children: g ? r.jsxs("div", {
             className: "flex items-center gap-2 w-full max-w-2xl mx-auto",
             children: [
@@ -43514,11 +43514,11 @@ Details: ${A.inner}`);
                         type: "button",
                         id: "btn-cancel-visit",
                         onClick: () => Vn(true),
-                        className: "py-3.5 px-4 rounded-2xl border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 font-bold text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn",
+                        className: "py-2.5 px-3.5 rounded-xl border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn",
                         title: "Cancel this visit with reason and process refund",
                         children: [
                           r.jsx(Qh, {
-                            className: "w-4 h-4"
+                            className: "w-3.5 h-3.5"
                           }),
                           r.jsx("span", {
                             children: "Cancel Visit"
@@ -43530,7 +43530,7 @@ Details: ${A.inner}`);
                         id: "btn-delete-draft",
                         onClick: Pt,
                         disabled: Ir || U || zn,
-                        className: "py-3.5 px-3 rounded-2xl border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800/60 font-bold text-xs flex items-center justify-center gap-1 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn disabled:opacity-50",
+                        className: "py-2.5 px-3 rounded-xl border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800/60 font-bold text-xs flex items-center justify-center gap-1 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn disabled:opacity-50",
                         title: "Permanently discard and delete this draft visit",
                         children: [
                           Ir ? r.jsx(Zn, {
@@ -43549,7 +43549,7 @@ Details: ${A.inner}`);
                   r.jsx("button", {
                     onClick: vi,
                     disabled: !ir || U || zn,
-                    className: ve("w-full py-3.5 px-6 rounded-2xl font-bold text-base flex items-center justify-center gap-2 transition-all active:scale-[0.99] shadow-sm synos-focus-btn", ir && !zn ? un.actionBtn.enabled : un.actionBtn.disabled),
+                    className: ve("w-full py-2.5 px-5 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition-all active:scale-[0.99] shadow-sm synos-focus-btn", ir && !zn ? un.actionBtn.enabled : un.actionBtn.disabled),
                     children: U || zn ? r.jsx(Zn, {
                       className: "w-4 h-4 animate-spin"
                     }) : r.jsxs(r.Fragment, {
@@ -46883,7 +46883,7 @@ Details: ${A.inner}`);
                 })
               }),
               r.jsx("div", {
-                className: ve("w-[220px] md:w-[250px] lg:w-[290px] xl:w-[340px] flex flex-col min-h-0 transition-opacity duration-200 shrink-0", A || f || m ? "hidden" : "flex"),
+                className: ve("w-[180px] md:w-[190px] lg:w-[205px] xl:w-[225px] flex flex-col min-h-0 transition-opacity duration-200 shrink-0", A || f || m ? "hidden" : "flex"),
                 children: r.jsx(dL, {
                   serverTime: N
                 })
