@@ -323,12 +323,12 @@ export function ActivityStream({ serverTime }) {
     return (
         <div className={cn("flex flex-col h-full rounded-xl border overflow-hidden transition-all duration-300", ui.container)}>
             {/* MATCHING HEADER STYLE */}
-            <div className={cn("h-9 sm:h-10 flex items-center px-3 shrink-0", ui.headerRow)} style={lightHeaderStyle}>
-                <div className="flex items-center gap-1.5">
+            <div className={cn("h-11 sm:h-12 flex items-center px-3.5 sm:px-4 shrink-0", ui.headerRow)} style={lightHeaderStyle}>
+                <div className="flex items-center gap-2">
                     {/* REQ: Keep Pulse Green in Top Window Bar */}
-                    <Activity className="h-3.5 w-3.5 text-green-600" />
+                    <Activity className="h-4 w-4 text-green-600" />
                     <h2 className={cn(
-                        "text-xs sm:text-sm font-semibold",
+                        "text-sm font-semibold",
                         isDark ? "text-zinc-200" : "text-zinc-800"
                     )}>
                         Live Stream
@@ -338,7 +338,7 @@ export function ActivityStream({ serverTime }) {
 
             <div className="flex-1 overflow-hidden p-0 relative">
                 <ScrollArea className="h-full">
-                    <div className="p-2 sm:p-2.5 space-y-3.5">
+                    <div className="p-3 sm:p-3.5 space-y-4">
                         {loading && <div className="text-center text-xs text-muted-foreground py-4">Syncing stream...</div>}
 
                         {!loading && events.length === 0 && (

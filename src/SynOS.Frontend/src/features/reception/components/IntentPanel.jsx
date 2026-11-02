@@ -1463,13 +1463,13 @@ export function IntentPanel({ onVisitUpdated }) {
             className={cn(
                 "flex flex-col h-full overflow-hidden rounded-[24px] transition-[width,transform,opacity] duration-300 ease-out z-30 shadow-2xl", 
                 (hasPatient || isCorrectionIntent) 
-                    ? "absolute right-0 top-0 bottom-0 w-[96vw] sm:w-[90vw] lg:w-[80vw] xl:w-[75vw] 2xl:w-[70vw] max-w-[1020px]" 
-                    : "absolute right-0 top-0 bottom-0 w-[92vw] sm:w-[42vw] max-w-[44vw] min-w-[360px]",
+                    ? "absolute right-0 top-0 bottom-0 w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[86vw] xl:w-[85vw] 2xl:w-[85vw] max-w-[85vw]" 
+                    : "absolute right-0 top-0 bottom-0 w-[92vw] sm:w-[480px] max-w-[520px] min-w-[360px]",
                 ui.panel
             )}
         >
             {/* Header */}
-            <div className={cn("h-12 sm:h-13 flex items-center justify-between px-4 sm:px-6 shrink-0 border-b border-black/[0.06] dark:border-white/[0.06]", ui.header)}>
+            <div className={cn("h-13 sm:h-14 flex items-center justify-between px-5 sm:px-7 shrink-0 border-b border-black/[0.06] dark:border-white/[0.06]", ui.header)}>
                 <div className="flex items-center gap-2.5">
                     <h2 className={cn("text-lg sm:text-xl font-bold tracking-normal flex items-baseline gap-2", ui.title)}>
                         {panelTitle}
@@ -1532,7 +1532,7 @@ export function IntentPanel({ onVisitUpdated }) {
                             </div>
                         ) : isPostProcessingView ? (
                             /* 2. POST-PROCESSING SPLIT VIEW: 50% DOCUMENT PREVIEW & PRINTER / 50% CONSOLIDATION OF VISIT */
-                            <div className="p-3 sm:p-4 max-w-full mx-auto w-full flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-300">
+                            <div className="p-3.5 sm:p-5 max-w-full mx-auto w-full flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-300">
                                 {/* Inline Print Stylesheet for In-Panel Document Printing */}
                                 <style>{`
                                     @media print {
@@ -1558,7 +1558,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                     }
                                 `}</style>
 
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 xl:gap-5 items-stretch flex-1 min-h-0 overflow-hidden">
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 xl:gap-6 items-stretch flex-1 min-h-0 overflow-hidden">
                                     {/* LEFT HALF (50% Width) - Document Preview & Print Controls */}
                                     <div className="flex flex-col h-full min-h-0 overflow-hidden">
                                         <div className={cn(
@@ -2224,9 +2224,9 @@ export function IntentPanel({ onVisitUpdated }) {
                             </div>
                         ) : (
                             /* 3. IDENTIFIED PATIENT WORKFLOW (Strictly following iOS Target Design) */
-                            <div className="p-3 sm:p-4 max-w-full mx-auto w-full flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-300">
+                            <div className="p-3.5 sm:p-5 max-w-full mx-auto w-full flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-300">
                                 {/* 2-COLUMN UNIFIED WORKFLOW (Left 7 cols: Patient Identification -> Visit Details | Right 5 cols: Billing & Payer Mode -> Financials) */}
-                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-3.5 xl:gap-4 items-stretch flex-1 min-h-0 overflow-hidden">
+                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 xl:gap-6 items-stretch flex-1 min-h-0 overflow-hidden">
                                     {/* LEFT COLUMN: 7 Cols */}
                                     <div className="lg:col-span-7 flex flex-col gap-3 h-full min-h-0 overflow-y-auto pr-1">
                                         {/* Step 1: Patient Identification (Compressed height, tightly hugs content, collapsible) */}

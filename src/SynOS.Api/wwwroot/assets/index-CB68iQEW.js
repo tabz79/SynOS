@@ -29965,19 +29965,19 @@ Details: ${A.inner}`);
                          linear-gradient(to bottom, #ffffff 0%, #f9fafb 100%)`
       },
       title: f,
-      className: ve("rounded-xl transition-[transform,opacity] duration-300 group cursor-default flex flex-col", "isolation-auto relative z-10", u.card, l && "opacity-0 pointer-events-none", c ? "px-3.5 py-2 gap-0 h-full" : "p-2.5 sm:p-3 h-16 sm:h-18 gap-0"),
+      className: ve("rounded-xl transition-[transform,opacity] duration-300 group cursor-default flex flex-col", "isolation-auto relative z-10", u.card, l && "opacity-0 pointer-events-none", c ? "px-4 py-2.5 gap-0 h-full" : "p-4 sm:p-5 h-28 sm:h-32 gap-0"),
       children: [
         r.jsxs("div", {
           className: "flex justify-between items-start w-full",
           children: [
             r.jsx("span", {
-              className: ve("font-bold font-sans tracking-tight group-hover:scale-[1.02] transition-transform duration-300 origin-left block tabular-nums", u.text, c ? "text-lg sm:text-xl leading-tight pb-0.5" : t && t.toString().length > 9 ? "text-lg sm:text-xl leading-snug" : t && t.toString().length > 6 ? "text-xl sm:text-2xl leading-snug" : "text-xl sm:text-2xl leading-tight pb-0.5"),
+              className: ve("font-extrabold font-sans tracking-tight group-hover:scale-[1.02] transition-transform duration-300 origin-left block tabular-nums", u.text, c ? "text-2xl sm:text-3xl leading-tight pb-0.5 font-bold" : t && t.toString().length > 9 ? "text-3xl sm:text-4xl leading-snug" : t && t.toString().length > 6 ? "text-4xl leading-snug" : "text-4xl sm:text-5xl leading-tight pb-1"),
               children: t
             }),
             r.jsx("div", {
-              className: ve("flex shrink-0 justify-center items-center", c ? "w-4 h-4 ml-2" : "w-5 h-5 ml-2 sm:ml-3"),
+              className: ve("flex shrink-0 justify-center items-center", c ? "w-4 h-4 ml-2" : "w-6 h-6 ml-3 sm:ml-4"),
               children: a ? r.jsx(a, {
-                className: ve("transition-colors duration-300", c ? "w-3.5 h-3.5" : "w-4 h-4 sm:w-5 sm:h-5", "text-zinc-500 group-hover:text-zinc-700")
+                className: ve("transition-colors duration-300", c ? "w-4 h-4" : "w-5 h-5 sm:w-6 sm:h-6", "text-zinc-500 group-hover:text-zinc-700")
               }) : null
             })
           ]
@@ -29988,7 +29988,7 @@ Details: ${A.inner}`);
         r.jsx("div", {
           className: "w-full shrink-0",
           children: r.jsxs("div", {
-            className: ve("text-zinc-600 transition-colors group-hover:text-zinc-800 flex items-baseline gap-1.5 whitespace-nowrap overflow-hidden", c ? "text-[11px] sm:text-xs font-semibold mb-0" : "text-xs sm:text-[13px] font-semibold mb-0 normal-case"),
+            className: ve("text-zinc-600 transition-colors group-hover:text-zinc-800 flex items-baseline gap-1.5 whitespace-nowrap overflow-hidden", c ? "text-xs font-medium mb-0" : "text-xs sm:text-sm font-semibold mb-0 normal-case"),
             children: [
               r.jsx("span", {
                 className: "truncate",
@@ -30043,7 +30043,7 @@ Details: ${A.inner}`);
       t
     ]), r.jsx("div", {
       ref: n,
-      className: ve("grid transition-none", e ? "grid-cols-6 grid-rows-[auto_0px] gap-x-3 gap-y-0 pb-0 overflow-hidden" : "grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3 p-0.5"),
+      className: ve("grid transition-none", e ? "grid-cols-6 grid-rows-[auto_0px] gap-x-4 gap-y-0 pb-0 overflow-hidden" : "grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-4 p-1"),
       children: t.map((s, A) => r.jsx("div", {
         ref: (o) => i.current.set(A, o),
         className: ve(),
@@ -30339,16 +30339,16 @@ Details: ${A.inner}`);
       className: ve("flex flex-col h-full rounded-xl border overflow-hidden transition-all duration-300", f.container),
       children: [
         r.jsx("div", {
-          className: ve("h-9 sm:h-10 flex items-center px-3 shrink-0", f.headerRow),
+          className: ve("h-11 sm:h-12 flex items-center px-3.5 sm:px-4 shrink-0", f.headerRow),
           style: I,
           children: r.jsxs("div", {
-            className: "flex items-center gap-1.5",
+            className: "flex items-center gap-2",
             children: [
               r.jsx(fs, {
-                className: "h-3.5 w-3.5 text-green-600"
+                className: "h-4 w-4 text-green-600"
               }),
               r.jsx("h2", {
-                className: ve("text-xs sm:text-sm font-semibold", o ? "text-zinc-200" : "text-zinc-800"),
+                className: ve("text-sm font-semibold", o ? "text-zinc-200" : "text-zinc-800"),
                 children: "Live Stream"
               })
             ]
@@ -30359,7 +30359,7 @@ Details: ${A.inner}`);
           children: r.jsx(lBe, {
             className: "h-full",
             children: r.jsxs("div", {
-              className: "p-2 sm:p-2.5 space-y-3.5",
+              className: "p-3 sm:p-3.5 space-y-4",
               children: [
                 i && r.jsx("div", {
                   className: "text-center text-xs text-muted-foreground py-4",
@@ -41969,10 +41969,10 @@ Details: ${A.inner}`);
     let vr = "Registration";
     return d && (vr = Wt ? "Visit Finalized & Print Dispatch" : "Resume Visit"), g && (vr = "Visit Correction"), Ot && (vr = "Visit Finalized & Print Dispatch"), r.jsxs("div", {
       ref: o,
-      className: ve("flex flex-col h-full overflow-hidden rounded-[24px] transition-[width,transform,opacity] duration-300 ease-out z-30 shadow-2xl", Qi || g ? "absolute right-0 top-0 bottom-0 w-[96vw] sm:w-[90vw] lg:w-[80vw] xl:w-[75vw] 2xl:w-[70vw] max-w-[1020px]" : "absolute right-0 top-0 bottom-0 w-[92vw] sm:w-[42vw] max-w-[44vw] min-w-[360px]", un.panel),
+      className: ve("flex flex-col h-full overflow-hidden rounded-[24px] transition-[width,transform,opacity] duration-300 ease-out z-30 shadow-2xl", Qi || g ? "absolute right-0 top-0 bottom-0 w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[86vw] xl:w-[85vw] 2xl:w-[85vw] max-w-[85vw]" : "absolute right-0 top-0 bottom-0 w-[92vw] sm:w-[480px] max-w-[520px] min-w-[360px]", un.panel),
       children: [
         r.jsxs("div", {
-          className: ve("h-12 sm:h-13 flex items-center justify-between px-4 sm:px-6 shrink-0 border-b border-black/[0.06] dark:border-white/[0.06]", un.header),
+          className: ve("h-13 sm:h-14 flex items-center justify-between px-5 sm:px-7 shrink-0 border-b border-black/[0.06] dark:border-white/[0.06]", un.header),
           children: [
             r.jsxs("div", {
               className: "flex items-center gap-2.5",
@@ -42058,7 +42058,7 @@ Details: ${A.inner}`);
                   isCorrectionIntent: g
                 })
               }) : Ot ? r.jsxs("div", {
-                className: "p-3 sm:p-4 max-w-full mx-auto w-full flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-300",
+                className: "p-3.5 sm:p-5 max-w-full mx-auto w-full flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-300",
                 children: [
                   r.jsx("style", {
                     children: `
@@ -42086,7 +42086,7 @@ Details: ${A.inner}`);
                                 `
                   }),
                   r.jsxs("div", {
-                    className: "grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 xl:gap-5 items-stretch flex-1 min-h-0 overflow-hidden",
+                    className: "grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 xl:gap-6 items-stretch flex-1 min-h-0 overflow-hidden",
                     children: [
                       r.jsx("div", {
                         className: "flex flex-col h-full min-h-0 overflow-hidden",
@@ -42920,10 +42920,10 @@ Details: ${A.inner}`);
                   })
                 ]
               }) : r.jsxs("div", {
-                className: "p-3 sm:p-4 max-w-full mx-auto w-full flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-300",
+                className: "p-3.5 sm:p-5 max-w-full mx-auto w-full flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-300",
                 children: [
                   r.jsxs("div", {
-                    className: "grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-3.5 xl:gap-4 items-stretch flex-1 min-h-0 overflow-hidden",
+                    className: "grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 xl:gap-6 items-stretch flex-1 min-h-0 overflow-hidden",
                     children: [
                       r.jsxs("div", {
                         className: "lg:col-span-7 flex flex-col gap-3 h-full min-h-0 overflow-y-auto pr-1",
@@ -46883,7 +46883,7 @@ Details: ${A.inner}`);
                 })
               }),
               r.jsx("div", {
-                className: ve("w-[180px] md:w-[190px] lg:w-[205px] xl:w-[225px] flex flex-col min-h-0 transition-opacity duration-200 shrink-0", A || f || m ? "hidden" : "flex"),
+                className: ve("w-[220px] md:w-[250px] lg:w-[290px] xl:w-[340px] 2xl:w-[380px] flex flex-col min-h-0 transition-opacity duration-200 shrink-0", A || f || m ? "hidden" : "flex"),
                 children: r.jsx(dL, {
                   serverTime: N
                 })
