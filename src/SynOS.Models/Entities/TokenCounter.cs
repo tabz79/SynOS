@@ -16,8 +16,6 @@ namespace SynOS.Models.Entities
         [Required]
         public DateTime Day { get; set; } // Lab local date
 
-        [Required]
-        [StringLength(1)]
         public Guid? BranchId { get; set; }
 
         [StringLength(5)]

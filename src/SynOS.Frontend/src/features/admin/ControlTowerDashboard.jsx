@@ -181,7 +181,7 @@ export function ControlTowerDashboard() {
     const activeBranchName = currentBranchName;
 
     return (
-        <div className="p-8 space-y-8 pb-16 relative z-10">
+        <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 pb-16 relative z-10">
             {/* HEADER WITH SWITCHER */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
@@ -334,7 +334,7 @@ function DepartmentCard({ title, subtitle, icon: Icon, watermark: Watermark, dat
                 </div>
             )}
 
-            <div className="p-5 flex-1 flex flex-col justify-between relative z-10">
+            <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-between relative z-10">
                 <div className="space-y-3">
                     <div className="flex items-start justify-between">
                         <div className="flex gap-3.5 items-center">

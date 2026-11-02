@@ -87,7 +87,7 @@ export function IntentPanel({ onVisitUpdated }) {
     const [isPartialPayment, setIsPartialPayment] = useState(false);
     const [customPaymentAmount, setCustomPaymentAmount] = useState('');
     const [userPayerExpandedState, setUserPayerExpandedState] = useState(true);
-    const [isPatientCardCollapsed, setIsPatientCardCollapsed] = useState(false);
+    const [isPatientCardCollapsed, setIsPatientCardCollapsed] = useState(() => Boolean(drawerState?.intent === 'resume' || drawerState?.intent === 'correction'));
 
     // In-Panel Post-Processing & Print Dispatch State (Split Screen Mode)
     const [postProcessingSession, setPostProcessingSession] = useState(null);
@@ -219,6 +219,7 @@ export function IntentPanel({ onVisitUpdated }) {
         if ((isResumeIntent || isCorrectionIntent) && drawerState.visitId) {
             // RESUME/CORRECT: Preset Visit ID, No Patient Selection needed yet (internal)
             setCurrentVisitId(drawerState.visitId);
+            setIsPatientCardCollapsed(true);
             // Patient ID will be derived from snapshot
         }
     }, [isOpen, intent, drawerState?.visitId]);
@@ -1359,11 +1360,15 @@ export function IntentPanel({ onVisitUpdated }) {
         const calculateScale = () => {
             if (!previewContainerRef.current) return;
             const containerWidth = previewContainerRef.current.clientWidth;
-            // Available width inside container with snug margins (fills container edge-to-edge)
-            const targetWidth = containerWidth - 16;
-            // 210mm in pixels at 96 DPI is 793.7px
-            // Smooth responsive scale: expands dynamically to fill container width without artificial ceiling
-            const scale = Math.max(0.65, targetWidth / 794);
+            const containerHeight = previewContainerRef.current.clientHeight;
+            // Snug padding clearance
+            const targetWidth = Math.max(200, containerWidth - 24);
+            const targetHeight = Math.max(200, containerHeight - 32);
+            // 210mm x 297mm at 96 DPI is 794px x 1123px
+            const scaleW = targetWidth / 794;
+            const scaleH = targetHeight / 1123;
+            // Auto-fit to contain the entire document on screen without vertical or horizontal cropping
+            const scale = Math.max(0.42, Math.min(scaleW, scaleH));
             setCanvasScale(Number(scale.toFixed(2)));
         };
         calculateScale();
@@ -1448,8 +1453,9 @@ export function IntentPanel({ onVisitUpdated }) {
 
     // Dynamic Title based on Intent
     let panelTitle = "Registration";
-    if (isResumeIntent) { panelTitle = isVisitFinalized ? "Visit Summary" : "Resume Visit"; }
+    if (isResumeIntent) { panelTitle = isVisitFinalized ? "Visit Finalized & Print Dispatch" : "Resume Visit"; }
     if (isCorrectionIntent) { panelTitle = "Visit Correction"; }
+    if (isPostProcessingView) { panelTitle = "Visit Finalized & Print Dispatch"; }
 
     return (
         <div 
@@ -1468,12 +1474,17 @@ export function IntentPanel({ onVisitUpdated }) {
                     <h2 className={cn("text-2xl font-bold tracking-normal flex items-baseline gap-2.5", ui.title)}>
                         {panelTitle}
                         {(snapshot?.visit?.visitToken || snapshot?.visit?.token) && (
-                            <span className="text-xs font-mono font-bold text-slate-400 dark:text-zinc-500 bg-slate-100 dark:bg-zinc-800/80 px-2.5 py-0.5 rounded-full border border-slate-200/60 dark:border-zinc-700/60">
+                            <span className="text-xs font-mono font-bold text-slate-500 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800/80 px-2.5 py-0.5 rounded-full border border-slate-200/60 dark:border-zinc-700/60">
                                 #{snapshot?.visit?.visitToken || snapshot?.visit?.token}
                             </span>
                         )}
                     </h2>
-
+                    {isPostProcessingView && (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#EDF7F2] text-[#245E49] dark:bg-emerald-950/40 dark:text-emerald-300 border border-[#CBE5D7] dark:border-emerald-800">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-[#245E49]" />
+                            {billingMode === 'PrepaidPartner' ? 'Corporate B2B Registered' : 'Billed & Settled'}
+                        </span>
+                    )}
                 </div>
                 <button
                     tabIndex={isPostProcessingView ? -1 : 0}
@@ -1686,10 +1697,10 @@ export function IntentPanel({ onVisitUpdated }) {
                                                 className="flex-1 min-h-0 my-3 rounded-2xl border border-slate-200/80 dark:border-zinc-800 bg-[#EAF1F6]/70 dark:bg-zinc-950/70 p-2 sm:p-2.5 flex justify-center items-start overflow-y-auto relative shadow-inner"
                                             >
                                                 {selectedDocFormat === 'thermal' && (
-                                                    <div className="w-[380px] sm:w-[420px] max-w-full h-full max-h-[850px] rounded-2xl shadow-2xl overflow-hidden border border-slate-300 dark:border-zinc-700 bg-white flex flex-col mx-auto transition-transform shrink-0">
+                                                    <div className="w-[320px] sm:w-[340px] max-w-full h-full max-h-[850px] rounded-2xl shadow-2xl overflow-hidden border border-slate-300 dark:border-zinc-700 bg-white flex flex-col mx-auto transition-transform shrink-0">
                                                         <div className="bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 px-4 py-2.5 text-xs font-mono border-b border-slate-200 dark:border-zinc-700 flex justify-between items-center shrink-0">
                                                             <span className="font-bold">Thermal POS (80mm)</span>
-                                                            <span className="text-[10px] bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800 font-bold">1:1 Roll Preview</span>
+                                                            <span className="text-[10px] bg-[#EDF7F2] dark:bg-emerald-950/40 text-[#245E49] dark:text-emerald-300 px-2 py-0.5 rounded border border-[#CBE5D7] dark:border-emerald-800 font-bold">1:1 Roll Preview</span>
                                                         </div>
                                                         <iframe
                                                             title="Thermal POS Receipt"
@@ -1787,7 +1798,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                         <span className={cn(
                                                             "text-xs font-bold px-2.5 py-1 rounded-lg flex items-center gap-1.5 animate-in fade-in",
                                                             printFeedback.type === 'success'
-                                                                ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
+                                                                ? "bg-[#EDF7F2] dark:bg-emerald-950/40 text-[#245E49] dark:text-emerald-300 border border-[#CBE5D7] dark:border-emerald-800"
                                                                 : "bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800"
                                                         )}>
                                                             <CheckCircle2 className="w-3.5 h-3.5" />
@@ -1795,7 +1806,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                         </span>
                                                     ) : (
                                                         <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400 flex items-center gap-1.5">
-                                                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                                                            <span className="w-2 h-2 rounded-full bg-[#3D9970] animate-pulse" />
                                                             Ready to Print • {selectedDocFormat === 'thermal' ? '80mm Roll' : 'A4 Paper'} • {selectedPrinter === 'default' ? 'OS Dialog' : selectedPrinter}
                                                         </span>
                                                     )}
@@ -1819,7 +1830,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                             }
                                                         }}
                                                         disabled={isPrinting}
-                                                        className="py-3 px-6 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white shadow-md active:scale-[0.99] transition-all cursor-pointer synos-focus-btn"
+                                                        className="py-3 px-6 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 bg-[#2B7A5D] hover:bg-[#23684F] dark:bg-[#348A6A] text-white shadow-[0_4px_14px_rgba(43,122,93,0.3)] active:scale-[0.99] transition-all cursor-pointer synos-focus-btn"
                                                     >
                                                         {isPrinting ? (
                                                             <>
@@ -2121,7 +2132,7 @@ export function IntentPanel({ onVisitUpdated }) {
 
                                                         <div className="p-2.5 rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 text-white dark:from-zinc-800 dark:to-zinc-900 border border-slate-800 dark:border-zinc-700 shadow-xs">
                                                             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-300 dark:text-zinc-400 block">Net Amount</span>
-                                                            <span className="font-mono font-black text-base sm:text-lg text-emerald-400 block">
+                                                            <span className="font-mono font-black text-base sm:text-lg text-emerald-300 dark:text-emerald-400 block">
                                                                 ₹{(stagedNet !== undefined ? stagedNet : (snapshot?.billing?.netAmount || 0)).toLocaleString()}
                                                             </span>
                                                         </div>
@@ -2132,7 +2143,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                         {billingMode === 'PrepaidPartner' ? (
                                                             <div className="flex items-center justify-between text-xs sm:text-sm">
                                                                 <span className="font-bold text-slate-700 dark:text-zinc-300">
-                                                                    Patient Desk Payment: <strong className="font-mono text-emerald-600">₹0 (Prepaid Partner)</strong>
+                                                                    Patient Desk Payment: <strong className="font-mono text-[#245E49] dark:text-emerald-400">₹0 (Prepaid Partner)</strong>
                                                                 </span>
                                                                 <span className="font-bold text-blue-700 dark:text-blue-300">
                                                                     B2B Receivable: <strong className="font-mono">₹{(stagedNet !== undefined ? stagedNet : (snapshot?.billing?.netAmount || 0)).toLocaleString()}</strong>
@@ -2140,8 +2151,8 @@ export function IntentPanel({ onVisitUpdated }) {
                                                             </div>
                                                         ) : (
                                                             <div className="flex items-center justify-between text-xs sm:text-sm">
-                                                                <div className="flex items-center gap-1.5 font-bold text-emerald-700 dark:text-emerald-400">
-                                                                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                                                                <div className="flex items-center gap-1.5 font-bold text-[#245E49] dark:text-emerald-300">
+                                                                    <CheckCircle2 className="w-4 h-4 text-[#2E7D63]" />
                                                                     <span>Desk Collection:</span>
                                                                     <span className="font-mono">
                                                                         ₹{(postProcessingSession?.paidAmount !== undefined ? postProcessingSession.paidAmount : (snapshot?.billing?.totalPaid || snapshot?.billing?.netAmount || 0)).toLocaleString()}
@@ -2149,7 +2160,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                                     <span className="text-xs font-normal text-slate-500 dark:text-zinc-400">via {paymentMethod}</span>
                                                                 </div>
                                                                 <div className="text-xs font-semibold text-slate-600 dark:text-zinc-400">
-                                                                    Balance Due: <strong className="font-mono text-slate-900 dark:text-white">₹0</strong> <span className="text-emerald-600 font-bold">(Fully Settled)</span>
+                                                                    Balance Due: <strong className="font-mono text-slate-900 dark:text-white">₹0</strong> <span className="text-[#245E49] dark:text-emerald-400 font-bold">(Fully Settled)</span>
                                                                 </div>
                                                             </div>
                                                         )}
@@ -2672,17 +2683,29 @@ export function IntentPanel({ onVisitUpdated }) {
                             <div className="flex flex-col gap-2 w-full max-w-2xl mx-auto">
                                 <div className="flex items-center gap-2.5 w-full">
                                     {snapshot?.visit?.visitId && (
-                                        <button
-                                            type="button"
-                                            id="btn-delete-draft"
-                                            onClick={handleDeleteDraftVisit}
-                                            disabled={isDeletingDraft || isLoading || isActionSubmitting}
-                                            className="py-3.5 px-4 rounded-2xl border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 font-bold text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn disabled:opacity-50"
-                                            title="Permanently discard and delete this draft visit"
-                                        >
-                                            {isDeletingDraft ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                                            <span>Delete Draft</span>
-                                        </button>
+                                        <>
+                                            <button
+                                                type="button"
+                                                id="btn-cancel-visit"
+                                                onClick={() => setIsCancelModalOpen(true)}
+                                                className="py-3.5 px-4 rounded-2xl border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 font-bold text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn"
+                                                title="Cancel this visit with reason and process refund"
+                                            >
+                                                <Ban className="w-4 h-4" />
+                                                <span>Cancel Visit</span>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                id="btn-delete-draft"
+                                                onClick={handleDeleteDraftVisit}
+                                                disabled={isDeletingDraft || isLoading || isActionSubmitting}
+                                                className="py-3.5 px-3 rounded-2xl border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800/60 font-bold text-xs flex items-center justify-center gap-1 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn disabled:opacity-50"
+                                                title="Permanently discard and delete this draft visit"
+                                            >
+                                                {isDeletingDraft ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                                                <span className="hidden sm:inline">Delete Draft</span>
+                                            </button>
+                                        </>
                                     )}
                                     <button
                                         onClick={handleUnifiedAction}

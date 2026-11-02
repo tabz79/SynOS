@@ -48,7 +48,7 @@ export function RealityTile({ value, label, shortLabel, qualifier, icon: Icon, c
                 ui.card,
                 isHidden && "opacity-0 pointer-events-none",
                 // Grid Height Standardization
-                isCollapsed ? "px-4 py-2.5 gap-0 h-full" : "p-3.5 sm:p-4 h-24 sm:h-26 gap-0"
+                isCollapsed ? "px-3.5 py-2 gap-0 h-full" : "p-2.5 sm:p-3 h-16 sm:h-18 gap-0"
             )}
         >
             {/* SLOT 1: HEADER + VALUE (Top Section) */}
@@ -57,23 +57,23 @@ export function RealityTile({ value, label, shortLabel, qualifier, icon: Icon, c
             <div className="flex justify-between items-start w-full">
                 {/* VALUE (Top Left) */}
                 <span className={cn(
-                    "font-bold font-sans tracking-tight group-hover:scale-[1.02] transition-transform duration-300 origin-left block",
+                    "font-bold font-sans tracking-tight group-hover:scale-[1.02] transition-transform duration-300 origin-left block tabular-nums",
                     ui.text,
                     isCollapsed
-                        ? "text-2xl sm:text-3xl leading-tight pb-0.5"
-                        : value && value.toString().length > 9 ? "text-2xl sm:text-3xl leading-snug"
-                            : value && value.toString().length > 6 ? "text-3xl leading-snug"
-                                : "text-3xl sm:text-4xl leading-tight pb-1"
+                        ? "text-lg sm:text-xl leading-tight pb-0.5"
+                        : value && value.toString().length > 9 ? "text-lg sm:text-xl leading-snug"
+                            : value && value.toString().length > 6 ? "text-xl sm:text-2xl leading-snug"
+                                : "text-xl sm:text-2xl leading-tight pb-0.5"
                 )}>
                     {value}
                 </span>
 
                 {/* ICON (Top Right) - Fixed Size Spacer */}
-                <div className={cn("flex shrink-0 justify-center items-center", isCollapsed ? "w-4 h-4 ml-2" : "w-6 h-6 ml-4")}>
+                <div className={cn("flex shrink-0 justify-center items-center", isCollapsed ? "w-4 h-4 ml-2" : "w-5 h-5 ml-2 sm:ml-3")}>
                     {Icon ? (
                         <Icon className={cn(
                             "transition-colors duration-300",
-                            isCollapsed ? "w-4 h-4" : "w-6 h-6",
+                            isCollapsed ? "w-3.5 h-3.5" : "w-4 h-4 sm:w-5 sm:h-5",
                             "text-zinc-500 group-hover:text-zinc-700"
                         )} />
                     ) : null}
@@ -81,7 +81,7 @@ export function RealityTile({ value, label, shortLabel, qualifier, icon: Icon, c
             </div>
 
             {/* SPACER (Pushes Label to Bottom) */}
-            <div className="flex-1" />
+            <div className="flex-1 min-h-0" />
 
             {/* SLOT 2: FOOTER (Label) */}
             <div className="w-full shrink-0">
@@ -89,8 +89,8 @@ export function RealityTile({ value, label, shortLabel, qualifier, icon: Icon, c
                     "text-zinc-600 transition-colors group-hover:text-zinc-800 flex items-baseline gap-1.5 whitespace-nowrap overflow-hidden",
                     // Reset margins here
                     isCollapsed
-                        ? "text-xs font-medium mb-0"
-                        : "text-sm font-medium mb-0 normal-case"
+                        ? "text-[11px] sm:text-xs font-semibold mb-0"
+                        : "text-xs sm:text-[13px] font-semibold mb-0 normal-case"
                 )}>
                     <span className="truncate">{displayLabel}</span>
                     {qualifier && !isCollapsed && (
@@ -194,8 +194,8 @@ export function RealitySummary({ tiles = [], isCollapsed }) {
             className={cn(
                 "grid transition-none", // Removed will-change-transform (Fixes Pixelated Text)
                 isCollapsed
-                    ? "grid-cols-6 grid-rows-[auto_0px] gap-x-4 gap-y-0 pb-0 overflow-hidden" // Only clip when collapsed (hiding row 2)
-                    : "grid-cols-4 gap-4 p-1" // Added p-1 to breathe and show shadows
+                    ? "grid-cols-6 grid-rows-[auto_0px] gap-x-3 gap-y-0 pb-0 overflow-hidden" // Only clip when collapsed (hiding row 2)
+                    : "grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3 p-0.5" // Sleek single-row layout on standard viewports
             )}
         >
             {tiles.map((tile, idx) => (

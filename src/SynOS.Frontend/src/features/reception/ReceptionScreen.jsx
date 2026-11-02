@@ -331,9 +331,9 @@ export function ReceptionScreen() {
                         <div className={`flex flex-col h-full transition-opacity duration-200 ${(isIntentPanelOpen || isInventoryModalOpen || isExpenseDrawerOpen) ? 'opacity-35 pointer-events-none' : 'opacity-100'}`}>
                             <div
                                 ref={summaryRef}
-                                className="mb-4 shrink-0"
+                                className="mb-2.5 shrink-0"
                             >
-                                <div className="flex items-center justify-between mb-2 px-3 sticky top-0 dark:bg-synos-background bg-transparent z-10 py-1">
+                                <div className="flex items-center justify-between mb-1.5 px-2 sticky top-0 dark:bg-synos-background bg-transparent z-10 py-0.5">
                                     <h2 className="text-lg font-bold dark:text-zinc-200 text-zinc-800">Reality Summary</h2>
                                     <button
                                         onClick={() => setIsSummaryCollapsed(!isSummaryCollapsed)}

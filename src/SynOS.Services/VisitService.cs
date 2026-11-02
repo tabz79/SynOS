@@ -1153,6 +1153,47 @@ namespace SynOS.Services
             {
                 await AssignOfficialTokenAsync(visitId, actorUserId);
             }
+
+            var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
+            if (invoice != null)
+            {
+                var existingPayment = await _context.Payments.FirstOrDefaultAsync(p => p.InvoiceId == invoice.InvoiceId);
+                if (existingPayment == null)
+                {
+                    var payment = new Payment
+                    {
+                        PaymentId = Guid.NewGuid(),
+                        InvoiceId = invoice.InvoiceId,
+                        Amount = invoice.Total,
+                        Method = "PartnerAccount",
+                        ReceiptNo = $"SYS-{visit.Token}",
+                        ReceivedAt = DateTime.UtcNow,
+                        ReceivedByUserId = actorUserId
+                    };
+                    _context.Payments.Add(payment);
+                }
+                invoice.Status = "Paid";
+
+                if (visit.ReferralPartnerId.HasValue && visit.ReferralPartnerId.Value != Guid.Empty)
+                {
+                    var existingReceivable = await _context.ReceivableFacts.FirstOrDefaultAsync(r => r.SourceVisitId == visit.VisitId);
+                    if (existingReceivable == null)
+                    {
+                        var receivable = new ReceivableFact
+                        {
+                            ReceivableFactId = Guid.NewGuid(),
+                            SourceVisitId = visit.VisitId,
+                            ReferralPartnerId = visit.ReferralPartnerId.Value,
+                            Amount = invoice.Total,
+                            Currency = invoice.Currency ?? "INR",
+                            OccurredAt = DateTimeOffset.UtcNow,
+                            RecordedAt = DateTimeOffset.UtcNow
+                        };
+                        _context.ReceivableFacts.Add(receivable);
+                    }
+                }
+            }
+
             await _context.SaveChangesAsync();
 
             await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
@@ -1160,7 +1201,6 @@ namespace SynOS.Services
             // ENRICHED METADATA
             string actorName = await GetActorNameAsync(actorUserId);
             string patientName = $"{visit.Patient?.FirstName} {visit.Patient?.LastName}".Trim();
-            var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault(); // Get Invoice
 
             var testCodes = visit.Orders?.Select(o => o.Test?.TestCode).Where(c => !string.IsNullOrEmpty(c)).ToList() ?? new List<string?>();
             string doctorName = visit.SecondaryReferralPartner?.Name ?? visit.ReferralPartner?.Name ?? "";
@@ -1450,9 +1490,11 @@ namespace SynOS.Services
                 if (prefix.Length > 3) prefix = prefix.Substring(0, 3);
             }
 
-            // We use a branch-specific counter for better isolation
+            // We find any existing token counter for this day & department to respect unique index IX_TokenCounters_Day_Department
             var tokenCounter = await _context.TokenCounters
-                .FirstOrDefaultAsync(tc => tc.Day == labLocalDay && tc.BranchId == branchId && tc.Department == department);
+                .FirstOrDefaultAsync(tc => tc.Day == labLocalDay && tc.BranchId == branchId && tc.Department == department)
+                ?? await _context.TokenCounters
+                .FirstOrDefaultAsync(tc => tc.Day == labLocalDay && tc.Department == department);
 
             if (tokenCounter == null)
             {
@@ -1471,6 +1513,10 @@ namespace SynOS.Services
             }
             else
             {
+                if (tokenCounter.BranchId != branchId && branchId != Guid.Empty)
+                {
+                    tokenCounter.BranchId = branchId;
+                }
                 // Ensure we have the latest number from DB (basic concurrency guard)
                 await _context.Entry(tokenCounter).ReloadAsync();
             }

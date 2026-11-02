@@ -1046,7 +1046,7 @@ export function DiscountMasterScreen() {
     };
 
     return (
-        <div className="px-5 sm:px-6 py-3.5 sm:py-4 w-full flex-1 min-h-0 flex flex-col justify-start gap-3 sm:gap-3.5 animate-in fade-in duration-500 relative bg-[#CBD5E1] dark:bg-zinc-950">
+        <div className="px-5 sm:px-6 py-3.5 sm:py-4 w-full flex flex-col justify-start gap-3 sm:gap-3.5 pb-16 animate-in fade-in duration-500 relative bg-[#CBD5E1] dark:bg-zinc-950">
             {/* TERMINAL HEADER MATCHING FINANCE HUB STANDARD */}
             <div className="shrink-0 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3 min-h-[44px]">
                 <div className="flex items-center gap-3.5">
@@ -1141,9 +1141,9 @@ export function DiscountMasterScreen() {
 
             {/* 0. CONCESSION CONTROL DECK (INTELLIGENCE) */}
             {tab === 'intelligence' && intelligence && (
-                <div className="flex-1 min-h-0 flex flex-col justify-start gap-3 sm:gap-3.5 lg:gap-4 animate-in fade-in duration-300">
+                <div className="w-full space-y-4 sm:space-y-5 pb-16 animate-in fade-in duration-300">
                     {/* SECTION 1: HERO CONTROL DECK (CARD 1) */}
-                    <div className="flex-1 min-h-[105px] p-4 sm:p-5 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-center">
+                    <div className="min-h-[130px] p-4 sm:p-5 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-center">
                                     {/* Left Column: Total Concessions Granted */}
                                     <div className="lg:col-span-5 flex items-center gap-4 min-w-0 pr-0 lg:pr-2">
                                         {/* 3D Tactile Coupon Tag Icon Squircle */}
@@ -1243,7 +1243,7 @@ export function DiscountMasterScreen() {
                                 </div>
 
                     {/* SECTION 2: 3-CARD MIDDLE ROW (CARDS 2, 3, 4) */}
-                    <div className="flex-[1.45] min-h-[195px] grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-12 gap-3 sm:gap-3.5 lg:gap-4 items-stretch">
+                    <div className="min-h-[220px] grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-12 gap-3 sm:gap-3.5 lg:gap-4 items-stretch">
                                     {/* CARD 2: PATIENT WALK-IN PRESETS */}
                                     <div className="col-span-1 lg:col-span-1 xl:col-span-4 h-full">
                                         <AdaptiveBreakdownCard
@@ -1329,7 +1329,7 @@ export function DiscountMasterScreen() {
                                                     <div className="space-y-3.5 my-auto">
                                                         <div className="flex items-center justify-between gap-3 sm:gap-4 py-1">
                                                             {/* Donut Ring with Inset Center Symbol Only */}
-                                                            <div className="relative w-[130px] h-[130px] sm:w-[140px] sm:h-[140px] shrink-0 flex items-center justify-center">
+                                                            <div className="relative w-[105px] h-[105px] sm:w-[115px] sm:h-[115px] xl:w-[135px] xl:h-[135px] shrink-0 flex items-center justify-center">
                                                                 <svg 
                                                                     className="w-full h-full -rotate-90 shrink-0" 
                                                                     viewBox="0 0 200 200"
@@ -1470,7 +1470,7 @@ export function DiscountMasterScreen() {
                                 </div>
 
                     {/* SECTION 3: BOTTOM ROW (CARDS 5, 6 & 7) */}
-                    <div className="flex-1 min-h-[105px] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-3 sm:gap-3.5 lg:gap-4 items-stretch">
+                    <div className="min-h-[160px] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-3 sm:gap-3.5 lg:gap-4 items-stretch">
                                     {/* CARD 5: DEPARTMENT CONCESSION SPLIT */}
                                     <div className="col-span-1 md:col-span-1 lg:col-span-3 p-4 sm:p-5 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex flex-col justify-between space-y-4 h-full overflow-hidden">
                                         <div className="flex items-center gap-2.5 pb-2.5 border-b border-slate-200 dark:border-zinc-800 shrink-0">

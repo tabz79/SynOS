@@ -473,11 +473,20 @@ export function generateThermalInvoiceHtml(payload = {}) {
                 break-inside: avoid !important;
             }
         }
-        html, body {
-            margin: 0 auto;
+        html {
+            width: 100%;
+            margin: 0;
             padding: 0;
+            background: #ffffff;
+            display: flex;
+            justify-content: center;
+        }
+        body {
             width: 72mm;
             max-width: 72mm;
+            min-width: 72mm;
+            margin: 0 auto;
+            padding: 0;
             background: #ffffff;
             color: #000000;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, monospace;
@@ -832,11 +841,20 @@ export function generateThermalPrepaidSlipHtml(payload = {}) {
                 break-inside: avoid !important;
             }
         }
-        html, body {
-            margin: 0 auto;
+        html {
+            width: 100%;
+            margin: 0;
             padding: 0;
+            background: #ffffff;
+            display: flex;
+            justify-content: center;
+        }
+        body {
             width: 72mm;
             max-width: 72mm;
+            min-width: 72mm;
+            margin: 0 auto;
+            padding: 0;
             background: #ffffff;
             color: #000000;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, monospace;
@@ -1198,11 +1216,20 @@ export function generateThermalInsuranceReceiptHtml(payload = {}) {
                 break-inside: avoid !important;
             }
         }
-        html, body {
-            margin: 0 auto;
+        html {
+            width: 100%;
+            margin: 0;
             padding: 0;
+            background: #ffffff;
+            display: flex;
+            justify-content: center;
+        }
+        body {
             width: 72mm;
             max-width: 72mm;
+            min-width: 72mm;
+            margin: 0 auto;
+            padding: 0;
             background: #ffffff;
             color: #000000;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, monospace;
