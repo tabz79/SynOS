@@ -23029,7 +23029,7 @@ Minimum version required to store current data is: ` + G + `.
     }
     return t;
   }, Bb = async (t) => {
-    if (t.status === 401) throw console.warn("Unauthorized API Access Detected. Clearing session."), localStorage.removeItem("synos_jwt"), localStorage.removeItem("synos_oversight_branch_id"), window.location.href = "/login?expired=true", new Error("Session Expired");
+    if (t.status === 401) throw console.warn("Unauthorized API Access Detected. Clearing session."), localStorage.removeItem("synos_jwt"), localStorage.removeItem("synos_oversight_branch_id"), typeof window < "u" && !window.location.pathname.startsWith("/login") && (window.location.href = "/login?expired=true"), new Error("Session Expired");
     if (t.status === 204) return null;
     const e = await t.text().catch(() => "");
     let n = {};
@@ -23189,10 +23189,10 @@ Minimum version required to store current data is: ` + G + `.
       return e.append("file", t), Nn.post(`${Ii}/tests/import-interpretation`, e);
     }
   }, AW = j.createContext(null), Wfe = ({ children: t }) => {
-    const { user: e, activeOversightBranchId: n, setOversightBranch: i } = Vi(), a = (e == null ? void 0 : e.role) === "Admin" || (e == null ? void 0 : e.role) === "SystemAdmin", [s, A] = j.useState(() => sessionStorage.getItem("synos_filter_preset") || "month"), [o, l] = j.useState(() => {
+    const { user: e, activeOversightBranchId: n, setOversightBranch: i, isAuthenticated: a } = Vi(), s = (e == null ? void 0 : e.role) === "Admin" || (e == null ? void 0 : e.role) === "SystemAdmin", [A, o] = j.useState(() => sessionStorage.getItem("synos_filter_preset") || "month"), [l, c] = j.useState(() => {
       try {
-        const U = sessionStorage.getItem("synos_filter_custom_dates");
-        return U ? JSON.parse(U) : {
+        const _ = sessionStorage.getItem("synos_filter_custom_dates");
+        return _ ? JSON.parse(_) : {
           start: "",
           end: ""
         };
@@ -23202,110 +23202,116 @@ Minimum version required to store current data is: ` + G + `.
           end: ""
         };
       }
-    }), [c, g] = j.useState(() => {
-      const U = sessionStorage.getItem("synos_filter_is_consolidated");
-      return U === null ? true : U === "true";
-    }), [d, u] = j.useState(() => n || localStorage.getItem("synos_oversight_branch_id") || (e == null ? void 0 : e.branchId) || ""), [h, f] = j.useState([]), [I, m] = j.useState(false);
+    }), [g, d] = j.useState(() => {
+      const _ = sessionStorage.getItem("synos_filter_is_consolidated");
+      return _ === null ? true : _ === "true";
+    }), [u, h] = j.useState(() => n || localStorage.getItem("synos_oversight_branch_id") || (e == null ? void 0 : e.branchId) || ""), [f, I] = j.useState([]), [m, B] = j.useState(false);
     j.useEffect(() => {
-      n && n !== d && u(n);
+      n && n !== u && h(n);
     }, [
       n
     ]), j.useEffect(() => {
-      let U = true;
+      if (!a) {
+        I([]);
+        return;
+      }
+      let _ = true;
       return (async () => {
-        m(true);
+        B(true);
         try {
-          const G = await dr.getBranches();
-          if (U && Array.isArray(G) && G.length > 0 && (f(G), !d && G[0])) {
-            const P = G[0].branchId || G[0].id;
-            u(P);
+          const P = await dr.getBranches();
+          if (_ && Array.isArray(P) && P.length > 0 && (I(P), !u && P[0])) {
+            const H = P[0].branchId || P[0].id;
+            h(H);
           }
-        } catch (G) {
-          console.error("Failed to load branches in GlobalFilterContext", G);
+        } catch (P) {
+          console.error("Failed to load branches in GlobalFilterContext", P);
         } finally {
-          U && m(false);
+          _ && B(false);
         }
       })(), () => {
-        U = false;
+        _ = false;
       };
-    }, []);
-    const B = j.useCallback((U) => {
-      sessionStorage.setItem("synos_filter_preset", U), A(U);
-    }, []), C = j.useCallback((U) => {
-      sessionStorage.setItem("synos_filter_custom_dates", JSON.stringify(U)), l(U), sessionStorage.setItem("synos_filter_preset", "custom"), A("custom");
-    }, []), E = j.useCallback((U) => {
-      const _ = /* @__PURE__ */ new Date(), G = /* @__PURE__ */ new Date();
-      G.setDate(_.getDate() - (U - 1));
-      const P = (Y) => {
-        const ae = Y.getFullYear(), re = String(Y.getMonth() + 1).padStart(2, "0"), ie = String(Y.getDate()).padStart(2, "0");
-        return `${ae}-${re}-${ie}`;
-      }, H = {
-        start: P(G),
-        end: P(_)
+    }, [
+      a
+    ]);
+    const C = j.useCallback((_) => {
+      sessionStorage.setItem("synos_filter_preset", _), o(_);
+    }, []), E = j.useCallback((_) => {
+      sessionStorage.setItem("synos_filter_custom_dates", JSON.stringify(_)), c(_), sessionStorage.setItem("synos_filter_preset", "custom"), o("custom");
+    }, []), b = j.useCallback((_) => {
+      const G = /* @__PURE__ */ new Date(), P = /* @__PURE__ */ new Date();
+      P.setDate(G.getDate() - (_ - 1));
+      const H = (ae) => {
+        const re = ae.getFullYear(), ie = String(ae.getMonth() + 1).padStart(2, "0"), ne = String(ae.getDate()).padStart(2, "0");
+        return `${re}-${ie}-${ne}`;
+      }, Y = {
+        start: H(P),
+        end: H(G)
       };
-      sessionStorage.setItem("synos_filter_custom_dates", JSON.stringify(H)), l(H), sessionStorage.setItem("synos_filter_preset", "custom"), A("custom");
-    }, []), b = j.useCallback((U) => {
-      sessionStorage.setItem("synos_filter_is_consolidated", String(U)), g(U);
-    }, []), N = j.useCallback((U) => {
-      localStorage.setItem("synos_oversight_branch_id", U), u(U), i && i(U);
+      sessionStorage.setItem("synos_filter_custom_dates", JSON.stringify(Y)), c(Y), sessionStorage.setItem("synos_filter_preset", "custom"), o("custom");
+    }, []), N = j.useCallback((_) => {
+      sessionStorage.setItem("synos_filter_is_consolidated", String(_)), d(_);
+    }, []), D = j.useCallback((_) => {
+      localStorage.setItem("synos_oversight_branch_id", _), h(_), i && i(_);
     }, [
       i
-    ]), D = j.useMemo(() => c && a ? null : d || n || (e == null ? void 0 : e.branchId) || null, [
-      c,
-      a,
-      d,
+    ]), R = j.useMemo(() => g && s ? null : u || n || (e == null ? void 0 : e.branchId) || null, [
+      g,
+      s,
+      u,
       n,
       e == null ? void 0 : e.branchId
     ]);
     j.useEffect(() => {
-      c && a ? localStorage.removeItem("activeBranchId") : D && localStorage.setItem("activeBranchId", D);
+      g && s ? localStorage.removeItem("activeBranchId") : R && localStorage.setItem("activeBranchId", R);
     }, [
-      c,
-      a,
-      D
-    ]);
-    const R = j.useMemo(() => {
-      var _a;
-      return c && a ? "All Branches" : ((_a = h.find((_) => (_.branchId || _.id) === D)) == null ? void 0 : _a.name) || (e == null ? void 0 : e.branchName) || "Main Branch";
-    }, [
-      c,
-      a,
-      D,
-      h,
-      e == null ? void 0 : e.branchName
-    ]), F = j.useMemo(() => ({
-      presetRange: s,
-      setPresetRange: B,
-      customDates: o,
-      setCustomDates: C,
-      setQuickDays: E,
-      isConsolidated: c,
-      setIsConsolidated: b,
-      activeBranchId: d,
-      setActiveBranchId: N,
-      effectiveBranchId: D,
-      branches: h,
-      isLoadingBranches: I,
-      currentBranchName: R,
-      isAdmin: a
-    }), [
+      g,
       s,
-      B,
-      o,
-      C,
-      E,
-      c,
-      b,
-      d,
-      N,
-      D,
-      h,
-      I,
+      R
+    ]);
+    const F = j.useMemo(() => {
+      var _a;
+      return g && s ? "All Branches" : ((_a = f.find((G) => (G.branchId || G.id) === R)) == null ? void 0 : _a.name) || (e == null ? void 0 : e.branchName) || "Main Branch";
+    }, [
+      g,
+      s,
       R,
-      a
+      f,
+      e == null ? void 0 : e.branchName
+    ]), U = j.useMemo(() => ({
+      presetRange: A,
+      setPresetRange: C,
+      customDates: l,
+      setCustomDates: E,
+      setQuickDays: b,
+      isConsolidated: g,
+      setIsConsolidated: N,
+      activeBranchId: u,
+      setActiveBranchId: D,
+      effectiveBranchId: R,
+      branches: f,
+      isLoadingBranches: m,
+      currentBranchName: F,
+      isAdmin: s
+    }), [
+      A,
+      C,
+      l,
+      E,
+      b,
+      g,
+      N,
+      u,
+      D,
+      R,
+      f,
+      m,
+      F,
+      s
     ]);
     return r.jsx(AW.Provider, {
-      value: F,
+      value: U,
       children: t
     });
   }, lo = () => {
@@ -29008,7 +29014,7 @@ Minimum version required to store current data is: ` + G + `.
         body: JSON.stringify(t)
       });
       if (!e.ok) {
-        if (e.status === 401) throw console.warn("Unauthorized: Session expired or invalid."), localStorage.removeItem("synos_jwt"), window.location.href = "/login", new Error("Unauthorized");
+        if (e.status === 401) throw console.warn("Unauthorized: Session expired or invalid."), localStorage.removeItem("synos_jwt"), typeof window < "u" && !window.location.pathname.startsWith("/login") && (window.location.href = "/login"), new Error("Unauthorized");
         const i = await e.json().catch(() => ({}));
         throw new Error(i.message || `Server Error: ${e.status}`);
       }
@@ -29230,7 +29236,7 @@ Minimum version required to store current data is: ` + G + `.
         headers: en.getHeaders()
       });
       if (!e.ok) {
-        if (e.status === 401) throw console.warn("Unauthorized: Session expired or invalid."), localStorage.removeItem("synos_jwt"), window.location.href = "/login", new Error("Unauthorized");
+        if (e.status === 401) throw console.warn("Unauthorized: Session expired or invalid."), localStorage.removeItem("synos_jwt"), typeof window < "u" && !window.location.pathname.startsWith("/login") && (window.location.href = "/login"), new Error("Unauthorized");
         const i = await e.text();
         throw console.error("DEBUG: Activity Stream Failed Response:", e.status, i), new Error(`Activity Stream Failed (${e.status}): ${i}`);
       }
@@ -29241,7 +29247,7 @@ Minimum version required to store current data is: ` + G + `.
       const t = en.withBranchId("/api/v1/branch/activity/timeline"), e = await fetch(t, {
         headers: en.getHeaders()
       });
-      if (!e.ok) throw e.status === 401 ? (console.warn("Unauthorized: Session expired or invalid."), localStorage.removeItem("synos_jwt"), window.location.href = "/login", new Error("Unauthorized")) : (console.error("Timeline Stream Failed:", e.status), new Error(`Timeline Stream Failed (${e.status})`));
+      if (!e.ok) throw e.status === 401 ? (console.warn("Unauthorized: Session expired or invalid."), localStorage.removeItem("synos_jwt"), typeof window < "u" && !window.location.pathname.startsWith("/login") && (window.location.href = "/login"), new Error("Unauthorized")) : (console.error("Timeline Stream Failed:", e.status), new Error(`Timeline Stream Failed (${e.status})`));
       const n = await e.json();
       return Array.isArray(n) ? n : [];
     },

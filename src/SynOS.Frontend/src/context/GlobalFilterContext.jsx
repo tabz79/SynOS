@@ -5,7 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 const GlobalFilterContext = createContext(null);
 
 export const GlobalFilterProvider = ({ children }) => {
-    const { user, activeOversightBranchId, setOversightBranch } = useAuth();
+    const { user, activeOversightBranchId, setOversightBranch, isAuthenticated } = useAuth();
     const isAdmin = user?.role === 'Admin' || user?.role === 'SystemAdmin';
 
     // 1. Time Horizon Preset ('today' | 'month' | 'quarter' | 'year' | 'custom')
@@ -44,8 +44,12 @@ export const GlobalFilterProvider = ({ children }) => {
         }
     }, [activeOversightBranchId]);
 
-    // Load available branches once
+    // Load available branches once authenticated
     useEffect(() => {
+        if (!isAuthenticated) {
+            setBranches([]);
+            return;
+        }
         let isMounted = true;
         const fetchBranches = async () => {
             setIsLoadingBranches(true);
@@ -68,7 +72,7 @@ export const GlobalFilterProvider = ({ children }) => {
 
         fetchBranches();
         return () => { isMounted = false; };
-    }, []);
+    }, [isAuthenticated]);
 
     const setPresetRange = useCallback((preset) => {
         sessionStorage.setItem('synos_filter_preset', preset);

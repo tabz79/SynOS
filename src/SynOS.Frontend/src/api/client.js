@@ -55,8 +55,10 @@ const handleResponse = async (response) => {
         console.warn("Unauthorized API Access Detected. Clearing session.");
         localStorage.removeItem('synos_jwt');
         localStorage.removeItem('synos_oversight_branch_id');
-        // Force a hard redirect to ensure the app state is reset
-        window.location.href = '/login?expired=true';
+        // Prevent infinite reload loop if already on login page
+        if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+            window.location.href = '/login?expired=true';
+        }
         throw new Error("Session Expired");
     }
     

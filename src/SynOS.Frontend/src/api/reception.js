@@ -86,7 +86,9 @@ export const ReceptionApi = {
             if (response.status === 401) {
                 console.warn("Unauthorized: Session expired or invalid.");
                 localStorage.removeItem('synos_jwt');
-                window.location.href = '/login'; // Force re-auth
+                if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+                    window.location.href = '/login'; // Force re-auth
+                }
                 throw new Error("Unauthorized");
             }
             const errorData = await response.json().catch(() => ({}));
@@ -480,7 +482,9 @@ export const ReceptionApi = {
             if (response.status === 401) {
                 console.warn("Unauthorized: Session expired or invalid.");
                 localStorage.removeItem('synos_jwt');
-                window.location.href = '/login';
+                if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+                    window.location.href = '/login';
+                }
                 throw new Error("Unauthorized");
             }
             const errorText = await response.text();
@@ -513,7 +517,9 @@ export const ReceptionApi = {
             if (response.status === 401) {
                 console.warn("Unauthorized: Session expired or invalid.");
                 localStorage.removeItem('synos_jwt');
-                window.location.href = '/login';
+                if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+                    window.location.href = '/login';
+                }
                 throw new Error("Unauthorized");
             }
             console.error("Timeline Stream Failed:", response.status);
