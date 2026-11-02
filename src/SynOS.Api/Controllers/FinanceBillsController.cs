@@ -462,7 +462,9 @@ namespace SynOS.Api.Controllers
                 var rp = v?.ReferralPartner;
                 var pcm = v?.PaymentCollectionModel ?? "";
                 var bt = v?.BillingType;
-                var partnerName = rp != null ? rp.Name : "Direct Patient";
+                var partnerName = rp != null 
+                    ? rp.Name 
+                    : (!string.IsNullOrWhiteSpace(v?.ReferrerText) ? v.ReferrerText : "Direct Patient");
                 bool hasCounterDeskPayment = totalCollected > 0;
 
                 bool isInsurance = false;
@@ -475,6 +477,7 @@ namespace SynOS.Api.Controllers
                     isInsurance = true;
                 }
                 else if (!hasCounterDeskPayment && 
+                         !string.Equals(partnerName, "SELF", StringComparison.OrdinalIgnoreCase) &&
                          (bt == BillingType.PrepaidPartner || 
                           bt == BillingType.Corporate || 
                           pcm.Equals("PartnerCollects", StringComparison.OrdinalIgnoreCase) || 

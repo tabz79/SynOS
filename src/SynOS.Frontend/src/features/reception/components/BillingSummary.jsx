@@ -720,6 +720,16 @@ export function BillingSummary({
                                                 Doctor
                                             </span>
                                         </div>
+                                    ) : (snapshot?.billing?.referral?.referrerText || '').trim().toUpperCase() === 'SELF' ? (
+                                        <div className="flex items-center gap-2 min-w-0">
+                                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] shrink-0" />
+                                            <span className="font-bold text-sm sm:text-base text-slate-900 dark:text-white truncate">
+                                                SELF
+                                            </span>
+                                            <span className="text-xs px-2.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/20 shrink-0">
+                                                Direct Walk-in
+                                            </span>
+                                        </div>
                                     ) : (
                                         <span className="text-sm font-medium text-slate-500 dark:text-zinc-400 italic">No Referral Partner (Direct Walk-in)</span>
                                     )}
