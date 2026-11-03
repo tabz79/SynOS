@@ -556,8 +556,14 @@ export const FinanceApi = {
     /**
      * Fetches pending receivables (supports filtering by type e.g. 'partner', 'corporate', 'insurance').
      */
-    getReceivables: async (type = null) => {
-        const query = type ? `?type=${encodeURIComponent(type)}` : '';
+    getReceivables: async (type = null, branchId = null, preset = null, startDate = null, endDate = null) => {
+        const params = new URLSearchParams();
+        if (type) params.set('type', type);
+        if (branchId) params.set('branchId', branchId);
+        if (preset && preset !== 'all' && preset !== 'custom') params.set('preset', preset);
+        if (startDate) params.set('startDate', startDate);
+        if (endDate) params.set('endDate', endDate);
+        const query = params.toString() ? `?${params.toString()}` : '';
         const response = await fetch(FinanceApi.withBranchId(`/api/v1/receivables${query}`), {
             headers: FinanceApi.getHeaders()
         });
@@ -628,8 +634,14 @@ export const FinanceApi = {
         return response.json();
     },
 
-    getPartnerReceivablesSummary: async () => {
-        const response = await fetch(FinanceApi.withBranchId('/api/v1/economics/partner-receivables-summary'), {
+    getPartnerReceivablesSummary: async (branchId = null, preset = null, startDate = null, endDate = null) => {
+        const params = new URLSearchParams();
+        if (branchId) params.set('branchId', branchId);
+        if (preset && preset !== 'all' && preset !== 'custom') params.set('preset', preset);
+        if (startDate) params.set('startDate', startDate);
+        if (endDate) params.set('endDate', endDate);
+        const query = params.toString() ? `?${params.toString()}` : '';
+        const response = await fetch(FinanceApi.withBranchId(`/api/v1/economics/partner-receivables-summary${query}`), {
             headers: FinanceApi.getHeaders()
         });
         if (!response.ok) throw new Error("Failed to load partner summary");

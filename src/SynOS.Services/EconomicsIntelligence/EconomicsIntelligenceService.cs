@@ -10,16 +10,93 @@ using SynOS.Models.ReadModels.Economics;
 using SynOS.Models.DTOs.Economics;
 using SynOS.Models.Entities.Payables; // ADDED
 using SynOS.Models.Enums;
+using SynOS.Services.Time;
 
 namespace SynOS.Services.EconomicsIntelligence
 {
     public class EconomicsIntelligenceService : IEconomicsIntelligenceService
     {
         private readonly SynOSDbContext _context;
+        private readonly ILabTimeProvider _labTimeProvider;
 
-        public EconomicsIntelligenceService(SynOSDbContext context)
+        public EconomicsIntelligenceService(SynOSDbContext context, ILabTimeProvider labTimeProvider)
         {
             _context = context;
+            _labTimeProvider = labTimeProvider;
+        }
+
+        private (DateTimeOffset? startUtc, DateTimeOffset? endUtc) ResolvePresetDateRange(string? preset, DateTime? explicitStart, DateTime? explicitEnd)
+        {
+            if (explicitStart.HasValue || explicitEnd.HasValue)
+            {
+                var adjustedEnd = explicitEnd;
+                if (adjustedEnd.HasValue && adjustedEnd.Value.TimeOfDay == TimeSpan.Zero)
+                {
+                    adjustedEnd = adjustedEnd.Value.AddDays(1).AddTicks(-1);
+                }
+                var s = explicitStart.HasValue ? (DateTimeOffset?)new DateTimeOffset(explicitStart.Value, TimeSpan.Zero) : null;
+                var e = adjustedEnd.HasValue ? (DateTimeOffset?)new DateTimeOffset(adjustedEnd.Value, TimeSpan.Zero) : null;
+                return (s, e);
+            }
+
+            if (string.IsNullOrWhiteSpace(preset))
+            {
+                return (null, null);
+            }
+
+            var p = preset.Trim().ToLowerInvariant();
+            var istZone = _labTimeProvider.GetLabTimeZone();
+            var istNow = _labTimeProvider.GetLabNow();
+            var istToday = istNow.Date; // 00:00:00 IST
+
+            DateTime istStart;
+            DateTime istEnd;
+
+            switch (p)
+            {
+                case "today":
+                    istStart = istToday;
+                    istEnd = istToday.AddDays(1).AddTicks(-1);
+                    break;
+                case "yesterday":
+                    istStart = istToday.AddDays(-1);
+                    istEnd = istToday.AddTicks(-1);
+                    break;
+                case "this week":
+                case "week":
+                    istStart = istToday.AddDays(-6);
+                    istEnd = istToday.AddDays(1).AddTicks(-1);
+                    break;
+                case "this month":
+                case "month":
+                    istStart = new DateTime(istToday.Year, istToday.Month, 1);
+                    istEnd = istStart.AddMonths(1).AddTicks(-1);
+                    break;
+                case "this quarter":
+                case "quarter":
+                case string q when q.StartsWith("q"):
+                    var quarter = (istToday.Month - 1) / 3 + 1;
+                    var qStartMonth = (quarter - 1) * 3 + 1;
+                    istStart = new DateTime(istToday.Year, qStartMonth, 1);
+                    istEnd = istStart.AddMonths(3).AddTicks(-1);
+                    break;
+                case "this year":
+                case "year":
+                case "fy":
+                    var fyStartYear = istToday.Month >= 4 ? istToday.Year : istToday.Year - 1;
+                    istStart = new DateTime(fyStartYear, 4, 1);
+                    istEnd = istStart.AddYears(1).AddTicks(-1);
+                    break;
+                case "all":
+                case "all time":
+                    return (null, null);
+                default:
+                    return (null, null);
+            }
+
+            var startUtc = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(istStart, DateTimeKind.Unspecified), istZone);
+            var endUtc = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(istEnd, DateTimeKind.Unspecified), istZone);
+            return (new DateTimeOffset(startUtc), new DateTimeOffset(endUtc));
         }
 
         private async Task<bool> CheckTableExistsAsync(string schema, string table)
@@ -839,28 +916,39 @@ namespace SynOS.Services.EconomicsIntelligence
             }).ToList();
         }
 
-        public async Task<IEnumerable<PartnerReceivableSummaryDto>> GetPartnerReceivablesSummaryAsync()
+        public async Task<IEnumerable<PartnerReceivableSummaryDto>> GetPartnerReceivablesSummaryAsync(
+            Guid? branchId = null, 
+            string? preset = null, 
+            DateTime? startDate = null, 
+            DateTime? endDate = null)
         {
+            var (startUtc, endUtc) = ResolvePresetDateRange(preset, startDate, endDate);
             var now = DateTimeOffset.UtcNow;
             var day7 = now.AddDays(-7);
             var day30 = now.AddDays(-30);
+
+            var baseFacts = _context.ReceivableFacts.AsNoTracking().Where(f => f.SettledAt == null);
+            if (startUtc.HasValue) baseFacts = baseFacts.Where(f => f.OccurredAt >= startUtc.Value);
+            if (endUtc.HasValue) baseFacts = baseFacts.Where(f => f.OccurredAt <= endUtc.Value);
             
-            var raw = await (from f in _context.ReceivableFacts.AsNoTracking()
+            var raw = await (from f in baseFacts
                              join v in _context.Visits.AsNoTracking() on f.SourceVisitId equals v.VisitId into vj
                              from v in vj.DefaultIfEmpty()
-                             where f.SettledAt == null && (f.ReferralPartnerId != null || (v != null && (v.SecondaryReferralPartnerId != null || v.ReferralPartnerId != null)))
+                             where (v == null || (v.Status != VisitStatus.Draft && 
+                                                 (v.Token == null || !v.Token.StartsWith("D-")) && 
+                                                 (!branchId.HasValue || branchId == Guid.Empty || v.BranchId == branchId.Value)))
                              select new
                              {
                                  EffectivePartnerId = (v != null && v.SecondaryReferralPartnerId != null) 
                                      ? v.SecondaryReferralPartnerId.Value 
                                      : (v != null && v.ReferralPartnerId != null) 
                                          ? v.ReferralPartnerId.Value 
-                                         : (f.ReferralPartnerId ?? f.DebtorId),
+                                         : (f.ReferralPartnerId ?? (f.DebtorId != Guid.Empty ? f.DebtorId : f.ReceivableFactId)),
                                  EffectivePartnerName = (v != null && v.SecondaryReferralPartner != null)
                                      ? v.SecondaryReferralPartner.Name
                                      : (v != null && v.ReferralPartner != null)
                                          ? v.ReferralPartner.Name
-                                         : (f.ReferralPartner != null ? f.ReferralPartner.Name : (!string.IsNullOrEmpty(f.DebtorName) ? f.DebtorName : "Unknown Account")),
+                                         : (f.ReferralPartner != null ? f.ReferralPartner.Name : (!string.IsNullOrEmpty(f.DebtorName) ? f.DebtorName : (v != null && v.CorporateAccount != null ? v.CorporateAccount.CompanyName : "Institutional Account"))),
                                  f.Amount,
                                  f.AmountReceived,
                                  f.OccurredAt

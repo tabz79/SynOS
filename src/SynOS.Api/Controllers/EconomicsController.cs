@@ -102,9 +102,13 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpGet("partner-receivables-summary")]
-        public async Task<IActionResult> GetPartnerReceivablesSummary()
+        public async Task<IActionResult> GetPartnerReceivablesSummary(
+            [FromQuery] Guid? branchId = null,
+            [FromQuery] string? preset = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null)
         {
-            var result = await _economicsService.GetPartnerReceivablesSummaryAsync();
+            var result = await _economicsService.GetPartnerReceivablesSummaryAsync(branchId, preset, startDate, endDate);
             return Ok(result);
         }
 

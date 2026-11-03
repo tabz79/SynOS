@@ -55,7 +55,7 @@ namespace SynOS.Services.EconomicsIntelligence
         /// <summary>
         /// Retrieves a summary of receivables grouped by partner.
         /// </summary>
-        Task<IEnumerable<PartnerReceivableSummaryDto>> GetPartnerReceivablesSummaryAsync();
+        Task<IEnumerable<PartnerReceivableSummaryDto>> GetPartnerReceivablesSummaryAsync(Guid? branchId = null, string? preset = null, DateTime? startDate = null, DateTime? endDate = null);
 
         /// <summary>
         /// Retrieves revenue trends for daily, weekly, and monthly buckets.

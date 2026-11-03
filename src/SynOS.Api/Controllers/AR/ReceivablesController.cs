@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SynOS.Data;
 using SynOS.Models.Enums;
+using SynOS.Services.Time;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,14 +16,95 @@ namespace SynOS.Api.Controllers.AR
     public class ReceivablesController : ControllerBase
     {
         private readonly SynOSDbContext _context;
+        private readonly ILabTimeProvider _labTimeProvider;
 
-        public ReceivablesController(SynOSDbContext context)
+        public ReceivablesController(SynOSDbContext context, ILabTimeProvider labTimeProvider)
         {
             _context = context;
+            _labTimeProvider = labTimeProvider;
+        }
+
+        private (DateTimeOffset? startUtc, DateTimeOffset? endUtc) ResolvePresetDateRange(string? preset, DateTime? explicitStart, DateTime? explicitEnd)
+        {
+            if (explicitStart.HasValue || explicitEnd.HasValue)
+            {
+                var adjustedEnd = explicitEnd;
+                if (adjustedEnd.HasValue && adjustedEnd.Value.TimeOfDay == TimeSpan.Zero)
+                {
+                    adjustedEnd = adjustedEnd.Value.AddDays(1).AddTicks(-1);
+                }
+                var s = explicitStart.HasValue ? (DateTimeOffset?)new DateTimeOffset(explicitStart.Value, TimeSpan.Zero) : null;
+                var e = adjustedEnd.HasValue ? (DateTimeOffset?)new DateTimeOffset(adjustedEnd.Value, TimeSpan.Zero) : null;
+                return (s, e);
+            }
+
+            if (string.IsNullOrWhiteSpace(preset))
+            {
+                return (null, null);
+            }
+
+            var p = preset.Trim().ToLowerInvariant();
+            var istZone = _labTimeProvider.GetLabTimeZone();
+            var istNow = _labTimeProvider.GetLabNow();
+            var istToday = istNow.Date; // 00:00:00 IST
+
+            DateTime istStart;
+            DateTime istEnd;
+
+            switch (p)
+            {
+                case "today":
+                    istStart = istToday;
+                    istEnd = istToday.AddDays(1).AddTicks(-1);
+                    break;
+                case "yesterday":
+                    istStart = istToday.AddDays(-1);
+                    istEnd = istToday.AddTicks(-1);
+                    break;
+                case "this week":
+                case "week":
+                    istStart = istToday.AddDays(-6);
+                    istEnd = istToday.AddDays(1).AddTicks(-1);
+                    break;
+                case "this month":
+                case "month":
+                    istStart = new DateTime(istToday.Year, istToday.Month, 1);
+                    istEnd = istStart.AddMonths(1).AddTicks(-1);
+                    break;
+                case "this quarter":
+                case "quarter":
+                case string q when q.StartsWith("q"):
+                    var quarter = (istToday.Month - 1) / 3 + 1;
+                    var qStartMonth = (quarter - 1) * 3 + 1;
+                    istStart = new DateTime(istToday.Year, qStartMonth, 1);
+                    istEnd = istStart.AddMonths(3).AddTicks(-1);
+                    break;
+                case "this year":
+                case "year":
+                case "fy":
+                    var fyStartYear = istToday.Month >= 4 ? istToday.Year : istToday.Year - 1;
+                    istStart = new DateTime(fyStartYear, 4, 1);
+                    istEnd = istStart.AddYears(1).AddTicks(-1);
+                    break;
+                case "all":
+                case "all time":
+                    return (null, null);
+                default:
+                    return (null, null);
+            }
+
+            var startUtc = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(istStart, DateTimeKind.Unspecified), istZone);
+            var endUtc = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(istEnd, DateTimeKind.Unspecified), istZone);
+            return (new DateTimeOffset(startUtc), new DateTimeOffset(endUtc));
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetReceivables([FromQuery] string? type = null)
+        public async Task<IActionResult> GetReceivables(
+            [FromQuery] string? type = null,
+            [FromQuery] Guid? branchId = null,
+            [FromQuery] string? preset = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null)
         {
             var baseQuery = _context.ReceivableFacts.AsNoTracking();
 
@@ -43,9 +125,22 @@ namespace SynOS.Api.Controllers.AR
                 }
             }
 
+            var (startUtc, endUtc) = ResolvePresetDateRange(preset, startDate, endDate);
+            if (startUtc.HasValue)
+            {
+                baseQuery = baseQuery.Where(r => r.OccurredAt >= startUtc.Value);
+            }
+            if (endUtc.HasValue)
+            {
+                baseQuery = baseQuery.Where(r => r.OccurredAt <= endUtc.Value);
+            }
+
             var raw = await (from r in baseQuery
                              join v in _context.Visits on r.SourceVisitId equals v.VisitId
                              join p in _context.Patients on v.PatientId equals p.PatientId
+                             where v.Status != VisitStatus.Draft && 
+                                   (v.Token == null || !v.Token.StartsWith("D-")) &&
+                                   (!branchId.HasValue || branchId == Guid.Empty || v.BranchId == branchId.Value)
                              orderby r.OccurredAt descending
                              select new
                              {

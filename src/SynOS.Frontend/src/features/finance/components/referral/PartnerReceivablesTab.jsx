@@ -19,10 +19,12 @@ import {
 import { FinanceApi } from '@/api/finance';
 import { SignalRService } from '@/lib/signalr';
 import { cn } from '@/lib/utils';
+import { useGlobalFilter } from '@/context/GlobalFilterContext';
 import { CommercialDocumentViewer } from '../documents/CommercialDocumentViewer';
 import { DynamicDocumentRenderer } from '../documents/DynamicDocumentRenderer';
 
 export const PartnerReceivablesTab = () => {
+    const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
     const [activePayerTab, setActivePayerTab] = useState('partner'); // 'partner' | 'insurance' | 'corporate'
     const [rawReceivables, setRawReceivables] = useState([]);
     const [receivables, setReceivables] = useState([]);
@@ -46,10 +48,14 @@ export const PartnerReceivablesTab = () => {
     const loadData = async (showSpinner = true) => {
         try {
             if (showSpinner) setLoading(true);
-            const data = await FinanceApi.getReceivables();
-            setRawReceivables(data || []);
+            const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
+            const start = presetRange === 'custom' ? customDates?.start : null;
+            const end = presetRange === 'custom' ? customDates?.end : null;
+            const data = await FinanceApi.getReceivables(null, bId, presetRange, start, end);
+            const validData = (data || []).filter(r => !r.token?.toUpperCase().startsWith('D-') && (r.status || '').toLowerCase() !== 'draft');
+            setRawReceivables(validData);
             const tabToUse = activePayerTabRef.current || 'partner';
-            const grouped = groupReceivables(data || [], tabToUse);
+            const grouped = groupReceivables(validData, tabToUse);
             setReceivables(grouped);
             setSelectedPartner(prev => {
                 if (!prev) return null;
@@ -64,7 +70,9 @@ export const PartnerReceivablesTab = () => {
 
     useEffect(() => {
         loadData(true);
+    }, [presetRange, customDates?.start, customDates?.end, isConsolidated, effectiveBranchId]);
 
+    useEffect(() => {
         // Real-time live synchronization via SignalR
         SignalRService.startConnection().catch(console.error);
         const conn = SignalRService._getConnection();

@@ -200,10 +200,16 @@ export function ReceptionScreen() {
     }, [showHistory]);
 
     // STAGE 1: Data Fetching (SignalR + Polling) (Strict DTO)
+    const nonDraftQueue = actionQueue?.filter(r => 
+        !r.token?.toUpperCase().startsWith('D-') && 
+        (r.operationalStatus || '').toLowerCase() !== 'draft' &&
+        (r.status || '').toLowerCase() !== 'draft'
+    ) || [];
+
     const effectiveWalkIns = summary ? Math.max(
         Number(summary.walkInsToday) || 0,
         (Number(summary.prepaidBillsCount) || 0) + (Number(summary.paymentsOnlineCount) || 0) + ((Number(summary.paymentsCashTotal) > 0) ? 1 : 0),
-        actionQueue?.filter(r => r.dateGroup === "Today" || !r.isFinalized)?.length || 0
+        nonDraftQueue.filter(r => r.dateGroup === "Today" || !r.isFinalized).length
     ) : 0;
 
     const realityTiles = summary ? [

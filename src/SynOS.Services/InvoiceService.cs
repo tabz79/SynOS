@@ -94,7 +94,8 @@ namespace SynOS.Services
                 .Where(v => v.BranchId == branchId 
                          && (v.TokenDate == today || (v.CreatedAt >= startUtc && v.CreatedAt < endUtc))
                          && v.Status != VisitStatus.Cancelled
-                         && (v.Status != VisitStatus.Draft || v.Orders.Any() || v.Invoices.Any()));
+                         && v.Status != VisitStatus.Draft
+                         && (v.Token == null || !v.Token.StartsWith("D-")));
 
             if (userId.HasValue)
             {

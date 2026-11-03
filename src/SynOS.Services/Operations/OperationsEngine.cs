@@ -170,6 +170,8 @@ namespace SynOS.Services.Operations
                 .AsSplitQuery()
                 .Where(v => v.BranchId == branchId && 
                             v.Status != VisitStatus.Cancelled &&
+                            v.Status != VisitStatus.Draft &&
+                            (v.Token == null || !v.Token.StartsWith("D-")) &&
                             (
                                 // LIVE VIEW: Active (7 days) + Terminal (Today)
                                 (!includeHistory && 

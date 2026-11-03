@@ -496,8 +496,8 @@ export const RevenueTerminal = () => {
       subtitle: "Track outstanding patient dues from walk-in and standard billing. Record desk collections and download due reports."
     },
     receivables: {
-      title: "Partner Receivables",
-      subtitle: "Operational inbox for institutional recovery and B2B settlements."
+      title: "Pending Receivables & Aging Ledger",
+      subtitle: "Institutional A/R aging profiles, credit recovery liabilities, and debtor bulk settlements."
     },
     corrections: {
       title: "Visit Corrections Audit",
@@ -914,6 +914,20 @@ export const BillsCollectionsScreen = () => {
     // Client-side filtration for fast reactive updates
     const filteredBills = bills.filter(b => {
         if (isDraftBill(b)) return false;
+
+        // Strict Date Preset Verification (Guards against timezone drift or broad backend returns)
+        if (globalPreset === 'today') {
+            const billDateStr = b.date || b.createdAt;
+            if (billDateStr) {
+                const bDate = new Date(billDateStr);
+                const now = new Date();
+                if (bDate.getFullYear() !== now.getFullYear() ||
+                    bDate.getMonth() !== now.getMonth() ||
+                    bDate.getDate() !== now.getDate()) {
+                    return false;
+                }
+            }
+        }
 
         // 1. Status Filter
         const isCancelled = b.isCancelled || (b.status || '').toUpperCase() === 'CANCELLED';
@@ -2080,9 +2094,11 @@ export const PendingReceivablesScreen = () => {
         try {
             setLoading(true);
             const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
+            const start = presetRange === 'custom' ? customDates?.start : null;
+            const end = presetRange === 'custom' ? customDates?.end : null;
             const [summaries, bills] = await Promise.all([
-                FinanceApi.getPartnerReceivablesSummary(bId),
-                FinanceApi.getReceivables('partner', bId)
+                FinanceApi.getPartnerReceivablesSummary(bId, presetRange, start, end),
+                FinanceApi.getReceivables(null, bId, presetRange, start, end)
             ]);
             setPartnerSummaries(summaries || []);
             setAllBills((bills || []).filter(b => !isDraftBill(b)).map(b => ({
