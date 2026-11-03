@@ -18,6 +18,7 @@ import {
     RefreshCw, 
     Edit3, 
     Save, 
+    Check,
     ExternalLink, 
     Award, 
     CreditCard, 
@@ -794,6 +795,11 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
     const [quickLearnInputs, setQuickLearnInputs] = useState({});
     const [savingTestId, setSavingTestId] = useState(null);
 
+    // Inline Editing for Active Learned Rate Card
+    const [editingRuleId, setEditingRuleId] = useState(null);
+    const [editRuleInput, setEditRuleInput] = useState({ type: 'Percentage', value: 10 });
+    const [savingEditRule, setSavingEditRule] = useState(false);
+
     const [demographicsForm, setDemographicsForm] = useState(null);
     const [savingDemographics, setSavingDemographics] = useState(false);
     const [demoSuccess, setDemoSuccess] = useState(false);
@@ -836,8 +842,8 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
 
     const handleQuickLearnRate = async (testId) => {
         const input = quickLearnInputs[testId];
-        if (!input || input.value === '' || isNaN(input.value)) {
-            alert("Please enter a valid commission amount or percentage.");
+        if (!input || input.value === '' || isNaN(input.value) || Number(input.value) < 0) {
+            alert("Please enter a valid non-negative commission amount or percentage.");
             return;
         }
 
@@ -855,6 +861,44 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
             alert(err.message || "Failed to lock commission rate.");
         } finally {
             setSavingTestId(null);
+        }
+    };
+
+    const handleStartEditRule = (rule) => {
+        const isFlat = rule.commissionType === 1 || rule.commissionType === 'Flat';
+        setEditingRuleId(rule.ruleId);
+        setEditRuleInput({
+            type: isFlat ? 'Flat' : 'Percentage',
+            value: rule.commissionValue ?? 10
+        });
+    };
+
+    const handleCancelEditRule = () => {
+        setEditingRuleId(null);
+        setEditRuleInput({ type: 'Percentage', value: 10 });
+    };
+
+    const handleSaveEditRule = async (rule) => {
+        if (editRuleInput.value === '' || isNaN(editRuleInput.value) || Number(editRuleInput.value) < 0) {
+            alert("Please enter a valid non-negative commission rate.");
+            return;
+        }
+
+        try {
+            setSavingEditRule(true);
+            await FinanceApi.quickLearnRate(doctorId, {
+                testId: rule.testId,
+                commissionType: editRuleInput.type === 'Flat' ? 1 : 0,
+                commissionValue: parseFloat(editRuleInput.value)
+            });
+
+            setEditingRuleId(null);
+            await loadProfile();
+            if (onRateLearned) onRateLearned();
+        } catch (err) {
+            alert(err.message || "Failed to update commission rate.");
+        } finally {
+            setSavingEditRule(false);
         }
     };
 
@@ -894,36 +938,40 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
 
     return (
         <div className="fixed inset-0 z-[120] flex justify-end bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="w-full max-w-2xl bg-white dark:bg-zinc-950 h-full shadow-2xl border-l border-slate-200 dark:border-zinc-800 flex flex-col animate-in slide-in-from-right duration-300 overflow-hidden">
+            <div className="w-full sm:w-[85vw] md:w-[70vw] lg:w-[55vw] xl:w-[52vw] min-w-[340px] sm:min-w-[650px] lg:min-w-[850px] max-w-6xl bg-white dark:bg-zinc-950 h-full shadow-2xl border-l border-slate-200 dark:border-zinc-800 flex flex-col animate-in slide-in-from-right duration-300 overflow-hidden">
                 {/* DRAWER TOP BAR */}
-                <div className="p-6 border-b border-black/[0.05] dark:border-white/[0.05] bg-slate-50/50 dark:bg-zinc-900/40 flex items-start justify-between">
+                <div className="px-6 py-4 border-b border-black/[0.05] dark:border-white/[0.05] bg-slate-50/70 dark:bg-zinc-900/60 flex items-center justify-between shrink-0">
                     {loading || !profileData ? (
                         <div className="flex items-center gap-3 animate-pulse">
-                            <div className="w-10 h-10 rounded-xl bg-slate-200 dark:bg-zinc-800" />
+                            <div className="w-11 h-11 rounded-2xl bg-slate-200 dark:bg-zinc-800" />
                             <div className="space-y-1.5">
-                                <div className="h-4 w-36 bg-slate-200 dark:bg-zinc-800 rounded" />
-                                <div className="h-3 w-20 bg-slate-200 dark:bg-zinc-800 rounded" />
+                                <div className="h-4.5 w-44 bg-slate-200 dark:bg-zinc-800 rounded" />
+                                <div className="h-3 w-28 bg-slate-200 dark:bg-zinc-800 rounded" />
                             </div>
                         </div>
                     ) : (
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-center font-bold text-xs">
-                                <Stethoscope size={20} />
+                        <div className="flex items-center gap-3.5 min-w-0">
+                            <div className="w-11 h-11 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-synos-primary border border-blue-100 dark:border-blue-900/50 flex items-center justify-center font-bold shadow-xs shrink-0">
+                                <Stethoscope size={22} strokeWidth={2.2} />
                             </div>
-                            <div>
-                                <div className="flex items-center gap-2">
-                                    <h2 className="type-value !text-base text-zinc-900 dark:text-white">
+                            <div className="min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <h2 className="text-base sm:text-lg font-extrabold text-zinc-900 dark:text-white truncate">
                                         {doc.name}
                                     </h2>
                                     {doc.demographics?.registrationNumber && (
-                                        <span className="type-code text-[10px] px-1.5 py-0.5 bg-slate-100 dark:bg-zinc-800 text-zinc-500 rounded border border-slate-200 dark:border-zinc-700">
+                                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 bg-slate-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded-md border border-slate-200 dark:border-zinc-700">
                                             {doc.demographics.registrationNumber}
                                         </span>
                                     )}
+                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40">
+                                        Active Partner
+                                    </span>
                                 </div>
-                                <p className="type-meta text-xs text-zinc-500 mt-0.5">
+                                <p className="text-xs text-zinc-500 font-medium mt-0.5 flex items-center gap-1.5 truncate">
                                     <span>{doc.demographics?.speciality || doc.partnerType || 'Doctor'}</span>
-                                    {doc.clinicName && <span> • {doc.clinicName}</span>}
+                                    {doc.clinicName && <span>• {doc.clinicName}</span>}
+                                    {doc.location && <span>({doc.location})</span>}
                                 </p>
                             </div>
                         </div>
@@ -931,36 +979,68 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
 
                     <button 
                         onClick={onClose}
-                        className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 transition-all"
+                        className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-all ml-3 shrink-0"
+                        title="Close File"
                     >
-                        <X size={18} />
+                        <X size={20} />
                     </button>
                 </div>
 
-                {/* COMMERCIAL SUMMARY STRIP */}
+                {/* COMMERCIAL SUMMARY METRIC PODS */}
                 {profileData && (
-                    <div className="grid grid-cols-4 gap-2 px-6 py-3.5 bg-slate-50 dark:bg-zinc-900/40 border-b border-black/[0.05] dark:border-white/[0.05]">
-                        <div>
-                            <span className="type-meta uppercase !text-[9px] block">Patients</span>
-                            <span className="type-value block mt-0.5">{doc.totalPatientsReferred || 0}</span>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 px-6 py-3.5 bg-slate-50/50 dark:bg-zinc-900/30 border-b border-black/[0.05] dark:border-white/[0.05] shrink-0">
+                        {/* Pod 1: Patients */}
+                        <div className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs">
+                            <div className="flex items-center justify-between text-zinc-400 mb-1">
+                                <span className="text-[10px] font-extrabold uppercase tracking-wider">Patients</span>
+                                <Users size={14} className="text-blue-500" />
+                            </div>
+                            <span className="text-lg sm:text-xl font-extrabold text-zinc-900 dark:text-white tabular-nums block">
+                                {doc.totalPatientsReferred || 0}
+                            </span>
+                            <span className="text-[10px] text-zinc-400 font-medium">Referred intake</span>
                         </div>
-                        <div>
-                            <span className="type-meta uppercase !text-[9px] block">Revenue</span>
-                            <span className="type-value block mt-0.5">₹ {Number(doc.totalRevenueGenerated || 0).toLocaleString()}</span>
+
+                        {/* Pod 2: Gross Revenue */}
+                        <div className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs">
+                            <div className="flex items-center justify-between text-zinc-400 mb-1">
+                                <span className="text-[10px] font-extrabold uppercase tracking-wider">Revenue</span>
+                                <IndianRupee size={14} className="text-indigo-500" />
+                            </div>
+                            <span className="text-lg sm:text-xl font-extrabold text-zinc-900 dark:text-white tabular-nums block">
+                                ₹{Number(doc.totalRevenueGenerated || 0).toLocaleString('en-IN')}
+                            </span>
+                            <span className="text-[10px] text-zinc-400 font-medium">Billed tariff</span>
                         </div>
-                        <div>
-                            <span className="type-meta uppercase !text-[9px] block">Earned</span>
-                            <span className="type-value block mt-0.5">₹ {Number(doc.totalCommissionEarned || 0).toLocaleString()}</span>
+
+                        {/* Pod 3: Earned Commission */}
+                        <div className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs">
+                            <div className="flex items-center justify-between text-zinc-400 mb-1">
+                                <span className="text-[10px] font-extrabold uppercase tracking-wider">Earned</span>
+                                <Award size={14} className="text-emerald-500" />
+                            </div>
+                            <span className="text-lg sm:text-xl font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums block">
+                                ₹{Number(doc.totalCommissionEarned || 0).toLocaleString('en-IN')}
+                            </span>
+                            <span className="text-[10px] text-zinc-400 font-medium">Total accrued</span>
                         </div>
-                        <div>
-                            <span className="type-meta uppercase !text-[9px] block">Due</span>
-                            <span className="type-value block mt-0.5 text-amber-600 dark:text-amber-400">₹ {Number(doc.pendingPayoutDue || 0).toLocaleString()}</span>
+
+                        {/* Pod 4: Due Payout */}
+                        <div className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs">
+                            <div className="flex items-center justify-between text-zinc-400 mb-1">
+                                <span className="text-[10px] font-extrabold uppercase tracking-wider">Due Payout</span>
+                                <CreditCard size={14} className="text-amber-500" />
+                            </div>
+                            <span className="text-lg sm:text-xl font-extrabold text-amber-600 dark:text-amber-400 tabular-nums block">
+                                ₹{Number(doc.pendingPayoutDue || 0).toLocaleString('en-IN')}
+                            </span>
+                            <span className="text-[10px] text-zinc-400 font-medium">Payable balance</span>
                         </div>
                     </div>
                 )}
 
                 {/* DRAWER TABS */}
-                <div className="flex items-center gap-2 px-6 pt-2 border-b border-black/[0.05] dark:border-white/[0.05]">
+                <div className="flex items-center gap-2 px-6 pt-2 border-b border-black/[0.05] dark:border-white/[0.05] shrink-0">
                     {[
                         { 
                             id: 'rates', 
@@ -975,7 +1055,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={cn(
-                                "flex items-center gap-1.5 px-3 py-2.5 border-b-2 text-xs font-bold transition-all whitespace-nowrap",
+                                "flex items-center gap-1.5 px-3.5 py-2.5 border-b-2 text-xs font-bold transition-all whitespace-nowrap",
                                 activeTab === tab.id 
                                     ? "border-synos-primary text-synos-primary" 
                                     : "border-transparent text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
@@ -983,7 +1063,14 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                         >
                             <span>{tab.label}</span>
                             {Boolean(tab.badge && tab.badge > 0) && (
-                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold bg-amber-500 text-white">
+                                    {tab.badge}
+                                </span>
+                            )}
+                            {tab.count !== undefined && (
+                                <span className="text-[11px] text-zinc-400 font-semibold">
+                                    ({tab.count})
+                                </span>
                             )}
                         </button>
                     ))}
@@ -1006,13 +1093,13 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                         <div className="space-y-3">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                                                    <span className="type-section-header uppercase text-amber-700 dark:text-amber-400">
+                                                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                                                    <span className="text-xs font-extrabold uppercase tracking-wider text-amber-700 dark:text-amber-400">
                                                         Unmapped Tests Prescribed at Reception ({unmappedList.length})
                                                     </span>
                                                 </div>
                                             </div>
-                                            <p className="type-meta text-xs">
+                                            <p className="text-xs text-zinc-500">
                                                 These tests were prescribed during billing. Set the rate below to lock it forever and recalculate pending visits atomically.
                                             </p>
 
@@ -1020,28 +1107,38 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                                 {unmappedList.map(test => {
                                                     const input = quickLearnInputs[test.testId] || { type: 'Percentage', value: doc.defaultCommissionPercentage ?? 10 };
                                                     const isSaving = savingTestId === test.testId;
+                                                    const numVal = parseFloat(input.value) || 0;
+                                                    const previewPayout = input.type === 'Percentage'
+                                                        ? (test.basePrice * numVal) / 100
+                                                        : numVal;
 
                                                     return (
                                                         <div 
                                                             key={test.testId}
-                                                            className="p-3 bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 rounded-xl flex items-center justify-between gap-3"
+                                                            className="p-3.5 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/40 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs"
                                                         >
-                                                            <div>
-                                                                <div className="flex items-center gap-2">
-                                                                    <span className="type-code text-[10px] bg-white dark:bg-zinc-800 px-1 rounded border border-amber-200 dark:border-amber-800">
+                                                            <div className="space-y-1 min-w-0 flex-1">
+                                                                <div className="flex items-center gap-2 flex-wrap">
+                                                                    <span className="font-mono text-[10px] font-bold bg-white dark:bg-zinc-800 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300">
                                                                         {test.testCode}
                                                                     </span>
-                                                                    <span className="type-value !text-xs text-zinc-900 dark:text-white">
+                                                                    <span className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white truncate">
                                                                         {test.testName}
                                                                     </span>
                                                                 </div>
-                                                                <span className="type-meta text-[11px] block mt-0.5">
-                                                                    {test.departmentName} • Base Price: ₹{test.basePrice}
-                                                                </span>
+                                                                <div className="flex items-center gap-2 text-[11px] text-zinc-500 flex-wrap">
+                                                                    <span className="font-medium">{test.departmentName}</span>
+                                                                    <span>•</span>
+                                                                    <span className="font-bold text-zinc-700 dark:text-zinc-300">MRP: ₹{Number(test.basePrice || 0).toLocaleString('en-IN')}</span>
+                                                                    <span>•</span>
+                                                                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                                                                        Yields ₹{previewPayout.toFixed(2)} / test
+                                                                    </span>
+                                                                </div>
                                                             </div>
 
-                                                            <div className="flex items-center gap-2">
-                                                                <div className="flex items-center bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg overflow-hidden p-0.5">
+                                                            <div className="flex items-center gap-2 shrink-0">
+                                                                <div className="flex items-center bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg overflow-hidden p-0.5 shadow-2xs">
                                                                     <button
                                                                         type="button"
                                                                         onClick={() => setQuickLearnInputs({
@@ -1049,8 +1146,8 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                                                             [test.testId]: { ...input, type: 'Percentage' }
                                                                         })}
                                                                         className={cn(
-                                                                            "px-2 py-0.5 text-xs font-bold rounded transition-all",
-                                                                            input.type === 'Percentage' ? "bg-synos-primary text-white" : "text-zinc-400"
+                                                                            "px-2.5 py-1 text-xs font-bold rounded transition-all",
+                                                                            input.type === 'Percentage' ? "bg-synos-primary text-white shadow-2xs" : "text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
                                                                         )}
                                                                     >
                                                                         %
@@ -1062,30 +1159,32 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                                                             [test.testId]: { ...input, type: 'Flat' }
                                                                         })}
                                                                         className={cn(
-                                                                            "px-2 py-0.5 text-xs font-bold rounded transition-all",
-                                                                            input.type === 'Flat' ? "bg-synos-primary text-white" : "text-zinc-400"
+                                                                            "px-2.5 py-1 text-xs font-bold rounded transition-all",
+                                                                            input.type === 'Flat' ? "bg-synos-primary text-white shadow-2xs" : "text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
                                                                         )}
                                                                     >
-                                                                        ₹
+                                                                        ₹ Flat
                                                                     </button>
                                                                 </div>
 
                                                                 <input 
                                                                     type="number"
+                                                                    step="any"
                                                                     value={input.value}
                                                                     onChange={(e) => setQuickLearnInputs({
                                                                         ...quickLearnInputs,
                                                                         [test.testId]: { ...input, value: e.target.value }
                                                                     })}
-                                                                    className="w-16 px-2 py-1 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg text-xs font-bold text-center outline-none"
+                                                                    className="w-20 px-2.5 py-1.5 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg text-xs font-bold text-center outline-none focus:ring-1 focus:ring-synos-primary"
                                                                 />
 
                                                                 <button
                                                                     onClick={() => handleQuickLearnRate(test.testId)}
                                                                     disabled={isSaving}
-                                                                    className="px-3 py-1 bg-synos-primary hover:brightness-105 text-white rounded-lg text-xs font-bold transition-all disabled:opacity-50"
+                                                                    className="px-3.5 py-1.5 bg-synos-primary hover:brightness-105 text-white rounded-lg text-xs font-bold transition-all disabled:opacity-50 shadow-xs flex items-center gap-1.5"
                                                                 >
-                                                                    {isSaving ? "Saving..." : "Lock Rate"}
+                                                                    {isSaving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+                                                                    <span>{isSaving ? "Locking..." : "Lock Rate"}</span>
                                                                 </button>
                                                             </div>
                                                         </div>
@@ -1098,62 +1197,192 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                     {/* Active Learned Commission Rules */}
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between">
-                                            <span className="type-section-header uppercase">
-                                                Active Learned Rate Card ({rateCardList.length})
-                                            </span>
-                                            <span className="type-meta text-xs">
-                                                Default Cut: <b className="text-zinc-800 dark:text-zinc-200">{doc.defaultCommissionPercentage ?? 10}%</b>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs font-extrabold uppercase tracking-wider text-zinc-900 dark:text-white">
+                                                    Active Learned Rate Card ({rateCardList.length})
+                                                </span>
+                                            </div>
+                                            <span className="text-xs text-zinc-500 font-medium">
+                                                Default Partner Cut: <b className="text-zinc-900 dark:text-zinc-100">{doc.defaultCommissionPercentage ?? 10}%</b>
                                             </span>
                                         </div>
 
                                         {rateCardList.length === 0 ? (
-                                            <div className="p-6 text-center synos-dept-card rounded-xl space-y-1">
-                                                <p className="type-value !text-xs">No Custom Rates Configured</p>
-                                                <p className="type-meta text-xs">
-                                                    This doctor currently receives the default {doc.defaultCommissionPercentage ?? 10}% cut.
+                                            <div className="p-8 text-center synos-dept-card rounded-2xl space-y-1.5 border border-dashed border-slate-300 dark:border-zinc-800">
+                                                <p className="text-xs font-bold text-zinc-700 dark:text-zinc-300">No Custom Test Rates Configured</p>
+                                                <p className="text-xs text-zinc-400">
+                                                    This doctor currently receives the standard default {doc.defaultCommissionPercentage ?? 10}% commission across all tests.
                                                 </p>
                                             </div>
                                         ) : (
-                                            <div className="synos-dept-card rounded-xl overflow-hidden">
-                                                <table className="w-full text-left border-collapse text-xs">
-                                                    <thead>
-                                                        <tr className="border-b border-black/[0.05] dark:border-white/[0.05] bg-slate-50 dark:bg-zinc-900 text-[10px] type-meta font-bold uppercase">
-                                                            <th className="py-2.5 px-3">Test</th>
-                                                            <th className="py-2.5 px-2">Dept</th>
-                                                            <th className="py-2.5 px-2">Base ₹</th>
-                                                            <th className="py-2.5 px-2">Commission</th>
-                                                            <th className="py-2.5 px-2 text-right">Action</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody className="divide-y divide-black/[0.05] dark:divide-white/[0.05]">
-                                                        {rateCardList.map(rule => (
-                                                            <tr key={rule.ruleId} className="hover:bg-slate-50/50 dark:hover:bg-zinc-900/50">
-                                                                <td className="py-2.5 px-3">
-                                                                    <p className="type-value !text-xs">{rule.testName}</p>
-                                                                    <p className="type-code text-[10px] text-zinc-400">{rule.testCode}</p>
-                                                                </td>
-                                                                <td className="py-2.5 px-2 type-meta text-[11px]">{rule.departmentName}</td>
-                                                                <td className="py-2.5 px-2 type-value !text-xs">₹{rule.testPrice}</td>
-                                                                <td className="py-2.5 px-2">
-                                                                    <span className="type-code text-xs font-bold text-synos-primary">
-                                                                        {rule.commissionType === 'Flat' || rule.commissionType === 1 
-                                                                            ? `₹${rule.commissionValue} Flat` 
-                                                                            : `${rule.commissionValue}%`}
-                                                                    </span>
-                                                                </td>
-                                                                <td className="py-2.5 px-2 text-right">
-                                                                    <button
-                                                                        onClick={() => handleDeleteRule(rule.ruleId)}
-                                                                        className="p-1 text-zinc-400 hover:text-red-500 rounded transition-colors"
-                                                                        title="Delete Rule"
-                                                                    >
-                                                                        <Trash2 size={13} />
-                                                                    </button>
-                                                                </td>
+                                            <div className="synos-dept-card rounded-xl overflow-hidden border border-slate-200 dark:border-zinc-800 shadow-2xs">
+                                                <div className="overflow-x-auto">
+                                                    <table className="w-full text-left border-collapse text-xs">
+                                                        <thead>
+                                                            <tr className="border-b border-black/[0.05] dark:border-white/[0.05] bg-slate-50 dark:bg-zinc-900/60 text-[10px] font-extrabold uppercase text-zinc-400 tracking-wider">
+                                                                <th className="py-3 px-4">Test / Investigation</th>
+                                                                <th className="py-3 px-3">Department</th>
+                                                                <th className="py-3 px-3 text-right">MRP (Base ₹)</th>
+                                                                <th className="py-3 px-4 text-center">Commission Cut</th>
+                                                                <th className="py-3 px-3 text-right">Doctor Payout</th>
+                                                                <th className="py-3 px-3 text-center">Status</th>
+                                                                <th className="py-3 px-4 text-right">Action</th>
                                                             </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-black/[0.05] dark:divide-white/[0.05]">
+                                                            {rateCardList.map(rule => {
+                                                                const isEditing = editingRuleId === rule.ruleId;
+                                                                const isPercentage = isEditing 
+                                                                    ? editRuleInput.type === 'Percentage'
+                                                                    : (rule.commissionType === 0 || rule.commissionType === 'Percentage');
+                                                                
+                                                                const numVal = isEditing 
+                                                                    ? (parseFloat(editRuleInput.value) || 0)
+                                                                    : Number(rule.commissionValue || 0);
+
+                                                                const payout = isPercentage
+                                                                    ? (rule.testPrice * numVal) / 100
+                                                                    : numVal;
+
+                                                                return (
+                                                                    <tr 
+                                                                        key={rule.ruleId} 
+                                                                        className={cn(
+                                                                            "transition-colors",
+                                                                            isEditing 
+                                                                            ? "bg-amber-50/60 dark:bg-amber-950/20 ring-1 ring-amber-300 dark:ring-amber-700/60" 
+                                                                            : "hover:bg-slate-50/70 dark:hover:bg-zinc-900/50"
+                                                                        )}
+                                                                    >
+                                                                        {/* Col 1: Test & Code */}
+                                                                        <td className="py-3 px-4">
+                                                                            <p className="font-bold text-zinc-900 dark:text-white text-xs">{rule.testName}</p>
+                                                                            <p className="font-mono text-[10px] text-zinc-400 mt-0.5">{rule.testCode}</p>
+                                                                        </td>
+
+                                                                        {/* Col 2: Department */}
+                                                                        <td className="py-3 px-3 text-zinc-500 font-medium text-[11px]">
+                                                                            {rule.departmentName}
+                                                                        </td>
+
+                                                                        {/* Col 3: Base Price */}
+                                                                        <td className="py-3 px-3 text-right font-bold text-zinc-800 dark:text-zinc-200 tabular-nums">
+                                                                            ₹{Number(rule.testPrice || 0).toLocaleString('en-IN')}
+                                                                        </td>
+
+                                                                        {/* Col 4: Commission Cut */}
+                                                                        <td className="py-3 px-4 text-center">
+                                                                            {isEditing ? (
+                                                                                <div className="inline-flex items-center gap-1.5">
+                                                                                    <div className="flex items-center bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg p-0.5 shadow-2xs">
+                                                                                        <button
+                                                                                            type="button"
+                                                                                            onClick={() => setEditRuleInput({ ...editRuleInput, type: 'Percentage' })}
+                                                                                            className={cn(
+                                                                                                "px-2 py-0.5 text-[10px] font-bold rounded transition-all",
+                                                                                                editRuleInput.type === 'Percentage' ? "bg-synos-primary text-white" : "text-zinc-400 hover:text-zinc-600"
+                                                                                            )}
+                                                                                        >
+                                                                                            %
+                                                                                        </button>
+                                                                                        <button
+                                                                                            type="button"
+                                                                                            onClick={() => setEditRuleInput({ ...editRuleInput, type: 'Flat' })}
+                                                                                            className={cn(
+                                                                                                "px-2 py-0.5 text-[10px] font-bold rounded transition-all",
+                                                                                                editRuleInput.type === 'Flat' ? "bg-synos-primary text-white" : "text-zinc-400 hover:text-zinc-600"
+                                                                                            )}
+                                                                                        >
+                                                                                            ₹
+                                                                                        </button>
+                                                                                    </div>
+                                                                                    <input
+                                                                                        type="number"
+                                                                                        step="any"
+                                                                                        value={editRuleInput.value}
+                                                                                        onChange={(e) => setEditRuleInput({ ...editRuleInput, value: e.target.value })}
+                                                                                        className="w-16 px-2 py-1 bg-white dark:bg-zinc-900 border border-amber-300 dark:border-amber-700 rounded-lg text-xs font-bold text-center outline-none focus:ring-1 focus:ring-synos-primary"
+                                                                                    />
+                                                                                </div>
+                                                                            ) : (
+                                                                                <span className={cn(
+                                                                                    "px-2.5 py-0.5 rounded-full text-xs font-extrabold tabular-nums",
+                                                                                    rule.commissionType === 'Flat' || rule.commissionType === 1
+                                                                                        ? "bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-800/40"
+                                                                                        : "bg-blue-50 dark:bg-blue-950/40 text-synos-primary dark:text-sky-400 border border-blue-200 dark:border-blue-800/40"
+                                                                                )}>
+                                                                                    {rule.commissionType === 'Flat' || rule.commissionType === 1 
+                                                                                        ? `₹${rule.commissionValue} Flat` 
+                                                                                        : `${rule.commissionValue}%`}
+                                                                                </span>
+                                                                            )}
+                                                                        </td>
+
+                                                                        {/* Col 5: Estimated Doctor Payout */}
+                                                                        <td className="py-3 px-3 text-right font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                                                                            ₹{payout.toFixed(2)}
+                                                                        </td>
+
+                                                                        {/* Col 6: Status */}
+                                                                        <td className="py-3 px-3 text-center">
+                                                                            {isEditing ? (
+                                                                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                                                                                    Editing
+                                                                                </span>
+                                                                            ) : (
+                                                                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                                                                                    Locked
+                                                                                </span>
+                                                                            )}
+                                                                        </td>
+
+                                                                        {/* Col 7: Actions */}
+                                                                        <td className="py-3 px-4 text-right">
+                                                                            {isEditing ? (
+                                                                                <div className="flex items-center justify-end gap-1.5">
+                                                                                    <button
+                                                                                        onClick={() => handleSaveEditRule(rule)}
+                                                                                        disabled={savingEditRule}
+                                                                                        className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-1 shadow-2xs"
+                                                                                        title="Save Rate"
+                                                                                    >
+                                                                                        {savingEditRule ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} strokeWidth={2.5} />}
+                                                                                        <span>Save</span>
+                                                                                    </button>
+                                                                                    <button
+                                                                                        onClick={handleCancelEditRule}
+                                                                                        disabled={savingEditRule}
+                                                                                        className="p-1 bg-slate-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-slate-300 rounded-lg transition-all"
+                                                                                        title="Cancel"
+                                                                                    >
+                                                                                        <X size={14} />
+                                                                                    </button>
+                                                                                </div>
+                                                                            ) : (
+                                                                                <div className="flex items-center justify-end gap-1">
+                                                                                    <button
+                                                                                        onClick={() => handleStartEditRule(rule)}
+                                                                                        className="p-1.5 text-zinc-400 hover:text-synos-primary hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded-lg transition-colors"
+                                                                                        title="Edit Commission Rate"
+                                                                                    >
+                                                                                        <Edit3 size={14} />
+                                                                                    </button>
+                                                                                    <button
+                                                                                        onClick={() => handleDeleteRule(rule.ruleId)}
+                                                                                        className="p-1.5 text-zinc-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors"
+                                                                                        title="Delete Rule"
+                                                                                    >
+                                                                                        <Trash2 size={14} />
+                                                                                    </button>
+                                                                                </div>
+                                                                            )}
+                                                                        </td>
+                                                                    </tr>
+                                                                );
+                                                            })}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
                                             </div>
                                         )}
                                     </div>
@@ -1162,80 +1391,80 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
 
                             {/* TAB 2: DEMOGRAPHICS */}
                             {activeTab === 'demographics' && demographicsForm && (
-                                <form onSubmit={handleSaveDemographics} className="space-y-4">
+                                <form onSubmit={handleSaveDemographics} className="space-y-5">
                                     <div className="flex items-center justify-between pb-2 border-b border-black/[0.05] dark:border-white/[0.05]">
-                                        <span className="type-section-header uppercase">Profile Details</span>
+                                        <span className="text-xs font-extrabold uppercase tracking-wider text-zinc-900 dark:text-white">Profile & Commercial Attribution</span>
                                         {demoSuccess && (
-                                            <span className="text-xs font-semibold text-cyan-600 dark:text-cyan-400">
-                                                Saved Successfully
+                                            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                                                <Check size={14} /> Saved Successfully
                                             </span>
                                         )}
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className="space-y-1">
-                                            <label className="type-label text-[11px]">Speciality</label>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <div className="space-y-1.5">
+                                            <label className="text-[11px] font-bold text-zinc-500">Speciality</label>
                                             <input 
                                                 type="text"
                                                 value={demographicsForm.speciality || ''}
                                                 onChange={(e) => setDemographicsForm({...demographicsForm, speciality: e.target.value})}
                                                 placeholder="e.g. Cardiologist"
-                                                className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-semibold outline-none"
+                                                className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-semibold outline-none focus:ring-1 focus:ring-synos-primary"
                                             />
                                         </div>
 
-                                        <div className="space-y-1">
-                                            <label className="type-label text-[11px]">Medical Registration No (MCI / SMC)</label>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[11px] font-bold text-zinc-500">Medical Registration No (MCI / SMC)</label>
                                             <input 
                                                 type="text"
                                                 value={demographicsForm.registrationNumber || ''}
                                                 onChange={(e) => setDemographicsForm({...demographicsForm, registrationNumber: e.target.value})}
                                                 placeholder="e.g. MCI-58291"
-                                                className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-semibold outline-none"
+                                                className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-semibold outline-none focus:ring-1 focus:ring-synos-primary"
                                             />
                                         </div>
 
-                                        <div className="space-y-1">
-                                            <label className="type-label text-[11px]">Phone</label>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[11px] font-bold text-zinc-500">Phone</label>
                                             <input 
                                                 type="text"
                                                 value={demographicsForm.phone || ''}
                                                 onChange={(e) => setDemographicsForm({...demographicsForm, phone: e.target.value})}
                                                 placeholder="9876543210"
-                                                className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-semibold outline-none"
+                                                className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-semibold outline-none focus:ring-1 focus:ring-synos-primary"
                                             />
                                         </div>
 
-                                        <div className="space-y-1">
-                                            <label className="type-label text-[11px]">Clinic Address</label>
+                                        <div className="space-y-1.5 sm:col-span-2 lg:col-span-1">
+                                            <label className="text-[11px] font-bold text-zinc-500">Clinic / Hospital Address</label>
                                             <input 
                                                 type="text"
                                                 value={demographicsForm.clinicAddress || doc.location || ''}
                                                 onChange={(e) => setDemographicsForm({...demographicsForm, clinicAddress: e.target.value, location: e.target.value})}
                                                 placeholder="Location / Area"
-                                                className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-semibold outline-none"
+                                                className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-semibold outline-none focus:ring-1 focus:ring-synos-primary"
                                             />
                                         </div>
 
-                                        <div className="space-y-1">
-                                            <label className="type-label text-[11px]">UPI ID (VPA)</label>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[11px] font-bold text-zinc-500">UPI ID (VPA)</label>
                                             <input 
                                                 type="text"
                                                 value={demographicsForm.upiId || ''}
                                                 onChange={(e) => setDemographicsForm({...demographicsForm, upiId: e.target.value})}
                                                 placeholder="doctor@okhdfcbank"
-                                                className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-semibold outline-none"
+                                                className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-semibold outline-none focus:ring-1 focus:ring-synos-primary"
                                             />
                                         </div>
 
-                                        <div className="space-y-1">
-                                            <label className="type-label text-[11px]">Bank Account / IFSC</label>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[11px] font-bold text-zinc-500">Bank Account / IFSC</label>
                                             <input 
                                                 type="text"
                                                 value={demographicsForm.accountNumber ? `${demographicsForm.accountNumber} (${demographicsForm.ifscCode || ''})` : ''}
                                                 onChange={(e) => setDemographicsForm({...demographicsForm, accountNumber: e.target.value})}
                                                 placeholder="A/C Number & IFSC"
-                                                className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-semibold outline-none"
+                                                className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-semibold outline-none focus:ring-1 focus:ring-synos-primary"
                                             />
                                         </div>
                                     </div>
@@ -1244,9 +1473,10 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                         <button
                                             type="submit"
                                             disabled={savingDemographics}
-                                            className="px-4 py-2 bg-synos-primary text-white rounded-xl text-xs font-bold hover:brightness-105 transition-all disabled:opacity-50"
+                                            className="px-5 py-2.5 bg-synos-primary text-white rounded-xl text-xs font-bold hover:brightness-105 transition-all disabled:opacity-50 shadow-xs flex items-center gap-1.5"
                                         >
-                                            {savingDemographics ? "Saving..." : "Save Demographics"}
+                                            {savingDemographics ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+                                            <span>{savingDemographics ? "Saving..." : "Save Demographics"}</span>
                                         </button>
                                     </div>
                                 </form>

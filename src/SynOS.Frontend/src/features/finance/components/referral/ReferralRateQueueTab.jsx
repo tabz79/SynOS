@@ -17,7 +17,9 @@ import {
     Stethoscope, 
     Loader2, 
     ArrowRight,
-    RefreshCw
+    RefreshCw,
+    Edit3,
+    X
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
 import { cn } from '@/lib/utils';
@@ -221,6 +223,49 @@ export const ReferralRateQueueTab = ({ onUpdateCount }) => {
             loadLearnedRules(ruleSearch);
         } catch (err) {
             alert(`Failed to delete rule: ${err.message}`);
+        }
+    };
+
+    // Inline Editing for Learned Rate Cards Tab
+    const [editingRuleId, setEditingRuleId] = useState(null);
+    const [editRuleState, setEditRuleState] = useState({ type: 'Percentage', value: 10 });
+    const [isSavingRule, setIsSavingRule] = useState(false);
+
+    const handleStartEditRule = (rule) => {
+        const isPercentage = rule.commissionType === 0 || rule.commissionType === 'Percentage';
+        setEditingRuleId(rule.ruleId);
+        setEditRuleState({
+            type: isPercentage ? 'Percentage' : 'Flat',
+            value: rule.commissionValue ?? 10
+        });
+    };
+
+    const handleCancelEditRule = () => {
+        setEditingRuleId(null);
+        setEditRuleState({ type: 'Percentage', value: 10 });
+    };
+
+    const handleSaveEditRule = async (rule) => {
+        if (editRuleState.value === '' || isNaN(editRuleState.value) || Number(editRuleState.value) < 0) {
+            alert("Please enter a valid non-negative commission rate.");
+            return;
+        }
+
+        try {
+            setIsSavingRule(true);
+            await FinanceApi.quickLearnRate(rule.referralPartnerId, {
+                testId: rule.testId,
+                commissionType: editRuleState.type === 'Flat' ? 1 : 0,
+                commissionValue: parseFloat(editRuleState.value)
+            });
+
+            setEditingRuleId(null);
+            await loadLearnedRules(ruleSearch);
+            if (onUpdateCount) onUpdateCount();
+        } catch (err) {
+            alert(err.message || "Failed to update rate card.");
+        } finally {
+            setIsSavingRule(false);
         }
     };
 
@@ -640,13 +685,29 @@ export const ReferralRateQueueTab = ({ onUpdateCount }) => {
                                     </thead>
                                     <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80 text-xs font-medium">
                                         {learnedRules.map(rule => {
-                                            const isPercentage = rule.commissionType === 0 || rule.commissionType === 'Percentage';
+                                            const isEditing = editingRuleId === rule.ruleId;
+                                            const isPercentage = isEditing 
+                                                ? editRuleState.type === 'Percentage'
+                                                : (rule.commissionType === 0 || rule.commissionType === 'Percentage');
+
+                                            const numVal = isEditing 
+                                                ? (parseFloat(editRuleState.value) || 0)
+                                                : Number(rule.commissionValue || 0);
+
                                             const payout = isPercentage 
-                                                ? (rule.testPrice * rule.commissionValue) / 100 
-                                                : rule.commissionValue;
+                                                ? (rule.testPrice * numVal) / 100 
+                                                : numVal;
 
                                             return (
-                                                <tr key={rule.ruleId} className="hover:bg-zinc-50/60 dark:hover:bg-zinc-900/30 transition-colors">
+                                                <tr 
+                                                    key={rule.ruleId} 
+                                                    className={cn(
+                                                        "transition-colors",
+                                                        isEditing 
+                                                            ? "bg-amber-50/60 dark:bg-amber-950/20 ring-1 ring-amber-300 dark:ring-amber-700/60" 
+                                                            : "hover:bg-zinc-50/60 dark:hover:bg-zinc-900/30"
+                                                    )}
+                                                >
                                                     <td className="py-3.5 px-5 font-bold text-zinc-900 dark:text-zinc-100">
                                                         {rule.doctorName}
                                                     </td>
@@ -658,41 +719,114 @@ export const ReferralRateQueueTab = ({ onUpdateCount }) => {
                                                             {rule.testCode}
                                                         </div>
                                                     </td>
-                                                    <td className="py-3.5 px-4 text-zinc-500">
+                                                    <td className="py-3.5 px-4 text-zinc-500 font-medium">
                                                         {rule.departmentName || 'General'}
                                                     </td>
                                                     <td className="py-3.5 px-4 text-right font-mono font-bold text-zinc-700 dark:text-zinc-300">
-                                                        ₹{Number(rule.testPrice).toLocaleString()}
+                                                        ₹{Number(rule.testPrice).toLocaleString('en-IN')}
                                                     </td>
                                                     <td className="py-3.5 px-4 text-center">
-                                                        <span className={cn(
-                                                            "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase",
-                                                            isPercentage 
-                                                                ? "bg-blue-500/10 text-blue-600 border border-blue-500/20" 
-                                                                : "bg-purple-500/10 text-purple-600 border border-purple-500/20"
-                                                        )}>
-                                                            {isPercentage ? 'Percentage' : 'Flat'}
-                                                        </span>
+                                                        {isEditing ? (
+                                                            <div className="inline-flex items-center bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg p-0.5 shadow-2xs">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setEditRuleState({ ...editRuleState, type: 'Percentage' })}
+                                                                    className={cn(
+                                                                        "px-2 py-0.5 text-[10px] font-bold rounded transition-all",
+                                                                        editRuleState.type === 'Percentage' ? "bg-synos-primary text-white" : "text-zinc-400 hover:text-zinc-600"
+                                                                    )}
+                                                                >
+                                                                    %
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setEditRuleState({ ...editRuleState, type: 'Flat' })}
+                                                                    className={cn(
+                                                                        "px-2 py-0.5 text-[10px] font-bold rounded transition-all",
+                                                                        editRuleState.type === 'Flat' ? "bg-synos-primary text-white" : "text-zinc-400 hover:text-zinc-600"
+                                                                    )}
+                                                                >
+                                                                    ₹ Flat
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            <span className={cn(
+                                                                "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase",
+                                                                isPercentage 
+                                                                    ? "bg-blue-500/10 text-blue-600 border border-blue-500/20" 
+                                                                    : "bg-purple-500/10 text-purple-600 border border-purple-500/20"
+                                                            )}>
+                                                                {isPercentage ? 'Percentage' : 'Flat'}
+                                                            </span>
+                                                        )}
                                                     </td>
                                                     <td className="py-3.5 px-4 text-right font-mono font-bold text-zinc-900 dark:text-zinc-100">
-                                                        {isPercentage ? `${rule.commissionValue}%` : `₹${rule.commissionValue}`}
+                                                        {isEditing ? (
+                                                            <div className="flex items-center justify-end">
+                                                                <input
+                                                                    type="number"
+                                                                    step="any"
+                                                                    value={editRuleState.value}
+                                                                    onChange={(e) => setEditRuleState({ ...editRuleState, value: e.target.value })}
+                                                                    className="w-16 px-2 py-1 bg-white dark:bg-zinc-900 border border-amber-300 dark:border-amber-700 rounded-lg text-xs font-bold text-right outline-none focus:ring-1 focus:ring-synos-primary"
+                                                                />
+                                                            </div>
+                                                        ) : (
+                                                            isPercentage ? `${rule.commissionValue}%` : `₹${rule.commissionValue}`
+                                                        )}
                                                     </td>
                                                     <td className="py-3.5 px-4 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
                                                         ₹{payout.toFixed(2)}
                                                     </td>
                                                     <td className="py-3.5 px-4 text-center">
-                                                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600">
-                                                            Active
-                                                        </span>
+                                                        {isEditing ? (
+                                                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                                                                Editing
+                                                            </span>
+                                                        ) : (
+                                                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600">
+                                                                Active
+                                                            </span>
+                                                        )}
                                                     </td>
                                                     <td className="py-3.5 px-5 text-right">
-                                                        <button
-                                                            onClick={() => handleDeleteRule(rule.ruleId)}
-                                                            className="p-1.5 hover:bg-rose-50 hover:text-rose-600 rounded-lg text-zinc-400 transition-colors"
-                                                            title="Unlink rate card"
-                                                        >
-                                                            <Trash2 size={14} />
-                                                        </button>
+                                                        {isEditing ? (
+                                                            <div className="flex items-center justify-end gap-1.5">
+                                                                <button
+                                                                    onClick={() => handleSaveEditRule(rule)}
+                                                                    disabled={isSavingRule}
+                                                                    className="p-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-all disabled:opacity-50 shadow-2xs"
+                                                                    title="Save Changes"
+                                                                >
+                                                                    {isSavingRule ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} strokeWidth={2.5} />}
+                                                                </button>
+                                                                <button
+                                                                    onClick={handleCancelEditRule}
+                                                                    disabled={isSavingRule}
+                                                                    className="p-1.5 bg-slate-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-slate-300 rounded-lg transition-all"
+                                                                    title="Cancel"
+                                                                >
+                                                                    <X size={13} />
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="flex items-center justify-end gap-1">
+                                                                <button
+                                                                    onClick={() => handleStartEditRule(rule)}
+                                                                    className="p-1.5 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-zinc-400 hover:text-synos-primary rounded-lg transition-colors"
+                                                                    title="Edit commission rate"
+                                                                >
+                                                                    <Edit3 size={14} />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleDeleteRule(rule.ruleId)}
+                                                                    className="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 rounded-lg text-zinc-400 transition-colors"
+                                                                    title="Unlink rate card"
+                                                                >
+                                                                    <Trash2 size={14} />
+                                                                </button>
+                                                            </div>
+                                                        )}
                                                     </td>
                                                 </tr>
                                             );
