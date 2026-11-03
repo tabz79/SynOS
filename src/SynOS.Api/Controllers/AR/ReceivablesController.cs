@@ -166,6 +166,11 @@ namespace SynOS.Api.Controllers.AR
                                  PatientName = (p.FirstName + " " + p.LastName).Trim(),
                                  PatientMrn = p.MRN,
                                  Token = v.Token,
+                                 PaymentCollectionModel = v.PaymentCollectionModel,
+                                 B2BDiscountAmount = v.B2BDiscountAmount,
+                                 InvoiceGrossAmount = v.Invoices.OrderByDescending(i => i.CreatedAt).Select(i => (decimal?)i.GrossAmount).FirstOrDefault(),
+                                 InvoiceDiscountAmount = v.Invoices.OrderByDescending(i => i.CreatedAt).Select(i => (decimal?)i.DiscountAmount).FirstOrDefault(),
+                                 InvoiceTotal = v.Invoices.OrderByDescending(i => i.CreatedAt).Select(i => (decimal?)i.Total).FirstOrDefault(),
                                  InvoiceId = v.Invoices.OrderByDescending(i => i.CreatedAt).Select(i => (Guid?)i.InvoiceId).FirstOrDefault(),
                                  SettlementReceiptNo = v.Invoices.SelectMany(i => i.Payments).OrderByDescending(pay => pay.ReceivedAt).Select(pay => pay.ReceiptNo).FirstOrDefault(),
                                  SettlementMethod = v.Invoices.SelectMany(i => i.Payments).OrderByDescending(pay => pay.ReceivedAt).Select(pay => pay.Method).FirstOrDefault(),
@@ -173,11 +178,67 @@ namespace SynOS.Api.Controllers.AR
                                  TestNames = v.Orders.Where(o => o.Status != OrderStatus.Cancelled).Select(o => o.Test.TestName).ToList()
                              }).ToListAsync();
 
+            // Self-Healing AR Subledger: heal any drifted ReceivableFacts asynchronously
+            var driftedFactIds = raw
+                .Where(x => (x.PaymentCollectionModel == "PartnerCollects" || x.DebtorType == "Partner") &&
+                            !x.SettledAt.HasValue &&
+                            x.AmountReceived == 0 &&
+                            Math.Abs(x.Amount - Math.Max(0m, ((x.InvoiceGrossAmount.HasValue && x.InvoiceGrossAmount.Value > 0 ? x.InvoiceGrossAmount.Value : (x.InvoiceTotal ?? x.Amount)) - ((x.B2BDiscountAmount.HasValue && x.B2BDiscountAmount.Value > 0) ? x.B2BDiscountAmount.Value : (x.InvoiceDiscountAmount ?? 0m))))) > 0.001m)
+                .Select(x => x.ReceivableFactId)
+                .ToList();
+
+            if (driftedFactIds.Any())
+            {
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        using var scope = HttpContext.RequestServices.CreateScope();
+                        var db = scope.ServiceProvider.GetRequiredService<SynOSDbContext>();
+                        var factsToHeal = await db.ReceivableFacts.Where(f => driftedFactIds.Contains(f.ReceivableFactId)).ToListAsync();
+                        foreach (var f in factsToHeal)
+                        {
+                            var visit = await db.Visits.Include(v => v.Invoices).FirstOrDefaultAsync(v => v.VisitId == f.SourceVisitId);
+                            if (visit != null)
+                            {
+                                var inv = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
+                                decimal g = (inv?.GrossAmount > 0 ? inv.GrossAmount : inv?.Total) ?? f.Amount;
+                                decimal disc = (visit.B2BDiscountAmount.HasValue && visit.B2BDiscountAmount.Value > 0)
+                                    ? visit.B2BDiscountAmount.Value
+                                    : (inv?.DiscountAmount ?? 0m);
+                                f.Amount = Math.Max(0m, g - disc);
+                                f.DebtorType = DebtorType.Partner;
+                                var pId = visit.SecondaryReferralPartnerId ?? visit.ReferralPartnerId;
+                                if (pId.HasValue)
+                                {
+                                    f.DebtorId = pId.Value;
+                                    f.ReferralPartnerId = pId.Value;
+                                    var pName = await db.ReferralPartners.Where(rp => rp.ReferralPartnerId == pId.Value).Select(rp => rp.Name).FirstOrDefaultAsync();
+                                    if (!string.IsNullOrEmpty(pName)) f.DebtorName = pName;
+                                }
+                            }
+                        }
+                        await db.SaveChangesAsync();
+                    }
+                    catch { /* non-fatal background self-healing */ }
+                });
+            }
+
             var receivables = raw.Select(x =>
             {
                 var testList = x.TestNames.Where(t => !string.IsNullOrEmpty(t)).ToList();
                 var testsSummary = string.Join(", ", testList);
-                var pending = x.Amount - x.AmountReceived;
+
+                // Canonical B2B Contracted Tariff Resolution: Net Due = Gross - Concession
+                var isPartnerReceivable = x.PaymentCollectionModel == "PartnerCollects" || x.DebtorType == "Partner";
+                var effectiveGross = (x.InvoiceGrossAmount.HasValue && x.InvoiceGrossAmount.Value > 0) ? x.InvoiceGrossAmount.Value : (x.InvoiceTotal ?? x.Amount);
+                var effectiveConcession = (x.B2BDiscountAmount.HasValue && x.B2BDiscountAmount.Value > 0)
+                    ? x.B2BDiscountAmount.Value
+                    : (x.InvoiceDiscountAmount ?? 0m);
+                var canonicalContractedAmount = isPartnerReceivable ? Math.Max(0m, effectiveGross - effectiveConcession) : x.Amount;
+                var effectiveAmount = (isPartnerReceivable && !x.SettledAt.HasValue && x.AmountReceived == 0) ? canonicalContractedAmount : x.Amount;
+
+                var pending = effectiveAmount - x.AmountReceived;
                 var isSettled = x.SettledAt.HasValue || pending <= 0.0001m;
                 var effectiveSettledAt = x.SettledAt ?? (isSettled ? x.PaymentReceivedAt : null);
                 var status = isSettled ? "Settled" : (x.AmountReceived > 0 ? "Partial" : "Pending");
@@ -215,8 +276,8 @@ namespace SynOS.Api.Controllers.AR
                     hasReferralChain = hasReferralChain,
                     corporateName = x.CorporateName,
                     insuranceName = x.InsuranceName,
-                    amount = x.Amount,
-                    totalAmount = x.Amount,
+                    amount = effectiveAmount,
+                    totalAmount = effectiveAmount,
                     amountReceived = x.AmountReceived,
                     paidAmount = x.AmountReceived,
                     pendingAmount = pending,

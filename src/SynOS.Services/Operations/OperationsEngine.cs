@@ -291,8 +291,8 @@ namespace SynOS.Services.Operations
                     PaymentDisplay = DerivePaymentDisplay(visit, invoice),
                     
                     // Phase 6: Granular Payment Fields (Contracted B2B Net Rate applied for Prepaid)
-                    TotalAmount = (visit.PaymentCollectionModel == "PartnerCollects" && visit.B2BDiscountAmount.HasValue && visit.B2BDiscountAmount.Value > 0)
-                        ? Math.Max(0m, (invoice?.Total ?? 0m) - visit.B2BDiscountAmount.Value)
+                    TotalAmount = (visit.PaymentCollectionModel == "PartnerCollects")
+                        ? Math.Max(0m, ((invoice?.GrossAmount > 0 ? invoice.GrossAmount : invoice?.Total) ?? 0m) - ((visit.B2BDiscountAmount.HasValue && visit.B2BDiscountAmount.Value > 0) ? visit.B2BDiscountAmount.Value : (invoice?.DiscountAmount ?? 0m)))
                         : (invoice?.Total ?? 0m),
                     TotalPaid = invoice?.Payments.Sum(p => p.Amount) ?? 0m,
                     RemainingDue = Math.Max(0m, (invoice?.Total ?? 0m) - (invoice?.Payments.Sum(p => p.Amount) ?? 0m)),
@@ -420,8 +420,8 @@ namespace SynOS.Services.Operations
                 
                 PaymentDisplay = DerivePaymentDisplay(visit, invoice),
                 
-                TotalAmount = (visit.PaymentCollectionModel == "PartnerCollects" && visit.B2BDiscountAmount.HasValue && visit.B2BDiscountAmount.Value > 0)
-                    ? Math.Max(0m, (invoice?.Total ?? 0m) - visit.B2BDiscountAmount.Value)
+                TotalAmount = (visit.PaymentCollectionModel == "PartnerCollects")
+                    ? Math.Max(0m, ((invoice?.GrossAmount > 0 ? invoice.GrossAmount : invoice?.Total) ?? 0m) - ((visit.B2BDiscountAmount.HasValue && visit.B2BDiscountAmount.Value > 0) ? visit.B2BDiscountAmount.Value : (invoice?.DiscountAmount ?? 0m)))
                     : (invoice?.Total ?? 0m),
                 TotalPaid = invoice?.Payments.Sum(p => p.Amount) ?? 0m,
                 RemainingDue = Math.Max(0m, (invoice?.Total ?? 0m) - (invoice?.Payments.Sum(p => p.Amount) ?? 0m)),

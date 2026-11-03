@@ -949,6 +949,9 @@ namespace SynOS.Services.EconomicsIntelligence
                                      : (v != null && v.ReferralPartner != null)
                                          ? v.ReferralPartner.Name
                                          : (f.ReferralPartner != null ? f.ReferralPartner.Name : (!string.IsNullOrEmpty(f.DebtorName) ? f.DebtorName : (v != null && v.CorporateAccount != null ? v.CorporateAccount.CompanyName : "Institutional Account"))),
+                                 EffectiveAmount = (v != null && (v.PaymentCollectionModel == "PartnerCollects" || f.DebtorType == DebtorType.Partner))
+                                     ? Math.Max(0m, (v.Invoices.OrderByDescending(i => i.CreatedAt).Select(i => (decimal?)i.GrossAmount).FirstOrDefault() ?? f.Amount) - ((v.B2BDiscountAmount.HasValue && v.B2BDiscountAmount.Value > 0) ? v.B2BDiscountAmount.Value : (v.Invoices.OrderByDescending(i => i.CreatedAt).Select(i => (decimal?)i.DiscountAmount).FirstOrDefault() ?? 0m)))
+                                     : f.Amount,
                                  f.Amount,
                                  f.AmountReceived,
                                  f.OccurredAt
@@ -960,12 +963,12 @@ namespace SynOS.Services.EconomicsIntelligence
                 {
                     PartnerId = g.Key.EffectivePartnerId,
                     PartnerName = g.Key.EffectivePartnerName,
-                    TotalOutstanding = g.Sum(x => x.Amount - x.AmountReceived),
+                    TotalOutstanding = g.Sum(x => x.EffectiveAmount - x.AmountReceived),
                     BillCount = g.Count(),
                     OldestDueDate = g.Min(x => x.OccurredAt).DateTime,
-                    Aging_0_7 = g.Where(x => x.OccurredAt >= day7).Sum(x => (decimal?)(x.Amount - x.AmountReceived)) ?? 0,
-                    Aging_7_30 = g.Where(x => x.OccurredAt < day7 && x.OccurredAt >= day30).Sum(x => (decimal?)(x.Amount - x.AmountReceived)) ?? 0,
-                    Aging_30_Plus = g.Where(x => x.OccurredAt < day30).Sum(x => (decimal?)(x.Amount - x.AmountReceived)) ?? 0
+                    Aging_0_7 = g.Where(x => x.OccurredAt >= day7).Sum(x => (decimal?)(x.EffectiveAmount - x.AmountReceived)) ?? 0,
+                    Aging_7_30 = g.Where(x => x.OccurredAt < day7 && x.OccurredAt >= day30).Sum(x => (decimal?)(x.EffectiveAmount - x.AmountReceived)) ?? 0,
+                    Aging_30_Plus = g.Where(x => x.OccurredAt < day30).Sum(x => (decimal?)(x.EffectiveAmount - x.AmountReceived)) ?? 0
                 })
                 .ToList();
 

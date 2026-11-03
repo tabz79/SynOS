@@ -666,6 +666,34 @@ BEGIN
     CREATE INDEX [IX_ExpenseCancellationAudits_ExpenseId] ON [Payables].[ExpenseCancellationAudits] ([ExpenseId]);
     CREATE INDEX [IX_ExpenseCancellationAudits_CancelledAt] ON [Payables].[ExpenseCancellationAudits] ([CancelledAt]);
 END
+
+-- 27. Reconcile B2B Prepaid ReceivableFacts to Contracted Net Tariff (Gross - Concession)
+IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Visits') AND name = 'B2BDiscountAmount')
+BEGIN
+    UPDATE rf
+    SET rf.Amount = CASE 
+            WHEN (ISNULL(i.GrossAmount, i.Total) - ISNULL(v.B2BDiscountAmount, ISNULL(i.DiscountAmount, 0))) < 0 THEN 0
+            ELSE (ISNULL(i.GrossAmount, i.Total) - ISNULL(v.B2BDiscountAmount, ISNULL(i.DiscountAmount, 0)))
+        END,
+        rf.DebtorId = ISNULL(v.SecondaryReferralPartnerId, ISNULL(v.ReferralPartnerId, rf.DebtorId)),
+        rf.ReferralPartnerId = ISNULL(v.SecondaryReferralPartnerId, ISNULL(v.ReferralPartnerId, rf.ReferralPartnerId)),
+        rf.DebtorName = CASE 
+            WHEN ISNULL(rf.DebtorName, '') = '' THEN ISNULL(rp.Name, 'Referral Partner')
+            ELSE rf.DebtorName
+        END
+    FROM [AR].[ReceivableFacts] rf
+    INNER JOIN [Visits] v ON rf.SourceVisitId = v.VisitId
+    OUTER APPLY (
+        SELECT TOP 1 GrossAmount, DiscountAmount, Total
+        FROM [Invoices] inv
+        WHERE inv.VisitId = v.VisitId
+        ORDER BY inv.CreatedAt DESC
+    ) i
+    LEFT JOIN [ReferralPartners] rp ON ISNULL(v.SecondaryReferralPartnerId, v.ReferralPartnerId) = rp.ReferralPartnerId
+    WHERE (v.PaymentCollectionModel = 'PartnerCollects' OR rf.DebtorType = 1)
+      AND rf.SettledAt IS NULL
+      AND rf.AmountReceived = 0;
+END
 ";
             context.Database.ExecuteSqlRaw(sql);
         }

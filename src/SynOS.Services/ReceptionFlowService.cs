@@ -399,38 +399,49 @@ namespace SynOS.Services
                 return;
             }
 
-            // IDEMPOTENCY GUARD: One Receivable per Visit
-            if (await _context.ReceivableFacts.AnyAsync(r => r.SourceVisitId == visitId)) 
-            {
-                 _logger.LogWarning("Idempotency: ReceivableFact already exists for Visit {VisitId}", visitId);
-                 return;
-            }
+            // AR Subledger Guarantee: Ensure the canonical contracted B2B rate is locked
+            var existingFact = await _context.ReceivableFacts.FirstOrDefaultAsync(r => r.SourceVisitId == visitId);
 
             var partner = await _context.ReferralPartners.FindAsync(effectivePartnerId.Value);
 
-            decimal b2bReceivableAmount = invoice.Total;
-            if (visit.B2BDiscountAmount.HasValue && visit.B2BDiscountAmount.Value > 0)
-            {
-                b2bReceivableAmount = Math.Max(0m, invoice.Total - visit.B2BDiscountAmount.Value);
-            }
+            decimal grossAmount = invoice.GrossAmount > 0 ? invoice.GrossAmount : invoice.Total;
+            decimal b2bDiscount = visit.B2BDiscountAmount ?? 0m;
+            decimal effectiveConcession = b2bDiscount > 0 ? b2bDiscount : invoice.DiscountAmount;
+            decimal b2bReceivableAmount = Math.Max(0m, grossAmount - effectiveConcession);
 
-            var factId = Guid.NewGuid();
-            var fact = new ReceivableFact
+            ReceivableFact targetFact;
+            if (existingFact != null)
             {
-                ReceivableFactId = factId,
-                SourceVisitId = visit.VisitId,
-                DebtorType = DebtorType.Partner,
-                DebtorId = effectivePartnerId.Value,
-                DebtorName = partner?.Name ?? "Referral Partner",
-                ClaimReference = $"Prepaid Partner Bill: {partner?.Name ?? "Partner"}",
-                ReferralPartnerId = effectivePartnerId.Value,
-                Amount = b2bReceivableAmount, // Net Contracted Tariff Owed
-                Currency = "INR",
-                OccurredAt = DateTimeOffset.UtcNow,
-                RecordedAt = DateTimeOffset.UtcNow
-            };
+                existingFact.Amount = b2bReceivableAmount;
+                existingFact.DebtorType = DebtorType.Partner;
+                existingFact.DebtorId = effectivePartnerId.Value;
+                existingFact.DebtorName = partner?.Name ?? (!string.IsNullOrEmpty(existingFact.DebtorName) ? existingFact.DebtorName : "Referral Partner");
+                existingFact.ClaimReference = $"Prepaid Partner Bill: {existingFact.DebtorName}";
+                existingFact.ReferralPartnerId = effectivePartnerId.Value;
+                existingFact.RecordedAt = DateTimeOffset.UtcNow;
+                _context.ReceivableFacts.Update(existingFact);
+                targetFact = existingFact;
+            }
+            else
+            {
+                var factId = Guid.NewGuid();
+                targetFact = new ReceivableFact
+                {
+                    ReceivableFactId = factId,
+                    SourceVisitId = visit.VisitId,
+                    DebtorType = DebtorType.Partner,
+                    DebtorId = effectivePartnerId.Value,
+                    DebtorName = partner?.Name ?? "Referral Partner",
+                    ClaimReference = $"Prepaid Partner Bill: {partner?.Name ?? "Partner"}",
+                    ReferralPartnerId = effectivePartnerId.Value,
+                    Amount = b2bReceivableAmount, // Net Contracted Tariff Owed
+                    Currency = "INR",
+                    OccurredAt = DateTimeOffset.UtcNow,
+                    RecordedAt = DateTimeOffset.UtcNow
+                };
+                _context.ReceivableFacts.Add(targetFact);
+            }
             
-            _context.ReceivableFacts.Add(fact);
             await _context.SaveChangesAsync();
             
             // Emit RECEIVABLE_CREATED
@@ -439,11 +450,11 @@ namespace SynOS.Services
                 _userContext.CurrentBranchId.ToString(),
                 visit.VisitId.ToString(),
                 visit.Token, // Restore missing Token
-                $"Prepaid Credit Issued: {fact.Amount:C} (Fact: {fact.ReceivableFactId})",
+                $"Prepaid Credit Issued: {targetFact.Amount:C} (Fact: {targetFact.ReceivableFactId})",
                 "User",
                 actorUserId.ToString(),
                 true, // saveChanges
-                fact.ReceivableFactId, // sourceId
+                targetFact.ReceivableFactId, // sourceId
                 "ReceivableFact"
             );
             // ----------------------------------------

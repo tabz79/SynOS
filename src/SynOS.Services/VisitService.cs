@@ -269,17 +269,7 @@ namespace SynOS.Services
                 invoice.Status = "Paid";
                 visit.Status = VisitStatus.Paid;
 
-                var receivable = new ReceivableFact
-                {
-                    ReceivableFactId = Guid.NewGuid(),
-                    SourceVisitId = visit.VisitId,
-                    ReferralPartnerId = visit.ReferralPartnerId.Value,
-                    Amount = invoice.Total,
-                    Currency = invoice.Currency,
-                    OccurredAt = DateTimeOffset.UtcNow,
-                    RecordedAt = DateTimeOffset.UtcNow
-                };
-                _context.ReceivableFacts.Add(receivable);
+                await EnsurePrepaidReceivableFactAsync(visit, invoice, effectiveUserId);
 
                 await _context.SaveChangesAsync();
                 
@@ -988,11 +978,14 @@ namespace SynOS.Services
             if (receivable != null)
             {
                 var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
-                decimal invoiceTotal = invoice?.Total ?? 0m;
+                decimal gross = (invoice?.GrossAmount > 0 ? invoice.GrossAmount : invoice?.Total) ?? 0m;
                 decimal oldAmount = receivable.Amount;
-                decimal newAmount = Math.Max(0m, invoiceTotal - b2bDiscountAmount);
+                decimal newAmount = Math.Max(0m, gross - b2bDiscountAmount);
+                receivable.DebtorType = DebtorType.Partner;
                 receivable.DebtorId = effectivePartnerId ?? receivable.DebtorId;
                 receivable.ReferralPartnerId = effectivePartnerId ?? receivable.ReferralPartnerId;
+                receivable.DebtorName = visit.SecondaryReferralPartner?.Name ?? visit.ReferralPartner?.Name ?? (!string.IsNullOrEmpty(receivable.DebtorName) ? receivable.DebtorName : "Referral Partner");
+                receivable.ClaimReference = $"Prepaid Partner Bill: {receivable.DebtorName}";
                 receivable.Amount = newAmount;
                 receivable.RecordedAt = DateTimeOffset.UtcNow;
 
@@ -1132,6 +1125,50 @@ namespace SynOS.Services
             );
         }
 
+        private async Task EnsurePrepaidReceivableFactAsync(Visit visit, Invoice invoice, Guid actorUserId)
+        {
+            var effectivePartnerId = visit.SecondaryReferralPartnerId ?? visit.ReferralPartnerId;
+            if (!effectivePartnerId.HasValue || effectivePartnerId.Value == Guid.Empty) return;
+
+            var partner = await _context.ReferralPartners.FindAsync(effectivePartnerId.Value);
+
+            decimal grossAmount = invoice.GrossAmount > 0 ? invoice.GrossAmount : invoice.Total;
+            decimal b2bDiscount = visit.B2BDiscountAmount ?? 0m;
+            decimal effectiveConcession = b2bDiscount > 0 ? b2bDiscount : invoice.DiscountAmount;
+            decimal netB2BAmount = Math.Max(0m, grossAmount - effectiveConcession);
+
+            var existingReceivable = await _context.ReceivableFacts.FirstOrDefaultAsync(r => r.SourceVisitId == visit.VisitId);
+            if (existingReceivable != null)
+            {
+                existingReceivable.Amount = netB2BAmount;
+                existingReceivable.DebtorType = DebtorType.Partner;
+                existingReceivable.DebtorId = effectivePartnerId.Value;
+                existingReceivable.DebtorName = partner?.Name ?? (!string.IsNullOrEmpty(existingReceivable.DebtorName) ? existingReceivable.DebtorName : "Referral Partner");
+                existingReceivable.ClaimReference = $"Prepaid Partner Bill: {existingReceivable.DebtorName}";
+                existingReceivable.ReferralPartnerId = effectivePartnerId.Value;
+                existingReceivable.RecordedAt = DateTimeOffset.UtcNow;
+                _context.ReceivableFacts.Update(existingReceivable);
+            }
+            else
+            {
+                var receivable = new ReceivableFact
+                {
+                    ReceivableFactId = Guid.NewGuid(),
+                    SourceVisitId = visit.VisitId,
+                    DebtorType = DebtorType.Partner,
+                    DebtorId = effectivePartnerId.Value,
+                    DebtorName = partner?.Name ?? "Referral Partner",
+                    ClaimReference = $"Prepaid Partner Bill: {partner?.Name ?? "Partner"}",
+                    ReferralPartnerId = effectivePartnerId.Value,
+                    Amount = netB2BAmount,
+                    Currency = invoice.Currency ?? "INR",
+                    OccurredAt = DateTimeOffset.UtcNow,
+                    RecordedAt = DateTimeOffset.UtcNow
+                };
+                _context.ReceivableFacts.Add(receivable);
+            }
+        }
+
         public async Task MarkVisitAsPrepaidAsync(Guid visitId, Guid actorUserId, Guid? intentId = null)
         {
             var visit = await _context.Visits
@@ -1176,21 +1213,7 @@ namespace SynOS.Services
 
                 if (visit.ReferralPartnerId.HasValue && visit.ReferralPartnerId.Value != Guid.Empty)
                 {
-                    var existingReceivable = await _context.ReceivableFacts.FirstOrDefaultAsync(r => r.SourceVisitId == visit.VisitId);
-                    if (existingReceivable == null)
-                    {
-                        var receivable = new ReceivableFact
-                        {
-                            ReceivableFactId = Guid.NewGuid(),
-                            SourceVisitId = visit.VisitId,
-                            ReferralPartnerId = visit.ReferralPartnerId.Value,
-                            Amount = invoice.Total,
-                            Currency = invoice.Currency ?? "INR",
-                            OccurredAt = DateTimeOffset.UtcNow,
-                            RecordedAt = DateTimeOffset.UtcNow
-                        };
-                        _context.ReceivableFacts.Add(receivable);
-                    }
+                    await EnsurePrepaidReceivableFactAsync(visit, invoice, actorUserId);
                 }
             }
 
@@ -2226,41 +2249,7 @@ namespace SynOS.Services
 
                     if (effectivePartnerId.HasValue)
                     {
-                        var partner = await _context.ReferralPartners.FindAsync(effectivePartnerId.Value);
-                        decimal b2bReceivableAmount = invoice.Total;
-                        if (visit.B2BDiscountAmount.HasValue && visit.B2BDiscountAmount.Value > 0)
-                        {
-                            b2bReceivableAmount = Math.Max(0m, invoice.Total - visit.B2BDiscountAmount.Value);
-                        }
-
-                        if (existingReceivable != null)
-                        {
-                            existingReceivable.DebtorId = effectivePartnerId.Value;
-                            existingReceivable.ReferralPartnerId = effectivePartnerId.Value;
-                            existingReceivable.DebtorName = partner?.Name ?? "Referral Partner";
-                            existingReceivable.ClaimReference = $"Prepaid Partner Bill: {partner?.Name ?? "Partner"}";
-                            existingReceivable.Amount = b2bReceivableAmount;
-                            existingReceivable.RecordedAt = DateTimeOffset.UtcNow;
-                            _context.ReceivableFacts.Update(existingReceivable);
-                        }
-                        else
-                        {
-                            var newFact = new ReceivableFact
-                            {
-                                ReceivableFactId = Guid.NewGuid(),
-                                SourceVisitId = visit.VisitId,
-                                DebtorType = DebtorType.Partner,
-                                DebtorId = effectivePartnerId.Value,
-                                DebtorName = partner?.Name ?? "Referral Partner",
-                                ClaimReference = $"Prepaid Partner Bill: {partner?.Name ?? "Partner"}",
-                                ReferralPartnerId = effectivePartnerId.Value,
-                                Amount = b2bReceivableAmount,
-                                Currency = invoice.Currency ?? "INR",
-                                OccurredAt = DateTimeOffset.UtcNow,
-                                RecordedAt = DateTimeOffset.UtcNow
-                            };
-                            _context.ReceivableFacts.Add(newFact);
-                        }
+                        await EnsurePrepaidReceivableFactAsync(visit, invoice, actorUserId);
                     }
                     await _context.SaveChangesAsync();
                     await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
