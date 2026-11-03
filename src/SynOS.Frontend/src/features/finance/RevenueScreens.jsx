@@ -668,6 +668,19 @@ const formatCanonicalBillNo = (bill) => {
     return `${cleanToken}-${dateStr}`;
 };
 
+export const isDraftBill = (b) => {
+    if (!b) return false;
+    if (b.isDraft === true) return true;
+    const token = String(b.token || b.tokenNumber || '').trim().toUpperCase();
+    if (token.startsWith('D-')) return true;
+    const status = String(b.status || '').trim().toLowerCase();
+    const visitStatus = String(b.visitStatus || '').trim().toLowerCase();
+    if (status === 'draft' || visitStatus === 'draft') return true;
+    const billNo = String(b.billNumber || '').trim().toUpperCase();
+    if (billNo.startsWith('D-') || /^D[0-9A-F]{8,16}-\d{6}$/i.test(billNo)) return true;
+    return false;
+};
+
 const PANEL_CHILDREN_MAP = {
     // Liver Function Test
     'lft': ['albumin', 'globulin', 'a:g ratio', 'albumin : globulin', 'albumin:globulin', 'bilirubin', 'serum bilirubin', 'sgot', 'sgpt', 'alkaline phosphatase', 'ast', 'alt', 'total protein', 'ggtp', 'gamma gt', 'aspartate aminotransferase', 'alanine aminotransferase'],
@@ -786,7 +799,8 @@ export const BillsCollectionsScreen = () => {
 
             const cancelledVisitIds = new Set((cancellationsData || []).map(c => c.visitId).filter(Boolean));
             const rawBills = Array.isArray(data) ? data : (data?.bills || []);
-            const normalizedBills = rawBills.map(b => {
+            const validBills = rawBills.filter(b => !isDraftBill(b));
+            const normalizedBills = validBills.map(b => {
                 const isCancelled = b.isCancelled || 
                                     (b.status || '').toUpperCase() === 'CANCELLED' ||
                                     cancelledVisitIds.has(b.visitId);
@@ -899,6 +913,8 @@ export const BillsCollectionsScreen = () => {
 
     // Client-side filtration for fast reactive updates
     const filteredBills = bills.filter(b => {
+        if (isDraftBill(b)) return false;
+
         // 1. Status Filter
         const isCancelled = b.isCancelled || (b.status || '').toUpperCase() === 'CANCELLED';
         if (statusFilter !== 'All') {
@@ -1550,7 +1566,7 @@ export const DueBillsScreen = () => {
             }
             const data = await FinanceApi.getDueBills(params);
             const list = Array.isArray(data) ? data : [];
-            const sanitized = list.map(b => ({
+            const sanitized = list.filter(b => !isDraftBill(b)).map(b => ({
                 ...b,
                 tests: sanitizeInvestigationItems(b.tests)
             }));
@@ -1610,6 +1626,7 @@ export const DueBillsScreen = () => {
     // Filter Logic
     const filteredBills = useMemo(() => {
         return dueBills.filter(b => {
+            if (isDraftBill(b)) return false;
             if (statusFilter === 'Partial' && b.status !== 'Partial') return false;
             if (statusFilter === 'Pending' && b.status !== 'Pending') return false;
 
@@ -2068,7 +2085,7 @@ export const PendingReceivablesScreen = () => {
                 FinanceApi.getReceivables('partner', bId)
             ]);
             setPartnerSummaries(summaries || []);
-            setAllBills((bills || []).map(b => ({
+            setAllBills((bills || []).filter(b => !isDraftBill(b)).map(b => ({
                 ...b,
                 billNumber: formatCanonicalBillNo(b)
             })));
