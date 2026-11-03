@@ -387,29 +387,47 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
 
     return (
         <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-xs transition-opacity duration-300 animate-in fade-in">
-            {/* Absolute Drawer matching IntentPanel: 85% screen width with Atmospheric Canvas */}
+            {/* Absolute Drawer matching IntentPanel: Dynamic width (Compact for Record, Wide for History & Metrics) */}
             <div 
                 className={cn(
-                    "w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[86vw] xl:w-[85vw] 2xl:w-[85vw] max-w-[1780px] h-full flex flex-col overflow-hidden rounded-l-[28px] shadow-2xl transition-[width,transform,opacity] duration-300 ease-out z-30",
+                    "h-full flex flex-col overflow-hidden rounded-l-[28px] shadow-2xl transition-all duration-300 ease-in-out z-30",
+                    activeTab === 'record'
+                        ? "w-full sm:w-[620px] md:w-[680px] lg:w-[720px] xl:w-[740px] max-w-full"
+                        : "w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[86vw] xl:w-[85vw] 2xl:w-[85vw] max-w-[1780px]",
                     ui.panel
                 )}
             >
                 {/* 1. NATIVE INTENTPANEL HEADER */}
-                <div className={cn("h-14 sm:h-16 flex items-center justify-between px-6 sm:px-8 shrink-0", ui.header)}>
-                    <div className="flex items-center gap-3">
-                        <h2 className={cn("text-lg sm:text-xl font-bold tracking-normal flex items-baseline gap-2", ui.title)}>
-                            Accounts Payable Terminal
-                            <span className="text-xs font-mono font-bold text-slate-500 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800/80 px-2 py-0.5 rounded-full border border-slate-200/60 dark:border-zinc-700/60">
-                                #EXP-RECEPTION
+                <div className={cn("px-6 sm:px-8 py-3 shrink-0 border-b flex flex-col gap-2.5", ui.header)}>
+                    {/* Top line: Title + Station Badge + Close button */}
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                            <h2 className={cn("text-base sm:text-lg lg:text-xl font-bold tracking-normal flex items-baseline gap-2", ui.title)}>
+                                Accounts Payable Terminal
+                                <span className="text-[11px] sm:text-xs font-mono font-bold text-slate-500 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800/80 px-2 py-0.5 rounded-full border border-slate-200/60 dark:border-zinc-700/60">
+                                    #EXP-RECEPTION
+                                </span>
+                            </h2>
+                            <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#EDF7F2] text-[#245E49] dark:bg-emerald-950/40 dark:text-emerald-300 border border-[#CBE5D7] dark:border-emerald-800">
+                                Station: Reception Desk
                             </span>
-                        </h2>
-                        <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#EDF7F2] text-[#245E49] dark:bg-emerald-950/40 dark:text-emerald-300 border border-[#CBE5D7] dark:border-emerald-800">
-                            Station: Reception Desk
-                        </span>
+                        </div>
+
+                        {/* Close Button */}
+                        <button
+                            onClick={onClose}
+                            className={cn(
+                                "p-1.5 sm:p-2 rounded-full transition-all duration-200 active:scale-95 cursor-pointer shrink-0",
+                                isDark ? "hover:bg-white/10 text-zinc-400 hover:text-white" : "hover:bg-slate-100 text-slate-400 hover:text-slate-700"
+                            )}
+                            title="Close Terminal (Esc)"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
                     </div>
 
-                    <div className="flex items-center gap-2 sm:gap-3">
-                        {/* 2. THREE-TAB INTENTPANEL NAVIGATION */}
+                    {/* Area 2: Three-Tab Navigation positioned directly under the title */}
+                    <div className="flex items-center gap-1">
                         <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-200/70 dark:bg-zinc-800/80 border border-slate-300/40 dark:border-zinc-700/40">
                             <button
                                 onClick={() => setActiveTab('record')}
@@ -455,18 +473,6 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                                 <span>3 Visual Metrics</span>
                             </button>
                         </div>
-
-                        {/* Close Button */}
-                        <button
-                            onClick={onClose}
-                            className={cn(
-                                "p-2 rounded-full transition-all duration-200 active:scale-95 cursor-pointer",
-                                isDark ? "hover:bg-white/10 text-zinc-400 hover:text-white" : "hover:bg-slate-100 text-slate-400 hover:text-slate-700"
-                            )}
-                            title="Close Terminal (Esc)"
-                        >
-                            <X className="w-5 h-5" />
-                        </button>
                     </div>
                 </div>
 
@@ -489,10 +495,7 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                 {/* 3. TAB 1: NATIVE INTENTPANEL RECORD EXPENSE WORKBENCH */}
                 {activeTab === 'record' && (
                     <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-                        <div className="p-3.5 sm:p-5 max-w-full mx-auto w-full flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-300">
-                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 xl:gap-6 items-stretch flex-1 min-h-0 overflow-hidden">
-                                {/* LEFT COLUMN (7 COLS): OUTFLOW PARTICULARS */}
-                                <div className="lg:col-span-7 flex flex-col gap-3 h-full min-h-0 overflow-y-auto pr-1">
+                        <div className="p-4 sm:p-6 w-full flex-1 min-h-0 overflow-y-auto space-y-4 animate-in fade-in duration-300 pr-1.5 sm:pr-3">
                                     {/* STEP 1: EXPENSE CLASSIFICATION & STREAM */}
                                     <div className={cn("p-4 sm:p-5 space-y-3 shrink-0", ui.card)}>
                                         <div className="flex items-center justify-between">
@@ -778,107 +781,103 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                                                 className="w-full bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-xs font-semibold outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white shadow-2xs"
                                             />
                                         </div>
+                            </div>
+
+                            {/* STEP 3: SETTLEMENT & FINANCIALS (Brought to Area 4 under Step 2) */}
+                            <div className={cn("p-4 sm:p-5 space-y-4 shrink-0", ui.card)}>
+                                <div className="flex items-center justify-between pb-2 border-b border-black/[0.06] dark:border-white/[0.06]">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-6 h-6 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-xs shadow-xs">
+                                            3
+                                        </div>
+                                        <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-normal">
+                                            Settlement & Financials
+                                        </h3>
+                                    </div>
+                                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                                        {form.isSettledNow ? 'Immediate Disburse' : 'Accrue Obligation'}
+                                    </span>
+                                </div>
+
+                                {/* Recessed Net Amount Pod */}
+                                <div className={cn("p-4 space-y-1", ui.recessedPod)}>
+                                    <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-zinc-400 block">
+                                        Net Disbursement Amount
+                                    </span>
+                                    <div className="flex items-baseline justify-between">
+                                        <span className="text-xs text-slate-500 dark:text-zinc-400">Ledger Impact</span>
+                                        <span className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tabular-nums tracking-tight">
+                                            ₹{form.amount ? parseFloat(form.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '0.00'}
+                                        </span>
                                     </div>
                                 </div>
 
-                                {/* RIGHT COLUMN (5 COLS): SETTLEMENT & FINANCIALS */}
-                                <div className="lg:col-span-5 flex flex-col gap-3 h-full min-h-0 overflow-y-auto pr-1">
-                                    <div className={cn("p-4 sm:p-5 space-y-4 shrink-0", ui.card)}>
-                                        <div className="flex items-center justify-between pb-2 border-b border-black/[0.06] dark:border-white/[0.06]">
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-6 h-6 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-xs shadow-xs">
-                                                    3
-                                                </div>
-                                                <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-normal">
-                                                    Settlement & Financials
-                                                </h3>
-                                            </div>
-                                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                                                {form.isSettledNow ? 'Immediate Disburse' : 'Accrue Obligation'}
-                                            </span>
+                                {/* Settle Now Toggle for Vendor Bills */}
+                                {outflowMode === 'vendor' && (
+                                    <div className="p-3 rounded-xl bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 flex items-center justify-between shadow-2xs">
+                                        <div>
+                                            <p className="text-xs font-bold text-slate-900 dark:text-white">Settle Invoice Now?</p>
+                                            <p className="text-[10px] text-slate-500 dark:text-zinc-400">Uncheck to log as unpaid accounts payable</p>
                                         </div>
+                                        <input
+                                            type="checkbox"
+                                            checked={form.isSettledNow}
+                                            onChange={(e) => saveDraft({ ...form, isSettledNow: e.target.checked })}
+                                            className="w-4 h-4 rounded text-blue-600 focus:ring-0 cursor-pointer"
+                                        />
+                                    </div>
+                                )}
 
-                                        {/* Recessed Net Amount Pod */}
-                                        <div className={cn("p-4 space-y-1", ui.recessedPod)}>
-                                            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-zinc-400 block">
-                                                Net Disbursement Amount
-                                            </span>
-                                            <div className="flex items-baseline justify-between">
-                                                <span className="text-xs text-slate-500 dark:text-zinc-400">Ledger Impact</span>
-                                                <span className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tabular-nums tracking-tight">
-                                                    ₹{form.amount ? parseFloat(form.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '0.00'}
-                                                </span>
-                                            </div>
+                                {/* Disbursement Channels */}
+                                {form.isSettledNow && (
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
+                                            Disbursement Channel
+                                        </label>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {[
+                                                { id: 'Cash', label: 'Cash Drawer', icon: Wallet },
+                                                { id: 'UPI', label: 'UPI / Scan', icon: QrCode },
+                                                { id: 'BankTransfer', label: 'Bank / Card', icon: CreditCard }
+                                            ].map(mode => {
+                                                const Icon = mode.icon;
+                                                const isSelected = form.paymentMethod === mode.id;
+                                                return (
+                                                    <button
+                                                        key={mode.id}
+                                                        type="button"
+                                                        onClick={() => saveDraft({ ...form, paymentMethod: mode.id })}
+                                                        className={cn(
+                                                            "py-3 px-2 rounded-xl border flex flex-col items-center gap-1.5 transition-all cursor-pointer font-bold",
+                                                            isSelected
+                                                                ? (isDark
+                                                                    ? "bg-white text-zinc-900 border-white shadow-md"
+                                                                    : "bg-slate-900 text-white border-slate-900 shadow-md")
+                                                                : (isDark
+                                                                    ? "bg-zinc-800/60 border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-white"
+                                                                    : "bg-white/90 border-slate-200/90 text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-2xs")
+                                                        )}
+                                                    >
+                                                        <Icon className="w-4 h-4" />
+                                                        <span className="text-[11px]">{mode.label}</span>
+                                                    </button>
+                                                );
+                                            })}
                                         </div>
+                                    </div>
+                                )}
 
-                                        {/* Settle Now Toggle for Vendor Bills */}
-                                        {outflowMode === 'vendor' && (
-                                            <div className="p-3 rounded-xl bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 flex items-center justify-between shadow-2xs">
-                                                <div>
-                                                    <p className="text-xs font-bold text-slate-900 dark:text-white">Settle Invoice Now?</p>
-                                                    <p className="text-[10px] text-slate-500 dark:text-zinc-400">Uncheck to log as unpaid accounts payable</p>
-                                                </div>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={form.isSettledNow}
-                                                    onChange={(e) => saveDraft({ ...form, isSettledNow: e.target.checked })}
-                                                    className="w-4 h-4 rounded text-blue-600 focus:ring-0 cursor-pointer"
-                                                />
-                                            </div>
-                                        )}
-
-                                        {/* Disbursement Channels */}
-                                        {form.isSettledNow && (
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
-                                                    Disbursement Channel
-                                                </label>
-                                                <div className="grid grid-cols-3 gap-2">
-                                                    {[
-                                                        { id: 'Cash', label: 'Cash Drawer', icon: Wallet },
-                                                        { id: 'UPI', label: 'UPI / Scan', icon: QrCode },
-                                                        { id: 'BankTransfer', label: 'Bank / Card', icon: CreditCard }
-                                                    ].map(mode => {
-                                                        const Icon = mode.icon;
-                                                        const isSelected = form.paymentMethod === mode.id;
-                                                        return (
-                                                            <button
-                                                                key={mode.id}
-                                                                type="button"
-                                                                onClick={() => saveDraft({ ...form, paymentMethod: mode.id })}
-                                                                className={cn(
-                                                                    "py-3 px-2 rounded-xl border flex flex-col items-center gap-1.5 transition-all cursor-pointer font-bold",
-                                                                    isSelected
-                                                                        ? (isDark
-                                                                            ? "bg-white text-zinc-900 border-white shadow-md"
-                                                                            : "bg-slate-900 text-white border-slate-900 shadow-md")
-                                                                        : (isDark
-                                                                            ? "bg-zinc-800/60 border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-white"
-                                                                            : "bg-white/90 border-slate-200/90 text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-2xs")
-                                                                )}
-                                                            >
-                                                                <Icon className="w-4 h-4" />
-                                                                <span className="text-[11px]">{mode.label}</span>
-                                                            </button>
-                                                        );
-                                                    })}
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Metadata Pod */}
-                                        <div className="p-3.5 rounded-xl border border-slate-200/80 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/60 text-xs space-y-1.5 shadow-2xs">
-                                            <div className="flex justify-between text-slate-500 dark:text-zinc-400">
-                                                <span>Disbursed By:</span>
-                                                <span className="font-bold text-slate-800 dark:text-zinc-200">{user?.name || 'Reception Staff'}</span>
-                                            </div>
-                                            <div className="flex justify-between text-slate-500 dark:text-zinc-400">
-                                                <span>Disbursement Source:</span>
-                                                <span className="font-bold text-slate-800 dark:text-zinc-200">
-                                                    {form.paymentMethod === 'Cash' ? 'Reception Cash Drawer' : form.paymentMethod}
-                                                </span>
-                                            </div>
-                                        </div>
+                                {/* Metadata Pod */}
+                                <div className="p-3.5 rounded-xl border border-slate-200/80 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/60 text-xs space-y-1.5 shadow-2xs">
+                                    <div className="flex justify-between text-slate-500 dark:text-zinc-400">
+                                        <span>Disbursed By:</span>
+                                        <span className="font-bold text-slate-800 dark:text-zinc-200">{user?.name || 'Reception Staff'}</span>
+                                    </div>
+                                    <div className="flex justify-between text-slate-500 dark:text-zinc-400">
+                                        <span>Disbursement Source:</span>
+                                        <span className="font-bold text-slate-800 dark:text-zinc-200">
+                                            {form.paymentMethod === 'Cash' ? 'Reception Cash Drawer' : form.paymentMethod}
+                                        </span>
                                     </div>
                                 </div>
                             </div>

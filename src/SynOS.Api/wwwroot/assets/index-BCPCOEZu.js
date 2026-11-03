@@ -45360,87 +45360,90 @@ Details: ${A.inner}`);
     return t ? r.jsx("div", {
       className: "fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-xs transition-opacity duration-300 animate-in fade-in",
       children: r.jsxs("div", {
-        className: De("w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[86vw] xl:w-[85vw] 2xl:w-[85vw] max-w-[1780px] h-full flex flex-col overflow-hidden rounded-l-[28px] shadow-2xl transition-[width,transform,opacity] duration-300 ease-out z-30", s.panel),
+        className: De("h-full flex flex-col overflow-hidden rounded-l-[28px] shadow-2xl transition-all duration-300 ease-in-out z-30", A === "record" ? "w-full sm:w-[620px] md:w-[680px] lg:w-[720px] xl:w-[740px] max-w-full" : "w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[86vw] xl:w-[85vw] 2xl:w-[85vw] max-w-[1780px]", s.panel),
         children: [
           r.jsxs("div", {
-            className: De("h-14 sm:h-16 flex items-center justify-between px-6 sm:px-8 shrink-0", s.header),
+            className: De("px-6 sm:px-8 py-3 shrink-0 border-b flex flex-col gap-2.5", s.header),
             children: [
               r.jsxs("div", {
-                className: "flex items-center gap-3",
-                children: [
-                  r.jsxs("h2", {
-                    className: De("text-lg sm:text-xl font-bold tracking-normal flex items-baseline gap-2", s.title),
-                    children: [
-                      "Accounts Payable Terminal",
-                      r.jsx("span", {
-                        className: "text-xs font-mono font-bold text-slate-500 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800/80 px-2 py-0.5 rounded-full border border-slate-200/60 dark:border-zinc-700/60",
-                        children: "#EXP-RECEPTION"
-                      })
-                    ]
-                  }),
-                  r.jsx("span", {
-                    className: "hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#EDF7F2] text-[#245E49] dark:bg-emerald-950/40 dark:text-emerald-300 border border-[#CBE5D7] dark:border-emerald-800",
-                    children: "Station: Reception Desk"
-                  })
-                ]
-              }),
-              r.jsxs("div", {
-                className: "flex items-center gap-2 sm:gap-3",
+                className: "flex items-center justify-between",
                 children: [
                   r.jsxs("div", {
-                    className: "flex items-center gap-1 p-1 rounded-xl bg-slate-200/70 dark:bg-zinc-800/80 border border-slate-300/40 dark:border-zinc-700/40",
+                    className: "flex items-center gap-2 sm:gap-3",
                     children: [
-                      r.jsxs("button", {
-                        onClick: () => o("record"),
-                        className: De("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer", A === "record" ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-xs font-extrabold" : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"),
+                      r.jsxs("h2", {
+                        className: De("text-base sm:text-lg lg:text-xl font-bold tracking-normal flex items-baseline gap-2", s.title),
                         children: [
-                          r.jsx(bA, {
-                            className: "w-3.5 h-3.5"
-                          }),
+                          "Accounts Payable Terminal",
                           r.jsx("span", {
-                            children: "1 Record Expense"
+                            className: "text-[11px] sm:text-xs font-mono font-bold text-slate-500 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800/80 px-2 py-0.5 rounded-full border border-slate-200/60 dark:border-zinc-700/60",
+                            children: "#EXP-RECEPTION"
                           })
                         ]
                       }),
-                      r.jsxs("button", {
-                        onClick: () => o("history"),
-                        className: De("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer", A === "history" ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-xs font-extrabold" : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"),
-                        children: [
-                          r.jsx(NA, {
-                            className: "w-3.5 h-3.5"
-                          }),
-                          r.jsx("span", {
-                            children: "2 Live & 7D History"
-                          }),
-                          f.totalCount > 0 && r.jsx("span", {
-                            className: "ml-1 px-1.5 py-0.2 rounded-full text-[9px] bg-blue-500/10 text-blue-600 dark:text-blue-400 font-mono font-bold",
-                            children: f.totalCount
-                          })
-                        ]
-                      }),
-                      r.jsxs("button", {
-                        onClick: () => o("metrics"),
-                        className: De("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer", A === "metrics" ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-xs font-extrabold" : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"),
-                        children: [
-                          r.jsx(zS, {
-                            className: "w-3.5 h-3.5"
-                          }),
-                          r.jsx("span", {
-                            children: "3 Visual Metrics"
-                          })
-                        ]
+                      r.jsx("span", {
+                        className: "hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#EDF7F2] text-[#245E49] dark:bg-emerald-950/40 dark:text-emerald-300 border border-[#CBE5D7] dark:border-emerald-800",
+                        children: "Station: Reception Desk"
                       })
                     ]
                   }),
                   r.jsx("button", {
                     onClick: e,
-                    className: De("p-2 rounded-full transition-all duration-200 active:scale-95 cursor-pointer", a ? "hover:bg-white/10 text-zinc-400 hover:text-white" : "hover:bg-slate-100 text-slate-400 hover:text-slate-700"),
+                    className: De("p-1.5 sm:p-2 rounded-full transition-all duration-200 active:scale-95 cursor-pointer shrink-0", a ? "hover:bg-white/10 text-zinc-400 hover:text-white" : "hover:bg-slate-100 text-slate-400 hover:text-slate-700"),
                     title: "Close Terminal (Esc)",
                     children: r.jsx(or, {
                       className: "w-5 h-5"
                     })
                   })
                 ]
+              }),
+              r.jsx("div", {
+                className: "flex items-center gap-1",
+                children: r.jsxs("div", {
+                  className: "flex items-center gap-1 p-1 rounded-xl bg-slate-200/70 dark:bg-zinc-800/80 border border-slate-300/40 dark:border-zinc-700/40",
+                  children: [
+                    r.jsxs("button", {
+                      onClick: () => o("record"),
+                      className: De("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer", A === "record" ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-xs font-extrabold" : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"),
+                      children: [
+                        r.jsx(bA, {
+                          className: "w-3.5 h-3.5"
+                        }),
+                        r.jsx("span", {
+                          children: "1 Record Expense"
+                        })
+                      ]
+                    }),
+                    r.jsxs("button", {
+                      onClick: () => o("history"),
+                      className: De("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer", A === "history" ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-xs font-extrabold" : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"),
+                      children: [
+                        r.jsx(NA, {
+                          className: "w-3.5 h-3.5"
+                        }),
+                        r.jsx("span", {
+                          children: "2 Live & 7D History"
+                        }),
+                        f.totalCount > 0 && r.jsx("span", {
+                          className: "ml-1 px-1.5 py-0.2 rounded-full text-[9px] bg-blue-500/10 text-blue-600 dark:text-blue-400 font-mono font-bold",
+                          children: f.totalCount
+                        })
+                      ]
+                    }),
+                    r.jsxs("button", {
+                      onClick: () => o("metrics"),
+                      className: De("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer", A === "metrics" ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-xs font-extrabold" : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"),
+                      children: [
+                        r.jsx(zS, {
+                          className: "w-3.5 h-3.5"
+                        }),
+                        r.jsx("span", {
+                          children: "3 Visual Metrics"
+                        })
+                      ]
+                    })
+                  ]
+                })
               })
             ]
           }),
@@ -45466,535 +45469,149 @@ Details: ${A.inner}`);
           A === "record" && r.jsxs("div", {
             className: "flex-1 flex flex-col min-h-0 overflow-hidden",
             children: [
-              r.jsx("div", {
-                className: "p-3.5 sm:p-5 max-w-full mx-auto w-full flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-300",
-                children: r.jsxs("div", {
-                  className: "grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 xl:gap-6 items-stretch flex-1 min-h-0 overflow-hidden",
-                  children: [
-                    r.jsxs("div", {
-                      className: "lg:col-span-7 flex flex-col gap-3 h-full min-h-0 overflow-y-auto pr-1",
-                      children: [
-                        r.jsxs("div", {
-                          className: De("p-4 sm:p-5 space-y-3 shrink-0", s.card),
-                          children: [
-                            r.jsxs("div", {
-                              className: "flex items-center justify-between",
-                              children: [
-                                r.jsxs("div", {
-                                  className: "flex items-center gap-2",
-                                  children: [
-                                    r.jsx("div", {
-                                      className: "w-6 h-6 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-xs shadow-xs",
-                                      children: "1"
-                                    }),
-                                    r.jsx("h3", {
-                                      className: "text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-normal",
-                                      children: "Expense Classification & Stream"
-                                    })
-                                  ]
-                                }),
-                                r.jsx("span", {
-                                  className: "text-xs text-slate-500 dark:text-zinc-400",
-                                  children: "Attribution Context"
-                                })
-                              ]
-                            }),
-                            r.jsxs("div", {
-                              className: "grid grid-cols-1 sm:grid-cols-3 gap-3",
-                              children: [
-                                r.jsxs("button", {
-                                  type: "button",
-                                  onClick: () => {
-                                    c("petty"), de({
-                                      ...F,
-                                      category: "Tea"
-                                    });
-                                  },
-                                  className: De("p-3.5 rounded-xl border text-left flex items-start gap-3 transition-all cursor-pointer", l === "petty" ? a ? "bg-zinc-800 border-2 border-blue-500 shadow-md ring-1 ring-blue-500/50" : "bg-white border-2 border-blue-600 shadow-[0_4px_16px_rgba(37,99,235,0.15)] ring-1 ring-blue-600/30" : a ? "bg-zinc-800/60 border-zinc-700/60 hover:bg-zinc-800 shadow-xs" : "bg-white/80 border border-[#D5E2EC] hover:bg-white hover:border-slate-300 shadow-[0_1px_3px_rgba(15,35,60,0.04)]"),
-                                  children: [
-                                    r.jsx("div", {
-                                      className: "p-2 rounded-lg bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 shrink-0",
-                                      children: r.jsx(kT, {
-                                        className: "w-4 h-4"
-                                      })
-                                    }),
-                                    r.jsxs("div", {
-                                      className: "flex-1 min-w-0",
-                                      children: [
-                                        r.jsxs("div", {
-                                          className: "flex items-center justify-between",
-                                          children: [
-                                            r.jsx("span", {
-                                              className: "text-xs font-bold text-slate-900 dark:text-white",
-                                              children: "Petty Cash"
-                                            }),
-                                            l === "petty" && r.jsx("div", {
-                                              className: "w-2 h-2 rounded-full bg-blue-600"
-                                            })
-                                          ]
-                                        }),
-                                        r.jsx("p", {
-                                          className: "text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5 leading-tight",
-                                          children: "Tea, courier, rolls, minor repairs"
-                                        })
-                                      ]
-                                    })
-                                  ]
-                                }),
-                                r.jsxs("button", {
-                                  type: "button",
-                                  onClick: () => {
-                                    c("vendor"), de({
-                                      ...F,
-                                      category: "Vendor"
-                                    });
-                                  },
-                                  className: De("p-3.5 rounded-xl border text-left flex items-start gap-3 transition-all cursor-pointer", l === "vendor" ? a ? "bg-zinc-800 border-2 border-blue-500 shadow-md ring-1 ring-blue-500/50" : "bg-white border-2 border-blue-600 shadow-[0_4px_16px_rgba(37,99,235,0.15)] ring-1 ring-blue-600/30" : a ? "bg-zinc-800/60 border-zinc-700/60 hover:bg-zinc-800 shadow-xs" : "bg-white/80 border border-[#D5E2EC] hover:bg-white hover:border-slate-300 shadow-[0_1px_3px_rgba(15,35,60,0.04)]"),
-                                  children: [
-                                    r.jsx("div", {
-                                      className: "p-2 rounded-lg bg-blue-500/10 text-blue-600 border border-blue-500/20 shrink-0",
-                                      children: r.jsx(oa, {
-                                        className: "w-4 h-4"
-                                      })
-                                    }),
-                                    r.jsxs("div", {
-                                      className: "flex-1 min-w-0",
-                                      children: [
-                                        r.jsxs("div", {
-                                          className: "flex items-center justify-between",
-                                          children: [
-                                            r.jsx("span", {
-                                              className: "text-xs font-bold text-slate-900 dark:text-white",
-                                              children: "Vendor Bill"
-                                            }),
-                                            l === "vendor" && r.jsx("div", {
-                                              className: "w-2 h-2 rounded-full bg-blue-600"
-                                            })
-                                          ]
-                                        }),
-                                        r.jsx("p", {
-                                          className: "text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5 leading-tight",
-                                          children: "Reagents, kits, consumables"
-                                        })
-                                      ]
-                                    })
-                                  ]
-                                }),
-                                r.jsxs("button", {
-                                  type: "button",
-                                  onClick: () => {
-                                    c("overhead"), de({
-                                      ...F,
-                                      category: "Power"
-                                    });
-                                  },
-                                  className: De("p-3.5 rounded-xl border text-left flex items-start gap-3 transition-all cursor-pointer", l === "overhead" ? a ? "bg-zinc-800 border-2 border-blue-500 shadow-md ring-1 ring-blue-500/50" : "bg-white border-2 border-blue-600 shadow-[0_4px_16px_rgba(37,99,235,0.15)] ring-1 ring-blue-600/30" : a ? "bg-zinc-800/60 border-zinc-700/60 hover:bg-zinc-800 shadow-xs" : "bg-white/80 border border-[#D5E2EC] hover:bg-white hover:border-slate-300 shadow-[0_1px_3px_rgba(15,35,60,0.04)]"),
-                                  children: [
-                                    r.jsx("div", {
-                                      className: "p-2 rounded-lg bg-amber-500/10 text-amber-600 border border-amber-500/20 shrink-0",
-                                      children: r.jsx(wA, {
-                                        className: "w-4 h-4"
-                                      })
-                                    }),
-                                    r.jsxs("div", {
-                                      className: "flex-1 min-w-0",
-                                      children: [
-                                        r.jsxs("div", {
-                                          className: "flex items-center justify-between",
-                                          children: [
-                                            r.jsx("span", {
-                                              className: "text-xs font-bold text-slate-900 dark:text-white",
-                                              children: "Overhead"
-                                            }),
-                                            l === "overhead" && r.jsx("div", {
-                                              className: "w-2 h-2 rounded-full bg-blue-600"
-                                            })
-                                          ]
-                                        }),
-                                        r.jsx("p", {
-                                          className: "text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5 leading-tight",
-                                          children: "Electricity, internet, waste, rent"
-                                        })
-                                      ]
-                                    })
-                                  ]
-                                })
-                              ]
-                            })
-                          ]
-                        }),
-                        r.jsxs("div", {
-                          className: De("p-4 sm:p-5 space-y-4 shrink-0", s.card),
-                          children: [
-                            r.jsxs("div", {
-                              className: "flex items-center justify-between",
-                              children: [
-                                r.jsxs("div", {
-                                  className: "flex items-center gap-2",
-                                  children: [
-                                    r.jsx("div", {
-                                      className: "w-6 h-6 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-xs shadow-xs",
-                                      children: "2"
-                                    }),
-                                    r.jsx("h3", {
-                                      className: "text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-normal",
-                                      children: "Outflow Particulars"
-                                    })
-                                  ]
-                                }),
-                                r.jsx("span", {
-                                  className: "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border border-slate-200/60 dark:border-zinc-700/60",
-                                  children: l === "petty" ? "Operational Cash" : l === "vendor" ? "Supplier Inward" : "Facility Utility"
-                                })
-                              ]
-                            }),
-                            l === "petty" && r.jsxs("div", {
-                              className: "space-y-1.5",
-                              children: [
-                                r.jsx("label", {
-                                  className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400",
-                                  children: "Quick Presets"
-                                }),
-                                r.jsx("div", {
-                                  className: "grid grid-cols-2 sm:grid-cols-3 gap-2",
-                                  children: te.map((ae) => {
-                                    const Ce = ae.icon, Ne = F.category === ae.category;
-                                    return r.jsxs("button", {
-                                      type: "button",
-                                      onClick: () => {
-                                        de({
-                                          ...F,
-                                          category: ae.category,
-                                          description: F.description || ae.defaultDesc
-                                        });
-                                      },
-                                      className: De("p-2.5 rounded-xl border text-left flex items-center gap-2 transition-all cursor-pointer font-bold text-xs", Ne ? a ? "bg-zinc-800 border-2 border-blue-500 text-blue-300 shadow-sm" : "bg-white border-2 border-blue-600 text-blue-700 shadow-[0_2px_8px_rgba(37,99,235,0.15)] ring-1 ring-blue-600/20" : a ? "bg-zinc-800/60 border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white" : "bg-white/90 border-slate-200/90 text-slate-700 hover:bg-white hover:border-slate-300 shadow-2xs"),
-                                      children: [
-                                        r.jsx(Ce, {
-                                          className: "w-3.5 h-3.5 shrink-0"
-                                        }),
-                                        r.jsx("span", {
-                                          className: "truncate",
-                                          children: ae.label
-                                        })
-                                      ]
-                                    }, ae.category);
-                                  })
-                                })
-                              ]
-                            }),
-                            l === "overhead" && r.jsxs("div", {
-                              className: "space-y-1.5",
-                              children: [
-                                r.jsx("label", {
-                                  className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400",
-                                  children: "Facility Utilities"
-                                }),
-                                r.jsx("div", {
-                                  className: "grid grid-cols-2 gap-2",
-                                  children: ie.map((ae) => r.jsxs("button", {
-                                    type: "button",
-                                    onClick: () => {
-                                      de({
-                                        ...F,
-                                        category: ae.category,
-                                        description: ae.defaultDesc
-                                      });
-                                    },
-                                    className: De("p-2.5 rounded-xl border text-left flex items-center gap-2 transition-all cursor-pointer font-bold text-xs", F.category === ae.category ? a ? "bg-zinc-800 border-2 border-blue-500 text-blue-300 shadow-sm" : "bg-white border-2 border-blue-600 text-blue-700 shadow-[0_2px_8px_rgba(37,99,235,0.15)] ring-1 ring-blue-600/20" : a ? "bg-zinc-800/60 border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white" : "bg-white/90 border-slate-200/90 text-slate-700 hover:bg-white hover:border-slate-300 shadow-2xs"),
-                                    children: [
-                                      r.jsx(wA, {
-                                        className: "w-3.5 h-3.5 shrink-0"
-                                      }),
-                                      r.jsx("span", {
-                                        className: "truncate",
-                                        children: ae.label
-                                      })
-                                    ]
-                                  }, ae.label))
-                                })
-                              ]
-                            }),
-                            l === "vendor" && r.jsxs("div", {
-                              className: "space-y-3",
-                              children: [
-                                r.jsxs("div", {
-                                  className: "space-y-1",
-                                  children: [
-                                    r.jsxs("div", {
-                                      className: "flex items-center justify-between",
-                                      children: [
-                                        r.jsx("label", {
-                                          className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400",
-                                          children: "Select Supplier (ERP Ledger)"
-                                        }),
-                                        r.jsxs("span", {
-                                          className: "text-[10px] text-blue-600 dark:text-blue-400 font-bold",
-                                          children: [
-                                            N.length,
-                                            " Verified Suppliers Loaded"
-                                          ]
-                                        })
-                                      ]
-                                    }),
-                                    r.jsxs("select", {
-                                      value: F.vendorId,
-                                      onChange: (ae) => {
-                                        const Ce = N.find((Ne) => Ne.id === ae.target.value);
-                                        de({
-                                          ...F,
-                                          vendorId: ae.target.value,
-                                          description: Ce ? `Inward Supplies: ${Ce.name}` : F.description
-                                        });
-                                      },
-                                      className: "w-full bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white",
-                                      required: true,
-                                      children: [
-                                        r.jsx("option", {
-                                          value: "",
-                                          children: "-- Choose Vendor / Supplier --"
-                                        }),
-                                        N.map((ae) => r.jsxs("option", {
-                                          value: ae.id,
-                                          children: [
-                                            ae.name,
-                                            " \u2022 ",
-                                            ae.category,
-                                            " ",
-                                            ae.taxId ? `[GST: ${ae.taxId}]` : ""
-                                          ]
-                                        }, ae.id))
-                                      ]
-                                    })
-                                  ]
-                                }),
-                                r.jsxs("div", {
-                                  className: "space-y-1",
-                                  children: [
-                                    r.jsx("label", {
-                                      className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400",
-                                      children: "Inward Invoice / Challan Reference #"
-                                    }),
-                                    r.jsx("input", {
-                                      type: "text",
-                                      placeholder: "e.g. INV-2026-9042 or DC-4412",
-                                      value: F.invoiceNumber,
-                                      onChange: (ae) => de({
-                                        ...F,
-                                        invoiceNumber: ae.target.value
-                                      }),
-                                      className: "w-full bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl px-3.5 py-2 text-xs font-semibold outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white shadow-2xs"
-                                    })
-                                  ]
-                                })
-                              ]
-                            }),
-                            r.jsxs("div", {
-                              className: De("p-3.5 sm:p-4 space-y-1.5", s.recessedPod),
-                              children: [
-                                r.jsx("label", {
-                                  className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400",
-                                  children: "Disbursement / Bill Amount (\u20B9) *"
-                                }),
-                                r.jsxs("div", {
-                                  className: "relative",
-                                  children: [
-                                    r.jsx("span", {
-                                      className: "absolute left-4 top-1/2 -translate-y-1/2 text-2xl sm:text-3xl font-black text-slate-400 dark:text-zinc-500",
-                                      children: "\u20B9"
-                                    }),
-                                    r.jsx("input", {
-                                      type: "number",
-                                      step: "0.01",
-                                      required: true,
-                                      placeholder: "0.00",
-                                      value: F.amount,
-                                      onChange: (ae) => de({
-                                        ...F,
-                                        amount: ae.target.value
-                                      }),
-                                      className: "w-full bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl pl-10 pr-4 py-2.5 text-2xl sm:text-3xl font-black outline-none focus:ring-2 focus:ring-blue-500 transition-all text-slate-900 dark:text-white tabular-nums shadow-inner"
-                                    })
-                                  ]
-                                })
-                              ]
-                            }),
-                            r.jsxs("div", {
-                              className: "space-y-1.5",
-                              children: [
-                                r.jsx("label", {
-                                  className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400",
-                                  children: "Description & Operational Purpose"
-                                }),
-                                r.jsx("input", {
-                                  type: "text",
-                                  required: true,
-                                  placeholder: "e.g. Courier charges for biopsy sample dispatch",
-                                  value: F.description,
-                                  onChange: (ae) => de({
-                                    ...F,
-                                    description: ae.target.value
-                                  }),
-                                  className: "w-full bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-xs font-semibold outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white shadow-2xs"
-                                })
-                              ]
-                            })
-                          ]
-                        })
-                      ]
-                    }),
-                    r.jsx("div", {
-                      className: "lg:col-span-5 flex flex-col gap-3 h-full min-h-0 overflow-y-auto pr-1",
-                      children: r.jsxs("div", {
-                        className: De("p-4 sm:p-5 space-y-4 shrink-0", s.card),
+              r.jsxs("div", {
+                className: "p-4 sm:p-6 w-full flex-1 min-h-0 overflow-y-auto space-y-4 animate-in fade-in duration-300 pr-1.5 sm:pr-3",
+                children: [
+                  r.jsxs("div", {
+                    className: De("p-4 sm:p-5 space-y-3 shrink-0", s.card),
+                    children: [
+                      r.jsxs("div", {
+                        className: "flex items-center justify-between",
                         children: [
                           r.jsxs("div", {
-                            className: "flex items-center justify-between pb-2 border-b border-black/[0.06] dark:border-white/[0.06]",
+                            className: "flex items-center gap-2",
                             children: [
-                              r.jsxs("div", {
-                                className: "flex items-center gap-2",
-                                children: [
-                                  r.jsx("div", {
-                                    className: "w-6 h-6 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-xs shadow-xs",
-                                    children: "3"
-                                  }),
-                                  r.jsx("h3", {
-                                    className: "text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-normal",
-                                    children: "Settlement & Financials"
-                                  })
-                                ]
-                              }),
-                              r.jsx("span", {
-                                className: "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20",
-                                children: F.isSettledNow ? "Immediate Disburse" : "Accrue Obligation"
-                              })
-                            ]
-                          }),
-                          r.jsxs("div", {
-                            className: De("p-4 space-y-1", s.recessedPod),
-                            children: [
-                              r.jsx("span", {
-                                className: "text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-zinc-400 block",
-                                children: "Net Disbursement Amount"
-                              }),
-                              r.jsxs("div", {
-                                className: "flex items-baseline justify-between",
-                                children: [
-                                  r.jsx("span", {
-                                    className: "text-xs text-slate-500 dark:text-zinc-400",
-                                    children: "Ledger Impact"
-                                  }),
-                                  r.jsxs("span", {
-                                    className: "text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tabular-nums tracking-tight",
-                                    children: [
-                                      "\u20B9",
-                                      F.amount ? parseFloat(F.amount).toLocaleString("en-IN", {
-                                        minimumFractionDigits: 2
-                                      }) : "0.00"
-                                    ]
-                                  })
-                                ]
-                              })
-                            ]
-                          }),
-                          l === "vendor" && r.jsxs("div", {
-                            className: "p-3 rounded-xl bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 flex items-center justify-between shadow-2xs",
-                            children: [
-                              r.jsxs("div", {
-                                children: [
-                                  r.jsx("p", {
-                                    className: "text-xs font-bold text-slate-900 dark:text-white",
-                                    children: "Settle Invoice Now?"
-                                  }),
-                                  r.jsx("p", {
-                                    className: "text-[10px] text-slate-500 dark:text-zinc-400",
-                                    children: "Uncheck to log as unpaid accounts payable"
-                                  })
-                                ]
-                              }),
-                              r.jsx("input", {
-                                type: "checkbox",
-                                checked: F.isSettledNow,
-                                onChange: (ae) => de({
-                                  ...F,
-                                  isSettledNow: ae.target.checked
-                                }),
-                                className: "w-4 h-4 rounded text-blue-600 focus:ring-0 cursor-pointer"
-                              })
-                            ]
-                          }),
-                          F.isSettledNow && r.jsxs("div", {
-                            className: "space-y-2",
-                            children: [
-                              r.jsx("label", {
-                                className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400",
-                                children: "Disbursement Channel"
-                              }),
                               r.jsx("div", {
-                                className: "grid grid-cols-3 gap-2",
+                                className: "w-6 h-6 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-xs shadow-xs",
+                                children: "1"
+                              }),
+                              r.jsx("h3", {
+                                className: "text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-normal",
+                                children: "Expense Classification & Stream"
+                              })
+                            ]
+                          }),
+                          r.jsx("span", {
+                            className: "text-xs text-slate-500 dark:text-zinc-400",
+                            children: "Attribution Context"
+                          })
+                        ]
+                      }),
+                      r.jsxs("div", {
+                        className: "grid grid-cols-1 sm:grid-cols-3 gap-3",
+                        children: [
+                          r.jsxs("button", {
+                            type: "button",
+                            onClick: () => {
+                              c("petty"), de({
+                                ...F,
+                                category: "Tea"
+                              });
+                            },
+                            className: De("p-3.5 rounded-xl border text-left flex items-start gap-3 transition-all cursor-pointer", l === "petty" ? a ? "bg-zinc-800 border-2 border-blue-500 shadow-md ring-1 ring-blue-500/50" : "bg-white border-2 border-blue-600 shadow-[0_4px_16px_rgba(37,99,235,0.15)] ring-1 ring-blue-600/30" : a ? "bg-zinc-800/60 border-zinc-700/60 hover:bg-zinc-800 shadow-xs" : "bg-white/80 border border-[#D5E2EC] hover:bg-white hover:border-slate-300 shadow-[0_1px_3px_rgba(15,35,60,0.04)]"),
+                            children: [
+                              r.jsx("div", {
+                                className: "p-2 rounded-lg bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 shrink-0",
+                                children: r.jsx(kT, {
+                                  className: "w-4 h-4"
+                                })
+                              }),
+                              r.jsxs("div", {
+                                className: "flex-1 min-w-0",
                                 children: [
-                                  {
-                                    id: "Cash",
-                                    label: "Cash Drawer",
-                                    icon: Dc
-                                  },
-                                  {
-                                    id: "UPI",
-                                    label: "UPI / Scan",
-                                    icon: mw
-                                  },
-                                  {
-                                    id: "BankTransfer",
-                                    label: "Bank / Card",
-                                    icon: rd
-                                  }
-                                ].map((ae) => {
-                                  const Ce = ae.icon, Ne = F.paymentMethod === ae.id;
-                                  return r.jsxs("button", {
-                                    type: "button",
-                                    onClick: () => de({
-                                      ...F,
-                                      paymentMethod: ae.id
-                                    }),
-                                    className: De("py-3 px-2 rounded-xl border flex flex-col items-center gap-1.5 transition-all cursor-pointer font-bold", Ne ? a ? "bg-white text-zinc-900 border-white shadow-md" : "bg-slate-900 text-white border-slate-900 shadow-md" : a ? "bg-zinc-800/60 border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-white" : "bg-white/90 border-slate-200/90 text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-2xs"),
+                                  r.jsxs("div", {
+                                    className: "flex items-center justify-between",
                                     children: [
-                                      r.jsx(Ce, {
-                                        className: "w-4 h-4"
-                                      }),
                                       r.jsx("span", {
-                                        className: "text-[11px]",
-                                        children: ae.label
+                                        className: "text-xs font-bold text-slate-900 dark:text-white",
+                                        children: "Petty Cash"
+                                      }),
+                                      l === "petty" && r.jsx("div", {
+                                        className: "w-2 h-2 rounded-full bg-blue-600"
                                       })
                                     ]
-                                  }, ae.id);
-                                })
+                                  }),
+                                  r.jsx("p", {
+                                    className: "text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5 leading-tight",
+                                    children: "Tea, courier, rolls, minor repairs"
+                                  })
+                                ]
                               })
                             ]
                           }),
-                          r.jsxs("div", {
-                            className: "p-3.5 rounded-xl border border-slate-200/80 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/60 text-xs space-y-1.5 shadow-2xs",
+                          r.jsxs("button", {
+                            type: "button",
+                            onClick: () => {
+                              c("vendor"), de({
+                                ...F,
+                                category: "Vendor"
+                              });
+                            },
+                            className: De("p-3.5 rounded-xl border text-left flex items-start gap-3 transition-all cursor-pointer", l === "vendor" ? a ? "bg-zinc-800 border-2 border-blue-500 shadow-md ring-1 ring-blue-500/50" : "bg-white border-2 border-blue-600 shadow-[0_4px_16px_rgba(37,99,235,0.15)] ring-1 ring-blue-600/30" : a ? "bg-zinc-800/60 border-zinc-700/60 hover:bg-zinc-800 shadow-xs" : "bg-white/80 border border-[#D5E2EC] hover:bg-white hover:border-slate-300 shadow-[0_1px_3px_rgba(15,35,60,0.04)]"),
                             children: [
-                              r.jsxs("div", {
-                                className: "flex justify-between text-slate-500 dark:text-zinc-400",
-                                children: [
-                                  r.jsx("span", {
-                                    children: "Disbursed By:"
-                                  }),
-                                  r.jsx("span", {
-                                    className: "font-bold text-slate-800 dark:text-zinc-200",
-                                    children: (n == null ? void 0 : n.name) || "Reception Staff"
-                                  })
-                                ]
+                              r.jsx("div", {
+                                className: "p-2 rounded-lg bg-blue-500/10 text-blue-600 border border-blue-500/20 shrink-0",
+                                children: r.jsx(oa, {
+                                  className: "w-4 h-4"
+                                })
                               }),
                               r.jsxs("div", {
-                                className: "flex justify-between text-slate-500 dark:text-zinc-400",
+                                className: "flex-1 min-w-0",
                                 children: [
-                                  r.jsx("span", {
-                                    children: "Disbursement Source:"
+                                  r.jsxs("div", {
+                                    className: "flex items-center justify-between",
+                                    children: [
+                                      r.jsx("span", {
+                                        className: "text-xs font-bold text-slate-900 dark:text-white",
+                                        children: "Vendor Bill"
+                                      }),
+                                      l === "vendor" && r.jsx("div", {
+                                        className: "w-2 h-2 rounded-full bg-blue-600"
+                                      })
+                                    ]
                                   }),
-                                  r.jsx("span", {
-                                    className: "font-bold text-slate-800 dark:text-zinc-200",
-                                    children: F.paymentMethod === "Cash" ? "Reception Cash Drawer" : F.paymentMethod
+                                  r.jsx("p", {
+                                    className: "text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5 leading-tight",
+                                    children: "Reagents, kits, consumables"
+                                  })
+                                ]
+                              })
+                            ]
+                          }),
+                          r.jsxs("button", {
+                            type: "button",
+                            onClick: () => {
+                              c("overhead"), de({
+                                ...F,
+                                category: "Power"
+                              });
+                            },
+                            className: De("p-3.5 rounded-xl border text-left flex items-start gap-3 transition-all cursor-pointer", l === "overhead" ? a ? "bg-zinc-800 border-2 border-blue-500 shadow-md ring-1 ring-blue-500/50" : "bg-white border-2 border-blue-600 shadow-[0_4px_16px_rgba(37,99,235,0.15)] ring-1 ring-blue-600/30" : a ? "bg-zinc-800/60 border-zinc-700/60 hover:bg-zinc-800 shadow-xs" : "bg-white/80 border border-[#D5E2EC] hover:bg-white hover:border-slate-300 shadow-[0_1px_3px_rgba(15,35,60,0.04)]"),
+                            children: [
+                              r.jsx("div", {
+                                className: "p-2 rounded-lg bg-amber-500/10 text-amber-600 border border-amber-500/20 shrink-0",
+                                children: r.jsx(wA, {
+                                  className: "w-4 h-4"
+                                })
+                              }),
+                              r.jsxs("div", {
+                                className: "flex-1 min-w-0",
+                                children: [
+                                  r.jsxs("div", {
+                                    className: "flex items-center justify-between",
+                                    children: [
+                                      r.jsx("span", {
+                                        className: "text-xs font-bold text-slate-900 dark:text-white",
+                                        children: "Overhead"
+                                      }),
+                                      l === "overhead" && r.jsx("div", {
+                                        className: "w-2 h-2 rounded-full bg-blue-600"
+                                      })
+                                    ]
+                                  }),
+                                  r.jsx("p", {
+                                    className: "text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5 leading-tight",
+                                    children: "Electricity, internet, waste, rent"
                                   })
                                 ]
                               })
@@ -46002,9 +45619,384 @@ Details: ${A.inner}`);
                           })
                         ]
                       })
-                    })
-                  ]
-                })
+                    ]
+                  }),
+                  r.jsxs("div", {
+                    className: De("p-4 sm:p-5 space-y-4 shrink-0", s.card),
+                    children: [
+                      r.jsxs("div", {
+                        className: "flex items-center justify-between",
+                        children: [
+                          r.jsxs("div", {
+                            className: "flex items-center gap-2",
+                            children: [
+                              r.jsx("div", {
+                                className: "w-6 h-6 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-xs shadow-xs",
+                                children: "2"
+                              }),
+                              r.jsx("h3", {
+                                className: "text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-normal",
+                                children: "Outflow Particulars"
+                              })
+                            ]
+                          }),
+                          r.jsx("span", {
+                            className: "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border border-slate-200/60 dark:border-zinc-700/60",
+                            children: l === "petty" ? "Operational Cash" : l === "vendor" ? "Supplier Inward" : "Facility Utility"
+                          })
+                        ]
+                      }),
+                      l === "petty" && r.jsxs("div", {
+                        className: "space-y-1.5",
+                        children: [
+                          r.jsx("label", {
+                            className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400",
+                            children: "Quick Presets"
+                          }),
+                          r.jsx("div", {
+                            className: "grid grid-cols-2 sm:grid-cols-3 gap-2",
+                            children: te.map((ae) => {
+                              const Ce = ae.icon, Ne = F.category === ae.category;
+                              return r.jsxs("button", {
+                                type: "button",
+                                onClick: () => {
+                                  de({
+                                    ...F,
+                                    category: ae.category,
+                                    description: F.description || ae.defaultDesc
+                                  });
+                                },
+                                className: De("p-2.5 rounded-xl border text-left flex items-center gap-2 transition-all cursor-pointer font-bold text-xs", Ne ? a ? "bg-zinc-800 border-2 border-blue-500 text-blue-300 shadow-sm" : "bg-white border-2 border-blue-600 text-blue-700 shadow-[0_2px_8px_rgba(37,99,235,0.15)] ring-1 ring-blue-600/20" : a ? "bg-zinc-800/60 border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white" : "bg-white/90 border-slate-200/90 text-slate-700 hover:bg-white hover:border-slate-300 shadow-2xs"),
+                                children: [
+                                  r.jsx(Ce, {
+                                    className: "w-3.5 h-3.5 shrink-0"
+                                  }),
+                                  r.jsx("span", {
+                                    className: "truncate",
+                                    children: ae.label
+                                  })
+                                ]
+                              }, ae.category);
+                            })
+                          })
+                        ]
+                      }),
+                      l === "overhead" && r.jsxs("div", {
+                        className: "space-y-1.5",
+                        children: [
+                          r.jsx("label", {
+                            className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400",
+                            children: "Facility Utilities"
+                          }),
+                          r.jsx("div", {
+                            className: "grid grid-cols-2 gap-2",
+                            children: ie.map((ae) => r.jsxs("button", {
+                              type: "button",
+                              onClick: () => {
+                                de({
+                                  ...F,
+                                  category: ae.category,
+                                  description: ae.defaultDesc
+                                });
+                              },
+                              className: De("p-2.5 rounded-xl border text-left flex items-center gap-2 transition-all cursor-pointer font-bold text-xs", F.category === ae.category ? a ? "bg-zinc-800 border-2 border-blue-500 text-blue-300 shadow-sm" : "bg-white border-2 border-blue-600 text-blue-700 shadow-[0_2px_8px_rgba(37,99,235,0.15)] ring-1 ring-blue-600/20" : a ? "bg-zinc-800/60 border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white" : "bg-white/90 border-slate-200/90 text-slate-700 hover:bg-white hover:border-slate-300 shadow-2xs"),
+                              children: [
+                                r.jsx(wA, {
+                                  className: "w-3.5 h-3.5 shrink-0"
+                                }),
+                                r.jsx("span", {
+                                  className: "truncate",
+                                  children: ae.label
+                                })
+                              ]
+                            }, ae.label))
+                          })
+                        ]
+                      }),
+                      l === "vendor" && r.jsxs("div", {
+                        className: "space-y-3",
+                        children: [
+                          r.jsxs("div", {
+                            className: "space-y-1",
+                            children: [
+                              r.jsxs("div", {
+                                className: "flex items-center justify-between",
+                                children: [
+                                  r.jsx("label", {
+                                    className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400",
+                                    children: "Select Supplier (ERP Ledger)"
+                                  }),
+                                  r.jsxs("span", {
+                                    className: "text-[10px] text-blue-600 dark:text-blue-400 font-bold",
+                                    children: [
+                                      N.length,
+                                      " Verified Suppliers Loaded"
+                                    ]
+                                  })
+                                ]
+                              }),
+                              r.jsxs("select", {
+                                value: F.vendorId,
+                                onChange: (ae) => {
+                                  const Ce = N.find((Ne) => Ne.id === ae.target.value);
+                                  de({
+                                    ...F,
+                                    vendorId: ae.target.value,
+                                    description: Ce ? `Inward Supplies: ${Ce.name}` : F.description
+                                  });
+                                },
+                                className: "w-full bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white",
+                                required: true,
+                                children: [
+                                  r.jsx("option", {
+                                    value: "",
+                                    children: "-- Choose Vendor / Supplier --"
+                                  }),
+                                  N.map((ae) => r.jsxs("option", {
+                                    value: ae.id,
+                                    children: [
+                                      ae.name,
+                                      " \u2022 ",
+                                      ae.category,
+                                      " ",
+                                      ae.taxId ? `[GST: ${ae.taxId}]` : ""
+                                    ]
+                                  }, ae.id))
+                                ]
+                              })
+                            ]
+                          }),
+                          r.jsxs("div", {
+                            className: "space-y-1",
+                            children: [
+                              r.jsx("label", {
+                                className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400",
+                                children: "Inward Invoice / Challan Reference #"
+                              }),
+                              r.jsx("input", {
+                                type: "text",
+                                placeholder: "e.g. INV-2026-9042 or DC-4412",
+                                value: F.invoiceNumber,
+                                onChange: (ae) => de({
+                                  ...F,
+                                  invoiceNumber: ae.target.value
+                                }),
+                                className: "w-full bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl px-3.5 py-2 text-xs font-semibold outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white shadow-2xs"
+                              })
+                            ]
+                          })
+                        ]
+                      }),
+                      r.jsxs("div", {
+                        className: De("p-3.5 sm:p-4 space-y-1.5", s.recessedPod),
+                        children: [
+                          r.jsx("label", {
+                            className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400",
+                            children: "Disbursement / Bill Amount (\u20B9) *"
+                          }),
+                          r.jsxs("div", {
+                            className: "relative",
+                            children: [
+                              r.jsx("span", {
+                                className: "absolute left-4 top-1/2 -translate-y-1/2 text-2xl sm:text-3xl font-black text-slate-400 dark:text-zinc-500",
+                                children: "\u20B9"
+                              }),
+                              r.jsx("input", {
+                                type: "number",
+                                step: "0.01",
+                                required: true,
+                                placeholder: "0.00",
+                                value: F.amount,
+                                onChange: (ae) => de({
+                                  ...F,
+                                  amount: ae.target.value
+                                }),
+                                className: "w-full bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl pl-10 pr-4 py-2.5 text-2xl sm:text-3xl font-black outline-none focus:ring-2 focus:ring-blue-500 transition-all text-slate-900 dark:text-white tabular-nums shadow-inner"
+                              })
+                            ]
+                          })
+                        ]
+                      }),
+                      r.jsxs("div", {
+                        className: "space-y-1.5",
+                        children: [
+                          r.jsx("label", {
+                            className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400",
+                            children: "Description & Operational Purpose"
+                          }),
+                          r.jsx("input", {
+                            type: "text",
+                            required: true,
+                            placeholder: "e.g. Courier charges for biopsy sample dispatch",
+                            value: F.description,
+                            onChange: (ae) => de({
+                              ...F,
+                              description: ae.target.value
+                            }),
+                            className: "w-full bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-xs font-semibold outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white shadow-2xs"
+                          })
+                        ]
+                      })
+                    ]
+                  }),
+                  r.jsxs("div", {
+                    className: De("p-4 sm:p-5 space-y-4 shrink-0", s.card),
+                    children: [
+                      r.jsxs("div", {
+                        className: "flex items-center justify-between pb-2 border-b border-black/[0.06] dark:border-white/[0.06]",
+                        children: [
+                          r.jsxs("div", {
+                            className: "flex items-center gap-2",
+                            children: [
+                              r.jsx("div", {
+                                className: "w-6 h-6 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-xs shadow-xs",
+                                children: "3"
+                              }),
+                              r.jsx("h3", {
+                                className: "text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-normal",
+                                children: "Settlement & Financials"
+                              })
+                            ]
+                          }),
+                          r.jsx("span", {
+                            className: "px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20",
+                            children: F.isSettledNow ? "Immediate Disburse" : "Accrue Obligation"
+                          })
+                        ]
+                      }),
+                      r.jsxs("div", {
+                        className: De("p-4 space-y-1", s.recessedPod),
+                        children: [
+                          r.jsx("span", {
+                            className: "text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-zinc-400 block",
+                            children: "Net Disbursement Amount"
+                          }),
+                          r.jsxs("div", {
+                            className: "flex items-baseline justify-between",
+                            children: [
+                              r.jsx("span", {
+                                className: "text-xs text-slate-500 dark:text-zinc-400",
+                                children: "Ledger Impact"
+                              }),
+                              r.jsxs("span", {
+                                className: "text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tabular-nums tracking-tight",
+                                children: [
+                                  "\u20B9",
+                                  F.amount ? parseFloat(F.amount).toLocaleString("en-IN", {
+                                    minimumFractionDigits: 2
+                                  }) : "0.00"
+                                ]
+                              })
+                            ]
+                          })
+                        ]
+                      }),
+                      l === "vendor" && r.jsxs("div", {
+                        className: "p-3 rounded-xl bg-white dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 flex items-center justify-between shadow-2xs",
+                        children: [
+                          r.jsxs("div", {
+                            children: [
+                              r.jsx("p", {
+                                className: "text-xs font-bold text-slate-900 dark:text-white",
+                                children: "Settle Invoice Now?"
+                              }),
+                              r.jsx("p", {
+                                className: "text-[10px] text-slate-500 dark:text-zinc-400",
+                                children: "Uncheck to log as unpaid accounts payable"
+                              })
+                            ]
+                          }),
+                          r.jsx("input", {
+                            type: "checkbox",
+                            checked: F.isSettledNow,
+                            onChange: (ae) => de({
+                              ...F,
+                              isSettledNow: ae.target.checked
+                            }),
+                            className: "w-4 h-4 rounded text-blue-600 focus:ring-0 cursor-pointer"
+                          })
+                        ]
+                      }),
+                      F.isSettledNow && r.jsxs("div", {
+                        className: "space-y-2",
+                        children: [
+                          r.jsx("label", {
+                            className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400",
+                            children: "Disbursement Channel"
+                          }),
+                          r.jsx("div", {
+                            className: "grid grid-cols-3 gap-2",
+                            children: [
+                              {
+                                id: "Cash",
+                                label: "Cash Drawer",
+                                icon: Dc
+                              },
+                              {
+                                id: "UPI",
+                                label: "UPI / Scan",
+                                icon: mw
+                              },
+                              {
+                                id: "BankTransfer",
+                                label: "Bank / Card",
+                                icon: rd
+                              }
+                            ].map((ae) => {
+                              const Ce = ae.icon, Ne = F.paymentMethod === ae.id;
+                              return r.jsxs("button", {
+                                type: "button",
+                                onClick: () => de({
+                                  ...F,
+                                  paymentMethod: ae.id
+                                }),
+                                className: De("py-3 px-2 rounded-xl border flex flex-col items-center gap-1.5 transition-all cursor-pointer font-bold", Ne ? a ? "bg-white text-zinc-900 border-white shadow-md" : "bg-slate-900 text-white border-slate-900 shadow-md" : a ? "bg-zinc-800/60 border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-white" : "bg-white/90 border-slate-200/90 text-slate-600 hover:bg-slate-50 hover:text-slate-900 shadow-2xs"),
+                                children: [
+                                  r.jsx(Ce, {
+                                    className: "w-4 h-4"
+                                  }),
+                                  r.jsx("span", {
+                                    className: "text-[11px]",
+                                    children: ae.label
+                                  })
+                                ]
+                              }, ae.id);
+                            })
+                          })
+                        ]
+                      }),
+                      r.jsxs("div", {
+                        className: "p-3.5 rounded-xl border border-slate-200/80 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/60 text-xs space-y-1.5 shadow-2xs",
+                        children: [
+                          r.jsxs("div", {
+                            className: "flex justify-between text-slate-500 dark:text-zinc-400",
+                            children: [
+                              r.jsx("span", {
+                                children: "Disbursed By:"
+                              }),
+                              r.jsx("span", {
+                                className: "font-bold text-slate-800 dark:text-zinc-200",
+                                children: (n == null ? void 0 : n.name) || "Reception Staff"
+                              })
+                            ]
+                          }),
+                          r.jsxs("div", {
+                            className: "flex justify-between text-slate-500 dark:text-zinc-400",
+                            children: [
+                              r.jsx("span", {
+                                children: "Disbursement Source:"
+                              }),
+                              r.jsx("span", {
+                                className: "font-bold text-slate-800 dark:text-zinc-200",
+                                children: F.paymentMethod === "Cash" ? "Reception Cash Drawer" : F.paymentMethod
+                              })
+                            ]
+                          })
+                        ]
+                      })
+                    ]
+                  })
+                ]
               }),
               r.jsxs("div", {
                 className: De("h-16 px-6 sm:px-8 border-t flex items-center justify-between shrink-0", s.footer),
