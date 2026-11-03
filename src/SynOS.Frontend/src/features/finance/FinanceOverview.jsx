@@ -359,13 +359,13 @@ export const FinanceOverview = () => {
     const totalDeptsSum = pathSum + radSum;
 
     // Scale pathology and radiology to net billed revenue proportionally so departments match the Top Card Net Billed
-    const pathShare = totalDeptsSum > 0 ? (pathSum / totalDeptsSum) : 0.5;
+    const pathShare = totalDeptsSum > 0 ? (pathSum / totalDeptsSum) : 0;
     const netPathologyTarget = totalDeptsSum > 0 && billedRevenue > 0 
         ? Math.round(billedRevenue * pathShare) 
-        : pathSum;
+        : (pathSum > 0 ? pathSum : 0);
     const netRadiologyTarget = totalDeptsSum > 0 && billedRevenue > 0 
         ? Math.max(0, billedRevenue - netPathologyTarget) 
-        : radSum;
+        : (radSum > 0 ? radSum : 0);
 
     let finalPathology = (totalDeptsSum > 0 && billedRevenue > 0 && totalDeptsSum !== billedRevenue)
         ? adjustDeptRevenueToNet(sanitizedPathology, netPathologyTarget)
@@ -377,7 +377,7 @@ export const FinanceOverview = () => {
     // Pathology & Radiology Discount Breakdown (sums up to total discount)
     const totalDiscountAmt = Number(concessionData?.totalDiscountAmount) || totalConcessions || 0;
     const pathDiscount = totalDeptsSum > 0 ? Math.round(totalDiscountAmt * pathShare) : 0;
-    const radDiscount = Math.max(0, totalDiscountAmt - pathDiscount);
+    const radDiscount = totalDeptsSum > 0 ? Math.max(0, totalDiscountAmt - pathDiscount) : 0;
 
     // If raw department list was not returned by backend and range is today, project from today's queue
     if (rawDeptList.length === 0 && presetRange === 'today') {

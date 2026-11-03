@@ -701,27 +701,11 @@ namespace SynOS.Services.EconomicsIntelligence
                         }
                         testsCount = matched.Count();
                     }
-                    else
-                    {
-                        deptRev = 0;
-                        testsCount = 0;
-                    }
-                }
-                else if (totalRev > 0 && (end - start).TotalDays > 3)
-                {
-                    // Only provide baseline proportional distribution for broad legacy historical time windows (e.g. Month/Quarter) if zero discrete order rows exist
-                    deptRev = Math.Round(totalRev * target.Share, MidpointRounding.AwayFromZero);
-                    testsCount = Math.Max(1, (int)Math.Round(target.DefaultCount * (totalRev > 100000 ? (totalRev / 200000m) : 1m)));
-                }
-                else
-                {
-                    deptRev = 0;
-                    testsCount = 0;
                 }
 
                 // Material / direct cost calculation
                 decimal deptCost = 0;
-                if (target.Category == "Pathology" && summary.ConsumableCashOutflow > 0)
+                if (target.Category == "Pathology" && summary.ConsumableCashOutflow > 0 && testsCount > 0)
                 {
                     deptCost = Math.Round(summary.ConsumableCashOutflow * target.CostShare, MidpointRounding.AwayFromZero);
                 }
@@ -747,22 +731,7 @@ namespace SynOS.Services.EconomicsIntelligence
                 });
             }
 
-            // Enterprise clinical safeguard: Ensure Pathology is NEVER 0 when total clinical revenue exists
-            var totalPathRev = deptList.Where(d => d.Category == "Pathology").Sum(d => d.BilledRevenue);
-            var totalRadRev = deptList.Where(d => d.Category == "Radiology").Sum(d => d.BilledRevenue);
-            if (totalPathRev == 0 && totalRev > 0)
-            {
-                var remainingPathRev = totalRev > totalRadRev ? (totalRev - totalRadRev) : Math.Round(totalRev * 0.40m, MidpointRounding.AwayFromZero);
-                var pathItems = deptList.Where(d => d.Category == "Pathology").ToList();
-                foreach (var item in pathItems)
-                {
-                    var targetDef = targetDepartments.First(t => t.Modality == item.Modality);
-                    item.BilledRevenue = Math.Round(remainingPathRev * (targetDef.Share / 0.68m), MidpointRounding.AwayFromZero);
-                    item.TotalTestsCompleted = Math.Max(1, (int)Math.Round(targetDef.DefaultCount * (remainingPathRev > 10000 ? (remainingPathRev / 30000m) : 1m)));
-                    item.CashCollected = Math.Round(item.BilledRevenue * Math.Min(1.0m, Math.Max(0.5m, cashRatio)), MidpointRounding.AwayFromZero);
-                }
-            }
-
+            // Strictly adhere to SSOT: If zero pathology tests were performed in this branch/window, pathology revenue and test counts must remain strictly 0.
             summary.DepartmentProfitability = deptList;
 
             // Populate Real Doctor & Clinic Partner ROI from database
