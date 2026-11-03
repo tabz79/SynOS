@@ -316,6 +316,10 @@ namespace SynOS.Api.Controllers
                             .ThenInclude(t => t.ModalityMaster)
                                 .ThenInclude(m => m.DepartmentMaster)
                 .Include(i => i.Payments)
+                .Where(i => i.Visit != null && 
+                            i.Visit.Status != VisitStatus.Draft && 
+                            (i.Visit.Token == null || !i.Visit.Token.StartsWith("D-")) &&
+                            i.Status != "Draft")
                 .AsNoTracking();
 
             // Date filtering
@@ -671,6 +675,9 @@ namespace SynOS.Api.Controllers
                 .Include(i => i.Payments)
                 .Include(i => i.PartialPayments)
                 .Where(i => i.Visit != null && 
+                            i.Visit.Status != VisitStatus.Draft && 
+                            (i.Visit.Token == null || !i.Visit.Token.StartsWith("D-")) &&
+                            i.Status != "Draft" &&
                             i.Status != "Cancelled" && 
                             i.Visit.PaymentCollectionModel != "PartnerMonthlyBilling" &&
                             i.Visit.PaymentCollectionModel != "PrepaidPartner" &&

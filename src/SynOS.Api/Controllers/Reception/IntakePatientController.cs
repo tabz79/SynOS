@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SynOS.Models.DTOs.Reception;
 using SynOS.Services.Reception;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace SynOS.Api.Controllers.Reception
@@ -41,6 +42,22 @@ namespace SynOS.Api.Controllers.Reception
                     stack = ex.StackTrace 
                 });
             }
+        }
+
+        [HttpGet("fuzzy-match")]
+        public async Task<IActionResult> FuzzyMatch(
+            [FromQuery] string name,
+            [FromQuery] string? gender = null,
+            [FromQuery] int? age = null,
+            [FromQuery] DateTime? dob = null)
+        {
+            if (string.IsNullOrWhiteSpace(name) || name.Trim().Length < 2)
+            {
+                return Ok(Array.Empty<PatientFuzzyMatchDto>());
+            }
+
+            var results = await _service.FindFuzzyMatchesAsync(name, gender, age, dob);
+            return Ok(results);
         }
     }
 }

@@ -550,7 +550,9 @@ export const ReceptionApi = {
         }
 
         const backendPayload = {
-            Phone: payload.mobile,
+            Phone: payload.hasNoMobile ? '' : payload.mobile,
+            HasNoMobile: Boolean(payload.hasNoMobile),
+            NoMobileReason: payload.noMobileReason || null,
             Name: payload.name,
             Dob: dob,
             IsDateOfBirthKnown: isDateOfBirthKnown,
@@ -571,6 +573,25 @@ export const ReceptionApi = {
 
         const json = await response.json();
         return json.data || json;
+    },
+
+    /**
+     * Fuzzy matches patients by name, gender, age, or dob to prevent duplicate MRNs.
+     * @param {Object} params - { name, gender, age, dob }
+     * @returns {Promise<Array>}
+     */
+    fuzzyMatchPatients: async ({ name, gender, age, dob } = {}) => {
+        if (!name || name.trim().length < 2) return [];
+        const params = new URLSearchParams({ name: name.trim() });
+        if (gender) params.append('gender', gender);
+        if (age) params.append('age', age);
+        if (dob) params.append('dob', dob);
+
+        const response = await fetch(ReceptionApi.withBranchId(`/api/v1/reception/intake/register-patient/fuzzy-match?${params.toString()}`), {
+            headers: ReceptionApi.getHeaders()
+        });
+        if (!response.ok) return [];
+        return response.json();
     },
 
     /**

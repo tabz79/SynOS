@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Search, X, Loader2, UserPlus, Phone, Fingerprint, ArrowRight, User, AlertCircle } from 'lucide-react'
+import { Search, X, Loader2, UserPlus, Phone, Fingerprint, ArrowRight, User, AlertCircle, Zap, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ReceptionApi } from '@/api/reception'
 import { useTheme } from '@/context/ThemeContext'
@@ -36,6 +36,7 @@ export function PatientIdentification({
 
     // Local UI state for "New Patient Form" visibility
     const [isNewPatientMode, setIsNewPatientMode] = useState(false);
+    const [startWithNoMobile, setStartWithNoMobile] = useState(false);
 
     // Derived from Snapshot
     const selectedPatient = snapshot?.patient;
@@ -206,6 +207,19 @@ export function PatientIdentification({
                                         <Loader2 className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-500 animate-spin" />
                                     )}
                                 </div>
+                                <div className="flex items-center justify-between pt-1">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setIsNewPatientMode(true);
+                                            setStartWithNoMobile(true);
+                                        }}
+                                        className="text-xs font-semibold text-slate-500 hover:text-synos-primary dark:text-zinc-400 dark:hover:text-synos-primary transition-colors flex items-center gap-1.5 cursor-pointer py-0.5"
+                                    >
+                                        <span className="w-2 h-2 rounded-full bg-amber-500 inline-block animate-pulse"></span>
+                                        <span>No mobile number? Register Walk-in</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -311,10 +325,16 @@ export function PatientIdentification({
 
                     <RegisterFormInline
                         initialMobile={searchQuery}
+                        initialNoMobile={startWithNoMobile}
                         onSuccess={(result, data) => {
                             // Ensure MRN and other metadata from backend are preserved
                             onSelectPatient({ ...data, ...result, id: result.patientId }); 
                             setIsNewPatientMode(false);
+                            setStartWithNoMobile(false);
+                        }}
+                        onCancel={() => {
+                            setIsNewPatientMode(false);
+                            setStartWithNoMobile(false);
                         }}
                     />
                 </div>
@@ -324,16 +344,30 @@ export function PatientIdentification({
 }
 
 
-function RegisterFormInline({ onSuccess, onCancel, initialMobile = '' }) {
+function RegisterFormInline({ onSuccess, onCancel, initialMobile = '', initialNoMobile = false }) {
     const [formData, setFormData] = useState({ name: '', mobile: initialMobile, gender: 'Male' });
+    const [hasNoMobile, setHasNoMobile] = useState(Boolean(initialNoMobile));
+    const [noMobileReason, setNoMobileReason] = useState('Elderly / Senior');
     const [entryMode, setEntryMode] = useState("dob"); // "dob" or "age"
     const [dob, setDob] = useState("");
     const [age, setAge] = useState("");
     const [ageUnit, setAgeUnit] = useState("Years"); // "Years", "Months", "Days"
     const [error, setError] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Fuzzy matching state for duplicate MRN prevention
+    const [fuzzyMatches, setFuzzyMatches] = useState([]);
+    const [isSearchingFuzzy, setIsSearchingFuzzy] = useState(false);
+
     const { theme } = useTheme();
     const isDark = theme === 'dark';
+
+    const reasons = [
+        'Elderly / Senior',
+        'Emergency Walk-in',
+        'Minor / Child',
+        'Refused / No Phone'
+    ];
 
     const ui = isDark ? {
         container: "bg-zinc-900/50 border-zinc-800",
@@ -355,13 +389,49 @@ function RegisterFormInline({ onSuccess, onCancel, initialMobile = '' }) {
         }
     };
 
+    // Live Fuzzy Match Effect: Searches for potential existing patients in DB
+    useEffect(() => {
+        const cleanName = (formData.name || '').trim();
+        if (cleanName.length < 2) {
+            setFuzzyMatches([]);
+            return;
+        }
+
+        let calcAge = null;
+        if (entryMode === "age" && age) {
+            calcAge = parseInt(age, 10);
+        } else if (entryMode === "dob" && dob) {
+            const birthYear = new Date(dob).getFullYear();
+            calcAge = new Date().getFullYear() - birthYear;
+        }
+
+        const timer = setTimeout(async () => {
+            setIsSearchingFuzzy(true);
+            try {
+                const results = await ReceptionApi.fuzzyMatchPatients({
+                    name: cleanName,
+                    gender: formData.gender,
+                    age: calcAge && !isNaN(calcAge) ? calcAge : undefined,
+                    dob: entryMode === "dob" && dob ? dob : undefined
+                });
+                setFuzzyMatches(results || []);
+            } catch (err) {
+                console.error("Fuzzy search error", err);
+            } finally {
+                setIsSearchingFuzzy(false);
+            }
+        }, 350);
+
+        return () => clearTimeout(timer);
+    }, [formData.name, formData.gender, age, dob, entryMode]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         const cleanName = (formData.name || '').trim();
         const cleanMobile = (formData.mobile || '').trim();
 
-        if (!cleanName || !cleanMobile) {
-            setError("Name and Mobile are required");
+        if (!cleanName) {
+            setError("Full Name is required");
             return;
         }
 
@@ -370,11 +440,18 @@ function RegisterFormInline({ onSuccess, onCancel, initialMobile = '' }) {
             return;
         }
 
-        // Phone validation: 10-15 digits
-        const phoneRegex = /^[0-9]{10,15}$/;
-        if (!phoneRegex.test(cleanMobile)) {
-            setError("Mobile number must be a valid 10 to 15 digit number");
-            return;
+        if (!hasNoMobile) {
+            if (!cleanMobile) {
+                setError("Mobile number is required, or check 'No Mobile Number'");
+                return;
+            }
+
+            // Phone validation: 10-15 digits
+            const phoneRegex = /^[0-9]{10,15}$/;
+            if (!phoneRegex.test(cleanMobile)) {
+                setError("Mobile number must be a valid 10 to 15 digit number");
+                return;
+            }
         }
 
         let finalDob = null;
@@ -434,13 +511,23 @@ function RegisterFormInline({ onSuccess, onCancel, initialMobile = '' }) {
         try {
             const apiPayload = {
                 ...formData,
+                mobile: hasNoMobile ? '' : cleanMobile,
+                hasNoMobile,
+                noMobileReason: hasNoMobile ? noMobileReason : null,
                 dob: finalDob,
                 isDateOfBirthKnown,
                 age: finalAge
             };
             const result = await ReceptionApi.registerPatient(apiPayload);
             if (result && result.patientId) {
-                onSuccess(result, { ...formData, dob: finalDob, isDateOfBirthKnown, age: finalAge });
+                onSuccess(result, { 
+                    ...formData, 
+                    currentPhoneNumber: hasNoMobile ? '' : cleanMobile,
+                    dob: finalDob, 
+                    isDateOfBirthKnown, 
+                    age: finalAge,
+                    mrn: result.mrn 
+                });
             }
         } catch (err) {
             setError(err.message);
@@ -453,15 +540,23 @@ function RegisterFormInline({ onSuccess, onCancel, initialMobile = '' }) {
         <form onSubmit={handleSubmit} className={cn("animate-in fade-in zoom-in-95 duration-200", ui.container)}>
             {error && (
                 <div className="flex items-center gap-2 text-xs text-red-600 bg-red-50 border border-red-100 p-2 rounded-lg">
-                    <AlertCircle className="w-3 h-3" />
-                    {error}
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span>{error}</span>
                 </div>
             )}
 
             <div className="space-y-4">
                 {/* 1. NAME */}
                 <div>
-                    <label className={ui.label}>Full Name <span className="text-red-400">*</span></label>
+                    <div className="flex items-center justify-between mb-1">
+                        <label className={ui.label}>Full Name <span className="text-red-400">*</span></label>
+                        {isSearchingFuzzy && (
+                            <span className="text-[10px] text-zinc-400 flex items-center gap-1">
+                                <Loader2 className="w-3 h-3 animate-spin text-synos-primary" />
+                                Checking duplicates...
+                            </span>
+                        )}
+                    </div>
                     <div className="relative">
                         <User className="absolute left-3 top-2.5 w-4 h-4 text-zinc-400" />
                         <input
@@ -477,38 +572,89 @@ function RegisterFormInline({ onSuccess, onCancel, initialMobile = '' }) {
                 </div>
 
                 {/* 2. ROW: MOBILE + ENTRY MODE */}
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className={ui.label}>Mobile <span className="text-red-400">*</span></label>
-                        <input
-                            type="tel"
-                            maxLength={15}
-                            className={cn("w-full h-10 rounded-lg px-3 py-2 outline-none", ui.input)}
-                            placeholder="987..."
-                            value={formData.mobile}
-                            onChange={e => setFormData({ ...formData, mobile: e.target.value })}
-                        />
-                    </div>
-                    <div>
-                        <label className={ui.label}>Entry Method <span className="text-red-400">*</span></label>
-                        <div className={cn("flex", ui.genderBox)}>
-                            {[
-                                { key: "dob", label: "DOB" },
-                                { key: "age", label: "Age" }
-                            ].map(mode => (
-                                <button
-                                    key={mode.key}
-                                    type="button"
-                                    onClick={() => setEntryMode(mode.key)}
-                                    className={cn(
-                                        "flex-1 text-xs py-1.5 rounded-md transition-all duration-200",
-                                        entryMode === mode.key ? ui.genderBtn.active : ui.genderBtn.inactive
-                                    )}
-                                >
-                                    {mode.label}
-                                </button>
-                            ))}
+                <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className={ui.label}>
+                                Mobile {!hasNoMobile && <span className="text-red-400">*</span>}
+                            </label>
+                            <input
+                                type="tel"
+                                maxLength={15}
+                                disabled={hasNoMobile}
+                                className={cn(
+                                    "w-full h-10 rounded-lg px-3 py-2 outline-none transition-all",
+                                    ui.input,
+                                    hasNoMobile && "opacity-60 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 cursor-not-allowed"
+                                )}
+                                placeholder={hasNoMobile ? "No Mobile (Physical Pickup)" : "987..."}
+                                value={hasNoMobile ? "" : formData.mobile}
+                                onChange={e => setFormData({ ...formData, mobile: e.target.value })}
+                            />
                         </div>
+                        <div>
+                            <label className={ui.label}>Entry Method <span className="text-red-400">*</span></label>
+                            <div className={cn("flex", ui.genderBox)}>
+                                {[
+                                    { key: "dob", label: "DOB" },
+                                    { key: "age", label: "Age" }
+                                ].map(mode => (
+                                    <button
+                                        key={mode.key}
+                                        type="button"
+                                        onClick={() => setEntryMode(mode.key)}
+                                        className={cn(
+                                            "flex-1 text-xs py-1.5 rounded-md transition-all duration-200",
+                                            entryMode === mode.key ? ui.genderBtn.active : ui.genderBtn.inactive
+                                        )}
+                                    >
+                                        {mode.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* NO MOBILE TOGGLE & AUDIT REASON */}
+                    <div className="pt-0.5">
+                        <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+                            <input
+                                type="checkbox"
+                                checked={hasNoMobile}
+                                onChange={e => setHasNoMobile(e.target.checked)}
+                                className="w-4 h-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500 accent-amber-600"
+                            />
+                            <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
+                                No Mobile Number (Physical Hardcopy Pickup Only)
+                            </span>
+                        </label>
+
+                        {hasNoMobile && (
+                            <div className="mt-2 p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/50 space-y-2 animate-in fade-in duration-150">
+                                <p className="text-[11px] font-medium text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
+                                    <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                                    <span>Reports will <strong>NOT</strong> be dispatched via WhatsApp. Physical hardcopy report pickup at front desk only.</span>
+                                </p>
+                                <div className="flex items-center flex-wrap gap-1.5 pt-0.5">
+                                    <span className="text-[10px] uppercase font-bold text-amber-700/80 dark:text-amber-400">Reason:</span>
+                                    {reasons.map(r => (
+                                        <button
+                                            key={r}
+                                            type="button"
+                                            onClick={() => setNoMobileReason(r)}
+                                            className={cn(
+                                                "px-2 py-0.5 rounded text-[11px] font-medium transition-all cursor-pointer",
+                                                noMobileReason === r
+                                                    ? "bg-amber-600 text-white shadow-xs font-bold"
+                                                    : "bg-white/80 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-amber-200 dark:border-zinc-700 hover:bg-amber-100 dark:hover:bg-zinc-700"
+                                            )}
+                                        >
+                                            {r}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -584,6 +730,59 @@ function RegisterFormInline({ onSuccess, onCancel, initialMobile = '' }) {
                 </div>
             </div>
 
+            {/* INSTANT FUZZY MATCH BANNER (ANTI-SPAM DUPLICATE PREVENTION) */}
+            {fuzzyMatches.length > 0 && (
+                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs space-y-2 animate-in fade-in duration-200">
+                    <div className="flex items-center justify-between text-amber-700 dark:text-amber-400 font-bold">
+                        <span className="flex items-center gap-1.5">
+                            <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
+                            Found {fuzzyMatches.length} Matching Walk-in Patient{fuzzyMatches.length > 1 ? 's' : ''} in System
+                        </span>
+                        <span className="text-[10px] uppercase font-bold text-amber-600 bg-amber-100 dark:bg-amber-900/50 px-1.5 py-0.5 rounded">
+                            1-Click Select
+                        </span>
+                    </div>
+                    <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                        {fuzzyMatches.map(m => (
+                            <div
+                                key={m.mrn || m.patientId}
+                                className="flex items-center justify-between p-2 rounded-lg bg-white/90 dark:bg-zinc-800/90 border border-amber-200/60 dark:border-zinc-700 shadow-2xs"
+                            >
+                                <div className="min-w-0 pr-2">
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="font-bold text-zinc-900 dark:text-white truncate">{m.name}</span>
+                                        <span className="text-[11px] text-zinc-500 dark:text-zinc-400">({m.age} Yrs, {m.gender})</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 mt-0.5 text-[10px] text-zinc-500">
+                                        <span className="font-mono font-bold bg-slate-100 dark:bg-zinc-700 px-1.5 py-0.2 rounded text-zinc-700 dark:text-zinc-300">
+                                            MRN: {m.mrn}
+                                        </span>
+                                        {m.currentPhoneNumber ? (
+                                            <span>Phone: {m.currentPhoneNumber}</span>
+                                        ) : (
+                                            <span className="text-amber-600 dark:text-amber-400 font-semibold">Walk-in (No Phone)</span>
+                                        )}
+                                        {m.lastVisitDate && (
+                                            <span>• Last: {new Date(m.lastVisitDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })}</span>
+                                        )}
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        onSuccess({ patientId: m.patientId, mrn: m.mrn }, { ...m, id: m.patientId });
+                                    }}
+                                    className="px-2.5 py-1 rounded-md bg-synos-primary hover:bg-synos-primary/90 text-white text-xs font-bold transition-all flex items-center gap-1 cursor-pointer shrink-0 shadow-xs"
+                                >
+                                    <Zap className="w-3 h-3 fill-current" />
+                                    <span>Use Patient</span>
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* ACTIONS */}
             <div className="pt-2 flex items-center gap-2">
                 {onCancel && (
@@ -599,7 +798,7 @@ function RegisterFormInline({ onSuccess, onCancel, initialMobile = '' }) {
                     type="submit"
                     disabled={isSubmitting}
                     className={cn(
-                        "flex-[2] text-white text-sm font-medium py-2 rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl active:scale-95",
+                        "flex-[2] text-white text-sm font-medium py-2 rounded-lg transition-all flex items-center justify-center gap-2 shadow-lg hover:shadow-xl active:scale-95 cursor-pointer",
                         isDark
                             ? "bg-emerald-600 hover:bg-emerald-500"
                             : "bg-gradient-to-r from-zinc-800 to-zinc-950 hover:to-black border-t border-white/20"

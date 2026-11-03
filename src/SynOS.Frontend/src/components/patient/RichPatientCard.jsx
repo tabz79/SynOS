@@ -284,7 +284,7 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
                     </span>
                     {/* Mobile */}
                     <span className={cn("px-2 py-0.5 rounded-md font-mono text-xs font-semibold", cardUi.badge)}>
-                        {mobile}
+                        {mobile || "No Mobile"}
                     </span>
                 </div>
                 <div className="justify-self-end leading-none">

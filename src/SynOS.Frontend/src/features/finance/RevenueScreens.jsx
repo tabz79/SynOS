@@ -482,6 +482,39 @@ export const RevenueTerminal = () => {
     { id: 'history', label: 'Collection History', icon: History }
   ];
 
+  const tabTitles = {
+    overview: {
+      title: "Revenue Overview",
+      subtitle: "Monitor incoming payments, receivables, and drawer balances."
+    },
+    bills: {
+      title: "Bills & Collections",
+      subtitle: "Real-time operational ledger with branch, department, and modality transaction breakdowns."
+    },
+    dues: {
+      title: "Due Bills & Counter Balances",
+      subtitle: "Track outstanding patient dues from walk-in and standard billing. Record desk collections and download due reports."
+    },
+    receivables: {
+      title: "Partner Receivables",
+      subtitle: "Operational inbox for institutional recovery and B2B settlements."
+    },
+    corrections: {
+      title: "Visit Corrections Audit",
+      subtitle: "Immutable audit log of historical invoice adjustments and rate changes."
+    },
+    cancellations: {
+      title: "Cancellations & Refunds",
+      subtitle: "Track voided investigations, refunded receipts, and cancelled invoices."
+    },
+    history: {
+      title: "Collection History",
+      subtitle: "Chronological ledger of counter drawer receipts and digital settlements."
+    }
+  };
+
+  const currentTabMeta = tabTitles[tab] || tabTitles.bills;
+
   if (isInitialLoading && !stats) return (
     <div className="p-20 text-center animate-pulse text-zinc-500 font-bold uppercase tracking-widest text-xs flex flex-col items-center gap-3">
       <div className="w-8 h-8 border-3 border-synos-primary border-t-transparent rounded-full animate-spin" />
@@ -502,12 +535,12 @@ export const RevenueTerminal = () => {
 
   return (
     <div className="flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-500">
-      {/* TERMINAL HEADER (UNBOXED NATIVE CANVAS STYLE) */}
-      <div className="px-8 pt-8 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      {/* UNIFIED ACTIVE HEADER (REPLACES REDUNDANT COMMAND CENTER BANNER) */}
+      <div className="px-8 pt-6 pb-3 flex flex-col md:flex-row md:items-center md:justify-between gap-4 shrink-0">
         <div className="flex items-center gap-3.5">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">Revenue Command Center</h1>
-            <p className="text-xs text-zinc-500 font-medium mt-0.5">Monitor incoming payments, receivables, and drawer balances.</p>
+          <div className="flex flex-col gap-0.5">
+            <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">{currentTabMeta.title}</h1>
+            <p className="text-xs text-zinc-500 font-medium">{currentTabMeta.subtitle}</p>
           </div>
 
           {/* Minimal Pulsing Radar Loading Badge */}
@@ -527,7 +560,7 @@ export const RevenueTerminal = () => {
       </div>
 
       {/* TAB NAVIGATION (SEGMENTED PILL ON NATIVE CANVAS) */}
-      <div ref={tabsRef} className="px-8 pb-2 flex items-center gap-1 overflow-x-auto scrollbar-thin">
+      <div ref={tabsRef} className="px-8 pb-3 flex items-center gap-1 overflow-x-auto scrollbar-thin shrink-0">
         <div className="flex items-center bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
           {tabs.map((t) => (
             <button
@@ -1024,49 +1057,41 @@ export const BillsCollectionsScreen = () => {
     });
 
     return (
-        <div className="p-8 w-full space-y-6 animate-in fade-in duration-500">
-            {/* Header & Download Bar */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex flex-col gap-1">
-                    <h1 className="text-2xl font-bold dark:text-white text-zinc-900">Bills & Collections</h1>
-                    <p className="text-xs text-zinc-500 font-medium">
-                        Real-time operational ledger with branch, department, and modality transaction breakdowns.
-                    </p>
-                </div>
-                <div className="flex items-center flex-wrap gap-2.5">
-                    {/* B2B DOCTOR CLAIM STATEMENT BUTTON */}
-                    {partnerBillsWithPending.length > 0 && (
-                        <button
-                            onClick={() => {
-                                const target = partnerBillsWithPending[0];
-                                const samePartnerBills = partnerBillsWithPending.filter(b => b.partnerName === target.partnerName);
-                                handleOpenPartnerClaim(target.partnerId || target.referralPartnerId, samePartnerBills.map(b => b.visitId));
-                            }}
-                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
-                        >
-                            <Receipt size={15} />
-                            <span>Doctor Invoice ({partnerBillsWithPending.length})</span>
-                        </button>
-                    )}
-
+        <div className="px-8 pt-1 pb-8 w-full space-y-4 animate-in fade-in duration-500">
+            {/* Action Bar (Aligned Right) */}
+            <div className="flex items-center justify-end flex-wrap gap-2.5">
+                {/* B2B DOCTOR CLAIM STATEMENT BUTTON */}
+                {partnerBillsWithPending.length > 0 && (
                     <button
-                        onClick={handleDownloadSummary}
-                        disabled={filteredBills.length === 0}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-synos-primary text-white text-xs font-bold hover:bg-synos-primary/90 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                        onClick={() => {
+                            const target = partnerBillsWithPending[0];
+                            const samePartnerBills = partnerBillsWithPending.filter(b => b.partnerName === target.partnerName);
+                            handleOpenPartnerClaim(target.partnerId || target.referralPartnerId, samePartnerBills.map(b => b.visitId));
+                        }}
+                        className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
                     >
-                        <Download size={15} />
-                        <span>Download Summary ({filteredBills.length})</span>
+                        <Receipt size={14} />
+                        <span>Doctor Invoice ({partnerBillsWithPending.length})</span>
                     </button>
+                )}
 
-                    <button
-                        onClick={() => setIsPrintSummaryOpen(true)}
-                        disabled={filteredBills.length === 0}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                    >
-                        <Printer size={15} />
-                        <span>Print Summary</span>
-                    </button>
-                </div>
+                <button
+                    onClick={handleDownloadSummary}
+                    disabled={filteredBills.length === 0}
+                    className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-synos-primary text-white text-xs font-bold hover:bg-synos-primary/90 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                    <Download size={14} />
+                    <span>Download Summary ({filteredBills.length})</span>
+                </button>
+
+                <button
+                    onClick={() => setIsPrintSummaryOpen(true)}
+                    disabled={filteredBills.length === 0}
+                    className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                    <Printer size={14} />
+                    <span>Print Summary</span>
+                </button>
             </div>
 
             {/* KPI METRIC STRIP (Cash vs Online vs Referral Cut vs Pending Dues) */}
@@ -1656,34 +1681,23 @@ export const DueBillsScreen = () => {
     };
 
     return (
-        <div className="w-full px-8 py-6 space-y-6">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h2 className="text-xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                        <AlertCircle className="w-5 h-5 text-amber-500" />
-                        Patient Due Bills & Counter Balances
-                    </h2>
-                    <p className="text-xs text-zinc-500 mt-1">
-                        Track outstanding patient dues from walk-in and standard billing. Record desk collections and download due reports.
-                    </p>
-                </div>
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={handleDownloadSummary}
-                        className="px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/80 transition-all shadow-xs flex items-center gap-2 cursor-pointer"
-                    >
-                        <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>Export CSV</span>
-                    </button>
-                    <button
-                        onClick={() => setIsPrintSummaryOpen(true)}
-                        className="px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/80 transition-all shadow-xs flex items-center gap-2 cursor-pointer"
-                    >
-                        <Printer className="w-3.5 h-3.5 text-synos-primary" />
-                        <span>Print Summary</span>
-                    </button>
-                </div>
+        <div className="w-full px-8 pt-1 pb-8 space-y-4">
+            {/* Actions Bar (Aligned Right) */}
+            <div className="flex items-center justify-end gap-2">
+                <button
+                    onClick={handleDownloadSummary}
+                    className="px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/80 transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+                >
+                    <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Export CSV</span>
+                </button>
+                <button
+                    onClick={() => setIsPrintSummaryOpen(true)}
+                    className="px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/80 transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+                >
+                    <Printer className="w-3.5 h-3.5 text-synos-primary" />
+                    <span>Print Summary</span>
+                </button>
             </div>
 
             {/* KPI Cards */}
@@ -2236,33 +2250,26 @@ export const PendingReceivablesScreen = () => {
     };
 
     return (
-        <div className="p-8 w-full space-y-6 animate-in fade-in duration-500">
-            {/* Header & Actions Bar */}
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                <div className="space-y-1">
-                    <h1 className="text-2xl font-bold dark:text-white text-zinc-900">Partner Receivables</h1>
-                    <p className="text-xs text-zinc-500 font-medium">Operational inbox for institutional recovery and B2B settlements.</p>
-                </div>
-                
-                <div className="flex items-center flex-wrap gap-2.5">
-                    <button
-                        onClick={handleDownloadSummary}
-                        disabled={filteredPartnerSummaries.length === 0}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-synos-primary text-white text-xs font-bold hover:bg-synos-primary/90 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                    >
-                        <Download size={15} />
-                        <span>Download Summary ({filteredPartnerSummaries.length})</span>
-                    </button>
+        <div className="px-8 pt-1 pb-8 w-full space-y-4 animate-in fade-in duration-500">
+            {/* Actions Bar (Aligned Right) */}
+            <div className="flex items-center justify-end flex-wrap gap-2.5">
+                <button
+                    onClick={handleDownloadSummary}
+                    disabled={filteredPartnerSummaries.length === 0}
+                    className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-synos-primary text-white text-xs font-bold hover:bg-synos-primary/90 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                    <Download size={14} />
+                    <span>Download Summary ({filteredPartnerSummaries.length})</span>
+                </button>
 
-                    <button
-                        onClick={() => setIsPrintSummaryOpen(true)}
-                        disabled={filteredPartnerSummaries.length === 0}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                    >
-                        <Printer size={15} />
-                        <span>Print Summary</span>
-                    </button>
-                </div>
+                <button
+                    onClick={() => setIsPrintSummaryOpen(true)}
+                    disabled={filteredPartnerSummaries.length === 0}
+                    className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                    <Printer size={14} />
+                    <span>Print Summary</span>
+                </button>
             </div>
 
             {/* KPI Metric Cards */}
@@ -2718,34 +2725,23 @@ export const VisitCorrectionsScreen = () => {
     };
 
     return (
-        <div className="w-full px-8 py-6 space-y-6">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h2 className="text-xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                        <ShieldCheck className="w-5 h-5 text-synos-primary" />
-                        Visit Corrections & Revision Audit Feed
-                    </h2>
-                    <p className="text-xs text-zinc-500 mt-1">
-                        Immutable forensic log of all amended visits, test revisions, fee adjustments, and referral transfer shifts.
-                    </p>
-                </div>
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={handleDownloadSummary}
-                        className="px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/80 transition-all shadow-xs flex items-center gap-2 cursor-pointer"
-                    >
-                        <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>Export CSV</span>
-                    </button>
-                    <button
-                        onClick={() => setIsPrintSummaryOpen(true)}
-                        className="px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/80 transition-all shadow-xs flex items-center gap-2 cursor-pointer"
-                    >
-                        <Printer className="w-3.5 h-3.5 text-synos-primary" />
-                        <span>Print Summary</span>
-                    </button>
-                </div>
+        <div className="w-full px-8 pt-1 pb-8 space-y-4">
+            {/* Actions Bar (Aligned Right) */}
+            <div className="flex items-center justify-end gap-2">
+                <button
+                    onClick={handleDownloadSummary}
+                    className="px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/80 transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+                >
+                    <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Export CSV</span>
+                </button>
+                <button
+                    onClick={() => setIsPrintSummaryOpen(true)}
+                    className="px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/80 transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+                >
+                    <Printer className="w-3.5 h-3.5 text-synos-primary" />
+                    <span>Print Summary</span>
+                </button>
             </div>
 
             {/* KPI Cards */}
@@ -3308,33 +3304,26 @@ export const CollectionHistoryScreen = () => {
     };
 
     return (
-        <div className="p-8 w-full space-y-6 animate-in fade-in duration-500">
-            {/* Header & Actions Bar */}
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                <div className="flex flex-col gap-1">
-                    <h1 className="text-2xl font-bold dark:text-white text-zinc-900">Collection History</h1>
-                    <p className="text-xs text-zinc-500 font-medium">Review completed collections and settlement activity.</p>
-                </div>
+        <div className="px-8 pt-1 pb-8 w-full space-y-4 animate-in fade-in duration-500">
+            {/* Actions Bar (Aligned Right) */}
+            <div className="flex items-center justify-end flex-wrap gap-2.5">
+                <button
+                    onClick={handleDownloadSummary}
+                    disabled={filteredHistory.length === 0}
+                    className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-synos-primary text-white text-xs font-bold hover:bg-synos-primary/90 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                    <Download size={14} />
+                    <span>Download Summary ({filteredHistory.length})</span>
+                </button>
 
-                <div className="flex items-center flex-wrap gap-2.5">
-                    <button
-                        onClick={handleDownloadSummary}
-                        disabled={filteredHistory.length === 0}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-synos-primary text-white text-xs font-bold hover:bg-synos-primary/90 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                    >
-                        <Download size={15} />
-                        <span>Download Summary ({filteredHistory.length})</span>
-                    </button>
-
-                    <button
-                        onClick={() => setIsPrintSummaryOpen(true)}
-                        disabled={filteredHistory.length === 0}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                    >
-                        <Printer size={15} />
-                        <span>Print Summary</span>
-                    </button>
-                </div>
+                <button
+                    onClick={() => setIsPrintSummaryOpen(true)}
+                    disabled={filteredHistory.length === 0}
+                    className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-bold transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
+                    <Printer size={14} />
+                    <span>Print Summary</span>
+                </button>
             </div>
 
             {/* KPI Metric Strip */}
@@ -3568,34 +3557,23 @@ export const CancellationsRefundsScreen = () => {
     };
 
     return (
-        <div className="w-full px-8 py-6 space-y-6">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h2 className="text-xl font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                        <Ban className="w-5 h-5 text-rose-500" />
-                        Cancelled Visits & Refund Settlements
-                    </h2>
-                    <p className="text-xs text-zinc-500 mt-1">
-                        Comprehensive ledger of voided registrations, order withdrawals, and outbound customer cash/UPI refunds.
-                    </p>
-                </div>
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={handleDownloadSummary}
-                        className="px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/80 transition-all shadow-xs flex items-center gap-2 cursor-pointer"
-                    >
-                        <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>Export CSV</span>
-                    </button>
-                    <button
-                        onClick={() => setIsPrintSummaryOpen(true)}
-                        className="px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/80 transition-all shadow-xs flex items-center gap-2 cursor-pointer"
-                    >
-                        <Printer className="w-3.5 h-3.5 text-synos-primary" />
-                        <span>Print Summary</span>
-                    </button>
-                </div>
+        <div className="w-full px-8 pt-1 pb-8 space-y-4">
+            {/* Actions Bar (Aligned Right) */}
+            <div className="flex items-center justify-end gap-2">
+                <button
+                    onClick={handleDownloadSummary}
+                    className="px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/80 transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+                >
+                    <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Export CSV</span>
+                </button>
+                <button
+                    onClick={() => setIsPrintSummaryOpen(true)}
+                    className="px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/80 transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+                >
+                    <Printer className="w-3.5 h-3.5 text-synos-primary" />
+                    <span>Print Summary</span>
+                </button>
             </div>
 
             {/* KPI Cards */}

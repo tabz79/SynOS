@@ -3,6 +3,7 @@ using SynOS.Data;
 using SynOS.Models.DTOs.Reception;
 using SynOS.Models.Entities;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -19,13 +20,12 @@ namespace SynOS.Services.Reception
 
         public async Task<IntakeRegisterPatientResponse> RegisterPatientAsync(IntakeRegisterPatientRequest request)
         {
-            if (string.IsNullOrWhiteSpace(request.Phone))
+            if (!request.HasNoMobile && string.IsNullOrWhiteSpace(request.Phone))
             {
-                throw new ArgumentException("Phone number is required for registration.");
+                throw new ArgumentException("Phone number is required for registration, or select No Mobile.");
             }
 
             // 1. INVARIANT: Explicit Identity Creation
-            // We removed the "Check Existing Phone" block. 
             // RegisterPatient = Create New Patient. Always.
             // The Frontend Search is responsible for displaying existing patients.
 
@@ -45,7 +45,7 @@ namespace SynOS.Services.Reception
             if (lastName.Length > 100) lastName = lastName.Substring(0, 100);
 
             // Phone Sanitization & Validation
-            var rawPhone = request.Phone?.Trim() ?? "";
+            var rawPhone = request.HasNoMobile ? "" : (request.Phone?.Trim() ?? "");
             if (rawPhone.Length > 20) rawPhone = rawPhone.Substring(0, 20);
 
             // DOB Sanity Bounds (DEF-003): cannot be in the future, cannot exceed 130 years ago
@@ -86,7 +86,7 @@ namespace SynOS.Services.Reception
             // Ensure phone history is initialized if phone is present
             if (!string.IsNullOrEmpty(rawPhone))
             {
-                patient.PhoneHistory = new System.Collections.Generic.List<PatientPhoneHistory>
+                patient.PhoneHistory = new List<PatientPhoneHistory>
                 {
                     new PatientPhoneHistory
                     {
@@ -104,6 +104,126 @@ namespace SynOS.Services.Reception
                 PatientId = patient.PatientId,
                 MRN = patient.MRN 
             };
+        }
+
+        public async Task<IEnumerable<PatientFuzzyMatchDto>> FindFuzzyMatchesAsync(string name, string? gender = null, int? age = null, DateTime? dob = null)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                return Enumerable.Empty<PatientFuzzyMatchDto>();
+
+            var cleanName = name.Trim();
+            var tokens = cleanName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (tokens.Length == 0)
+                return Enumerable.Empty<PatientFuzzyMatchDto>();
+
+            var primaryToken = tokens[0];
+
+            // 1. Query candidate pool from database using primary token or full name
+            var query = _context.Patients
+                .AsNoTracking()
+                .Where(p => !p.IsSoftDeleted &&
+                    (EF.Functions.Like(p.DisplayName, $"%{primaryToken}%") ||
+                     EF.Functions.Like(p.FirstName, $"%{primaryToken}%") ||
+                     EF.Functions.Like(p.LastName, $"%{primaryToken}%")));
+
+            var candidateList = await query
+                .OrderByDescending(p => p.CreatedAt)
+                .Take(30)
+                .ToListAsync();
+
+            if (!candidateList.Any())
+                return Enumerable.Empty<PatientFuzzyMatchDto>();
+
+            var candidateIds = candidateList.Select(c => c.PatientId).ToList();
+
+            // 2. Fetch last visit dates for these candidates in 1 single grouped query
+            var lastVisits = await _context.Visits
+                .AsNoTracking()
+                .Where(v => candidateIds.Contains(v.PatientId))
+                .GroupBy(v => v.PatientId)
+                .Select(g => new
+                {
+                    PatientId = g.Key,
+                    LastVisitDate = g.Max(v => (DateTime?)v.TokenDate)
+                })
+                .ToDictionaryAsync(x => x.PatientId, x => x.LastVisitDate);
+
+            // 3. Compute score for each candidate
+            var currentYear = DateTime.UtcNow.Year;
+            var scored = candidateList.Select(p =>
+            {
+                int score = 0;
+                var pDisplayName = (p.DisplayName ?? $"{p.FirstName} {p.LastName}").Trim();
+                
+                // Name scoring
+                if (string.Equals(pDisplayName, cleanName, StringComparison.OrdinalIgnoreCase))
+                {
+                    score += 50;
+                }
+                else if (tokens.All(t => pDisplayName.Contains(t, StringComparison.OrdinalIgnoreCase)))
+                {
+                    score += 35;
+                }
+                else
+                {
+                    score += 20;
+                }
+
+                // Gender scoring
+                if (!string.IsNullOrWhiteSpace(gender) && !string.IsNullOrWhiteSpace(p.Gender))
+                {
+                    if (string.Equals(p.Gender, gender, StringComparison.OrdinalIgnoreCase) ||
+                        (gender.StartsWith("M", StringComparison.OrdinalIgnoreCase) && p.Gender.StartsWith("M", StringComparison.OrdinalIgnoreCase)) ||
+                        (gender.StartsWith("F", StringComparison.OrdinalIgnoreCase) && p.Gender.StartsWith("F", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        score += 20;
+                    }
+                }
+
+                // Age / DOB scoring
+                int patientAge = p.DateOfBirth == DateTime.MinValue ? 0 : Math.Max(0, currentYear - p.DateOfBirth.Year);
+                if (age.HasValue && age.Value > 0)
+                {
+                    int diff = Math.Abs(patientAge - age.Value);
+                    if (diff == 0) score += 30;
+                    else if (diff <= 2) score += 20;
+                    else if (diff <= 5) score += 10;
+                }
+
+                if (dob.HasValue && p.DateOfBirth.Date == dob.Value.Date)
+                {
+                    score += 40;
+                }
+
+                // If patient had no phone, prioritize match
+                bool hasNoPhone = string.IsNullOrWhiteSpace(p.CurrentPhoneNumber) || p.CurrentPhoneNumber == "NO-PHONE";
+                if (hasNoPhone)
+                {
+                    score += 15;
+                }
+
+                lastVisits.TryGetValue(p.PatientId, out var lvDate);
+
+                return new PatientFuzzyMatchDto
+                {
+                    PatientId = p.PatientId,
+                    MRN = p.MRN,
+                    Name = pDisplayName,
+                    Gender = p.Gender,
+                    Age = patientAge,
+                    Dob = p.DateOfBirth != DateTime.MinValue ? p.DateOfBirth : null,
+                    CurrentPhoneNumber = p.CurrentPhoneNumber,
+                    LastVisitDate = lvDate,
+                    HasNoMobile = hasNoPhone,
+                    MatchScore = score
+                };
+            })
+            .OrderByDescending(x => x.MatchScore)
+            .ThenByDescending(x => x.LastVisitDate ?? DateTime.MinValue)
+            .Take(5)
+            .ToList();
+
+            return scored;
         }
 
         private async Task<string> GenerateCanonicalMrnAsync()
