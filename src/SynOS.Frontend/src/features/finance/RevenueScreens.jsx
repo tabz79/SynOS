@@ -44,6 +44,120 @@ import { StandardFilterBar } from '@/components/layout/StandardFilterBar';
 
 import { cn, formatDateCompact } from '@/lib/utils';
 
+const classifyInvestigation = (testName) => {
+    if (!testName || typeof testName !== 'string') return { department: 'Pathology', modality: 'General' };
+    const lower = testName.toLowerCase().trim();
+
+    // 1. Radiology Modalities
+    if (lower.includes('mri') || lower.includes('magnetic') || lower.includes('brain plain') || lower.includes('angiogram') || lower.includes('cervical spine')) {
+        return { department: 'Radiology', modality: 'MRI' };
+    }
+    if (lower.includes('ct scan') || lower.includes('computed') || lower.includes('hrct') || lower.includes(' ct ') || lower.startsWith('ct ')) {
+        return { department: 'Radiology', modality: 'CT Scan' };
+    }
+    if (lower.includes('ultrasound') || lower.includes('usg') || lower.includes('u/s') || lower.includes('echo') || lower.includes('sonography') || lower.includes('doppler')) {
+        return { department: 'Radiology', modality: 'Ultrasound' };
+    }
+    if (lower.includes('x-ray') || lower.includes('xray') || lower.includes('radiograph') || lower.includes('chest pa') || lower.includes('c.spine') || lower.includes('foot ap') || lower.includes('views') || lower.includes('routine xray')) {
+        return { department: 'Radiology', modality: 'X-Ray' };
+    }
+
+    // 2. Pathology - Hematology
+    if (lower.includes('cbp') || lower.includes('cbc') || lower.includes('blood count') || lower.includes('hemogram') ||
+        lower.includes('haemogram') || lower.includes('haemoglobin') || lower.includes('hemoglobin') || lower.includes('platelet') ||
+        lower.includes('esr') || lower.includes('aec') || lower.includes('blood group') || lower.includes('rh typing') ||
+        lower.includes('wbc') || lower.includes('rbc') || lower.includes('peripheral smear') || lower.includes('reticulocyte') ||
+        lower.includes('pt/inr') || lower.includes('prothrombin') || lower.includes('tc,dc') || lower.includes('tc dc')) {
+        return { department: 'Pathology', modality: 'Hematology' };
+    }
+
+    // 3. Pathology - Microbiology
+    if (lower.includes('culture') || lower.includes('sensitivity') || lower.includes('c/s') || lower.includes('fungal') ||
+        lower.includes('afb') || lower.includes('sputum') || lower.includes('gram stain') || lower.includes('mantoux') ||
+        lower.includes('pyogenic')) {
+        return { department: 'Pathology', modality: 'Microbiology' };
+    }
+
+    // 4. Pathology - Histopathology / Cytology
+    if (lower.includes('biopsy') || lower.includes('fnac') || lower.includes('pap smear') || lower.includes('histopath') || lower.includes('cytology')) {
+        return { department: 'Pathology', modality: 'Histopathology' };
+    }
+
+    // 5. Pathology - Clinical Pathology & Serology
+    if (lower.includes('stool') || lower.includes('urine routine') || lower.includes('r.u.a') || lower.includes('occult') ||
+        lower.includes('widal') || lower.includes('typhoid') || lower.includes('dengue') || lower.includes('malaria') ||
+        lower.includes('hiv') || lower.includes('hbsag') || lower.includes('hcv') || lower.includes('vdrl') ||
+        lower.includes('crp') || lower.includes('aso') || lower.includes('streptolysin') || lower.includes('ra factor') || lower.includes('rafactor')) {
+        return { department: 'Pathology', modality: 'Clinical Pathology' };
+    }
+
+    // 6. Pathology - Biochemistry
+    if (lower.includes('lft') || lower.includes('liver') || lower.includes('bilirubin') || lower.includes('sgot') ||
+        lower.includes('sgpt') || lower.includes('kft') || lower.includes('rft') || lower.includes('renal') ||
+        lower.includes('urea') || lower.includes('creatinine') || lower.includes('uric acid') || lower.includes('lipid') ||
+        lower.includes('cholesterol') || lower.includes('triglyceride') || lower.includes('glucose') || lower.includes('fbs') ||
+        lower.includes('ppbs') || lower.includes('rbs') || lower.includes('hba1c') || lower.includes('thyroid') ||
+        lower.includes('t3') || lower.includes('t4') || lower.includes('tsh') || lower.includes('calcium') ||
+        lower.includes('electrolytes') || lower.includes('sodium') || lower.includes('potassium') || lower.includes('amylase') ||
+        lower.includes('lipase') || lower.includes('vitamin') || lower.includes('b12') || lower.includes('d3') ||
+        lower.includes('ferritin') || lower.includes('iron') || lower.includes('bun') || lower.includes('biochem')) {
+        return { department: 'Pathology', modality: 'Biochemistry' };
+    }
+
+    // Cardiology / General Diagnostics
+    if (lower.includes('ecg') || lower.includes('tmt') || lower.includes('echo')) {
+        return { department: 'Diagnostics', modality: 'Cardiology' };
+    }
+
+    return { department: 'Pathology', modality: 'General' };
+};
+
+/**
+ * Robust Canonical Payer Mode Resolver
+ * Accurately classifies a bill into: 'Standard / Direct', 'Corporate B2B', or 'Insurance'
+ * Handles both canonical modern DTOs and legacy partner payloads.
+ */
+export const getPayerModeInfo = (bill) => {
+    if (!bill) return { mode: 'Standard / Direct', isCorporate: false, isInsurance: false, isStandard: true };
+
+    const pCat = (bill.partnerCategory || '').toLowerCase();
+    const pMode = (bill.payerMode || '').toLowerCase();
+    const bType = (bill.billingType || '').toLowerCase();
+    const pcm = (bill.paymentCollectionModel || '').toLowerCase();
+    const pName = (bill.partnerName || '').toLowerCase();
+    const collected = Number(bill.collectedAmount || (Number(bill.cashAmount || 0) + Number(bill.onlineAmount || 0)));
+    const pending = Number(bill.pendingAmount || 0);
+    const prepaid = Number(bill.prepaidAmount || 0);
+
+    // 1. Insurance Check
+    const isInsurance = pCat === 'insurance' || pMode === 'insurance' || bType.includes('insurance') || pName.includes('insurance');
+    if (isInsurance) {
+        return { mode: 'Insurance', isCorporate: false, isInsurance: true, isStandard: false };
+    }
+
+    // 2. Corporate B2B Check
+    // A bill is Corporate B2B if explicitly tagged as Corporate/PrepaidPartner,
+    // OR if associated with an institutional/referral partner where patient paid ₹0 at counter desk
+    const isInstitutionalName = pName.includes('hospital') || pName.includes('clinic') || pName.includes('corporate') || pName.includes('center') || pName.includes('centre');
+    const isCorporate = (
+        pCat === 'corporate' ||
+        pMode.includes('corporate') ||
+        bType.includes('corporate') ||
+        bType.includes('prepaidpartner') ||
+        pcm.includes('partnercollects') ||
+        pcm.includes('corporateb2b') ||
+        pcm.includes('partnermonthlybilling') ||
+        (pCat === 'partner' && (isInstitutionalName || (collected === 0 && (pending > 0 || prepaid > 0))) && pName !== 'direct patient')
+    );
+
+    if (isCorporate) {
+        return { mode: 'Corporate B2B', isCorporate: true, isInsurance: false, isStandard: false };
+    }
+
+    // 3. Otherwise Standard / Direct (Desk collections, doctor referrals with counter cash/UPI payment or counter dues)
+    return { mode: 'Standard / Direct', isCorporate: false, isInsurance: false, isStandard: true };
+};
+
 // --- SCREENS ---
 
 export const RevenueOverviewTab = ({ stats, onRefresh, presetRange, setPresetRange }) => {
@@ -462,7 +576,8 @@ const StatusBadge = ({ status }) => {
         Settled: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
         Partial: "bg-amber-500/10 text-amber-500 border-amber-500/20",
         Pending: "bg-rose-500/10 text-rose-500 border-rose-500/20",
-        Overdue: "bg-rose-600/10 text-rose-600 border-rose-600/20 font-bold"
+        Overdue: "bg-rose-600/10 text-rose-600 border-rose-600/20 font-bold",
+        Cancelled: "bg-zinc-500/10 text-zinc-500 dark:text-zinc-400 border-zinc-500/20 line-through font-medium"
     };
 
     return (
@@ -472,10 +587,10 @@ const StatusBadge = ({ status }) => {
     );
 };
 
-const FilterTab = ({ label, count, isActive, onClick }) => (
+const FilterTab = ({ label, count, isActive, onClick, className = '' }) => (
     <button 
         onClick={onClick}
-        className={`px-4 py-2 rounded-lg text-xs font-medium transition-all ${isActive ? 'bg-white dark:bg-zinc-900 shadow-sm text-synos-primary' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300'}`}
+        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap ${isActive ? 'bg-white dark:bg-zinc-900 shadow-sm text-synos-primary' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300'} ${className}`}
     >
         {label} {count !== undefined && <span className="ml-1.5 opacity-50">({count})</span>}
     </button>
@@ -631,13 +746,26 @@ export const BillsCollectionsScreen = () => {
                 params.startDate = globalCustomDates.start;
                 params.endDate = globalCustomDates.end;
             }
-            const data = await FinanceApi.getFinanceBills(params);
+            const [data, cancellationsData] = await Promise.all([
+                FinanceApi.getFinanceBills(params),
+                FinanceApi.getVisitCancellations({ preset: 'year' }).catch(() => [])
+            ]);
+
+            const cancelledVisitIds = new Set((cancellationsData || []).map(c => c.visitId).filter(Boolean));
             const rawBills = Array.isArray(data) ? data : (data?.bills || []);
-            const normalizedBills = rawBills.map(b => ({
-                ...b,
-                billNumber: formatCanonicalBillNo(b),
-                testItems: sanitizeInvestigationItems(b.testItems)
-            }));
+            const normalizedBills = rawBills.map(b => {
+                const isCancelled = b.isCancelled || 
+                                    (b.status || '').toUpperCase() === 'CANCELLED' ||
+                                    cancelledVisitIds.has(b.visitId);
+                return {
+                    ...b,
+                    isCancelled,
+                    pendingAmount: isCancelled ? 0 : Number(b.pendingAmount || 0),
+                    status: isCancelled ? 'Cancelled' : b.status,
+                    billNumber: formatCanonicalBillNo(b),
+                    testItems: sanitizeInvestigationItems(b.testItems)
+                };
+            });
             setBills(normalizedBills);
         } catch (err) {
             console.error("Failed to load bills:", err);
@@ -646,24 +774,26 @@ export const BillsCollectionsScreen = () => {
         }
     };
 
-    // Dynamic test options: only tests populated in the current dataset matching department & modality
+    // Dynamic test options: strictly tests populated in the current dataset matching department & modality
     const dynamicTestOptions = useMemo(() => {
-        const pool = bills.filter(b => {
-            if (departmentFilter !== 'All') {
-                const bDept = (b.department || '').toLowerCase();
-                if (!bDept.includes(departmentFilter.toLowerCase())) return false;
-            }
-            if (modalityFilter !== 'All') {
-                const bMod = (b.modality || '').toLowerCase();
-                if (!bMod.includes(modalityFilter.toLowerCase())) return false;
-            }
-            return true;
-        });
-
         const testSet = new Set();
-        pool.forEach(b => {
+        bills.forEach(b => {
             (b.testItems || []).forEach(t => {
-                if (t && typeof t === 'string' && t.trim()) testSet.add(t.trim());
+                if (!t || typeof t !== 'string' || !t.trim()) return;
+                const cleanTest = t.trim();
+                const classified = classifyInvestigation(cleanTest);
+
+                // Strict Department match
+                if (departmentFilter !== 'All') {
+                    if (classified.department.toLowerCase() !== departmentFilter.toLowerCase()) return;
+                }
+
+                // Strict Modality / Discipline match
+                if (modalityFilter !== 'All') {
+                    if (classified.modality.toLowerCase() !== modalityFilter.toLowerCase()) return;
+                }
+
+                testSet.add(cleanTest);
             });
         });
 
@@ -715,55 +845,72 @@ export const BillsCollectionsScreen = () => {
         window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
     };
 
-    const confirmCollection = async (amount) => {
+    const confirmCollection = async (amount, paymentMethod = 'BankTransfer', notes = '') => {
         if (!selectedBill) return;
         const response = await fetch(`/api/v1/visits/${selectedBill.visitId}/payment`, {
             method: 'POST',
             headers: FinanceApi.getHeaders(),
             body: JSON.stringify({ 
                 amount, 
-                paymentMethod: 'BankTransfer',
-                notes: `Institutional settlement from Finance Hub`
+                paymentMethod: paymentMethod || 'BankTransfer',
+                notes: notes || `Settlement from Finance Hub (${selectedBill.patientName || 'Visit'})`
             })
         });
 
-        if (!response.ok) throw new Error("Failed to record payment");
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.message || "Failed to record payment");
+        }
         await loadBills();
     };
 
     // Client-side filtration for fast reactive updates
     const filteredBills = bills.filter(b => {
         // 1. Status Filter
+        const isCancelled = b.isCancelled || (b.status || '').toUpperCase() === 'CANCELLED';
         if (statusFilter !== 'All') {
-            const statusMap = {
-                'Pending': 'PENDING',
-                'Partial': 'PARTIAL',
-                'Settled': 'SETTLED'
-            };
-            const currentStatus = (b.status || '').toUpperCase();
-            if (statusMap[statusFilter] && !currentStatus.includes(statusMap[statusFilter])) return false;
+            if (statusFilter === 'Pending') {
+                if (isCancelled || (b.status || '').toUpperCase() !== 'PENDING') return false;
+            } else if (statusFilter === 'Partial') {
+                if (isCancelled || (b.status || '').toUpperCase() !== 'PARTIAL') return false;
+            } else if (statusFilter === 'Settled') {
+                if (isCancelled || (b.status || '').toUpperCase() !== 'SETTLED') return false;
+            } else if (statusFilter === 'Cancelled') {
+                if (!isCancelled) return false;
+            }
         }
 
-        // 2. Category Filter (Direct, Partner, Corporate, Insurance)
+        // 2. Category / Bill Type Filter (Standard/Direct, Corporate B2B, Insurance)
         if (categoryFilter !== 'All') {
-            const pCat = b.partnerCategory || (b.partnerName === 'Direct Patient' || b.partnerName === 'Direct Institutional' ? 'Direct' : 'Partner');
-            if (categoryFilter === 'Direct' && pCat !== 'Direct') return false;
-            if (categoryFilter === 'Partner' && pCat !== 'Partner') return false;
-            if (categoryFilter === 'Corporate' && pCat !== 'Corporate') return false;
-            if (categoryFilter === 'Insurance' && pCat !== 'Insurance') return false;
+            const payerInfo = getPayerModeInfo(b);
+
+            if (categoryFilter === 'Standard/Direct' || categoryFilter === 'Direct' || categoryFilter === 'Standard') {
+                if (!payerInfo.isStandard) return false;
+            } else if (categoryFilter === 'Corporate B2B' || categoryFilter === 'Corporate') {
+                if (!payerInfo.isCorporate) return false;
+            } else if (categoryFilter === 'Insurance') {
+                if (!payerInfo.isInsurance) return false;
+            }
         }
 
         // 3. Department Filter
         if (departmentFilter !== 'All') {
-            const bDept = (b.department || '').toLowerCase();
-            if (!bDept.includes(departmentFilter.toLowerCase())) return false;
+            const targetDept = departmentFilter.toLowerCase();
+            const hasMatchingDept = (b.testItems || []).some(t => {
+                const c = classifyInvestigation(t);
+                return c.department.toLowerCase() === targetDept;
+            }) || (b.department || '').toLowerCase().includes(targetDept);
+            if (!hasMatchingDept) return false;
         }
 
         // 4. Modality Filter
         if (modalityFilter !== 'All') {
-            const bMod = (b.modality || '').toLowerCase();
             const targetMod = modalityFilter.toLowerCase();
-            if (!bMod.includes(targetMod)) return false;
+            const hasMatchingMod = (b.testItems || []).some(t => {
+                const c = classifyInvestigation(t);
+                return c.modality.toLowerCase() === targetMod;
+            });
+            if (!hasMatchingMod) return false;
         }
 
         // 5. Dynamic Test-wise Filter (Item 3)
@@ -791,13 +938,25 @@ export const BillsCollectionsScreen = () => {
     });
 
     // Summary calculation for the filtered dataset
-    const totalBilled = filteredBills.reduce((sum, b) => sum + (Number(b.totalAmount) || 0), 0);
+    const totalBilled = filteredBills.reduce((sum, b) => {
+        if (b.isCancelled || (b.status || '').toUpperCase() === 'CANCELLED') return sum;
+        return sum + (Number(b.totalAmount) || 0);
+    }, 0);
     const totalCollected = filteredBills.reduce((sum, b) => sum + (Number(b.collectedAmount) || 0), 0);
     const totalCash = filteredBills.reduce((sum, b) => sum + (Number(b.cashAmount) || 0), 0);
     const totalOnline = filteredBills.reduce((sum, b) => sum + (Number(b.onlineAmount) || 0), 0);
-    const totalPrepaid = filteredBills.reduce((sum, b) => sum + (Number(b.prepaidAmount) || 0), 0);
-    const totalPending = filteredBills.reduce((sum, b) => sum + (Number(b.pendingAmount) || 0), 0);
-    const totalReferralCut = filteredBills.reduce((sum, b) => sum + (Number(b.referralCommissionCut) || 0), 0);
+    const totalPrepaid = 0;
+    const totalPending = filteredBills.reduce((sum, b) => {
+        if (b.isCancelled || (b.status || '').toUpperCase() === 'CANCELLED') return sum;
+        return sum + (Number(b.pendingAmount) || 0);
+    }, 0);
+    const totalReferralCut = filteredBills.reduce((sum, b) => {
+        if (b.isCancelled || (b.status || '').toUpperCase() === 'CANCELLED') return sum;
+        const payerInfo = getPayerModeInfo(b);
+        if (payerInfo.isCorporate || payerInfo.isInsurance) return sum;
+        if ((b.partnerName || '').trim().toUpperCase() === 'SELF') return sum;
+        return sum + (Number(b.referralCommissionCut) || 0);
+    }, 0);
 
     // Download Summary CSV Export
     const handleDownloadSummary = () => {
@@ -821,9 +980,10 @@ export const BillsCollectionsScreen = () => {
         ];
 
         const rows = filteredBills.map(b => {
-            const billingModel = b.partnerCategory === 'Partner' ? 'Partner Prepaid' : (b.partnerCategory === 'Corporate' ? 'Corporate Credit' : 'Direct Counter');
+            const payerInfo = getPayerModeInfo(b);
+            const billingModel = payerInfo.mode;
             const dueSource = b.pendingAmount > 0 
-                ? (b.partnerCategory === 'Partner' ? `Partner: ${b.partnerName}` : (b.partnerCategory === 'Direct' ? 'Direct Patient Counter' : b.partnerCategory))
+                ? (payerInfo.isCorporate ? `Partner: ${b.partnerName}` : (payerInfo.isInsurance ? `Insurance: ${b.partnerName}` : 'Direct Patient Counter'))
                 : 'Settled';
 
             return [
@@ -841,7 +1001,7 @@ export const BillsCollectionsScreen = () => {
                 b.prepaidAmount || 0,
                 b.pendingAmount || 0,
                 `"${dueSource}"`,
-                b.referralCommissionCut || 0,
+                payerInfo.isCorporate || payerInfo.isInsurance ? 0 : (b.referralCommissionCut || 0),
                 `"${b.status || ''}"`
             ];
         });
@@ -858,7 +1018,10 @@ export const BillsCollectionsScreen = () => {
     };
 
     // Find any pending partner for header claim generation
-    const partnerBillsWithPending = filteredBills.filter(b => b.partnerCategory === 'Partner' && b.pendingAmount > 0);
+    const partnerBillsWithPending = filteredBills.filter(b => {
+        const payerInfo = getPayerModeInfo(b);
+        return (payerInfo.isCorporate || b.partnerCategory === 'Partner') && b.pendingAmount > 0;
+    });
 
     return (
         <div className="p-8 w-full space-y-6 animate-in fade-in duration-500">
@@ -906,8 +1069,8 @@ export const BillsCollectionsScreen = () => {
                 </div>
             </div>
 
-            {/* KPI METRIC STRIP (Cash vs Online vs Prepaid vs Referral Cut) */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            {/* KPI METRIC STRIP (Cash vs Online vs Referral Cut vs Pending Dues) */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                 <div className="p-4 rounded-xl synos-kpi-card">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Total Billed</p>
                     <p className="text-lg font-black text-zinc-900 dark:text-white mt-1">₹{totalBilled.toLocaleString()}</p>
@@ -924,14 +1087,9 @@ export const BillsCollectionsScreen = () => {
                     <span className="text-[10px] text-zinc-400 font-medium">UPI / POS / Cards</span>
                 </div>
                 <div className="p-4 rounded-xl synos-kpi-card">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-purple-500">Prepaid Wallet</p>
-                    <p className="text-lg font-black text-purple-600 dark:text-purple-400 mt-1">₹{totalPrepaid.toLocaleString()}</p>
-                    <span className="text-[10px] text-zinc-400 font-medium">Token Redemptions</span>
-                </div>
-                <div className="p-4 rounded-xl synos-kpi-card">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-amber-500">Referral Cut</p>
                     <p className="text-lg font-black text-amber-600 dark:text-amber-400 mt-1">₹{totalReferralCut.toLocaleString()}</p>
-                    <span className="text-[10px] text-zinc-400 font-medium">Partner Commissions</span>
+                    <span className="text-[10px] text-zinc-400 font-medium">Doctor Commissions</span>
                 </div>
                 <div className="p-4 rounded-xl synos-kpi-card">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-rose-500">Pending Dues</p>
@@ -942,11 +1100,11 @@ export const BillsCollectionsScreen = () => {
 
             {/* Comprehensive Multi-Dimensional Filters Bar */}
             <div className="space-y-3 p-4 rounded-2xl bg-zinc-100 dark:bg-zinc-900/50 border dark:border-zinc-800 border-zinc-200">
-                {/* Top Row: Search on Left (1), Status & Category Pills to the Right (2) */}
+                {/* Top Row: Search on Left (1), Payment Status & Bill Type Groups to the Right (2) */}
                 <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3">
                     <div className="flex flex-wrap items-center gap-3 flex-1">
                         {/* Search Input - First on Left */}
-                        <div className="relative min-w-[260px] sm:min-w-[300px]">
+                        <div className="relative min-w-[240px] sm:min-w-[280px]">
                             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
                             <input
                                 type="text"
@@ -957,15 +1115,33 @@ export const BillsCollectionsScreen = () => {
                             />
                         </div>
 
-                        {/* Status & Category Pills - Immediately After Search Box */}
-                        <div className="flex items-center gap-1 overflow-x-auto pb-1 xl:pb-0 no-scrollbar">
-                            {['All', 'Pending', 'Partial', 'Settled'].map(f => (
-                                <FilterTab key={f} label={f} isActive={statusFilter === f} onClick={() => setStatusFilter(f)} />
-                            ))}
-                            <div className="w-px h-6 bg-zinc-300 dark:bg-zinc-800 mx-2 hidden sm:block" />
-                            {['All', 'Direct', 'Partner', 'Corporate', 'Insurance'].map(f => (
-                                <FilterTab key={f} label={f} isActive={categoryFilter === f} onClick={() => setCategoryFilter(f)} variant="outline" />
-                            ))}
+                        {/* Status & Bill Type Filter Groups */}
+                        <div className="flex items-center gap-2 overflow-x-auto pb-1 xl:pb-0 no-scrollbar flex-wrap">
+                            {/* Payment Status */}
+                            <div className="flex items-center gap-1.5 bg-zinc-200/50 dark:bg-zinc-950/40 p-1 rounded-xl border border-zinc-200/60 dark:border-zinc-800/60">
+                                <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400 dark:text-zinc-500 px-1.5 select-none whitespace-nowrap">
+                                    Payment Status
+                                </span>
+                                <div className="flex items-center gap-0.5">
+                                    {['All', 'Pending', 'Partial', 'Settled'].map(f => (
+                                        <FilterTab key={f} label={f} isActive={statusFilter === f} onClick={() => setStatusFilter(f)} />
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="w-px h-6 bg-zinc-300 dark:bg-zinc-800 mx-1 hidden sm:block" />
+
+                            {/* Bill Type */}
+                            <div className="flex items-center gap-1.5 bg-zinc-200/50 dark:bg-zinc-950/40 p-1 rounded-xl border border-zinc-200/60 dark:border-zinc-800/60">
+                                <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400 dark:text-zinc-500 px-1.5 select-none whitespace-nowrap">
+                                    Bill Type
+                                </span>
+                                <div className="flex items-center gap-0.5">
+                                    {['All', 'Standard/Direct', 'Corporate B2B', 'Insurance'].map(f => (
+                                        <FilterTab key={f} label={f} isActive={categoryFilter === f} onClick={() => setCategoryFilter(f)} />
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1041,7 +1217,7 @@ export const BillsCollectionsScreen = () => {
             </div>
 
             {/* Main Table Surface */}
-            <div className="synos-dept-card rounded-2xl overflow-hidden">
+            <div className="synos-dept-card rounded-2xl overflow-hidden border border-slate-200/80 dark:border-zinc-800 shadow-sm">
                 {loading ? (
                     <div className="p-20 text-center text-zinc-500 animate-pulse text-xs font-bold uppercase tracking-wider">
                         Synchronizing bill ledger...
@@ -1053,10 +1229,10 @@ export const BillsCollectionsScreen = () => {
                         <p className="text-[11px] text-zinc-400">Try adjusting the department, modality, branch, or date range filter.</p>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
+                    <div className="overflow-x-auto overflow-y-auto max-h-[calc(100vh-380px)] min-h-[380px] relative">
                         <table className="w-full text-left border-collapse synos-table">
-                            <thead>
-                                <tr className="bg-slate-50/80 dark:bg-zinc-900/80 border-b border-slate-200 dark:border-zinc-800">
+                            <thead className="sticky top-0 z-10 bg-slate-50/95 dark:bg-zinc-900/95 border-b border-slate-200 dark:border-zinc-800 backdrop-blur-md shadow-sm">
+                                <tr>
                                     <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Bill No</th>
                                     <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Patient</th>
                                     <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Investigations / Dept</th>
@@ -1070,7 +1246,9 @@ export const BillsCollectionsScreen = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80">
-                                {filteredBills.map((bill) => (
+                                {filteredBills.map((bill) => {
+                                    const payerInfo = getPayerModeInfo(bill);
+                                    return (
                                     <tr key={bill.billId} className="group hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors">
                                         <td className="p-4">
                                             <div className="flex flex-col">
@@ -1138,8 +1316,8 @@ export const BillsCollectionsScreen = () => {
                                             </div>
                                         </td>
                                         <td className="p-4 text-xs text-zinc-500">
-                                            <span>{bill.partnerName}</span>
-                                            {bill.referralCommissionCut > 0 && (
+                                            <span className="font-semibold text-zinc-700 dark:text-zinc-200">{bill.partnerName || "Direct Patient"}</span>
+                                            {bill.referralCommissionCut > 0 && !payerInfo.isCorporate && !payerInfo.isInsurance && (
                                                 <p className="text-[10px] text-amber-500 font-medium mt-0.5">
                                                     Cut: ₹{bill.referralCommissionCut.toLocaleString()}
                                                 </p>
@@ -1160,11 +1338,11 @@ export const BillsCollectionsScreen = () => {
                                         </td>
                                         <td className="p-4 text-xs font-black text-right text-rose-500">
                                             <p className="font-mono">₹{bill.pendingAmount.toLocaleString()}</p>
-                                            {bill.pendingAmount > 0 && (
+                                            {bill.pendingAmount > 0 && !bill.isCancelled && (
                                                 <span className="text-[9px] font-bold block mt-0.5 tracking-tight text-zinc-400">
-                                                    {bill.partnerCategory === 'Partner' 
+                                                    {payerInfo.isCorporate
                                                         ? `Due: ${bill.partnerName}` 
-                                                        : (bill.partnerCategory === 'Direct' ? 'Due at Counter' : bill.partnerCategory)}
+                                                        : (payerInfo.isInsurance ? `Claim: ${bill.partnerName}` : 'Due at Counter')}
                                                 </span>
                                             )}
                                         </td>
@@ -1188,7 +1366,7 @@ export const BillsCollectionsScreen = () => {
                                                 </button>
 
                                                 {/* B2B Doctor Invoice (For Partner bills) */}
-                                                {bill.partnerCategory === 'Partner' && (
+                                                {(payerInfo.isCorporate || bill.partnerCategory === 'Partner') && !bill.isCancelled && (
                                                     <button
                                                         onClick={() => handleOpenPartnerClaim(bill.partnerId || bill.referralPartnerId, [bill.visitId])}
                                                         title="Generate B2B Diagnostic Invoice for this visit"
@@ -1199,12 +1377,12 @@ export const BillsCollectionsScreen = () => {
                                                     </button>
                                                 )}
 
-                                                {bill.pendingAmount > 0 ? (
+                                                {bill.pendingAmount > 0 && !bill.isCancelled ? (
                                                     <button 
                                                         onClick={() => handleRecordCollection(bill)}
                                                         className="px-3 py-1.5 rounded-lg bg-synos-primary text-white text-[10px] font-bold uppercase tracking-wider hover:bg-synos-primary/90 transition-all shadow-sm cursor-pointer"
                                                     >
-                                                        {bill.partnerCategory === 'Partner' ? 'Settle' : 'Collect'}
+                                                        {payerInfo.isCorporate ? 'Settle' : 'Collect'}
                                                     </button>
                                                 ) : (
                                                     <button
@@ -1217,7 +1395,8 @@ export const BillsCollectionsScreen = () => {
                                             </div>
                                         </td>
                                     </tr>
-                                ))}
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>
@@ -1265,16 +1444,15 @@ export const BillsCollectionsScreen = () => {
                     departmentFilter !== 'All' ? `Dept: ${departmentFilter}` : null,
                     modalityFilter !== 'All' ? `Modality: ${modalityFilter}` : null,
                     statusFilter !== 'All' ? `Status: ${statusFilter}` : null,
-                    categoryFilter !== 'All' ? `Category: ${categoryFilter}` : null,
+                    categoryFilter !== 'All' ? `Bill Type: ${categoryFilter}` : null,
                     searchQuery ? `Search: "${searchQuery}"` : null
                 ].filter(Boolean)}
                 kpis={[
                     { label: "Total Billed", value: `₹${totalBilled.toLocaleString()}`, color: "text-zinc-900", subtext: `${filteredBills.length} Invoices` },
                     { label: "Cash Collected", value: `₹${totalCash.toLocaleString()}`, color: "text-emerald-600", subtext: "Physical Currency" },
                     { label: "Online / Digital", value: `₹${totalOnline.toLocaleString()}`, color: "text-sky-600", subtext: "UPI & Cards" },
-                    { label: "Wallet / Advance", value: `₹${totalPrepaid.toLocaleString()}`, color: "text-amber-600", subtext: "Prepaid Balances" },
-                    { label: "Pending Dues", value: `₹${totalPending.toLocaleString()}`, color: "text-rose-600", subtext: "Receivables Balance" },
-                    { label: "Partner Commissions", value: `₹${totalReferralCut.toLocaleString()}`, color: "text-purple-600", subtext: "Referral Liability" }
+                    { label: "Doctor Commissions", value: `₹${totalReferralCut.toLocaleString()}`, color: "text-purple-600", subtext: "Referral Liability" },
+                    { label: "Pending Dues", value: `₹${totalPending.toLocaleString()}`, color: "text-rose-600", subtext: "Receivables Balance" }
                 ]}
                 columns={[
                     { key: 'billNumber', label: 'Bill / Inv No' },
@@ -1295,7 +1473,7 @@ export const BillsCollectionsScreen = () => {
                 data={filteredBills}
                 summaryTotals={{
                     totalAmount: `₹${totalBilled.toLocaleString()}`,
-                    paidAmount: `₹${(totalCash + totalOnline + totalPrepaid).toLocaleString()}`,
+                    paidAmount: `₹${(totalCash + totalOnline).toLocaleString()}`,
                     pendingAmount: `₹${totalPending.toLocaleString()}`
                 }}
                 onDownloadCsv={handleDownloadSummary}
@@ -1593,7 +1771,7 @@ export const DueBillsScreen = () => {
                                 {filteredBills.map((b) => (
                                     <tr key={b.invoiceId} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
                                         <td className="py-3.5 px-4 font-mono font-bold text-xs text-synos-primary dark:text-sky-400 whitespace-nowrap">
-                                            {b.billNumber || b.token}
+                                            {b.billNumber || formatCanonicalBillNo(b)}
                                         </td>
                                         <td className="py-3.5 px-4 whitespace-nowrap text-zinc-500 font-mono text-[11px]">
                                             {b.createdAt ? new Date(b.createdAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '—'}

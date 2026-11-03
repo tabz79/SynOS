@@ -15,6 +15,8 @@ using SynOS.Services;
 using SynOS.Models.Entities.IMS;
 using SynOS.Models.Enums.IMS;
 using SynOS.Models.DTOs.IMS;
+using SynOS.Models.Entities.Referral;
+using SynOS.Models.Enums.Referral;
 using SynOS.Services.Inventory;
 using Xunit;
 
@@ -689,6 +691,71 @@ namespace SynOS.Tests
             Assert.Equal(600m, updatedInvoice.DiscountAmount);
             Assert.Equal(0m, updatedInvoice.NetAmount);
             Assert.Equal(0m, updatedInvoice.Total);
+        }
+
+        [Theory]
+        [InlineData("SELF")]
+        [InlineData("self")]
+        [InlineData("Self")]
+        [InlineData("DIRECT")]
+        [InlineData("WALK-IN")]
+        public async Task ReferralPartnerService_Rejects_Reserved_SELF_Keywords(string name)
+        {
+            using var db = GetDbContext();
+            var mapperConfig = new AutoMapper.MapperConfiguration(cfg => {
+                cfg.CreateMap<SynOS.Models.DTOs.Admin.Referral.ReferralPartnerCreateDto, ReferralPartner>();
+                cfg.CreateMap<ReferralPartner, SynOS.Models.DTOs.Admin.Referral.ReferralPartnerReadDto>();
+            });
+            var mapper = mapperConfig.CreateMapper();
+            var mockAudit = new Mock<IAuditService>();
+            var mockFinancial = new Mock<SynOS.Services.Referral.IReferralFinancialService>();
+            var mockLogger = new Mock<ILogger<SynOS.Services.Referral.ReferralPartnerService>>();
+
+            var service = new SynOS.Services.Referral.ReferralPartnerService(db, mapper, mockAudit.Object, mockFinancial.Object, mockLogger.Object);
+
+            var dto = new SynOS.Models.DTOs.Admin.Referral.ReferralPartnerCreateDto
+            {
+                Name = name,
+                PartnerType = PartnerType.Doctor
+            };
+
+            await Assert.ThrowsAsync<InvalidOperationException>(() => service.CreateReferralPartnerAsync(dto, Guid.NewGuid()));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => service.CreateDraftPartnerAsync(dto, Guid.NewGuid()));
+        }
+
+        [Fact]
+        public async Task ReferralPartnerService_GetAllReferralPartners_Filters_Out_Legacy_SELF_Rows()
+        {
+            using var db = GetDbContext();
+            var mapperConfig = new AutoMapper.MapperConfiguration(cfg => {
+                cfg.CreateMap<ReferralPartner, SynOS.Models.DTOs.Admin.Referral.ReferralPartnerReadDto>();
+            });
+            var mapper = mapperConfig.CreateMapper();
+            var mockAudit = new Mock<IAuditService>();
+            var mockFinancial = new Mock<SynOS.Services.Referral.IReferralFinancialService>();
+            var mockLogger = new Mock<ILogger<SynOS.Services.Referral.ReferralPartnerService>>();
+
+            db.ReferralPartners.Add(new ReferralPartner
+            {
+                ReferralPartnerId = Guid.NewGuid(),
+                Name = "SELF",
+                IsActive = true,
+                Status = SynOS.Models.Enums.Referral.PartnerStatus.Active
+            });
+            db.ReferralPartners.Add(new ReferralPartner
+            {
+                ReferralPartnerId = Guid.NewGuid(),
+                Name = "Dr. John Doe",
+                IsActive = true,
+                Status = SynOS.Models.Enums.Referral.PartnerStatus.Active
+            });
+            await db.SaveChangesAsync();
+
+            var service = new SynOS.Services.Referral.ReferralPartnerService(db, mapper, mockAudit.Object, mockFinancial.Object, mockLogger.Object);
+            var partners = (await service.GetAllReferralPartnersAsync()).ToList();
+
+            Assert.Single(partners);
+            Assert.Equal("Dr. John Doe", partners[0].Name);
         }
     }
 }

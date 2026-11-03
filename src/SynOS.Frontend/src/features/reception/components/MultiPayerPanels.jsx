@@ -1296,6 +1296,13 @@ export function AddReferralPartnerModal({
             return;
         }
 
+        const normalized = name.trim().toUpperCase();
+        const reservedKeywords = ['SELF', 'DIRECT', 'WALK-IN', 'WALKIN', 'SELF WALK-IN', 'SELF WALKIN', 'PATIENT SELF'];
+        if (reservedKeywords.includes(normalized)) {
+            setError("'SELF' is a built-in system option! You don't need to add a doctor profile. Just type 'SELF' into the search box and select it directly.");
+            return;
+        }
+
         setIsSubmitting(true);
         setError(null);
         try {

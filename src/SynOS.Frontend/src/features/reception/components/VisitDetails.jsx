@@ -92,9 +92,21 @@ export function VisitDetails({
 
     // 5. REFERRAL EDITABILITY & EFFECTIVE PARTNER STATE
     // In Correction Intent, operator can freely change/remove referral partners
+    const isSelfCurrent = !snapshot?.billing?.referral?.partner && 
+        (snapshot?.billing?.referral?.referrerText || '').trim().toUpperCase() === 'SELF';
+
     const effectivePartner = isCorrectionIntent && stagedReferralPartnerId !== undefined
         ? (stagedReferralPartnerId ? (referralPartners.find(p => (p.referralPartnerId || p.id) === stagedReferralPartnerId) || snapshot?.billing?.referral?.partner) : null)
-        : snapshot?.billing?.referral?.partner;
+        : (isSelfCurrent 
+            ? {
+                isSelf: true,
+                referralPartnerId: 'SYSTEM_SELF',
+                name: 'SELF',
+                displayName: 'SELF',
+                partnerType: 'Direct Walk-In',
+                commissionCutPercentage: 0
+              }
+            : snapshot?.billing?.referral?.partner);
 
     const effectiveSecondaryPartner = isCorrectionIntent && stagedSecondaryPartnerId !== undefined
         ? (stagedSecondaryPartnerId ? (referralPartners.find(p => (p.referralPartnerId || p.id) === stagedSecondaryPartnerId) || snapshot?.billing?.referral?.secondaryPartner) : null)
@@ -315,6 +327,47 @@ export function VisitDetails({
     const handleApplyReferral = async (partnerId) => {
         if (!canEditReferral || !visitId) return;
 
+        // SELF MODE SENTINEL HANDLING
+        if (partnerId === 'SYSTEM_SELF' || partnerId === 'SELF') {
+            if (isCorrectionIntent) {
+                if (onStageReferral) {
+                    onStageReferral(null);
+                }
+                setCorrectionState({
+                    isOpen: true,
+                    type: 'ChangeReferral',
+                    payload: { partnerId: null, referrerText: 'SELF' },
+                    reason: ""
+                });
+                return;
+            }
+            setIsProcessing(true);
+            try {
+                // Clear any external partner to ensure zero commission
+                await ReceptionApi.removeReferralFromVisit(visitId);
+                // Set referrer text to SELF
+                await ReceptionApi.updateReferrerText(visitId, "SELF");
+                if (onVisitUpdated) await onVisitUpdated();
+                setTimeout(() => {
+                    if (!document.activeElement || document.activeElement === document.body) {
+                        if (standardSecondaryReferralRef.current) {
+                            standardSecondaryReferralRef.current.focus();
+                        } else if (prepaidSecondaryReferralRef.current) {
+                            prepaidSecondaryReferralRef.current.focus();
+                        } else if (testSearchInputRef.current) {
+                            testSearchInputRef.current.focus();
+                        }
+                    }
+                }, 100);
+            } catch (err) {
+                console.error("Failed to apply SELF mode", err);
+                alert("Failed to apply SELF mode: " + err.message);
+            } finally {
+                setIsProcessing(false);
+            }
+            return;
+        }
+
         // CORRECTION INTENT
         if (isCorrectionIntent) {
             if (onStageReferral) {
@@ -373,7 +426,8 @@ export function VisitDetails({
         setIsProcessing(true);
         try {
             await ReceptionApi.removeReferralFromVisit(visitId);
-            if (onVisitUpdated) onVisitUpdated();
+            await ReceptionApi.updateReferrerText(visitId, null);
+            if (onVisitUpdated) await onVisitUpdated();
         } catch (err) {
             console.error("Failed to remove referral", err);
             alert("Failed to remove referral: " + err.message);
@@ -968,7 +1022,7 @@ export function VisitDetails({
                                         className={cn("flex items-center gap-3 font-bold p-3.5 rounded-xl border cursor-pointer synos-focus-card focus:outline-none",
                                         isDark ? "bg-zinc-800/60 border-zinc-700/60 text-zinc-100" : "bg-white border border-[#D5E2EC] text-slate-900 shadow-[0_1px_3px_rgba(15,35,60,0.04)]")}
                                     >
-                                        <div className="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.4)]"></div>
+                                        <div className={cn("w-3 h-3 rounded-full", effectivePartner.isSelf ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" : "bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.4)]")}></div>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2">
                                                 <span className="truncate tracking-normal text-base font-bold text-slate-900 dark:text-white">
@@ -982,7 +1036,11 @@ export function VisitDetails({
                                             </div>
                                             <div className="text-sm text-slate-500 dark:text-zinc-400 font-medium mt-0.5">
                                                 Type: {effectivePartner.partnerType || 'Doctor'}
-                                                {!effectiveSecondaryPartner && ` • Comm: ${snapshot?.billing?.referral?.commissionCutPercentage || 0}%`}
+                                                {!effectiveSecondaryPartner && (
+                                                    effectivePartner.isSelf 
+                                                        ? ' • No Commission' 
+                                                        : ` • Comm: ${snapshot?.billing?.referral?.commissionCutPercentage || 0}%`
+                                                )}
                                             </div>
                                         </div>
                                         {canEditReferral && (
@@ -1040,6 +1098,10 @@ export function VisitDetails({
                                             }}
                                             onUpdateText={async (text) => {
                                                 if (!visitId || !canEditReferral) return;
+                                                if (text && text.trim().toUpperCase() === 'SELF') {
+                                                    handleApplyReferral('SYSTEM_SELF');
+                                                    return;
+                                                }
                                                 if (isCorrectionIntent) {
                                                     setCorrectionState({
                                                         isOpen: true,
@@ -1185,6 +1247,7 @@ export function VisitDetails({
                                             isProcessing={isProcessing}
                                             partners={referralPartners}
                                             allowFreeText={false}
+                                            allowSelf={false}
                                             onApplyPartner={handleApplySecondaryReferral}
                                             onUpdateText={() => {}}
                                             onAdvanceForward={() => {
@@ -1336,6 +1399,10 @@ export function VisitDetails({
                                         }}
                                         onUpdateText={async (text) => {
                                             if (!visitId || !canEditReferral) return;
+                                            if (text && text.trim().toUpperCase() === 'SELF') {
+                                                handleApplyReferral('SYSTEM_SELF');
+                                                return;
+                                            }
                                             try {
                                                 await ReceptionApi.updateReferrerText(visitId, text);
                                                 if (onVisitUpdated) onVisitUpdated();
@@ -2051,6 +2118,15 @@ export function VisitDetails({
     )
 }
 
+export const SELF_REFERRAL_OPTION = {
+    referralPartnerId: 'SYSTEM_SELF',
+    name: 'SELF',
+    displayName: 'SELF',
+    partnerType: 'Direct Walk-In',
+    isSystemSelf: true,
+    defaultCommissionPercentage: 0
+};
+
 function ReferralCombinedInput({ 
     initialValue, 
     isReadOnly, 
@@ -2063,7 +2139,8 @@ function ReferralCombinedInput({
     fallbackNextRef,
     inputId,
     onAdvanceForward,
-    onAdvanceBackward
+    onAdvanceBackward,
+    allowSelf = true
 }) {
     const [value, setValue] = useState(initialValue);
     const [showSuggestions, setShowSuggestions] = useState(false);
@@ -2076,12 +2153,30 @@ function ReferralCombinedInput({
         setValue(initialValue);
     }, [initialValue]);
 
+    // Filter out any legacy or duplicate DB rows for SELF
+    const cleanPartners = useMemo(() => {
+        return (partners || []).filter(p => {
+            const n = (p.name || p.displayName || '').trim().toUpperCase();
+            return n !== 'SELF' && n !== 'SELF WALK-IN' && n !== 'DIRECT';
+        });
+    }, [partners]);
+
     // Derived Suggestions (Show top partners when empty so ArrowDown immediately navigates)
     const suggestions = useMemo(() => {
-        if (!value || value.trim().length === 0) return (partners || []).slice(0, 15);
-        const q = value.toLowerCase();
-        return (partners || []).filter(p => p.name && p.name.toLowerCase().includes(q)).slice(0, 15);
-    }, [value, partners]);
+        const q = (value || '').trim().toLowerCase();
+        let list = cleanPartners;
+        if (q.length > 0) {
+            list = cleanPartners.filter(p => p.name && p.name.toLowerCase().includes(q));
+        }
+
+        if (!allowSelf) {
+            return list.slice(0, 15);
+        }
+
+        const selfMatches = !q || 'self'.includes(q) || 'direct walk-in'.includes(q) || q.includes('self');
+        const results = selfMatches ? [SELF_REFERRAL_OPTION, ...list] : list;
+        return results.slice(0, 15);
+    }, [value, cleanPartners, allowSelf]);
 
     // Reset keyboard selection index when suggestions change - start at -1 (nothing pre-selected)
     useEffect(() => {
@@ -2216,9 +2311,15 @@ function ReferralCombinedInput({
                         // FIX: If we are currently selecting a partner from the dropdown, skip the raw text update
                         if (isSelecting.current) return;
 
-                        // Case B: Commit text if changed, no partner selected, and value differs from snapshot
+                        // Case A: If user typed "SELF" explicitly, trigger SELF mode
                         const trimmedValue = value?.trim();
                         const trimmedInitial = initialValue?.trim();
+                        if (trimmedValue && trimmedValue.toUpperCase() === 'SELF' && allowSelf) {
+                            handleApply('SYSTEM_SELF');
+                            return;
+                        }
+
+                        // Case B: Commit text if changed, no partner selected, and value differs from snapshot
                         if (trimmedValue !== trimmedInitial) {
                             onUpdateText(trimmedValue);
                         }
@@ -2257,13 +2358,25 @@ function ReferralCombinedInput({
                                             : "hover:bg-zinc-50 border border-transparent text-zinc-700 hover:text-zinc-900")
                                 )}
                             >
-                                <span className="truncate">{p.name}</span>
-                                {p.status === 0 && (
-                                    <span className={cn("text-xs font-bold px-2 py-0.5 rounded-md border leading-none uppercase", 
+                                <div className="flex flex-col min-w-0">
+                                    <span className="truncate font-semibold">{p.name}</span>
+                                    {p.isSystemSelf && (
+                                        <span className="text-[11px] text-slate-400 dark:text-zinc-500 font-normal">
+                                            Direct Walk-in • Zero Commission
+                                        </span>
+                                    )}
+                                </div>
+                                {p.isSystemSelf ? (
+                                    <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-md border leading-none uppercase shrink-0",
+                                        isDark ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" : "bg-emerald-50 border-emerald-200 text-emerald-700")}>
+                                        Walk-In
+                                    </span>
+                                ) : p.status === 0 ? (
+                                    <span className={cn("text-xs font-bold px-2 py-0.5 rounded-md border leading-none uppercase shrink-0", 
                                         isDark ? "bg-amber-500/10 border-amber-500/30 text-amber-500" : "bg-amber-100 border-amber-300 text-amber-700")}>
                                         Draft
                                     </span>
-                                )}
+                                ) : null}
                             </button>
                         );
                     })}

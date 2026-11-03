@@ -43,6 +43,12 @@ namespace SynOS.Services.Referral
         
         public async Task<ReferralPartnerReadDto> CreateReferralPartnerAsync(ReferralPartnerCreateDto createDto, Guid userId)
         {
+            var reserved = new[] { "SELF", "DIRECT", "WALK-IN", "WALKIN", "SELF WALK-IN", "SELF WALKIN", "PATIENT SELF" };
+            if (reserved.Any(r => string.Equals(r, createDto.Name?.Trim(), StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new InvalidOperationException("'SELF' is a reserved system keyword and cannot be registered as an external referral partner.");
+            }
+
             var existingPartner = await _context.ReferralPartners.FirstOrDefaultAsync(p => p.Name == createDto.Name);
             if (existingPartner != null)
             {
@@ -66,6 +72,12 @@ namespace SynOS.Services.Referral
 
         public async Task<ReferralPartnerReadDto> CreateDraftPartnerAsync(ReferralPartnerCreateDto createDto, Guid userId)
         {
+            var reserved = new[] { "SELF", "DIRECT", "WALK-IN", "WALKIN", "SELF WALK-IN", "SELF WALKIN", "PATIENT SELF" };
+            if (reserved.Any(r => string.Equals(r, createDto.Name?.Trim(), StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new InvalidOperationException("'SELF' is a reserved system keyword and cannot be registered as an external referral partner.");
+            }
+
             var existingPartner = await _context.ReferralPartners.FirstOrDefaultAsync(p => p.Name == createDto.Name);
             if (existingPartner != null) return _mapper.Map<ReferralPartnerReadDto>(existingPartner);
 
@@ -140,7 +152,14 @@ namespace SynOS.Services.Referral
                 _logger.LogInformation("Synced {Count} referral partners for state consistency.", needsSync.Count);
             }
 
-            return _mapper.Map<IEnumerable<ReferralPartnerReadDto>>(partners);
+            // Exclude reserved system entries (e.g. legacy DB rows named "SELF") from active doctor lists
+            var cleanPartners = partners.Where(p => 
+                !string.Equals(p.Name?.Trim(), "SELF", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(p.Name?.Trim(), "SELF WALK-IN", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(p.Name?.Trim(), "DIRECT", StringComparison.OrdinalIgnoreCase)
+            ).ToList();
+
+            return _mapper.Map<IEnumerable<ReferralPartnerReadDto>>(cleanPartners);
         }
 
         public async Task<ReferralPartnerReadDto> GetReferralPartnerByIdAsync(Guid id)
@@ -155,6 +174,12 @@ namespace SynOS.Services.Referral
 
         public async Task<ReferralPartnerReadDto> UpdateReferralPartnerAsync(Guid id, ReferralPartnerUpdateDto updateDto, Guid userId)
         {
+            var reserved = new[] { "SELF", "DIRECT", "WALK-IN", "WALKIN", "SELF WALK-IN", "SELF WALKIN", "PATIENT SELF" };
+            if (reserved.Any(r => string.Equals(r, updateDto.Name?.Trim(), StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new InvalidOperationException("'SELF' is a reserved system keyword and cannot be used as a referral partner name.");
+            }
+
             var partner = await _context.ReferralPartners.FirstOrDefaultAsync(p => p.ReferralPartnerId == id);
             if (partner == null)
             {

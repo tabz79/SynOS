@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using SynOS.Data;
+using SynOS.Models.Entities;
 using SynOS.Models.Entities.SpendEngine;
 using SynOS.Models.Enums;
 using SynOS.Models.Entities.Revenue;
@@ -118,6 +119,54 @@ namespace SynOS.Services.Settlements
 
                 _context.ReceivableFacts.Update(receivable);
 
+                // Synchronize visit Invoice and record Payment in central ledger
+                if (receivable.SourceVisitId != Guid.Empty)
+                {
+                    var invoice = await _context.Invoices
+                        .Include(i => i.Payments)
+                        .Include(i => i.PartialPayments)
+                        .FirstOrDefaultAsync(i => i.VisitId == receivable.SourceVisitId);
+
+                    if (invoice != null)
+                    {
+                        var invoicePaid = (invoice.Payments?.Sum(p => p.Amount) ?? 0) + (invoice.PartialPayments?.Sum(p => p.Amount) ?? 0);
+                        var invoiceDue = Math.Max(0, invoice.Total - invoicePaid);
+                        var payAmount = Math.Min(amount, invoiceDue);
+
+                        if (payAmount > 0)
+                        {
+                            var actorId = _userContext.CurrentUserId != Guid.Empty 
+                                ? _userContext.CurrentUserId 
+                                : await _context.Users.OrderBy(u => u.CreatedAt).Select(u => u.UserId).FirstOrDefaultAsync();
+
+                            var payRecord = new Payment
+                            {
+                                PaymentId = Guid.NewGuid(),
+                                InvoiceId = invoice.InvoiceId,
+                                Amount = payAmount,
+                                Method = "BankTransfer",
+                                ReceiptNo = $"RCP-PARTNER-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpper()}",
+                                ReceivedAt = DateTime.UtcNow,
+                                ReceivedByUserId = actorId
+                            };
+                            _context.Payments.Add(payRecord);
+
+                            if (invoicePaid + payAmount >= invoice.Total)
+                            {
+                                invoice.Status = "Paid";
+                                var visit = await _context.Visits.FindAsync(invoice.VisitId);
+                                if (visit != null) visit.Status = VisitStatus.Paid;
+                            }
+                            else
+                            {
+                                invoice.Status = "PartialPayment";
+                                var visit = await _context.Visits.FindAsync(invoice.VisitId);
+                                if (visit != null) visit.Status = VisitStatus.PartialPayment;
+                            }
+                        }
+                    }
+                }
+
                 // Emit RevenueFact (Truth acknowledgment of money arriving)
                 var command = new DeclareRevenueFactCommand
                 {
@@ -201,6 +250,54 @@ namespace SynOS.Services.Settlements
 
                     remaining -= apply;
                     _context.ReceivableFacts.Update(rec);
+
+                    // Synchronize visit Invoice and record Payment in central ledger
+                    if (rec.SourceVisitId != Guid.Empty && apply > 0)
+                    {
+                        var invoice = await _context.Invoices
+                            .Include(i => i.Payments)
+                            .Include(i => i.PartialPayments)
+                            .FirstOrDefaultAsync(i => i.VisitId == rec.SourceVisitId);
+
+                        if (invoice != null)
+                        {
+                            var invoicePaid = (invoice.Payments?.Sum(p => p.Amount) ?? 0) + (invoice.PartialPayments?.Sum(p => p.Amount) ?? 0);
+                            var invoiceDue = Math.Max(0, invoice.Total - invoicePaid);
+                            var payAmount = Math.Min(apply, invoiceDue);
+
+                            if (payAmount > 0)
+                            {
+                                var actorId = _userContext.CurrentUserId != Guid.Empty 
+                                    ? _userContext.CurrentUserId 
+                                    : await _context.Users.OrderBy(u => u.CreatedAt).Select(u => u.UserId).FirstOrDefaultAsync();
+
+                                var payRecord = new Payment
+                                {
+                                    PaymentId = Guid.NewGuid(),
+                                    InvoiceId = invoice.InvoiceId,
+                                    Amount = payAmount,
+                                    Method = !string.IsNullOrWhiteSpace(paymentMode) ? paymentMode : "BankTransfer",
+                                    ReceiptNo = $"RCP-PARTNER-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpper()}",
+                                    ReceivedAt = DateTime.UtcNow,
+                                    ReceivedByUserId = actorId
+                                };
+                                _context.Payments.Add(payRecord);
+
+                                if (invoicePaid + payAmount >= invoice.Total)
+                                {
+                                    invoice.Status = "Paid";
+                                    var visit = await _context.Visits.FindAsync(invoice.VisitId);
+                                    if (visit != null) visit.Status = VisitStatus.Paid;
+                                }
+                                else
+                                {
+                                    invoice.Status = "PartialPayment";
+                                    var visit = await _context.Visits.FindAsync(invoice.VisitId);
+                                    if (visit != null) visit.Status = VisitStatus.PartialPayment;
+                                }
+                            }
+                        }
+                    }
                 }
 
                 // 3. Declare Revenue Fact (Truth Engine)
