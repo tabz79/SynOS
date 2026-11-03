@@ -9,5 +9,6 @@ namespace SynOS.Models.DTOs.Revenue
         public List<Guid> FactIds { get; set; }
         public decimal TotalAmount { get; set; }
         public string PaymentMode { get; set; } // Using string for easy mapping from frontend
+        public string? Reference { get; set; } // Bank UTR / Cheque / Remittance Reference
     }
 }

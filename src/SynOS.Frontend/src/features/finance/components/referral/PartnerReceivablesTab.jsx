@@ -14,7 +14,9 @@ import {
     Receipt,
     Printer,
     ShieldCheck,
-    Briefcase
+    Briefcase,
+    History,
+    FileText
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
 import { SignalRService } from '@/lib/signalr';
@@ -22,7 +24,7 @@ import { cn } from '@/lib/utils';
 import { useGlobalFilter } from '@/context/GlobalFilterContext';
 import { CommercialDocumentViewer } from '../documents/CommercialDocumentViewer';
 import { DynamicDocumentRenderer } from '../documents/DynamicDocumentRenderer';
-import { isWithinTimeRange, formatCanonicalBillNo, isDraftEntity } from '../FinanceUtils';
+import { isWithinTimeRange, formatCanonicalBillNo, isDraftEntity, getReceivableStatus, isReceivableSettled, getEffectiveBalanceDue } from '../FinanceUtils';
 
 export const PartnerReceivablesTab = () => {
     const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
@@ -34,6 +36,10 @@ export const PartnerReceivablesTab = () => {
     const [selectedPartner, setSelectedPartner] = useState(null);
     const [settling, setSettling] = useState(false);
     const [expandedPartnerId, setExpandedPartnerId] = useState(null);
+    const [partnerSubTabs, setPartnerSubTabs] = useState({}); // { [partnerId]: 'open' | 'history' }
+
+    const getSubTab = (pId) => partnerSubTabs[pId] || 'open';
+    const setSubTab = (pId, tab) => setPartnerSubTabs(prev => ({ ...prev, [pId]: tab }));
 
     // Enterprise Claim Statement State
     const [claimDocData, setClaimDocData] = useState(null);
@@ -135,31 +141,50 @@ export const PartnerReceivablesTab = () => {
                     partnerName: r.debtorName || r.partnerName || (tab === 'insurance' ? 'Empanelled Insurer' : tab === 'corporate' ? 'Corporate Account' : 'Unknown Partner'),
                     totalAmount: 0,
                     billCount: 0,
-                    oldestDate: r.occurredAt || r.date || new Date().toISOString(),
+                    totalSettledAmount: 0,
+                    settledCount: 0,
+                    oldestDate: null,
+                    openItems: [],
+                    settledItems: [],
                     items: []
                 };
             }
             const total = Number(r.totalAmount || r.amount || 0);
             const paid = Number(r.paidAmount || r.amountReceived || 0);
-            const due = r.balanceDue !== undefined && !isNaN(r.balanceDue) ? Number(r.balanceDue) : (total - paid);
-            const safeDue = isNaN(due) ? 0 : due;
+            const safeDue = getEffectiveBalanceDue(r);
+            const isSettled = isReceivableSettled(r);
 
-            groups[key].totalAmount += safeDue;
-            groups[key].billCount += 1;
-            const itemDate = r.occurredAt || r.date;
-            if (itemDate && new Date(itemDate) < new Date(groups[key].oldestDate)) {
-                groups[key].oldestDate = itemDate;
-            }
-            groups[key].items.push({
+            const formattedItem = {
                 ...r,
                 totalAmount: total,
                 paidAmount: paid,
                 balanceDue: safeDue,
+                isSettled: isSettled,
+                settledAt: r.settledAt,
+                settlementReceiptNo: r.settlementReceiptNo,
+                settlementMethod: r.settlementMethod,
                 token: r.token || r.visitToken || '-',
-                billNumber: formatCanonicalBillNo(r)
-            });
+                billNumber: r.billNumber || formatCanonicalBillNo(r),
+                testsSummary: r.testsSummary || (r.testNames?.join(', ')) || (r.tests?.join(', ')) || '-'
+            };
+
+            groups[key].items.push(formattedItem);
+
+            if (isSettled) {
+                groups[key].settledItems.push(formattedItem);
+                groups[key].settledCount += 1;
+                groups[key].totalSettledAmount += (paid > 0 ? paid : total);
+            } else {
+                groups[key].openItems.push(formattedItem);
+                groups[key].billCount += 1;
+                groups[key].totalAmount += safeDue;
+                const itemDate = r.occurredAt || r.date;
+                if (itemDate && (!groups[key].oldestDate || new Date(itemDate) < new Date(groups[key].oldestDate))) {
+                    groups[key].oldestDate = itemDate;
+                }
+            }
         });
-        return Object.values(groups).filter(g => g.totalAmount > 0);
+        return Object.values(groups).filter(g => g.billCount > 0 || g.settledCount > 0);
     };
 
     const handleSwitchTab = (tab) => {
@@ -172,41 +197,25 @@ export const PartnerReceivablesTab = () => {
 
     const partnerTotal = rawReceivables
         .filter(r => normalizeDebtorType(r.debtorType) === 'partner')
-        .reduce((sum, r) => {
-            const due = r.balanceDue !== undefined && !isNaN(r.balanceDue) ? Number(r.balanceDue) : (Number(r.totalAmount || r.amount || 0) - Number(r.paidAmount || r.amountReceived || 0));
-            return sum + (isNaN(due) ? 0 : due);
-        }, 0);
+        .reduce((sum, r) => sum + getEffectiveBalanceDue(r), 0);
 
     const insuranceTotal = rawReceivables
         .filter(r => normalizeDebtorType(r.debtorType) === 'insurance')
-        .reduce((sum, r) => {
-            const due = r.balanceDue !== undefined && !isNaN(r.balanceDue) ? Number(r.balanceDue) : (Number(r.totalAmount || r.amount || 0) - Number(r.paidAmount || r.amountReceived || 0));
-            return sum + (isNaN(due) ? 0 : due);
-        }, 0);
+        .reduce((sum, r) => sum + getEffectiveBalanceDue(r), 0);
 
     const corporateTotal = rawReceivables
         .filter(r => normalizeDebtorType(r.debtorType) === 'corporate')
-        .reduce((sum, r) => {
-            const due = r.balanceDue !== undefined && !isNaN(r.balanceDue) ? Number(r.balanceDue) : (Number(r.totalAmount || r.amount || 0) - Number(r.paidAmount || r.amountReceived || 0));
-            return sum + (isNaN(due) ? 0 : due);
-        }, 0);
+        .reduce((sum, r) => sum + getEffectiveBalanceDue(r), 0);
 
-    const handleSettleRecovery = async (partner, amount, method) => {
+    const handleSettleRecovery = async (partner, amount, method, reference = null) => {
         try {
             setSettling(true);
-            const factIds = partner.items.map(i => i.receivableFactId);
-            const payload = {
-                partnerId: partner.partnerId,
-                debtorId: partner.partnerId,
-                debtorType: activePayerTab === 'insurance' ? 2 : activePayerTab === 'corporate' ? 3 : 1,
-                factIds,
-                totalAmount: amount,
-                paymentMethod: method
-            };
-            console.log("Settling Multi-Payer Recovery:", payload);
-            await FinanceApi.settleReferralRecovery(payload);
+            const targetFactIds = partner.openItems.length > 0 
+                ? partner.openItems.map(i => i.receivableFactId)
+                : partner.items.map(i => i.receivableFactId);
+            await FinanceApi.settleBulkPartnerReceivables(partner.partnerId, targetFactIds, amount, method, reference);
             setSelectedPartner(null);
-            loadData();
+            loadData(false);
         } catch (err) {
             alert("Settlement failed: " + err.message);
         } finally {
@@ -219,7 +228,7 @@ export const PartnerReceivablesTab = () => {
             setGeneratingClaim(true);
             const targetFactIds = specificFactIds && specificFactIds.length > 0
                 ? specificFactIds
-                : partner.items.map(i => i.receivableFactId);
+                : (partner.openItems?.length > 0 ? partner.openItems.map(i => i.receivableFactId) : partner.items.map(i => i.receivableFactId));
             const res = await FinanceApi.getPartnerClaimStatement({
                 partnerId: partner.partnerId,
                 receivableFactIds: targetFactIds
@@ -312,11 +321,6 @@ export const PartnerReceivablesTab = () => {
                         className="w-full pl-11 pr-4 py-3 bg-white dark:bg-zinc-950 border dark:border-zinc-900 border-zinc-100 rounded-2xl text-xs font-medium focus:ring-2 focus:ring-synos-primary/20 transition-all outline-none"
                     />
                 </div>
-                <div className="flex items-center gap-2">
-                    <button className="px-6 py-3 bg-emerald-600 text-white rounded-2xl text-xs font-bold hover:shadow-lg hover:shadow-emerald-500/20 active:scale-95 transition-all cursor-pointer">
-                        RECORD RECOVERY
-                    </button>
-                </div>
             </div>
 
             {/* RECEIVABLES LIST */}
@@ -371,160 +375,297 @@ export const PartnerReceivablesTab = () => {
                                         </td>
                                         <td className="p-6 text-center text-sm font-semibold dark:text-zinc-400">{partner.billCount}</td>
                                         <td className="p-6 text-right">
-                                            <div className="text-sm font-black text-emerald-500">₹{partner.totalAmount.toLocaleString()}</div>
+                                            {partner.totalAmount > 0 ? (
+                                                <div className="text-sm font-black text-rose-500">₹{partner.totalAmount.toLocaleString()}</div>
+                                            ) : (
+                                                <div className="text-sm font-bold text-emerald-500 flex items-center justify-end gap-1">
+                                                    <CheckCircle2 size={13} />
+                                                    <span>Cleared</span>
+                                                </div>
+                                            )}
                                         </td>
-                                        <td className="p-6 text-xs text-zinc-400 font-medium">{new Date(partner.oldestDate).toLocaleDateString()}</td>
+                                        <td className="p-6 text-xs text-zinc-400 font-medium">
+                                            {partner.oldestDate ? new Date(partner.oldestDate).toLocaleDateString() : '—'}
+                                        </td>
                                         <td className="p-6 text-right">
                                             <div className="flex items-center justify-end gap-2">
-                                                <button
-                                                    onClick={() => handleGenerateClaimStatement(partner)}
-                                                    disabled={generatingClaim}
-                                                    title="Generate B2B Diagnostic Tax Invoice for partner collections"
-                                                    className="px-3 py-2 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-wider hover:bg-indigo-100 dark:hover:bg-indigo-900/60 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs disabled:opacity-50"
-                                                >
-                                                    <Receipt size={12} />
-                                                    <span>B2B Invoice</span>
-                                                </button>
+                                                {partner.billCount > 0 && (
+                                                    <button
+                                                        onClick={() => handleGenerateClaimStatement(partner)}
+                                                        disabled={generatingClaim}
+                                                        title="Generate B2B Diagnostic Tax Invoice for partner collections"
+                                                        className="px-3 py-2 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 text-[10px] font-black uppercase tracking-wider hover:bg-indigo-100 dark:hover:bg-indigo-900/60 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs disabled:opacity-50"
+                                                    >
+                                                        <Receipt size={12} />
+                                                        <span>B2B Invoice</span>
+                                                    </button>
+                                                )}
                                                 <button 
-                                                    onClick={() => setSelectedPartner(partner)}
-                                                    className="px-4 py-2 rounded-xl bg-emerald-500 text-white text-[10px] font-black uppercase tracking-wider hover:shadow-lg hover:shadow-emerald-500/30 active:scale-95 transition-all cursor-pointer"
+                                                    onClick={() => setExpandedPartnerId(expandedPartnerId === partner.partnerId ? null : partner.partnerId)}
+                                                    className={`px-3.5 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer ${
+                                                        expandedPartnerId === partner.partnerId 
+                                                            ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-sm' 
+                                                            : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                                                    }`}
                                                 >
-                                                    Record Receipt
+                                                    <FileText size={12} />
+                                                    <span>{expandedPartnerId === partner.partnerId ? 'Close Statement' : 'Account Statement'}</span>
                                                 </button>
                                             </div>
                                         </td>
                                     </tr>
                                     {expandedPartnerId === partner.partnerId && (() => {
-                                        const partnerItemIds = partner.items.map(i => i.receivableFactId);
-                                        const selectedInPartner = partner.items.filter(i => selectedFactIds.has(i.receivableFactId));
+                                        const subTab = getSubTab(partner.partnerId);
+                                        const partnerOpenItemIds = (partner.openItems || []).map(i => i.receivableFactId);
+                                        const selectedInPartner = (partner.openItems || []).filter(i => selectedFactIds.has(i.receivableFactId));
                                         const selectedCount = selectedInPartner.length;
-                                        const selectedSum = selectedInPartner.reduce((sum, i) => sum + (i.amount - i.amountReceived), 0);
-                                        const allPartnerSelected = partner.items.length > 0 && selectedCount === partner.items.length;
+                                        const selectedSum = selectedInPartner.reduce((sum, i) => sum + (i.balanceDue || 0), 0);
+                                        const allPartnerSelected = (partner.openItems || []).length > 0 && selectedCount === (partner.openItems || []).length;
 
                                         return (
                                             <tr>
                                                 <td colSpan="8" className="p-0 bg-zinc-50/50 dark:bg-zinc-950/50">
                                                     <div className="p-6 border-x border-b dark:border-zinc-900 border-zinc-100 mx-4 mb-4 rounded-b-2xl bg-white dark:bg-zinc-950 shadow-inner">
                                                         
-                                                        {/* BATCH SELECTION ACTION BAR */}
-                                                        {selectedCount > 0 && (
-                                                            <div className="flex items-center justify-between p-3.5 mb-3 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 animate-in fade-in duration-200">
-                                                                <div className="flex items-center gap-3">
-                                                                    <div className="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-black text-xs shadow-xs">
-                                                                        {selectedCount}
+                                                        {/* DOSSIER SUB-NAVIGATION BAR */}
+                                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b dark:border-zinc-800 border-zinc-200 pb-3 mb-4">
+                                                            <div className="flex items-center gap-2">
+                                                                <button
+                                                                    onClick={() => setSubTab(partner.partnerId, 'open')}
+                                                                    className={cn(
+                                                                        "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2",
+                                                                        subTab === 'open' 
+                                                                            ? "bg-indigo-600 text-white shadow-xs" 
+                                                                            : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                                                    )}
+                                                                >
+                                                                    <span>Open Invoices</span>
+                                                                    <span className={cn("px-1.5 py-0.5 rounded-full text-[10px]", subTab === 'open' ? "bg-white/25" : "bg-zinc-200 dark:bg-zinc-700")}>
+                                                                        {(partner.openItems || []).length}
+                                                                    </span>
+                                                                </button>
+
+                                                                <button
+                                                                    onClick={() => setSubTab(partner.partnerId, 'history')}
+                                                                    className={cn(
+                                                                        "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2",
+                                                                        subTab === 'history' 
+                                                                            ? "bg-emerald-600 text-white shadow-xs" 
+                                                                            : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                                                                    )}
+                                                                >
+                                                                    <History size={13} />
+                                                                    <span>Settlement & Audit History</span>
+                                                                    <span className={cn("px-1.5 py-0.5 rounded-full text-[10px]", subTab === 'history' ? "bg-white/25" : "bg-zinc-200 dark:bg-zinc-700")}>
+                                                                        {(partner.settledItems || []).length}
+                                                                    </span>
+                                                                </button>
+                                                            </div>
+
+                                                            {/* DISCREET RECEIPT VOUCHER ACTION */}
+                                                            {(partner.openItems || []).length > 0 && (
+                                                                <button
+                                                                    onClick={() => setSelectedPartner(partner)}
+                                                                    className="px-3.5 py-1.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                                                                >
+                                                                    <ArrowDownLeft size={13} />
+                                                                    <span>+ Record Payment Receipt</span>
+                                                                </button>
+                                                            )}
+                                                        </div>
+
+                                                        {/* VIEW A: OPEN INVOICES */}
+                                                        {subTab === 'open' && (
+                                                            <div>
+                                                                {selectedCount > 0 && (
+                                                                    <div className="flex items-center justify-between p-3.5 mb-3 rounded-2xl bg-indigo-50/80 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 animate-in fade-in duration-200">
+                                                                        <div className="flex items-center gap-3">
+                                                                            <div className="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-black text-xs shadow-xs">
+                                                                                {selectedCount}
+                                                                            </div>
+                                                                            <div>
+                                                                                <p className="text-xs font-bold text-indigo-950 dark:text-indigo-200">
+                                                                                    {selectedCount} of {(partner.openItems || []).length} Invoices Selected
+                                                                                </p>
+                                                                                <p className="text-[10px] text-zinc-500 font-medium">
+                                                                                    Total Selected Due: <strong className="text-indigo-600 dark:text-indigo-400 font-mono">₹{selectedSum.toLocaleString()}</strong>
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="flex items-center gap-2">
+                                                                            <button
+                                                                                onClick={() => {
+                                                                                    const next = new Set(selectedFactIds);
+                                                                                    partnerOpenItemIds.forEach(id => next.delete(id));
+                                                                                    setSelectedFactIds(next);
+                                                                                }}
+                                                                                className="px-3 py-1.5 rounded-xl text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 text-[10px] font-bold cursor-pointer transition-all"
+                                                                            >
+                                                                                Clear Selection
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={() => handleGenerateClaimStatement(partner, selectedInPartner.map(i => i.receivableFactId))}
+                                                                                disabled={generatingClaim}
+                                                                                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-indigo-500/20 active:scale-95 cursor-pointer transition-all disabled:opacity-50"
+                                                                            >
+                                                                                <Receipt size={13} />
+                                                                                <span>Generate B2B Invoice ({selectedCount})</span>
+                                                                            </button>
+                                                                        </div>
                                                                     </div>
-                                                                    <div>
-                                                                        <p className="text-xs font-bold text-indigo-950 dark:text-indigo-200">
-                                                                            {selectedCount} of {partner.items.length} Invoices Selected
-                                                                        </p>
-                                                                        <p className="text-[10px] text-zinc-500 font-medium">
-                                                                            Total Selected Due: <strong className="text-indigo-600 dark:text-indigo-400 font-mono">₹{selectedSum.toLocaleString()}</strong>
-                                                                        </p>
+                                                                )}
+
+                                                                {(partner.openItems || []).length === 0 ? (
+                                                                    <div className="py-10 text-center space-y-1">
+                                                                        <CheckCircle2 size={32} className="text-emerald-500 mx-auto mb-2 opacity-80" />
+                                                                        <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400">All invoices for this account are fully settled.</p>
+                                                                        <p className="text-[10px] text-zinc-400">There are no outstanding recovery dues pending collection.</p>
                                                                     </div>
-                                                                </div>
-                                                                <div className="flex items-center gap-2">
-                                                                    <button
-                                                                        onClick={() => {
-                                                                            const next = new Set(selectedFactIds);
-                                                                            partnerItemIds.forEach(id => next.delete(id));
-                                                                            setSelectedFactIds(next);
-                                                                        }}
-                                                                        className="px-3 py-1.5 rounded-xl text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 text-[10px] font-bold cursor-pointer transition-all"
-                                                                    >
-                                                                        Clear Selection
-                                                                    </button>
-                                                                    <button
-                                                                        onClick={() => handleGenerateClaimStatement(partner, selectedInPartner.map(i => i.receivableFactId))}
-                                                                        disabled={generatingClaim}
-                                                                        className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-indigo-500/20 active:scale-95 cursor-pointer transition-all disabled:opacity-50"
-                                                                    >
-                                                                        <Receipt size={13} />
-                                                                        <span>Generate B2B Invoice ({selectedCount})</span>
-                                                                    </button>
-                                                                </div>
+                                                                ) : (
+                                                                    <table className="w-full text-left">
+                                                                        <thead>
+                                                                            <tr className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 border-b dark:border-zinc-900 pb-2">
+                                                                                <th className="pb-2 w-8 text-center">
+                                                                                    <input
+                                                                                        type="checkbox"
+                                                                                        checked={allPartnerSelected}
+                                                                                        onChange={(e) => {
+                                                                                            const next = new Set(selectedFactIds);
+                                                                                            if (e.target.checked) {
+                                                                                                partnerOpenItemIds.forEach(id => next.add(id));
+                                                                                            } else {
+                                                                                                partnerOpenItemIds.forEach(id => next.delete(id));
+                                                                                            }
+                                                                                            setSelectedFactIds(next);
+                                                                                        }}
+                                                                                        className="rounded border-zinc-300 dark:border-zinc-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                                                                                        title={allPartnerSelected ? "Deselect all" : "Select all open bills"}
+                                                                                    />
+                                                                                </th>
+                                                                                <th className="pb-2">Bill No</th>
+                                                                                <th className="pb-2">Patient</th>
+                                                                                <th className="pb-2">Main Doctor</th>
+                                                                                <th className="pb-2">Tests / Investigations</th>
+                                                                                <th className="pb-2">Date</th>
+                                                                                <th className="pb-2 text-right">Original</th>
+                                                                                <th className="pb-2 text-right">Outstanding</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80">
+                                                                            {(partner.openItems || []).map(fact => {
+                                                                                const isChecked = selectedFactIds.has(fact.receivableFactId);
+                                                                                return (
+                                                                                    <tr key={fact.receivableFactId} className={isChecked ? 'bg-indigo-50/40 dark:bg-indigo-950/30' : ''}>
+                                                                                        <td className="py-3 w-8 text-center">
+                                                                                            <input
+                                                                                                type="checkbox"
+                                                                                                checked={isChecked}
+                                                                                                onChange={(e) => {
+                                                                                                    const next = new Set(selectedFactIds);
+                                                                                                    if (e.target.checked) {
+                                                                                                        next.add(fact.receivableFactId);
+                                                                                                    } else {
+                                                                                                        next.delete(fact.receivableFactId);
+                                                                                                    }
+                                                                                                    setSelectedFactIds(next);
+                                                                                                }}
+                                                                                                className="rounded border-zinc-300 dark:border-zinc-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                                                                                            />
+                                                                                        </td>
+                                                                                        <td className="py-3 text-[10px] font-mono font-bold">
+                                                                                            <div className="text-synos-primary dark:text-sky-400 font-bold">{fact.billNumber}</div>
+                                                                                            <div className="text-[9px] text-zinc-400 font-normal">Token: {fact.token}</div>
+                                                                                            {fact.claimReference && (
+                                                                                                <div className="text-[9px] text-indigo-500 font-sans font-semibold">
+                                                                                                    {activePayerTab === 'insurance' ? `Policy/Claim: ${fact.claimReference}` : `Emp ID: ${fact.claimReference}`}
+                                                                                                </div>
+                                                                                            )}
+                                                                                        </td>
+                                                                                        <td className="py-3 text-[10px] font-bold dark:text-zinc-300">{fact.patientName || 'Unknown Patient'}</td>
+                                                                                        <td className="py-3 text-[10px]">
+                                                                                            {fact.primaryDoctorName ? (
+                                                                                                <span className="font-semibold text-zinc-700 dark:text-zinc-300 text-[10px] truncate max-w-[160px] inline-block" title={fact.primaryDoctorName}>
+                                                                                                    {fact.primaryDoctorName}
+                                                                                                </span>
+                                                                                            ) : (
+                                                                                                <span className="text-zinc-400 text-[10px]">—</span>
+                                                                                            )}
+                                                                                        </td>
+                                                                                        <td className="py-3 text-[10px] text-zinc-600 dark:text-zinc-400 max-w-[200px] truncate" title={fact.testsSummary}>
+                                                                                            {fact.testsSummary}
+                                                                                        </td>
+                                                                                        <td className="py-3 text-[10px] text-zinc-400">{new Date(fact.occurredAt || fact.date).toLocaleDateString()}</td>
+                                                                                        <td className="py-3 text-[10px] font-black text-right dark:text-zinc-300">₹{(fact.totalAmount || 0).toLocaleString()}</td>
+                                                                                        <td className="py-3 text-[10px] font-black text-right text-rose-500">₹{(fact.balanceDue || 0).toLocaleString()}</td>
+                                                                                    </tr>
+                                                                                );
+                                                                            })}
+                                                                        </tbody>
+                                                                    </table>
+                                                                )}
                                                             </div>
                                                         )}
 
-                                                        <table className="w-full text-left">
-                                                            <thead>
-                                                                <tr className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 border-b dark:border-zinc-900 pb-2">
-                                                                    <th className="pb-2 w-8 text-center">
-                                                                        <input
-                                                                            type="checkbox"
-                                                                            checked={allPartnerSelected}
-                                                                            onChange={(e) => {
-                                                                                const next = new Set(selectedFactIds);
-                                                                                if (e.target.checked) {
-                                                                                    partnerItemIds.forEach(id => next.add(id));
-                                                                                } else {
-                                                                                    partnerItemIds.forEach(id => next.delete(id));
-                                                                                }
-                                                                                setSelectedFactIds(next);
-                                                                            }}
-                                                                            className="rounded border-zinc-300 dark:border-zinc-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
-                                                                            title={allPartnerSelected ? "Deselect all" : "Select all open bills"}
-                                                                        />
-                                                                    </th>
-                                                                    <th className="pb-2">Bill No</th>
-                                                                    <th className="pb-2">Patient</th>
-                                                                    <th className="pb-2">Main Doctor</th>
-                                                                    <th className="pb-2">Tests / Investigations</th>
-                                                                    <th className="pb-2">Date</th>
-                                                                    <th className="pb-2 text-right">Original</th>
-                                                                    <th className="pb-2 text-right">Outstanding</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80">
-                                                                {partner.items.map(fact => {
-                                                                    const isChecked = selectedFactIds.has(fact.receivableFactId);
-                                                                    return (
-                                                                        <tr key={fact.receivableFactId} className={isChecked ? 'bg-indigo-50/40 dark:bg-indigo-950/30' : ''}>
-                                                                            <td className="py-3 w-8 text-center">
-                                                                                <input
-                                                                                    type="checkbox"
-                                                                                    checked={isChecked}
-                                                                                    onChange={(e) => {
-                                                                                        const next = new Set(selectedFactIds);
-                                                                                        if (e.target.checked) {
-                                                                                            next.add(fact.receivableFactId);
-                                                                                        } else {
-                                                                                            next.delete(fact.receivableFactId);
-                                                                                        }
-                                                                                        setSelectedFactIds(next);
-                                                                                    }}
-                                                                                    className="rounded border-zinc-300 dark:border-zinc-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
-                                                                                />
-                                                                            </td>
-                                                                            <td className="py-3 text-[10px] font-mono font-bold">
-                                                                                <div className="text-synos-primary dark:text-sky-400 font-bold">{fact.billNumber || formatCanonicalBillNo(fact)}</div>
-                                                                                <div className="text-[9px] text-zinc-400 font-normal">Token: {fact.token || fact.visitToken || '-'}</div>
-                                                                                {fact.claimReference && (
-                                                                                    <div className="text-[9px] text-indigo-500 font-sans font-semibold">
-                                                                                        {activePayerTab === 'insurance' ? `Policy/Claim: ${fact.claimReference}` : `Emp ID: ${fact.claimReference}`}
-                                                                                    </div>
-                                                                                )}
-                                                                            </td>
-                                                                            <td className="py-3 text-[10px] font-bold dark:text-zinc-300">{fact.patientName || 'Unknown Patient'}</td>
-                                                                            <td className="py-3 text-[10px]">
-                                                                                {fact.primaryDoctorName ? (
-                                                                                    <span className="font-semibold text-zinc-700 dark:text-zinc-300 text-[10px] truncate max-w-[160px] inline-block" title={fact.primaryDoctorName}>
-                                                                                        {fact.primaryDoctorName}
-                                                                                    </span>
-                                                                                ) : (
-                                                                                    <span className="text-zinc-400 text-[10px]">—</span>
-                                                                                )}
-                                                                            </td>
-                                                                            <td className="py-3 text-[10px] text-zinc-600 dark:text-zinc-400 max-w-[200px] truncate" title={fact.testsSummary || (fact.testNames?.join(', ')) || (fact.tests?.join(', ')) || '-'}>
-                                                                                {fact.testsSummary || (fact.testNames?.join(', ')) || (fact.tests?.join(', ')) || '-'}
-                                                                            </td>
-                                                                            <td className="py-3 text-[10px] text-zinc-400">{new Date(fact.occurredAt || fact.date).toLocaleDateString()}</td>
-                                                                            <td className="py-3 text-[10px] font-black text-right dark:text-zinc-300">₹{(fact.totalAmount || fact.amount || 0).toLocaleString()}</td>
-                                                                            <td className="py-3 text-[10px] font-black text-right text-rose-500">₹{(fact.balanceDue !== undefined && !isNaN(fact.balanceDue) ? fact.balanceDue : (fact.amount || 0) - (fact.amountReceived || 0)).toLocaleString()}</td>
-                                                                        </tr>
-                                                                    );
-                                                                })}
-                                                            </tbody>
-                                                        </table>
+                                                        {/* VIEW B: SETTLEMENT & AUDIT HISTORY */}
+                                                        {subTab === 'history' && (
+                                                            <div>
+                                                                {(partner.settledItems || []).length === 0 ? (
+                                                                    <div className="py-10 text-center space-y-1">
+                                                                        <Clock size={32} className="text-zinc-300 dark:text-zinc-700 mx-auto mb-2" />
+                                                                        <p className="text-xs font-bold text-zinc-400">No settlement history recorded yet.</p>
+                                                                        <p className="text-[10px] text-zinc-500">When collections or bank settlements are recorded, their audit receipts appear here.</p>
+                                                                    </div>
+                                                                ) : (
+                                                                    <table className="w-full text-left">
+                                                                        <thead>
+                                                                            <tr className="text-[9px] font-bold uppercase tracking-widest text-zinc-400 border-b dark:border-zinc-900 pb-2">
+                                                                                <th className="pb-2">Bill No</th>
+                                                                                <th className="pb-2">Patient</th>
+                                                                                <th className="pb-2">Investigations</th>
+                                                                                <th className="pb-2">Billed Date</th>
+                                                                                <th className="pb-2">Settled Date</th>
+                                                                                <th className="pb-2 text-right">Settled Amount</th>
+                                                                                <th className="pb-2">Mode</th>
+                                                                                <th className="pb-2">Voucher / Receipt Ref</th>
+                                                                                <th className="pb-2 text-right">Status</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80">
+                                                                            {(partner.settledItems || []).map(item => (
+                                                                                <tr key={item.receivableFactId} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30">
+                                                                                    <td className="py-3 text-[10px] font-mono font-bold">
+                                                                                        <div className="text-zinc-800 dark:text-zinc-200">{item.billNumber}</div>
+                                                                                        <div className="text-[9px] text-zinc-400 font-normal">Token: {item.token}</div>
+                                                                                    </td>
+                                                                                    <td className="py-3 text-[10px] font-bold dark:text-zinc-300">{item.patientName || 'Unknown Patient'}</td>
+                                                                                    <td className="py-3 text-[10px] text-zinc-600 dark:text-zinc-400 max-w-[180px] truncate" title={item.testsSummary}>
+                                                                                        {item.testsSummary}
+                                                                                    </td>
+                                                                                    <td className="py-3 text-[10px] text-zinc-400">{new Date(item.occurredAt || item.date).toLocaleDateString()}</td>
+                                                                                    <td className="py-3 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                                                                                        {item.settledAt ? new Date(item.settledAt).toLocaleDateString() : 'Settled'}
+                                                                                    </td>
+                                                                                    <td className="py-3 text-[10px] font-black text-right text-emerald-600 dark:text-emerald-400">
+                                                                                        ₹{(item.paidAmount || item.totalAmount || 0).toLocaleString()}
+                                                                                    </td>
+                                                                                    <td className="py-3 text-[10px] font-mono text-zinc-600 dark:text-zinc-400">
+                                                                                        {item.settlementMethod || 'BankTransfer'}
+                                                                                    </td>
+                                                                                    <td className="py-3 text-[10px] font-mono text-zinc-500">
+                                                                                        {item.settlementReceiptNo || item.claimReference || '-'}
+                                                                                    </td>
+                                                                                    <td className="py-3 text-right">
+                                                                                        <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                                                                                            Settled
+                                                                                        </span>
+                                                                                    </td>
+                                                                                </tr>
+                                                                            ))}
+                                                                        </tbody>
+                                                                    </table>
+                                                                )}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </td>
                                             </tr>
@@ -541,7 +682,7 @@ export const PartnerReceivablesTab = () => {
                 <RecoveryModal 
                     partner={selectedPartner} 
                     onClose={() => setSelectedPartner(null)} 
-                    onConfirm={(amount, method) => handleSettleRecovery(selectedPartner, amount, method)}
+                    onConfirm={(amount, method, reference) => handleSettleRecovery(selectedPartner, amount, method, reference)}
                     settling={settling}
                 />
             )}
@@ -569,6 +710,7 @@ export const PartnerReceivablesTab = () => {
 const RecoveryModal = ({ partner, onClose, onConfirm, settling }) => {
     const [amount, setAmount] = useState(partner.totalAmount.toString());
     const [method, setMethod] = useState('BankTransfer');
+    const [reference, setReference] = useState('');
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300 p-4">
@@ -583,7 +725,7 @@ const RecoveryModal = ({ partner, onClose, onConfirm, settling }) => {
                             <p className="text-[11px] text-zinc-500 font-medium uppercase tracking-widest">Collecting dues from {partner.partnerName}</p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-xl transition-all">
+                    <button onClick={onClose} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-xl transition-all cursor-pointer">
                         <X size={20} className="text-zinc-400" />
                     </button>
                 </div>
@@ -612,7 +754,7 @@ const RecoveryModal = ({ partner, onClose, onConfirm, settling }) => {
                                     <button 
                                         key={pct}
                                         onClick={() => setAmount((partner.totalAmount * pct).toFixed(2))}
-                                        className="flex-1 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-[10px] font-black text-zinc-500 hover:bg-emerald-500/10 hover:text-emerald-500 transition-all"
+                                        className="flex-1 py-2 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-[10px] font-black text-zinc-500 hover:bg-emerald-500/10 hover:text-emerald-500 transition-all cursor-pointer"
                                     >
                                         {pct * 100}% Dues
                                     </button>
@@ -630,10 +772,10 @@ const RecoveryModal = ({ partner, onClose, onConfirm, settling }) => {
                                     <button
                                         key={m.id}
                                         onClick={() => setMethod(m.id)}
-                                        className={`flex items-center gap-3 p-4 rounded-2xl border transition-all ${
+                                        className={`flex items-center gap-3 p-4 rounded-2xl border transition-all cursor-pointer ${
                                             method === m.id 
                                             ? 'border-emerald-500 bg-emerald-500/5 text-emerald-600' 
-                                            : 'border-zinc-100 dark:border-zinc-900 bg-white dark:bg-zinc-950 text-zinc-500 hover:border-zinc-300'
+                                             : 'border-zinc-100 dark:border-zinc-900 bg-white dark:bg-zinc-950 text-zinc-500 hover:border-zinc-300'
                                         }`}
                                     >
                                         <m.icon size={18} />
@@ -641,6 +783,17 @@ const RecoveryModal = ({ partner, onClose, onConfirm, settling }) => {
                                     </button>
                                 ))}
                             </div>
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 px-1">Bank Reference / UTR / Cheque #</label>
+                            <input 
+                                type="text" 
+                                value={reference}
+                                onChange={(e) => setReference(e.target.value)}
+                                placeholder="e.g. HDFC-98124, UTR-0891..."
+                                className="w-full px-5 py-3 rounded-2xl bg-zinc-50 dark:bg-zinc-950 border-2 border-transparent focus:border-emerald-500 outline-none transition-all dark:text-white font-mono text-xs font-semibold"
+                            />
                         </div>
 
                         <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20">
@@ -655,14 +808,14 @@ const RecoveryModal = ({ partner, onClose, onConfirm, settling }) => {
                         <button 
                             disabled={settling}
                             onClick={onClose}
-                            className="flex-1 py-4 bg-zinc-100 dark:bg-zinc-900 text-zinc-500 rounded-2xl text-xs font-bold hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-all"
+                            className="flex-1 py-4 bg-zinc-100 dark:bg-zinc-900 text-zinc-500 rounded-2xl text-xs font-bold hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-all cursor-pointer"
                         >
                             CANCEL
                         </button>
                         <button 
                             disabled={settling || !amount || parseFloat(amount) <= 0}
-                            onClick={() => onConfirm(parseFloat(amount), method)}
-                            className="flex-[2] py-4 bg-emerald-600 text-white rounded-2xl text-xs font-bold hover:shadow-lg hover:shadow-emerald-500/20 active:scale-95 transition-all disabled:opacity-50"
+                            onClick={() => onConfirm(parseFloat(amount), method, reference)}
+                            className="flex-[2] py-4 bg-emerald-600 text-white rounded-2xl text-xs font-bold hover:shadow-lg hover:shadow-emerald-500/20 active:scale-95 transition-all disabled:opacity-50 cursor-pointer"
                         >
                             {settling ? 'RECOVERING...' : 'RECORD SETTLEMENT'}
                         </button>

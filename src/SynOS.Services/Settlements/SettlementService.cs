@@ -21,17 +21,20 @@ namespace SynOS.Services.Settlements
         private readonly ISpendFactWriter _spendFactWriter;
         private readonly IRevenueFactWriter _revenueFactWriter;
         private readonly IUserContext _userContext;
+        private readonly SynOS.Services.Operational.INotifier _notifier;
 
         public SettlementService(
             SynOSDbContext context, 
             ISpendFactWriter spendFactWriter, 
             IRevenueFactWriter revenueFactWriter,
-            IUserContext userContext)
+            IUserContext userContext,
+            SynOS.Services.Operational.INotifier notifier)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _spendFactWriter = spendFactWriter ?? throw new ArgumentNullException(nameof(spendFactWriter));
             _revenueFactWriter = revenueFactWriter ?? throw new ArgumentNullException(nameof(revenueFactWriter));
             _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
+            _notifier = notifier ?? throw new ArgumentNullException(nameof(notifier));
         }
 
         public async Task SettleReferralPayableAsync(Guid id, decimal amount)
@@ -184,6 +187,13 @@ namespace SynOS.Services.Settlements
                 await _revenueFactWriter.DeclareRevenueFactAsync(command);
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
+
+                // Live Single Source of Truth Broadcast
+                try
+                {
+                    await _notifier.NotifyReceivablesUpdatedAsync(null, receivable.ReferralPartnerId ?? receivable.DebtorId);
+                }
+                catch { }
             }
             catch
             {
@@ -191,7 +201,7 @@ namespace SynOS.Services.Settlements
                 throw;
             }
         }
-        public async Task SettleBulkPartnerReceivablesAsync(Guid partnerId, List<Guid> factIds, decimal totalAmount, string paymentMode)
+        public async Task SettleBulkPartnerReceivablesAsync(Guid partnerId, List<Guid> factIds, decimal totalAmount, string paymentMode, string? reference = null)
         {
             if (totalAmount <= 0) throw new ArgumentException("Amount must be positive.");
             if (factIds == null || !factIds.Any()) throw new ArgumentException("No fact IDs provided.");
@@ -271,13 +281,17 @@ namespace SynOS.Services.Settlements
                                     ? _userContext.CurrentUserId 
                                     : await _context.Users.OrderBy(u => u.CreatedAt).Select(u => u.UserId).FirstOrDefaultAsync();
 
+                                var receiptNo = !string.IsNullOrWhiteSpace(reference)
+                                    ? reference.Trim()
+                                    : $"RCP-PARTNER-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpper()}";
+
                                 var payRecord = new Payment
                                 {
                                     PaymentId = Guid.NewGuid(),
                                     InvoiceId = invoice.InvoiceId,
                                     Amount = payAmount,
                                     Method = !string.IsNullOrWhiteSpace(paymentMode) ? paymentMode : "BankTransfer",
-                                    ReceiptNo = $"RCP-PARTNER-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpper()}",
+                                    ReceiptNo = receiptNo,
                                     ReceivedAt = DateTime.UtcNow,
                                     ReceivedByUserId = actorId
                                 };
@@ -317,6 +331,13 @@ namespace SynOS.Services.Settlements
                 await _revenueFactWriter.DeclareRevenueFactAsync(command);
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
+
+                // Live Single Source of Truth Broadcast
+                try
+                {
+                    await _notifier.NotifyReceivablesUpdatedAsync(null, partnerId);
+                }
+                catch { }
             }
             catch
             {

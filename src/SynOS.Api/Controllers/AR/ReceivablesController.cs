@@ -167,6 +167,9 @@ namespace SynOS.Api.Controllers.AR
                                  PatientMrn = p.MRN,
                                  Token = v.Token,
                                  InvoiceId = v.Invoices.OrderByDescending(i => i.CreatedAt).Select(i => (Guid?)i.InvoiceId).FirstOrDefault(),
+                                 SettlementReceiptNo = v.Invoices.SelectMany(i => i.Payments).OrderByDescending(pay => pay.ReceivedAt).Select(pay => pay.ReceiptNo).FirstOrDefault(),
+                                 SettlementMethod = v.Invoices.SelectMany(i => i.Payments).OrderByDescending(pay => pay.ReceivedAt).Select(pay => pay.Method).FirstOrDefault(),
+                                 PaymentReceivedAt = v.Invoices.SelectMany(i => i.Payments).OrderByDescending(pay => pay.ReceivedAt).Select(pay => (DateTime?)pay.ReceivedAt).FirstOrDefault(),
                                  TestNames = v.Orders.Where(o => o.Status != OrderStatus.Cancelled).Select(o => o.Test.TestName).ToList()
                              }).ToListAsync();
 
@@ -175,7 +178,9 @@ namespace SynOS.Api.Controllers.AR
                 var testList = x.TestNames.Where(t => !string.IsNullOrEmpty(t)).ToList();
                 var testsSummary = string.Join(", ", testList);
                 var pending = x.Amount - x.AmountReceived;
-                var status = x.SettledAt.HasValue ? "Settled" : (x.AmountReceived > 0 ? "Partial" : "Pending");
+                var isSettled = x.SettledAt.HasValue || pending <= 0.0001m;
+                var effectiveSettledAt = x.SettledAt ?? (isSettled ? x.PaymentReceivedAt : null);
+                var status = isSettled ? "Settled" : (x.AmountReceived > 0 ? "Partial" : "Pending");
 
                 // Secondary Referral overrides primary doctor for financial attribution (Receivables & Payouts)
                 var effectivePartnerId = x.SecondaryPartnerId ?? x.PrimaryPartnerId ?? x.ReferralPartnerId ?? (x.DebtorId != Guid.Empty ? x.DebtorId : (Guid?)null);
@@ -218,7 +223,10 @@ namespace SynOS.Api.Controllers.AR
                     balanceDue = pending,
                     currency = x.Currency,
                     occurredAt = x.OccurredAt,
-                    settledAt = x.SettledAt,
+                    settledAt = effectiveSettledAt,
+                    settlementReceiptNo = x.SettlementReceiptNo,
+                    settlementMethod = x.SettlementMethod,
+                    isSettled = isSettled,
                     status = status,
                     patientName = x.PatientName,
                     patientMrn = x.PatientMrn,

@@ -184,3 +184,32 @@ export const isDraftEntity = (item) => {
     if (billNo.startsWith('D-') || billNo.startsWith('DDF') || /^D[0-9A-F]{8,}/i.test(billNo) || /^D-?[0-9A-F]{8,}-\d{6}$/i.test(billNo)) return true;
     return false;
 };
+
+/**
+ * Authoritative Receivable Status Evaluator (Zero Heuristic Leakage)
+ * Deterministic Invariant: SettledAt != null OR BalanceDue <= 0 means Settled everywhere
+ */
+export const getReceivableStatus = (item) => {
+    if (!item) return 'Pending';
+    if (item.isSettled === true) return 'Settled';
+    if (item.settledAt) return 'Settled';
+    const total = Number(item.totalAmount ?? item.amount ?? 0);
+    const paid = Number(item.paidAmount ?? item.amountReceived ?? 0);
+    const due = item.balanceDue !== undefined && !isNaN(item.balanceDue) ? Number(item.balanceDue) : (total - paid);
+    if (due <= 0.0001) return 'Settled';
+    const rawStatus = String(item.status || item.paymentStatus || '').trim().toLowerCase();
+    if (rawStatus === 'settled' || rawStatus === 'paid') return 'Settled';
+    if (paid > 0 || rawStatus === 'partial') return 'Partial';
+    return 'Pending';
+};
+
+export const isReceivableSettled = (item) => getReceivableStatus(item) === 'Settled';
+
+export const getEffectiveBalanceDue = (item) => {
+    if (!item || isReceivableSettled(item)) return 0;
+    const total = Number(item.totalAmount ?? item.amount ?? 0);
+    const paid = Number(item.paidAmount ?? item.amountReceived ?? 0);
+    const due = item.balanceDue !== undefined && !isNaN(item.balanceDue) ? Number(item.balanceDue) : (total - paid);
+    return Math.max(0, isNaN(due) ? 0 : due);
+};
+

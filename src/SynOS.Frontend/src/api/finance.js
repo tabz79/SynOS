@@ -660,11 +660,11 @@ export const FinanceApi = {
         return response.json();
     },
 
-    settleBulkPartnerReceivables: async (partnerId, factIds, totalAmount, paymentMode) => {
+    settleBulkPartnerReceivables: async (partnerId, factIds, totalAmount, paymentMode, reference = null) => {
         const response = await fetch('/api/settlements/receivable/bulk', {
             method: 'POST',
             headers: FinanceApi.getHeaders(),
-            body: JSON.stringify({ partnerId, factIds, totalAmount, paymentMode })
+            body: JSON.stringify({ partnerId, factIds, totalAmount, paymentMode, reference })
         });
         if (!response.ok) throw new Error("Failed to process bulk settlement");
         return response.json();

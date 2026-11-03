@@ -32,7 +32,8 @@ import { RecordCollectionModal } from './components/RecordCollectionModal';
 import { BulkSettleModal } from './components/BulkSettleModal';
 import { DepartmentOverview } from './components/FinanceShared';
 import { FinanceApi } from '@/api/finance';
-import { FinanceUtils, isWithinTimeRange, formatCanonicalBillNo, isDraftEntity } from './components/FinanceUtils';
+import { FinanceUtils, isWithinTimeRange, formatCanonicalBillNo, isDraftEntity, getReceivableStatus, isReceivableSettled, getEffectiveBalanceDue } from './components/FinanceUtils';
+import { SignalRService } from '@/lib/signalr';
 import { useAuth } from '@/context/AuthContext';
 import { AdminApi } from '@/api/admin';
 import { CommercialDocumentViewer } from './components/documents/CommercialDocumentViewer';
@@ -2037,6 +2038,20 @@ export const PendingReceivablesScreen = () => {
         loadData();
     }, [presetRange, isConsolidated, effectiveBranchId, customDates?.start, customDates?.end]);
 
+    useEffect(() => {
+        SignalRService.startConnection().catch(console.error);
+        const conn = SignalRService._getConnection();
+        const handleLiveSync = () => {
+            loadData();
+        };
+        conn.on("ReceivableUpdated", handleLiveSync);
+        conn.on("ActionQueueUpdated", handleLiveSync);
+        return () => {
+            conn.off("ReceivableUpdated", handleLiveSync);
+            conn.off("ActionQueueUpdated", handleLiveSync);
+        };
+    }, []);
+
     const loadData = async () => {
         try {
             setLoading(true);
@@ -2063,16 +2078,18 @@ export const PendingReceivablesScreen = () => {
         return allBills.filter(b => isWithinTimeRange(b.occurredAt || b.date, presetRange, customDates));
     }, [allBills, presetRange, customDates]);
 
+    // AR Clearing Workbench strictly tracks open / unsettled receivables
+    const openBills = useMemo(() => {
+        return timeFilteredBills.filter(b => !isReceivableSettled(b));
+    }, [timeFilteredBills]);
+
     const computedPartnerSummaries = useMemo(() => {
         const groups = new Map();
-        timeFilteredBills.forEach(b => {
+        openBills.forEach(b => {
             const partnerName = b.partnerName || b.debtorName || 'Unknown Partner';
             const partnerId = b.referralPartnerId || b.debtorId || b.partnerId || partnerName;
-            const total = Number(b.totalAmount || b.amount || 0);
-            const paid = Number(b.paidAmount || b.amountReceived || 0);
-            const due = b.balanceDue !== undefined && !isNaN(b.balanceDue) ? Number(b.balanceDue) : (total - paid);
-            const safeDue = isNaN(due) ? 0 : Math.max(0, due);
-            if (safeDue <= 0 && b.settledAt) return;
+            const safeDue = getEffectiveBalanceDue(b);
+            if (safeDue <= 0) return;
 
             const billDate = b.occurredAt || b.date;
             const days = billDate ? Math.floor((new Date() - new Date(billDate)) / (1000 * 60 * 60 * 24)) : 0;
@@ -2100,12 +2117,12 @@ export const PendingReceivablesScreen = () => {
             else p.aging_30_Plus += safeDue;
         });
         return Array.from(groups.values()).filter(p => p.totalOutstanding > 0);
-    }, [timeFilteredBills]);
+    }, [openBills]);
 
     const handleOpenPartnerClaim = async (partner, specificFactIds = null) => {
         try {
             setGeneratingClaim(true);
-            const partnerBills = timeFilteredBills.filter(b => b.partnerName === partner.partnerName && !b.settledAt);
+            const partnerBills = openBills.filter(b => b.partnerName === partner.partnerName);
             const targetFactIds = specificFactIds && specificFactIds.length > 0 
                 ? specificFactIds 
                 : partnerBills.map(b => b.receivableFactId);
@@ -2134,17 +2151,22 @@ export const PendingReceivablesScreen = () => {
         window.open(`https://wa.me/${cleanPhone ? (cleanPhone.startsWith('91') ? cleanPhone : '91' + cleanPhone) : ''}?text=${encodeURIComponent(msg)}`, '_blank');
     };
 
-    const handleBulkSettle = (partner) => {
+    const handleBulkSettle = (partner, specificFactIds = null) => {
         setSelectedPartner(partner);
-        const partnerBills = timeFilteredBills.filter(b => b.partnerName === partner.partnerName && !b.settledAt);
-        setSelectedBillIds(partnerBills.map(b => b.receivableFactId));
+        const partnerBills = openBills.filter(b => b.partnerName === partner.partnerName);
+        const targetIds = specificFactIds && specificFactIds.length > 0
+            ? specificFactIds
+            : partnerBills.map(b => b.receivableFactId);
+        setSelectedBillIds(targetIds);
         setIsBulkModalOpen(true);
     };
 
-    const confirmBulkSettlement = async (totalAmount, paymentMode) => {
+    const confirmBulkSettlement = async (totalAmount, paymentMode, reference = null) => {
         try {
-            await FinanceApi.settleBulkPartnerReceivables(selectedPartner.partnerId, selectedBillIds, totalAmount, paymentMode);
+            await FinanceApi.settleBulkPartnerReceivables(selectedPartner.partnerId, selectedBillIds, totalAmount, paymentMode, reference);
             setIsBulkModalOpen(false);
+            setSelectedBillIds([]);
+            setSelectedFactIds(new Set());
             loadData();
         } catch (err) {
             alert(err.message);
@@ -2401,11 +2423,11 @@ export const PendingReceivablesScreen = () => {
                                         </td>
                                     </tr>
                                     {expandedPartnerId === partner.partnerId && (() => {
-                                        const partnerBills = timeFilteredBills.filter(b => b.partnerName === partner.partnerName && !b.settledAt);
+                                        const partnerBills = openBills.filter(b => b.partnerName === partner.partnerName);
                                         const partnerItemIds = partnerBills.map(b => b.receivableFactId);
                                         const selectedInPartner = partnerBills.filter(b => selectedFactIds.has(b.receivableFactId));
                                         const selectedCount = selectedInPartner.length;
-                                        const selectedSum = selectedInPartner.reduce((sum, b) => sum + (b.amount - b.amountReceived), 0);
+                                        const selectedSum = selectedInPartner.reduce((sum, b) => sum + getEffectiveBalanceDue(b), 0);
                                         const allPartnerSelected = partnerBills.length > 0 && selectedCount === partnerBills.length;
 
                                         return (
@@ -2447,6 +2469,12 @@ export const PendingReceivablesScreen = () => {
                                                                     >
                                                                         <Receipt size={13} />
                                                                         <span>Generate B2B Invoice ({selectedCount})</span>
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => handleBulkSettle(partner, selectedInPartner.map(b => b.receivableFactId))}
+                                                                        className="px-4 py-2 rounded-xl bg-synos-primary hover:bg-synos-primary/90 text-white text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 shadow-md shadow-synos-primary/20 active:scale-95 cursor-pointer transition-all"
+                                                                    >
+                                                                        <span>Settle Selected ({selectedCount})</span>
                                                                     </button>
                                                                 </div>
                                                             </div>
@@ -2534,10 +2562,13 @@ export const PendingReceivablesScreen = () => {
             {selectedPartner && (
                 <BulkSettleModal 
                     isOpen={isBulkModalOpen}
-                    onClose={() => setIsBulkModalOpen(false)}
+                    onClose={() => {
+                        setIsBulkModalOpen(false);
+                        setSelectedBillIds([]);
+                    }}
                     onConfirm={confirmBulkSettlement}
                     partnerName={selectedPartner.partnerName}
-                    selectedBills={allBills.filter(b => b.partnerName === selectedPartner.partnerName && !b.settledAt)}
+                    selectedBills={openBills.filter(b => b.partnerName === selectedPartner.partnerName && (selectedBillIds.length === 0 || selectedBillIds.includes(b.receivableFactId)))}
                 />
             )}
 

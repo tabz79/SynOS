@@ -7,7 +7,7 @@ namespace SynOS.Services.Settlements
     {
         Task SettleReferralPayableAsync(Guid id, decimal amount);
         Task SettleReceivableAsync(Guid id, decimal amount);
-        Task SettleBulkPartnerReceivablesAsync(Guid partnerId, System.Collections.Generic.List<Guid> factIds, decimal totalAmount, string paymentMode);
+        Task SettleBulkPartnerReceivablesAsync(Guid partnerId, System.Collections.Generic.List<Guid> factIds, decimal totalAmount, string paymentMode, string? reference = null);
         Task SettleBulkReferralPayablesAsync(Guid partnerId, System.Collections.Generic.List<Guid> factIds, decimal totalAmount, string paymentMethod);
     }
 }

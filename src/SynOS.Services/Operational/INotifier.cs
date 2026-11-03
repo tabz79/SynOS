@@ -10,5 +10,6 @@ namespace SynOS.Services.Operational
         Task NotifyAssignmentUpdateAsync(string branchId, string departmentCode, Guid assignmentId, string status, string visitId, Guid? assignedResourceId = null, string? assignedTechnicianName = null);
         Task NotifyPrintJobAsync(string branchId, string printerType, string payload);
         Task NotifyInventoryShortageAsync(string branchId, string specimenId, string tubeCode, int required, int available);
+        Task NotifyReceivablesUpdatedAsync(string? branchId = null, Guid? partnerId = null);
     }
 }

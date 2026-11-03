@@ -4,7 +4,13 @@ import { FinanceUtils } from './FinanceUtils';
 export const BulkSettleModal = ({ isOpen, onClose, onConfirm, partnerName, selectedBills }) => {
     const [amount, setAmount] = useState('');
     const [paymentMode, setPaymentMode] = useState('BankTransfer');
-    const totalDue = selectedBills.reduce((acc, bill) => acc + (bill.amount - bill.amountReceived), 0);
+    const [reference, setReference] = useState('');
+    const totalDue = selectedBills.reduce((acc, bill) => {
+        const total = Number(bill.totalAmount || bill.amount || 0);
+        const paid = Number(bill.paidAmount || bill.amountReceived || 0);
+        const due = bill.balanceDue !== undefined && !isNaN(bill.balanceDue) ? Number(bill.balanceDue) : (total - paid);
+        return acc + Math.max(0, isNaN(due) ? 0 : due);
+    }, 0);
 
     if (!isOpen) return null;
 
@@ -73,6 +79,17 @@ export const BulkSettleModal = ({ isOpen, onClose, onConfirm, partnerName, selec
                             </div>
                         </div>
 
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 px-1">Bank Reference / UTR / Cheque #</label>
+                            <input 
+                                type="text" 
+                                value={reference}
+                                onChange={(e) => setReference(e.target.value)}
+                                placeholder="e.g. HDFC12938491, UTR-0921..."
+                                className="w-full px-4 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-950 border-2 border-transparent focus:border-synos-primary outline-none transition-all dark:text-white font-medium text-xs font-mono"
+                            />
+                        </div>
+
                         <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20">
                             <p className="text-[10px] text-amber-500 leading-relaxed font-medium">
                                 <span className="font-bold uppercase mr-1">Distribution:</span>
@@ -84,14 +101,14 @@ export const BulkSettleModal = ({ isOpen, onClose, onConfirm, partnerName, selec
                     <div className="flex gap-3 pt-4">
                         <button 
                             onClick={onClose}
-                            className="flex-1 py-3 rounded-2xl bg-zinc-100 dark:bg-zinc-800 text-sm font-bold text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all"
+                            className="flex-1 py-3 rounded-2xl bg-zinc-100 dark:bg-zinc-800 text-sm font-bold text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all cursor-pointer"
                         >
                             Cancel
                         </button>
                         <button 
                             disabled={!amount || parseFloat(amount) <= 0}
-                            onClick={() => onConfirm(parseFloat(amount), paymentMode)}
-                            className="flex-[2] py-3 rounded-2xl bg-synos-primary text-sm font-bold text-white shadow-lg shadow-synos-primary/20 hover:brightness-105 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale"
+                            onClick={() => onConfirm(parseFloat(amount), paymentMode, reference)}
+                            className="flex-[2] py-3 rounded-2xl bg-synos-primary text-sm font-bold text-white shadow-lg shadow-synos-primary/20 hover:brightness-105 active:scale-95 transition-all disabled:opacity-50 disabled:grayscale cursor-pointer"
                         >
                             Process Settlement
                         </button>

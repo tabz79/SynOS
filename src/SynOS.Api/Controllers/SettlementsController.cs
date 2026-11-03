@@ -36,7 +36,7 @@ namespace SynOS.Api.Controllers
         [HttpPost("receivable/bulk")]
         public async Task<IActionResult> SettleBulkReceivables([FromBody] BulkSettleRequestDto request)
         {
-            await _settlementService.SettleBulkPartnerReceivablesAsync(request.PartnerId, request.FactIds, request.TotalAmount, request.PaymentMode);
+            await _settlementService.SettleBulkPartnerReceivablesAsync(request.PartnerId, request.FactIds, request.TotalAmount, request.PaymentMode, request.Reference);
             return Ok(new { Message = "Bulk settlement processed successfully." });
         }
     }

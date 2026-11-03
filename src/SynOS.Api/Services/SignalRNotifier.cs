@@ -161,5 +161,26 @@ namespace SynOS.Api.Services
                     timestamp = DateTime.UtcNow
                 });
         }
+
+        public async Task NotifyReceivablesUpdatedAsync(string? branchId = null, Guid? partnerId = null)
+        {
+            try
+            {
+                var payload = new
+                {
+                    partnerId = partnerId?.ToString(),
+                    branchId = branchId,
+                    timestamp = DateTime.UtcNow
+                };
+
+                // Broadcast to all active clients (financial ledger authority event)
+                await _hubContext.Clients.All.SendAsync("ReceivableUpdated", payload);
+                await _hubContext.Clients.All.SendAsync("ActionQueueUpdated");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[SignalRNotifier] Error broadcasting ReceivableUpdated: {ex.Message}");
+            }
+        }
     }
 }
