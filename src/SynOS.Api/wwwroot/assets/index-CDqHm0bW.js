@@ -46974,8 +46974,8 @@ Details: ${A.inner}`);
     ]);
     const ie = (g == null ? void 0 : g.filter((W) => {
       var _a3;
-      return !((_a3 = W.token) == null ? void 0 : _a3.toUpperCase().startsWith("D-")) && (W.operationalStatus || "").toLowerCase() !== "draft" && (W.status || "").toLowerCase() !== "draft";
-    })) || [], ee = a ? Math.max(Number(a.walkInsToday) || 0, (Number(a.prepaidBillsCount) || 0) + (Number(a.paymentsOnlineCount) || 0) + (Number(a.paymentsCashTotal) > 0 ? 1 : 0), ie.filter((W) => W.dateGroup === "Today" || !W.isFinalized).length) : 0, ae = a ? [
+      return W.dateGroup === "Today" && !((_a3 = W.token) == null ? void 0 : _a3.toUpperCase().startsWith("D-")) && (W.operationalStatus || "").toLowerCase() !== "draft" && (W.status || "").toLowerCase() !== "draft";
+    })) || [], ee = a && (Number(a.walkInsToday) || ie.length) || 0, ae = a ? [
       {
         value: ee.toString(),
         label: "Walk-Ins",

@@ -124,14 +124,19 @@ namespace SynOS.Services
 
             var finalPrepaidCount = prepaidCount > 0 ? prepaidCount : (stats?.PrepaidCount ?? 0);
             
-            // Total Walk-Ins: ALL patients who registered at the reception desk today (Paid cash/online + Corporate Prepaid)
-            var statsWalkIns = (stats?.WalkIns ?? 0) + (stats?.PrepaidCount ?? 0);
-            var finalWalkIns = Math.Max(walkIns, Math.Max(statsWalkIns, finalPrepaidCount + (stats?.WalkIns ?? 0)));
+            // Total Walk-Ins: ALL patients who registered at the reception desk today (excluding uncommitted drafts & cancellations)
+            var finalWalkIns = walkIns > 0 ? walkIns : (stats?.WalkIns ?? 0);
 
             var paymentsQuery = _context.Payments
                 .Include(p => p.Invoice)
                     .ThenInclude(i => i.Visit)
-                .Where(p => p.Invoice != null && p.Invoice.Visit != null && p.Invoice.Visit.BranchId == branchId && p.ReceivedAt >= startUtc && p.ReceivedAt < endUtc);
+                .Where(p => p.Invoice != null && p.Invoice.Visit != null 
+                         && p.Invoice.Visit.BranchId == branchId 
+                         && p.Invoice.Visit.Status != VisitStatus.Draft
+                         && (p.Invoice.Visit.Token == null || !p.Invoice.Visit.Token.StartsWith("D-"))
+                         && p.Invoice.Visit.PaymentCollectionModel != "PartnerCollects"
+                         && p.Invoice.Visit.BillingType != BillingType.PrepaidPartner
+                         && p.ReceivedAt >= startUtc && p.ReceivedAt < endUtc);
 
             if (userId.HasValue)
             {
@@ -146,8 +151,38 @@ namespace SynOS.Services
             var payments = await paymentsQuery.ToListAsync();
             Func<string?, bool> isCash = m => !string.IsNullOrEmpty(m) && m.IndexOf("Cash", StringComparison.OrdinalIgnoreCase) >= 0;
 
+            Func<string?, bool> isOnline = m =>
+            {
+                if (string.IsNullOrWhiteSpace(m)) return false;
+                var norm = m.Trim().ToLowerInvariant();
+                // Exclude internal B2B partner ledger credits, receivables, adjustments
+                if (norm.Contains("partner") || norm.Contains("prepaid") || norm.Contains("corporate") || 
+                    norm.Contains("insurance") || norm.Contains("credit") || norm.Contains("receivable") || 
+                    norm.Contains("adjust") || norm.Contains("writeoff") || norm.Contains("waive") || 
+                    norm.Contains("draft"))
+                {
+                    return false;
+                }
+
+                return norm.Contains("upi") || 
+                       norm.Contains("card") || 
+                       norm.Contains("online") || 
+                       norm.Contains("pos") || 
+                       norm.Contains("qr") || 
+                       norm.Contains("netbanking") || 
+                       norm.Contains("banktransfer") || 
+                       norm.Contains("digital") ||
+                       norm.Contains("gpay") ||
+                       norm.Contains("phonepe") ||
+                       norm.Contains("paytm") ||
+                       norm.Contains("neft") ||
+                       norm.Contains("rtgs") ||
+                       norm.Contains("imps") ||
+                       norm.Contains("cheque");
+            };
+
             decimal cashTotal = payments.Where(p => isCash(p.Method)).Sum(p => p.Amount);
-            var onlinePayments = payments.Where(p => !isCash(p.Method)).ToList();
+            var onlinePayments = payments.Where(p => isOnline(p.Method)).ToList();
             decimal onlineTotal = onlinePayments.Sum(p => p.Amount);
             int onlineCount = onlinePayments.Count(p => p.Amount > 0);
             decimal totalPayments = cashTotal + onlineTotal;
