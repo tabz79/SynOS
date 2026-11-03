@@ -170,8 +170,6 @@ namespace SynOS.Services.Operations
                 .AsSplitQuery()
                 .Where(v => v.BranchId == branchId && 
                             v.Status != VisitStatus.Cancelled &&
-                            v.Status != VisitStatus.Draft &&
-                            (v.Token == null || !v.Token.StartsWith("D-")) &&
                             (
                                 // LIVE VIEW: Active (7 days) + Terminal (Today)
                                 (!includeHistory && 
@@ -293,7 +291,7 @@ namespace SynOS.Services.Operations
                     // Phase 6: Granular Payment Fields (Contracted B2B Net Rate applied for Prepaid)
                     TotalAmount = (visit.PaymentCollectionModel == "PartnerCollects")
                         ? Math.Max(0m, ((invoice?.GrossAmount > 0 ? invoice.GrossAmount : invoice?.Total) ?? 0m) - ((visit.B2BDiscountAmount.HasValue && visit.B2BDiscountAmount.Value > 0) ? visit.B2BDiscountAmount.Value : (invoice?.DiscountAmount ?? 0m)))
-                        : (invoice?.Total ?? 0m),
+                        : ((invoice?.Total > 0 ? invoice.Total : (visit.Orders?.Where(o => o.ParentOrderId == null && o.Status != OrderStatus.Cancelled).Sum(o => o.Price) ?? 0m))),
                     TotalPaid = invoice?.Payments.Sum(p => p.Amount) ?? 0m,
                     RemainingDue = Math.Max(0m, (invoice?.Total ?? 0m) - (invoice?.Payments.Sum(p => p.Amount) ?? 0m)),
                     PaymentMethod = DerivePaymentMethod(visit, invoice),
@@ -422,7 +420,7 @@ namespace SynOS.Services.Operations
                 
                 TotalAmount = (visit.PaymentCollectionModel == "PartnerCollects")
                     ? Math.Max(0m, ((invoice?.GrossAmount > 0 ? invoice.GrossAmount : invoice?.Total) ?? 0m) - ((visit.B2BDiscountAmount.HasValue && visit.B2BDiscountAmount.Value > 0) ? visit.B2BDiscountAmount.Value : (invoice?.DiscountAmount ?? 0m)))
-                    : (invoice?.Total ?? 0m),
+                    : ((invoice?.Total > 0 ? invoice.Total : (visit.Orders?.Where(o => o.ParentOrderId == null && o.Status != OrderStatus.Cancelled).Sum(o => o.Price) ?? 0m))),
                 TotalPaid = invoice?.Payments.Sum(p => p.Amount) ?? 0m,
                 RemainingDue = Math.Max(0m, (invoice?.Total ?? 0m) - (invoice?.Payments.Sum(p => p.Amount) ?? 0m)),
                 PaymentMethod = DerivePaymentMethod(visit, invoice),
@@ -495,6 +493,11 @@ namespace SynOS.Services.Operations
 
         private string DerivePaymentDisplay(Visit visit, Invoice? invoice)
         {
+            if (visit.Status == VisitStatus.Draft || (visit.Token != null && visit.Token.StartsWith("D-", StringComparison.OrdinalIgnoreCase)))
+            {
+                return "Draft";
+            }
+
             if (visit.PaymentCollectionModel == "PartnerCollects")
             {
                 var partnerName = visit.ReferralPartner?.Name ?? "Partner";
@@ -528,6 +531,11 @@ namespace SynOS.Services.Operations
 
         private string DerivePaymentMethod(Visit visit, Invoice? invoice)
         {
+            if (visit.Status == VisitStatus.Draft || (visit.Token != null && visit.Token.StartsWith("D-", StringComparison.OrdinalIgnoreCase)))
+            {
+                return "Draft";
+            }
+
             if (visit.PaymentCollectionModel == "PartnerCollects") return "Prepaid";
 
             if (invoice != null && (invoice.Status == "Paid" || invoice.Status == "FullPaid"))
@@ -547,6 +555,10 @@ namespace SynOS.Services.Operations
         private string DeriveOperationalStatus(Visit visit, List<object>? sampleStatuses, List<ProcessingAssignmentStatus> processingStatuses, List<string?> resultStatuses, string? reportStatus)
         {
             // 5. Operational Status (SINGLE SOURCE OF TRUTH)
+            if (visit.Status == VisitStatus.Draft || (visit.Token != null && visit.Token.StartsWith("D-", StringComparison.OrdinalIgnoreCase)))
+            {
+                return "Draft";
+            }
             
             // Completed
             if (reportStatus == "Signed" || reportStatus == "Finalized")

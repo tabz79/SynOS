@@ -70,100 +70,108 @@ namespace SynOS.Api.Controllers
                 return BadRequest("Valid amount is required.");
             }
 
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            var strategy = _context.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync<IActionResult>(async () =>
             {
-                // 1. Create Overhead Payable (Obligation ONLY)
-                var userId = request.UserId != Guid.Empty ? request.UserId : (_userContext.CurrentUserId != Guid.Empty ? _userContext.CurrentUserId : Guid.Empty);
-                var payable = new OverheadPayableFact
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                try
                 {
-                    OverheadPayableId = Guid.NewGuid(),
-                    Category = request.Category,
-                    AmountDue = request.Amount,
-                    Description = request.Description,
-                    DueDate = request.ExpenseDate != default ? request.ExpenseDate : DateTime.UtcNow,
-                    Status = VendorPayableStatus.Pending,
-                    CreatedAt = DateTime.UtcNow,
-                    CreatedBy = userId
-                };
+                    // 1. Create Overhead Payable (Obligation ONLY)
+                    var userId = request.UserId != Guid.Empty ? request.UserId : (_userContext.CurrentUserId != Guid.Empty ? _userContext.CurrentUserId : Guid.Empty);
+                    var payable = new OverheadPayableFact
+                    {
+                        OverheadPayableId = Guid.NewGuid(),
+                        Category = request.Category,
+                        AmountDue = request.Amount,
+                        Description = request.Description,
+                        DueDate = request.ExpenseDate != default ? request.ExpenseDate : DateTime.UtcNow,
+                        Status = VendorPayableStatus.Pending,
+                        CreatedAt = DateTime.UtcNow,
+                        CreatedBy = userId
+                    };
 
-                await _context.OverheadPayableFacts.AddAsync(payable);
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
+                    await _context.OverheadPayableFacts.AddAsync(payable);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
 
-                return CreatedAtAction(nameof(GetExpenseById), new { id = payable.OverheadPayableId }, payable);
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+                    return CreatedAtAction(nameof(GetExpenseById), new { id = payable.OverheadPayableId }, payable);
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    return StatusCode(500, $"Internal server error: {ex.Message}");
+                }
+            });
         }
 
         [HttpPost("{id}/settle")]
         public async Task<IActionResult> SettleExpense(Guid id, [FromBody] SettleOverheadRequestDto request)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            var strategy = _context.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync<IActionResult>(async () =>
             {
-                var payable = await _context.OverheadPayableFacts.FindAsync(id);
-                if (payable == null) return NotFound("Overhead payable not found.");
-
-                if (payable.Status == VendorPayableStatus.Settled)
-                    return BadRequest("Payable is already settled.");
-
-                var remaining = payable.AmountDue - payable.AmountPaid;
-                var settleAmount = Math.Min(request.Amount, remaining);
-
-                payable.AmountPaid += settleAmount;
-
-                // Precision check: using 0.0001m
-                if (Math.Abs(payable.AmountDue - payable.AmountPaid) < 0.0001m)
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                try
                 {
-                    payable.Status = VendorPayableStatus.Settled;
-                    payable.SettledAt = DateTime.UtcNow;
+                    var payable = await _context.OverheadPayableFacts.FindAsync(id);
+                    if (payable == null) return NotFound("Overhead payable not found.");
+
+                    if (payable.Status == VendorPayableStatus.Settled)
+                        return BadRequest("Payable is already settled.");
+
+                    var remaining = payable.AmountDue - payable.AmountPaid;
+                    var settleAmount = Math.Min(request.Amount, remaining);
+
+                    payable.AmountPaid += settleAmount;
+
+                    // Precision check: using 0.0001m
+                    if (Math.Abs(payable.AmountDue - payable.AmountPaid) < 0.0001m)
+                    {
+                        payable.Status = VendorPayableStatus.Settled;
+                        payable.SettledAt = DateTime.UtcNow;
+                    }
+                    else
+                    {
+                        payable.Status = VendorPayableStatus.PartiallyPaid;
+                    }
+
+                    var effectiveBranchId = _userContext.CurrentBranchId != Guid.Empty
+                        ? _userContext.CurrentBranchId
+                        : (Guid?)null;
+
+                    // Emit SpendFact (Money Moved)
+                    var spendFact = new SpendFact(
+                        Guid.NewGuid(),
+                        Guid.Empty,
+                        settleAmount,
+                        "INR",
+                        "Overhead",
+                        payable.Description ?? "Overhead Expense", // PayeeName
+                        $"Category: {payable.Category}", // Notes
+                        effectiveBranchId, // BranchId
+                        request.PaymentMethod,
+                        $"OHP-{payable.OverheadPayableId.ToString().Substring(0, 8)}",
+                        DateTime.UtcNow,
+                        DateTime.UtcNow,
+                        "Main Account",
+                        "Finance API",
+                        Guid.Empty,
+                        Guid.Empty,
+                        Guid.Empty
+                    );
+
+                    await _spendFactWriter.CreateSpendFactAsync(spendFact);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    return Ok(payable);
                 }
-                else
+                catch (Exception ex)
                 {
-                    payable.Status = VendorPayableStatus.PartiallyPaid;
+                    await transaction.RollbackAsync();
+                    return StatusCode(500, $"Internal server error: {ex.Message}");
                 }
-
-                var effectiveBranchId = _userContext.CurrentBranchId != Guid.Empty
-                    ? _userContext.CurrentBranchId
-                    : (Guid?)null;
-
-                // Emit SpendFact (Money Moved)
-                var spendFact = new SpendFact(
-                    Guid.NewGuid(),
-                    Guid.Empty,
-                    settleAmount,
-                    "INR",
-                    "Overhead",
-                    payable.Description ?? "Overhead Expense", // PayeeName
-                    $"Category: {payable.Category}", // Notes
-                    effectiveBranchId, // BranchId
-                    request.PaymentMethod,
-                    $"OHP-{payable.OverheadPayableId.ToString().Substring(0, 8)}",
-                    DateTime.UtcNow,
-                    DateTime.UtcNow,
-                    "Main Account",
-                    "Finance API",
-                    Guid.Empty,
-                    Guid.Empty,
-                    Guid.Empty
-                );
-
-                await _spendFactWriter.CreateSpendFactAsync(spendFact);
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                return Ok(payable);
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+            });
         }
 
         [HttpGet("templates")]
@@ -579,106 +587,247 @@ namespace SynOS.Api.Controllers
             if (string.IsNullOrWhiteSpace(request.Reason))
                 return BadRequest("A valid correction reason is required.");
 
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            var strategy = _context.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync<IActionResult>(async () =>
             {
-                var effectiveUserId = request.UserId.HasValue && request.UserId.Value != Guid.Empty 
-                    ? request.UserId.Value 
-                    : (_userContext.CurrentUserId != Guid.Empty ? _userContext.CurrentUserId : Guid.Empty);
-
-                var payable = await _context.OverheadPayableFacts.FindAsync(id);
-                var vp = payable == null ? await _context.VendorPayables.FindAsync(id) : null;
-                if (payable == null && vp == null) return NotFound("Expense record not found.");
-
-                if (vp != null)
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                try
                 {
-                    var prevVpAmount = vp.Amount;
-                    var diffVp = request.NewAmount - prevVpAmount;
-                    vp.Amount = request.NewAmount;
-                    if (vp.Status == VendorPayableStatus.Settled)
+                    var effectiveUserId = request.UserId.HasValue && request.UserId.Value != Guid.Empty 
+                        ? request.UserId.Value 
+                        : (_userContext.CurrentUserId != Guid.Empty ? _userContext.CurrentUserId : Guid.Empty);
+
+                    var payable = await _context.OverheadPayableFacts.FindAsync(id);
+                    var vp = payable == null ? await _context.VendorPayables.FindAsync(id) : null;
+                    if (payable == null && vp == null) return NotFound("Expense record not found.");
+
+                    if (vp != null)
                     {
-                        vp.AmountPaid = request.NewAmount;
+                        var prevVpAmount = vp.Amount;
+                        var diffVp = request.NewAmount - prevVpAmount;
+                        vp.Amount = request.NewAmount;
+                        if (vp.Status == VendorPayableStatus.Settled)
+                        {
+                            vp.AmountPaid = request.NewAmount;
+                        }
+
+                        var vpAudit = new ExpenseCorrectionAudit
+                        {
+                            Id = Guid.NewGuid(),
+                            ExpenseId = vp.VendorPayableId,
+                            ExpenseType = "VendorPayable",
+                            PreviousAmount = prevVpAmount,
+                            NewAmount = request.NewAmount,
+                            PreviousCategory = "Vendor",
+                            NewCategory = "Vendor",
+                            PreviousPaymentMethod = "BankTransfer",
+                            NewPaymentMethod = request.NewPaymentMethod ?? "BankTransfer",
+                            Reason = request.Reason,
+                            Notes = request.Notes ?? "",
+                            AuditDiffJson = System.Text.Json.JsonSerializer.Serialize(new {
+                                previousAmount = prevVpAmount,
+                                newAmount = request.NewAmount,
+                                difference = diffVp,
+                                vendorName = vp.VendorName
+                            }),
+                            CorrectedByUserId = effectiveUserId,
+                            CorrectedByName = !string.IsNullOrWhiteSpace(request.UserName) ? request.UserName : "Reception Staff",
+                            CorrectedAt = DateTime.UtcNow
+                        };
+
+                        await _context.ExpenseCorrectionAudits.AddAsync(vpAudit);
+                        await _context.SaveChangesAsync();
+                        await transaction.CommitAsync();
+
+                        return Ok(new { payable = vp, audit = vpAudit });
                     }
 
-                    var vpAudit = new ExpenseCorrectionAudit
+                    var prevAmount = payable!.AmountDue;
+                    var prevCategory = payable.Category.ToString();
+                    var prevDesc = payable.Description;
+
+                    var prefix = $"OHP-{payable.OverheadPayableId.ToString().Substring(0, 8)}";
+                    var spendFact = await _context.SpendFacts
+                        .OrderByDescending(s => s.OccurredAt)
+                        .FirstOrDefaultAsync(s => s.TransactionReference == prefix);
+
+                    var prevPaymentMethod = spendFact != null ? spendFact.PaymentMethod.ToString() : "Cash";
+
+                    // Update category if provided
+                    if (!string.IsNullOrEmpty(request.NewCategory) && Enum.TryParse<OverheadExpenseCategory>(request.NewCategory, true, out var parsedCategory))
+                    {
+                        payable.Category = parsedCategory;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(request.NewDescription))
+                    {
+                        payable.Description = request.NewDescription;
+                    }
+
+                    var diff = request.NewAmount - prevAmount;
+                    payable.AmountDue = request.NewAmount;
+
+                    if (payable.Status == VendorPayableStatus.Settled)
+                    {
+                        payable.AmountPaid = request.NewAmount;
+
+                        if (diff != 0)
+                        {
+                            var paymentMethod = spendFact?.PaymentMethod ?? SynOS.Models.Enums.PaymentMethod.Cash;
+                            if (!string.IsNullOrEmpty(request.NewPaymentMethod) && Enum.TryParse<SynOS.Models.Enums.PaymentMethod>(request.NewPaymentMethod, true, out var parsedPm))
+                            {
+                                paymentMethod = parsedPm;
+                            }
+
+                            var adjSpendFact = new SpendFact(
+                                Guid.NewGuid(),
+                                Guid.Empty,
+                                diff,
+                                "INR",
+                                "Overhead",
+                                payable.Description ?? "Expense Correction",
+                                $"Correction Diff [{diff:+0.00;-0.00}]: {request.Reason}",
+                                _userContext.CurrentBranchId != Guid.Empty ? _userContext.CurrentBranchId : null,
+                                paymentMethod,
+                                $"OHP-ADJ-{payable.OverheadPayableId.ToString().Substring(0, 8)}-{DateTime.UtcNow.Ticks}",
+                                DateTime.UtcNow,
+                                DateTime.UtcNow,
+                                "Main Account",
+                                "Finance API",
+                                Guid.Empty,
+                                Guid.Empty,
+                                Guid.Empty
+                            );
+
+                            await _spendFactWriter.CreateSpendFactAsync(adjSpendFact);
+                        }
+                    }
+
+                    var auditDiff = new
+                    {
+                        previousAmount = prevAmount,
+                        newAmount = request.NewAmount,
+                        difference = diff,
+                        previousCategory = prevCategory,
+                        newCategory = request.NewCategory ?? prevCategory,
+                        previousDescription = prevDesc,
+                        newDescription = request.NewDescription ?? prevDesc,
+                        previousPaymentMethod = prevPaymentMethod,
+                        newPaymentMethod = request.NewPaymentMethod ?? prevPaymentMethod
+                    };
+
+                    var audit = new ExpenseCorrectionAudit
                     {
                         Id = Guid.NewGuid(),
-                        ExpenseId = vp.VendorPayableId,
-                        ExpenseType = "VendorPayable",
-                        PreviousAmount = prevVpAmount,
+                        ExpenseId = payable.OverheadPayableId,
+                        ExpenseType = "DailyExpense",
+                        PreviousAmount = prevAmount,
                         NewAmount = request.NewAmount,
-                        PreviousCategory = "Vendor",
-                        NewCategory = "Vendor",
-                        PreviousPaymentMethod = "BankTransfer",
-                        NewPaymentMethod = request.NewPaymentMethod ?? "BankTransfer",
+                        PreviousCategory = prevCategory,
+                        NewCategory = request.NewCategory ?? prevCategory,
+                        PreviousPaymentMethod = prevPaymentMethod,
+                        NewPaymentMethod = request.NewPaymentMethod ?? prevPaymentMethod,
                         Reason = request.Reason,
                         Notes = request.Notes ?? "",
-                        AuditDiffJson = System.Text.Json.JsonSerializer.Serialize(new {
-                            previousAmount = prevVpAmount,
-                            newAmount = request.NewAmount,
-                            difference = diffVp,
-                            vendorName = vp.VendorName
-                        }),
+                        AuditDiffJson = System.Text.Json.JsonSerializer.Serialize(auditDiff),
                         CorrectedByUserId = effectiveUserId,
                         CorrectedByName = !string.IsNullOrWhiteSpace(request.UserName) ? request.UserName : "Reception Staff",
                         CorrectedAt = DateTime.UtcNow
                     };
 
-                    await _context.ExpenseCorrectionAudits.AddAsync(vpAudit);
+                    await _context.ExpenseCorrectionAudits.AddAsync(audit);
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
 
-                    return Ok(new { payable = vp, audit = vpAudit });
+                    return Ok(new { payable, audit });
                 }
-
-                var prevAmount = payable!.AmountDue;
-                var prevCategory = payable.Category.ToString();
-                var prevDesc = payable.Description;
-
-                var prefix = $"OHP-{payable.OverheadPayableId.ToString().Substring(0, 8)}";
-                var spendFact = await _context.SpendFacts
-                    .OrderByDescending(s => s.OccurredAt)
-                    .FirstOrDefaultAsync(s => s.TransactionReference == prefix);
-
-                var prevPaymentMethod = spendFact != null ? spendFact.PaymentMethod.ToString() : "Cash";
-
-                // Update category if provided
-                if (!string.IsNullOrEmpty(request.NewCategory) && Enum.TryParse<OverheadExpenseCategory>(request.NewCategory, true, out var parsedCategory))
+                catch (Exception ex)
                 {
-                    payable.Category = parsedCategory;
+                    await transaction.RollbackAsync();
+                    return StatusCode(500, $"Internal server error: {ex.Message}");
                 }
+            });
+        }
 
-                if (!string.IsNullOrWhiteSpace(request.NewDescription))
+        [HttpPost("{id}/cancel")]
+        public async Task<IActionResult> CancelExpense(Guid id, [FromBody] CancelExpenseDto request)
+        {
+            if (request == null || string.IsNullOrWhiteSpace(request.Reason))
+                return BadRequest("A valid cancellation reason is required.");
+
+            var strategy = _context.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync<IActionResult>(async () =>
+            {
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                try
                 {
-                    payable.Description = request.NewDescription;
-                }
+                    var effectiveUserId = request.UserId.HasValue && request.UserId.Value != Guid.Empty 
+                        ? request.UserId.Value 
+                        : (_userContext.CurrentUserId != Guid.Empty ? _userContext.CurrentUserId : Guid.Empty);
 
-                var diff = request.NewAmount - prevAmount;
-                payable.AmountDue = request.NewAmount;
+                    var payable = await _context.OverheadPayableFacts.FindAsync(id);
+                    var vp = payable == null ? await _context.VendorPayables.FindAsync(id) : null;
+                    if (payable == null && vp == null) return NotFound("Expense record not found.");
 
-                if (payable.Status == VendorPayableStatus.Settled)
-                {
-                    payable.AmountPaid = request.NewAmount;
-
-                    if (diff != 0)
+                    if (vp != null)
                     {
-                        var paymentMethod = spendFact?.PaymentMethod ?? SynOS.Models.Enums.PaymentMethod.Cash;
-                        if (!string.IsNullOrEmpty(request.NewPaymentMethod) && Enum.TryParse<SynOS.Models.Enums.PaymentMethod>(request.NewPaymentMethod, true, out var parsedPm))
-                        {
-                            paymentMethod = parsedPm;
-                        }
+                        if (vp.Status == VendorPayableStatus.Cancelled)
+                            return BadRequest("Expense is already cancelled.");
 
-                        var adjSpendFact = new SpendFact(
+                        var vpCancelledAmount = vp.AmountPaid > 0 ? vp.AmountPaid : vp.Amount;
+                        vp.Status = VendorPayableStatus.Cancelled;
+                        vp.AmountPaid = 0;
+
+                        var vpAudit = new ExpenseCancellationAudit
+                        {
+                            Id = Guid.NewGuid(),
+                            ExpenseId = vp.VendorPayableId,
+                            ExpenseType = "VendorPayable",
+                            CancelledAmount = vpCancelledAmount,
+                            Category = "Vendor",
+                            PaymentMethod = "Cash",
+                            Description = $"{vp.VendorName} [{vp.ReferenceType}]",
+                            Reason = request.Reason,
+                            Notes = request.Notes ?? "",
+                            IsDrawerRefunded = request.RefundToDrawer,
+                            CancelledByUserId = effectiveUserId,
+                            CancelledByName = !string.IsNullOrWhiteSpace(request.UserName) ? request.UserName : "Reception Staff",
+                            CancelledAt = DateTime.UtcNow
+                        };
+
+                        await _context.ExpenseCancellationAudits.AddAsync(vpAudit);
+                        await _context.SaveChangesAsync();
+                        await transaction.CommitAsync();
+
+                        return Ok(new { message = "Vendor expense cancelled successfully", audit = vpAudit });
+                    }
+
+                    if (payable!.Status == VendorPayableStatus.Cancelled)
+                        return BadRequest("Expense is already cancelled.");
+
+                    var cancelledAmount = payable.AmountPaid > 0 ? payable.AmountPaid : payable.AmountDue;
+
+                    var prefix = $"OHP-{payable.OverheadPayableId.ToString().Substring(0, 8)}";
+                    var spendFact = await _context.SpendFacts
+                        .OrderByDescending(s => s.OccurredAt)
+                        .FirstOrDefaultAsync(s => s.TransactionReference == prefix);
+
+                    var paymentMethod = spendFact != null ? spendFact.PaymentMethod : SynOS.Models.Enums.PaymentMethod.Cash;
+
+                    // If money was disbursed, emit a reversal SpendFact
+                    if (payable.AmountPaid > 0)
+                    {
+                        var revSpendFact = new SpendFact(
                             Guid.NewGuid(),
                             Guid.Empty,
-                            diff,
+                            -payable.AmountPaid,
                             "INR",
                             "Overhead",
-                            payable.Description ?? "Expense Correction",
-                            $"Correction Diff [{diff:+0.00;-0.00}]: {request.Reason}",
+                            $"Cancelled: {payable.Description}",
+                            $"Cancellation Reversal: {request.Reason}",
                             _userContext.CurrentBranchId != Guid.Empty ? _userContext.CurrentBranchId : null,
                             paymentMethod,
-                            $"OHP-ADJ-{payable.OverheadPayableId.ToString().Substring(0, 8)}-{DateTime.UtcNow.Ticks}",
+                            $"OHP-CAN-{payable.OverheadPayableId.ToString().Substring(0, 8)}-{DateTime.UtcNow.Ticks}",
                             DateTime.UtcNow,
                             DateTime.UtcNow,
                             "Main Account",
@@ -688,90 +837,21 @@ namespace SynOS.Api.Controllers
                             Guid.Empty
                         );
 
-                        await _spendFactWriter.CreateSpendFactAsync(adjSpendFact);
+                        await _spendFactWriter.CreateSpendFactAsync(revSpendFact);
                     }
-                }
 
-                var auditDiff = new
-                {
-                    previousAmount = prevAmount,
-                    newAmount = request.NewAmount,
-                    difference = diff,
-                    previousCategory = prevCategory,
-                    newCategory = request.NewCategory ?? prevCategory,
-                    previousDescription = prevDesc,
-                    newDescription = request.NewDescription ?? prevDesc,
-                    previousPaymentMethod = prevPaymentMethod,
-                    newPaymentMethod = request.NewPaymentMethod ?? prevPaymentMethod
-                };
+                    payable.Status = VendorPayableStatus.Cancelled;
+                    payable.AmountPaid = 0;
 
-                var audit = new ExpenseCorrectionAudit
-                {
-                    Id = Guid.NewGuid(),
-                    ExpenseId = payable.OverheadPayableId,
-                    ExpenseType = "DailyExpense",
-                    PreviousAmount = prevAmount,
-                    NewAmount = request.NewAmount,
-                    PreviousCategory = prevCategory,
-                    NewCategory = request.NewCategory ?? prevCategory,
-                    PreviousPaymentMethod = prevPaymentMethod,
-                    NewPaymentMethod = request.NewPaymentMethod ?? prevPaymentMethod,
-                    Reason = request.Reason,
-                    Notes = request.Notes ?? "",
-                    AuditDiffJson = System.Text.Json.JsonSerializer.Serialize(auditDiff),
-                    CorrectedByUserId = effectiveUserId,
-                    CorrectedByName = !string.IsNullOrWhiteSpace(request.UserName) ? request.UserName : "Reception Staff",
-                    CorrectedAt = DateTime.UtcNow
-                };
-
-                await _context.ExpenseCorrectionAudits.AddAsync(audit);
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                return Ok(new { payable, audit });
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-        }
-
-        [HttpPost("{id}/cancel")]
-        public async Task<IActionResult> CancelExpense(Guid id, [FromBody] CancelExpenseDto request)
-        {
-            if (request == null || string.IsNullOrWhiteSpace(request.Reason))
-                return BadRequest("A valid cancellation reason is required.");
-
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
-            {
-                var effectiveUserId = request.UserId.HasValue && request.UserId.Value != Guid.Empty 
-                    ? request.UserId.Value 
-                    : (_userContext.CurrentUserId != Guid.Empty ? _userContext.CurrentUserId : Guid.Empty);
-
-                var payable = await _context.OverheadPayableFacts.FindAsync(id);
-                var vp = payable == null ? await _context.VendorPayables.FindAsync(id) : null;
-                if (payable == null && vp == null) return NotFound("Expense record not found.");
-
-                if (vp != null)
-                {
-                    if (vp.Status == VendorPayableStatus.Cancelled)
-                        return BadRequest("Expense is already cancelled.");
-
-                    var vpCancelledAmount = vp.AmountPaid > 0 ? vp.AmountPaid : vp.Amount;
-                    vp.Status = VendorPayableStatus.Cancelled;
-                    vp.AmountPaid = 0;
-
-                    var vpAudit = new ExpenseCancellationAudit
+                    var audit = new ExpenseCancellationAudit
                     {
                         Id = Guid.NewGuid(),
-                        ExpenseId = vp.VendorPayableId,
-                        ExpenseType = "VendorPayable",
-                        CancelledAmount = vpCancelledAmount,
-                        Category = "Vendor",
-                        PaymentMethod = "Cash",
-                        Description = $"{vp.VendorName} [{vp.ReferenceType}]",
+                        ExpenseId = payable.OverheadPayableId,
+                        ExpenseType = "DailyExpense",
+                        CancelledAmount = cancelledAmount,
+                        Category = payable.Category.ToString(),
+                        PaymentMethod = paymentMethod.ToString(),
+                        Description = payable.Description,
                         Reason = request.Reason,
                         Notes = request.Notes ?? "",
                         IsDrawerRefunded = request.RefundToDrawer,
@@ -780,82 +860,18 @@ namespace SynOS.Api.Controllers
                         CancelledAt = DateTime.UtcNow
                     };
 
-                    await _context.ExpenseCancellationAudits.AddAsync(vpAudit);
+                    await _context.ExpenseCancellationAudits.AddAsync(audit);
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
 
-                    return Ok(new { message = "Vendor expense cancelled successfully", audit = vpAudit });
+                    return Ok(new { message = "Expense cancelled successfully", audit });
                 }
-
-                if (payable!.Status == VendorPayableStatus.Cancelled)
-                    return BadRequest("Expense is already cancelled.");
-
-                var cancelledAmount = payable.AmountPaid > 0 ? payable.AmountPaid : payable.AmountDue;
-
-                var prefix = $"OHP-{payable.OverheadPayableId.ToString().Substring(0, 8)}";
-                var spendFact = await _context.SpendFacts
-                    .OrderByDescending(s => s.OccurredAt)
-                    .FirstOrDefaultAsync(s => s.TransactionReference == prefix);
-
-                var paymentMethod = spendFact != null ? spendFact.PaymentMethod : SynOS.Models.Enums.PaymentMethod.Cash;
-
-                // If money was disbursed, emit a reversal SpendFact
-                if (payable.AmountPaid > 0)
+                catch (Exception ex)
                 {
-                    var revSpendFact = new SpendFact(
-                        Guid.NewGuid(),
-                        Guid.Empty,
-                        -payable.AmountPaid,
-                        "INR",
-                        "Overhead",
-                        $"Cancelled: {payable.Description}",
-                        $"Cancellation Reversal: {request.Reason}",
-                        _userContext.CurrentBranchId != Guid.Empty ? _userContext.CurrentBranchId : null,
-                        paymentMethod,
-                        $"OHP-CAN-{payable.OverheadPayableId.ToString().Substring(0, 8)}-{DateTime.UtcNow.Ticks}",
-                        DateTime.UtcNow,
-                        DateTime.UtcNow,
-                        "Main Account",
-                        "Finance API",
-                        Guid.Empty,
-                        Guid.Empty,
-                        Guid.Empty
-                    );
-
-                    await _spendFactWriter.CreateSpendFactAsync(revSpendFact);
+                    await transaction.RollbackAsync();
+                    return StatusCode(500, $"Internal server error: {ex.Message}");
                 }
-
-                payable.Status = VendorPayableStatus.Cancelled;
-                payable.AmountPaid = 0;
-
-                var audit = new ExpenseCancellationAudit
-                {
-                    Id = Guid.NewGuid(),
-                    ExpenseId = payable.OverheadPayableId,
-                    ExpenseType = "DailyExpense",
-                    CancelledAmount = cancelledAmount,
-                    Category = payable.Category.ToString(),
-                    PaymentMethod = paymentMethod.ToString(),
-                    Description = payable.Description,
-                    Reason = request.Reason,
-                    Notes = request.Notes ?? "",
-                    IsDrawerRefunded = request.RefundToDrawer,
-                    CancelledByUserId = effectiveUserId,
-                    CancelledByName = !string.IsNullOrWhiteSpace(request.UserName) ? request.UserName : "Reception Staff",
-                    CancelledAt = DateTime.UtcNow
-                };
-
-                await _context.ExpenseCancellationAudits.AddAsync(audit);
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                return Ok(new { message = "Expense cancelled successfully", audit });
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+            });
         }
 
         [HttpGet("corrections")]

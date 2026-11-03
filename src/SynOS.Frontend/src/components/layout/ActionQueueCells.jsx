@@ -1,6 +1,8 @@
 import { cn } from "@/lib/utils";
 
 export function TokenCell({ row, theme, onAction }) {
+    const isDraft = (row.token || "").toUpperCase().startsWith("D-") || (row.operationalStatus || "").toLowerCase() === "draft";
+
     return (
         <div className="flex flex-col gap-1 items-start">
             <div className="flex items-center gap-2">
@@ -12,21 +14,25 @@ export function TokenCell({ row, theme, onAction }) {
                     tabIndex={-1}
                     className={cn(
                         "action-trigger transition-all font-mono font-bold tracking-tight rounded-md px-1.5 py-0.5 -mx-1.5 cursor-pointer underline-offset-4",
-                        theme === 'dark'
-                            ? "text-white hover:text-zinc-300 hover:bg-white/5"
-                            : "text-zinc-900 hover:text-zinc-700 hover:bg-zinc-50 hover:underline decoration-zinc-500/50 decoration-2"
+                        isDraft
+                            ? (theme === 'dark'
+                                ? "text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 underline decoration-amber-500/50 decoration-1"
+                                : "text-amber-700 hover:text-amber-800 hover:bg-amber-50 underline decoration-amber-500/50 decoration-1")
+                            : (theme === 'dark'
+                                ? "text-white hover:text-zinc-300 hover:bg-white/5"
+                                : "text-zinc-900 hover:text-zinc-700 hover:bg-zinc-50 hover:underline decoration-zinc-500/50 decoration-2")
                     )}
                 >
                     {row.token}
                 </button>
 
                 {/* TOKEN PRINT STATUS (Non-Blocking) */}
-                {row.isTokenPrinted === false && ( // Explicit false check
+                {!isDraft && row.isTokenPrinted === false && ( // Explicit false check
                     <span className="text-amber-500 text-[10px] uppercase font-bold tracking-tighter" title="Printer Communication Failed">
                         ⚠️ Print Fail
                     </span>
                 )}
-                {row.isTokenPrinted === true && (
+                {!isDraft && row.isTokenPrinted === true && (
                     <span className="text-emerald-500/50 text-[10px]" title="Token Printed">
                         ✅
                     </span>
@@ -64,6 +70,19 @@ export function PatientCell({ row }) {
 export function StatusCell({ row }) {
     // SYSTEM STATUS INDICATOR: Final Canonical Implementation
     // Rules: Static Cyan Dot (6px), Body Text (14px), No Badge, No Pulse
+    const isDraft = (row.operationalStatus || "").toLowerCase() === "draft" || (row.token || "").toUpperCase().startsWith("D-");
+
+    if (isDraft) {
+        return (
+            <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0 animate-pulse" />
+                <span className="type-body text-amber-600 dark:text-amber-400 font-medium">
+                    Draft Visit
+                </span>
+            </div>
+        );
+    }
+
     const StatusDot = (
         <div className="w-1.5 h-1.5 rounded-full bg-cyan-500 shrink-0" />
     );

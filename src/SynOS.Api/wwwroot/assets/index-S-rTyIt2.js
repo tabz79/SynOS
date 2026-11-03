@@ -29055,11 +29055,7 @@ Minimum version required to store current data is: ` + G + `.
       };
       return t && (e.Authorization = `Bearer ${t}`), e;
     },
-    normalizeQueueData: (t) => Array.isArray(t) ? t.filter((e) => {
-      if (!e) return false;
-      const n = (e.token || e.Token || "").toUpperCase(), i = (e.operationalStatus || e.OperationalStatus || e.status || e.Status || "").toLowerCase();
-      return !(n.startsWith("D-") || i === "draft");
-    }).map((e) => ({
+    normalizeQueueData: (t) => Array.isArray(t) ? t.filter(Boolean).map((e) => ({
       ...e,
       visitId: e.visitId || e.VisitId,
       token: e.token || e.Token,
@@ -30493,25 +30489,26 @@ Details: ${A.inner}`);
     });
   }
   function mL({ row: t, theme: e, onAction: n }) {
+    const i = (t.token || "").toUpperCase().startsWith("D-") || (t.operationalStatus || "").toLowerCase() === "draft";
     return r.jsx("div", {
       className: "flex flex-col gap-1 items-start",
       children: r.jsxs("div", {
         className: "flex items-center gap-2",
         children: [
           r.jsx("button", {
-            onClick: (i) => {
-              i.stopPropagation(), n && n(t);
+            onClick: (a) => {
+              a.stopPropagation(), n && n(t);
             },
             tabIndex: -1,
-            className: De("action-trigger transition-all font-mono font-bold tracking-tight rounded-md px-1.5 py-0.5 -mx-1.5 cursor-pointer underline-offset-4", e === "dark" ? "text-white hover:text-zinc-300 hover:bg-white/5" : "text-zinc-900 hover:text-zinc-700 hover:bg-zinc-50 hover:underline decoration-zinc-500/50 decoration-2"),
+            className: De("action-trigger transition-all font-mono font-bold tracking-tight rounded-md px-1.5 py-0.5 -mx-1.5 cursor-pointer underline-offset-4", i ? e === "dark" ? "text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 underline decoration-amber-500/50 decoration-1" : "text-amber-700 hover:text-amber-800 hover:bg-amber-50 underline decoration-amber-500/50 decoration-1" : e === "dark" ? "text-white hover:text-zinc-300 hover:bg-white/5" : "text-zinc-900 hover:text-zinc-700 hover:bg-zinc-50 hover:underline decoration-zinc-500/50 decoration-2"),
             children: t.token
           }),
-          t.isTokenPrinted === false && r.jsx("span", {
+          !i && t.isTokenPrinted === false && r.jsx("span", {
             className: "text-amber-500 text-[10px] uppercase font-bold tracking-tighter",
             title: "Printer Communication Failed",
             children: "\u26A0\uFE0F Print Fail"
           }),
-          t.isTokenPrinted === true && r.jsx("span", {
+          !i && t.isTokenPrinted === true && r.jsx("span", {
             className: "text-emerald-500/50 text-[10px]",
             title: "Token Printed",
             children: "\u2705"
@@ -30548,13 +30545,25 @@ Details: ${A.inner}`);
     });
   }
   function BL({ row: t }) {
-    const e = r.jsx("div", {
+    if ((t.operationalStatus || "").toLowerCase() === "draft" || (t.token || "").toUpperCase().startsWith("D-")) return r.jsxs("div", {
+      className: "flex items-center gap-2",
+      children: [
+        r.jsx("div", {
+          className: "w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0 animate-pulse"
+        }),
+        r.jsx("span", {
+          className: "type-body text-amber-600 dark:text-amber-400 font-medium",
+          children: "Draft Visit"
+        })
+      ]
+    });
+    const n = r.jsx("div", {
       className: "w-1.5 h-1.5 rounded-full bg-cyan-500 shrink-0"
     });
     return t.assignedResource ? r.jsxs("div", {
       className: "flex items-center gap-2",
       children: [
-        e,
+        n,
         r.jsxs("span", {
           className: "type-body text-zinc-900 dark:text-zinc-200",
           children: [
@@ -30566,7 +30575,7 @@ Details: ${A.inner}`);
     }) : r.jsxs("div", {
       className: "flex items-center gap-2",
       children: [
-        e,
+        n,
         r.jsx("span", {
           className: "type-body text-zinc-900 dark:text-zinc-200",
           children: t.operationalStatus || "Processing"
@@ -47161,10 +47170,10 @@ Details: ${A.inner}`);
         accessor: "paymentDisplay",
         className: "w-40",
         render: (q) => {
-          const te = Number(q.totalAmount || 0), ie = Number(q.totalPaid || 0), de = q.remainingDue !== void 0 ? Number(q.remainingDue) : Math.max(0, te - ie), me = q.paymentMethod === "Prepaid" || q.paymentDisplay && q.paymentDisplay.startsWith("Prepaid"), ke = q.paymentMethod === "Partial Due" || q.paymentDisplay && q.paymentDisplay.includes("Partial") || ie > 0 && de > 0, ye = !me && !ke && (q.paymentMethod === "Paid" || q.paymentMethod === "Cash" || q.paymentMethod === "UPI" || q.paymentMethod === "Card" || de === 0 && te > 0), Ee = "text-[10px] px-1.5 py-0.5 rounded font-mono leading-none border uppercase tracking-wide shrink-0 font-bold";
-          let Re = "bg-zinc-500/10 dark:text-zinc-400 text-zinc-600 border-zinc-500/20", Oe = q.paymentMethod || "DUE";
-          me ? (Re = "bg-red-500/10 dark:text-red-400 text-red-600 border-red-500/20", Oe = "PREPAID") : ke ? (Re = "bg-amber-500/10 dark:text-amber-400 text-amber-600 border-amber-500/20", Oe = "PARTIAL DUE") : ye && (Re = "bg-emerald-500/10 dark:text-emerald-400 text-emerald-600 border-emerald-500/20", Oe = q.paymentMethod || "PAID");
-          const Fe = ke ? `\u20B9${de.toLocaleString()}` : te ? `\u20B9${te.toLocaleString()}` : "\u20B90";
+          const te = Number(q.totalAmount || 0), ie = Number(q.totalPaid || 0), de = q.remainingDue !== void 0 ? Number(q.remainingDue) : Math.max(0, te - ie), me = q.token && q.token.toUpperCase().startsWith("D-") || (q.paymentMethod || "").toLowerCase() === "draft" || (q.operationalStatus || "").toLowerCase() === "draft", ke = !me && (q.paymentMethod === "Prepaid" || q.paymentDisplay && q.paymentDisplay.startsWith("Prepaid")), ye = !me && (q.paymentMethod === "Partial Due" || q.paymentDisplay && q.paymentDisplay.includes("Partial") || ie > 0 && de > 0), Ee = !me && !ke && !ye && (q.paymentMethod === "Paid" || q.paymentMethod === "Cash" || q.paymentMethod === "UPI" || q.paymentMethod === "Card" || de === 0 && te > 0), Re = "text-[10px] px-1.5 py-0.5 rounded font-mono leading-none border uppercase tracking-wide shrink-0 font-bold";
+          let Oe = "bg-zinc-500/10 dark:text-zinc-400 text-zinc-600 border-zinc-500/20", Fe = q.paymentMethod || "DUE";
+          me ? (Oe = "bg-amber-500/10 dark:text-amber-400 text-amber-600 border-amber-500/20", Fe = "DRAFT") : ke ? (Oe = "bg-red-500/10 dark:text-red-400 text-red-600 border-red-500/20", Fe = "PREPAID") : ye ? (Oe = "bg-amber-500/10 dark:text-amber-400 text-amber-600 border-amber-500/20", Fe = "PARTIAL DUE") : Ee && (Oe = "bg-emerald-500/10 dark:text-emerald-400 text-emerald-600 border-emerald-500/20", Fe = q.paymentMethod || "PAID");
+          const ue = me ? te ? `\u20B9${te.toLocaleString()}` : "\u20B90" : ye ? `\u20B9${de.toLocaleString()}` : te ? `\u20B9${te.toLocaleString()}` : "\u20B90";
           return r.jsxs("div", {
             className: "flex flex-col gap-1 items-start justify-center min-h-[3rem]",
             children: [
@@ -47173,22 +47182,22 @@ Details: ${A.inner}`);
                 children: [
                   r.jsx("span", {
                     className: "font-bold text-sm dark:text-zinc-200 text-zinc-900 leading-none pt-0.5",
-                    children: Fe
+                    children: ue
                   }),
                   r.jsx("span", {
-                    className: `${Ee} ${Re}`,
-                    children: Oe
+                    className: `${Re} ${Oe}`,
+                    children: Fe
                   })
                 ]
               }),
-              ke && ie > 0 && r.jsxs("span", {
+              ye && ie > 0 && r.jsxs("span", {
                 className: "type-meta text-emerald-600 dark:text-emerald-400 text-[10px] font-mono font-medium",
                 children: [
                   "Paid: \u20B9",
                   ie.toLocaleString()
                 ]
               }),
-              me && q.referrerName && r.jsx("span", {
+              ke && q.referrerName && r.jsx("span", {
                 className: "type-meta text-zinc-500 truncate max-w-[140px]",
                 title: q.referrerName,
                 children: q.referrerName

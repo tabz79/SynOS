@@ -260,15 +260,21 @@ export function ReceptionScreen() {
                 const totalPaid = Number(row.totalPaid || 0);
                 const remainingDue = row.remainingDue !== undefined ? Number(row.remainingDue) : Math.max(0, totalBilled - totalPaid);
                 
-                const isPrepaid = row.paymentMethod === "Prepaid" || (row.paymentDisplay && row.paymentDisplay.startsWith("Prepaid"));
-                const isPartial = row.paymentMethod === "Partial Due" || (row.paymentDisplay && row.paymentDisplay.includes("Partial")) || (totalPaid > 0 && remainingDue > 0);
-                const isPaid = !isPrepaid && !isPartial && (row.paymentMethod === "Paid" || row.paymentMethod === "Cash" || row.paymentMethod === "UPI" || row.paymentMethod === "Card" || (remainingDue === 0 && totalBilled > 0));
+                const isDraft = (row.token && row.token.toUpperCase().startsWith("D-")) || 
+                                (row.paymentMethod || "").toLowerCase() === "draft" || 
+                                (row.operationalStatus || "").toLowerCase() === "draft";
+                const isPrepaid = !isDraft && (row.paymentMethod === "Prepaid" || (row.paymentDisplay && row.paymentDisplay.startsWith("Prepaid")));
+                const isPartial = !isDraft && (row.paymentMethod === "Partial Due" || (row.paymentDisplay && row.paymentDisplay.includes("Partial")) || (totalPaid > 0 && remainingDue > 0));
+                const isPaid = !isDraft && !isPrepaid && !isPartial && (row.paymentMethod === "Paid" || row.paymentMethod === "Cash" || row.paymentMethod === "UPI" || row.paymentMethod === "Card" || (remainingDue === 0 && totalBilled > 0));
 
                 const badgeBase = "text-[10px] px-1.5 py-0.5 rounded font-mono leading-none border uppercase tracking-wide shrink-0 font-bold";
                 let badgeColor = "bg-zinc-500/10 dark:text-zinc-400 text-zinc-600 border-zinc-500/20";
                 let badgeText = row.paymentMethod || "DUE";
 
-                if (isPrepaid) {
+                if (isDraft) {
+                    badgeColor = "bg-amber-500/10 dark:text-amber-400 text-amber-600 border-amber-500/20";
+                    badgeText = "DRAFT";
+                } else if (isPrepaid) {
                     badgeColor = "bg-red-500/10 dark:text-red-400 text-red-600 border-red-500/20";
                     badgeText = "PREPAID";
                 } else if (isPartial) {
@@ -280,9 +286,11 @@ export function ReceptionScreen() {
                 }
 
                 // If partial, primary emphasis is the remaining due amount to collect
-                const displayAmount = isPartial
-                    ? `₹${remainingDue.toLocaleString()}`
-                    : (totalBilled ? `₹${totalBilled.toLocaleString()}` : "₹0");
+                const displayAmount = isDraft
+                    ? (totalBilled ? `₹${totalBilled.toLocaleString()}` : "₹0")
+                    : (isPartial
+                        ? `₹${remainingDue.toLocaleString()}`
+                        : (totalBilled ? `₹${totalBilled.toLocaleString()}` : "₹0"));
 
                 return (
                     <div className="flex flex-col gap-1 items-start justify-center min-h-[3rem]">

@@ -13,6 +13,8 @@ namespace SynOS.Models.Enums.Payables
         Logistics = 12,
         Electricity = 13,
         Staff = 14,
+        Cleaning = 15,
+        Stationery = 16,
         Misc = 99
     }
 }

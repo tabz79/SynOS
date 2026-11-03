@@ -45,13 +45,7 @@ export const ReceptionApi = {
     normalizeQueueData: (data) => {
         if (!Array.isArray(data)) return [];
         return data
-            .filter(row => {
-                if (!row) return false;
-                const token = (row.token || row.Token || '').toUpperCase();
-                const status = (row.operationalStatus || row.OperationalStatus || row.status || row.Status || '').toLowerCase();
-                if (token.startsWith('D-') || status === 'draft') return false;
-                return true;
-            })
+            .filter(Boolean)
             .map(row => ({
             ...row,
             visitId: row.visitId || row.VisitId,
