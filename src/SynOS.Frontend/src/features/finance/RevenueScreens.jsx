@@ -3345,7 +3345,7 @@ export const CollectionHistoryScreen = () => {
 
     // Tab-Aware CSV Download for Collection History
     const handleDownloadSummary = () => {
-        const headers = ["Date & Time", "Source Category", "Collected Amount (INR)", "Payment Mode", "OG Bill No", "Token", "Patient Name", "Audit / Notes"];
+        const headers = ["Date & Time", "Source Category", "Collected Amount (INR)", "Payment Mode", "Bill Number", "Token", "Patient Name", "Audit / Notes"];
         const rows = filteredHistory.map(r => [
             `"${new Date(r.occurredAt).toLocaleString()}"`,
             `"${(r.sourceType || '').replace(/"/g, '""')}"`,
@@ -3438,7 +3438,7 @@ export const CollectionHistoryScreen = () => {
                                 <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Source Category</th>
                                 <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Amount</th>
                                 <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-center">Payment Mode</th>
-                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">OG Bill No / Patient</th>
+                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Bill Number / Patient</th>
                                 <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Audit / Notes</th>
                             </tr>
                         </thead>

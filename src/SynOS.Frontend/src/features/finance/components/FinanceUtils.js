@@ -49,7 +49,7 @@ export const FinanceUtils = {
 };
 
 /**
- * Enterprise-grade Canonical OG Bill Number Generator
+ * Enterprise-grade Canonical Bill Number Generator
  * Standard clinical format: ${BranchToken}-${YYMMDD} e.g. MAI004-261103
  */
 export const formatCanonicalBillNo = (bill) => {

@@ -308,31 +308,35 @@ export function PatientRegistrationModal({ isOpen, onClose, onPatientRegistered 
                                         type="checkbox"
                                         checked={hasNoMobile}
                                         onChange={e => setHasNoMobile(e.target.checked)}
-                                        className="w-4 h-4 rounded border-slate-300 text-amber-600 focus:ring-amber-500 accent-amber-600"
+                                        className="w-4 h-4 rounded border-slate-300 text-synos-primary focus:ring-synos-primary accent-synos-primary cursor-pointer"
                                     />
-                                    <span className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
+                                    <span className="text-xs font-bold text-slate-800 dark:text-zinc-200">
                                         No Mobile Number (Physical Hardcopy Pickup Only)
                                     </span>
                                 </label>
 
                                 {hasNoMobile && (
-                                    <div className="mt-2 p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/50 space-y-2 animate-in fade-in duration-150">
-                                        <p className="text-[11px] font-medium text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
-                                            <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                                            <span>Reports will <strong>NOT</strong> be dispatched via WhatsApp. Physical hardcopy report pickup at front desk only.</span>
-                                        </p>
-                                        <div className="flex items-center flex-wrap gap-1.5 pt-0.5">
-                                            <span className="text-[10px] uppercase font-bold text-amber-700/80 dark:text-amber-400">Reason:</span>
+                                    <div className="mt-2.5 p-3 rounded-xl bg-slate-100/80 dark:bg-zinc-800/50 border border-slate-200/90 dark:border-zinc-700/80 space-y-2.5 animate-in fade-in duration-150">
+                                        <div className="flex items-start gap-2">
+                                            <div className="w-5 h-5 rounded-md bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+                                                <AlertCircle className="w-3.5 h-3.5" />
+                                            </div>
+                                            <p className="text-xs font-medium text-slate-700 dark:text-zinc-300 leading-snug">
+                                                Reports will <strong className="text-slate-900 dark:text-white font-semibold">NOT</strong> be dispatched via WhatsApp. Physical hardcopy report pickup at front desk only.
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center flex-wrap gap-1.5 pt-1.5 border-t border-slate-200/70 dark:border-zinc-700/60">
+                                            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-zinc-400 mr-1">Reason:</span>
                                             {reasons.map(r => (
                                                 <button
                                                     key={r}
                                                     type="button"
                                                     onClick={() => setNoMobileReason(r)}
                                                     className={cn(
-                                                        "px-2 py-0.5 rounded text-[11px] font-medium transition-all cursor-pointer",
+                                                        "px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer",
                                                         noMobileReason === r
-                                                            ? "bg-amber-600 text-white shadow-xs font-bold"
-                                                            : "bg-white/80 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-amber-200 dark:border-zinc-700 hover:bg-amber-100"
+                                                            ? "bg-synos-primary text-white shadow-xs font-bold"
+                                                            : "bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-750"
                                                     )}
                                                 >
                                                     {r}

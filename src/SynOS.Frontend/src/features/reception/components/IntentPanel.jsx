@@ -1486,7 +1486,7 @@ export function IntentPanel({ onVisitUpdated }) {
                 "flex flex-col h-full overflow-hidden rounded-[24px] transition-[width,transform,opacity] duration-300 ease-out z-30 shadow-2xl", 
                 (hasPatient || isCorrectionIntent) 
                     ? "absolute right-0 top-0 bottom-0 w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[86vw] xl:w-[85vw] 2xl:w-[85vw] max-w-[85vw]" 
-                    : "absolute right-0 top-0 bottom-0 w-[92vw] sm:w-[480px] max-w-[520px] min-w-[360px]",
+                    : "absolute right-0 top-0 bottom-0 w-[96vw] sm:w-[92vw] md:w-[75vw] lg:w-[50vw] xl:w-[44vw] 2xl:w-[40vw] min-w-[580px] max-w-[880px]",
                 ui.panel
             )}
         >
@@ -2710,8 +2710,24 @@ export function IntentPanel({ onVisitUpdated }) {
                         hasVisit && (
                             <div className="flex flex-col gap-2 w-full max-w-2xl mx-auto">
                                 <div className="flex items-center gap-2.5 w-full">
-                                    {snapshot?.visit?.visitId && (
-                                        <>
+                                    {snapshot?.visit?.visitId && (() => {
+                                        const isDraftVisit = (snapshot?.visit?.status || '').toLowerCase() === 'draft' || 
+                                                             (snapshot?.visit?.token || '').toUpperCase().startsWith('D-') || 
+                                                             (snapshot?.visit?.visitToken || '').toUpperCase().startsWith('D-') ||
+                                                             (snapshot?.visit?.token || '').toUpperCase().startsWith('DRAFT');
+                                        return isDraftVisit ? (
+                                            <button
+                                                type="button"
+                                                id="btn-delete-draft"
+                                                onClick={handleDeleteDraftVisit}
+                                                disabled={isDeletingDraft || isLoading || isActionSubmitting}
+                                                className="py-2.5 px-3.5 rounded-xl border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn disabled:opacity-50"
+                                                title="Permanently discard and delete this draft visit"
+                                            >
+                                                {isDeletingDraft ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                                                <span>Delete Draft</span>
+                                            </button>
+                                        ) : (
                                             <button
                                                 type="button"
                                                 id="btn-cancel-visit"
@@ -2722,19 +2738,8 @@ export function IntentPanel({ onVisitUpdated }) {
                                                 <Ban className="w-3.5 h-3.5" />
                                                 <span>Cancel Visit</span>
                                             </button>
-                                            <button
-                                                type="button"
-                                                id="btn-delete-draft"
-                                                onClick={handleDeleteDraftVisit}
-                                                disabled={isDeletingDraft || isLoading || isActionSubmitting}
-                                                className="py-2.5 px-3 rounded-xl border border-zinc-200 dark:border-zinc-700 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 bg-zinc-50 hover:bg-zinc-100 dark:bg-zinc-800/60 font-bold text-xs flex items-center justify-center gap-1 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn disabled:opacity-50"
-                                                title="Permanently discard and delete this draft visit"
-                                            >
-                                                {isDeletingDraft ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-                                                <span className="hidden sm:inline">Delete Draft</span>
-                                            </button>
-                                        </>
-                                    )}
+                                        );
+                                    })()}
                                     <button
                                         onClick={handleUnifiedAction}
                                         disabled={!isActionEnabled || isLoading || isActionSubmitting}

@@ -231,56 +231,60 @@ namespace SynOS.Services.Referral
                 .OrderBy(v => v.CreatedAt)
                 .ToListAsync();
 
-            int updatedCount = 0;
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            var strategy = _context.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync(async () =>
             {
-                foreach (var visit in visits)
+                int updatedCount = 0;
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                try
                 {
-                    var eval = await EvaluateVisitAsync(visit.VisitId);
-                    if (!eval.IsFullyResolved) continue;
-
-                    var existingPayable = await _context.ReferralPayableFacts
-                        .FirstOrDefaultAsync(f => f.SourceVisitId == visit.VisitId);
-
-                    if (existingPayable != null)
+                    foreach (var visit in visits)
                     {
-                        if (existingPayable.SettledAt == null && existingPayable.Amount != eval.TotalCommissionRecognized)
+                        var eval = await EvaluateVisitAsync(visit.VisitId);
+                        if (!eval.IsFullyResolved) continue;
+
+                        var existingPayable = await _context.ReferralPayableFacts
+                            .FirstOrDefaultAsync(f => f.SourceVisitId == visit.VisitId);
+
+                        if (existingPayable != null)
                         {
-                            existingPayable.Amount = eval.TotalCommissionRecognized;
-                            existingPayable.Description = "Auto-governed via Rate Learning";
+                            if (existingPayable.SettledAt == null && existingPayable.Amount != eval.TotalCommissionRecognized)
+                            {
+                                existingPayable.Amount = eval.TotalCommissionRecognized;
+                                existingPayable.Description = "Auto-governed via Rate Learning";
+                                updatedCount++;
+                            }
+                        }
+                        else if (eval.TotalCommissionRecognized > 0 && visit.PaymentCollectionModel != "PartnerCollects")
+                        {
+                            var newPayable = new ReferralPayableFact
+                            {
+                                ReferralPayableFactId = Guid.NewGuid(),
+                                ReferralPartnerId = partnerId,
+                                Amount = eval.TotalCommissionRecognized,
+                                Currency = "INR",
+                                SourceVisitId = visit.VisitId,
+                                OccurredAt = visit.CreatedAt,
+                                RecordedAt = DateTime.UtcNow,
+                                Status = "Pending",
+                                Description = "Auto-governed via Rate Learning"
+                            };
+                            _context.ReferralPayableFacts.Add(newPayable);
                             updatedCount++;
                         }
                     }
-                    else if (eval.TotalCommissionRecognized > 0 && visit.PaymentCollectionModel != "PartnerCollects")
-                    {
-                        var newPayable = new ReferralPayableFact
-                        {
-                            ReferralPayableFactId = Guid.NewGuid(),
-                            ReferralPartnerId = partnerId,
-                            Amount = eval.TotalCommissionRecognized,
-                            Currency = "INR",
-                            SourceVisitId = visit.VisitId,
-                            OccurredAt = visit.CreatedAt,
-                            RecordedAt = DateTime.UtcNow,
-                            Status = "Pending",
-                            Description = "Auto-governed via Rate Learning"
-                        };
-                        _context.ReferralPayableFacts.Add(newPayable);
-                        updatedCount++;
-                    }
-                }
 
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-                return updatedCount;
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, "Failed to recalculate visits for partner {PartnerId}", partnerId);
-                throw;
-            }
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    return updatedCount;
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    _logger.LogError(ex, "Failed to recalculate visits for partner {PartnerId}", partnerId);
+                    throw;
+                }
+            });
         }
     }
 }

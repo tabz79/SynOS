@@ -379,7 +379,8 @@ export const FinanceOverview = () => {
     const pathDiscount = totalDeptsSum > 0 ? Math.round(totalDiscountAmt * pathShare) : 0;
     const radDiscount = Math.max(0, totalDiscountAmt - pathDiscount);
 
-    if (presetRange === 'today') {
+    // If raw department list was not returned by backend and range is today, project from today's queue
+    if (rawDeptList.length === 0 && presetRange === 'today') {
         const todayVisits = (todayActionQueue || []).filter(r => r.dateGroup === 'Today' || !r.isFinalized);
         if (todayVisits.length > 0) {
             let hematologyRev = 0, hematologyCount = 0;
@@ -419,14 +420,6 @@ export const FinanceOverview = () => {
                 } else if (codes.includes('histo') || codes.includes('biopsy') || codes.includes('pap')) {
                     histoRev += amt;
                     histoCount += Math.max(1, v.testCodes?.length || 1);
-                } else {
-                    if (v.paymentMethod?.toLowerCase().includes('prepaid')) {
-                        xrayRev += amt;
-                        xrayCount += 1;
-                    } else {
-                        hematologyRev += amt;
-                        hematologyCount += 1;
-                    }
                 }
             });
 
@@ -442,38 +435,6 @@ export const FinanceOverview = () => {
                 { departmentName: 'CT Scan', category: 'Radiology', modality: 'CT Scan', billedRevenue: ctRev, totalTestsCompleted: ctCount, testsCompleted: ctCount },
                 { departmentName: 'Ultrasound', category: 'Radiology', modality: 'Ultrasound', billedRevenue: usgRev, totalTestsCompleted: usgCount, testsCompleted: usgCount },
                 { departmentName: 'MRI', category: 'Radiology', modality: 'MRI', billedRevenue: mriRev, totalTestsCompleted: mriCount, testsCompleted: mriCount }
-            ];
-        } else {
-            // Failsafe: desk cash is Pathology (CBP ₹350), prepaid total is Radiology X-Ray (₹725)
-            const deskCash = cashInflow;
-            const prepaid = prepaidBillsTotal;
-            finalPathology = [
-                { departmentName: 'Biochemistry', category: 'Pathology', modality: 'Biochemistry', billedRevenue: 0, totalTestsCompleted: 0, testsCompleted: 0 },
-                { departmentName: 'Hematology', category: 'Pathology', modality: 'Hematology', billedRevenue: deskCash, totalTestsCompleted: deskCash > 0 ? 1 : 0, testsCompleted: deskCash > 0 ? 1 : 0 },
-                { departmentName: 'Microbiology', category: 'Pathology', modality: 'Microbiology', billedRevenue: 0, totalTestsCompleted: 0, testsCompleted: 0 },
-                { departmentName: 'Histopathology', category: 'Pathology', modality: 'Histopathology', billedRevenue: 0, totalTestsCompleted: 0, testsCompleted: 0 }
-            ];
-
-            finalRadiology = [
-                { departmentName: 'X-Ray', category: 'Radiology', modality: 'X-Ray', billedRevenue: prepaid, totalTestsCompleted: prepaid > 0 ? (Number(receptionSummary?.prepaidBillsCount) || 2) : 0, testsCompleted: prepaid > 0 ? (Number(receptionSummary?.prepaidBillsCount) || 2) : 0 },
-                { departmentName: 'CT Scan', category: 'Radiology', modality: 'CT Scan', billedRevenue: 0, totalTestsCompleted: 0, testsCompleted: 0 },
-                { departmentName: 'Ultrasound', category: 'Radiology', modality: 'Ultrasound', billedRevenue: 0, totalTestsCompleted: 0, testsCompleted: 0 },
-                { departmentName: 'MRI', category: 'Radiology', modality: 'MRI', billedRevenue: 0, totalTestsCompleted: 0, testsCompleted: 0 }
-            ];
-        }
-    } else {
-        // Enterprise clinical safeguard: If Pathology sum is 0 in historical presets, reconstruct from clinical billed share
-        const baselineRev = billedRevenue > 0 ? billedRevenue : (cashInflow > 0 ? cashInflow : radSum);
-        if (pathSum === 0 && baselineRev > 0) {
-            const pathRev = radSum > 0 && baselineRev > radSum 
-                ? (baselineRev - radSum) 
-                : Math.round(baselineRev * 0.45);
-
-            finalPathology = [
-                { departmentName: 'Biochemistry', category: 'Pathology', modality: 'Biochemistry', billedRevenue: Math.round(pathRev * 0.40), totalTestsCompleted: Math.max(1, Math.round((pathRev * 0.40) / 350)), testsCompleted: Math.max(1, Math.round((pathRev * 0.40) / 350)) },
-                { departmentName: 'Hematology', category: 'Pathology', modality: 'Hematology', billedRevenue: Math.round(pathRev * 0.35), totalTestsCompleted: Math.max(1, Math.round((pathRev * 0.35) / 400)), testsCompleted: Math.max(1, Math.round((pathRev * 0.35) / 400)) },
-                { departmentName: 'Microbiology', category: 'Pathology', modality: 'Microbiology', billedRevenue: Math.round(pathRev * 0.15), totalTestsCompleted: Math.max(1, Math.round((pathRev * 0.15) / 600)), testsCompleted: Math.max(1, Math.round((pathRev * 0.15) / 600)) },
-                { departmentName: 'Histopathology', category: 'Pathology', modality: 'Histopathology', billedRevenue: Math.round(pathRev * 0.10), totalTestsCompleted: Math.max(1, Math.round((pathRev * 0.10) / 1200)), testsCompleted: Math.max(1, Math.round((pathRev * 0.10) / 1200)) }
             ];
         }
     }

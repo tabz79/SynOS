@@ -151,71 +151,75 @@ namespace SynOS.Services.Referral
             var affectedPartnerIds = request.Rules.Select(r => r.ReferralPartnerId).Distinct().ToList();
             var learnedCount = 0;
 
-            using var transaction = await _context.Database.BeginTransactionAsync();
-            try
+            var strategy = _context.Database.CreateExecutionStrategy();
+            return await strategy.ExecuteAsync(async () =>
             {
-                // 1. Commit and persist each specific Doctor + Test Rule
-                foreach (var item in request.Rules)
+                using var transaction = await _context.Database.BeginTransactionAsync();
+                try
                 {
-                    var existingRule = await _context.ReferralCommissionRules
-                        .FirstOrDefaultAsync(r => r.ReferralPartnerId == item.ReferralPartnerId && r.TestId == item.TestId);
+                    // 1. Commit and persist each specific Doctor + Test Rule
+                    foreach (var item in request.Rules)
+                    {
+                        var existingRule = await _context.ReferralCommissionRules
+                            .FirstOrDefaultAsync(r => r.ReferralPartnerId == item.ReferralPartnerId && r.TestId == item.TestId);
 
-                    if (existingRule != null)
-                    {
-                        existingRule.CommissionType = item.CommissionType;
-                        existingRule.CommissionValue = item.CommissionValue;
-                        existingRule.EffectiveFrom = today;
-                        existingRule.IsActive = true;
-                    }
-                    else
-                    {
-                        var newRule = new ReferralCommissionRule
+                        if (existingRule != null)
                         {
-                            RuleId = Guid.NewGuid(),
-                            ReferralPartnerId = item.ReferralPartnerId,
-                            TestId = item.TestId,
-                            CommissionType = item.CommissionType,
-                            CommissionValue = item.CommissionValue,
-                            EffectiveFrom = today,
-                            AllowCommissionOnOutsourcedTests = false,
-                            IsActive = true
-                        };
-                        _context.ReferralCommissionRules.Add(newRule);
+                            existingRule.CommissionType = item.CommissionType;
+                            existingRule.CommissionValue = item.CommissionValue;
+                            existingRule.EffectiveFrom = today;
+                            existingRule.IsActive = true;
+                        }
+                        else
+                        {
+                            var newRule = new ReferralCommissionRule
+                            {
+                                RuleId = Guid.NewGuid(),
+                                ReferralPartnerId = item.ReferralPartnerId,
+                                TestId = item.TestId,
+                                CommissionType = item.CommissionType,
+                                CommissionValue = item.CommissionValue,
+                                EffectiveFrom = today,
+                                AllowCommissionOnOutsourcedTests = false,
+                                IsActive = true
+                            };
+                            _context.ReferralCommissionRules.Add(newRule);
+                        }
+
+                        learnedCount++;
                     }
 
-                    learnedCount++;
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+
+                    // 2. Central Governing Authority: Recalculate pending visits for affected doctors
+                    var recalculatedVisitsCount = 0;
+                    foreach (var partnerId in affectedPartnerIds)
+                    {
+                        recalculatedVisitsCount += await _governingEngine.RecalculatePartnerPendingVisitsAsync(partnerId);
+                    }
+
+                    var totalCommissionRecognized = await _context.ReferralPayableFacts
+                        .Where(f => affectedPartnerIds.Contains(f.ReferralPartnerId) && f.Status == "Pending")
+                        .SumAsync(f => f.Amount);
+
+                    _logger.LogInformation("Committed {RuleCount} learned rules. Recalculated {VisitCount} visits via Governing Engine.", learnedCount, recalculatedVisitsCount);
+
+                    return new CommitLearningBatchResponseDto
+                    {
+                        LearnedRulesCount = learnedCount,
+                        RecalculatedVisitsCount = recalculatedVisitsCount,
+                        TotalCommissionRecognized = totalCommissionRecognized,
+                        Message = $"Successfully locked {learnedCount} rule(s) across {affectedPartnerIds.Count} doctor(s) through Commission Governing Engine."
+                    };
                 }
-
-                await _context.SaveChangesAsync();
-                await transaction.CommitAsync();
-
-                // 2. Central Governing Authority: Recalculate pending visits for affected doctors
-                var recalculatedVisitsCount = 0;
-                foreach (var partnerId in affectedPartnerIds)
+                catch (Exception ex)
                 {
-                    recalculatedVisitsCount += await _governingEngine.RecalculatePartnerPendingVisitsAsync(partnerId);
+                    await transaction.RollbackAsync();
+                    _logger.LogError(ex, "Failed to commit learned referral rates.");
+                    throw;
                 }
-
-                var totalCommissionRecognized = await _context.ReferralPayableFacts
-                    .Where(f => affectedPartnerIds.Contains(f.ReferralPartnerId) && f.Status == "Pending")
-                    .SumAsync(f => f.Amount);
-
-                _logger.LogInformation("Committed {RuleCount} learned rules. Recalculated {VisitCount} visits via Governing Engine.", learnedCount, recalculatedVisitsCount);
-
-                return new CommitLearningBatchResponseDto
-                {
-                    LearnedRulesCount = learnedCount,
-                    RecalculatedVisitsCount = recalculatedVisitsCount,
-                    TotalCommissionRecognized = totalCommissionRecognized,
-                    Message = $"Successfully locked {learnedCount} rule(s) across {affectedPartnerIds.Count} doctor(s) through Commission Governing Engine."
-                };
-            }
-            catch (Exception ex)
-            {
-                await transaction.RollbackAsync();
-                _logger.LogError(ex, "Failed to commit learned referral rates.");
-                throw;
-            }
+            });
         }
 
         public async Task<List<DoctorLearnedRuleReadDto>> GetLearnedRulesForDoctorAsync(Guid partnerId)
