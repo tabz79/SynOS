@@ -64,6 +64,8 @@ namespace SynOS.Models.DTOs.Admin.Referral
         public Guid RuleId { get; set; }
         public Guid ReferralPartnerId { get; set; }
         public string DoctorName { get; set; } = string.Empty;
+        public string? ClinicName { get; set; }
+        public decimal? DefaultCommissionPercentage { get; set; }
         public Guid TestId { get; set; }
         public string TestCode { get; set; } = string.Empty;
         public string TestName { get; set; } = string.Empty;

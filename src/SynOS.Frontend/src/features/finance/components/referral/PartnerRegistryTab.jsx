@@ -938,7 +938,10 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
 
     return (
         <div className="fixed inset-0 z-[120] flex justify-end bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="w-full sm:w-[85vw] md:w-[70vw] lg:w-[55vw] xl:w-[52vw] min-w-[340px] sm:min-w-[650px] lg:min-w-[850px] max-w-6xl bg-white dark:bg-zinc-950 h-full shadow-2xl border-l border-slate-200 dark:border-zinc-800 flex flex-col animate-in slide-in-from-right duration-300 overflow-hidden">
+            <div 
+                className="w-full bg-white dark:bg-zinc-950 h-full shadow-2xl border-l border-slate-200 dark:border-zinc-800 flex flex-col animate-in slide-in-from-right duration-300 overflow-hidden"
+                style={{ width: '55vw', minWidth: 'min(850px, 100vw)', maxWidth: '1400px' }}
+            >
                 {/* DRAWER TOP BAR */}
                 <div className="px-6 py-4 border-b border-black/[0.05] dark:border-white/[0.05] bg-slate-50/70 dark:bg-zinc-900/60 flex items-center justify-between shrink-0">
                     {loading || !profileData ? (
@@ -1343,7 +1346,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                                                                     <button
                                                                                         onClick={() => handleSaveEditRule(rule)}
                                                                                         disabled={savingEditRule}
-                                                                                        className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all disabled:opacity-50 flex items-center gap-1 shadow-2xs"
+                                                                                        className="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all disabled:opacity-50 shadow-2xs"
                                                                                         title="Save Rate"
                                                                                     >
                                                                                         {savingEditRule ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} strokeWidth={2.5} />}
@@ -1352,24 +1355,25 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                                                                     <button
                                                                                         onClick={handleCancelEditRule}
                                                                                         disabled={savingEditRule}
-                                                                                        className="p-1 bg-slate-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-slate-300 rounded-lg transition-all"
+                                                                                        className="p-1.5 bg-slate-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-slate-300 rounded-xl transition-all"
                                                                                         title="Cancel"
                                                                                     >
                                                                                         <X size={14} />
                                                                                     </button>
                                                                                 </div>
                                                                             ) : (
-                                                                                <div className="flex items-center justify-end gap-1">
+                                                                                <div className="flex items-center justify-end gap-1.5">
                                                                                     <button
                                                                                         onClick={() => handleStartEditRule(rule)}
-                                                                                        className="p-1.5 text-zinc-400 hover:text-synos-primary hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded-lg transition-colors"
+                                                                                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-synos-primary bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:text-sky-400 dark:hover:bg-blue-900/60 rounded-xl border border-blue-200/80 dark:border-blue-800/40 transition-all shadow-2xs"
                                                                                         title="Edit Commission Rate"
                                                                                     >
-                                                                                        <Edit3 size={14} />
+                                                                                        <Edit3 size={12} />
+                                                                                        <span>Edit</span>
                                                                                     </button>
                                                                                     <button
                                                                                         onClick={() => handleDeleteRule(rule.ruleId)}
-                                                                                        className="p-1.5 text-zinc-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors"
+                                                                                        className="p-1.5 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors"
                                                                                         title="Delete Rule"
                                                                                     >
                                                                                         <Trash2 size={14} />
