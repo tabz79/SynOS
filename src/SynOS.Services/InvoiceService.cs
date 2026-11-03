@@ -90,27 +90,28 @@ namespace SynOS.Services
             var startUtc = startOfToday.UtcDateTime;
             var endUtc = endOfToday.UtcDateTime;
 
-            var visitsQuery = _context.Visits
+            // Total Walk-Ins: ALL confirmed patients registered across all desks in the branch today (excluding uncommitted drafts & cancellations)
+            var branchVisitsQuery = _context.Visits
                 .Where(v => v.BranchId == branchId 
                          && (v.TokenDate == today || (v.CreatedAt >= startUtc && v.CreatedAt < endUtc))
                          && v.Status != VisitStatus.Cancelled
                          && v.Status != VisitStatus.Draft
                          && (v.Token == null || !v.Token.StartsWith("D-")));
 
+            var walkIns = await branchVisitsQuery.CountAsync();
+
+            var deskVisitsQuery = branchVisitsQuery;
             if (userId.HasValue)
             {
-                visitsQuery = visitsQuery.Where(v => v.AssignedReceptionistId == userId.Value || v.CreatedByUserId == userId.Value);
+                deskVisitsQuery = deskVisitsQuery.Where(v => v.AssignedReceptionistId == userId.Value || v.CreatedByUserId == userId.Value);
             }
             else if (_userContext.CurrentRole == "Receptionist")
             {
                 var currentUserId = _userContext.CurrentUserId;
-                // If user is receptionist, include visits assigned to/created by them, or unassigned branch visits they are serving
-                visitsQuery = visitsQuery.Where(v => v.AssignedReceptionistId == currentUserId || v.CreatedByUserId == currentUserId || v.AssignedReceptionistId == null);
+                deskVisitsQuery = deskVisitsQuery.Where(v => v.AssignedReceptionistId == currentUserId || v.CreatedByUserId == currentUserId);
             }
 
-            var walkIns = await visitsQuery.CountAsync();
-
-            var prepaidVisits = await visitsQuery
+            var prepaidVisits = await deskVisitsQuery
                 .Where(v => v.PaymentCollectionModel == "PartnerCollects" && (v.Status == VisitStatus.Paid || v.Status == VisitStatus.FullPaid))
                 .Include(v => v.Invoices)
                 .ToListAsync();
@@ -123,8 +124,6 @@ namespace SynOS.Services
             });
 
             var finalPrepaidCount = prepaidCount > 0 ? prepaidCount : (stats?.PrepaidCount ?? 0);
-            
-            // Total Walk-Ins: ALL patients who registered at the reception desk today (excluding uncommitted drafts & cancellations)
             var finalWalkIns = walkIns > 0 ? walkIns : (stats?.WalkIns ?? 0);
 
             var paymentsQuery = _context.Payments
@@ -193,6 +192,33 @@ namespace SynOS.Services
             int finalOnlineCount = payments.Any() ? onlineCount : (stats?.OnlineCount ?? 0);
             decimal finalTotal = payments.Any() ? totalPayments : (stats?.Payments ?? 0m);
 
+            // Branch Pool Cash Collected (All desks combined for drawer balance calculation)
+            decimal branchCashTotal = finalCash;
+            if (userId.HasValue || _userContext.CurrentRole == "Receptionist")
+            {
+                var allBranchPayments = await _context.Payments
+                    .Include(p => p.Invoice).ThenInclude(i => i.Visit)
+                    .Where(p => p.Invoice != null && p.Invoice.Visit != null 
+                             && p.Invoice.Visit.BranchId == branchId 
+                             && p.Invoice.Visit.Status != VisitStatus.Draft
+                             && (p.Invoice.Visit.Token == null || !p.Invoice.Visit.Token.StartsWith("D-"))
+                             && p.Invoice.Visit.PaymentCollectionModel != "PartnerCollects"
+                             && p.Invoice.Visit.BillingType != BillingType.PrepaidPartner
+                             && p.ReceivedAt >= startUtc && p.ReceivedAt < endUtc)
+                    .ToListAsync();
+                branchCashTotal = allBranchPayments.Where(p => isCash(p.Method)).Sum(p => p.Amount);
+            }
+
+            // Branch Pool Daily Cash Expenses (Physical cash disbursed out of the cash drawer today)
+            var dailyCashExpenses = await _context.SpendFacts
+                .Where(s => s.BranchId == branchId 
+                         && s.PaymentMethod == PaymentMethod.Cash
+                         && ((s.RecordedAt >= startUtc && s.RecordedAt < endUtc) || (s.OccurredAt >= startUtc && s.OccurredAt < endUtc)))
+                .SumAsync(s => s.Amount);
+
+            // Cash in Drawer = Branch Cash Collected - Daily Cash Expenses
+            decimal cashDrawerBalance = Math.Max(0m, branchCashTotal - dailyCashExpenses);
+
             return new RevenueStatsDto
             {
                 WalkInsToday = finalWalkIns,
@@ -202,6 +228,8 @@ namespace SynOS.Services
                 PaymentsOnlineCount = finalOnlineCount,
                 PrepaidBillsCount = finalPrepaidCount,
                 PrepaidBillsTotal = prepaidTotal > 0 ? prepaidTotal : (stats?.PrepaidTotal ?? 0m),
+                DailyExpensesCashTotal = dailyCashExpenses,
+                CashDrawerBalance = cashDrawerBalance,
                 PendingReports = 0,
                 AvgReportTimeMinutes = 0
             };

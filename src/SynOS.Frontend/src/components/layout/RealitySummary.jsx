@@ -1,8 +1,9 @@
 import { useLayoutEffect, useRef } from 'react';
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/context/ThemeContext";
+import { Users } from 'lucide-react';
 
-export function RealityTile({ value, label, shortLabel, qualifier, icon: Icon, color = "default", id, style, isHidden, isCollapsed }) {
+export function RealityTile({ value, label, shortLabel, qualifier, icon: Icon, color = "default", id, style, isHidden, isCollapsed, isPool, scopeBadge }) {
     const colorClasses = {
         default: "bg-zinc-200",
         amber: "bg-synos-amber",
@@ -68,15 +69,30 @@ export function RealityTile({ value, label, shortLabel, qualifier, icon: Icon, c
                     {value}
                 </span>
 
-                {/* ICON (Top Right) - Fixed Size Spacer */}
-                <div className={cn("flex shrink-0 justify-center items-center", isCollapsed ? "w-4 h-4 ml-2" : "w-6 h-6 ml-3 sm:ml-4")}>
-                    {Icon ? (
-                        <Icon className={cn(
-                            "transition-colors duration-300",
-                            isCollapsed ? "w-4 h-4" : "w-5 h-5 sm:w-6 sm:h-6",
-                            "text-zinc-500 group-hover:text-zinc-700"
-                        )} />
+                {/* ICON (Top Right) + SCOPE BADGE */}
+                <div className="flex items-center gap-1.5 ml-2">
+                    {isPool ? (
+                        <span 
+                            title="Branch Pool: Consolidated across all reception desks"
+                            className="inline-flex items-center gap-1 text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 shrink-0"
+                        >
+                            <Users className="w-2.5 h-2.5" />
+                            Pool
+                        </span>
+                    ) : scopeBadge ? (
+                        <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border border-zinc-500/20 shrink-0">
+                            {scopeBadge}
+                        </span>
                     ) : null}
+                    <div className={cn("flex shrink-0 justify-center items-center", isCollapsed ? "w-4 h-4 ml-1" : "w-6 h-6 ml-1.5 sm:ml-2")}>
+                        {Icon ? (
+                            <Icon className={cn(
+                                "transition-colors duration-300",
+                                isCollapsed ? "w-4 h-4" : "w-5 h-5 sm:w-6 sm:h-6",
+                                "text-zinc-500 group-hover:text-zinc-700"
+                            )} />
+                        ) : null}
+                    </div>
                 </div>
             </div>
 

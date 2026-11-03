@@ -11,6 +11,8 @@ namespace SynOS.Models.DTOs.Dashboard
         public int? PaymentsOnlineCount { get; set; }
         public int? PrepaidBillsCount { get; set; }
         public decimal? PrepaidBillsTotal { get; set; }
+        public decimal? DailyExpensesCashTotal { get; set; }
+        public decimal? CashDrawerBalance { get; set; }
         public int? PendingReports { get; set; }
         public double? AvgReportTimeMinutes { get; set; }
 

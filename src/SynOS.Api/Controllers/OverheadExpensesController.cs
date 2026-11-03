@@ -22,17 +22,20 @@ namespace SynOS.Api.Controllers
         private readonly ISpendFactWriter _spendFactWriter;
         private readonly IUserContext _userContext;
         private readonly ILabTimeProvider _labTimeProvider;
+        private readonly SynOS.Services.Operational.INotifier _notifier;
 
         public OverheadExpensesController(
             SynOSDbContext context, 
             ISpendFactWriter spendFactWriter, 
             IUserContext userContext,
-            ILabTimeProvider labTimeProvider)
+            ILabTimeProvider labTimeProvider,
+            SynOS.Services.Operational.INotifier notifier)
         {
             _context = context;
             _spendFactWriter = spendFactWriter;
             _userContext = userContext;
             _labTimeProvider = labTimeProvider;
+            _notifier = notifier;
         }
 
         [HttpGet]
@@ -163,6 +166,15 @@ namespace SynOS.Api.Controllers
                     await _spendFactWriter.CreateSpendFactAsync(spendFact);
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
+
+                    if (effectiveBranchId.HasValue)
+                    {
+                        _ = Task.Run(async () => {
+                            try {
+                                await _notifier.NotifyRealitySummaryUpdateAsync(effectiveBranchId.Value.ToString(), null);
+                            } catch { }
+                        });
+                    }
 
                     return Ok(payable);
                 }
@@ -739,6 +751,14 @@ namespace SynOS.Api.Controllers
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
 
+                    var effectiveBranchId = _userContext.CurrentBranchId != Guid.Empty ? _userContext.CurrentBranchId : (Guid?)null;
+                    if (effectiveBranchId.HasValue)
+                    {
+                        _ = Task.Run(async () => {
+                            try { await _notifier.NotifyRealitySummaryUpdateAsync(effectiveBranchId.Value.ToString(), null); } catch { }
+                        });
+                    }
+
                     return Ok(new { payable, audit });
                 }
                 catch (Exception ex)
@@ -863,6 +883,14 @@ namespace SynOS.Api.Controllers
                     await _context.ExpenseCancellationAudits.AddAsync(audit);
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
+
+                    var effectiveBranchId = _userContext.CurrentBranchId != Guid.Empty ? _userContext.CurrentBranchId : (Guid?)null;
+                    if (effectiveBranchId.HasValue)
+                    {
+                        _ = Task.Run(async () => {
+                            try { await _notifier.NotifyRealitySummaryUpdateAsync(effectiveBranchId.Value.ToString(), null); } catch { }
+                        });
+                    }
 
                     return Ok(new { message = "Expense cancelled successfully", audit });
                 }

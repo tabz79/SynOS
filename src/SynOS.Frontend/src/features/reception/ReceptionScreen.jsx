@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { cn } from "@/lib/utils"
 import { useFlipGroup } from "@/hooks/useSynOSMotion"
-import { Plus, Users, ClipboardList, Bed, Clock, Loader2, ChevronDown, Package, Receipt } from 'lucide-react'
+import { Plus, Users, ClipboardList, Bed, Clock, Loader2, ChevronDown, Package, Receipt, Wallet, TrendingDown } from 'lucide-react'
 import { StockRequestPanel } from '../inventory/StockRequestPanel'
 import { SystemBar } from '@/components/layout/SystemBar'
 import { RealitySummary } from '@/components/layout/RealitySummary'
@@ -210,23 +210,77 @@ export function ReceptionScreen() {
     const effectiveWalkIns = summary ? (Number(summary.walkInsToday) || todayNonDraftQueue.length || 0) : 0;
 
     const realityTiles = summary ? [
-        { value: effectiveWalkIns.toString(), label: "Walk-Ins", qualifier: "Paid/Credit", icon: Users, color: "zinc" },
-        { value: `₹${(summary.paymentsCashTotal || 0).toLocaleString()}`, label: "Cash Collected", icon: ClipboardList, color: "emerald" },
-        { value: summary.paymentsOnlineCount?.toString() || "0", label: "Online Payments", icon: ClipboardList, color: "blue" },
-        { value: `₹${(summary.paymentsOnlineTotal || 0).toLocaleString()}`, label: "Online Total", icon: ClipboardList, color: "blue" },
-        { value: summary.prepaidBillsCount?.toString() || "0", label: "Prepaid Bills Issued", shortLabel: "Prepaid Bills", icon: ClipboardList, color: "amber" },
-        { value: `₹${(summary.prepaidBillsTotal || 0).toLocaleString()}`, label: "Prepaid Total", icon: ClipboardList, color: "amber" },
-        { value: summary.pendingReports?.toString() || "0", label: "Pending Reports", icon: Bed, color: "red" },
-        { value: `${summary.avgReportTimeMinutes || 0}m`, label: "Avg Report Time", icon: Clock, color: "default" },
+        { 
+            value: (summary.walkInsToday !== undefined && summary.walkInsToday !== null ? summary.walkInsToday : effectiveWalkIns).toString(), 
+            label: "Walk-Ins", 
+            qualifier: "Paid/Credit", 
+            icon: Users, 
+            color: "zinc",
+            isPool: true 
+        },
+        { 
+            value: `₹${(summary.paymentsCashTotal || 0).toLocaleString()}`, 
+            label: "Cash Collected", 
+            icon: ClipboardList, 
+            color: "emerald",
+            scopeBadge: "Desk"
+        },
+        { 
+            value: summary.paymentsOnlineCount?.toString() || "0", 
+            label: "Online Payments", 
+            icon: ClipboardList, 
+            color: "blue",
+            scopeBadge: "Desk"
+        },
+        { 
+            value: `₹${(summary.paymentsOnlineTotal || 0).toLocaleString()}`, 
+            label: "Online Total", 
+            icon: ClipboardList, 
+            color: "blue",
+            scopeBadge: "Desk"
+        },
+        { 
+            value: summary.prepaidBillsCount?.toString() || "0", 
+            label: "Prepaid Bills Issued", 
+            shortLabel: "Prepaid Bills", 
+            icon: ClipboardList, 
+            color: "amber",
+            scopeBadge: "Desk"
+        },
+        { 
+            value: `₹${(summary.prepaidBillsTotal || 0).toLocaleString()}`, 
+            label: "Prepaid Total", 
+            icon: ClipboardList, 
+            color: "amber",
+            scopeBadge: "Desk"
+        },
+        { 
+            value: `₹${(summary.dailyExpensesCashTotal || 0).toLocaleString()}`, 
+            label: "Recorded Expenses", 
+            shortLabel: "Daily Expenses", 
+            qualifier: "Cash Outflow", 
+            icon: Receipt, 
+            color: "red",
+            isPool: true 
+        },
+        { 
+            value: `₹${(summary.cashDrawerBalance || 0).toLocaleString()}`, 
+            label: "Cash in the Drawer", 
+            shortLabel: "Cash Drawer", 
+            qualifier: "Physical Balance", 
+            icon: Wallet, 
+            color: "emerald",
+            isPool: true 
+        },
     ] : [
-        { value: "—", label: "Walk-Ins", qualifier: "(Paid/Credit)", icon: Users, color: "default" },
-        { value: "—", label: "Cash Collected", icon: ClipboardList, color: "default" },
-        { value: "—", label: "Online Payments", icon: ClipboardList, color: "default" },
-        { value: "—", label: "Online Total", icon: ClipboardList, color: "default" },
-        { value: "—", label: "Credit Bills", icon: ClipboardList, color: "default" },
-        { value: "—", label: "Credit Value", icon: ClipboardList, color: "default" },
-        { value: "—", label: "Pending Reports", icon: Bed, color: "default" },
-        { value: "—", label: "Avg Report Time", icon: Clock, color: "default" },
+        { value: "—", label: "Walk-Ins", qualifier: "(Paid/Credit)", icon: Users, color: "default", isPool: true },
+        { value: "—", label: "Cash Collected", icon: ClipboardList, color: "default", scopeBadge: "Desk" },
+        { value: "—", label: "Online Payments", icon: ClipboardList, color: "default", scopeBadge: "Desk" },
+        { value: "—", label: "Online Total", icon: ClipboardList, color: "default", scopeBadge: "Desk" },
+        { value: "—", label: "Credit Bills", icon: ClipboardList, color: "default", scopeBadge: "Desk" },
+        { value: "—", label: "Credit Value", icon: ClipboardList, color: "default", scopeBadge: "Desk" },
+        { value: "—", label: "Recorded Expenses", icon: Receipt, color: "default", isPool: true },
+        { value: "—", label: "Cash in the Drawer", icon: Wallet, color: "default", isPool: true },
     ];
 
     // ACTION QUEUE COLUMNS (Strict Backend Truth)

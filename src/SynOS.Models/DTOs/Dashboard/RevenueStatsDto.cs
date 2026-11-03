@@ -12,6 +12,10 @@ namespace SynOS.Models.DTOs.Dashboard
         public int? PrepaidBillsCount { get; set; }
         public decimal? PrepaidBillsTotal { get; set; }
         
+        // Cash Drawer & Expense Aggregates
+        public decimal? DailyExpensesCashTotal { get; set; }
+        public decimal? CashDrawerBalance { get; set; }
+        
         // These are not calculated by InvoiceService but required by DTO contract (can be 0)
         public int? PendingReports { get; set; } 
         public double? AvgReportTimeMinutes { get; set; }
