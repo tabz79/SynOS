@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils';
 import { useGlobalFilter } from '@/context/GlobalFilterContext';
 import { CommercialDocumentViewer } from '../documents/CommercialDocumentViewer';
 import { DynamicDocumentRenderer } from '../documents/DynamicDocumentRenderer';
+import { isWithinTimeRange, formatCanonicalBillNo, isDraftEntity } from '../FinanceUtils';
 
 export const PartnerReceivablesTab = () => {
     const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
@@ -52,7 +53,10 @@ export const PartnerReceivablesTab = () => {
             const start = presetRange === 'custom' ? customDates?.start : null;
             const end = presetRange === 'custom' ? customDates?.end : null;
             const data = await FinanceApi.getReceivables(null, bId, presetRange, start, end);
-            const validData = (data || []).filter(r => !r.token?.toUpperCase().startsWith('D-') && (r.status || '').toLowerCase() !== 'draft');
+            const validData = (data || []).filter(r => 
+                !isDraftEntity(r) && 
+                isWithinTimeRange(r.occurredAt || r.date, presetRange, customDates)
+            );
             setRawReceivables(validData);
             const tabToUse = activePayerTabRef.current || 'partner';
             const grouped = groupReceivables(validData, tabToUse);
@@ -151,7 +155,8 @@ export const PartnerReceivablesTab = () => {
                 totalAmount: total,
                 paidAmount: paid,
                 balanceDue: safeDue,
-                token: r.token || r.visitToken || '-'
+                token: r.token || r.visitToken || '-',
+                billNumber: formatCanonicalBillNo(r)
             });
         });
         return Object.values(groups).filter(g => g.totalAmount > 0);
@@ -460,7 +465,7 @@ export const PartnerReceivablesTab = () => {
                                                                             title={allPartnerSelected ? "Deselect all" : "Select all open bills"}
                                                                         />
                                                                     </th>
-                                                                    <th className="pb-2">Token / Reference</th>
+                                                                    <th className="pb-2">Bill No</th>
                                                                     <th className="pb-2">Patient</th>
                                                                     <th className="pb-2">Main Doctor</th>
                                                                     <th className="pb-2">Tests / Investigations</th>
@@ -490,8 +495,9 @@ export const PartnerReceivablesTab = () => {
                                                                                     className="rounded border-zinc-300 dark:border-zinc-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                                                                                 />
                                                                             </td>
-                                                                            <td className="py-3 text-[10px] font-mono font-bold text-zinc-600 dark:text-zinc-400">
-                                                                                <div>{fact.token || fact.visitToken || fact.receivableFactId.toString().substring(0, 13)}</div>
+                                                                            <td className="py-3 text-[10px] font-mono font-bold">
+                                                                                <div className="text-synos-primary dark:text-sky-400 font-bold">{fact.billNumber || formatCanonicalBillNo(fact)}</div>
+                                                                                <div className="text-[9px] text-zinc-400 font-normal">Token: {fact.token || fact.visitToken || '-'}</div>
                                                                                 {fact.claimReference && (
                                                                                     <div className="text-[9px] text-indigo-500 font-sans font-semibold">
                                                                                         {activePayerTab === 'insurance' ? `Policy/Claim: ${fact.claimReference}` : `Emp ID: ${fact.claimReference}`}

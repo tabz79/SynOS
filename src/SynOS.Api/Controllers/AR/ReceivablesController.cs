@@ -188,10 +188,15 @@ namespace SynOS.Api.Controllers.AR
                 var resolvedDebtorName = isPartnerDebtor ? effectivePartnerName : (!string.IsNullOrEmpty(x.DebtorName) ? x.DebtorName : effectivePartnerName);
                 var hasReferralChain = x.SecondaryPartnerId.HasValue && x.PrimaryPartnerId.HasValue;
 
+                var cleanToken = !string.IsNullOrEmpty(x.Token) ? System.Text.RegularExpressions.Regex.Replace(x.Token, "[^a-zA-Z0-9]", "").ToUpper() : "MAI000";
+                var canonicalBillNo = $"{cleanToken}-{x.OccurredAt:yyMMdd}";
+
                 return new
                 {
                     receivableFactId = x.ReceivableFactId,
                     sourceVisitId = x.SourceVisitId,
+                    billNumber = canonicalBillNo,
+                    canonicalBillNo = canonicalBillNo,
                     debtorType = x.DebtorType,
                     debtorId = resolvedDebtorId,
                     debtorName = resolvedDebtorName,

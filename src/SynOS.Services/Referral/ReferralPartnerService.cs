@@ -6,8 +6,10 @@ using SynOS.Models.DTOs.Admin.Referral;
 using SynOS.Models.Entities.Referral;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using SynOS.Models.Enums.Referral;
+using SynOS.Services.Time;
 
 namespace SynOS.Services.Referral
 {
@@ -18,19 +20,22 @@ namespace SynOS.Services.Referral
         private readonly IAuditService _auditService;
         private readonly IReferralFinancialService _referralFinancialService;
         private readonly ILogger<ReferralPartnerService> _logger;
+        private readonly ILabTimeProvider _labTimeProvider;
 
         public ReferralPartnerService(
             SynOSDbContext context, 
             IMapper mapper, 
             IAuditService auditService,
             IReferralFinancialService referralFinancialService,
-            ILogger<ReferralPartnerService> logger)
+            ILogger<ReferralPartnerService> logger,
+            ILabTimeProvider labTimeProvider = null!)
         {
             _context = context;
             _mapper = mapper;
             _auditService = auditService;
             _referralFinancialService = referralFinancialService;
             _logger = logger;
+            _labTimeProvider = labTimeProvider ?? new LabTimeProvider();
         }
 
         // Updated signature to accept userId? Or inject UserContext? 
@@ -226,8 +231,87 @@ namespace SynOS.Services.Referral
             await _auditService.LogAsync(userId, "SuspendReferralPartner", "ReferralPartner", id, new { Active = false });
         }
 
-        public async Task<ReferralSummaryDto> GetReferralSummaryAsync(Guid? branchId = null)
+        private (DateTimeOffset? startUtc, DateTimeOffset? endUtc) ResolvePresetDateRange(string? preset, DateTime? explicitStart, DateTime? explicitEnd)
         {
+            if (explicitStart.HasValue || explicitEnd.HasValue)
+            {
+                var adjustedEnd = explicitEnd;
+                if (adjustedEnd.HasValue && adjustedEnd.Value.TimeOfDay == TimeSpan.Zero)
+                {
+                    adjustedEnd = adjustedEnd.Value.AddDays(1).AddTicks(-1);
+                }
+                var s = explicitStart.HasValue ? (DateTimeOffset?)new DateTimeOffset(explicitStart.Value, TimeSpan.Zero) : null;
+                var e = adjustedEnd.HasValue ? (DateTimeOffset?)new DateTimeOffset(adjustedEnd.Value, TimeSpan.Zero) : null;
+                return (s, e);
+            }
+
+            if (string.IsNullOrWhiteSpace(preset))
+            {
+                return (null, null);
+            }
+
+            var p = preset.Trim().ToLowerInvariant();
+            var istZone = _labTimeProvider.GetLabTimeZone();
+            var istNow = _labTimeProvider.GetLabNow();
+            var istToday = istNow.Date; // 00:00:00 IST
+
+            DateTime istStart;
+            DateTime istEnd;
+
+            switch (p)
+            {
+                case "today":
+                    istStart = istToday;
+                    istEnd = istToday.AddDays(1).AddTicks(-1);
+                    break;
+                case "yesterday":
+                    istStart = istToday.AddDays(-1);
+                    istEnd = istToday.AddTicks(-1);
+                    break;
+                case "this week":
+                case "week":
+                    istStart = istToday.AddDays(-6);
+                    istEnd = istToday.AddDays(1).AddTicks(-1);
+                    break;
+                case "this month":
+                case "month":
+                    istStart = new DateTime(istToday.Year, istToday.Month, 1);
+                    istEnd = istStart.AddMonths(1).AddTicks(-1);
+                    break;
+                case "this quarter":
+                case "quarter":
+                case string q when q.StartsWith("q"):
+                    var quarter = (istToday.Month - 1) / 3 + 1;
+                    var qStartMonth = (quarter - 1) * 3 + 1;
+                    istStart = new DateTime(istToday.Year, qStartMonth, 1);
+                    istEnd = istStart.AddMonths(3).AddTicks(-1);
+                    break;
+                case "this year":
+                case "year":
+                case "fy":
+                    var fyStartYear = istToday.Month >= 4 ? istToday.Year : istToday.Year - 1;
+                    istStart = new DateTime(fyStartYear, 4, 1);
+                    istEnd = istStart.AddYears(1).AddTicks(-1);
+                    break;
+                case "all":
+                case "all time":
+                    return (null, null);
+                default:
+                    return (null, null);
+            }
+
+            var startUtc = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(istStart, DateTimeKind.Unspecified), istZone);
+            var endUtc = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(istEnd, DateTimeKind.Unspecified), istZone);
+            return (new DateTimeOffset(startUtc), new DateTimeOffset(endUtc));
+        }
+
+        public async Task<ReferralSummaryDto> GetReferralSummaryAsync(
+            Guid? branchId = null,
+            string? preset = null,
+            DateTime? startDate = null,
+            DateTime? endDate = null)
+        {
+            var (startUtc, endUtc) = ResolvePresetDateRange(preset, startDate, endDate);
             var today = DateTimeOffset.UtcNow.Date;
             
             var pendingPayoutsQuery = _context.ReferralPayableFacts.AsNoTracking();
@@ -251,6 +335,21 @@ namespace SynOS.Services.Referral
                 
                 invoicesQuery = invoicesQuery.Where(i => i.Visit != null && i.Visit.BranchId == branchId.Value);
             }
+
+            if (startUtc.HasValue)
+            {
+                pendingPayoutsQuery = pendingPayoutsQuery.Where(f => f.OccurredAt >= startUtc.Value);
+                pendingReceivablesQuery = pendingReceivablesQuery.Where(f => f.OccurredAt >= startUtc.Value);
+                visitsQuery = visitsQuery.Where(v => v.CreatedAt >= startUtc.Value);
+                invoicesQuery = invoicesQuery.Where(i => i.CreatedAt >= startUtc.Value);
+            }
+            if (endUtc.HasValue)
+            {
+                pendingPayoutsQuery = pendingPayoutsQuery.Where(f => f.OccurredAt <= endUtc.Value);
+                pendingReceivablesQuery = pendingReceivablesQuery.Where(f => f.OccurredAt <= endUtc.Value);
+                visitsQuery = visitsQuery.Where(v => v.CreatedAt <= endUtc.Value);
+                invoicesQuery = invoicesQuery.Where(i => i.CreatedAt <= endUtc.Value);
+            }
             
             var totalPendingPayouts = await pendingPayoutsQuery
                 .Where(f => f.SettledAt == null)
@@ -264,11 +363,11 @@ namespace SynOS.Services.Referral
                 .SumAsync(f => (decimal?)(f.Amount - f.AmountReceived)) ?? 0m;
 
             var referralsToday = await visitsQuery
-                .Where(v => v.IsReferred && v.CreatedAt >= today)
+                .Where(v => v.IsReferred && (startUtc.HasValue || v.CreatedAt >= today))
                 .CountAsync();
 
             var revenueToday = await invoicesQuery
-                .Where(i => i.Visit != null && i.Visit.IsReferred && i.CreatedAt >= today)
+                .Where(i => i.Visit != null && i.Visit.IsReferred && (startUtc.HasValue || i.CreatedAt >= today))
                 .SumAsync(i => (decimal?)i.Total) ?? 0m;
 
             return new ReferralSummaryDto

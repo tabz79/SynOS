@@ -130,7 +130,12 @@ namespace SynOS.Api.Controllers.Admin.Referral
         }
         [HttpGet("summary")]
         [Authorize(Roles = "Admin,Receptionist")]
-        public async Task<IActionResult> GetSummary([FromQuery] Guid? branchId, [FromQuery] bool isConsolidated = false)
+        public async Task<IActionResult> GetSummary(
+            [FromQuery] Guid? branchId, 
+            [FromQuery] bool isConsolidated = false,
+            [FromQuery] string? preset = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null)
         {
             await _referralFinancialService.BackfillUnrecognizedCommissionsAsync();
 
@@ -140,7 +145,7 @@ namespace SynOS.Api.Controllers.Admin.Referral
                 effectiveBranchId = null;
             }
 
-            var summary = await _referralPartnerService.GetReferralSummaryAsync(effectiveBranchId);
+            var summary = await _referralPartnerService.GetReferralSummaryAsync(effectiveBranchId, preset, startDate, endDate);
             return Ok(summary);
         }
 

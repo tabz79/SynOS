@@ -32,7 +32,7 @@ import { RecordCollectionModal } from './components/RecordCollectionModal';
 import { BulkSettleModal } from './components/BulkSettleModal';
 import { DepartmentOverview } from './components/FinanceShared';
 import { FinanceApi } from '@/api/finance';
-import { FinanceUtils } from './components/FinanceUtils';
+import { FinanceUtils, isWithinTimeRange, formatCanonicalBillNo, isDraftEntity } from './components/FinanceUtils';
 import { useAuth } from '@/context/AuthContext';
 import { AdminApi } from '@/api/admin';
 import { CommercialDocumentViewer } from './components/documents/CommercialDocumentViewer';
@@ -631,54 +631,9 @@ const FilterTab = ({ label, count, isActive, onClick, className = '' }) => (
 
 // --- CANONICAL IDENTIFIER & INVESTIGATION SANITIZERS ---
 
-const formatCanonicalBillNo = (bill) => {
-    if (!bill) return 'MAI000-000000';
-    
-    // If already in MAI001-261102 format (letters + digits - digits), return as is
-    if (bill.billNumber && /^[A-Za-z]{2,5}\d{3,4}-\d{6}$/.test(bill.billNumber)) {
-        return bill.billNumber;
-    }
-
-    // Extract token (e.g. "MAI-001" -> "MAI001")
-    const rawToken = bill.token || bill.tokenNumber || '';
-    let cleanToken = rawToken ? rawToken.replace(/[^a-zA-Z0-9]/g, '').toUpperCase() : '';
-    
-    // If no token, fallback to branch code + 000
-    if (!cleanToken) {
-        const bCode = (bill.branchCode || bill.branchName || 'MAI').replace(/[^a-zA-Z]/g, '').slice(0, 3).toUpperCase() || 'MAI';
-        cleanToken = `${bCode}000`;
-    }
-
-    // Extract YYMMDD from bill.date (e.g. 2026-11-02 -> 261102)
-    let dateStr = '';
-    if (bill.date) {
-        const d = new Date(bill.date);
-        if (!isNaN(d.getTime())) {
-            const yy = String(d.getFullYear()).slice(-2);
-            const mm = String(d.getMonth() + 1).padStart(2, '0');
-            const dd = String(d.getDate()).padStart(2, '0');
-            dateStr = `${yy}${mm}${dd}`;
-        }
-    }
-    if (!dateStr) {
-        const now = new Date();
-        dateStr = `${String(now.getFullYear()).slice(-2)}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
-    }
-
-    return `${cleanToken}-${dateStr}`;
-};
-
 export const isDraftBill = (b) => {
     if (!b) return false;
-    if (b.isDraft === true) return true;
-    const token = String(b.token || b.tokenNumber || '').trim().toUpperCase();
-    if (token.startsWith('D-')) return true;
-    const status = String(b.status || '').trim().toLowerCase();
-    const visitStatus = String(b.visitStatus || '').trim().toLowerCase();
-    if (status === 'draft' || visitStatus === 'draft') return true;
-    const billNo = String(b.billNumber || '').trim().toUpperCase();
-    if (billNo.startsWith('D-') || /^D[0-9A-F]{8,16}-\d{6}$/i.test(billNo)) return true;
-    return false;
+    return isDraftEntity(b);
 };
 
 const PANEL_CHILDREN_MAP = {
@@ -916,17 +871,8 @@ export const BillsCollectionsScreen = () => {
         if (isDraftBill(b)) return false;
 
         // Strict Date Preset Verification (Guards against timezone drift or broad backend returns)
-        if (globalPreset === 'today') {
-            const billDateStr = b.date || b.createdAt;
-            if (billDateStr) {
-                const bDate = new Date(billDateStr);
-                const now = new Date();
-                if (bDate.getFullYear() !== now.getFullYear() ||
-                    bDate.getMonth() !== now.getMonth() ||
-                    bDate.getDate() !== now.getDate()) {
-                    return false;
-                }
-            }
+        if (!isWithinTimeRange(b.date || b.createdAt, globalPreset, globalCustomDates)) {
+            return false;
         }
 
         // 1. Status Filter
@@ -1641,6 +1587,7 @@ export const DueBillsScreen = () => {
     const filteredBills = useMemo(() => {
         return dueBills.filter(b => {
             if (isDraftBill(b)) return false;
+            if (!isWithinTimeRange(b.createdAt || b.date, presetRange, customDates)) return false;
             if (statusFilter === 'Partial' && b.status !== 'Partial') return false;
             if (statusFilter === 'Pending' && b.status !== 'Pending') return false;
 
@@ -2112,10 +2059,53 @@ export const PendingReceivablesScreen = () => {
         }
     };
 
+    const timeFilteredBills = useMemo(() => {
+        return allBills.filter(b => isWithinTimeRange(b.occurredAt || b.date, presetRange, customDates));
+    }, [allBills, presetRange, customDates]);
+
+    const computedPartnerSummaries = useMemo(() => {
+        const groups = new Map();
+        timeFilteredBills.forEach(b => {
+            const partnerName = b.partnerName || b.debtorName || 'Unknown Partner';
+            const partnerId = b.referralPartnerId || b.debtorId || b.partnerId || partnerName;
+            const total = Number(b.totalAmount || b.amount || 0);
+            const paid = Number(b.paidAmount || b.amountReceived || 0);
+            const due = b.balanceDue !== undefined && !isNaN(b.balanceDue) ? Number(b.balanceDue) : (total - paid);
+            const safeDue = isNaN(due) ? 0 : Math.max(0, due);
+            if (safeDue <= 0 && b.settledAt) return;
+
+            const billDate = b.occurredAt || b.date;
+            const days = billDate ? Math.floor((new Date() - new Date(billDate)) / (1000 * 60 * 60 * 24)) : 0;
+
+            if (!groups.has(partnerId)) {
+                groups.set(partnerId, {
+                    partnerId,
+                    partnerName,
+                    totalOutstanding: 0,
+                    billCount: 0,
+                    oldestDueDate: billDate || new Date().toISOString(),
+                    aging_0_7: 0,
+                    aging_7_30: 0,
+                    aging_30_Plus: 0
+                });
+            }
+            const p = groups.get(partnerId);
+            p.totalOutstanding += safeDue;
+            p.billCount += 1;
+            if (billDate && new Date(billDate) < new Date(p.oldestDueDate)) {
+                p.oldestDueDate = billDate;
+            }
+            if (days <= 7) p.aging_0_7 += safeDue;
+            else if (days <= 30) p.aging_7_30 += safeDue;
+            else p.aging_30_Plus += safeDue;
+        });
+        return Array.from(groups.values()).filter(p => p.totalOutstanding > 0);
+    }, [timeFilteredBills]);
+
     const handleOpenPartnerClaim = async (partner, specificFactIds = null) => {
         try {
             setGeneratingClaim(true);
-            const partnerBills = allBills.filter(b => b.partnerName === partner.partnerName && !b.settledAt);
+            const partnerBills = timeFilteredBills.filter(b => b.partnerName === partner.partnerName && !b.settledAt);
             const targetFactIds = specificFactIds && specificFactIds.length > 0 
                 ? specificFactIds 
                 : partnerBills.map(b => b.receivableFactId);
@@ -2146,7 +2136,7 @@ export const PendingReceivablesScreen = () => {
 
     const handleBulkSettle = (partner) => {
         setSelectedPartner(partner);
-        const partnerBills = allBills.filter(b => b.partnerName === partner.partnerName && !b.settledAt);
+        const partnerBills = timeFilteredBills.filter(b => b.partnerName === partner.partnerName && !b.settledAt);
         setSelectedBillIds(partnerBills.map(b => b.receivableFactId));
         setIsBulkModalOpen(true);
     };
@@ -2168,17 +2158,17 @@ export const PendingReceivablesScreen = () => {
     // Extract list of all referring doctors / clinical partners for filter dropdown
     const doctorOptions = useMemo(() => {
         const names = new Set();
-        partnerSummaries.forEach(p => {
+        computedPartnerSummaries.forEach(p => {
             if (p.partnerName) names.add(p.partnerName);
         });
-        allBills.forEach(b => {
+        timeFilteredBills.forEach(b => {
             if (b.partnerName) names.add(b.partnerName);
         });
         return Array.from(names).sort();
-    }, [partnerSummaries, allBills]);
+    }, [computedPartnerSummaries, timeFilteredBills]);
 
     // Filter partners based on search, doctor, status, and aging
-    const filteredPartnerSummaries = partnerSummaries.filter(p => {
+    const filteredPartnerSummaries = computedPartnerSummaries.filter(p => {
         if (doctorFilter !== 'All' && p.partnerName !== doctorFilter) {
             return false;
         }
@@ -2203,11 +2193,12 @@ export const PendingReceivablesScreen = () => {
     // Prepare itemized bills breakdown (including individual tests) for Printable Summary
     const itemizedBillsForPrint = useMemo(() => {
         const partnerNames = new Set(filteredPartnerSummaries.map(p => p.partnerName));
-        return allBills
+        return timeFilteredBills
             .filter(b => partnerNames.has(b.partnerName) && !b.settledAt)
             .map(b => ({
                 id: b.id || b.receivableFactId,
                 partnerName: b.partnerName,
+                billNumber: b.billNumber || formatCanonicalBillNo(b),
                 token: b.token || b.visitToken || '-',
                 patientName: b.patientName || 'Unknown Patient',
                 testsSummary: b.testsSummary || (b.testNames?.join(', ')) || (b.tests?.join(', ')) || '-',
@@ -2215,12 +2206,13 @@ export const PendingReceivablesScreen = () => {
                 totalAmount: b.totalAmount || b.amount || 0,
                 balanceDue: b.balanceDue !== undefined && !isNaN(b.balanceDue) ? b.balanceDue : (b.amount || 0) - (b.amountReceived || 0)
             }));
-    }, [filteredPartnerSummaries, allBills]);
+    }, [filteredPartnerSummaries, timeFilteredBills]);
 
     // Tab-Aware CSV Download for Partner Receivables (includes itemized individual tests)
     const handleDownloadSummary = () => {
         const headers = [
             "Referring Doctor / Partner Name",
+            "Bill No",
             "Token / Visit Ref",
             "Patient Name",
             "Tests / Investigations Billed",
@@ -2232,7 +2224,7 @@ export const PendingReceivablesScreen = () => {
             "Overdue Category"
         ];
         const partnerNames = new Set(filteredPartnerSummaries.map(p => p.partnerName));
-        const relevantBills = allBills.filter(b => partnerNames.has(b.partnerName) && !b.settledAt);
+        const relevantBills = timeFilteredBills.filter(b => partnerNames.has(b.partnerName) && !b.settledAt);
         
         let rows = [];
         if (relevantBills.length > 0) {
@@ -2245,6 +2237,7 @@ export const PendingReceivablesScreen = () => {
                 const tests = b.testsSummary || (b.testNames?.join('; ')) || (b.tests?.join('; ')) || 'N/A';
                 return [
                     `"${(b.partnerName || '').replace(/"/g, '""')}"`,
+                    `"${b.billNumber || formatCanonicalBillNo(b)}"`,
                     `"${b.token || b.visitToken || ''}"`,
                     `"${(b.patientName || '').replace(/"/g, '""')}"`,
                     `"${tests.replace(/"/g, '""')}"`,
@@ -2408,7 +2401,7 @@ export const PendingReceivablesScreen = () => {
                                         </td>
                                     </tr>
                                     {expandedPartnerId === partner.partnerId && (() => {
-                                        const partnerBills = allBills.filter(b => b.partnerName === partner.partnerName && !b.settledAt);
+                                        const partnerBills = timeFilteredBills.filter(b => b.partnerName === partner.partnerName && !b.settledAt);
                                         const partnerItemIds = partnerBills.map(b => b.receivableFactId);
                                         const selectedInPartner = partnerBills.filter(b => selectedFactIds.has(b.receivableFactId));
                                         const selectedCount = selectedInPartner.length;
@@ -2479,7 +2472,7 @@ export const PendingReceivablesScreen = () => {
                                                                             title={allPartnerSelected ? "Deselect all" : "Select all open bills"}
                                                                         />
                                                                     </th>
-                                                                    <th className="pb-2">Token / Ref</th>
+                                                                    <th className="pb-2">Bill No</th>
                                                                     <th className="pb-2">Patient</th>
                                                                     <th className="pb-2">Tests / Investigations</th>
                                                                     <th className="pb-2">Date</th>
@@ -2509,7 +2502,10 @@ export const PendingReceivablesScreen = () => {
                                                                                     className="rounded border-zinc-300 dark:border-zinc-700 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                                                                                 />
                                                                             </td>
-                                                                            <td className="py-3 text-[10px] font-mono text-zinc-500 font-bold">{bill.token || bill.visitToken || bill.receivableFactId?.toString().substring(0, 13)}</td>
+                                                                            <td className="py-3 text-[10px] font-mono font-bold">
+                                                                                <div className="text-synos-primary dark:text-sky-400 font-bold">{bill.billNumber || formatCanonicalBillNo(bill)}</div>
+                                                                                <div className="text-[9px] text-zinc-400 font-normal">Token: {bill.token || bill.visitToken || '-'}</div>
+                                                                            </td>
                                                                             <td className="py-3 text-[10px] font-bold dark:text-zinc-300">{bill.patientName || 'Unknown Patient'}</td>
                                                                             <td className="py-3 text-[10px] text-zinc-600 dark:text-zinc-400 max-w-[220px] truncate" title={bill.testsSummary || (bill.testNames?.join(', ')) || (bill.tests?.join(', ')) || '-'}>
                                                                                 {bill.testsSummary || (bill.testNames?.join(', ')) || (bill.tests?.join(', ')) || '-'}
@@ -2601,7 +2597,8 @@ export const PendingReceivablesScreen = () => {
                     subtitle: `Complete breakdown of tests referred across ${itemizedBillsForPrint.length} open visit records`,
                     columns: [
                         { key: 'partnerName', label: 'Referring Doctor / Partner' },
-                        { key: 'token', label: 'Token / Ref' },
+                        { key: 'billNumber', label: 'Bill No' },
+                        { key: 'token', label: 'Token' },
                         { key: 'patientName', label: 'Patient Name' },
                         { key: 'testsSummary', label: 'Tests / Investigations Billed' },
                         { key: 'date', label: 'Date' },

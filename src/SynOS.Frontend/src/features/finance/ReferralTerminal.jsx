@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
 import { FinancePrintableSummaryModal } from './components/FinancePrintableSummaryModal';
+import { formatCanonicalBillNo, isWithinTimeRange, isDraftEntity } from './components/FinanceUtils';
 import { PartnerRegistryTab } from './components/referral/PartnerRegistryTab';
 import { PendingPayoutsTab } from './components/referral/PendingPayoutsTab';
 import { PartnerReceivablesTab } from './components/referral/PartnerReceivablesTab';
@@ -50,6 +51,16 @@ export const ReferralTerminal = () => {
     });
     const tabsRef = React.useRef(null);
 
+    const activeTabReceivablesTotal = React.useMemo(() => {
+        if (!tabData.receivables || tabData.receivables.length === 0) return 0;
+        return tabData.receivables.reduce((sum, r) => {
+            const due = r.balanceDue !== undefined && !isNaN(r.balanceDue)
+                ? Number(r.balanceDue)
+                : (Number(r.totalAmount || r.amount || 0) - Number(r.paidAmount || r.amountReceived || 0));
+            return sum + (isNaN(due) ? 0 : due);
+        }, 0);
+    }, [tabData.receivables]);
+
     const tabs = [
         { id: 'overview', label: 'Overview', icon: LayoutDashboard },
         { id: 'rate-queue', label: 'Rate Queue', icon: Zap, badge: unmappedQueueCount },
@@ -64,13 +75,15 @@ export const ReferralTerminal = () => {
     const loadSummary = async () => {
         const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
         const isCons = isConsolidated && isAdmin;
+        const start = presetRange === 'custom' ? customDates?.start : null;
+        const end = presetRange === 'custom' ? customDates?.end : null;
         try {
             if (summary) {
                 setIsUpdating(true);
             } else {
                 setLoading(true);
             }
-            const data = await FinanceApi.getReferralSummary(bId, isCons);
+            const data = await FinanceApi.getReferralSummary(bId, isCons, presetRange, start, end);
             setSummary(data);
         } catch (err) {
             console.error("Failed to load referral summary", err);
@@ -116,8 +129,13 @@ export const ReferralTerminal = () => {
                 setTabData(prev => ({ ...prev, payouts: res || [] }));
                 return res || [];
             } else if (targetTab === 'receivables') {
-                const res = await FinanceApi.getReceivables('partner');
+                const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
+                const start = presetRange === 'custom' ? customDates?.start : null;
+                const end = presetRange === 'custom' ? customDates?.end : null;
+                const res = await FinanceApi.getReceivables('partner', bId, presetRange, start, end);
                 const partnerOnly = (res || []).filter(r => {
+                    if (isDraftEntity(r)) return false;
+                    if (!isWithinTimeRange(r.occurredAt || r.date, presetRange, customDates)) return false;
                     const dt = String(r.debtorType || '').toLowerCase();
                     return dt === 'partner' || dt === '1' || (!r.corporateName && !r.corporateAccountId && !r.insuranceName && !r.insuranceCompanyId);
                 });
@@ -343,7 +361,8 @@ export const ReferralTerminal = () => {
                 ],
                 columns: [
                     { key: 'partnerName', label: 'Partner / Clinic', render: (v, r) => v || r.clinicName || 'Clinic' },
-                    { key: 'visitToken', label: 'Visit / Token', render: (v, r) => v || r.token || '-' },
+                    { key: 'billNumber', label: 'Bill No', render: (v, r) => v || r.canonicalBillNo || formatCanonicalBillNo(r) },
+                    { key: 'visitToken', label: 'Token', render: (v, r) => v || r.token || '-' },
                     { key: 'patientName', label: 'Patient', render: (v) => v || '-' },
                     { key: 'testsSummary', label: 'Tests / Investigations', render: (v, r) => v || (r.testNames?.join(', ')) || (r.tests?.join(', ')) || '-' },
                     { key: 'totalAmount', label: 'Invoice Total (₹)', align: 'right', render: (v, r) => `₹${Number(v || r.amount || 0).toLocaleString()}` },
@@ -469,7 +488,7 @@ export const ReferralTerminal = () => {
                             <div className="w-px h-6 bg-zinc-300 dark:bg-zinc-700" />
                             <div className="text-right">
                                 <span className="text-[9px] text-zinc-500 uppercase font-black tracking-wider block">Receivables</span>
-                                <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">₹{summary.totalPendingReceivables?.toLocaleString()}</span>
+                                <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">₹{(tab === 'receivables' ? activeTabReceivablesTotal : (summary.totalPendingReceivables || 0)).toLocaleString()}</span>
                             </div>
                         </div>
                     )}

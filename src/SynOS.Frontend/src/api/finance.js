@@ -592,10 +592,13 @@ export const FinanceApi = {
         return response.json();
     },
 
-    getReferralSummary: async (branchId, isConsolidated) => {
+    getReferralSummary: async (branchId, isConsolidated, preset = null, startDate = null, endDate = null) => {
         const q = [];
         if (branchId) q.push(`branchId=${branchId}`);
         if (isConsolidated) q.push(`isConsolidated=true`);
+        if (preset && preset !== 'all' && preset !== 'custom') q.push(`preset=${preset}`);
+        if (startDate) q.push(`startDate=${startDate}`);
+        if (endDate) q.push(`endDate=${endDate}`);
         const qs = q.length ? '?' + q.join('&') : '';
         let url = `/api/v1/admin/referral-partners/summary${qs}`;
         if (!branchId && !isConsolidated) {
