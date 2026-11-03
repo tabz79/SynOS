@@ -28,8 +28,8 @@ export const RecordCollectionModal = ({ isOpen, onClose, onConfirm, entityName, 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/40 backdrop-blur-sm">
-      <div className="w-full max-w-md bg-white dark:bg-zinc-950 rounded-2xl border dark:border-zinc-800 border-zinc-200 shadow-2xl overflow-hidden flex flex-col">
-        <div className="p-4 border-b dark:border-zinc-900 border-zinc-100 flex items-center justify-between">
+      <div className="w-full max-w-md bg-slate-50 dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-2xl overflow-hidden flex flex-col">
+        <div className="p-4 border-b dark:border-zinc-800 border-slate-200 flex items-center justify-between bg-slate-100/50 dark:bg-zinc-950/40">
           <h2 className="text-sm font-bold uppercase tracking-wider text-zinc-400">
             {isPayout ? 'Execute Payout' : 'Record Collection'}
           </h2>

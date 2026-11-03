@@ -1277,27 +1277,19 @@ export const BillsCollectionsScreen = () => {
                                             </div>
                                         </td>
                                         <td className="p-4">
-                                            <div className="flex flex-col gap-1 max-w-[280px]">
-                                                {/* Test / Investigation Names */}
+                                            <div className="flex flex-col gap-1.5 max-w-[320px]">
+                                                {/* Test / Investigation Badges */}
                                                 {bill.testItems && bill.testItems.length > 0 ? (
-                                                    <div className="space-y-0.5">
-                                                        <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 block truncate" title={bill.testItems.join(', ')}>
-                                                            {bill.testItems[0]}
-                                                        </span>
-                                                        {bill.testItems.length > 1 && (
-                                                            <div className="flex items-center gap-1.5 flex-wrap">
-                                                                {bill.testItems.slice(1, 3).map((t, idx) => (
-                                                                    <span key={idx} className="text-[10px] text-zinc-600 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800/80 px-1.5 py-0.5 rounded font-medium truncate max-w-[130px]" title={t}>
-                                                                        {t}
-                                                                    </span>
-                                                                ))}
-                                                                {bill.testItems.length > 3 && (
-                                                                    <span className="text-[9px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/50 px-1.5 py-0.5 rounded" title={bill.testItems.slice(3).join(', ')}>
-                                                                        +{bill.testItems.length - 3} more
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                        )}
+                                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                                        {bill.testItems.map((t, idx) => (
+                                                            <span 
+                                                                key={idx} 
+                                                                className="bg-synos-primary/10 text-synos-primary border border-synos-primary/20 text-[10px] px-1.5 py-0.5 rounded font-mono leading-none truncate max-w-[150px]" 
+                                                                title={t}
+                                                            >
+                                                                {t}
+                                                            </span>
+                                                        ))}
                                                     </div>
                                                 ) : (
                                                     <span className="text-xs font-semibold dark:text-zinc-200">
@@ -3307,7 +3299,9 @@ export const CollectionHistoryScreen = () => {
         try {
             setLoading(true);
             const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
-            const data = await FinanceApi.getRevenueHistory(bId);
+            const start = presetRange === 'custom' ? customDates?.start : null;
+            const end = presetRange === 'custom' ? customDates?.end : null;
+            const data = await FinanceApi.getRevenueHistory(bId, presetRange, start, end);
             setHistory(data || []);
         } catch (err) {
             console.error("Failed to load collection history:", err);
@@ -3317,12 +3311,18 @@ export const CollectionHistoryScreen = () => {
     };
 
     const filteredHistory = history.filter(row => {
+        // Strict client-side date boundary verification
+        if (!isWithinTimeRange(row.occurredAt, presetRange, customDates)) return false;
+
         if (searchQuery.trim()) {
             const q = searchQuery.toLowerCase();
+            const matchBill = (row.canonicalBillNo || row.billNumber || '').toLowerCase().includes(q);
+            const matchToken = (row.token || '').toLowerCase().includes(q);
+            const matchPatient = (row.patientName || '').toLowerCase().includes(q);
             const matchRef = (row.sourceReferenceId || '').toLowerCase().includes(q);
-            const matchNotes = (row.notes || '').toLowerCase().includes(q);
+            const matchNotes = (row.cleanNotes || row.notes || '').toLowerCase().includes(q);
             const matchType = (row.sourceType || '').toLowerCase().includes(q);
-            if (!matchRef && !matchNotes && !matchType) return false;
+            if (!matchBill && !matchToken && !matchPatient && !matchRef && !matchNotes && !matchType) return false;
         }
         if (paymentModeFilter !== 'All') {
             const mode = (row.paymentMode || '').toLowerCase();
@@ -3345,14 +3345,16 @@ export const CollectionHistoryScreen = () => {
 
     // Tab-Aware CSV Download for Collection History
     const handleDownloadSummary = () => {
-        const headers = ["Date & Time", "Source Category", "Collected Amount (INR)", "Payment Mode", "Reference ID", "Notes"];
+        const headers = ["Date & Time", "Source Category", "Collected Amount (INR)", "Payment Mode", "OG Bill No", "Token", "Patient Name", "Audit / Notes"];
         const rows = filteredHistory.map(r => [
             `"${new Date(r.occurredAt).toLocaleString()}"`,
             `"${(r.sourceType || '').replace(/"/g, '""')}"`,
             r.amount || 0,
             `"${(r.paymentMode || '').replace(/"/g, '""')}"`,
-            `"${(r.sourceReferenceId || '').replace(/"/g, '""')}"`,
-            `"${(r.notes || '').replace(/"/g, '""')}"`
+            `"${(r.canonicalBillNo || r.billNumber || '').replace(/"/g, '""')}"`,
+            `"${(r.token || '').replace(/"/g, '""')}"`,
+            `"${(r.patientName || '').replace(/"/g, '""')}"`,
+            `"${(r.cleanNotes || r.notes || '').replace(/"/g, '""')}"`
         ]);
         const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
         const encodedUri = encodeURI(csvContent);
@@ -3436,8 +3438,8 @@ export const CollectionHistoryScreen = () => {
                                 <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Source Category</th>
                                 <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Amount</th>
                                 <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-center">Payment Mode</th>
-                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Reference</th>
-                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Notes</th>
+                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">OG Bill No / Patient</th>
+                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Audit / Notes</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80">
@@ -3449,14 +3451,40 @@ export const CollectionHistoryScreen = () => {
                                             ? row.notes.split('|')[0].replace('Partner:', '').trim()
                                             : FinanceUtils.mapRevenueSource(row.sourceType)}
                                     </td>
-                                    <td className="p-4 text-xs font-bold text-right dark:text-zinc-300">₹{row.amount.toLocaleString()}</td>
+                                    <td className="p-4 text-xs font-bold text-right dark:text-zinc-300">
+                                        <span className={Number(row.amount) < 0 ? "text-rose-500 font-mono" : "text-emerald-600 dark:text-emerald-400 font-mono"}>
+                                            {Number(row.amount) < 0 ? `-₹${Math.abs(Number(row.amount)).toLocaleString()}` : `₹${Number(row.amount).toLocaleString()}`}
+                                        </span>
+                                    </td>
                                     <td className="p-4 text-center">
                                         <span className="px-2 py-1 rounded-md bg-zinc-100 dark:bg-zinc-800 text-[10px] font-medium text-zinc-500 uppercase tracking-wider">
                                             {FinanceUtils.mapPaymentMode(row.paymentMode)}
                                         </span>
                                     </td>
-                                    <td className="p-4 text-xs font-mono text-zinc-400">{row.sourceReferenceId}</td>
-                                    <td className="p-4 text-xs text-zinc-500">{row.notes}</td>
+                                    <td className="p-4">
+                                        <div className="flex flex-col gap-0.5 max-w-[220px]">
+                                            <div className="flex items-center gap-1.5 flex-wrap">
+                                                <span className="font-mono font-bold text-xs text-synos-primary">
+                                                    {row.canonicalBillNo || formatCanonicalBillNo(row) || row.billNumber || '—'}
+                                                </span>
+                                                {row.token && (
+                                                    <span className="text-[10px] font-mono px-1.5 py-0.2 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 rounded border border-zinc-200 dark:border-zinc-700">
+                                                        {row.token}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {row.patientName && (
+                                                <span className="text-xs text-zinc-700 dark:text-zinc-300 font-medium truncate" title={row.patientName}>
+                                                    {row.patientName}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td className="p-4 text-xs text-zinc-600 dark:text-zinc-400">
+                                        <span className="line-clamp-2" title={row.cleanNotes || row.notes}>
+                                            {row.cleanNotes || (row.notes && !row.notes.includes('-') ? row.notes : (row.sourceType === 'Partner' ? 'B2B Partner Settlement' : 'Patient Visit Collection'))}
+                                        </span>
+                                    </td>
                                 </tr>
                             ))}
                             {filteredHistory.length === 0 && (

@@ -23,14 +23,14 @@ export const BulkSettleModal = ({ isOpen, onClose, onConfirm, partnerName, selec
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-950/60 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="w-full max-w-md bg-white dark:bg-zinc-900 rounded-3xl shadow-2xl border dark:border-zinc-800 border-zinc-200 overflow-hidden scale-in duration-300">
+            <div className="w-full max-w-md bg-slate-50 dark:bg-zinc-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-zinc-800 overflow-hidden scale-in duration-300">
                 <div className="p-8 space-y-6">
                     <div className="space-y-2">
                         <h2 className="text-xl font-bold dark:text-white text-zinc-900">Bulk Settlement</h2>
                         <p className="text-sm text-zinc-500 font-medium">Processing payment for <span className="text-synos-primary font-bold">{partnerName}</span></p>
                     </div>
 
-                    <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-950/50 border dark:border-zinc-800 border-zinc-200 space-y-3">
+                    <div className="p-4 rounded-2xl bg-white dark:bg-zinc-950/50 border border-slate-200/80 dark:border-zinc-800 space-y-3">
                         <div className="flex justify-between items-center text-xs">
                             <span className="text-zinc-500">Selected Bills</span>
                             <span className="font-bold dark:text-zinc-300">{selectedBills.length}</span>
@@ -49,14 +49,14 @@ export const BulkSettleModal = ({ isOpen, onClose, onConfirm, partnerName, selec
                                 value={amount}
                                 onChange={(e) => setAmount(e.target.value)}
                                 placeholder="Enter total amount received"
-                                className="w-full px-4 py-3 rounded-xl bg-zinc-100 dark:bg-zinc-950 border-2 border-transparent focus:border-synos-primary outline-none transition-all dark:text-white font-bold text-lg"
+                                className="w-full px-4 py-3 rounded-xl bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 focus:border-synos-primary outline-none transition-all text-zinc-900 dark:text-white font-bold text-lg"
                             />
                             <div className="flex gap-2 pt-2">
                                 {[0.5, 1].map(pct => (
                                     <button 
                                         key={pct}
                                         onClick={() => setAmount((totalDue * pct).toFixed(2))}
-                                        className="flex-1 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-[10px] font-bold text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                                        className="flex-1 py-1 rounded-lg bg-white dark:bg-zinc-800 text-[10px] font-bold text-zinc-600 dark:text-zinc-400 border border-slate-200 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
                                     >
                                         {pct * 100}% Dues
                                     </button>
@@ -71,7 +71,7 @@ export const BulkSettleModal = ({ isOpen, onClose, onConfirm, partnerName, selec
                                     <button 
                                         key={m.id}
                                         onClick={() => setPaymentMode(m.id)}
-                                        className={`px-3 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider border-2 transition-all ${paymentMode === m.id ? 'border-synos-primary bg-synos-primary/5 text-synos-primary' : 'border-zinc-100 dark:border-zinc-800 text-zinc-500'}`}
+                                        className={`px-3 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wider border-2 transition-all cursor-pointer ${paymentMode === m.id ? 'border-synos-primary bg-synos-primary/10 text-synos-primary font-black' : 'border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950/40 text-zinc-600 dark:text-zinc-400 hover:bg-slate-100'}`}
                                     >
                                         {m.label}
                                     </button>
@@ -86,7 +86,7 @@ export const BulkSettleModal = ({ isOpen, onClose, onConfirm, partnerName, selec
                                 value={reference}
                                 onChange={(e) => setReference(e.target.value)}
                                 placeholder="e.g. HDFC12938491, UTR-0921..."
-                                className="w-full px-4 py-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-950 border-2 border-transparent focus:border-synos-primary outline-none transition-all dark:text-white font-medium text-xs font-mono"
+                                className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 focus:border-synos-primary outline-none transition-all text-zinc-900 dark:text-white font-medium text-xs font-mono"
                             />
                         </div>
 
@@ -101,7 +101,7 @@ export const BulkSettleModal = ({ isOpen, onClose, onConfirm, partnerName, selec
                     <div className="flex gap-3 pt-4">
                         <button 
                             onClick={onClose}
-                            className="flex-1 py-3 rounded-2xl bg-zinc-100 dark:bg-zinc-800 text-sm font-bold text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-all cursor-pointer"
+                            className="flex-1 py-3 rounded-2xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-sm font-bold text-zinc-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all cursor-pointer"
                         >
                             Cancel
                         </button>

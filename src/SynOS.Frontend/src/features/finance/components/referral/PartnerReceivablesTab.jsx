@@ -714,8 +714,8 @@ const RecoveryModal = ({ partner, onClose, onConfirm, settling }) => {
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300 p-4">
-            <div className="bg-white dark:bg-zinc-950 w-full max-w-lg rounded-[32px] overflow-hidden shadow-2xl border dark:border-zinc-900 border-zinc-100 animate-in zoom-in-95 duration-300">
-                <div className="p-8 flex justify-between items-center border-b dark:border-zinc-900 border-zinc-100 bg-emerald-500/5">
+            <div className="bg-slate-50 dark:bg-zinc-900 w-full max-w-lg rounded-[32px] overflow-hidden shadow-2xl border dark:border-zinc-800 border-slate-200 animate-in zoom-in-95 duration-300">
+                <div className="p-8 flex justify-between items-center border-b dark:border-zinc-800 border-slate-200 bg-emerald-500/5">
                     <div className="flex items-center gap-4">
                         <div className="p-3 bg-emerald-500/10 text-emerald-500 rounded-2xl">
                             <ArrowDownLeft size={20} />

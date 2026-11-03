@@ -1330,9 +1330,33 @@ export function BillingSummary({
                             </div>
 
                             {settlementDiff < 0 && (
-                                <div className="text-[11px] p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 flex items-start gap-1.5">
-                                    <span className="font-bold text-xs">💵</span>
-                                    <span>Refund will be disbursed strictly in <strong>Cash from register</strong> upon confirmation.</span>
+                                <div className="pt-1 space-y-1.5">
+                                    <label className="text-[10px] font-bold uppercase tracking-wider opacity-80 block">Refund Mode / Instrument</label>
+                                    <div className="grid grid-cols-2 gap-1.5">
+                                        {['Cash', 'UPI'].map(m => (
+                                            <button
+                                                key={m}
+                                                type="button"
+                                                onClick={() => setPaymentMethod && setPaymentMethod(m)}
+                                                className={cn(
+                                                    "py-1 px-2 text-xs font-bold rounded-lg border transition-all cursor-pointer flex items-center justify-center gap-1",
+                                                    paymentMethod === m 
+                                                        ? "bg-emerald-600 text-white border-emerald-600 shadow-xs" 
+                                                        : "bg-white/70 dark:bg-zinc-800/70 border-zinc-200 dark:border-zinc-700 hover:bg-white dark:hover:bg-zinc-800"
+                                                )}
+                                            >
+                                                {m === 'Cash' && <IndianRupee className="w-3 h-3" />}
+                                                {m === 'UPI' && <Smartphone className="w-3 h-3" />}
+                                                <span>{m === 'Cash' ? 'Physical Cash' : 'Digital (UPI)'}</span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <div className="text-[11px] p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 flex items-start gap-1.5">
+                                        <span className="font-bold text-xs">{paymentMethod === 'Cash' ? '💵' : '📱'}</span>
+                                        <span>
+                                            Refund will be disbursed via <strong>{paymentMethod === 'Cash' ? 'Cash from drawer' : 'Digital (UPI)'}</strong> upon confirmation.
+                                        </span>
+                                    </div>
                                 </div>
                             )}
 

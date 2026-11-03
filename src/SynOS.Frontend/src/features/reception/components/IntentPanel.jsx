@@ -3262,7 +3262,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                             <span className="font-mono font-bold">₹{stagedNet.toLocaleString()}</span>
                                         </div>
                                         <div className="flex justify-between items-center text-sm font-extrabold pt-1.5 border-t border-current/10">
-                                            <span>{settlementDiff < 0 ? "Cash Refund to Patient:" : settlementDiff > 0 ? `Collect from Patient (${paymentMethod}):` : "Difference:"}</span>
+                                            <span>{settlementDiff < 0 ? `Refund to Patient (${paymentMethod}):` : settlementDiff > 0 ? `Collect from Patient (${paymentMethod}):` : "Difference:"}</span>
                                             <span className="font-mono text-base font-bold">
                                                 {settlementDiff > 0 ? `+₹${settlementDiff.toLocaleString()}` : settlementDiff < 0 ? `-₹${Math.abs(settlementDiff).toLocaleString()}` : "₹0"}
                                             </span>
@@ -3273,9 +3273,33 @@ export function IntentPanel({ onVisitUpdated }) {
                                             </p>
                                         )}
                                         {settlementDiff < 0 && (
-                                            <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">
-                                                * Give ₹{Math.abs(settlementDiff).toLocaleString()} refund cash to patient from cash drawer.
-                                            </p>
+                                            <div className="pt-1.5 space-y-2 border-t border-emerald-500/20">
+                                                <div className="flex items-center justify-between text-xs">
+                                                    <span className="font-semibold text-emerald-800 dark:text-emerald-300">Refund Instrument:</span>
+                                                    <div className="flex gap-1.5">
+                                                        {['Cash', 'UPI'].map(m => (
+                                                            <button
+                                                                key={m}
+                                                                type="button"
+                                                                onClick={() => setPaymentMethod(m)}
+                                                                className={cn(
+                                                                    "px-2.5 py-1 text-xs font-bold rounded-lg border transition-all cursor-pointer",
+                                                                    paymentMethod === m
+                                                                        ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+                                                                        : "bg-white/80 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-zinc-700 hover:bg-white"
+                                                                )}
+                                                            >
+                                                                {m === 'Cash' ? 'Physical Cash' : 'Digital / UPI'}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                                <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                                                    * {paymentMethod === 'Cash' 
+                                                        ? `Give ₹${Math.abs(settlementDiff).toLocaleString()} refund cash to patient from cash drawer.` 
+                                                        : `Disburse ₹${Math.abs(settlementDiff).toLocaleString()} refund via Digital / UPI to patient.`}
+                                                </p>
+                                            </div>
                                         )}
                                         {settlementDiff === 0 && (
                                             <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">

@@ -2179,14 +2179,15 @@ namespace SynOS.Services
                 string settlementAction = "None";
                 if (dto.SettlementDifference < 0)
                 {
-                    // Refund to patient via Cash from Register
+                    // Refund to patient via selected instrument (Cash or UPI)
                     decimal refundAmt = Math.Abs(dto.SettlementDifference);
+                    var refundMethod = !string.IsNullOrWhiteSpace(dto.PaymentMethod) ? dto.PaymentMethod : "Cash";
                     var refundPayment = new Payment
                     {
                         PaymentId = Guid.NewGuid(),
                         InvoiceId = invoice.InvoiceId,
                         Amount = -refundAmt, // Negative payment reduces total paid
-                        Method = "Cash",
+                        Method = refundMethod,
                         ReceiptNo = $"REF-{DateTime.UtcNow:yyyyMMdd}-{visit.Token}",
                         ReceivedAt = DateTime.UtcNow,
                         ReceivedByUserId = actorUserId
@@ -2195,6 +2196,21 @@ namespace SynOS.Services
                     settlementAction = "RefundIssued";
                     await _context.SaveChangesAsync();
 
+                    // Declare Outflow / Reversal RevenueFact for Cash/Digital drawer truth
+                    await _revenueFactWriter.DeclareRevenueFactAsync(new SynOS.Models.DTOs.Revenue.DeclareRevenueFactCommand
+                    {
+                        OccurredAt = DateTimeOffset.UtcNow,
+                        Amount = refundAmt,
+                        Currency = "INR",
+                        Direction = SynOS.Models.Entities.Revenue.RevenueDirection.Reversal,
+                        SourceType = SynOS.Models.Entities.Revenue.RevenueSourceType.Patient,
+                        SourceReferenceId = refundPayment.PaymentId.ToString(),
+                        PaymentMode = refundMethod.IndexOf("Cash", StringComparison.OrdinalIgnoreCase) >= 0 ? SynOS.Models.Entities.Revenue.PaymentMode.Cash : SynOS.Models.Entities.Revenue.PaymentMode.UPI,
+                        DeclaredByUserId = actorUserId,
+                        Notes = $"Refund for visit correction {visit.Token}: {dto.Reason}",
+                        ExternalTransactionId = refundPayment.ReceiptNo
+                    });
+
                     // Re-apply snapshot to lock in status
                     await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
                 }
@@ -2202,12 +2218,13 @@ namespace SynOS.Services
                 {
                     // Additional payment collected at desk
                     decimal dueAmt = dto.SettlementDifference;
+                    var addMethod = !string.IsNullOrWhiteSpace(dto.PaymentMethod) ? dto.PaymentMethod : "Cash";
                     var addPayment = new Payment
                     {
                         PaymentId = Guid.NewGuid(),
                         InvoiceId = invoice.InvoiceId,
                         Amount = dueAmt,
-                        Method = !string.IsNullOrWhiteSpace(dto.PaymentMethod) ? dto.PaymentMethod : "Cash",
+                        Method = addMethod,
                         ReceiptNo = $"REC-{DateTime.UtcNow:yyyyMMdd}-{visit.Token}",
                         ReceivedAt = DateTime.UtcNow,
                         ReceivedByUserId = actorUserId
@@ -2215,6 +2232,21 @@ namespace SynOS.Services
                     _context.Payments.Add(addPayment);
                     settlementAction = "AdditionalPaymentRecorded";
                     await _context.SaveChangesAsync();
+
+                    // Declare Inflow RevenueFact for Cash/Digital drawer truth
+                    await _revenueFactWriter.DeclareRevenueFactAsync(new SynOS.Models.DTOs.Revenue.DeclareRevenueFactCommand
+                    {
+                        OccurredAt = DateTimeOffset.UtcNow,
+                        Amount = dueAmt,
+                        Currency = "INR",
+                        Direction = SynOS.Models.Entities.Revenue.RevenueDirection.Inflow,
+                        SourceType = SynOS.Models.Entities.Revenue.RevenueSourceType.Patient,
+                        SourceReferenceId = addPayment.PaymentId.ToString(),
+                        PaymentMode = addMethod.IndexOf("Cash", StringComparison.OrdinalIgnoreCase) >= 0 ? SynOS.Models.Entities.Revenue.PaymentMode.Cash : SynOS.Models.Entities.Revenue.PaymentMode.UPI,
+                        DeclaredByUserId = actorUserId,
+                        Notes = $"Payment for visit correction {visit.Token}: {dto.Reason}",
+                        ExternalTransactionId = addPayment.ReceiptNo
+                    });
 
                     // Re-apply snapshot to lock in status
                     await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);

@@ -28,12 +28,13 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpGet("revenue-facts")]
-        public async Task<IActionResult> GetRevenueFacts([FromQuery] DateTime start, [FromQuery] DateTime end)
+        public async Task<IActionResult> GetRevenueFacts(
+            [FromQuery] Guid? branchId = null,
+            [FromQuery] string? preset = null,
+            [FromQuery] DateTime? start = null,
+            [FromQuery] DateTime? end = null)
         {
-            if (start == default) start = DateTime.UtcNow.AddDays(-30);
-            if (end == default) end = DateTime.UtcNow;
-
-            var result = await _economicsService.GetRevenueFactsAsync(start, end);
+            var result = await _economicsService.GetRevenueFactsAsync(branchId, preset, start, end);
             return Ok(result);
         }
 
