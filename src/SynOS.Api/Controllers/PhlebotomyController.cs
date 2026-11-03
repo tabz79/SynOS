@@ -45,14 +45,48 @@ namespace SynOS.Api.Controllers
         [HttpPost("claim")]
         public async Task<IActionResult> ClaimAssignment([FromBody] ClaimAssignmentRequest request)
         {
-            if (request == null || request.AssignmentId == Guid.Empty)
+            if (request == null)
+            {
+                return BadRequest("Invalid claim request");
+            }
+
+            Guid assignmentId = request.AssignmentId;
+            if (assignmentId == Guid.Empty && request.VisitId.HasValue && request.VisitId.Value != Guid.Empty)
+            {
+                var a = await _db.WorkAssignments.FirstOrDefaultAsync(w => w.SourceReferenceId == request.VisitId.Value && w.WorkType == WorkType.SampleCollection);
+                if (a == null)
+                {
+                    var visit = await _db.Visits.FirstOrDefaultAsync(v => v.VisitId == request.VisitId.Value);
+                    if (visit != null && visit.Status != VisitStatus.Draft && !visit.Token.StartsWith("D-") && !visit.Token.StartsWith("DRAFT"))
+                    {
+                        var branchId = visit.BranchId ?? SynOS.Data.DbInitializer.DefaultBranchId;
+                        a = new WorkAssignment
+                        {
+                            AssignmentId = Guid.NewGuid(),
+                            BranchId = branchId,
+                            WorkType = WorkType.SampleCollection,
+                            SourceReferenceId = visit.VisitId,
+                            Status = WorkAssignmentStatus.PendingClaim,
+                            Department = "Pathology",
+                            RequiredRole = "Phlebotomist",
+                            CreatedAt = DateTimeOffset.UtcNow
+                        };
+                        _db.WorkAssignments.Add(a);
+                        visit.CurrentAssignmentId = a.AssignmentId;
+                        await _db.SaveChangesAsync();
+                    }
+                }
+                if (a != null) assignmentId = a.AssignmentId;
+            }
+
+            if (assignmentId == Guid.Empty)
             {
                 return BadRequest("Invalid assignment ID");
             }
 
             try
             {
-                var result = await _phlebotomyService.ClaimAssignmentAsync(request.AssignmentId);
+                var result = await _phlebotomyService.ClaimAssignmentAsync(assignmentId);
 
                 return result switch
                 {

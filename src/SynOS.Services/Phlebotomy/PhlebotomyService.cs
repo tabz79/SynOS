@@ -79,6 +79,26 @@ namespace SynOS.Services.Phlebotomy
                 .FirstOrDefaultAsync(a => a.SourceReferenceId == visitId && 
                                          (a.Status == WorkAssignmentStatus.PendingClaim || a.Status == WorkAssignmentStatus.Assigned || a.Status == WorkAssignmentStatus.Completed));
 
+            // Enterprise Self-Healing: If visit is confirmed but missing WorkAssignment (e.g. from B2B Prepaid, Insurance, Corporate, or async lag), synthesize it
+            if (assignment == null && visit.Status != VisitStatus.Draft && !visit.Token.StartsWith("D-") && !visit.Token.StartsWith("DRAFT"))
+            {
+                var branchId = visit.BranchId ?? SynOS.Data.DbInitializer.DefaultBranchId;
+                assignment = new WorkAssignment
+                {
+                    AssignmentId = Guid.NewGuid(),
+                    BranchId = branchId,
+                    WorkType = WorkType.SampleCollection,
+                    SourceReferenceId = visit.VisitId,
+                    Status = WorkAssignmentStatus.PendingClaim,
+                    Department = "Pathology",
+                    RequiredRole = "Phlebotomist",
+                    CreatedAt = DateTimeOffset.UtcNow
+                };
+                _db.WorkAssignments.Add(assignment);
+                visit.CurrentAssignmentId = assignment.AssignmentId;
+                await _db.SaveChangesAsync();
+            }
+
             var plan = await _groupingService.CreateSpecimenPlanAsync(visit.Orders);
             
             // Fetch Tube Details from Catalog
@@ -747,7 +767,10 @@ namespace SynOS.Services.Phlebotomy
                 .Include(v => v.Patient)
                 .Include(v => v.Orders).ThenInclude(o => o.Test)
                 .Include(v => v.ReferralPartner)
-                .Where(v => phleboVisitIds.Contains(v.VisitId));
+                .Where(v => phleboVisitIds.Contains(v.VisitId) &&
+                            v.Status != VisitStatus.Draft &&
+                            !v.Token.StartsWith("D-") &&
+                            !v.Token.StartsWith("DRAFT"));
 
             if (includeHistory)
             {

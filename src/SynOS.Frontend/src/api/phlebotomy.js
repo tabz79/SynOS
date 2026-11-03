@@ -16,11 +16,11 @@ export const PhlebotomyApi = {
         return response.json();
     },
 
-    claimAssignment: async (assignmentId) => {
+    claimAssignment: async (assignmentId, visitId) => {
         const response = await fetch(ReceptionApi.withBranchId('/api/v1/phlebotomy/claim'), {
             method: 'POST',
             headers: ReceptionApi.getHeaders(),
-            body: JSON.stringify({ AssignmentId: assignmentId })
+            body: JSON.stringify({ AssignmentId: assignmentId, VisitId: visitId })
         });
         if (!response.ok) throw new Error('Failed to claim assignment');
     },

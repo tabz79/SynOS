@@ -26,6 +26,7 @@ import {
     QrCode,
     Calendar,
     ChevronRight,
+    ChevronDown,
     TrendingDown,
     FileSpreadsheet,
     ShieldAlert,
@@ -124,6 +125,21 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
         notes: '',
         refundToDrawer: true
     });
+
+    // Native Vendor Combobox Dropdown State
+    const [vendorSearch, setVendorSearch] = useState('');
+    const [isVendorDropdownOpen, setIsVendorDropdownOpen] = useState(false);
+    const vendorDropdownRef = useRef(null);
+
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (vendorDropdownRef.current && !vendorDropdownRef.current.contains(event.target)) {
+                setIsVendorDropdownOpen(false);
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     // Preset categories for petty cash
     const pettyPresets = [
@@ -226,6 +242,16 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
             setIsLoading(false);
         }
     }, [isOpen, historyRange, user?.id]);
+
+    const filteredVendors = useMemo(() => {
+        if (!vendorSearch.trim()) return vendors;
+        const q = vendorSearch.toLowerCase();
+        return vendors.filter(v => 
+            v.name?.toLowerCase().includes(q) || 
+            v.category?.toLowerCase().includes(q) || 
+            v.taxId?.toLowerCase().includes(q)
+        );
+    }, [vendors, vendorSearch]);
 
     useEffect(() => {
         loadFeed();
@@ -386,13 +412,13 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-xs transition-opacity duration-300 animate-in fade-in">
-            {/* Absolute Drawer matching IntentPanel: Dynamic width (Compact for Record, Wide for History & Metrics) */}
+        <div className="fixed inset-0 z-50 flex justify-end p-2 sm:p-3 md:p-4 bg-black/60 backdrop-blur-xs transition-opacity duration-300 animate-in fade-in">
+            {/* Absolute Drawer matching IntentPanel: Dynamic width (Min 40% for Record, Wide for History & Metrics) */}
             <div 
                 className={cn(
-                    "h-full flex flex-col overflow-hidden rounded-l-[28px] shadow-2xl transition-all duration-300 ease-in-out z-30",
+                    "h-full flex flex-col overflow-hidden rounded-[24px] sm:rounded-[28px] border border-white/80 dark:border-white/10 shadow-2xl transition-all duration-300 ease-in-out z-30",
                     activeTab === 'record'
-                        ? "w-full sm:w-[620px] md:w-[680px] lg:w-[720px] xl:w-[740px] max-w-full"
+                        ? "w-full sm:w-[92vw] md:w-[75vw] lg:w-[50vw] xl:w-[44vw] 2xl:w-[40vw] min-w-[580px] max-w-[880px]"
                         : "w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[86vw] xl:w-[85vw] 2xl:w-[85vw] max-w-[1780px]",
                     ui.panel
                 )}
@@ -700,53 +726,148 @@ export function ReceptionExpenseDrawer({ isOpen, onClose }) {
                                         )}
 
                                         {/* Vendor Inward Fields */}
-                                        {outflowMode === 'vendor' && (
-                                            <div className="space-y-3">
-                                                <div className="space-y-1">
-                                                    <div className="flex items-center justify-between">
-                                                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
-                                                            Select Supplier (ERP Ledger)
-                                                        </label>
-                                                        <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold">
-                                                            {vendors.length} Verified Suppliers Loaded
-                                                        </span>
-                                                    </div>
-                                                    <select
-                                                        value={form.vendorId}
-                                                        onChange={(e) => {
-                                                            const chosen = vendors.find(v => v.id === e.target.value);
-                                                            saveDraft({ 
-                                                                ...form, 
-                                                                vendorId: e.target.value,
-                                                                description: chosen ? `Inward Supplies: ${chosen.name}` : form.description
-                                                            });
-                                                        }}
-                                                        className="w-full bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white"
-                                                        required
-                                                    >
-                                                        <option value="">-- Choose Vendor / Supplier --</option>
-                                                        {vendors.map(v => (
-                                                            <option key={v.id} value={v.id}>
-                                                                {v.name} &bull; {v.category} {v.taxId ? `[GST: ${v.taxId}]` : ''}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                </div>
+                                        {outflowMode === 'vendor' && (() => {
+                                            const selectedVendor = vendors.find(v => v.id === form.vendorId);
+                                            return (
+                                                <div className="space-y-3">
+                                                    <div className="space-y-1.5" ref={vendorDropdownRef}>
+                                                        <div className="flex items-center justify-between">
+                                                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
+                                                                Select Supplier (ERP Ledger) *
+                                                            </label>
+                                                            <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold">
+                                                                {vendors.length} Verified Suppliers Loaded
+                                                            </span>
+                                                        </div>
 
-                                                <div className="space-y-1">
-                                                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
-                                                        Inward Invoice / Challan Reference #
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        placeholder="e.g. INV-2026-9042 or DC-4412"
-                                                        value={form.invoiceNumber}
-                                                        onChange={(e) => saveDraft({ ...form, invoiceNumber: e.target.value })}
-                                                        className="w-full bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl px-3.5 py-2 text-xs font-semibold outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white shadow-2xs"
-                                                    />
+                                                        {selectedVendor ? (
+                                                            /* Selected Vendor Card matching Doctor Referral Card */
+                                                            <div className={cn(
+                                                                "flex items-center justify-between p-3 rounded-xl border transition-all animate-in fade-in duration-200",
+                                                                isDark ? "bg-zinc-800/80 border-zinc-700" : "bg-white border-[#CCDCE8] shadow-2xs"
+                                                            )}>
+                                                                <div className="flex items-center gap-3 min-w-0">
+                                                                    <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-500/20 shrink-0">
+                                                                        <Building2 className="w-4 h-4" />
+                                                                    </div>
+                                                                    <div className="min-w-0">
+                                                                        <div className="flex items-center gap-2">
+                                                                            <span className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white truncate">
+                                                                                {selectedVendor.name}
+                                                                            </span>
+                                                                            <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-900/40 shrink-0">
+                                                                                {selectedVendor.category}
+                                                                            </span>
+                                                                        </div>
+                                                                        {selectedVendor.taxId && (
+                                                                            <span className="text-[10px] font-mono text-slate-500 dark:text-zinc-400 block mt-0.5">
+                                                                                GST: {selectedVendor.taxId}
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        saveDraft({ ...form, vendorId: '' });
+                                                                        setVendorSearch('');
+                                                                        setIsVendorDropdownOpen(true);
+                                                                    }}
+                                                                    className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-700 text-slate-400 hover:text-rose-500 transition-colors cursor-pointer"
+                                                                    title="Change Supplier"
+                                                                >
+                                                                    <X className="w-4 h-4" />
+                                                                </button>
+                                                            </div>
+                                                        ) : (
+                                                            /* Searchable Dropdown Input */
+                                                            <div className="relative">
+                                                                <div className="relative">
+                                                                    <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                                                                    <input
+                                                                        type="text"
+                                                                        placeholder="Search supplier by name, category, or GST..."
+                                                                        value={vendorSearch}
+                                                                        onFocus={() => setIsVendorDropdownOpen(true)}
+                                                                        onChange={(e) => {
+                                                                            setVendorSearch(e.target.value);
+                                                                            setIsVendorDropdownOpen(true);
+                                                                        }}
+                                                                        className="w-full bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl pl-9 pr-9 py-2.5 text-xs font-semibold outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white shadow-2xs"
+                                                                    />
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setIsVendorDropdownOpen(prev => !prev)}
+                                                                        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 transition-colors cursor-pointer"
+                                                                    >
+                                                                        <ChevronDown className={cn("w-4 h-4 transition-transform", isVendorDropdownOpen && "rotate-180")} />
+                                                                    </button>
+                                                                </div>
+
+                                                                {isVendorDropdownOpen && (
+                                                                    <div className="absolute left-0 right-0 top-full mt-1.5 max-h-56 overflow-y-auto bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-xl shadow-xl z-50 p-1 divide-y divide-slate-100 dark:divide-zinc-800 animate-in fade-in slide-in-from-top-1 duration-150">
+                                                                        {filteredVendors.length === 0 ? (
+                                                                            <div className="py-4 px-3 text-center text-xs text-slate-400 dark:text-zinc-500">
+                                                                                No suppliers found matching "{vendorSearch}"
+                                                                            </div>
+                                                                        ) : (
+                                                                            filteredVendors.map(v => (
+                                                                                <button
+                                                                                    key={v.id}
+                                                                                    type="button"
+                                                                                    onClick={() => {
+                                                                                        saveDraft({ 
+                                                                                            ...form, 
+                                                                                            vendorId: v.id,
+                                                                                            description: form.description || `Inward Supplies: ${v.name}`
+                                                                                        });
+                                                                                        setIsVendorDropdownOpen(false);
+                                                                                        setVendorSearch('');
+                                                                                    }}
+                                                                                    className="w-full text-left p-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors flex items-center justify-between gap-2 cursor-pointer group"
+                                                                                >
+                                                                                    <div className="min-w-0 flex items-center gap-2.5">
+                                                                                        <div className="w-7 h-7 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                                                                            <Building2 className="w-3.5 h-3.5" />
+                                                                                        </div>
+                                                                                        <div className="min-w-0">
+                                                                                            <span className="text-xs font-bold text-slate-900 dark:text-white block truncate">
+                                                                                                {v.name}
+                                                                                            </span>
+                                                                                            {v.taxId && (
+                                                                                                <span className="text-[10px] font-mono text-slate-400 dark:text-zinc-500 block">
+                                                                                                    GST: {v.taxId}
+                                                                                                </span>
+                                                                                            )}
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 border border-slate-200/60 dark:border-zinc-700/60 shrink-0">
+                                                                                        {v.category}
+                                                                                    </span>
+                                                                                </button>
+                                                                            ))
+                                                                        )}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    <div className="space-y-1">
+                                                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
+                                                            Inward Invoice / Challan Reference #
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            placeholder="e.g. INV-2026-9042 or DC-4412"
+                                                            value={form.invoiceNumber}
+                                                            onChange={(e) => saveDraft({ ...form, invoiceNumber: e.target.value })}
+                                                            className="w-full bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl px-3.5 py-2 text-xs font-semibold outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white shadow-2xs"
+                                                        />
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        )}
+                                            );
+                                        })()}
 
                                         {/* Recessed Pod for Amount */}
                                         <div className={cn("p-3.5 sm:p-4 space-y-1.5", ui.recessedPod)}>

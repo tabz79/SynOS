@@ -462,6 +462,10 @@ namespace SynOS.Services
             // --- OUTSOURCED PAYABLE GENERATION ---
             await ProcessOutsourcedPayablesAsync(visit.VisitId, actorUserId);
             // -------------------------------------
+
+            // --- PHLEBOTOMY SPECIMEN PLANNING & WORK ASSIGNMENT ---
+            await TransitionToSpecimenPlannedAsync(visit.VisitId);
+            // -----------------------------------------------------
         }
 
         public async Task SetBillingContextAsync(
@@ -609,6 +613,7 @@ namespace SynOS.Services
             );
 
             await ProcessOutsourcedPayablesAsync(visit.VisitId, actorUserId);
+            await TransitionToSpecimenPlannedAsync(visit.VisitId);
         }
 
         public async Task MarkVisitAsCorporateAsync(Guid visitId, Guid actorUserId)
@@ -670,6 +675,7 @@ namespace SynOS.Services
             );
 
             await ProcessOutsourcedPayablesAsync(visit.VisitId, actorUserId);
+            await TransitionToSpecimenPlannedAsync(visit.VisitId);
         }
 
         private async Task ProcessOutsourcedPayablesAsync(Guid visitId, Guid actorUserId)

@@ -116,11 +116,11 @@ export function PhlebotomyIntentPanel({ isOpen, visitId, closePanel, queueItem, 
     }, [isOpen, planData]);
 
     const handleClaim = async () => {
-        if (!planData?.assignmentId) return;
+        if (!planData?.assignmentId && !visitId) return;
         setIsClaiming(true);
         setError(null);
         try {
-            await PhlebotomyApi.claimAssignment(planData.assignmentId);
+            await PhlebotomyApi.claimAssignment(planData?.assignmentId, visitId);
             // Optimistically update the parent's action queue so the tab switches 
             // (or let SignalR handle it if we wait, but adjusting locally provides instant feedback)
             if (onUpdateLocalState) {

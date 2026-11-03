@@ -15,10 +15,13 @@ import { useReceptionDrawer } from '@/features/reception/hooks/useReceptionPanel
 import { ReceptionApi, prewarmReceptionCatalogs } from '@/api/reception'
 import { SignalRService } from '@/lib/signalr'
 import { useTheme } from '@/context/ThemeContext'
+import { useAuth } from '@/context/AuthContext'
 
 export function ReceptionScreen() {
     const navigate = useNavigate();
     const { theme } = useTheme();
+    const { user } = useAuth();
+    const isReceptionist = user?.role === 'Receptionist';
     const [activeQueue, setActiveQueue] = useState("pending");
     const [summary, setSummary] = useState(null);
     // Unified Drawer State + Helpers
@@ -216,28 +219,28 @@ export function ReceptionScreen() {
             qualifier: "Paid/Credit", 
             icon: Users, 
             color: "zinc",
-            isPool: true 
+            isPool: isReceptionist ? true : undefined 
         },
         { 
             value: `₹${(summary.paymentsCashTotal || 0).toLocaleString()}`, 
             label: "Cash Collected", 
             icon: ClipboardList, 
             color: "emerald",
-            scopeBadge: "Desk"
+            scopeBadge: isReceptionist ? "Desk" : undefined
         },
         { 
             value: summary.paymentsOnlineCount?.toString() || "0", 
             label: "Online Payments", 
             icon: ClipboardList, 
             color: "blue",
-            scopeBadge: "Desk"
+            scopeBadge: isReceptionist ? "Desk" : undefined
         },
         { 
             value: `₹${(summary.paymentsOnlineTotal || 0).toLocaleString()}`, 
             label: "Online Total", 
             icon: ClipboardList, 
             color: "blue",
-            scopeBadge: "Desk"
+            scopeBadge: isReceptionist ? "Desk" : undefined
         },
         { 
             value: summary.prepaidBillsCount?.toString() || "0", 
@@ -245,14 +248,14 @@ export function ReceptionScreen() {
             shortLabel: "Prepaid Bills", 
             icon: ClipboardList, 
             color: "amber",
-            scopeBadge: "Desk"
+            scopeBadge: isReceptionist ? "Desk" : undefined
         },
         { 
             value: `₹${(summary.prepaidBillsTotal || 0).toLocaleString()}`, 
             label: "Prepaid Total", 
             icon: ClipboardList, 
             color: "amber",
-            scopeBadge: "Desk"
+            scopeBadge: isReceptionist ? "Desk" : undefined
         },
         { 
             value: `₹${(summary.dailyExpensesCashTotal || 0).toLocaleString()}`, 
@@ -261,7 +264,7 @@ export function ReceptionScreen() {
             qualifier: "Cash Outflow", 
             icon: Receipt, 
             color: "red",
-            isPool: true 
+            isPool: isReceptionist ? true : undefined 
         },
         { 
             value: `₹${(summary.cashDrawerBalance || 0).toLocaleString()}`, 
@@ -270,17 +273,17 @@ export function ReceptionScreen() {
             qualifier: "Physical Balance", 
             icon: Wallet, 
             color: "emerald",
-            isPool: true 
+            isPool: isReceptionist ? true : undefined 
         },
     ] : [
-        { value: "—", label: "Walk-Ins", qualifier: "(Paid/Credit)", icon: Users, color: "default", isPool: true },
-        { value: "—", label: "Cash Collected", icon: ClipboardList, color: "default", scopeBadge: "Desk" },
-        { value: "—", label: "Online Payments", icon: ClipboardList, color: "default", scopeBadge: "Desk" },
-        { value: "—", label: "Online Total", icon: ClipboardList, color: "default", scopeBadge: "Desk" },
-        { value: "—", label: "Credit Bills", icon: ClipboardList, color: "default", scopeBadge: "Desk" },
-        { value: "—", label: "Credit Value", icon: ClipboardList, color: "default", scopeBadge: "Desk" },
-        { value: "—", label: "Recorded Expenses", icon: Receipt, color: "default", isPool: true },
-        { value: "—", label: "Cash in the Drawer", icon: Wallet, color: "default", isPool: true },
+        { value: "—", label: "Walk-Ins", qualifier: "(Paid/Credit)", icon: Users, color: "default", isPool: isReceptionist ? true : undefined },
+        { value: "—", label: "Cash Collected", icon: ClipboardList, color: "default", scopeBadge: isReceptionist ? "Desk" : undefined },
+        { value: "—", label: "Online Payments", icon: ClipboardList, color: "default", scopeBadge: isReceptionist ? "Desk" : undefined },
+        { value: "—", label: "Online Total", icon: ClipboardList, color: "default", scopeBadge: isReceptionist ? "Desk" : undefined },
+        { value: "—", label: "Credit Bills", icon: ClipboardList, color: "default", scopeBadge: isReceptionist ? "Desk" : undefined },
+        { value: "—", label: "Credit Value", icon: ClipboardList, color: "default", scopeBadge: isReceptionist ? "Desk" : undefined },
+        { value: "—", label: "Recorded Expenses", icon: Receipt, color: "default", isPool: isReceptionist ? true : undefined },
+        { value: "—", label: "Cash in the Drawer", icon: Wallet, color: "default", isPool: isReceptionist ? true : undefined },
     ];
 
     // ACTION QUEUE COLUMNS (Strict Backend Truth)
