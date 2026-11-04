@@ -331,6 +331,7 @@ export function ReceptionScreen() {
                 const isPrepaid = !isDraft && (row.paymentMethod === "Prepaid" || (row.paymentDisplay && row.paymentDisplay.startsWith("Prepaid")));
                 const isPartial = !isDraft && (row.paymentMethod === "Partial Due" || (row.paymentDisplay && row.paymentDisplay.includes("Partial")) || (totalPaid > 0 && remainingDue > 0));
                 const isPaid = !isDraft && !isPrepaid && !isPartial && (row.paymentMethod === "Paid" || row.paymentMethod === "Cash" || row.paymentMethod === "UPI" || row.paymentMethod === "Card" || (remainingDue === 0 && totalBilled > 0));
+                const isFullDue = !isDraft && !isPrepaid && !isPaid && !isPartial && (totalPaid === 0 && (remainingDue > 0 || (row.paymentMethod || '').toLowerCase().includes('due') || (row.paymentMethod || '').toLowerCase().includes('credit')));
 
                 const badgeBase = "text-[10px] px-1.5 py-0.5 rounded font-mono leading-none border uppercase tracking-wide shrink-0 font-bold";
                 let badgeColor = "bg-zinc-500/10 dark:text-zinc-400 text-zinc-600 border-zinc-500/20";
@@ -345,6 +346,9 @@ export function ReceptionScreen() {
                 } else if (isPartial) {
                     badgeColor = "bg-amber-500/10 dark:text-amber-400 text-amber-600 border-amber-500/20";
                     badgeText = "PARTIAL DUE";
+                } else if (isFullDue) {
+                    badgeColor = "bg-orange-500/15 dark:text-orange-300 text-orange-700 border-orange-500/30";
+                    badgeText = "FULL DUE";
                 } else if (isPaid) {
                     badgeColor = "bg-emerald-500/10 dark:text-emerald-400 text-emerald-600 border-emerald-500/20";
                     badgeText = row.paymentMethod || "PAID";

@@ -682,10 +682,12 @@ export function BillingSummary({
         ? stagedGross
         : (billing?.grossAmount || 0);
     const hasTestsForBilling = currentGross > 0 || (snapshot?.tests?.length || 0) > 0;
-    const isDiscountExpanded = userDiscountExpandedState !== null
+    const isInitialIntake = isDraftVisit || isCorrectionIntent;
+    const isDiscountExpanded = isInitialIntake && (userDiscountExpandedState !== null
         ? Boolean(userDiscountExpandedState)
-        : Boolean(hasTestsForBilling && canPerformActions && !isPrepaid && !isCorporate && (billing?.paymentStatus === 'PendingPayment' || !billing?.paymentStatus));
+        : Boolean(hasTestsForBilling && canPerformActions && !isPrepaid && !isCorporate && (billing?.paymentStatus === 'PendingPayment' || !billing?.paymentStatus)));
     const setIsDiscountExpanded = (val) => {
+        if (!isInitialIntake) return;
         setUserDiscountExpandedState(typeof val === 'function' ? val(isDiscountExpanded) : val);
     };
 
@@ -810,8 +812,14 @@ export function BillingSummary({
                                         ref={concessionTriggerRef}
                                         data-concession-trigger="true"
                                         type="button"
-                                        onClick={() => setIsDiscountExpanded(prev => !prev)}
+                                        disabled={!isInitialIntake}
+                                        onClick={() => {
+                                            if (isInitialIntake) {
+                                                setIsDiscountExpanded(prev => !prev);
+                                            }
+                                        }}
                                         onKeyDown={(e) => {
+                                            if (!isInitialIntake) return;
                                             if (e.key === 'Tab') {
                                                 if (!e.shiftKey) {
                                                     if (hasDiscountApplied) {
@@ -837,17 +845,22 @@ export function BillingSummary({
                                             }
                                         }}
                                         className={cn(
-                                            "px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all cursor-pointer border shadow-2xs shrink-0 synos-focus-btn",
-                                            isDiscountExpanded
-                                                ? "bg-slate-900 text-white border-slate-900 dark:bg-zinc-700 dark:border-zinc-600 shadow-xs"
-                                                : (hasDiscountApplied
-                                                    ? "bg-[#EBF5EF] dark:bg-emerald-950/30 text-[#245E49] dark:text-emerald-300 border border-[#CCE8D8] dark:border-emerald-800 hover:bg-[#DFF0E6]"
-                                                    : "bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 border-[#CCDCE8] dark:border-zinc-700 hover:bg-slate-50")
+                                            "px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all border shadow-2xs shrink-0 synos-focus-btn",
+                                            !isInitialIntake
+                                                ? "opacity-45 cursor-not-allowed bg-slate-100 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500 border-slate-200 dark:border-zinc-700 select-none"
+                                                : (isDiscountExpanded
+                                                    ? "bg-slate-900 text-white border-slate-900 dark:bg-zinc-700 dark:border-zinc-600 shadow-xs cursor-pointer"
+                                                    : (hasDiscountApplied
+                                                        ? "bg-[#EBF5EF] dark:bg-emerald-950/30 text-[#245E49] dark:text-emerald-300 border border-[#CCE8D8] dark:border-emerald-800 hover:bg-[#DFF0E6] cursor-pointer"
+                                                        : "bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 border-[#CCDCE8] dark:border-zinc-700 hover:bg-slate-50 cursor-pointer"))
                                         )}
+                                        title={!isInitialIntake ? "Initial registration concession is locked. Use Visit Correction to amend, or use Secondary Concession below." : (hasDiscountApplied ? "Edit Concession" : "+ Concession")}
                                     >
                                         <Tag className="w-3.5 h-3.5 text-slate-500 dark:text-zinc-400" />
                                         <span>{hasDiscountApplied ? "Edit Concession" : "+ Concession"}</span>
-                                        <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", isDiscountExpanded && "rotate-180")} />
+                                        {isInitialIntake && (
+                                            <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", isDiscountExpanded && "rotate-180")} />
+                                        )}
                                     </button>
                                 )}
                             </div>
@@ -980,13 +993,13 @@ export function BillingSummary({
                             {/* SECONDARY CONCESSION & LAB OWNER WRITE-OFF CARD */}
                             {!isDraftVisit && remainingDue > 0 && canPerformActions && (
                                 <div className={cn(
-                                    "p-3.5 sm:p-4 rounded-2xl border space-y-3 transition-all shadow-xs animate-in fade-in slide-in-from-top-1 duration-200",
-                                    isDark ? "bg-amber-950/20 border-amber-500/40" : "bg-amber-50/70 border-amber-200"
+                                    "p-3.5 sm:p-4 rounded-2xl border space-y-3 transition-all shadow-2xs animate-in fade-in slide-in-from-top-1 duration-200",
+                                    isDark ? "bg-orange-950/20 border-orange-900/40" : "bg-[#FFF9F3] border-[#FDE3CF]"
                                 )}>
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
-                                            <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
-                                            <span className="text-xs sm:text-sm font-bold text-amber-900 dark:text-amber-200">
+                                            <ShieldAlert className="w-4 h-4 text-[#C2611D] dark:text-orange-400 shrink-0" />
+                                            <span className="text-xs sm:text-sm font-bold text-[#8C3C0B] dark:text-orange-200">
                                                 Secondary Concession / Write-Off
                                             </span>
                                         </div>
@@ -994,33 +1007,33 @@ export function BillingSummary({
                                             type="button"
                                             id="btn-toggle-secondary-concession"
                                             onClick={() => setIsSecondaryExpanded(prev => !prev)}
-                                            className="px-2.5 py-1 rounded-lg text-xs font-bold text-amber-800 dark:text-amber-300 bg-amber-100 hover:bg-amber-200/80 dark:bg-amber-900/40 dark:hover:bg-amber-900/60 border border-amber-300 dark:border-amber-700/60 cursor-pointer transition-all active:scale-95 flex items-center gap-1"
+                                            className="px-2.5 py-1 rounded-lg text-xs font-bold text-[#8C3C0B] dark:text-orange-200 bg-[#FCE5D3] hover:bg-[#F9DAC2] dark:bg-orange-900/40 dark:hover:bg-orange-900/60 border border-[#F5C7A5] dark:border-orange-800/60 cursor-pointer transition-all active:scale-95 flex items-center gap-1 shadow-2xs"
                                         >
                                             <span>{isSecondaryExpanded ? "Minimize" : "+ Concession / Write-Off"}</span>
                                             <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", isSecondaryExpanded && "rotate-180")} />
                                         </button>
                                     </div>
 
-                                    <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80 leading-tight">
+                                    <p className="text-[11px] text-[#A3521E]/80 dark:text-orange-300/80 leading-tight">
                                         Authorized lab owner or pathologist courtesy discount applied specifically against remaining ₹{remainingDue.toLocaleString()} due.
                                     </p>
 
                                     {isSecondaryExpanded && (
-                                        <div className="pt-2 border-t border-amber-200/70 dark:border-amber-800/60 space-y-3 animate-in fade-in duration-200">
+                                        <div className="pt-2 border-t border-[#FDE3CF] dark:border-orange-900/50 space-y-3 animate-in fade-in duration-200">
                                             {/* Discount Type Toggle */}
                                             <div className="flex items-center justify-between">
-                                                <span className="text-xs font-semibold text-amber-900 dark:text-amber-200">
+                                                <span className="text-xs font-semibold text-[#8C3C0B] dark:text-orange-200">
                                                     Adjustment Type:
                                                 </span>
-                                                <div className="flex items-center rounded-lg p-1 bg-amber-200/80 dark:bg-amber-900/60 border border-amber-300 dark:border-amber-700 text-[10px] font-bold shadow-2xs">
+                                                <div className="flex items-center rounded-lg p-0.5 bg-[#FCE7D6] dark:bg-orange-950/60 border border-[#F5CBAA] dark:border-orange-900/60 text-[10px] font-bold shadow-2xs">
                                                     <button
                                                         type="button"
                                                         onClick={() => setSecondaryDiscountType('FLAT')}
                                                         className={cn(
-                                                            "px-2.5 py-0.5 rounded transition-all cursor-pointer font-bold",
+                                                            "px-2.5 py-0.5 rounded-md transition-all cursor-pointer font-bold",
                                                             secondaryDiscountType === 'FLAT'
-                                                                ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-xs"
-                                                                : "text-amber-800 dark:text-amber-300"
+                                                                ? "bg-white dark:bg-zinc-800 text-[#8C3C0B] dark:text-orange-200 shadow-2xs"
+                                                                : "text-[#A3521E] dark:text-orange-400 hover:text-[#8C3C0B]"
                                                         )}
                                                     >
                                                         Flat (₹)
@@ -1029,10 +1042,10 @@ export function BillingSummary({
                                                         type="button"
                                                         onClick={() => setSecondaryDiscountType('PERCENTAGE')}
                                                         className={cn(
-                                                            "px-2.5 py-0.5 rounded transition-all cursor-pointer font-bold",
+                                                            "px-2.5 py-0.5 rounded-md transition-all cursor-pointer font-bold",
                                                             secondaryDiscountType === 'PERCENTAGE'
-                                                                ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-xs"
-                                                                : "text-amber-800 dark:text-amber-300"
+                                                                ? "bg-white dark:bg-zinc-800 text-[#8C3C0B] dark:text-orange-200 shadow-2xs"
+                                                                : "text-[#A3521E] dark:text-orange-400 hover:text-[#8C3C0B]"
                                                         )}
                                                     >
                                                         % of Due
@@ -1049,7 +1062,7 @@ export function BillingSummary({
                                                         setSecondaryDiscountValue(String(remainingDue));
                                                         setSecondaryReason('Lab Owner Discretionary Write-off');
                                                     }}
-                                                    className="px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white cursor-pointer transition-all active:scale-95 shadow-2xs flex items-center gap-1"
+                                                    className="px-3 py-1 rounded-lg text-xs font-bold bg-[#FDE4D0] hover:bg-[#FCD8BE] text-[#8C3C0B] dark:bg-orange-900/50 dark:hover:bg-orange-900/70 dark:text-orange-200 border border-[#F8BE95] dark:border-orange-700/60 cursor-pointer transition-all active:scale-95 shadow-2xs flex items-center gap-1"
                                                 >
                                                     <span>Full Write-Off (₹{remainingDue.toLocaleString()})</span>
                                                 </button>
@@ -1059,7 +1072,7 @@ export function BillingSummary({
                                                         setSecondaryDiscountType('FLAT');
                                                         setSecondaryDiscountValue(String(Math.round(remainingDue * 0.5)));
                                                     }}
-                                                    className="px-2 py-1 rounded-lg text-xs font-semibold bg-white dark:bg-zinc-800 text-amber-900 dark:text-amber-200 border border-amber-200 dark:border-amber-800 cursor-pointer hover:bg-amber-50"
+                                                    className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white/90 dark:bg-zinc-800 text-[#8C3C0B] dark:text-orange-300 border border-[#FDE3CF] dark:border-orange-900/50 hover:bg-[#FFF3E8] cursor-pointer transition-all active:scale-95 shadow-2xs"
                                                 >
                                                     50% (₹{Math.round(remainingDue * 0.5).toLocaleString()})
                                                 </button>
@@ -1070,7 +1083,7 @@ export function BillingSummary({
                                                             setSecondaryDiscountType('FLAT');
                                                             setSecondaryDiscountValue('100');
                                                         }}
-                                                        className="px-2 py-1 rounded-lg text-xs font-semibold bg-white dark:bg-zinc-800 text-amber-900 dark:text-amber-200 border border-amber-200 dark:border-amber-800 cursor-pointer hover:bg-amber-50"
+                                                        className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white/90 dark:bg-zinc-800 text-[#8C3C0B] dark:text-orange-300 border border-[#FDE3CF] dark:border-orange-900/50 hover:bg-[#FFF3E8] cursor-pointer transition-all active:scale-95 shadow-2xs"
                                                     >
                                                         ₹100 Off
                                                     </button>
@@ -1080,7 +1093,7 @@ export function BillingSummary({
                                             {/* Input & Reason */}
                                             <div className="space-y-2">
                                                 <div className="relative">
-                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-amber-500">
+                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-[#C2611D] dark:text-orange-400">
                                                         {secondaryDiscountType === 'FLAT' ? '₹' : '%'}
                                                     </span>
                                                     <input
@@ -1094,7 +1107,7 @@ export function BillingSummary({
                                                             setSecondaryDiscountValue(raw);
                                                         }}
                                                         className={cn(
-                                                            "w-full h-10 pl-8 pr-4 rounded-xl text-sm font-mono font-bold outline-none border transition-all",
+                                                            "w-full h-10 pl-8 pr-4 rounded-xl text-sm font-mono font-bold outline-none border transition-all bg-white dark:bg-zinc-800 border-[#FDE3CF] dark:border-orange-900/50 focus:border-[#E8864A] focus:ring-2 focus:ring-[#E8864A]/20 text-slate-900 dark:text-white",
                                                             ui.input
                                                         )}
                                                     />
@@ -1102,13 +1115,16 @@ export function BillingSummary({
 
                                                 {/* Reason Selection */}
                                                 <div className="space-y-1">
-                                                    <label className="text-[11px] font-bold text-amber-900 dark:text-amber-200 block">
+                                                    <label className="text-[11px] font-bold text-[#8C3C0B] dark:text-orange-200 block">
                                                         Authorization Authority & Reason *
                                                     </label>
                                                     <select
                                                         value={secondaryReason}
                                                         onChange={(e) => setSecondaryReason(e.target.value)}
-                                                        className={cn("w-full h-9 rounded-xl px-3 outline-none text-xs font-medium cursor-pointer border", ui.input)}
+                                                        className={cn(
+                                                            "w-full h-9 rounded-xl px-3 outline-none text-xs font-medium cursor-pointer border bg-white dark:bg-zinc-800 border-[#FDE3CF] dark:border-orange-900/50 text-slate-800 dark:text-zinc-200 focus:border-[#E8864A]",
+                                                            ui.input
+                                                        )}
                                                     >
                                                         <option value="Lab Owner Discretionary Concession">Lab Owner Discretionary Concession</option>
                                                         <option value="Chief Pathologist Courtesy Concession">Chief Pathologist Courtesy Concession</option>
@@ -1128,18 +1144,18 @@ export function BillingSummary({
                                                     const newDue = Math.max(0, remainingDue - deduction);
 
                                                     return (
-                                                        <div className="p-2.5 rounded-xl bg-white dark:bg-zinc-800/80 border border-amber-200 dark:border-amber-800 text-xs space-y-1.5 animate-in fade-in">
-                                                            <div className="flex justify-between items-center text-zinc-600 dark:text-zinc-400">
+                                                        <div className="p-3 rounded-xl bg-white dark:bg-zinc-800/90 border border-[#FDE3CF] dark:border-orange-900/50 space-y-1.5 text-xs shadow-2xs animate-in fade-in">
+                                                            <div className="flex justify-between items-center text-slate-600 dark:text-zinc-400">
                                                                 <span>Current Due:</span>
                                                                 <span className="font-mono font-bold">₹{remainingDue.toLocaleString()}</span>
                                                             </div>
-                                                            <div className="flex justify-between items-center text-rose-600 dark:text-rose-400">
+                                                            <div className="flex justify-between items-center text-[#C2611D] dark:text-orange-400 font-bold">
                                                                 <span>Secondary Concession:</span>
                                                                 <span className="font-mono font-bold">-₹{deduction.toLocaleString()}</span>
                                                             </div>
-                                                            <div className="flex justify-between items-center pt-1 border-t border-slate-100 dark:border-zinc-700 font-bold text-zinc-900 dark:text-white">
+                                                            <div className="flex justify-between items-center pt-1 border-t border-[#FDE3CF]/70 dark:border-zinc-700 font-bold text-slate-900 dark:text-white">
                                                                 <span>Revised Remaining Due:</span>
-                                                                <span className="font-mono text-emerald-600 dark:text-emerald-400 text-sm">
+                                                                <span className="font-mono text-emerald-700 dark:text-emerald-400 text-sm">
                                                                     ₹{newDue.toLocaleString()} {newDue === 0 && "(Fully Settled)"}
                                                                 </span>
                                                             </div>
@@ -1152,7 +1168,7 @@ export function BillingSummary({
                                                     id="btn-apply-secondary-concession"
                                                     disabled={!secondaryDiscountValue || Number(secondaryDiscountValue) <= 0 || isApplyingSecondary || isProcessing}
                                                     onClick={handleApplySecondaryConcession}
-                                                    className="w-full py-2 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-xs disabled:opacity-50"
+                                                    className="w-full py-2.5 px-4 rounded-xl bg-[#E87A38] hover:bg-[#D96B29] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-xs border border-[#D96B29] disabled:opacity-40 disabled:cursor-not-allowed"
                                                 >
                                                     {isApplyingSecondary ? (
                                                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -1172,7 +1188,7 @@ export function BillingSummary({
                             )}
 
                             {/* 4. EXPANDABLE CONCESSION EDITOR (Smoothly unfolds directly in native styling) */}
-                            {isDiscountExpanded && canPerformActions && !isPrepaid && (
+                            {isDiscountExpanded && isInitialIntake && canPerformActions && !isPrepaid && (
                                 <div ref={concessionEditorRef} className="p-4 sm:p-5 rounded-2xl bg-white/70 dark:bg-zinc-800/60 border border-[#CCDCE8]/80 dark:border-zinc-700/80 shadow-[0_2px_8px_rgba(15,35,60,0.03)] space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
                                     {/* Discount Mode Toggle */}
                                     <div className="flex items-center justify-between">
@@ -2064,14 +2080,9 @@ export function BillingSummary({
                     >
                         <div className="flex items-center justify-between">
                             <label className="text-base font-bold text-slate-800 dark:text-zinc-200 tracking-normal">Settlement Terms</label>
-                            {isPartialPayment && (
-                                <span className={cn(
-                                    "text-xs px-2.5 py-0.5 rounded-md font-bold uppercase tracking-wider border",
-                                    Number(customPaymentAmount) === 0
-                                        ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
-                                        : "bg-[#FFF8EE] text-[#9A6B2F] dark:bg-amber-950/30 dark:text-amber-300 border-[#F5E2C8] dark:border-amber-900/40"
-                                )}>
-                                    {Number(customPaymentAmount) === 0 ? 'Full Due (100% Credit)' : 'Partial Due'}
+                            {isPartialPayment && Number(customPaymentAmount) > 0 && (
+                                <span className="text-xs px-2.5 py-0.5 rounded-md font-bold uppercase tracking-wider border bg-[#FFF8EE] text-[#9A6B2F] dark:bg-amber-950/30 dark:text-amber-300 border-[#F5E2C8] dark:border-amber-900/40">
+                                    Partial Due
                                 </span>
                             )}
                         </div>
@@ -2223,23 +2234,7 @@ export function BillingSummary({
                             </div>
                         )}
 
-                        {/* Full Due Notice Card */}
-                        {isPartialPayment && Number(customPaymentAmount) === 0 && (
-                            <div className="p-4 sm:p-5 rounded-2xl bg-[#FFF8EE] dark:bg-amber-950/30 border border-[#F5E2C8] dark:border-amber-900/40 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-bold text-[#9A6B2F] dark:text-amber-200 flex items-center gap-1.5">
-                                        <Clock className="w-4 h-4 text-[#9A6B2F] dark:text-amber-400" />
-                                        100% Patient Counter Credit (Full Due)
-                                    </span>
-                                    <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-900/60 text-[#9A6B2F] dark:text-amber-200 border border-[#F5E2C8] dark:border-amber-800">
-                                        ₹0 Desk Collection
-                                    </span>
-                                </div>
-                                <p className="text-xs text-[#9A6B2F]/90 dark:text-amber-300/90 leading-relaxed">
-                                    Patient pays <strong>₹0</strong> at the counter today. The entire bill amount of <strong className="font-mono">₹{displayAmountToCollect.toLocaleString()}</strong> will be booked as an Outstanding Due under this patient's profile and tracked in the Due Bills ledger.
-                                </p>
-                            </div>
-                        )}
+
                     </div>
                 )}
 

@@ -191,5 +191,31 @@
 4. **Production Bundle Build & Asset Sync:**
    * Rebuilt frontend bundle (`index-CA6NwEHb.js`), synced to `src/SynOS.Api/wwwroot/assets/`, purged stale hashes.
 
+---
+
+## 10. Reception Action Queue Full Due Pill, Redundant Credit Box Removal & Pastel Secondary Concession Overhaul — [RESOLVED & VERIFIED]
+### Audit Findings & Root Causes
+1. **Redundant 100% Credit Notice & Badge:** On `Full Due` selection, a bulky amber notice card and an explicit `FULL DUE (100% CREDIT)` badge cluttered the settlement screen when the `Full Due` button was already self-explanatory.
+2. **Generic Queue Status Badge:** In `ReceptionScreen.jsx`, uncollected Full Due tokens displayed a generic grey `DUE` badge (`bg-zinc-500/10`), obscuring whether it was standard due or total counter credit.
+3. **Duplicate Primary Concession Form during Resume Visit:** In `Resume Visit`, the primary concession trigger (`+ Concession` / `Edit Concession`) was active, and the drawer expanded, showing initial discount inputs even when the visit was already registered and not in Visit Correction mode.
+4. **Secondary Concession Visual Harshness:** The Secondary Concession deck used saturated amber/orange tones (`bg-amber-600`) that clashed with SynOS's pastel clinical UI system.
+
+### Implemented Fix
+1. **Streamlined Settlement Terms UI (`BillingSummary.jsx`):**
+   * Removed the bulky `100% Patient Counter Credit` notice card completely.
+   * Removed the `Full Due (100% Credit)` header badge, keeping only the clean, self-explanatory `Full Due` segmented button.
+2. **Pastel Orange FULL DUE Action Queue Badge (`ReceptionScreen.jsx`):**
+   * Added explicit `isFullDue` condition (`totalPaid === 0 && remainingDue > 0`).
+   * Rendered `FULL DUE` in pastel orange pill (`bg-orange-500/15 text-orange-700 dark:text-orange-300 border-orange-500/30`).
+3. **Primary Concession Lockout on Follow-up (`BillingSummary.jsx`):**
+   * Conditioned primary concession expansion and trigger on `isInitialIntake = isDraftVisit || isCorrectionIntent`.
+   * In standard `Resume Visit` mode, the primary concession trigger is greyed out (`opacity-45 cursor-not-allowed`) with a tooltip directing users to Visit Correction or Secondary Concession, and the primary discount form does not render.
+4. **Pastel Orange Secondary Concession Design System (`BillingSummary.jsx`):**
+   * Restyled the Secondary Concession drawer to soft pastel orange (`bg-[#FFF9F3] border-[#FDE3CF]`, header `#8C3C0B`, chips `#FDE4D0`, button `#E87A38`).
+   * Secondary Concession cleanly takes over follow-up due adjustments with zero visual clutter.
+5. **Production Build & Verification:**
+   * Bundle rebuilt (`index-B8ixeIVB.js`, `index-BObHbOkl.css`), synced to `wwwroot`, and validated with 16/16 test passes.
+
+
 
 
