@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { cn } from "@/lib/utils"
 import { useFlipGroup } from "@/hooks/useSynOSMotion"
-import { Plus, Users, ClipboardList, Bed, Clock, Loader2, ChevronDown, Package, Receipt, Wallet, TrendingDown } from 'lucide-react'
+import { Plus, Users, ClipboardList, Bed, Clock, Loader2, ChevronDown, Package, Receipt, Wallet, TrendingDown, ArrowDownLeft } from 'lucide-react'
 import { StockRequestPanel } from '../inventory/StockRequestPanel'
 import { SystemBar } from '@/components/layout/SystemBar'
 import { RealitySummary } from '@/components/layout/RealitySummary'
@@ -11,8 +11,10 @@ import { ActivityStream } from '@/components/layout/ActivityStream'
 import { TokenCell, PatientCell, StatusCell } from '@/components/layout/ActionQueueCells'
 import { IntentPanel } from '@/features/reception/components/IntentPanel'
 import { ReceptionExpenseDrawer } from '@/features/reception/components/ReceptionExpenseDrawer'
+import { ReceptionB2BReceivablesDrawer } from '@/features/reception/components/ReceptionB2BReceivablesDrawer'
 import { useReceptionDrawer } from '@/features/reception/hooks/useReceptionPanelUI'
 import { ReceptionApi, prewarmReceptionCatalogs } from '@/api/reception'
+import { FinanceApi } from '@/api/finance'
 import { SignalRService } from '@/lib/signalr'
 import { useTheme } from '@/context/ThemeContext'
 import { useAuth } from '@/context/AuthContext'
@@ -31,6 +33,8 @@ export function ReceptionScreen() {
     const [isLoadingQueue, setIsLoadingQueue] = useState(true);
     const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
     const [isExpenseDrawerOpen, setIsExpenseDrawerOpen] = useState(false);
+    const [isB2BReceivablesOpen, setIsB2BReceivablesOpen] = useState(false);
+    const [todayB2BPendingCount, setTodayB2BPendingCount] = useState(0);
 
     // History State (Phase 5)
     // We use a Ref for SignalR callback access, and State for Render.
@@ -54,13 +58,17 @@ export function ReceptionScreen() {
         }
 
         try {
-            const [summaryData, queueData] = await Promise.all([
+            const [summaryData, queueData, b2bGroups] = await Promise.all([
                 ReceptionApi.getDashboardSummary(),
-                ReceptionApi.getActionQueue(showHistoryRef.current)
+                ReceptionApi.getActionQueue(showHistoryRef.current),
+                FinanceApi.getTodayB2BReceivables().catch(() => [])
             ]);
             if (summaryData) setSummary(summaryData);
             if (Array.isArray(queueData)) {
                 setActionQueue(normalizeQueueData(queueData));
+            }
+            if (Array.isArray(b2bGroups)) {
+                setTodayB2BPendingCount(b2bGroups.length);
             }
         } catch (e) {
             console.error("Failed to refresh dashboard data", e);
@@ -396,7 +404,7 @@ export function ReceptionScreen() {
                 <div className="flex h-full gap-4">
                     {/* Main Dashboard Panel - STABLE WIDTH, NO CONTRACTION/EXPANSION REF-LOW */}
                     <div className="flex-1 flex flex-col min-h-0 min-w-0">
-                        <div className={`flex flex-col h-full transition-opacity duration-200 ${(isIntentPanelOpen || isInventoryModalOpen || isExpenseDrawerOpen) ? 'opacity-35 pointer-events-none' : 'opacity-100'}`}>
+                        <div className={`flex flex-col h-full transition-opacity duration-200 ${(isIntentPanelOpen || isInventoryModalOpen || isExpenseDrawerOpen || isB2BReceivablesOpen) ? 'opacity-35 pointer-events-none' : 'opacity-100'}`}>
                             <div
                                 ref={summaryRef}
                                 className="mb-2.5 shrink-0"
@@ -444,6 +452,23 @@ export function ReceptionScreen() {
                                     </div>
 
                                     <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => setIsB2BReceivablesOpen(true)}
+                                            className={cn(
+                                                "px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition-colors duration-200 flex items-center gap-2 pointer-events-auto active:scale-95 border",
+                                                theme === 'dark' 
+                                                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:text-white hover:bg-emerald-500/20" 
+                                                    : "bg-emerald-50 text-emerald-700 border-emerald-200 hover:text-emerald-900 hover:bg-emerald-100"
+                                            )}
+                                        >
+                                            <ArrowDownLeft className="w-4 h-4" />
+                                            Record B2B Receivables
+                                            {todayB2BPendingCount > 0 && (
+                                                <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-emerald-600 text-white">
+                                                    {todayB2BPendingCount}
+                                                </span>
+                                            )}
+                                        </button>
                                         <button
                                             onClick={() => setIsExpenseDrawerOpen(true)}
                                             className={cn(
@@ -503,7 +528,7 @@ export function ReceptionScreen() {
                     {/* Activity Stream Column when Drawer is closed */}
                     <div className={cn(
                         "w-[220px] md:w-[250px] lg:w-[290px] xl:w-[340px] 2xl:w-[380px] flex flex-col min-h-0 transition-opacity duration-200 shrink-0",
-                        (isIntentPanelOpen || isInventoryModalOpen || isExpenseDrawerOpen) ? "hidden" : "flex"
+                        (isIntentPanelOpen || isInventoryModalOpen || isExpenseDrawerOpen || isB2BReceivablesOpen) ? "hidden" : "flex"
                     )}>
                         <ActivityStream serverTime={serverTimeAnchor} />
                     </div>
@@ -518,6 +543,13 @@ export function ReceptionScreen() {
                         isOpen={isExpenseDrawerOpen}
                         onClose={() => {
                             setIsExpenseDrawerOpen(false);
+                            refreshDashboard();
+                        }}
+                    />
+                    <ReceptionB2BReceivablesDrawer
+                        isOpen={isB2BReceivablesOpen}
+                        onClose={() => {
+                            setIsB2BReceivablesOpen(false);
                             refreshDashboard();
                         }}
                     />

@@ -676,6 +676,47 @@ export const FinanceApi = {
         return response.json();
     },
 
+    getTodayB2BReceivables: async (branchId = null) => {
+        let url = '/api/settlements/reception/b2b-today';
+        if (branchId) {
+            url += `?branchId=${branchId}`;
+        } else {
+            url = FinanceApi.withBranchId(url);
+        }
+        const response = await fetch(url, {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load today's B2B receivables");
+        return response.json();
+    },
+
+    settleSameDayB2BReceivables: async (data) => {
+        const response = await fetch('/api/settlements/reception/b2b-today/settle', {
+            method: 'POST',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || "Failed to process same-day B2B settlement");
+        }
+        return response.json();
+    },
+
+    getTodayB2BSettlementsHistory: async (branchId = null) => {
+        let url = '/api/settlements/reception/b2b-today/history';
+        if (branchId) {
+            url += `?branchId=${branchId}`;
+        } else {
+            url = FinanceApi.withBranchId(url);
+        }
+        const response = await fetch(url, {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load today's B2B settlement history");
+        return response.json();
+    },
+
     settleReferralPayable: async (id, amount) => {
         const response = await fetch(`/api/settlements/referral-payable/${id}/settle`, {
             method: 'POST',

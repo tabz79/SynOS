@@ -1262,6 +1262,146 @@ export function generateThermalInsuranceReceiptHtml(payload = {}) {
     `;
 }
 
+export function generateThermalB2BSettlementSlipHtml(payload = {}) {
+    let labSettings = {
+        labLegalName: "SRI DIVYA DIAGNOSTIC CENTRE",
+        labTradeName: "AN ISO 9001:2015 CERTIFIED DIAGNOSTIC CENTRE",
+        address: "Wyra Road, Khammam | Ph: 9876543210",
+        phone: "+91 98765 43210"
+    };
+
+    if (typeof window !== 'undefined' && window.localStorage) {
+        try {
+            const settingsSaved = window.localStorage.getItem('synos_stationery_settings');
+            if (settingsSaved) {
+                labSettings = { ...labSettings, ...JSON.parse(settingsSaved) };
+            }
+            if (window.__synos_stationery_settings) {
+                labSettings = { ...labSettings, ...window.__synos_stationery_settings };
+            }
+        } catch {}
+    }
+
+    const receiptNo = payload.receiptNo || payload.ReceiptNo || 'RCP-B2B-UNKNOWN';
+    const partnerName = payload.partnerName || payload.PartnerName || 'B2B Partner';
+    const clinicName = payload.clinicName || payload.ClinicName || '';
+    const amount = Number(payload.amount || payload.Amount || 0);
+    const paymentMode = (payload.paymentMode || payload.PaymentMode || 'Cash').toUpperCase();
+    const receivedFrom = payload.receivedFrom || payload.ReceivedFrom || 'Partner Representative';
+    const cashierName = payload.cashierName || payload.CashierName || 'Reception Staff';
+    const settledAt = payload.settledAt || payload.SettledAt ? new Date(payload.settledAt || payload.SettledAt).toLocaleString('en-IN') : new Date().toLocaleString('en-IN');
+    const visits = payload.settledVisits || payload.SettledVisits || [];
+
+    const visitsRows = visits.map((v, i) => `
+        <div style="margin-bottom: 5px; padding-bottom: 4px; border-bottom: 1px dashed #ddd;">
+            <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 11px;">
+                <span>#${v.token || v.Token || 'N/A'} - ${v.patientName || v.PatientName || 'Patient'}</span>
+                <span>₹ ${Number(v.amountDue || v.AmountDue || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+            </div>
+            <div style="font-size: 9.5px; color: #555; display: flex; justify-content: space-between;">
+                <span>${v.gender || ''} ${v.age ? v.age + 'y' : ''} | ${v.testsSummary || v.TestsSummary || 'Diagnostics'}</span>
+            </div>
+        </div>
+    `).join('');
+
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>B2B Settlement Slip - ${receiptNo}</title>
+    <style>
+        @page {
+            size: 80mm auto;
+            margin: 0;
+        }
+        body {
+            width: 76mm;
+            margin: 0 auto;
+            padding: 8px 4px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: #000;
+            background: #fff;
+            font-size: 11px;
+            line-height: 1.25;
+        }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .font-bold { font-weight: bold; }
+        .divider { border-top: 1px dashed #000; margin: 6px 0; }
+        .double-divider { border-top: 2px solid #000; margin: 6px 0; }
+        .flex-between { display: flex; justify-content: space-between; }
+        .badge { display: inline-block; padding: 2px 6px; font-size: 9px; font-weight: bold; border: 1px solid #000; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="text-center">
+        <div style="font-size: 14px; font-weight: 900; letter-spacing: 0.5px;">${labSettings.labLegalName}</div>
+        <div style="font-size: 8.5px; margin-top: 2px; text-transform: uppercase;">${labSettings.labTradeName}</div>
+        <div style="font-size: 8.5px; color: #333; margin-top: 2px;">${labSettings.address}</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="text-center" style="margin: 4px 0;">
+        <span class="badge">B2B RECEIVABLES COLLECTION SLIP</span>
+    </div>
+
+    <div style="margin-top: 4px; font-size: 10px;">
+        <div class="flex-between">
+            <span class="font-bold">Receipt No:</span>
+            <span>${receiptNo}</span>
+        </div>
+        <div class="flex-between">
+            <span>Date & Time:</span>
+            <span>${settledAt}</span>
+        </div>
+        <div class="flex-between">
+            <span class="font-bold">B2B Partner:</span>
+            <span class="font-bold">${partnerName}</span>
+        </div>
+        ${clinicName ? `<div class="flex-between"><span>Clinic/Org:</span><span>${clinicName}</span></div>` : ''}
+        <div class="flex-between">
+            <span>Collected From:</span>
+            <span>${receivedFrom}</span>
+        </div>
+        <div class="flex-between">
+            <span>Desk Cashier:</span>
+            <span>${cashierName}</span>
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div style="font-size: 9.5px; font-weight: bold; text-transform: uppercase; margin-bottom: 4px;">
+        Settled Patient Investigations (${visits.length}):
+    </div>
+
+    ${visitsRows || '<div style="font-style: italic; font-size: 10px;">Same-day B2B balance clearance</div>'}
+
+    <div class="double-divider"></div>
+
+    <div style="font-size: 13px; font-weight: 900; display: flex; justify-content: space-between; align-items: center;">
+        <span>TOTAL COLLECTED:</span>
+        <span>₹ ${amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+    </div>
+    <div class="flex-between" style="font-size: 10px; margin-top: 3px;">
+        <span>Payment Channel:</span>
+        <span class="font-bold">${paymentMode}</span>
+    </div>
+
+    <div class="divider"></div>
+
+    <div style="text-align: center; font-size: 8.5px; color: #444; margin-top: 8px;">
+        <div>*** SAME-DAY RECEPTION CLEARANCE ***</div>
+        <div style="margin-top: 2px;">Official Computerized Counter Voucher</div>
+        <div>Thank you for partnering with us.</div>
+    </div>
+</body>
+</html>
+    `;
+}
+
 export function generateThermalSlipHtml(payload) {
     return generateThermalInvoiceHtml(payload);
 }

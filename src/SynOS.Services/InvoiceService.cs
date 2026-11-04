@@ -133,8 +133,8 @@ namespace SynOS.Services
                          && p.Invoice.Visit.BranchId == branchId 
                          && p.Invoice.Visit.Status != VisitStatus.Draft
                          && (p.Invoice.Visit.Token == null || !p.Invoice.Visit.Token.StartsWith("D-"))
-                         && p.Invoice.Visit.PaymentCollectionModel != "PartnerCollects"
-                         && p.Invoice.Visit.BillingType != BillingType.PrepaidPartner
+                         && (p.Invoice.Visit.PaymentCollectionModel != "PartnerCollects" || (p.ReceiptNo != null && p.ReceiptNo.StartsWith("RCP-B2B")))
+                         && (p.Invoice.Visit.BillingType != BillingType.PrepaidPartner || (p.ReceiptNo != null && p.ReceiptNo.StartsWith("RCP-B2B")))
                          && p.ReceivedAt >= startUtc && p.ReceivedAt < endUtc);
 
             if (userId.HasValue)
@@ -202,8 +202,8 @@ namespace SynOS.Services
                              && p.Invoice.Visit.BranchId == branchId 
                              && p.Invoice.Visit.Status != VisitStatus.Draft
                              && (p.Invoice.Visit.Token == null || !p.Invoice.Visit.Token.StartsWith("D-"))
-                             && p.Invoice.Visit.PaymentCollectionModel != "PartnerCollects"
-                             && p.Invoice.Visit.BillingType != BillingType.PrepaidPartner
+                             && (p.Invoice.Visit.PaymentCollectionModel != "PartnerCollects" || (p.ReceiptNo != null && p.ReceiptNo.StartsWith("RCP-B2B")))
+                             && (p.Invoice.Visit.BillingType != BillingType.PrepaidPartner || (p.ReceiptNo != null && p.ReceiptNo.StartsWith("RCP-B2B")))
                              && p.ReceivedAt >= startUtc && p.ReceivedAt < endUtc)
                     .ToListAsync();
                 branchCashTotal = allBranchPayments.Where(p => isCash(p.Method)).Sum(p => p.Amount);

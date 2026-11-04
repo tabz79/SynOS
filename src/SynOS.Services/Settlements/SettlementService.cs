@@ -12,6 +12,7 @@ using SynOS.Models.DTOs.Revenue;
 using SynOS.Services.Security;
 using SynOS.Services.SpendEngine;
 using SynOS.Services.Revenue;
+using SynOS.Services.Time;
 
 namespace SynOS.Services.Settlements
 {
@@ -22,19 +23,22 @@ namespace SynOS.Services.Settlements
         private readonly IRevenueFactWriter _revenueFactWriter;
         private readonly IUserContext _userContext;
         private readonly SynOS.Services.Operational.INotifier _notifier;
+        private readonly ILabTimeProvider _labTimeProvider;
 
         public SettlementService(
             SynOSDbContext context, 
             ISpendFactWriter spendFactWriter, 
             IRevenueFactWriter revenueFactWriter,
             IUserContext userContext,
-            SynOS.Services.Operational.INotifier notifier)
+            SynOS.Services.Operational.INotifier notifier,
+            ILabTimeProvider labTimeProvider)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _spendFactWriter = spendFactWriter ?? throw new ArgumentNullException(nameof(spendFactWriter));
             _revenueFactWriter = revenueFactWriter ?? throw new ArgumentNullException(nameof(revenueFactWriter));
             _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
             _notifier = notifier ?? throw new ArgumentNullException(nameof(notifier));
+            _labTimeProvider = labTimeProvider ?? throw new ArgumentNullException(nameof(labTimeProvider));
         }
 
         public async Task SettleReferralPayableAsync(Guid id, decimal amount)
@@ -425,6 +429,349 @@ namespace SynOS.Services.Settlements
                 await transaction.RollbackAsync();
                 throw;
             }
+        }
+
+        public async Task<List<TodayB2BReceivableGroupDto>> GetTodayB2BReceivablesAsync(Guid branchId)
+        {
+            var today = _labTimeProvider.GetLabToday();
+            var tz = _labTimeProvider.GetLabTimeZone();
+            var startOfToday = new DateTimeOffset(today, tz.GetUtcOffset(today));
+            var endOfToday = startOfToday.AddDays(1);
+            var startUtc = startOfToday.UtcDateTime;
+            var endUtc = endOfToday.UtcDateTime;
+
+            // 1. Fetch today's B2B visits registered under Corporate B2B (Prepaid) or PartnerCollects
+            var todayVisits = await _context.Visits
+                .AsNoTracking()
+                .Include(v => v.ReferralPartner)
+                .Include(v => v.SecondaryReferralPartner)
+                .Include(v => v.Patient)
+                .Include(v => v.Orders).ThenInclude(o => o.Test)
+                .Where(v => v.BranchId == branchId
+                         && (v.TokenDate == today || (v.CreatedAt >= startUtc && v.CreatedAt < endUtc))
+                         && v.Status != VisitStatus.Cancelled
+                         && v.Status != VisitStatus.Draft
+                         && (v.BillingType == BillingType.PrepaidPartner || v.PaymentCollectionModel == "PartnerCollects")
+                         && (v.Token == null || !v.Token.StartsWith("D-")))
+                .ToListAsync();
+
+            if (!todayVisits.Any())
+            {
+                return new List<TodayB2BReceivableGroupDto>();
+            }
+
+            var visitIds = todayVisits.Select(v => v.VisitId).ToList();
+
+            // 2. Fetch pending (unsettled) ReceivableFacts for these visits
+            var facts = await _context.ReceivableFacts
+                .AsNoTracking()
+                .Where(f => visitIds.Contains(f.SourceVisitId) && f.SettledAt == null && f.AmountReceived < f.Amount)
+                .ToListAsync();
+
+            var factMap = facts.GroupBy(f => f.SourceVisitId).ToDictionary(g => g.Key, g => g.First());
+
+            // 3. Group by partner
+            var partnerGroups = new Dictionary<Guid, TodayB2BReceivableGroupDto>();
+
+            foreach (var v in todayVisits)
+            {
+                if (!factMap.TryGetValue(v.VisitId, out var fact))
+                {
+                    continue; // Either already settled or no fact
+                }
+
+                var partner = v.SecondaryReferralPartner ?? v.ReferralPartner;
+                var partnerId = v.SecondaryReferralPartnerId ?? v.ReferralPartnerId ?? fact.DebtorId;
+                var partnerName = partner?.Name ?? fact.DebtorName ?? "B2B Partner";
+
+                // Exclude system sentinels
+                if (string.Equals(partnerName.Trim(), "SELF", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(partnerName.Trim(), "SYSTEM_SELF", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(partnerName.Trim(), "SELF WALK-IN", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(partnerName.Trim(), "DIRECT", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                if (!partnerGroups.TryGetValue(partnerId, out var group))
+                {
+                    group = new TodayB2BReceivableGroupDto
+                    {
+                        PartnerId = partnerId,
+                        PartnerName = partnerName,
+                        ClinicName = partner?.ClinicName,
+                        Phone = partner?.ContactInfo,
+                        TotalDueToday = 0,
+                        TotalVisitsCount = 0,
+                        Visits = new List<TodayB2BReceivableVisitDto>()
+                    };
+                    partnerGroups[partnerId] = group;
+                }
+
+                decimal due = Math.Max(0m, fact.Amount - fact.AmountReceived);
+                if (due <= 0) continue;
+
+                group.TotalDueToday += due;
+                group.TotalVisitsCount += 1;
+
+                var testsSummary = string.Join(", ", v.Orders?.Select(o => o.Test?.TestName).Where(n => !string.IsNullOrEmpty(n)) ?? Array.Empty<string>());
+                if (string.IsNullOrEmpty(testsSummary)) testsSummary = "Clinical Diagnostics";
+
+                group.Visits.Add(new TodayB2BReceivableVisitDto
+                {
+                    VisitId = v.VisitId,
+                    ReceivableFactId = fact.ReceivableFactId,
+                    Token = v.Token ?? "N/A",
+                    PatientName = v.Patient != null ? $"{v.Patient.FirstName} {v.Patient.LastName}".Trim() : "Patient",
+                    Age = v.Patient != null && v.Patient.DateOfBirth > DateTime.MinValue
+                        ? Math.Max(0, (int)((DateTime.Today - v.Patient.DateOfBirth).TotalDays / 365.25))
+                        : 0,
+                    Gender = v.Patient?.Gender,
+                    TestsSummary = testsSummary,
+                    BilledAmount = fact.Amount,
+                    AmountDue = due,
+                    RegisteredAt = v.CreatedAt
+                });
+            }
+
+            return partnerGroups.Values
+                .Where(g => g.TotalDueToday > 0 && g.Visits.Any())
+                .OrderByDescending(g => g.TotalDueToday)
+                .ToList();
+        }
+
+        public async Task<B2BSettlementReceiptDto> SettleSameDayB2BReceivablesAsync(SettleSameDayB2BRequestDto request, Guid userId, Guid branchId)
+        {
+            if (request == null) throw new ArgumentNullException(nameof(request));
+            if (request.Amount <= 0) throw new ArgumentException("Settlement amount must be positive.");
+            if (request.FactIds == null || !request.FactIds.Any()) throw new ArgumentException("No receivable fact IDs selected.");
+
+            var today = _labTimeProvider.GetLabToday();
+            var tz = _labTimeProvider.GetLabTimeZone();
+            var startOfToday = new DateTimeOffset(today, tz.GetUtcOffset(today));
+            var endOfToday = startOfToday.AddDays(1);
+            var startUtc = startOfToday.UtcDateTime;
+            var endUtc = endOfToday.UtcDateTime;
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // 1. Fetch facts
+                var facts = await _context.ReceivableFacts
+                    .Where(f => request.FactIds.Contains(f.ReceivableFactId) && f.SettledAt == null)
+                    .OrderBy(f => f.OccurredAt)
+                    .ToListAsync();
+
+                if (!facts.Any())
+                {
+                    throw new InvalidOperationException("No open receivable facts found matching the provided IDs.");
+                }
+
+                var sourceVisitIds = facts.Select(f => f.SourceVisitId).ToList();
+                var visits = await _context.Visits
+                    .Include(v => v.Patient)
+                    .Include(v => v.Orders).ThenInclude(o => o.Test)
+                    .Include(v => v.Invoices)
+                    .Where(v => sourceVisitIds.Contains(v.VisitId))
+                    .ToListAsync();
+
+                // STRICT SAME-DAY AND BRANCH BOUNDARY CHECK (Zero Heuristic Seepage)
+                foreach (var fact in facts)
+                {
+                    var v = visits.FirstOrDefault(x => x.VisitId == fact.SourceVisitId);
+                    bool isToday = (v != null && (v.TokenDate == today || (v.CreatedAt >= startUtc && v.CreatedAt < endUtc)))
+                                   || (fact.OccurredAt >= startUtc && fact.OccurredAt < endUtc);
+
+                    if (!isToday || (v != null && v.BranchId != branchId))
+                    {
+                        throw new UnauthorizedAccessException(
+                            "Reception desk is strictly authorized for same-day B2B settlements. " +
+                            "Aged receivables (>1 day) must be cleared through Finance Administration."
+                        );
+                    }
+                }
+
+                var partner = await _context.ReferralPartners.FindAsync(request.PartnerId);
+                string partnerName = partner?.Name ?? facts.First().DebtorName;
+                if (string.IsNullOrEmpty(partnerName)) partnerName = "B2B Partner";
+
+                var user = await _context.Users.FindAsync(userId);
+                string cashierName = user?.Name ?? "Reception Staff";
+
+                var receiptNo = $"RCP-B2B-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..6].ToUpper()}";
+                var settledVisitsList = new List<TodayB2BReceivableVisitDto>();
+
+                decimal remaining = request.Amount;
+
+                foreach (var fact in facts)
+                {
+                    if (remaining <= 0) break;
+
+                    var v = visits.FirstOrDefault(x => x.VisitId == fact.SourceVisitId);
+                    var outstanding = fact.Amount - fact.AmountReceived;
+                    var apply = Math.Min(remaining, outstanding);
+
+                    fact.AmountReceived += apply;
+                    if (fact.AmountReceived >= fact.Amount)
+                    {
+                        fact.SettledAt = DateTimeOffset.UtcNow;
+                    }
+
+                    remaining -= apply;
+                    _context.ReceivableFacts.Update(fact);
+
+                    if (v != null)
+                    {
+                        var invoice = v.Invoices.FirstOrDefault();
+                        if (invoice != null && apply > 0)
+                        {
+                            var payment = new Payment
+                            {
+                                PaymentId = Guid.NewGuid(),
+                                InvoiceId = invoice.InvoiceId,
+                                Amount = apply,
+                                Method = request.PaymentMode,
+                                ReceiptNo = receiptNo,
+                                ReceivedAt = DateTime.UtcNow,
+                                ReceivedByUserId = userId
+                            };
+                            _context.Payments.Add(payment);
+
+                            var totalPaid = (invoice.Payments?.Sum(p => p.Amount) ?? 0) + apply;
+                            if (totalPaid >= invoice.Total)
+                            {
+                                invoice.Status = "Paid";
+                                v.Status = VisitStatus.Paid;
+                            }
+                            else
+                            {
+                                invoice.Status = "PartialPayment";
+                                v.Status = VisitStatus.PartialPayment;
+                            }
+                        }
+
+                        var testsSummary = string.Join(", ", v.Orders?.Select(o => o.Test?.TestName).Where(n => !string.IsNullOrEmpty(n)) ?? Array.Empty<string>());
+                        settledVisitsList.Add(new TodayB2BReceivableVisitDto
+                        {
+                            VisitId = v.VisitId,
+                            ReceivableFactId = fact.ReceivableFactId,
+                            Token = v.Token ?? "N/A",
+                            PatientName = v.Patient != null ? $"{v.Patient.FirstName} {v.Patient.LastName}".Trim() : "Patient",
+                            Age = v.Patient != null && v.Patient.DateOfBirth > DateTime.MinValue
+                                ? Math.Max(0, (int)((DateTime.Today - v.Patient.DateOfBirth).TotalDays / 365.25))
+                                : 0,
+                            Gender = v.Patient?.Gender,
+                            TestsSummary = testsSummary,
+                            BilledAmount = fact.Amount,
+                            AmountDue = apply,
+                            RegisteredAt = v.CreatedAt
+                        });
+                    }
+                }
+
+                // Declare RevenueFact (Truth Engine)
+                var command = new DeclareRevenueFactCommand
+                {
+                    OccurredAt = DateTimeOffset.UtcNow,
+                    Amount = request.Amount,
+                    Currency = "INR",
+                    Direction = RevenueDirection.Inflow,
+                    SourceType = RevenueSourceType.Partner,
+                    SourceReferenceId = receiptNo,
+                    PaymentMode = Enum.TryParse<PaymentMode>(request.PaymentMode, out var pm) ? pm : PaymentMode.Cash,
+                    DeclaredByUserId = userId,
+                    Notes = $"Reception Same-Day B2B Settlement. Partner: {partnerName} | Payer: {request.ReceivedFrom ?? "Representative"} | Notes: {request.Notes ?? "N/A"}"
+                };
+
+                await _revenueFactWriter.DeclareRevenueFactAsync(command);
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                // Broadcast Live Real-time Sync
+                try
+                {
+                    await _notifier.NotifyReceivablesUpdatedAsync(branchId.ToString(), request.PartnerId);
+                    await _notifier.NotifyRealitySummaryUpdateAsync(branchId.ToString());
+                }
+                catch { }
+
+                return new B2BSettlementReceiptDto
+                {
+                    ReceiptNo = receiptNo,
+                    PartnerId = request.PartnerId,
+                    PartnerName = partnerName,
+                    ClinicName = partner?.ClinicName,
+                    Amount = request.Amount,
+                    PaymentMode = request.PaymentMode,
+                    ReceivedFrom = request.ReceivedFrom,
+                    CashierName = cashierName,
+                    SettledAt = DateTimeOffset.UtcNow,
+                    SettledVisits = settledVisitsList
+                };
+            }
+            catch
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        }
+
+        public async Task<List<TodayB2BSettlementHistoryDto>> GetTodayB2BSettlementsHistoryAsync(Guid branchId)
+        {
+            var today = _labTimeProvider.GetLabToday();
+            var tz = _labTimeProvider.GetLabTimeZone();
+            var startOfToday = new DateTimeOffset(today, tz.GetUtcOffset(today));
+            var endOfToday = startOfToday.AddDays(1);
+            var startUtc = startOfToday.UtcDateTime;
+            var endUtc = endOfToday.UtcDateTime;
+
+            var payments = await _context.Payments
+                .AsNoTracking()
+                .Include(p => p.Invoice).ThenInclude(i => i.Visit).ThenInclude(v => v.ReferralPartner)
+                .Include(p => p.Invoice).ThenInclude(i => i.Visit).ThenInclude(v => v.SecondaryReferralPartner)
+                .Where(p => p.ReceiptNo != null && p.ReceiptNo.StartsWith("RCP-B2B")
+                         && p.ReceivedAt >= startUtc && p.ReceivedAt < endUtc
+                         && p.Invoice != null && p.Invoice.Visit != null && p.Invoice.Visit.BranchId == branchId)
+                .OrderByDescending(p => p.ReceivedAt)
+                .ToListAsync();
+
+            if (!payments.Any())
+            {
+                return new List<TodayB2BSettlementHistoryDto>();
+            }
+
+            var userIds = payments.Select(p => p.ReceivedByUserId).Distinct().ToList();
+            var userMap = await _context.Users
+                .AsNoTracking()
+                .Where(u => userIds.Contains(u.UserId))
+                .ToDictionaryAsync(u => u.UserId, u => u.Name);
+
+            var historyGroups = payments
+                .GroupBy(p => p.ReceiptNo)
+                .Select(g => {
+                    var first = g.First();
+                    var visit = first.Invoice?.Visit;
+                    var partner = visit?.SecondaryReferralPartner ?? visit?.ReferralPartner;
+                    var partnerName = partner?.Name ?? "B2B Partner";
+                    var tokens = g.Select(x => x.Invoice?.Visit?.Token).Where(t => !string.IsNullOrEmpty(t)).Distinct().ToList()!;
+
+                    return new TodayB2BSettlementHistoryDto
+                    {
+                        ReceiptNo = g.Key!,
+                        PartnerId = partner?.ReferralPartnerId ?? Guid.Empty,
+                        PartnerName = partnerName,
+                        Amount = g.Sum(x => x.Amount),
+                        PaymentMode = first.Method ?? "Cash",
+                        ReceivedFrom = null,
+                        CashierName = userMap.TryGetValue(first.ReceivedByUserId, out var uname) ? uname : "Reception Staff",
+                        SettledAt = first.ReceivedAt,
+                        VisitCount = tokens.Count(),
+                        PatientTokens = tokens
+                    };
+                })
+                .ToList();
+
+            return historyGroups;
         }
     }
 }

@@ -84,3 +84,69 @@
   * Add a subtle, ambient backlit elevation glow for active/focused cards:
     `shadow-sm focus-visible:shadow-[0_0_15px_rgba(var(--synos-primary-rgb),0.18)] transition-all duration-200`.
   * Ensure clear visual distinction in both light and dark themes without heavy harsh outlines.
+
+---
+
+## 6. Duplicate Key Collision on `Payments.ReceiptNo` (`SYS-{Token}`) During Visit Correction & Prepaid Intake
+### Severity: High / Crash (HTTP 500 `DbUpdateException`)
+### Impacted Workflows
+* **Visit Correction / Batch Edit:** `POST /api/v1/visits/{id}/batch-edit`
+* **Intake Registration for Corporate B2B:** `POST /api/v1/reception/intake/register`
+* **Prepaid Settle Flow:** `POST /api/v1/reception/visit/prepaid`
+
+### Incident & Evidence
+* **Incident:** Batch edit on Visit `MAI-003` (`SANTHOSH`, Nov 4, 2026) crashed with:
+  `"Batch edit failed: An error occurred while saving the entity changes. See the inner exception for details."`
+* **Database Constraint:**
+  Table `dbo.Payments` has a strict unique index on column `ReceiptNo`:
+  ```csharp
+  entity.HasIndex(e => e.ReceiptNo).IsUnique();
+  ```
+* **Live DB Audit:**
+  On Nov 2, 2026, visit `MAI-003` (`MAI003-261102`) was billed as Corporate B2B. The system generated a B2B partner settlement payment record with:
+  `ReceiptNo = "SYS-MAI-003"`
+  On Nov 4, 2026, when today's visit `MAI-003` (`SANTHOSH`) was corrected, EF Core attempted to insert:
+  `ReceiptNo = "SYS-MAI-003"`
+  SQL Server threw a `Cannot insert duplicate key row in object 'dbo.Payments' with unique index 'IX_Payments_ReceiptNo'`.
+
+### Root Cause Analysis
+1. **Missing Date/Temporal Scoping in `ReceiptNo`:**
+   In [`VisitService.cs`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/VisitService.cs), normal receipts and refunds include date stamps:
+   * Cash/UPI Payment: `$"REC-{DateTime.UtcNow:yyyyMMdd}-{visit.Token}"`
+   * Refund: `$"REF-{DateTime.UtcNow:yyyyMMdd}-{visit.Token}"`
+   However, for Corporate B2B prepaid settlements, the code hardcodes:
+   * Line 264: `ReceiptNo = $"SYS-{visit.Token}"`
+   * Line 1206: `ReceiptNo = $"SYS-{visit.Token}"`
+   * Line 2275: `ReceiptNo = $"SYS-{visit.Token}"`
+2. **Token Cyclic Reuse:**
+   Tokens reset daily (`MAI-001`, `MAI-002`, `MAI-003`, ...). Without the calendar date or unified invoice number, any B2B visit or visit correction on `Token N` will collide with `Token N` from previous days.
+
+### Architecture Clarification: Unified Bill No. vs. Payment Receipt No.
+* **Unified Bill No (`YYYYMMDD-TOKEN` or `TOKEN-YYMMDD`):**
+  Identifies the **Invoice / Visit**. For example, `20261104-MAI003`. Because tokens are sequential per branch per day, this number is mathematically guaranteed to be 100% unique across all calendar time. Pairing with MRN is **redundant** and counterproductive (bloats barcode density and thermal slip widths; patient ID is already linked via foreign key).
+* **Payment Receipt No (`ReceiptNo`):**
+  Identifies individual financial transactions / settlement vouchers against that bill. A single bill can have multiple payments or adjustments.
+  Receipt numbers must strictly inherit the unified bill identifier with a transaction prefix:
+  * Patient Desk Receipts: `$"REC-{canonicalBillNo}"` (or `$"REC-{canonicalBillNo}-1"`)
+  * Patient Refunds: `$"REF-{canonicalBillNo}"` (or `$"REF-{canonicalBillNo}-1"`)
+  * B2B Ledger Settlement: `$"SYS-{canonicalBillNo}"`
+
+### Prescribed Fix Specifications (For Implementation Agent)
+1. In `src/SynOS.Services/VisitService.cs`:
+   Replace all un-scoped `$"SYS-{visit.Token}"` generations (lines 264, 1206, 2275) with the canonical date-scoped format:
+   ```csharp
+   // Format: SYS-{yyyyMMdd}-{token} or SYS-{invoiceNumber}
+   ReceiptNo = $"SYS-{DateTime.UtcNow:yyyyMMdd}-{visit.Token.Replace(" ", "")}"
+   ```
+   Or dynamically tie to `visit.InvoiceNumber`:
+   ```csharp
+   ReceiptNo = $"SYS-{visit.InvoiceNumber ?? $"{DateTime.UtcNow:yyyyMMdd}-{visit.Token}"}"
+   ```
+2. Handle multi-payment suffixes if multiple adjustments occur on the same visit:
+   ```csharp
+   var existingCount = await _context.Payments.CountAsync(p => p.VisitId == visit.Id);
+   var suffix = existingCount > 0 ? $"-{existingCount + 1}" : "";
+   ReceiptNo = $"SYS-{DateTime.UtcNow:yyyyMMdd}-{visit.Token}{suffix}";
+   ```
+3. Run safe migration / sanitization script on existing historical collisions in `dbo.Payments` where `ReceiptNo` was saved without a date stamp.
+
