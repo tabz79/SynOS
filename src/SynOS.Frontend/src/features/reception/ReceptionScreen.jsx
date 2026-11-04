@@ -270,10 +270,8 @@ export function ReceptionScreen() {
             value: `₹${(summary.dailyExpensesCashPool !== undefined && summary.dailyExpensesCashPool !== null ? summary.dailyExpensesCashPool : (summary.dailyExpensesCashTotal || 0)).toLocaleString()}`, 
             individualValue: `₹${(summary.dailyExpensesCashIndividual || 0).toLocaleString()}`,
             poolLabel: "Pool Total",
-            individualLabel: "You",
             label: "Recorded Expenses", 
             shortLabel: "Daily Expenses", 
-            qualifier: "Cash Outflow", 
             icon: Receipt, 
             color: "red"
         },
@@ -282,10 +280,8 @@ export function ReceptionScreen() {
             value: `₹${(summary.cashDrawerBalancePool !== undefined && summary.cashDrawerBalancePool !== null ? summary.cashDrawerBalancePool : (summary.cashDrawerBalance || 0)).toLocaleString()}`, 
             individualValue: `₹${(summary.cashDrawerBalanceIndividual || 0).toLocaleString()}`,
             poolLabel: "Pool Total",
-            individualLabel: "You",
             label: "Cash in the Drawer", 
             shortLabel: "Cash Drawer", 
-            qualifier: "Physical Balance", 
             icon: Wallet, 
             color: "emerald"
         },
@@ -296,8 +292,8 @@ export function ReceptionScreen() {
         { value: "—", label: "Online Total", icon: ClipboardList, color: "default", scopeBadge: isReceptionist ? "Desk" : undefined },
         { value: "—", label: "Credit Bills", icon: ClipboardList, color: "default", scopeBadge: isReceptionist ? "Desk" : undefined },
         { value: "—", label: "Credit Value", icon: ClipboardList, color: "default", scopeBadge: isReceptionist ? "Desk" : undefined },
-        { isDual: true, value: "—", individualValue: "—", poolLabel: "Pool Total", individualLabel: "You", label: "Recorded Expenses", shortLabel: "Daily Expenses", qualifier: "Cash Outflow", icon: Receipt, color: "default" },
-        { isDual: true, value: "—", individualValue: "—", poolLabel: "Pool Total", individualLabel: "You", label: "Cash in the Drawer", shortLabel: "Cash Drawer", qualifier: "Physical Balance", icon: Wallet, color: "default" },
+        { isDual: true, value: "—", individualValue: "—", poolLabel: "Pool Total", label: "Recorded Expenses", shortLabel: "Daily Expenses", icon: Receipt, color: "default" },
+        { isDual: true, value: "—", individualValue: "—", poolLabel: "Pool Total", label: "Cash in the Drawer", shortLabel: "Cash Drawer", icon: Wallet, color: "default" },
     ];
 
     // ACTION QUEUE COLUMNS (Strict Backend Truth)

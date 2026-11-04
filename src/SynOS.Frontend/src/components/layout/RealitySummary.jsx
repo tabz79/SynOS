@@ -96,7 +96,7 @@ export function RealityTile({
             ) : isDual ? (
                 /* DUAL METRIC SPLIT LAYOUT (Mockup Option B) */
                 <div className="flex flex-col h-full w-full justify-between">
-                    {/* TOP: Icon Badge + Title + Qualifier */}
+                    {/* TOP: Icon Badge + Title */}
                     <div className="flex items-center justify-between w-full">
                         <div className="flex items-center gap-2 min-w-0">
                             <div className={cn(
@@ -114,14 +114,9 @@ export function RealityTile({
                                 {displayLabel}
                             </span>
                         </div>
-                        {qualifier && (
-                            <span className="text-[10px] text-zinc-400 font-mono tracking-wider uppercase hidden sm:inline-block">
-                                {qualifier}
-                            </span>
-                        )}
                     </div>
 
-                    {/* BOTTOM: Horizontal Split (Pool on Left, You Pod on Right) */}
+                    {/* BOTTOM: Horizontal Split (Pool on Left, User Pod on Right) */}
                     <div className="flex items-center justify-between w-full mt-auto pt-1 gap-1 sm:gap-2">
                         {/* Left: Pool Value + Label */}
                         <div className="flex flex-col min-w-0">
@@ -140,26 +135,23 @@ export function RealityTile({
                         {/* Divider */}
                         <div className="h-8 w-px bg-slate-200 dark:bg-zinc-700/60 shrink-0 self-center mx-1 sm:mx-1.5" />
 
-                        {/* Right: Recessed Pod (You) */}
+                        {/* Right: Recessed Pod (User Icon + Amount Only) */}
                         <div className={cn(
-                            "rounded-xl px-2.5 py-1 sm:px-3 sm:py-1.5 flex flex-col items-center justify-center shrink-0 border transition-all group-hover:scale-[1.02]",
+                            "rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 flex items-center justify-center shrink-0 border transition-all group-hover:scale-[1.02]",
                             isDark 
                                 ? "bg-zinc-800/90 border-zinc-700/80 shadow-xs" 
                                 : "bg-slate-100/90 border-slate-200/80 shadow-xs"
                         )}>
-                            <div className="flex items-center gap-1 leading-none">
+                            <div className="flex items-center gap-1.5 leading-none">
                                 <User className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                                 <span className={cn(
                                     "font-bold font-sans tracking-tight tabular-nums",
                                     ui.text,
                                     individualValue && individualValue.toString().length > 6 ? "text-base sm:text-lg" : "text-lg sm:text-xl"
-                                    )}>
+                                )}>
                                     {individualValue}
                                 </span>
                             </div>
-                            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mt-0.5">
-                                {individualLabel}
-                            </span>
                         </div>
                     </div>
                 </div>

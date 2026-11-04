@@ -271,6 +271,132 @@
      - Warn the user in the Secondary Concession drawer: *"Applying this concession creates an excess collection of ₹{excess}. Do you want to disburse a cash refund from drawer or credit patient account?"*
      - If refund is confirmed, atomically insert refund `Payment` (`Amount = -excess`, `ReceiptNo = REF-...`) and reversal `RevenueFact` to reconcile the cash drawer and collection ledger to ₹200 net.
 
+---
+
+## 12. Walk-Ins Metric Inaccuracy (Showing 7 vs 12 Actual) & Fragility Root Cause
+### Severity: High / Core Operational Truth Metric Failure
+### Impacted Workflows & Files
+* **Dashboard Summary Service:** [`DashboardService.cs:33-40`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/Dashboard/DashboardService.cs#L33-L40)
+* **Revenue Read Model Engine:** [`InvoiceService.cs:54-130`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/InvoiceService.cs#L54-L130) (`GetDailyRevenueStatsAsync`)
+* **Event Projection Disconnect:** [`OperationalStatsProjector.cs`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/Operational/OperationalStatsProjector.cs)
+* **Frontend Reality Tile Fallback:** [`ReceptionScreen.jsx:221-231`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/ReceptionScreen.jsx#L221-L231)
+
+### Incident Evidence (Screenshot Audit)
+* **Live Reality:**
+  12 daily tokens were issued today (`MAI-001` through `MAI-012`).
+  - Active Visits: 11
+  - Cancelled Visits: 1 (`MAI-008` refunded ₹100 due to long queue)
+* **What the UI Displays:**
+  - **Walk-Ins (Paid/Credit):** `7`
+  - **Prepaid Bills Issued:** `1` (₹340)
+* **Discrepancy:**
+  Where did the remaining 4 visits go?
+  - Retail Direct Walk-Ins (Cash/Due): `MAI-001`, `MAI-002`, `MAI-004`, `MAI-009`, `MAI-010`, `MAI-011`, `MAI-012` = **7 visits**
+  - Corporate B2B Prepaid Visits: `MAI-003`, `MAI-005`, `MAI-006`, `MAI-007` = **4 visits**
+  - Cancelled: `MAI-008` = **1 visit**
+  - Total = **12 visits**
+  The system counted ONLY the 7 retail visits in Walk-Ins, but because of a query bug, it failed to count the 4 Prepaid visits in *Prepaid Bills Issued* (showing 1 instead of 4), completely losing track of 3 B2B visits!
+
+### Forensic Root Cause: Why "Walk-Ins" Breaks Every 3–4 Code Edits
+
+#### 1. Dual Competing Truth Sources (Event Sourcing Projection vs Direct DB Query)
+* SynOS has an event projector (`OperationalStatsProjector.cs`) that updates `UserOperationalStats.WalkInsCount` whenever `BranchEventType.VISIT_STARTED` is fired.
+* Whenever an agent adds or refactors an intake endpoint (`/intake/register`, `/visit/prepaid`, `/visits/{id}/batch-edit`, `/intake/resume`, `/visit/cancel`), the new or altered endpoint frequently fails to emit the exact matching event or emits it with a different user context.
+* When the projector counters drift, developers attempt to "patch" it by writing fallback direct SQL queries in `InvoiceService.cs`. This creates two un-synchronized sources of truth fighting each other.
+
+#### 2. The Variable Mutation Bug in `InvoiceService.cs` (Prepaid Vanishing Bug)
+* In [`InvoiceService.cs:94-119`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/InvoiceService.cs#L94-L119):
+  ```csharp
+  var branchVisitsQuery = _context.Visits
+      .Where(v => v.BranchId == branchId 
+               && (v.TokenDate == today || (v.CreatedAt >= startUtc && v.CreatedAt < endUtc))
+               && v.Status != VisitStatus.Cancelled
+               && v.Status != VisitStatus.Draft
+               && (v.Token == null || !v.Token.StartsWith("D-"))
+               && v.PaymentCollectionModel != "PartnerCollects"  // <-- EXCLUDES PREPAID
+               && v.BillingType != BillingType.PrepaidPartner); // <-- EXCLUDES PREPAID
+
+  var walkIns = await branchVisitsQuery.CountAsync(); // Result: Exactly 7
+
+  // FATAL REUSE BUG:
+  var deskVisitsQuery = branchVisitsQuery; // Inherits the exclusion above!
+  ...
+  var prepaidVisits = await deskVisitsQuery
+      .Where(v => v.PaymentCollectionModel == "PartnerCollects" ...); // IMPOSSIBLE QUERY!
+  ```
+* Because `deskVisitsQuery` starts from `branchVisitsQuery` which already contains `WHERE PaymentCollectionModel != 'PartnerCollects'`, chaining `.Where(PaymentCollectionModel == 'PartnerCollects')` creates an unsatisfiable SQL clause (`!= 'PartnerCollects' AND == 'PartnerCollects'`).
+* The database returns `0` prepaid visits!
+* Line 128 then executes:
+  `var finalPrepaidCount = prepaidCount > 0 ? prepaidCount : (stats?.PrepaidCount ?? 0);`
+  Falling back to stale projector stats, which happened to freeze at `1` (₹340).
+
+#### 3. Semantic Definition Gap: Physical Human Walk-In vs Accounting Retail Direct Payer
+* **Physical Clinical Reality (Lab Owner Perspective):**
+  Every human who walks through the front door, receives an official accession token (`MAI-xxx`), and enters the phlebotomy queue is a **Physical Walk-In Patient**.
+* **Flawed Code Logic:**
+  The developer equated "Walk-In" with "Retail Cash/UPI Payer" and subtracted all Corporate B2B visits from Walk-Ins.
+  Meanwhile, the UI tile subtitle explicitly promises: **`Walk-Ins (Paid/Credit)`**.
+  When 11 patients are sitting in the Action Queue with tokens `MAI-001` to `MAI-012`, displaying `7` makes the lab owner think the software has lost records.
+
+#### 4. Role Scoping Bleed (`Receptionist` vs `Admin`)
+* In `InvoiceService.cs:67-71` and `110-114`:
+  ```csharp
+  else if (_userContext.CurrentRole == "Receptionist")
+  {
+      var currentUserId = _userContext.CurrentUserId;
+      deskVisitsQuery = deskVisitsQuery.Where(v => v.AssignedReceptionistId == currentUserId || v.CreatedByUserId == currentUserId);
+  }
+  ```
+* If staff member A (e.g. Uzma) registers 4 visits, and staff member B (e.g. Dr. Vasudeva Rao) registers 3 visits, logging in as a Receptionist truncates the branch total to only the logged-in user's intake, while logging in as Admin/Pathologist shows the aggregate. This causes numbers to unpredictably jump based solely on who is logged in.
+
+---
+
+### Enterprise ERP Grade Solution Specification (For Implementation Agent)
+
+#### 1. Single Source of Truth: Canonical Database State
+Abolish ad-hoc event projection counters for live operational counts. Base all dashboard summary tiles directly on canonical relational database state:
+```csharp
+// Canonical query scoped to branch and calendar day
+var todayVisits = await _context.Visits
+    .AsNoTracking()
+    .Where(v => v.BranchId == branchId
+             && (v.TokenDate == today || (v.CreatedAt >= startUtc && v.CreatedAt < endUtc))
+             && v.Status != VisitStatus.Draft
+             && v.Status != VisitStatus.Cancelled
+             && (v.Token == null || !v.Token.StartsWith("D-")))
+    .Include(v => v.Invoices)
+    .ToListAsync();
+```
+
+#### 2. Partitioning Taxonomy (Mutually Exclusive & Collectively Exhaustive)
+Split `todayVisits` deterministically without cross-contamination:
+```csharp
+// 1. All Valid Confirmed Intake Patients Today (Tokens Issued)
+int totalIntakeCount = todayVisits.Count; // 11 active today
+
+// 2. Retail Direct Walk-Ins (Cash, UPI, Card, Desk Credit / Due)
+var retailWalkIns = todayVisits
+    .Where(v => v.PaymentCollectionModel != "PartnerCollects" && v.BillingType != BillingType.PrepaidPartner)
+    .ToList();
+int retailWalkInCount = retailWalkIns.Count; // 7
+
+// 3. Corporate B2B / Doctor Referral Prepaid
+var prepaidVisits = todayVisits
+    .Where(v => v.PaymentCollectionModel == "PartnerCollects" || v.BillingType == BillingType.PrepaidPartner)
+    .ToList();
+int prepaidCount = prepaidVisits.Count; // 4
+decimal prepaidTotal = prepaidVisits.Sum(v => v.Invoices.FirstOrDefault()?.Total ?? 0m);
+
+// INVARIANT: totalIntakeCount == retailWalkInCount + prepaidCount (7 + 4 = 11)
+```
+
+#### 3. Clear UI Presentation
+* **Card 1 (Walk-Ins):** Display either:
+  * Option A (Clinical Reality): **Total Patient Intake: 11** with sub-badge *(7 Direct + 4 B2B)*.
+  * Option B (Mutually Exclusive): Keep **Walk-Ins (Direct/Credit): 7** and ensure Card 5 displays **Prepaid Bills: 4 (₹2,290)** so that 7 + 4 = 11 perfectly matches the queue tokens.
+* Fix the `branchVisitsQuery` variable overwrite in `InvoiceService.cs` so prepaid visits are never queried against a filter that already excluded them.
+
+
 
 
 

@@ -30182,29 +30182,23 @@ Details: ${A.inner}`);
       }) : u ? r.jsxs("div", {
         className: "flex flex-col h-full w-full justify-between",
         children: [
-          r.jsxs("div", {
+          r.jsx("div", {
             className: "flex items-center justify-between w-full",
-            children: [
-              r.jsxs("div", {
-                className: "flex items-center gap-2 min-w-0",
-                children: [
-                  r.jsx("div", {
-                    className: be("w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border", x ? "bg-zinc-800/80 text-zinc-300 border-zinc-700/60" : "bg-slate-100 text-zinc-700 border-slate-200/80 shadow-xs"),
-                    children: a ? r.jsx(a, {
-                      className: "w-4 h-4"
-                    }) : null
-                  }),
-                  r.jsx("span", {
-                    className: be("font-bold text-xs sm:text-sm tracking-tight truncate", x ? "text-zinc-100" : "text-zinc-900"),
-                    children: E
-                  })
-                ]
-              }),
-              i && r.jsx("span", {
-                className: "text-[10px] text-zinc-400 font-mono tracking-wider uppercase hidden sm:inline-block",
-                children: i
-              })
-            ]
+            children: r.jsxs("div", {
+              className: "flex items-center gap-2 min-w-0",
+              children: [
+                r.jsx("div", {
+                  className: be("w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border", x ? "bg-zinc-800/80 text-zinc-300 border-zinc-700/60" : "bg-slate-100 text-zinc-700 border-slate-200/80 shadow-xs"),
+                  children: a ? r.jsx(a, {
+                    className: "w-4 h-4"
+                  }) : null
+                }),
+                r.jsx("span", {
+                  className: be("font-bold text-xs sm:text-sm tracking-tight truncate", x ? "text-zinc-100" : "text-zinc-900"),
+                  children: E
+                })
+              ]
+            })
           }),
           r.jsxs("div", {
             className: "flex items-center justify-between w-full mt-auto pt-1 gap-1 sm:gap-2",
@@ -30225,26 +30219,20 @@ Details: ${A.inner}`);
               r.jsx("div", {
                 className: "h-8 w-px bg-slate-200 dark:bg-zinc-700/60 shrink-0 self-center mx-1 sm:mx-1.5"
               }),
-              r.jsxs("div", {
-                className: be("rounded-xl px-2.5 py-1 sm:px-3 sm:py-1.5 flex flex-col items-center justify-center shrink-0 border transition-all group-hover:scale-[1.02]", x ? "bg-zinc-800/90 border-zinc-700/80 shadow-xs" : "bg-slate-100/90 border-slate-200/80 shadow-xs"),
-                children: [
-                  r.jsxs("div", {
-                    className: "flex items-center gap-1 leading-none",
-                    children: [
-                      r.jsx(ws, {
-                        className: "w-3.5 h-3.5 text-zinc-400 shrink-0"
-                      }),
-                      r.jsx("span", {
-                        className: be("font-bold font-sans tracking-tight tabular-nums", C.text, h && h.toString().length > 6 ? "text-base sm:text-lg" : "text-lg sm:text-xl"),
-                        children: h
-                      })
-                    ]
-                  }),
-                  r.jsx("span", {
-                    className: "text-[10px] font-bold text-zinc-500 uppercase tracking-wider mt-0.5",
-                    children: p
-                  })
-                ]
+              r.jsx("div", {
+                className: be("rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 flex items-center justify-center shrink-0 border transition-all group-hover:scale-[1.02]", x ? "bg-zinc-800/90 border-zinc-700/80 shadow-xs" : "bg-slate-100/90 border-slate-200/80 shadow-xs"),
+                children: r.jsxs("div", {
+                  className: "flex items-center gap-1.5 leading-none",
+                  children: [
+                    r.jsx(ws, {
+                      className: "w-3.5 h-3.5 text-zinc-400 shrink-0"
+                    }),
+                    r.jsx("span", {
+                      className: be("font-bold font-sans tracking-tight tabular-nums", C.text, h && h.toString().length > 6 ? "text-base sm:text-lg" : "text-lg sm:text-xl"),
+                      children: h
+                    })
+                  ]
+                })
               })
             ]
           })
@@ -49236,10 +49224,8 @@ Details: ${A.inner}`);
         value: `\u20B9${(A.dailyExpensesCashPool !== void 0 && A.dailyExpensesCashPool !== null ? A.dailyExpensesCashPool : A.dailyExpensesCashTotal || 0).toLocaleString()}`,
         individualValue: `\u20B9${(A.dailyExpensesCashIndividual || 0).toLocaleString()}`,
         poolLabel: "Pool Total",
-        individualLabel: "You",
         label: "Recorded Expenses",
         shortLabel: "Daily Expenses",
-        qualifier: "Cash Outflow",
         icon: fA,
         color: "red"
       },
@@ -49248,10 +49234,8 @@ Details: ${A.inner}`);
         value: `\u20B9${(A.cashDrawerBalancePool !== void 0 && A.cashDrawerBalancePool !== null ? A.cashDrawerBalancePool : A.cashDrawerBalance || 0).toLocaleString()}`,
         individualValue: `\u20B9${(A.cashDrawerBalanceIndividual || 0).toLocaleString()}`,
         poolLabel: "Pool Total",
-        individualLabel: "You",
         label: "Cash in the Drawer",
         shortLabel: "Cash Drawer",
-        qualifier: "Physical Balance",
         icon: ic,
         color: "emerald"
       }
@@ -49304,10 +49288,8 @@ Details: ${A.inner}`);
         value: "\u2014",
         individualValue: "\u2014",
         poolLabel: "Pool Total",
-        individualLabel: "You",
         label: "Recorded Expenses",
         shortLabel: "Daily Expenses",
-        qualifier: "Cash Outflow",
         icon: fA,
         color: "default"
       },
@@ -49316,10 +49298,8 @@ Details: ${A.inner}`);
         value: "\u2014",
         individualValue: "\u2014",
         poolLabel: "Pool Total",
-        individualLabel: "You",
         label: "Cash in the Drawer",
         shortLabel: "Cash Drawer",
-        qualifier: "Physical Balance",
         icon: ic,
         color: "default"
       }
