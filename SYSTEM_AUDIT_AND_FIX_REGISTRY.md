@@ -170,4 +170,26 @@
    * Relaxed `GetDueBills` filter to `.Where(x => x.BalanceDue > 0)`, returning `Status = x.TotalPaid > 0 ? "Partial" : "Pending"`.
    * Updated `DueBillsScreen` filter tabs and table to expose both `Partial Due` and `Full Due (Unpaid)` with distinctive visual status pills.
 
+---
+
+## 9. Post-Payment Concession Lock, Secondary Owner Concession Drawer Default & Universal Visit Correction — [RESOLVED & VERIFIED]
+### Audit Findings & Root Causes
+1. **Accidental Due Balance Inflation via Discount Deletion:** When a visit had already received partial desk collection (`TotalPaid > 0`), the UI still displayed a delete `(x)` button beside the initial registration concession (e.g. `Shakeel Test - ₹100`). Clicking `(x)` deleted the discount from the database, inflating the gross/net bill from ₹400 to ₹500 and causing remaining dues to jump from ₹300 to ₹400.
+2. **Secondary Concession Drawer Default Visibility:** For returning patients with an active due balance (`remainingDue > 0`), the secondary concession card was collapsed by default (`isSecondaryExpanded = false`), obscuring the owner concession/write-off capabilities from receptionists.
+3. **Visit Correction Accessibility on Active Visits:** The `[Visit Correction]` action was only visible in the bottom bar on certain screens, leaving receptionists uncertain how to amend an active due visit without cancelling it.
+
+### Implemented Fix
+1. **Initial Registration Concession Lock (`BillingSummary.jsx` & `VisitService.cs`):**
+   * In `BillingSummary.jsx`, conditioned the `(x)` discount deletion button on `totalPaid === 0`. When `totalPaid > 0`, the `(x)` is replaced by an `Initial Concession` badge, completely preventing accidental discount deletion and due inflation.
+   * In `VisitService.cs` (`RemoveDiscountFromVisitAsync`), added a hard backend safeguard that verifies if `Payments` or `PartialPayments` with `Amount > 0` exist on the invoice; if so, rejects deletion with an `InvalidOperationException` advising the user to use Visit Correction or Secondary Concession.
+2. **Expanded-by-Default Secondary Concession & Write-off (`BillingSummary.jsx`):**
+   * Initialized `isSecondaryExpanded = true` so the card is open and visible whenever `!isDraftVisit && remainingDue > 0 && canPerformActions`.
+   * Provides immediate 1-click `Full Write-Off`, `50%`, `₹100 Off`, or custom ₹/% reductions with authorized management/owner preset reasons.
+3. **Dual Placement of `[Visit Correction]` (`IntentPanel.jsx`):**
+   * Added `[Visit Correction]` directly into the top header next to the token `#MAI-xxx`, as well as maintaining the bottom action bar button next to `[Cancel Visit]`.
+   * Allows receptionists to seamlessly enter the audited correction drawer for any active visit with a single click.
+4. **Production Bundle Build & Asset Sync:**
+   * Rebuilt frontend bundle (`index-CA6NwEHb.js`), synced to `src/SynOS.Api/wwwroot/assets/`, purged stale hashes.
+
+
 

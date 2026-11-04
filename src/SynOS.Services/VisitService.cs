@@ -563,6 +563,14 @@ namespace SynOS.Services
             var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
             if (invoice != null)
             {
+                var hasCapturedPayments = await _context.Payments.AnyAsync(p => p.InvoiceId == invoice.InvoiceId && p.Amount > 0)
+                    || await _context.PartialPayments.AnyAsync(pp => pp.InvoiceId == invoice.InvoiceId && pp.Amount > 0);
+
+                if (hasCapturedPayments)
+                {
+                    throw new InvalidOperationException("Cannot remove initial concession after payments have been received at the desk. Use Visit Correction or apply an authorized Secondary Concession / Write-off.");
+                }
+
                 var discountFacts = await _context.DiscountFacts
                     .Where(df => df.InvoiceId == invoice.InvoiceId && df.IsActive)
                     .ToListAsync();

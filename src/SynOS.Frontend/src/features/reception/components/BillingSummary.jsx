@@ -60,7 +60,7 @@ export function BillingSummary({
     const reasonListRef = useRef(null);
 
     // Secondary Concession & Owner Write-Off State (For Active Due Bills)
-    const [isSecondaryExpanded, setIsSecondaryExpanded] = useState(false);
+    const [isSecondaryExpanded, setIsSecondaryExpanded] = useState(true);
     const [secondaryDiscountType, setSecondaryDiscountType] = useState('FLAT'); // FLAT by default per invariant Rule 2
     const [secondaryDiscountValue, setSecondaryDiscountValue] = useState('');
     const [secondaryReason, setSecondaryReason] = useState('Lab Owner Discretionary Concession');
@@ -654,6 +654,8 @@ export function BillingSummary({
     const isCorporate = billingMode === 'Corporate';
 
     // Settlement Logic
+    const tokenStr = snapshot?.visit?.token || snapshot?.visit?.visitToken || '';
+    const isDraftVisit = !tokenStr || tokenStr.toUpperCase().startsWith('D-') || (snapshot?.visit?.status || '').toLowerCase() === 'draft';
     const totalPaid = isPrepaid ? 0 : (originalPaid || billing.totalPaid || 0);
     const netAmount = stagedNet !== undefined ? stagedNet : (billing.netAmount || 0);
     const effectiveDiff = settlementDiff !== undefined ? settlementDiff : (netAmount - totalPaid);
@@ -871,7 +873,7 @@ export function BillingSummary({
                                                     <span className="text-sm opacity-80 font-semibold">({discountReasonText})</span>
                                                 )}
                                             </span>
-                                            {canPerformActions && (
+                                            {canPerformActions && totalPaid === 0 && (
                                                 <button
                                                     type="button"
                                                     id="btn-remove-discount"
@@ -908,6 +910,11 @@ export function BillingSummary({
                                                 >
                                                     <X className="w-3.5 h-3.5" />
                                                 </button>
+                                            )}
+                                            {totalPaid > 0 && hasDiscountApplied && (
+                                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-500 font-semibold border border-black/5 dark:border-white/5" title="Registration concession is preserved after receipting payment. Use Secondary Concession below to apply further reductions.">
+                                                    Initial Concession
+                                                </span>
                                             )}
                                         </div>
                                     ) : (
@@ -971,7 +978,7 @@ export function BillingSummary({
                             )}
 
                             {/* SECONDARY CONCESSION & LAB OWNER WRITE-OFF CARD */}
-                            {totalPaid > 0 && remainingDue > 0 && canPerformActions && (
+                            {!isDraftVisit && remainingDue > 0 && canPerformActions && (
                                 <div className={cn(
                                     "p-3.5 sm:p-4 rounded-2xl border space-y-3 transition-all shadow-xs animate-in fade-in slide-in-from-top-1 duration-200",
                                     isDark ? "bg-amber-950/20 border-amber-500/40" : "bg-amber-50/70 border-amber-200"

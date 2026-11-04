@@ -1516,6 +1516,18 @@ export function IntentPanel({ onVisitUpdated }) {
                             </span>
                         )}
                     </h2>
+                    {snapshot?.visit?.visitId && !isCorrectionIntent && !isPostProcessingView && (
+                        <button
+                            type="button"
+                            id="btn-header-visit-correction"
+                            onClick={() => openCorrectionIntent(snapshot.visit.visitId)}
+                            className="px-2.5 py-1 rounded-lg text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/50 border border-blue-200 dark:border-blue-800 flex items-center gap-1 transition-all active:scale-95 cursor-pointer shadow-2xs"
+                            title="Open Visit Correction to amend tests, tariffs, or discounts with full audit"
+                        >
+                            <Edit3 className="w-3.5 h-3.5" />
+                            <span>Visit Correction</span>
+                        </button>
+                    )}
                     {isPostProcessingView && (
                         <span className={cn(
                             "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border",
