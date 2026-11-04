@@ -19,10 +19,451 @@ import {
     ArrowRight,
     RefreshCw,
     Edit3,
-    X
+    X,
+    Filter
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
 import { cn } from '@/lib/utils';
+
+// ============================================================================
+// INDIVIDUAL DOCTOR LEARNED RATE CARD ACCORDION WITH INLINE SEARCH & FILTERS
+// ============================================================================
+const DoctorLearnedCard = ({
+    group,
+    isCollapsed,
+    onToggleCollapse,
+    editingRuleId,
+    editRuleState,
+    setEditRuleState,
+    isSavingRule,
+    handleStartEditRule,
+    handleCancelEditRule,
+    handleSaveEditRule,
+    handleDeleteRule
+}) => {
+    const [search, setSearch] = useState('');
+    const [selectedDept, setSelectedDept] = useState('ALL');
+    const [selectedRateType, setSelectedRateType] = useState('ALL'); // 'ALL' | 'Percentage' | 'Flat'
+
+    const rules = group.rules || [];
+    const totalCount = rules.length;
+
+    // Unique departments with counts
+    const departmentStats = useMemo(() => {
+        const counts = {};
+        rules.forEach(r => {
+            const dept = r.departmentName || 'General Diagnostics';
+            counts[dept] = (counts[dept] || 0) + 1;
+        });
+        return Object.keys(counts).sort().map(name => ({
+            name,
+            count: counts[name]
+        }));
+    }, [rules]);
+
+    // Rate type counts
+    const rateTypeStats = useMemo(() => {
+        let pct = 0;
+        let flat = 0;
+        rules.forEach(r => {
+            const isPct = r.commissionType === 0 || r.commissionType === 'Percentage';
+            if (isPct) pct++;
+            else flat++;
+        });
+        return { pct, flat };
+    }, [rules]);
+
+    const isFilterActive = Boolean(search.trim()) || selectedDept !== 'ALL' || selectedRateType !== 'ALL';
+
+    const resetFilters = () => {
+        setSearch('');
+        setSelectedDept('ALL');
+        setSelectedRateType('ALL');
+    };
+
+    // Filtered rules for this doctor
+    const filteredRules = useMemo(() => {
+        return rules.filter(rule => {
+            // 1. Investigation / Test search
+            if (search.trim()) {
+                const q = search.toLowerCase().trim();
+                const matchName = rule.testName?.toLowerCase().includes(q);
+                const matchCode = rule.testCode?.toLowerCase().includes(q);
+                if (!matchName && !matchCode) return false;
+            }
+
+            // 2. Department filter
+            if (selectedDept !== 'ALL') {
+                const dept = rule.departmentName || 'General Diagnostics';
+                if (dept !== selectedDept) return false;
+            }
+
+            // 3. Rate type filter
+            if (selectedRateType !== 'ALL') {
+                const isPct = rule.commissionType === 0 || rule.commissionType === 'Percentage';
+                if (selectedRateType === 'Percentage' && !isPct) return false;
+                if (selectedRateType === 'Flat' && isPct) return false;
+            }
+
+            return true;
+        });
+    }, [rules, search, selectedDept, selectedRateType]);
+
+    return (
+        <div className="synos-dept-card rounded-2xl overflow-hidden transition-all shadow-xs border border-slate-200/80 dark:border-zinc-800">
+            {/* DOCTOR / CLINIC ACCORDION HEADER */}
+            <div 
+                onClick={onToggleCollapse}
+                className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-zinc-50/70 dark:bg-zinc-900/40 border-b border-zinc-100 dark:border-zinc-900 cursor-pointer hover:bg-slate-100/60 dark:hover:bg-zinc-800/40 transition-colors select-none"
+            >
+                <div className="flex items-start sm:items-center gap-3.5">
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleCollapse();
+                        }}
+                        className="p-1.5 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors shrink-0 mt-0.5 sm:mt-0"
+                    >
+                        {isCollapsed ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
+                    </button>
+
+                    <div className="w-10 h-10 rounded-xl bg-synos-primary/10 text-synos-primary flex items-center justify-center shrink-0">
+                        <Stethoscope size={20} />
+                    </div>
+
+                    <div>
+                        <div className="flex items-center gap-2.5 flex-wrap">
+                            <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                                {group.doctorName}
+                            </h4>
+                            <span className="px-2.5 py-0.5 text-[10px] font-extrabold rounded-md bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                                {totalCount} Learned Rate{totalCount !== 1 ? 's' : ''}
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-3 text-[11px] text-zinc-500 mt-0.5 flex-wrap">
+                            {group.clinicName && (
+                                <span className="flex items-center gap-1 font-medium">
+                                    <Building2 size={12} />
+                                    {group.clinicName}
+                                </span>
+                            )}
+                            <span>• Partner Default Cut: <b>{group.defaultCommissionPercentage}%</b></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-end sm:self-auto text-xs font-bold text-zinc-400">
+                    <span>{isCollapsed ? "Click to view rates" : "Click to collapse"}</span>
+                </div>
+            </div>
+
+            {/* EXPANDED CONTENT AREA */}
+            {!isCollapsed && (
+                <div>
+                    {/* INLINE DEDICATED SEARCH & FILTERS TOOLBAR */}
+                    <div className="px-5 py-3.5 bg-slate-50/90 dark:bg-zinc-900/60 border-b border-zinc-200/80 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
+                            {/* 1. Search Investigation / Code */}
+                            <div className="relative flex-1 min-w-[200px] max-w-sm group">
+                                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-synos-primary transition-colors" />
+                                <input
+                                    type="text"
+                                    placeholder="Filter by investigation or test code..."
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    className="w-full pl-8.5 pr-7 py-1.5 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-medium outline-none focus:ring-1 focus:ring-synos-primary text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 transition-all shadow-2xs"
+                                />
+                                {search && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setSearch('')}
+                                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-0.5"
+                                        title="Clear search"
+                                    >
+                                        <X size={12} />
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* 2. Department Filter Dropdown */}
+                            <div className="flex items-center gap-1.5 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl px-2.5 py-1.5 shadow-2xs">
+                                <Filter size={13} className="text-zinc-400 shrink-0" />
+                                <select
+                                    value={selectedDept}
+                                    onChange={(e) => setSelectedDept(e.target.value)}
+                                    className="bg-transparent text-xs font-semibold text-zinc-700 dark:text-zinc-300 outline-none cursor-pointer pr-1"
+                                >
+                                    <option value="ALL">All Departments ({totalCount})</option>
+                                    {departmentStats.map(d => (
+                                        <option key={d.name} value={d.name}>
+                                            {d.name} ({d.count})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* 3. Rate Type Filter Pill Group */}
+                            <div className="inline-flex items-center bg-slate-200/70 dark:bg-zinc-800 p-0.5 rounded-xl border border-slate-300/60 dark:border-zinc-700 text-xs font-bold">
+                                <button
+                                    type="button"
+                                    onClick={() => setSelectedRateType('ALL')}
+                                    className={cn(
+                                        "px-2.5 py-1 rounded-lg transition-all text-xs cursor-pointer",
+                                        selectedRateType === 'ALL'
+                                            ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-2xs font-extrabold"
+                                            : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+                                    )}
+                                >
+                                    All Types ({totalCount})
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setSelectedRateType('Percentage')}
+                                    className={cn(
+                                        "px-2.5 py-1 rounded-lg transition-all text-xs cursor-pointer",
+                                        selectedRateType === 'Percentage'
+                                            ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-2xs font-extrabold"
+                                            : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+                                    )}
+                                >
+                                    % ({rateTypeStats.pct})
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setSelectedRateType('Flat')}
+                                    className={cn(
+                                        "px-2.5 py-1 rounded-lg transition-all text-xs cursor-pointer",
+                                        selectedRateType === 'Flat'
+                                            ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-2xs font-extrabold"
+                                            : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+                                    )}
+                                >
+                                    ₹ Flat ({rateTypeStats.flat})
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Right side: Matching Count & Reset Action */}
+                        <div className="flex items-center gap-2 text-xs shrink-0">
+                            <span className="text-zinc-400 font-medium text-[11px]">
+                                Showing <b className="text-zinc-800 dark:text-zinc-200 font-bold">{filteredRules.length}</b> of {totalCount}
+                            </span>
+                            {isFilterActive && (
+                                <button
+                                    type="button"
+                                    onClick={resetFilters}
+                                    className="text-[11px] font-bold text-synos-primary hover:underline ml-1 cursor-pointer"
+                                >
+                                    Reset Filters
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* RATES TABLE */}
+                    <div className="p-0 overflow-x-auto">
+                        {filteredRules.length === 0 ? (
+                            <div className="py-12 text-center text-zinc-400 space-y-2">
+                                <p className="text-xs font-bold text-zinc-600 dark:text-zinc-300">
+                                    No learned rates match your search / filter criteria
+                                </p>
+                                <p className="text-[11px] text-zinc-400">
+                                    Try modifying the test name, selecting a different department, or clearing filters.
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={resetFilters}
+                                    className="inline-flex items-center gap-1 px-3 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg text-xs font-bold mt-1 cursor-pointer"
+                                >
+                                    <X size={12} /> Clear Filters
+                                </button>
+                            </div>
+                        ) : (
+                            <table className="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr className="border-b border-zinc-100 dark:border-zinc-900 bg-zinc-50/40 dark:bg-zinc-900/20 text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
+                                        <th className="py-3 px-5">Investigation / Test</th>
+                                        <th className="py-3 px-4">Department</th>
+                                        <th className="py-3 px-4 text-right">MRP (₹)</th>
+                                        <th className="py-3 px-4 text-center">Rate Type</th>
+                                        <th className="py-3 px-4 text-right">Commission Cut</th>
+                                        <th className="py-3 px-4 text-right">Payout / Test</th>
+                                        <th className="py-3 px-4 text-center">Status</th>
+                                        <th className="py-3 px-5 text-right">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80 font-medium">
+                                    {filteredRules.map(rule => {
+                                        const isEditing = editingRuleId === rule.ruleId;
+                                        const isPercentage = isEditing 
+                                            ? editRuleState.type === 'Percentage'
+                                            : (rule.commissionType === 0 || rule.commissionType === 'Percentage');
+
+                                        const numVal = isEditing 
+                                            ? (parseFloat(editRuleState.value) || 0)
+                                            : Number(rule.commissionValue || 0);
+
+                                        const payout = isPercentage 
+                                            ? (rule.testPrice * numVal) / 100 
+                                            : numVal;
+
+                                        return (
+                                            <tr 
+                                                key={rule.ruleId} 
+                                                className={cn(
+                                                    "transition-colors",
+                                                    isEditing 
+                                                        ? "bg-amber-50/70 dark:bg-amber-950/20 ring-1 ring-amber-300 dark:ring-amber-700/60" 
+                                                        : "hover:bg-zinc-50/60 dark:hover:bg-zinc-900/30"
+                                                )}
+                                            >
+                                                {/* Investigation / Test */}
+                                                <td className="py-3.5 px-5">
+                                                    <div className="font-bold text-zinc-900 dark:text-zinc-100">
+                                                        {rule.testName}
+                                                    </div>
+                                                    <div className="text-[10px] text-zinc-400 font-mono">
+                                                        {rule.testCode}
+                                                    </div>
+                                                </td>
+
+                                                {/* Department */}
+                                                <td className="py-3.5 px-4 text-zinc-500 font-medium">
+                                                    {rule.departmentName || 'General'}
+                                                </td>
+
+                                                {/* MRP */}
+                                                <td className="py-3.5 px-4 text-right font-mono font-bold text-zinc-700 dark:text-zinc-300">
+                                                    ₹{Number(rule.testPrice || 0).toLocaleString('en-IN')}
+                                                </td>
+
+                                                {/* Rate Type */}
+                                                <td className="py-3.5 px-4 text-center">
+                                                    {isEditing ? (
+                                                        <div className="inline-flex items-center bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg p-0.5 shadow-2xs">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setEditRuleState({ ...editRuleState, type: 'Percentage' })}
+                                                                className={cn(
+                                                                    "px-2.5 py-1 text-[10px] font-bold rounded transition-all cursor-pointer",
+                                                                    editRuleState.type === 'Percentage' ? "bg-synos-primary text-white shadow-2xs" : "text-zinc-400 hover:text-zinc-600"
+                                                                )}
+                                                            >
+                                                                %
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setEditRuleState({ ...editRuleState, type: 'Flat' })}
+                                                                className={cn(
+                                                                    "px-2.5 py-1 text-[10px] font-bold rounded transition-all cursor-pointer",
+                                                                    editRuleState.type === 'Flat' ? "bg-synos-primary text-white shadow-2xs" : "text-zinc-400 hover:text-zinc-600"
+                                                                )}
+                                                            >
+                                                                ₹ Flat
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <span className={cn(
+                                                            "px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase",
+                                                            isPercentage 
+                                                                ? "bg-blue-500/10 text-blue-600 border border-blue-500/20" 
+                                                                : "bg-purple-500/10 text-purple-600 border border-purple-500/20"
+                                                        )}>
+                                                            {isPercentage ? 'Percentage' : 'Flat'}
+                                                        </span>
+                                                    )}
+                                                </td>
+
+                                                {/* Commission Cut */}
+                                                <td className="py-3.5 px-4 text-right font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                                                    {isEditing ? (
+                                                        <div className="flex items-center justify-end">
+                                                            <input
+                                                                type="number"
+                                                                step="any"
+                                                                value={editRuleState.value}
+                                                                onChange={(e) => setEditRuleState({ ...editRuleState, value: e.target.value })}
+                                                                className="w-20 px-2.5 py-1 bg-white dark:bg-zinc-900 border border-amber-300 dark:border-amber-700 rounded-lg text-xs font-bold text-right outline-none focus:ring-1 focus:ring-synos-primary"
+                                                            />
+                                                        </div>
+                                                    ) : (
+                                                        isPercentage ? `${rule.commissionValue}%` : `₹${rule.commissionValue} Flat`
+                                                    )}
+                                                </td>
+
+                                                {/* Payout / Test */}
+                                                <td className="py-3.5 px-4 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                                                    ₹{payout.toFixed(2)}
+                                                </td>
+
+                                                {/* Status */}
+                                                <td className="py-3.5 px-4 text-center">
+                                                    {isEditing ? (
+                                                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                                                            Editing
+                                                        </span>
+                                                    ) : (
+                                                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                                                            Active
+                                                        </span>
+                                                    )}
+                                                </td>
+
+                                                {/* Action */}
+                                                <td className="py-3.5 px-5 text-right">
+                                                    {isEditing ? (
+                                                        <div className="flex items-center justify-end gap-1.5">
+                                                            <button
+                                                                onClick={() => handleSaveEditRule(rule)}
+                                                                disabled={isSavingRule}
+                                                                className="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all disabled:opacity-50 shadow-2xs cursor-pointer"
+                                                                title="Save Changes"
+                                                            >
+                                                                {isSavingRule ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} strokeWidth={2.5} />}
+                                                                <span>Save</span>
+                                                            </button>
+                                                            <button
+                                                                onClick={handleCancelEditRule}
+                                                                disabled={isSavingRule}
+                                                                className="p-1.5 bg-slate-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-slate-300 rounded-xl transition-all cursor-pointer"
+                                                                title="Cancel"
+                                                            >
+                                                                <X size={14} />
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex items-center justify-end gap-1.5">
+                                                            <button
+                                                                onClick={() => handleStartEditRule(rule)}
+                                                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-synos-primary bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:text-sky-400 dark:hover:bg-blue-900/60 rounded-xl border border-blue-200/80 dark:border-blue-800/40 transition-all shadow-2xs cursor-pointer"
+                                                                title="Edit commission rate"
+                                                            >
+                                                                <Edit3 size={12} />
+                                                                <span>Edit</span>
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDeleteRule(rule.ruleId)}
+                                                                className="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-zinc-400 hover:text-rose-600 rounded-xl transition-colors cursor-pointer"
+                                                                title="Unlink rate card"
+                                                            >
+                                                                <Trash2 size={14} />
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
 
 export const ReferralRateQueueTab = ({ onUpdateCount }) => {
     const [subTab, setSubTab] = useState('queue'); // 'queue' | 'rate-cards'
@@ -720,247 +1161,22 @@ export const ReferralRateQueueTab = ({ onUpdateCount }) => {
                         </div>
                     ) : (
                         <div className="space-y-4">
-                            {filteredLearnedGroups.map(group => {
-                                const isCollapsed = collapsedLearnedDoctors[group.referralPartnerId];
-                                const rulesCount = group.rules?.length || 0;
-
-                                return (
-                                    <div 
-                                        key={group.referralPartnerId}
-                                        className="synos-dept-card rounded-2xl overflow-hidden transition-all shadow-xs border border-slate-200/80 dark:border-zinc-800"
-                                    >
-                                        {/* DOCTOR / CLINIC ACCORDION HEADER */}
-                                        <div 
-                                            onClick={() => toggleLearnedCollapse(group.referralPartnerId)}
-                                            className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-zinc-50/70 dark:bg-zinc-900/40 border-b border-zinc-100 dark:border-zinc-900 cursor-pointer hover:bg-slate-100/60 dark:hover:bg-zinc-800/40 transition-colors select-none"
-                                        >
-                                            <div className="flex items-start sm:items-center gap-3.5">
-                                                <button
-                                                    type="button"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        toggleLearnedCollapse(group.referralPartnerId);
-                                                    }}
-                                                    className="p-1.5 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors shrink-0 mt-0.5 sm:mt-0"
-                                                >
-                                                    {isCollapsed ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
-                                                </button>
-
-                                                <div className="w-10 h-10 rounded-xl bg-synos-primary/10 text-synos-primary flex items-center justify-center shrink-0">
-                                                    <Stethoscope size={20} />
-                                                </div>
-
-                                                <div>
-                                                    <div className="flex items-center gap-2.5 flex-wrap">
-                                                        <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                                                            {group.doctorName}
-                                                        </h4>
-                                                        <span className="px-2.5 py-0.5 text-[10px] font-extrabold rounded-md bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                                                            {rulesCount} Learned Rate{rulesCount > 1 ? 's' : ''}
-                                                        </span>
-                                                    </div>
-                                                    <div className="flex items-center gap-3 text-[11px] text-zinc-500 mt-0.5 flex-wrap">
-                                                        {group.clinicName && (
-                                                            <span className="flex items-center gap-1 font-medium">
-                                                                <Building2 size={12} />
-                                                                {group.clinicName}
-                                                            </span>
-                                                        )}
-                                                        <span>• Partner Default Cut: <b>{group.defaultCommissionPercentage}%</b></span>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="flex items-center gap-2 self-end sm:self-auto text-xs font-bold text-zinc-400">
-                                                <span>{isCollapsed ? "Click to view rates" : "Click to collapse"}</span>
-                                            </div>
-                                        </div>
-
-                                        {/* EXPANDED RATES TABLE */}
-                                        {!isCollapsed && (
-                                            <div className="p-0 overflow-x-auto">
-                                                <table className="w-full text-left border-collapse text-xs">
-                                                    <thead>
-                                                        <tr className="border-b border-zinc-100 dark:border-zinc-900 bg-zinc-50/40 dark:bg-zinc-900/20 text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
-                                                            <th className="py-3 px-5">Investigation / Test</th>
-                                                            <th className="py-3 px-4">Department</th>
-                                                            <th className="py-3 px-4 text-right">MRP (₹)</th>
-                                                            <th className="py-3 px-4 text-center">Rate Type</th>
-                                                            <th className="py-3 px-4 text-right">Commission Cut</th>
-                                                            <th className="py-3 px-4 text-right">Payout / Test</th>
-                                                            <th className="py-3 px-4 text-center">Status</th>
-                                                            <th className="py-3 px-5 text-right">Action</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80 font-medium">
-                                                        {group.rules.map(rule => {
-                                                            const isEditing = editingRuleId === rule.ruleId;
-                                                            const isPercentage = isEditing 
-                                                                ? editRuleState.type === 'Percentage'
-                                                                : (rule.commissionType === 0 || rule.commissionType === 'Percentage');
-
-                                                            const numVal = isEditing 
-                                                                ? (parseFloat(editRuleState.value) || 0)
-                                                                : Number(rule.commissionValue || 0);
-
-                                                            const payout = isPercentage 
-                                                                ? (rule.testPrice * numVal) / 100 
-                                                                : numVal;
-
-                                                            return (
-                                                                <tr 
-                                                                    key={rule.ruleId} 
-                                                                    className={cn(
-                                                                        "transition-colors",
-                                                                        isEditing 
-                                                                            ? "bg-amber-50/70 dark:bg-amber-950/20 ring-1 ring-amber-300 dark:ring-amber-700/60" 
-                                                                            : "hover:bg-zinc-50/60 dark:hover:bg-zinc-900/30"
-                                                                    )}
-                                                                >
-                                                                    {/* Investigation / Test */}
-                                                                    <td className="py-3.5 px-5">
-                                                                        <div className="font-bold text-zinc-900 dark:text-zinc-100">
-                                                                            {rule.testName}
-                                                                        </div>
-                                                                        <div className="text-[10px] text-zinc-400 font-mono">
-                                                                            {rule.testCode}
-                                                                        </div>
-                                                                    </td>
-
-                                                                    {/* Department */}
-                                                                    <td className="py-3.5 px-4 text-zinc-500 font-medium">
-                                                                        {rule.departmentName || 'General'}
-                                                                    </td>
-
-                                                                    {/* MRP */}
-                                                                    <td className="py-3.5 px-4 text-right font-mono font-bold text-zinc-700 dark:text-zinc-300">
-                                                                        ₹{Number(rule.testPrice || 0).toLocaleString('en-IN')}
-                                                                    </td>
-
-                                                                    {/* Rate Type */}
-                                                                    <td className="py-3.5 px-4 text-center">
-                                                                        {isEditing ? (
-                                                                            <div className="inline-flex items-center bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg p-0.5 shadow-2xs">
-                                                                                <button
-                                                                                    type="button"
-                                                                                    onClick={() => setEditRuleState({ ...editRuleState, type: 'Percentage' })}
-                                                                                    className={cn(
-                                                                                        "px-2.5 py-1 text-[10px] font-bold rounded transition-all",
-                                                                                        editRuleState.type === 'Percentage' ? "bg-synos-primary text-white shadow-2xs" : "text-zinc-400 hover:text-zinc-600"
-                                                                                    )}
-                                                                                >
-                                                                                    %
-                                                                                </button>
-                                                                                <button
-                                                                                    type="button"
-                                                                                    onClick={() => setEditRuleState({ ...editRuleState, type: 'Flat' })}
-                                                                                    className={cn(
-                                                                                        "px-2.5 py-1 text-[10px] font-bold rounded transition-all",
-                                                                                        editRuleState.type === 'Flat' ? "bg-synos-primary text-white shadow-2xs" : "text-zinc-400 hover:text-zinc-600"
-                                                                                    )}
-                                                                                >
-                                                                                    ₹ Flat
-                                                                                </button>
-                                                                            </div>
-                                                                        ) : (
-                                                                            <span className={cn(
-                                                                                "px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase",
-                                                                                isPercentage 
-                                                                                    ? "bg-blue-500/10 text-blue-600 border border-blue-500/20" 
-                                                                                    : "bg-purple-500/10 text-purple-600 border border-purple-500/20"
-                                                                            )}>
-                                                                                {isPercentage ? 'Percentage' : 'Flat'}
-                                                                            </span>
-                                                                        )}
-                                                                    </td>
-
-                                                                    {/* Commission Cut */}
-                                                                    <td className="py-3.5 px-4 text-right font-mono font-bold text-zinc-900 dark:text-zinc-100">
-                                                                        {isEditing ? (
-                                                                            <div className="flex items-center justify-end">
-                                                                                <input
-                                                                                    type="number"
-                                                                                    step="any"
-                                                                                    value={editRuleState.value}
-                                                                                    onChange={(e) => setEditRuleState({ ...editRuleState, value: e.target.value })}
-                                                                                    className="w-20 px-2.5 py-1 bg-white dark:bg-zinc-900 border border-amber-300 dark:border-amber-700 rounded-lg text-xs font-bold text-right outline-none focus:ring-1 focus:ring-synos-primary"
-                                                                                />
-                                                                            </div>
-                                                                        ) : (
-                                                                            isPercentage ? `${rule.commissionValue}%` : `₹${rule.commissionValue} Flat`
-                                                                        )}
-                                                                    </td>
-
-                                                                    {/* Payout / Test */}
-                                                                    <td className="py-3.5 px-4 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                                                                        ₹{payout.toFixed(2)}
-                                                                    </td>
-
-                                                                    {/* Status */}
-                                                                    <td className="py-3.5 px-4 text-center">
-                                                                        {isEditing ? (
-                                                                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 border border-amber-500/20">
-                                                                                Editing
-                                                                            </span>
-                                                                        ) : (
-                                                                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                                                                                Active
-                                                                            </span>
-                                                                        )}
-                                                                    </td>
-
-                                                                    {/* Action */}
-                                                                    <td className="py-3.5 px-5 text-right">
-                                                                        {isEditing ? (
-                                                                            <div className="flex items-center justify-end gap-1.5">
-                                                                                <button
-                                                                                    onClick={() => handleSaveEditRule(rule)}
-                                                                                    disabled={isSavingRule}
-                                                                                    className="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all disabled:opacity-50 shadow-2xs"
-                                                                                    title="Save Changes"
-                                                                                >
-                                                                                    {isSavingRule ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} strokeWidth={2.5} />}
-                                                                                    <span>Save</span>
-                                                                                </button>
-                                                                                <button
-                                                                                    onClick={handleCancelEditRule}
-                                                                                    disabled={isSavingRule}
-                                                                                    className="p-1.5 bg-slate-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-slate-300 rounded-xl transition-all"
-                                                                                    title="Cancel"
-                                                                                >
-                                                                                    <X size={14} />
-                                                                                </button>
-                                                                            </div>
-                                                                        ) : (
-                                                                            <div className="flex items-center justify-end gap-1.5">
-                                                                                <button
-                                                                                    onClick={() => handleStartEditRule(rule)}
-                                                                                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-synos-primary bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/40 dark:text-sky-400 dark:hover:bg-blue-900/60 rounded-xl border border-blue-200/80 dark:border-blue-800/40 transition-all shadow-2xs"
-                                                                                    title="Edit commission rate"
-                                                                                >
-                                                                                    <Edit3 size={12} />
-                                                                                    <span>Edit</span>
-                                                                                </button>
-                                                                                <button
-                                                                                    onClick={() => handleDeleteRule(rule.ruleId)}
-                                                                                    className="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-zinc-400 hover:text-rose-600 rounded-xl transition-colors"
-                                                                                    title="Unlink rate card"
-                                                                                >
-                                                                                    <Trash2 size={14} />
-                                                                                </button>
-                                                                            </div>
-                                                                        )}
-                                                                    </td>
-                                                                </tr>
-                                                            );
-                                                        })}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
+                            {filteredLearnedGroups.map(group => (
+                                <DoctorLearnedCard
+                                    key={group.referralPartnerId}
+                                    group={group}
+                                    isCollapsed={collapsedLearnedDoctors[group.referralPartnerId]}
+                                    onToggleCollapse={() => toggleLearnedCollapse(group.referralPartnerId)}
+                                    editingRuleId={editingRuleId}
+                                    editRuleState={editRuleState}
+                                    setEditRuleState={setEditRuleState}
+                                    isSavingRule={isSavingRule}
+                                    handleStartEditRule={handleStartEditRule}
+                                    handleCancelEditRule={handleCancelEditRule}
+                                    handleSaveEditRule={handleSaveEditRule}
+                                    handleDeleteRule={handleDeleteRule}
+                                />
+                            ))}
                         </div>
                     )}
                 </div>

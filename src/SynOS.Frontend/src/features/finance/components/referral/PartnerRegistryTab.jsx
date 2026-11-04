@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
     Users, 
     Search, 
@@ -28,7 +28,8 @@ import {
     Activity,
     LayoutGrid,
     List,
-    ArrowUpDown
+    ArrowUpDown,
+    Filter
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
 import { cn } from '@/lib/utils';
@@ -840,6 +841,63 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
     const recentVisitsList = profileData?.recentVisits || [];
     const topTestsList = profileData?.topPrescribedTests || [];
 
+    // Search and filter state for doctor's active rate cards
+    const [rateCardSearch, setRateCardSearch] = useState('');
+    const [rateCardDept, setRateCardDept] = useState('ALL');
+    const [rateCardType, setRateCardType] = useState('ALL');
+
+    const rateCardDeptStats = useMemo(() => {
+        const counts = {};
+        (rateCardList || []).forEach(r => {
+            const dept = r.departmentName || 'General Diagnostics';
+            counts[dept] = (counts[dept] || 0) + 1;
+        });
+        return Object.keys(counts).sort().map(name => ({
+            name,
+            count: counts[name]
+        }));
+    }, [rateCardList]);
+
+    const rateCardTypeStats = useMemo(() => {
+        let pct = 0;
+        let flat = 0;
+        (rateCardList || []).forEach(r => {
+            const isPct = r.commissionType === 0 || r.commissionType === 'Percentage';
+            if (isPct) pct++;
+            else flat++;
+        });
+        return { pct, flat };
+    }, [rateCardList]);
+
+    const isRateFilterActive = Boolean(rateCardSearch.trim()) || rateCardDept !== 'ALL' || rateCardType !== 'ALL';
+
+    const resetRateFilters = () => {
+        setRateCardSearch('');
+        setRateCardDept('ALL');
+        setRateCardType('ALL');
+    };
+
+    const filteredRateCardList = useMemo(() => {
+        return (rateCardList || []).filter(rule => {
+            if (rateCardSearch.trim()) {
+                const q = rateCardSearch.toLowerCase().trim();
+                const matchName = rule.testName?.toLowerCase().includes(q);
+                const matchCode = rule.testCode?.toLowerCase().includes(q);
+                if (!matchName && !matchCode) return false;
+            }
+            if (rateCardDept !== 'ALL') {
+                const dept = rule.departmentName || 'General Diagnostics';
+                if (dept !== rateCardDept) return false;
+            }
+            if (rateCardType !== 'ALL') {
+                const isPct = rule.commissionType === 0 || rule.commissionType === 'Percentage';
+                if (rateCardType === 'Percentage' && !isPct) return false;
+                if (rateCardType === 'Flat' && isPct) return false;
+            }
+            return true;
+        });
+    }, [rateCardList, rateCardSearch, rateCardDept, rateCardType]);
+
     const handleQuickLearnRate = async (testId) => {
         const input = quickLearnInputs[testId];
         if (!input || input.value === '' || isNaN(input.value) || Number(input.value) < 0) {
@@ -1219,21 +1277,136 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                             </div>
                                         ) : (
                                             <div className="synos-dept-card rounded-xl overflow-hidden border border-slate-200 dark:border-zinc-800 shadow-2xs">
+                                                {/* INLINE SEARCH & FILTER TOOLBAR */}
+                                                <div className="px-4 py-3 bg-slate-50/90 dark:bg-zinc-900/60 border-b border-zinc-200/80 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-2.5">
+                                                    <div className="flex flex-wrap items-center gap-2 flex-1 min-w-[280px]">
+                                                        {/* Search */}
+                                                        <div className="relative flex-1 min-w-[180px] max-w-xs group">
+                                                            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-synos-primary transition-colors" />
+                                                            <input
+                                                                type="text"
+                                                                placeholder="Search test name or code..."
+                                                                value={rateCardSearch}
+                                                                onChange={(e) => setRateCardSearch(e.target.value)}
+                                                                className="w-full pl-8.5 pr-7 py-1.5 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-medium outline-none focus:ring-1 focus:ring-synos-primary text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 shadow-2xs"
+                                                            />
+                                                            {rateCardSearch && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setRateCardSearch('')}
+                                                                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-0.5"
+                                                                >
+                                                                    <X size={12} />
+                                                                </button>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Department */}
+                                                        <div className="flex items-center gap-1.5 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl px-2.5 py-1.5 shadow-2xs">
+                                                            <Filter size={13} className="text-zinc-400 shrink-0" />
+                                                            <select
+                                                                value={rateCardDept}
+                                                                onChange={(e) => setRateCardDept(e.target.value)}
+                                                                className="bg-transparent text-xs font-semibold text-zinc-700 dark:text-zinc-300 outline-none cursor-pointer pr-1"
+                                                            >
+                                                                <option value="ALL">All Departments ({rateCardList.length})</option>
+                                                                {rateCardDeptStats.map(d => (
+                                                                    <option key={d.name} value={d.name}>
+                                                                        {d.name} ({d.count})
+                                                                    </option>
+                                                                ))}
+                                                            </select>
+                                                        </div>
+
+                                                        {/* Rate Type Filter */}
+                                                        <div className="inline-flex items-center bg-slate-200/70 dark:bg-zinc-800 p-0.5 rounded-xl border border-slate-300/60 dark:border-zinc-700 text-xs font-bold">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setRateCardType('ALL')}
+                                                                className={cn(
+                                                                    "px-2 py-0.5 rounded-lg transition-all text-xs cursor-pointer",
+                                                                    rateCardType === 'ALL'
+                                                                        ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-2xs font-extrabold"
+                                                                        : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+                                                                )}
+                                                            >
+                                                                All ({rateCardList.length})
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setRateCardType('Percentage')}
+                                                                className={cn(
+                                                                    "px-2 py-0.5 rounded-lg transition-all text-xs cursor-pointer",
+                                                                    rateCardType === 'Percentage'
+                                                                        ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-2xs font-extrabold"
+                                                                        : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+                                                                )}
+                                                            >
+                                                                % ({rateCardTypeStats.pct})
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setRateCardType('Flat')}
+                                                                className={cn(
+                                                                    "px-2 py-0.5 rounded-lg transition-all text-xs cursor-pointer",
+                                                                    rateCardType === 'Flat'
+                                                                        ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-2xs font-extrabold"
+                                                                        : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+                                                                )}
+                                                            >
+                                                                ₹ Flat ({rateCardTypeStats.flat})
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-2 text-xs shrink-0">
+                                                        <span className="text-zinc-400 font-medium text-[11px]">
+                                                            Showing <b className="text-zinc-800 dark:text-zinc-200 font-bold">{filteredRateCardList.length}</b> of {rateCardList.length}
+                                                        </span>
+                                                        {isRateFilterActive && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={resetRateFilters}
+                                                                className="text-[11px] font-bold text-synos-primary hover:underline ml-1 cursor-pointer"
+                                                            >
+                                                                Reset Filters
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+
                                                 <div className="overflow-x-auto">
-                                                    <table className="w-full text-left border-collapse text-xs">
-                                                        <thead>
-                                                            <tr className="border-b border-black/[0.05] dark:border-white/[0.05] bg-slate-50 dark:bg-zinc-900/60 text-[10px] font-extrabold uppercase text-zinc-400 tracking-wider">
-                                                                <th className="py-3 px-4">Test / Investigation</th>
-                                                                <th className="py-3 px-3">Department</th>
-                                                                <th className="py-3 px-3 text-right">MRP (Base ₹)</th>
-                                                                <th className="py-3 px-4 text-center">Commission Cut</th>
-                                                                <th className="py-3 px-3 text-right">Doctor Payout</th>
-                                                                <th className="py-3 px-3 text-center">Status</th>
-                                                                <th className="py-3 px-4 text-right">Action</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody className="divide-y divide-black/[0.05] dark:divide-white/[0.05]">
-                                                            {rateCardList.map(rule => {
+                                                    {filteredRateCardList.length === 0 ? (
+                                                        <div className="py-12 text-center text-zinc-400 space-y-2">
+                                                            <p className="text-xs font-bold text-zinc-600 dark:text-zinc-300">
+                                                                No learned rates match your search / filter criteria
+                                                            </p>
+                                                            <p className="text-[11px] text-zinc-400">
+                                                                Try modifying the test name, selecting a different department, or resetting filters.
+                                                            </p>
+                                                            <button
+                                                                type="button"
+                                                                onClick={resetRateFilters}
+                                                                className="inline-flex items-center gap-1 px-3 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg text-xs font-bold mt-1 cursor-pointer"
+                                                            >
+                                                                <X size={12} /> Clear Filters
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <table className="w-full text-left border-collapse text-xs">
+                                                            <thead>
+                                                                <tr className="border-b border-black/[0.05] dark:border-white/[0.05] bg-slate-50 dark:bg-zinc-900/60 text-[10px] font-extrabold uppercase text-zinc-400 tracking-wider">
+                                                                    <th className="py-3 px-4">Test / Investigation</th>
+                                                                    <th className="py-3 px-3">Department</th>
+                                                                    <th className="py-3 px-3 text-right">MRP (Base ₹)</th>
+                                                                    <th className="py-3 px-4 text-center">Commission Cut</th>
+                                                                    <th className="py-3 px-3 text-right">Doctor Payout</th>
+                                                                    <th className="py-3 px-3 text-center">Status</th>
+                                                                    <th className="py-3 px-4 text-right">Action</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody className="divide-y divide-black/[0.05] dark:divide-white/[0.05]">
+                                                                {filteredRateCardList.map(rule => {
                                                                 const isEditing = editingRuleId === rule.ruleId;
                                                                 const isPercentage = isEditing 
                                                                     ? editRuleInput.type === 'Percentage'
@@ -1386,6 +1559,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                                             })}
                                                         </tbody>
                                                     </table>
+                                                )}
                                                 </div>
                                             </div>
                                         )}
