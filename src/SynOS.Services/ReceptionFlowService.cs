@@ -853,7 +853,7 @@ namespace SynOS.Services
                 .FirstOrDefaultAsync(i => i.InvoiceId == invoiceId);
 
             Payment payment;
-            if (existingInvoice != null && (string.Equals(existingInvoice.Status, "Paid", StringComparison.OrdinalIgnoreCase) || existingInvoice.Total <= 0 || request.Amount <= 0))
+            if (existingInvoice != null && (string.Equals(existingInvoice.Status, "Paid", StringComparison.OrdinalIgnoreCase) || existingInvoice.Total <= 0))
             {
                 // Idempotent retry or zero net bill (e.g. 100% concession / complimentary service)
                 existingInvoice.Status = "Paid";
@@ -875,6 +875,28 @@ namespace SynOS.Services
                 }
                 await _context.SaveChangesAsync();
             }
+            else if (request.Amount <= 0 && existingInvoice != null && existingInvoice.Total > 0)
+            {
+                // Full Due Booking (100% Credit / Unpaid Visit at Desk)
+                existingInvoice.Status = "PendingPayment";
+                var dbVisit = await _context.Visits.FindAsync(visit.VisitId);
+                if (dbVisit != null)
+                {
+                    dbVisit.Status = VisitStatus.PendingPayment;
+                }
+
+                payment = new Payment
+                {
+                    PaymentId = Guid.NewGuid(),
+                    InvoiceId = invoiceId,
+                    Amount = 0m,
+                    Method = "Unpaid / Credit",
+                    ReceiptNo = request.ReceiptNo ?? $"DUE-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpper()}",
+                    ReceivedAt = DateTime.UtcNow,
+                    ReceivedByUserId = userId
+                };
+                await _context.SaveChangesAsync();
+            }
             else
             {
                 var paymentDto = new PaymentRequestDto
@@ -893,28 +915,32 @@ namespace SynOS.Services
                 .FirstAsync(i => i.InvoiceId == invoiceId);
 
             // --- STAGE 1: IMMUTABLE FACT CREATION (Before Event Emission) ---
-            var factExists = await _context.PaymentConfirmedFacts.AnyAsync(f => f.ReferenceId == payment.PaymentId);
-            if (!factExists)
+            if (payment.Amount > 0)
             {
-                var factFinal = new PaymentConfirmedFact(
-                    Guid.NewGuid(),
-                    PaymentDirection.In, // Was Inbound
-                    payment.Amount,
-                    visit.PatientId, // Payer
-                    DateTimeOffset.UtcNow,
-                    DateTimeOffset.UtcNow,
-                    payment.PaymentId,
-                    payment.Method
-                );
-                
-                _context.PaymentConfirmedFacts.Add(factFinal);
-                await _context.SaveChangesAsync();
+                var factExists = await _context.PaymentConfirmedFacts.AnyAsync(f => f.ReferenceId == payment.PaymentId);
+                if (!factExists)
+                {
+                    var factFinal = new PaymentConfirmedFact(
+                        Guid.NewGuid(),
+                        PaymentDirection.In, // Was Inbound
+                        payment.Amount,
+                        visit.PatientId, // Payer
+                        DateTimeOffset.UtcNow,
+                        DateTimeOffset.UtcNow,
+                        payment.PaymentId,
+                        payment.Method
+                    );
+                    
+                    _context.PaymentConfirmedFacts.Add(factFinal);
+                    await _context.SaveChangesAsync();
+                }
             }
             // ------------------------------------------------------------
 
-            // If payment is complete or partial payment accepted at desk, trigger creation of lab work items
+            // If payment is complete, partial payment accepted, or registered as Full Due, trigger creation of lab work items
             if (string.Equals(updatedInvoice.Status, "Paid", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(updatedInvoice.Status, "PartialPayment", StringComparison.OrdinalIgnoreCase))
+                string.Equals(updatedInvoice.Status, "PartialPayment", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(updatedInvoice.Status, "PendingPayment", StringComparison.OrdinalIgnoreCase))
             {
                 // Assign official daily token (e.g. MAI-001) from branch counter
                 var dbVisitForToken = await _context.Visits.FindAsync(visit.VisitId);

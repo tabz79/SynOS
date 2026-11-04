@@ -1,5 +1,5 @@
 
-import { X, Loader2, ArrowRight, AlertCircle, CheckCircle2, Printer, FileText, Building2, ScrollText, Pencil, Save, History, ChevronDown, ChevronUp, Ban, Check, SlidersHorizontal, RefreshCw, Lock, Trash2 } from 'lucide-react'
+import { X, Loader2, ArrowRight, AlertCircle, CheckCircle2, Printer, FileText, Building2, ScrollText, Pencil, Save, History, ChevronDown, ChevronUp, Ban, Check, SlidersHorizontal, RefreshCw, Lock, Trash2, Clock, Edit3 } from 'lucide-react'
 import { useReceptionDrawer } from '../hooks/useReceptionPanelUI'
 import { PatientIdentification } from './PatientIdentification'
 import { RichPatientCard } from '@/components/patient/RichPatientCard'
@@ -1108,11 +1108,13 @@ export function IntentPanel({ onVisitUpdated }) {
             setIsActionSubmitting(true);
             setError(null);
             try {
+                const isFullDueSelected = isPartialPayment && Number(customPaymentAmount) === 0;
                 const numCustom = Number(customPaymentAmount);
                 const isPartialValid = isPartialPayment && numCustom > 0 && numCustom < remainingDue;
-                const effectiveAmount = isPartialValid ? numCustom : remainingDue;
+                const effectiveAmount = isFullDueSelected ? 0 : (isPartialValid ? numCustom : remainingDue);
+                const methodToUse = isFullDueSelected ? 'Unpaid / Credit' : paymentMethod;
 
-                const res = await ReceptionApi.collectPayment(snapshot.visit.visitId, effectiveAmount, paymentMethod);
+                const res = await ReceptionApi.collectPayment(snapshot.visit.visitId, effectiveAmount, methodToUse);
 
                 const currentPaid = snapshot?.billing?.totalPaid || 0;
                 await loadSnapshot();
@@ -1328,6 +1330,14 @@ export function IntentPanel({ onVisitUpdated }) {
         : Boolean(isVisitFinalized);
     const isPostProcessingView = Boolean(postProcessingSession) || (isVisitFinalized && !isCorrectionIntent);
 
+    const postNet = stagedNet !== undefined ? stagedNet : (snapshot?.billing?.netAmount || snapshot?.billing?.totalAmount || 0);
+    const postPaid = postProcessingSession?.paidAmount !== undefined 
+        ? postProcessingSession.paidAmount 
+        : (isPrepaid ? 0 : (snapshot?.billing?.totalPaid !== undefined ? Number(snapshot.billing.totalPaid) : (isVisitFinalized ? postNet : 0)));
+    const actualBalanceDue = Math.max(0, postNet - postPaid);
+    const isFullySettled = actualBalanceDue <= 0.01;
+    const isFullDueVisit = postPaid === 0 && actualBalanceDue > 0;
+
     // Auto-focus Thermal (80mm) format switcher when entering Visit Summary view
     useEffect(() => {
         if (!isOpen || !isPostProcessingView) return;
@@ -1457,14 +1467,19 @@ export function IntentPanel({ onVisitUpdated }) {
                 mainActionLabel = "Confirm & Complete Visit (₹0)";
                 isActionEnabled = true;
             } else {
+                const isFullDueSelected = isPartialPayment && Number(customPaymentAmount) === 0;
                 const numCustom = Number(customPaymentAmount);
                 const isPartialValid = isPartialPayment && numCustom > 0 && numCustom < remainingDue;
                 const payNowAmount = isPartialValid ? numCustom : remainingDue;
                 const balanceRemaining = remainingDue - payNowAmount;
 
-                mainActionLabel = isPartialValid
-                    ? `Accept Partial (₹${payNowAmount.toLocaleString()}) • Due ₹${balanceRemaining.toLocaleString()}`
-                    : `Accept Payment (₹${remainingDue.toLocaleString()})`;
+                if (isFullDueSelected) {
+                    mainActionLabel = `Confirm Visit (Full Due ₹${remainingDue.toLocaleString()})`;
+                } else if (isPartialValid) {
+                    mainActionLabel = `Accept Partial (₹${payNowAmount.toLocaleString()}) • Due ₹${balanceRemaining.toLocaleString()}`;
+                } else {
+                    mainActionLabel = `Accept Payment (₹${remainingDue.toLocaleString()})`;
+                }
                 isActionEnabled = true;
             }
         } else {
@@ -1502,9 +1517,37 @@ export function IntentPanel({ onVisitUpdated }) {
                         )}
                     </h2>
                     {isPostProcessingView && (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#EDF7F2] text-[#245E49] dark:bg-emerald-950/40 dark:text-emerald-300 border border-[#CBE5D7] dark:border-emerald-800">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-[#245E49]" />
-                            {billingMode === 'PrepaidPartner' ? 'Corporate B2B Registered' : 'Billed & Settled'}
+                        <span className={cn(
+                            "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border",
+                            billingMode === 'PrepaidPartner'
+                                ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800"
+                                : isFullDueVisit
+                                    ? "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border-amber-200 dark:border-amber-800"
+                                    : actualBalanceDue > 0
+                                        ? "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border-amber-200 dark:border-amber-800"
+                                        : "bg-[#EDF7F2] text-[#245E49] dark:bg-emerald-950/40 dark:text-emerald-300 border-[#CBE5D7] dark:border-emerald-800"
+                        )}>
+                            {billingMode === 'PrepaidPartner' ? (
+                                <>
+                                    <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600" />
+                                    <span>Corporate B2B Registered</span>
+                                </>
+                            ) : isFullDueVisit ? (
+                                <>
+                                    <Clock className="w-3.5 h-3.5 text-amber-600" />
+                                    <span>Billed (Full Due)</span>
+                                </>
+                            ) : actualBalanceDue > 0 ? (
+                                <>
+                                    <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
+                                    <span>Billed (Partial Due)</span>
+                                </>
+                            ) : (
+                                <>
+                                    <CheckCircle2 className="w-3.5 h-3.5 text-[#245E49]" />
+                                    <span>Billed & Settled</span>
+                                </>
+                            )}
                         </span>
                     )}
                 </div>
@@ -1973,13 +2016,31 @@ export function IntentPanel({ onVisitUpdated }) {
                                                             </h3>
                                                         </div>
                                                         <div className="flex items-center gap-2">
-                                                            <div className={cn(
-                                                                "flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs sm:text-sm font-bold tracking-normal",
-                                                                isDark ? "bg-zinc-800/80 border-zinc-700 text-zinc-300" : "bg-emerald-50 border-emerald-200 text-emerald-700"
-                                                            )}>
-                                                                <Lock className="w-3.5 h-3.5 text-emerald-600" />
-                                                                <span>PAID</span>
-                                                            </div>
+                                                            {isFullDueVisit ? (
+                                                                <div className={cn(
+                                                                    "flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs sm:text-sm font-bold tracking-normal",
+                                                                    isDark ? "bg-amber-950/40 border-amber-800 text-amber-300" : "bg-amber-50 border-amber-200 text-amber-800"
+                                                                )}>
+                                                                    <Clock className="w-3.5 h-3.5 text-amber-600" />
+                                                                    <span>FULL DUE</span>
+                                                                </div>
+                                                            ) : actualBalanceDue > 0 ? (
+                                                                <div className={cn(
+                                                                    "flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs sm:text-sm font-bold tracking-normal",
+                                                                    isDark ? "bg-amber-950/40 border-amber-800 text-amber-300" : "bg-amber-50 border-amber-200 text-amber-700"
+                                                                )}>
+                                                                    <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
+                                                                    <span>PARTIAL DUE</span>
+                                                                </div>
+                                                            ) : (
+                                                                <div className={cn(
+                                                                    "flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs sm:text-sm font-bold tracking-normal",
+                                                                    isDark ? "bg-zinc-800/80 border-zinc-700 text-zinc-300" : "bg-emerald-50 border-emerald-200 text-emerald-700"
+                                                                )}>
+                                                                    <Lock className="w-3.5 h-3.5 text-emerald-600" />
+                                                                    <span>PAID</span>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
 
@@ -2115,14 +2176,31 @@ export function IntentPanel({ onVisitUpdated }) {
                                                             </h3>
                                                         </div>
                                                         <div className="flex items-center gap-2">
-                                                            {/* Paid Status Pill */}
-                                                            <div className={cn(
-                                                                "flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs font-bold",
-                                                                isDark ? "bg-zinc-800/80 border-zinc-700 text-zinc-300" : "bg-emerald-50 border-emerald-200 text-emerald-700"
-                                                            )}>
-                                                                <Lock className="w-3.5 h-3.5 text-emerald-600" />
-                                                                <span>PAID</span>
-                                                            </div>
+                                                            {isFullDueVisit ? (
+                                                                <div className={cn(
+                                                                    "flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs font-bold",
+                                                                    isDark ? "bg-amber-950/40 border-amber-800 text-amber-300" : "bg-amber-50 border-amber-200 text-amber-800"
+                                                                )}>
+                                                                    <Clock className="w-3.5 h-3.5 text-amber-600" />
+                                                                    <span>FULL DUE</span>
+                                                                </div>
+                                                            ) : actualBalanceDue > 0 ? (
+                                                                <div className={cn(
+                                                                    "flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs font-bold",
+                                                                    isDark ? "bg-amber-950/40 border-amber-800 text-amber-300" : "bg-amber-50 border-amber-200 text-amber-700"
+                                                                )}>
+                                                                    <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
+                                                                    <span>PARTIAL DUE</span>
+                                                                </div>
+                                                            ) : (
+                                                                <div className={cn(
+                                                                    "flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs font-bold",
+                                                                    isDark ? "bg-zinc-800/80 border-zinc-700 text-zinc-300" : "bg-emerald-50 border-emerald-200 text-emerald-700"
+                                                                )}>
+                                                                    <Lock className="w-3.5 h-3.5 text-emerald-600" />
+                                                                    <span>PAID</span>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
 
@@ -2183,12 +2261,21 @@ export function IntentPanel({ onVisitUpdated }) {
                                                                     <CheckCircle2 className="w-4 h-4 text-[#2E7D63]" />
                                                                     <span>Desk Collection:</span>
                                                                     <span className="font-mono">
-                                                                        ₹{(postProcessingSession?.paidAmount !== undefined ? postProcessingSession.paidAmount : (snapshot?.billing?.totalPaid || snapshot?.billing?.netAmount || 0)).toLocaleString()}
+                                                                        ₹{postPaid.toLocaleString()}
                                                                     </span>
-                                                                    <span className="text-xs font-normal text-slate-500 dark:text-zinc-400">via {paymentMethod}</span>
+                                                                    <span className="text-xs font-normal text-slate-500 dark:text-zinc-400">
+                                                                        {postPaid > 0 ? `via ${paymentMethod}` : `(Unpaid / Credit)`}
+                                                                    </span>
                                                                 </div>
                                                                 <div className="text-xs font-semibold text-slate-600 dark:text-zinc-400">
-                                                                    Balance Due: <strong className="font-mono text-slate-900 dark:text-white">₹0</strong> <span className="text-[#245E49] dark:text-emerald-400 font-bold">(Fully Settled)</span>
+                                                                    Balance Due: <strong className={cn("font-mono", actualBalanceDue > 0 ? "text-rose-600 dark:text-rose-400 text-sm font-black" : "text-slate-900 dark:text-white")}>₹{actualBalanceDue.toLocaleString()}</strong>{" "}
+                                                                    {actualBalanceDue <= 0 ? (
+                                                                        <span className="text-[#245E49] dark:text-emerald-400 font-bold">(Fully Settled)</span>
+                                                                    ) : isFullDueVisit ? (
+                                                                        <span className="text-amber-600 dark:text-amber-400 font-bold">(100% Full Due)</span>
+                                                                    ) : (
+                                                                        <span className="text-amber-600 dark:text-amber-400 font-bold">(Partial Due)</span>
+                                                                    )}
                                                                 </div>
                                                             </div>
                                                         )}
@@ -2731,16 +2818,28 @@ export function IntentPanel({ onVisitUpdated }) {
                                                 <span>Delete Draft</span>
                                             </button>
                                         ) : (
-                                            <button
-                                                type="button"
-                                                id="btn-cancel-visit"
-                                                onClick={() => setIsCancelModalOpen(true)}
-                                                className="py-2.5 px-3.5 rounded-xl border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn"
-                                                title="Cancel this visit with reason and process refund"
-                                            >
-                                                <Ban className="w-3.5 h-3.5" />
-                                                <span>Cancel Visit</span>
-                                            </button>
+                                            <>
+                                                <button
+                                                    type="button"
+                                                    id="btn-resume-visit-correction"
+                                                    onClick={() => openCorrectionIntent(snapshot.visit.visitId)}
+                                                    className="py-2.5 px-3.5 rounded-xl border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/30 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn"
+                                                    title="Open Visit Correction to amend tests, tariffs, or discounts with audit trail"
+                                                >
+                                                    <Edit3 className="w-3.5 h-3.5" />
+                                                    <span>Visit Correction</span>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    id="btn-cancel-visit"
+                                                    onClick={() => setIsCancelModalOpen(true)}
+                                                    className="py-2.5 px-3.5 rounded-xl border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn"
+                                                    title="Cancel this visit with reason and process refund"
+                                                >
+                                                    <Ban className="w-3.5 h-3.5" />
+                                                    <span>Cancel Visit</span>
+                                                </button>
+                                            </>
                                         );
                                     })()}
                                     <button

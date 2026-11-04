@@ -36,7 +36,7 @@ namespace SynOS.Api.Controllers
         {
             try
             {
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
                 if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var actorUserId))
                 {
                     return Unauthorized(new { message = "User ID not found in token or invalid." });
@@ -65,7 +65,7 @@ namespace SynOS.Api.Controllers
         {
             try
             {
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
                 if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
                 {
                     return Unauthorized(new { message = "User ID not found in token." });
@@ -118,7 +118,7 @@ namespace SynOS.Api.Controllers
         {
             try
             {
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
                 if (!Guid.TryParse(userIdClaim, out var userId)) return Unauthorized();
 
                 if (request.CustomValue.HasValue && !string.IsNullOrWhiteSpace(request.Mode))
@@ -155,7 +155,7 @@ namespace SynOS.Api.Controllers
         {
             try
             {
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
                 if (!Guid.TryParse(userIdClaim, out var userId)) return Unauthorized();
 
                 await _receptionFlowService.RemoveDiscountAsync(visitId, userId);
@@ -173,7 +173,7 @@ namespace SynOS.Api.Controllers
         {
             try
             {
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
                 if (!Guid.TryParse(userIdClaim, out var userId)) return Unauthorized();
 
                 var response = await _receptionFlowService.AddTestAsync(request.VisitId, request.TestCode, userId);
@@ -198,7 +198,7 @@ namespace SynOS.Api.Controllers
         {
             try
             {
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
                 if (!Guid.TryParse(userIdClaim, out var userId)) return Unauthorized();
 
                 var response = await _receptionFlowService.RemoveTestAsync(visitId, testCode, userId);
@@ -223,7 +223,7 @@ namespace SynOS.Api.Controllers
         {
             try
             {
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
                 if (!Guid.TryParse(userIdClaim, out var userId)) return Unauthorized();
 
                 var response = await _receptionFlowService.RemoveOrderAsync(visitId, orderId, userId);
@@ -243,7 +243,7 @@ namespace SynOS.Api.Controllers
         {
             try
             {
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
                 if (!Guid.TryParse(userIdClaim, out var userId)) return Unauthorized();
 
                 await _receptionFlowService.SetVisitCollectionModelAsync(request.VisitId, request.Model, userId);
@@ -262,7 +262,7 @@ namespace SynOS.Api.Controllers
         {
             try
             {
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
                 if (!Guid.TryParse(userIdClaim, out var userId)) return Unauthorized();
 
                 await _receptionFlowService.SetVisitReferralAsync(request.VisitId, request.ReferralPartnerId, userId);
@@ -282,7 +282,7 @@ namespace SynOS.Api.Controllers
         {
             try
             {
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
                 if (!Guid.TryParse(userIdClaim, out var userId)) return Unauthorized();
 
                 await _receptionFlowService.SetSecondaryReferralAsync(request.VisitId, request.SecondaryReferralPartnerId, userId);
@@ -302,7 +302,7 @@ namespace SynOS.Api.Controllers
         {
             try
             {
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
                 if (!Guid.TryParse(userIdClaim, out var userId)) return Unauthorized();
 
                 await _receptionFlowService.SetB2BPrepaidRateAsync(request.VisitId, request.B2BDiscountAmount, request.DiscountType, request.DiscountValue, userId);
@@ -326,7 +326,7 @@ namespace SynOS.Api.Controllers
         {
             try
             {
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
                 if (!Guid.TryParse(userIdClaim, out var userId)) return Unauthorized();
 
                 await _receptionFlowService.AddReferralDraftAsync(request.VisitId, request.ProviderName, request.ClinicName, request.Location, userId);
@@ -346,7 +346,7 @@ namespace SynOS.Api.Controllers
         {
             try
             {
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
                 if (!Guid.TryParse(userIdClaim, out var userId)) return Unauthorized();
 
                 await _receptionFlowService.ResolveReferralDraftAsync(request.DraftId, request.TargetPartnerId, userId);
@@ -367,7 +367,7 @@ namespace SynOS.Api.Controllers
         {
             try
             {
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
                 if (!Guid.TryParse(userIdClaim, out var actorUserId)) return Unauthorized();
 
                 await _receptionFlowService.ReassignVisitAsync(request.VisitId, request.NewReceptionistId, actorUserId);
@@ -386,7 +386,7 @@ namespace SynOS.Api.Controllers
         {
             try
             {
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
                 if (!Guid.TryParse(userIdClaim, out var userId)) return Unauthorized();
 
                 var response = await _receptionFlowService.AddOutsourcedTestAsync(request.VisitId, request.TestName, request.Price, request.OutsourceCost, request.ReferenceLabId, userId);
@@ -434,7 +434,7 @@ namespace SynOS.Api.Controllers
         {
             try
             {
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
                 if (!Guid.TryParse(userIdClaim, out var actorUserId)) return Unauthorized();
 
                 await _receptionFlowService.DeleteVisitAsync(visitId, actorUserId);

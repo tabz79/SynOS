@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
-import { Tag, X, Loader2, IndianRupee, Lock, AlertCircle, Smartphone, CreditCard, Plus, ShieldCheck, Search, ChevronDown, CheckCircle2 } from 'lucide-react'
+import { Tag, X, Loader2, IndianRupee, Lock, AlertCircle, Smartphone, CreditCard, Plus, ShieldCheck, Search, ChevronDown, CheckCircle2, Clock, ShieldAlert } from 'lucide-react'
 import { ReceptionApi } from '@/api/reception'
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/context/ThemeContext'
@@ -58,6 +58,13 @@ export function BillingSummary({
     const [showReasonDropdown, setShowReasonDropdown] = useState(false);
     const [reasonSelectedIndex, setReasonSelectedIndex] = useState(-1);
     const reasonListRef = useRef(null);
+
+    // Secondary Concession & Owner Write-Off State (For Active Due Bills)
+    const [isSecondaryExpanded, setIsSecondaryExpanded] = useState(false);
+    const [secondaryDiscountType, setSecondaryDiscountType] = useState('FLAT'); // FLAT by default per invariant Rule 2
+    const [secondaryDiscountValue, setSecondaryDiscountValue] = useState('');
+    const [secondaryReason, setSecondaryReason] = useState('Lab Owner Discretionary Concession');
+    const [isApplyingSecondary, setIsApplyingSecondary] = useState(false);
 
     // Corporate B2B Billing Doctor Override State
     const [b2bDoctorSearch, setB2BDoctorSearch] = useState('');
@@ -485,6 +492,46 @@ export function BillingSummary({
             console.error("Failed to apply custom discount", err);
             alert("Failed to apply custom discount: " + err.message);
         } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    // COMMAND: Apply Secondary Concession / Owner Write-Off (Due Settlement)
+    const handleApplySecondaryConcession = async () => {
+        if (!visitId || !secondaryDiscountValue || Number(secondaryDiscountValue) <= 0) return;
+        if (!secondaryReason?.trim()) {
+            alert("A valid authorization reason is mandatory for secondary concession or write-off.");
+            return;
+        }
+
+        const secVal = Number(secondaryDiscountValue);
+        const addedSecondary = secondaryDiscountType === 'PERCENTAGE'
+            ? Math.round(remainingDue * (Math.min(100, secVal) / 100))
+            : Math.min(remainingDue, secVal);
+
+        if (addedSecondary <= 0) return;
+
+        // Cumulative discount: existing discount + secondary concession
+        const currentDiscountAmt = billing?.discountAmount || 0;
+        const totalNewDiscount = currentDiscountAmt + addedSecondary;
+
+        setIsApplyingSecondary(true);
+        setIsProcessing(true);
+        try {
+            const auditReason = `${secondaryReason.trim()} [Authorized Secondary Concession: -₹${addedSecondary}]`;
+            await ReceptionApi.applyDiscountToVisit(visitId, {
+                mode: 'Flat',
+                customValue: totalNewDiscount,
+                reason: auditReason
+            });
+            setIsSecondaryExpanded(false);
+            setSecondaryDiscountValue('');
+            if (onVisitUpdated) onVisitUpdated();
+        } catch (err) {
+            console.error("Failed to apply secondary concession", err);
+            alert("Failed to apply secondary concession: " + err.message);
+        } finally {
+            setIsApplyingSecondary(false);
             setIsProcessing(false);
         }
     };
@@ -920,6 +967,200 @@ export function BillingSummary({
                                         <IndianRupee className="w-4 h-4 mr-0.5" />
                                         {remainingDue.toLocaleString()}
                                     </span>
+                                </div>
+                            )}
+
+                            {/* SECONDARY CONCESSION & LAB OWNER WRITE-OFF CARD */}
+                            {totalPaid > 0 && remainingDue > 0 && canPerformActions && (
+                                <div className={cn(
+                                    "p-3.5 sm:p-4 rounded-2xl border space-y-3 transition-all shadow-xs animate-in fade-in slide-in-from-top-1 duration-200",
+                                    isDark ? "bg-amber-950/20 border-amber-500/40" : "bg-amber-50/70 border-amber-200"
+                                )}>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                                            <span className="text-xs sm:text-sm font-bold text-amber-900 dark:text-amber-200">
+                                                Secondary Concession / Write-Off
+                                            </span>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            id="btn-toggle-secondary-concession"
+                                            onClick={() => setIsSecondaryExpanded(prev => !prev)}
+                                            className="px-2.5 py-1 rounded-lg text-xs font-bold text-amber-800 dark:text-amber-300 bg-amber-100 hover:bg-amber-200/80 dark:bg-amber-900/40 dark:hover:bg-amber-900/60 border border-amber-300 dark:border-amber-700/60 cursor-pointer transition-all active:scale-95 flex items-center gap-1"
+                                        >
+                                            <span>{isSecondaryExpanded ? "Minimize" : "+ Concession / Write-Off"}</span>
+                                            <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", isSecondaryExpanded && "rotate-180")} />
+                                        </button>
+                                    </div>
+
+                                    <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80 leading-tight">
+                                        Authorized lab owner or pathologist courtesy discount applied specifically against remaining ₹{remainingDue.toLocaleString()} due.
+                                    </p>
+
+                                    {isSecondaryExpanded && (
+                                        <div className="pt-2 border-t border-amber-200/70 dark:border-amber-800/60 space-y-3 animate-in fade-in duration-200">
+                                            {/* Discount Type Toggle */}
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-xs font-semibold text-amber-900 dark:text-amber-200">
+                                                    Adjustment Type:
+                                                </span>
+                                                <div className="flex items-center rounded-lg p-1 bg-amber-200/80 dark:bg-amber-900/60 border border-amber-300 dark:border-amber-700 text-[10px] font-bold shadow-2xs">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setSecondaryDiscountType('FLAT')}
+                                                        className={cn(
+                                                            "px-2.5 py-0.5 rounded transition-all cursor-pointer font-bold",
+                                                            secondaryDiscountType === 'FLAT'
+                                                                ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-xs"
+                                                                : "text-amber-800 dark:text-amber-300"
+                                                        )}
+                                                    >
+                                                        Flat (₹)
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setSecondaryDiscountType('PERCENTAGE')}
+                                                        className={cn(
+                                                            "px-2.5 py-0.5 rounded transition-all cursor-pointer font-bold",
+                                                            secondaryDiscountType === 'PERCENTAGE'
+                                                                ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-xs"
+                                                                : "text-amber-800 dark:text-amber-300"
+                                                        )}
+                                                    >
+                                                        % of Due
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {/* Quick Action Chips */}
+                                            <div className="flex items-center gap-1.5 flex-wrap">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setSecondaryDiscountType('FLAT');
+                                                        setSecondaryDiscountValue(String(remainingDue));
+                                                        setSecondaryReason('Lab Owner Discretionary Write-off');
+                                                    }}
+                                                    className="px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white cursor-pointer transition-all active:scale-95 shadow-2xs flex items-center gap-1"
+                                                >
+                                                    <span>Full Write-Off (₹{remainingDue.toLocaleString()})</span>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setSecondaryDiscountType('FLAT');
+                                                        setSecondaryDiscountValue(String(Math.round(remainingDue * 0.5)));
+                                                    }}
+                                                    className="px-2 py-1 rounded-lg text-xs font-semibold bg-white dark:bg-zinc-800 text-amber-900 dark:text-amber-200 border border-amber-200 dark:border-amber-800 cursor-pointer hover:bg-amber-50"
+                                                >
+                                                    50% (₹{Math.round(remainingDue * 0.5).toLocaleString()})
+                                                </button>
+                                                {remainingDue >= 100 && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setSecondaryDiscountType('FLAT');
+                                                            setSecondaryDiscountValue('100');
+                                                        }}
+                                                        className="px-2 py-1 rounded-lg text-xs font-semibold bg-white dark:bg-zinc-800 text-amber-900 dark:text-amber-200 border border-amber-200 dark:border-amber-800 cursor-pointer hover:bg-amber-50"
+                                                    >
+                                                        ₹100 Off
+                                                    </button>
+                                                )}
+                                            </div>
+
+                                            {/* Input & Reason */}
+                                            <div className="space-y-2">
+                                                <div className="relative">
+                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-amber-500">
+                                                        {secondaryDiscountType === 'FLAT' ? '₹' : '%'}
+                                                    </span>
+                                                    <input
+                                                        type="number"
+                                                        min="1"
+                                                        max={secondaryDiscountType === 'FLAT' ? remainingDue : 100}
+                                                        placeholder={secondaryDiscountType === 'FLAT' ? `Enter concession ₹ (max ${remainingDue})` : 'Enter concession % (1 - 100)'}
+                                                        value={secondaryDiscountValue}
+                                                        onChange={(e) => {
+                                                            const raw = e.target.value;
+                                                            setSecondaryDiscountValue(raw);
+                                                        }}
+                                                        className={cn(
+                                                            "w-full h-10 pl-8 pr-4 rounded-xl text-sm font-mono font-bold outline-none border transition-all",
+                                                            ui.input
+                                                        )}
+                                                    />
+                                                </div>
+
+                                                {/* Reason Selection */}
+                                                <div className="space-y-1">
+                                                    <label className="text-[11px] font-bold text-amber-900 dark:text-amber-200 block">
+                                                        Authorization Authority & Reason *
+                                                    </label>
+                                                    <select
+                                                        value={secondaryReason}
+                                                        onChange={(e) => setSecondaryReason(e.target.value)}
+                                                        className={cn("w-full h-9 rounded-xl px-3 outline-none text-xs font-medium cursor-pointer border", ui.input)}
+                                                    >
+                                                        <option value="Lab Owner Discretionary Concession">Lab Owner Discretionary Concession</option>
+                                                        <option value="Chief Pathologist Courtesy Concession">Chief Pathologist Courtesy Concession</option>
+                                                        <option value="Indigent Patient Full Write-off">Indigent Patient Full Write-off</option>
+                                                        <option value="VIP / Personal Relative Courtesy">VIP / Personal Relative Courtesy</option>
+                                                        <option value="Director Approved Concession">Director Approved Concession</option>
+                                                        <option value="Management Waiver / Write-off">Management Waiver / Write-off</option>
+                                                    </select>
+                                                </div>
+
+                                                {/* Live Preview & Apply Button */}
+                                                {secondaryDiscountValue && Number(secondaryDiscountValue) > 0 && (() => {
+                                                    const secVal = Number(secondaryDiscountValue);
+                                                    const deduction = secondaryDiscountType === 'PERCENTAGE'
+                                                        ? Math.round(remainingDue * (Math.min(100, secVal) / 100))
+                                                        : Math.min(remainingDue, secVal);
+                                                    const newDue = Math.max(0, remainingDue - deduction);
+
+                                                    return (
+                                                        <div className="p-2.5 rounded-xl bg-white dark:bg-zinc-800/80 border border-amber-200 dark:border-amber-800 text-xs space-y-1.5 animate-in fade-in">
+                                                            <div className="flex justify-between items-center text-zinc-600 dark:text-zinc-400">
+                                                                <span>Current Due:</span>
+                                                                <span className="font-mono font-bold">₹{remainingDue.toLocaleString()}</span>
+                                                            </div>
+                                                            <div className="flex justify-between items-center text-rose-600 dark:text-rose-400">
+                                                                <span>Secondary Concession:</span>
+                                                                <span className="font-mono font-bold">-₹{deduction.toLocaleString()}</span>
+                                                            </div>
+                                                            <div className="flex justify-between items-center pt-1 border-t border-slate-100 dark:border-zinc-700 font-bold text-zinc-900 dark:text-white">
+                                                                <span>Revised Remaining Due:</span>
+                                                                <span className="font-mono text-emerald-600 dark:text-emerald-400 text-sm">
+                                                                    ₹{newDue.toLocaleString()} {newDue === 0 && "(Fully Settled)"}
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })()}
+
+                                                <button
+                                                    type="button"
+                                                    id="btn-apply-secondary-concession"
+                                                    disabled={!secondaryDiscountValue || Number(secondaryDiscountValue) <= 0 || isApplyingSecondary || isProcessing}
+                                                    onClick={handleApplySecondaryConcession}
+                                                    className="w-full py-2 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-xs disabled:opacity-50"
+                                                >
+                                                    {isApplyingSecondary ? (
+                                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                                    ) : (
+                                                        <CheckCircle2 className="w-4 h-4" />
+                                                    )}
+                                                    <span>
+                                                        {Number(secondaryDiscountValue) >= remainingDue
+                                                            ? `Authorize Full Write-Off (₹${remainingDue.toLocaleString()})`
+                                                            : `Apply Secondary Concession (-₹${Number(secondaryDiscountValue || 0).toLocaleString()})`}
+                                                    </span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
@@ -1807,7 +2048,7 @@ export function BillingSummary({
 
 
 
-                {/* E. Payment Settlement Mode (Full vs Partial) & Amount Collected */}
+                {/* E. Payment Settlement Mode (Full vs Partial vs Full Due) & Amount Collected */}
                 {displayAmountToCollect > 0 && !isPrepaid && !isCorporate && (billing?.paymentStatus === 'PendingPayment' || billing?.paymentStatus === 'PartialPayment') && !isCorrectionIntent && (
                     <div 
                         className="pt-2 animate-in fade-in space-y-3"
@@ -1817,14 +2058,19 @@ export function BillingSummary({
                         <div className="flex items-center justify-between">
                             <label className="text-base font-bold text-slate-800 dark:text-zinc-200 tracking-normal">Settlement Terms</label>
                             {isPartialPayment && (
-                                <span className="text-xs px-2.5 py-0.5 rounded-md bg-[#FFF8EE] text-[#9A6B2F] dark:bg-amber-950/30 dark:text-amber-300 font-bold border border-[#F5E2C8] dark:border-amber-900/40 uppercase tracking-wider">
-                                    Partial Due
+                                <span className={cn(
+                                    "text-xs px-2.5 py-0.5 rounded-md font-bold uppercase tracking-wider border",
+                                    Number(customPaymentAmount) === 0
+                                        ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                                        : "bg-[#FFF8EE] text-[#9A6B2F] dark:bg-amber-950/30 dark:text-amber-300 border-[#F5E2C8] dark:border-amber-900/40"
+                                )}>
+                                    {Number(customPaymentAmount) === 0 ? 'Full Due (100% Credit)' : 'Partial Due'}
                                 </span>
                             )}
                         </div>
                         
-                        {/* Segmented control: Full Settlement vs Partial */}
-                        <div className="inline-flex w-full p-1 rounded-xl bg-[#DFEAF3] dark:bg-zinc-800 border border-slate-200/60">
+                        {/* Segmented control: Full Settlement vs Partial vs Full Due */}
+                        <div className="inline-flex w-full p-1 rounded-xl bg-[#DFEAF3] dark:bg-zinc-800 border border-slate-200/60 gap-1">
                             <button
                                 id="btn-settlement-full"
                                 type="button"
@@ -1850,14 +2096,14 @@ export function BillingSummary({
                                     }
                                 }}
                                 className={cn(
-                                    "flex-1 py-2 px-3 rounded-lg text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 synos-focus-btn",
+                                    "flex-1 py-2 px-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 synos-focus-btn",
                                     !isPartialPayment
                                         ? "bg-[#506A85] text-white shadow-xs"
                                         : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
                                 )}
                             >
-                                <CheckCircle2 className="w-4 h-4" />
-                                <span>Full (₹{displayAmountToCollect.toLocaleString()})</span>
+                                <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                                <span className="truncate">Full (₹{displayAmountToCollect.toLocaleString()})</span>
                             </button>
 
                             <button
@@ -1865,24 +2111,42 @@ export function BillingSummary({
                                 type="button"
                                 onClick={() => {
                                     setIsPartialPayment?.(true);
-                                    if (!customPaymentAmount) {
+                                    if (!customPaymentAmount || Number(customPaymentAmount) === 0) {
                                         setCustomPaymentAmount?.(String(Math.round(displayAmountToCollect * 0.5)));
                                     }
                                 }}
                                 className={cn(
-                                    "flex-1 py-2 px-3 rounded-lg text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 synos-focus-btn",
-                                    isPartialPayment
+                                    "flex-1 py-2 px-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 synos-focus-btn",
+                                    isPartialPayment && Number(customPaymentAmount) > 0
                                         ? "bg-[#506A85] text-white shadow-xs"
                                         : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
                                 )}
                             >
-                                <AlertCircle className="w-4 h-4" />
+                                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                                 <span>Partial Due</span>
+                            </button>
+
+                            <button
+                                id="btn-settlement-fulldue"
+                                type="button"
+                                onClick={() => {
+                                    setIsPartialPayment?.(true);
+                                    setCustomPaymentAmount?.('0');
+                                }}
+                                className={cn(
+                                    "flex-1 py-2 px-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 synos-focus-btn",
+                                    isPartialPayment && Number(customPaymentAmount) === 0
+                                        ? "bg-amber-700 text-white shadow-xs"
+                                        : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
+                                )}
+                            >
+                                <Clock className="w-3.5 h-3.5 shrink-0" />
+                                <span>Full Due</span>
                             </button>
                         </div>
 
-                        {/* Partial Payment Amount Input & Quick Chips (Native SynOS Modal / Card Styling) */}
-                        {isPartialPayment && (
+                        {/* Partial Payment Amount Input & Quick Chips */}
+                        {isPartialPayment && Number(customPaymentAmount) > 0 && (
                             <div className="p-4 sm:p-5 rounded-2xl bg-white/70 dark:bg-zinc-800/60 border border-[#CCDCE8]/80 dark:border-zinc-700/80 shadow-[0_2px_8px_rgba(15,35,60,0.03)] space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
                                 <div className="flex items-center justify-between">
                                     <span className="text-base font-bold text-slate-800 dark:text-zinc-200 tracking-normal">
@@ -1951,11 +2215,29 @@ export function BillingSummary({
                                 </div>
                             </div>
                         )}
+
+                        {/* Full Due Notice Card */}
+                        {isPartialPayment && Number(customPaymentAmount) === 0 && (
+                            <div className="p-4 sm:p-5 rounded-2xl bg-[#FFF8EE] dark:bg-amber-950/30 border border-[#F5E2C8] dark:border-amber-900/40 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-sm font-bold text-[#9A6B2F] dark:text-amber-200 flex items-center gap-1.5">
+                                        <Clock className="w-4 h-4 text-[#9A6B2F] dark:text-amber-400" />
+                                        100% Patient Counter Credit (Full Due)
+                                    </span>
+                                    <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-900/60 text-[#9A6B2F] dark:text-amber-200 border border-[#F5E2C8] dark:border-amber-800">
+                                        ₹0 Desk Collection
+                                    </span>
+                                </div>
+                                <p className="text-xs text-[#9A6B2F]/90 dark:text-amber-300/90 leading-relaxed">
+                                    Patient pays <strong>₹0</strong> at the counter today. The entire bill amount of <strong className="font-mono">₹{displayAmountToCollect.toLocaleString()}</strong> will be booked as an Outstanding Due under this patient's profile and tracked in the Due Bills ledger.
+                                </p>
+                            </div>
+                        )}
                     </div>
                 )}
 
                 {/* E. Payment Method (STAGE 2) - Only show when desk collection is required */}
-                {displayAmountToCollect > 0 && (billing?.paymentStatus === 'PendingPayment' || billing?.paymentStatus === 'PartialPayment') && (
+                {displayAmountToCollect > 0 && !(isPartialPayment && Number(customPaymentAmount) === 0) && (billing?.paymentStatus === 'PendingPayment' || billing?.paymentStatus === 'PartialPayment') && (
                     <div 
                         className="pt-2 animate-in fade-in space-y-2"
                         onFocusCapture={() => { if (isDiscountExpanded) setIsDiscountExpanded(false); }}

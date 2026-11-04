@@ -138,4 +138,36 @@
    * Updated CSV download to export `Collected By (Staff)` and `Staff Role`.
    * Updated A4 printable financial summary modal to include cashier filter tags and staff column.
 
+---
+
+## 8. Enterprise Due Settlement, Three-Way Terms, Secondary Owner Concessions & Due Bills Audit — [RESOLVED & VERIFIED]
+### Audit Findings & Root Causes
+1. **Binary Settlement Terms:** The intake screen only offered `Full` or `Partial Due`. In clinical practice, patients often pay ₹0 at the counter (100% credit / Full Due), needing the entire bill booked as Outstanding Due without locking the visit or recording false payments.
+2. **Hardcoded ₹0 in Post-Processing Print Dispatch:** In `IntentPanel.jsx`, the Print Dispatch screen displayed hardcoded `Balance Due: ₹0 (Fully Settled)` and hardcoded `PAID` / `Billed & Settled` badges even when only a partial payment was received (e.g. ₹100 of ₹400).
+3. **Due Bills Tab Leakage (`FinanceBillsController.cs`):** `GetDueBills` queried `.Where(x => x.TotalPaid > 0 && x.BalanceDue > 0)`, which silently suppressed and hid Full Due visits where `TotalPaid == 0`.
+4. **Missing Secondary Concession Card for Resumed Due Visits:** When patients returned with an outstanding balance (e.g. ₹300) and met the Lab Owner or Chief Pathologist for a courtesy concession or write-off, there was no dedicated secondary concession card to record an authorized discretionary reduction against remaining dues.
+5. **Missing Visit Correction for Active Due Visits:** Active due visits in `Resume Visit` lacked the `[Visit Correction]` action button in the footer bar, preventing receptionists from adding/removing tests or amending financials.
+
+### Implemented Fix
+1. **Three-Way Settlement Terms (`BillingSummary.jsx` & `IntentPanel.jsx`):**
+   * Added segmented 3-mode control: `Full (₹{net})`, `Partial Due`, and `Full Due`.
+   * When `Full Due` is selected (`customPaymentAmount === '0'`), renders an amber counter-credit notice and hides cashier method inputs.
+   * Action button reflects: `Confirm Visit (Full Due ₹{due}) ->` and calls `ReceptionApi.collectPayment(visitId, 0, 'Unpaid / Credit')`.
+2. **Backend Full Due Registration (`ReceptionFlowService.cs`):**
+   * When `request.Amount <= 0 && existingInvoice.Total > 0`, safely sets `Invoice.Status = "PendingPayment"` and `Visit.Status = VisitStatus.PendingPayment`.
+   * Skips adding false `PaymentConfirmedFact` records for zero-rupee amounts while generating official daily tokens (`MAI-xxx`) and creating lab test accession items.
+3. **Dynamic Balance Due & True Settlement State in Print Dispatch (`IntentPanel.jsx`):**
+   * Dynamically calculates `actualBalanceDue = Math.max(0, postNet - postPaid)`.
+   * Replaced hardcoded `Balance Due: ₹0` with dynamic live amount (`Balance Due: ₹{actualBalanceDue}`).
+   * Rendered dynamic badges: `Billed (Full Due)`, `Billed (Partial Due)`, or `Billed & Settled`.
+4. **Secondary Concession & Owner Write-Off Card (`BillingSummary.jsx` & `VisitService.cs`):**
+   * Added dedicated card on active due visits allowing `Flat (₹)` or `% of Due` adjustments with quick chips (`Full Write-Off`, `50%`, `₹100 Off`).
+   * Enforced mandatory authorization presets: *Lab Owner Discretionary Concession*, *Chief Pathologist Courtesy*, *Indigent Patient Full Write-off*, etc.
+   * In `VisitService.cs`, permitted authorized owner concessions/write-offs even after sample collection.
+5. **Visit Correction Integration for Active Due Visits (`IntentPanel.jsx`):**
+   * Added `[Visit Correction]` button directly to the bottom action bar on non-finalized active due visits, enabling instant transition to amendment mode.
+6. **Due Bills Ledger Audit Parity (`FinanceBillsController.cs` & `RevenueScreens.jsx`):**
+   * Relaxed `GetDueBills` filter to `.Where(x => x.BalanceDue > 0)`, returning `Status = x.TotalPaid > 0 ? "Partial" : "Pending"`.
+   * Updated `DueBillsScreen` filter tabs and table to expose both `Partial Due` and `Full Due (Unpaid)` with distinctive visual status pills.
+
 

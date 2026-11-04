@@ -670,7 +670,20 @@ namespace SynOS.Services
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found.");
 
             if (IsSampleCollectionStarted(visit))
-                throw new InvalidOperationException("Cannot apply discount. Sample collection has already started.");
+            {
+                var isAuthorizedConcession = !string.IsNullOrWhiteSpace(reason) && (
+                    reason.Contains("Owner", StringComparison.OrdinalIgnoreCase) ||
+                    reason.Contains("Pathologist", StringComparison.OrdinalIgnoreCase) ||
+                    reason.Contains("Write-off", StringComparison.OrdinalIgnoreCase) ||
+                    reason.Contains("Authorized", StringComparison.OrdinalIgnoreCase) ||
+                    reason.Contains("Courtesy", StringComparison.OrdinalIgnoreCase) ||
+                    reason.Contains("Secondary", StringComparison.OrdinalIgnoreCase) ||
+                    reason.Contains("Management", StringComparison.OrdinalIgnoreCase)
+                );
+
+                if (!isAuthorizedConcession)
+                    throw new InvalidOperationException("Cannot apply discount after sample collection without authorized Lab Owner / Pathologist approval reason.");
+            }
 
             var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
             if (invoice == null) throw new InvalidOperationException("No invoice found.");

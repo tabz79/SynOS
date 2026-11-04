@@ -1701,7 +1701,7 @@ export const DueBillsScreen = () => {
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
                     <div className="flex items-center gap-1 overflow-x-auto pb-1 lg:pb-0 no-scrollbar">
                         {['All', 'Partial', 'Pending'].map(f => (
-                            <FilterTab key={f} label={f === 'All' ? 'All Due Bills' : (f === 'Partial' ? 'Partially Paid' : 'Unpaid Counter Dues')} isActive={statusFilter === f} onClick={() => setStatusFilter(f)} />
+                            <FilterTab key={f} label={f === 'All' ? 'All Due Bills' : (f === 'Partial' ? 'Partially Paid' : 'Full Due (Unpaid)')} isActive={statusFilter === f} onClick={() => setStatusFilter(f)} />
                         ))}
                     </div>
 
@@ -1767,6 +1767,15 @@ export const DueBillsScreen = () => {
                                                 <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border border-black/5 dark:border-white/5">
                                                     {b.token}
                                                 </span>
+                                                {b.totalPaid > 0 ? (
+                                                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 whitespace-nowrap">
+                                                        Partial Due
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 whitespace-nowrap">
+                                                        Full Due
+                                                    </span>
+                                                )}
                                                 <div>
                                                     <p className="font-bold text-zinc-900 dark:text-white leading-tight">{b.patientName}</p>
                                                     <p className="text-[11px] text-zinc-400 font-medium">

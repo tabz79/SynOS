@@ -714,7 +714,7 @@ namespace SynOS.Api.Controllers
                         LastPayment = lastPayment
                     };
                 })
-                .Where(x => x.TotalPaid > 0 && x.BalanceDue > 0)
+                .Where(x => x.BalanceDue > 0)
                 .Select(x => new {
                     InvoiceId = x.Invoice.InvoiceId,
                     BillNumber = FormatBillNumber(x.Invoice.Visit?.Token, x.Invoice.Visit?.Branch?.Code, x.Invoice.CreatedAt),
@@ -735,9 +735,9 @@ namespace SynOS.Api.Controllers
                     TotalAmount = x.Invoice.Total,
                     TotalPaid = x.TotalPaid,
                     BalanceDue = x.BalanceDue,
-                    Status = "Partial",
+                    Status = x.TotalPaid > 0 ? "Partial" : "Pending",
                     LastPaymentDate = x.LastPayment?.ReceivedAt,
-                    LastPaymentMethod = x.LastPayment?.Method ?? "N/A",
+                    LastPaymentMethod = x.LastPayment?.Method ?? (x.TotalPaid > 0 ? "Cash" : "Unpaid / Credit"),
                     Tests = x.Invoice.Visit?.Orders?.Select(o => o.Test?.TestName ?? o.TestCode).Where(t => !string.IsNullOrEmpty(t)).ToList() ?? new List<string>()
                 });
 
