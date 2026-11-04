@@ -18,7 +18,14 @@ import {
     ArrowRight,
     Check,
     AlertCircle,
-    Info
+    Info,
+    ChevronDown,
+    ChevronUp,
+    Percent,
+    Tag,
+    ShieldCheck,
+    Layers,
+    Sparkles
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
 import { useAuth } from '@/context/AuthContext';
@@ -32,6 +39,14 @@ const QUICK_PAYER_PRESETS = [
     "Partner Staff",
     "Doctor In-Person",
     "Self / Patient"
+];
+
+const CONCESSION_REASONS = [
+    "Director / Owner Direct Waiver",
+    "Goodwill Partner Retainer Discount",
+    "Volume Rebate Settlement",
+    "Disputed Item Billing Adjustment",
+    "Special Compassionate Allowance"
 ];
 
 export function ReceptionB2BReceivablesDrawer({ isOpen, onClose }) {
@@ -72,7 +87,13 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose }) {
     // Form selection state
     const [selectedPartnerId, setSelectedPartnerId] = useState(null);
     const [selectedFactIds, setSelectedFactIds] = useState([]);
+    const [expandedPartnerIds, setExpandedPartnerIds] = useState(new Set());
+    const [termsMode, setTermsMode] = useState('FULL'); // 'FULL' | 'PARTIAL'
     const [amount, setAmount] = useState('');
+    const [hasConcession, setHasConcession] = useState(false);
+    const [concessionAmount, setConcessionAmount] = useState('');
+    const [concessionReason, setConcessionReason] = useState('Director / Owner Direct Waiver');
+    const [concessionAuthorizer, setConcessionAuthorizer] = useState('');
     const [paymentMode, setPaymentMode] = useState('Cash'); // 'Cash' | 'UPI' | 'BankTransfer'
     const [receivedFrom, setReceivedFrom] = useState('');
     const [notes, setNotes] = useState('');
@@ -123,13 +144,38 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose }) {
 
     const selectPartner = (group) => {
         setSelectedPartnerId(group.partnerId);
+        setExpandedPartnerIds(prev => new Set([...prev, group.partnerId]));
         const factIds = (group.visits || []).map(v => v.receivableFactId);
         setSelectedFactIds(factIds);
-        setAmount(group.totalDueToday ? group.totalDueToday.toString() : '');
+        setTermsMode('FULL');
+        setHasConcession(false);
+        setConcessionAmount('');
+        const total = (group.visits || []).reduce((sum, v) => sum + (Number(v.amountDue) || 0), 0);
+        setAmount(total > 0 ? total.toString() : '');
         setReceivedFrom(group.partnerName ? `${group.partnerName} Representative` : '');
     };
 
-    const toggleVisitSelection = (factId, visitDue) => {
+    const togglePartnerAccordion = (partnerId) => {
+        setExpandedPartnerIds(prev => {
+            const next = new Set(prev);
+            if (next.has(partnerId)) {
+                next.delete(partnerId);
+            } else {
+                next.add(partnerId);
+            }
+            return next;
+        });
+    };
+
+    // Calculate sum of selected visits for validation
+    const selectedVisitsTotal = useMemo(() => {
+        if (!selectedGroup || !selectedGroup.visits) return 0;
+        return selectedGroup.visits
+            .filter(v => selectedFactIds.includes(v.receivableFactId))
+            .reduce((acc, v) => acc + (Number(v.amountDue) || 0), 0);
+    }, [selectedGroup, selectedFactIds]);
+
+    const toggleVisitSelection = (factId) => {
         let newFactIds;
         if (selectedFactIds.includes(factId)) {
             newFactIds = selectedFactIds.filter(id => id !== factId);
@@ -138,40 +184,177 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose }) {
         }
         setSelectedFactIds(newFactIds);
 
-        // Recalculate amount to match selected visits
+        // Recalculate amount if in FULL mode
         if (selectedGroup) {
             const sumSelected = (selectedGroup.visits || [])
                 .filter(v => newFactIds.includes(v.receivableFactId))
-                .reduce((sum, v) => sum + (v.amountDue || 0), 0);
-            setAmount(sumSelected > 0 ? sumSelected.toString() : '');
+                .reduce((sum, v) => sum + (Number(v.amountDue) || 0), 0);
+            if (termsMode === 'FULL') {
+                const conc = hasConcession ? (parseFloat(concessionAmount) || 0) : 0;
+                setAmount(Math.max(0, sumSelected - conc).toString());
+            }
         }
     };
 
-    const selectAllVisits = () => {
-        if (!selectedGroup) return;
-        const allIds = (selectedGroup.visits || []).map(v => v.receivableFactId);
-        setSelectedFactIds(allIds);
-        setAmount(selectedGroup.totalDueToday ? selectedGroup.totalDueToday.toString() : '');
+    const selectAllVisitsForPartner = (partnerGroup) => {
+        const factIds = (partnerGroup.visits || []).map(v => v.receivableFactId);
+        setSelectedFactIds(factIds);
+        if (termsMode === 'FULL') {
+            const sumSelected = (partnerGroup.visits || []).reduce((sum, v) => sum + (Number(v.amountDue) || 0), 0);
+            const conc = hasConcession ? (parseFloat(concessionAmount) || 0) : 0;
+            setAmount(Math.max(0, sumSelected - conc).toString());
+        }
     };
 
-    const clearAllVisits = () => {
+    const clearAllVisitsForPartner = () => {
         setSelectedFactIds([]);
-        setAmount('');
+        if (termsMode === 'FULL') {
+            setAmount('0');
+        }
     };
 
-    // Calculate sum of selected visits for validation
-    const selectedVisitsTotal = useMemo(() => {
-        if (!selectedGroup || !selectedGroup.visits) return 0;
-        return selectedGroup.visits
-            .filter(v => selectedFactIds.includes(v.receivableFactId))
-            .reduce((acc, v) => acc + (v.amountDue || 0), 0);
-    }, [selectedGroup, selectedFactIds]);
+    // Smart FIFO Auto-Allocation Engine:
+    // Calculates how amount + concessionAmount is distributed across selected visits in FIFO order
+    const allocationSummary = useMemo(() => {
+        if (!selectedGroup || !selectedGroup.visits) {
+            return {
+                visitAllocations: new Map(),
+                totalAllocated: 0,
+                totalPaidAllocated: 0,
+                totalConcessionAllocated: 0,
+                totalSelectedDue: 0,
+                netToClear: 0,
+                remainingDue: 0,
+                fullPaidCount: 0,
+                partialPaidCount: 0,
+                unsettledCount: 0
+            };
+        }
+
+        const numAmount = parseFloat(amount) || 0;
+        const numConcession = hasConcession ? (parseFloat(concessionAmount) || 0) : 0;
+        let availablePayment = numAmount;
+        let availableConcession = numConcession;
+
+        const visitAllocations = new Map();
+        let fullPaidCount = 0;
+        let partialPaidCount = 0;
+        let unsettledCount = 0;
+        let totalPaidAllocated = 0;
+        let totalConcessionAllocated = 0;
+
+        const visits = selectedGroup.visits || [];
+        for (const v of visits) {
+            const isSelected = selectedFactIds.includes(v.receivableFactId);
+            if (!isSelected) {
+                visitAllocations.set(v.receivableFactId, {
+                    isSelected: false,
+                    paymentAllocated: 0,
+                    concessionAllocated: 0,
+                    totalAllocated: 0,
+                    remainingDue: Number(v.amountDue) || 0,
+                    status: 'EXCLUDED'
+                });
+                continue;
+            }
+
+            const due = Number(v.amountDue) || 0;
+            // 1. Allocate real payment first
+            const payApply = Math.min(availablePayment, due);
+            availablePayment -= payApply;
+            totalPaidAllocated += payApply;
+
+            // 2. Allocate concession next
+            const concApply = Math.min(availableConcession, due - payApply);
+            availableConcession -= concApply;
+            totalConcessionAllocated += concApply;
+
+            const totalAllocated = payApply + concApply;
+            const remainingDue = Math.max(0, due - totalAllocated);
+
+            let status = 'UNSETTLED';
+            if (totalAllocated >= due) {
+                status = 'FULL';
+                fullPaidCount++;
+            } else if (totalAllocated > 0) {
+                status = 'PARTIAL';
+                partialPaidCount++;
+            } else {
+                status = 'UNSETTLED';
+                unsettledCount++;
+            }
+
+            visitAllocations.set(v.receivableFactId, {
+                isSelected: true,
+                paymentAllocated: payApply,
+                concessionAllocated: concApply,
+                totalAllocated,
+                remainingDue,
+                status
+            });
+        }
+
+        const totalCleared = totalPaidAllocated + totalConcessionAllocated;
+        const netToClear = Math.max(0, selectedVisitsTotal - (hasConcession ? (parseFloat(concessionAmount) || 0) : 0));
+        const remainingDue = Math.max(0, selectedVisitsTotal - totalCleared);
+
+        return {
+            visitAllocations,
+            totalAllocated: totalCleared,
+            totalPaidAllocated,
+            totalConcessionAllocated,
+            totalSelectedDue: selectedVisitsTotal,
+            netToClear,
+            remainingDue,
+            fullPaidCount,
+            partialPaidCount,
+            unsettledCount
+        };
+    }, [selectedGroup, selectedFactIds, amount, hasConcession, concessionAmount, selectedVisitsTotal]);
+
+    const handleTermsModeChange = (mode) => {
+        setTermsMode(mode);
+        if (mode === 'FULL') {
+            const conc = hasConcession ? (parseFloat(concessionAmount) || 0) : 0;
+            setAmount(Math.max(0, selectedVisitsTotal - conc).toString());
+        }
+    };
+
+    const handleConcessionToggle = (enabled) => {
+        setHasConcession(enabled);
+        if (!enabled) {
+            setConcessionAmount('');
+            if (termsMode === 'FULL') {
+                setAmount(selectedVisitsTotal.toString());
+            }
+        } else {
+            if (termsMode === 'FULL' && concessionAmount) {
+                const conc = parseFloat(concessionAmount) || 0;
+                setAmount(Math.max(0, selectedVisitsTotal - conc).toString());
+            }
+        }
+    };
+
+    const handleConcessionAmountChange = (val) => {
+        setConcessionAmount(val);
+        if (termsMode === 'FULL') {
+            const conc = parseFloat(val) || 0;
+            setAmount(Math.max(0, selectedVisitsTotal - conc).toString());
+        }
+    };
+
+    const applyPercentage = (pct) => {
+        const netBase = Math.max(0, selectedVisitsTotal - (hasConcession ? (parseFloat(concessionAmount) || 0) : 0));
+        const val = Math.round((netBase * pct) / 100);
+        setAmount(val.toString());
+    };
 
     const handleSettle = async (e) => {
         e?.preventDefault();
-        const numAmount = parseFloat(amount);
-        if (!numAmount || numAmount <= 0) {
-            alert("Please enter a valid settlement amount.");
+        const numAmount = parseFloat(amount) || 0;
+        const numConcession = hasConcession ? (parseFloat(concessionAmount) || 0) : 0;
+        if (numAmount < 0 || (numAmount === 0 && numConcession === 0)) {
+            alert("Please enter a valid settlement or concession amount.");
             return;
         }
         if (!selectedPartnerId || selectedFactIds.length === 0) {
@@ -187,6 +370,9 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose }) {
                 partnerId: selectedPartnerId,
                 factIds: selectedFactIds,
                 amount: numAmount,
+                concessionAmount: numConcession > 0 ? numConcession : null,
+                concessionReason: numConcession > 0 ? (concessionReason.trim() || "B2B Waiver") : null,
+                concessionAuthorizer: numConcession > 0 ? (concessionAuthorizer.trim() || user?.name || "Lab Owner") : null,
                 paymentMode: paymentMode,
                 receivedFrom: receivedFrom.trim() || `${selectedGroup?.partnerName || 'Partner'} Representative`,
                 notes: notes.trim()
@@ -214,25 +400,38 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose }) {
         }
     };
 
-    // Filtered groups for search
+    // Filtered groups for search across partner names, patient names, tokens, tests
     const filteredGroups = useMemo(() => {
         if (!searchQuery.trim()) return groups;
-        const q = searchQuery.toLowerCase();
-        return groups.filter(g => 
-            (g.partnerName && g.partnerName.toLowerCase().includes(q)) ||
-            (g.clinicName && g.clinicName.toLowerCase().includes(q))
-        );
+        const q = searchQuery.toLowerCase().trim();
+        return groups.filter(g => {
+            const partnerMatch = (g.partnerName || '').toLowerCase().includes(q) || 
+                                 (g.clinicName || '').toLowerCase().includes(q) ||
+                                 (g.phone || '').includes(q);
+            if (partnerMatch) return true;
+            return (g.visits || []).some(v => 
+                (v.patientName || '').toLowerCase().includes(q) ||
+                (v.token || '').toLowerCase().includes(q) ||
+                (v.testsSummary || '').toLowerCase().includes(q)
+            );
+        });
     }, [groups, searchQuery]);
 
-    // Financial summary calculations
+    // Totals across all groups for telemetry
+    const totalPendingVisits = useMemo(() => {
+        return groups.reduce((acc, g) => acc + (g.visits?.length || 0), 0);
+    }, [groups]);
+
+    const totalDueToday = useMemo(() => {
+        return groups.reduce((acc, g) => acc + (Number(g.totalDueToday) || 0), 0);
+    }, [groups]);
+
+    // Telemetry summary metrics
     const summaryMetrics = useMemo(() => {
         const totalSettledToday = history.reduce((sum, h) => sum + (h.amount || 0), 0);
-        const cashSettled = history.filter(h => (h.paymentMode || '').toLowerCase() === 'cash').reduce((sum, h) => sum + (h.amount || 0), 0);
-        const upiSettled = history.filter(h => (h.paymentMode || '').toLowerCase().includes('upi')).reduce((sum, h) => sum + (h.amount || 0), 0);
-        const bankSettled = history.filter(h => {
-            const m = (h.paymentMode || '').toLowerCase();
-            return m.includes('bank') || m.includes('card');
-        }).reduce((sum, h) => sum + (h.amount || 0), 0);
+        const cashSettled = history.filter(h => h.paymentMode === 'Cash').reduce((sum, h) => sum + (h.amount || 0), 0);
+        const upiSettled = history.filter(h => h.paymentMode === 'UPI').reduce((sum, h) => sum + (h.amount || 0), 0);
+        const bankSettled = history.filter(h => h.paymentMode === 'BankTransfer').reduce((sum, h) => sum + (h.amount || 0), 0);
         const totalPendingDue = groups.reduce((sum, g) => sum + (g.totalDueToday || 0), 0);
         const totalVisitsSettled = history.reduce((sum, h) => sum + (h.visitCount || 0), 0);
 
@@ -254,9 +453,7 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose }) {
             <div 
                 className={cn(
                     "h-full flex flex-col overflow-hidden rounded-[24px] sm:rounded-[28px] border border-white/80 dark:border-white/10 shadow-2xl transition-all duration-300 ease-in-out z-30",
-                    activeTab === 'record'
-                        ? "w-full sm:w-[92vw] md:w-[75vw] lg:w-[50vw] xl:w-[44vw] 2xl:w-[40vw] min-w-[580px] max-w-[880px]"
-                        : "w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[86vw] xl:w-[85vw] 2xl:w-[85vw] max-w-[1780px]",
+                    "w-[96vw] sm:w-[94vw] md:w-[92vw] lg:w-[88vw] xl:w-[85vw] 2xl:w-[85vw] max-w-[1780px]",
                     ui.panel
                 )}
             >
@@ -352,7 +549,7 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose }) {
                     </div>
                 </div>
 
-                {/* 2. TAB 1: RECORD COLLECTION WORKBENCH */}
+                {/* 2. TAB 1: RECORD COLLECTION WORKBENCH (Extended Split Tab Design) */}
                 {activeTab === 'record' && (
                     <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
                         {completedReceipt ? (
@@ -383,6 +580,12 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose }) {
                                         <span className="text-slate-500 dark:text-zinc-400">Payment Channel:</span>
                                         <span className="font-bold uppercase text-emerald-600">{completedReceipt.paymentMode}</span>
                                     </div>
+                                    {completedReceipt.concessionAmount > 0 && (
+                                        <div className="flex justify-between text-orange-600 dark:text-orange-400">
+                                            <span>Concession / Waiver:</span>
+                                            <span className="font-bold">-₹{Number(completedReceipt.concessionAmount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                                        </div>
+                                    )}
                                     <div className="flex justify-between">
                                         <span className="text-slate-500 dark:text-zinc-400">Received From:</span>
                                         <span className="font-bold text-slate-900 dark:text-white">{completedReceipt.receivedFrom || 'Representative'}</span>
@@ -424,376 +627,679 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose }) {
                                 </div>
                             </div>
                         ) : (
-                            /* MAIN FORM WORKBENCH */
+                            /* SPLIT 2-COLUMN EXTENDED WORKBENCH */
                             <form onSubmit={handleSettle} className="flex-1 flex flex-col min-h-0 overflow-hidden">
-                                <div className="p-4 sm:p-6 w-full flex-1 min-h-0 overflow-y-auto space-y-4 animate-in fade-in duration-300 pr-1.5 sm:pr-3">
-                                    {/* STEP 1: INFLOW SOURCE & CORPORATE PARTNER */}
-                                    <div className={cn("p-4 sm:p-5 space-y-3 shrink-0", ui.card)}>
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-6 h-6 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-xs shadow-xs">
-                                                    1
-                                                </div>
-                                                <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-normal">
-                                                    Inflow Source & Corporate Partner
-                                                </h3>
-                                            </div>
-                                            <span className="text-xs text-slate-500 dark:text-zinc-400">
-                                                Attribution Context
-                                            </span>
-                                        </div>
-
-                                        {groups.length === 0 ? (
-                                            <div className="py-6 px-4 text-center rounded-xl border border-dashed border-slate-300 dark:border-zinc-800 space-y-2">
-                                                <div className="w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-600 mx-auto flex items-center justify-center">
-                                                    <Check className="w-5 h-5" />
-                                                </div>
-                                                <div className="text-xs font-bold text-slate-800 dark:text-zinc-200">
-                                                    Zero Pending B2B Dues Today
-                                                </div>
-                                                <p className="text-[11px] text-slate-500 dark:text-zinc-400 max-w-sm mx-auto">
-                                                    All corporate B2B prepaid referrals registered today are settled, or no B2B visits billed yet today.
-                                                </p>
-                                            </div>
-                                        ) : (
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                                                {groups.map(g => {
-                                                    const isSelected = selectedPartnerId === g.partnerId;
-                                                    return (
-                                                        <button
-                                                            key={g.partnerId}
-                                                            type="button"
-                                                            onClick={() => selectPartner(g)}
-                                                            className={cn(
-                                                                "p-3 rounded-xl border text-left flex items-start gap-3 transition-all cursor-pointer relative",
-                                                                isSelected
-                                                                    ? (isDark
-                                                                        ? "bg-zinc-800 border-2 border-emerald-500 shadow-md ring-1 ring-emerald-500/50"
-                                                                        : "bg-white border-2 border-emerald-600 shadow-[0_4px_16px_rgba(16,185,129,0.15)] ring-1 ring-emerald-600/30")
-                                                                    : (isDark
-                                                                        ? "bg-zinc-800/60 border-zinc-700/60 hover:bg-zinc-800 shadow-xs"
-                                                                        : "bg-white/80 border border-[#D5E2EC] hover:bg-white hover:border-slate-300 shadow-[0_1px_3px_rgba(15,35,60,0.04)]")
-                                                            )}
-                                                        >
-                                                            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 shrink-0">
-                                                                <Building2 className="w-4 h-4" />
-                                                            </div>
-                                                            <div className="flex-1 min-w-0">
-                                                                <div className="flex items-center justify-between">
-                                                                    <span className="text-xs font-bold text-slate-900 dark:text-white truncate">
-                                                                        {g.partnerName}
-                                                                    </span>
-                                                                    {isSelected && <div className="w-2 h-2 rounded-full bg-emerald-600 shrink-0 ml-1" />}
-                                                                </div>
-                                                                {g.clinicName && (
-                                                                    <p className="text-[10px] text-slate-500 dark:text-zinc-400 truncate">{g.clinicName}</p>
-                                                                )}
-                                                                <div className="mt-1 flex items-center justify-between text-[11px]">
-                                                                    <span className="text-slate-500 dark:text-zinc-400">
-                                                                        {g.totalVisitsCount} {g.totalVisitsCount === 1 ? 'Visit' : 'Visits'}
-                                                                    </span>
-                                                                    <span className="font-extrabold text-emerald-700 dark:text-emerald-400">
-                                                                        ₹{Number(g.totalDueToday).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-                                                        </button>
-                                                    );
-                                                })}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* STEP 2: INFLOW PARTICULARS & TODAY'S VISITS */}
-                                    {selectedGroup && (
-                                        <div className={cn("p-4 sm:p-5 space-y-4 shrink-0", ui.card)}>
+                                <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
+                                    {/* ============================================================ */}
+                                    {/* LEFT COLUMN: PREPAID REFERRAL DEBTORS & PATIENT VISITS LIST  */}
+                                    {/* (Scalable for 50+ to 90+ bills with accordion & search)     */}
+                                    {/* ============================================================ */}
+                                    <div className="w-full lg:w-[54%] xl:w-[56%] flex flex-col h-full min-h-0 border-r border-slate-200/80 dark:border-zinc-800 bg-white/40 dark:bg-zinc-950/20">
+                                        {/* Left Top Search & Header */}
+                                        <div className="p-3.5 sm:p-4 border-b border-slate-200/80 dark:border-zinc-800 shrink-0 space-y-2.5 bg-white/60 dark:bg-zinc-900/40">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="w-6 h-6 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-xs shadow-xs">
-                                                        2
+                                                    <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                                                        <Layers className="w-4 h-4" />
                                                     </div>
-                                                    <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-normal">
-                                                        Inflow Particulars & Today's Visits
-                                                    </h3>
+                                                    <div>
+                                                        <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                                                            Prepaid Referral Debtors
+                                                        </h3>
+                                                        <p className="text-[10.5px] text-slate-500 dark:text-zinc-400">
+                                                            Select partner and bills to clear or partially settle
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400 border border-slate-200/60 dark:border-zinc-700/60">
-                                                    Operational Inflow
-                                                </span>
+                                                <div className="text-right">
+                                                    <span className="text-[11px] font-mono font-bold text-slate-700 dark:text-zinc-300">
+                                                        {groups.length} Partners • {totalPendingVisits} Bills
+                                                    </span>
+                                                    <span className="block text-xs font-black text-emerald-700 dark:text-emerald-400 font-mono">
+                                                        Due: ₹{totalDueToday.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                                    </span>
+                                                </div>
                                             </div>
 
-                                            {/* Visits Checklist */}
-                                            <div className="space-y-2">
-                                                <div className="flex items-center justify-between text-xs">
-                                                    <span className="font-bold text-slate-700 dark:text-zinc-300">
-                                                        Select Patient Visits to Settle ({selectedFactIds.length}/{selectedGroup.visits?.length || 0}):
-                                                    </span>
-                                                    <div className="flex items-center gap-2">
-                                                        <button
-                                                            type="button"
-                                                            onClick={selectAllVisits}
-                                                            className="text-[11px] font-bold text-blue-600 hover:text-blue-700 cursor-pointer"
-                                                        >
-                                                            Select All
-                                                        </button>
-                                                        <span className="text-slate-300">|</span>
-                                                        <button
-                                                            type="button"
-                                                            onClick={clearAllVisits}
-                                                            className="text-[11px] font-bold text-slate-500 hover:text-slate-700 cursor-pointer"
-                                                        >
-                                                            Clear
-                                                        </button>
-                                                    </div>
-                                                </div>
+                                            {/* Search Bar */}
+                                            <div className="relative">
+                                                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                                                <input
+                                                    type="text"
+                                                    value={searchQuery}
+                                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                                    placeholder="Search partner hospital, doctor, patient name, token, test..."
+                                                    className="w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl pl-9 pr-8 py-2 text-xs font-medium outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white shadow-2xs"
+                                                />
+                                                {searchQuery && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setSearchQuery('')}
+                                                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
 
-                                                <div className="max-h-48 overflow-y-auto space-y-1.5 p-1 rounded-xl bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800">
-                                                    {(selectedGroup.visits || []).map(v => {
-                                                        const isChecked = selectedFactIds.includes(v.receivableFactId);
-                                                        return (
-                                                            <div
-                                                                key={v.receivableFactId}
-                                                                onClick={() => toggleVisitSelection(v.receivableFactId, v.amountDue)}
+                                        {/* Scrollable Debtors Accordion List */}
+                                        <div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 space-y-3">
+                                            {groups.length === 0 ? (
+                                                <div className="py-16 text-center space-y-2">
+                                                    <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-600 mx-auto flex items-center justify-center">
+                                                        <Check className="w-6 h-6" />
+                                                    </div>
+                                                    <h4 className="text-sm font-bold text-slate-800 dark:text-zinc-200">
+                                                        Zero Pending B2B Dues Today
+                                                    </h4>
+                                                    <p className="text-xs text-slate-500 dark:text-zinc-400 max-w-sm mx-auto">
+                                                        All corporate B2B prepaid referrals registered today are settled, or no B2B visits billed yet today.
+                                                    </p>
+                                                </div>
+                                            ) : filteredGroups.length === 0 ? (
+                                                <div className="py-12 text-center text-slate-400 space-y-1 text-xs">
+                                                    <p className="font-bold">No partners or visits match "{searchQuery}"</p>
+                                                    <p className="text-[11px]">Try searching by accession token (#MAI-xxx) or test name.</p>
+                                                </div>
+                                            ) : (
+                                                filteredGroups.map(g => {
+                                                    const isSelectedPartner = selectedPartnerId === g.partnerId;
+                                                    const isExpanded = expandedPartnerIds.has(g.partnerId) || isSelectedPartner;
+                                                    const partnerVisits = g.visits || [];
+                                                    const partnerSelectedVisits = partnerVisits.filter(v => selectedFactIds.includes(v.receivableFactId));
+                                                    const isAllSelected = partnerVisits.length > 0 && partnerSelectedVisits.length === partnerVisits.length;
+
+                                                    return (
+                                                        <div 
+                                                            key={g.partnerId}
+                                                            className={cn(
+                                                                "rounded-2xl border transition-all overflow-hidden",
+                                                                isSelectedPartner
+                                                                    ? "border-emerald-500/70 dark:border-emerald-500/50 shadow-md bg-white dark:bg-zinc-900"
+                                                                    : "border-slate-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/60 hover:border-slate-300"
+                                                            )}
+                                                        >
+                                                            {/* Partner Accordion Header */}
+                                                            <div 
                                                                 className={cn(
-                                                                    "p-2.5 rounded-lg flex items-center justify-between gap-3 text-xs transition-colors cursor-pointer",
-                                                                    isChecked
-                                                                        ? "bg-white dark:bg-zinc-900 border border-emerald-500/30 shadow-2xs"
-                                                                        : "hover:bg-slate-100 dark:hover:bg-zinc-900/60 opacity-70"
+                                                                    "p-3.5 flex items-center justify-between gap-3 cursor-pointer select-none transition-colors",
+                                                                    isSelectedPartner
+                                                                        ? "bg-emerald-50/50 dark:bg-emerald-950/20 border-b border-emerald-100 dark:border-emerald-900/30"
+                                                                        : "hover:bg-slate-50 dark:hover:bg-zinc-800/40"
                                                                 )}
+                                                                onClick={() => {
+                                                                    if (!isSelectedPartner) {
+                                                                        selectPartner(g);
+                                                                    } else {
+                                                                        togglePartnerAccordion(g.partnerId);
+                                                                    }
+                                                                }}
                                                             >
-                                                                <div className="flex items-center gap-2.5 min-w-0">
-                                                                    <input
-                                                                        type="checkbox"
-                                                                        checked={isChecked}
-                                                                        onChange={() => {}}
-                                                                        className="w-4 h-4 rounded text-emerald-600 focus:ring-0 cursor-pointer"
-                                                                    />
+                                                                <div className="flex items-center gap-3 min-w-0">
+                                                                    <div className={cn(
+                                                                        "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border",
+                                                                        isSelectedPartner
+                                                                            ? "bg-emerald-600 text-white border-emerald-700 shadow-sm"
+                                                                            : "bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 border-slate-200 dark:border-zinc-700"
+                                                                    )}>
+                                                                        <Building2 className="w-4 h-4" />
+                                                                    </div>
                                                                     <div className="min-w-0">
                                                                         <div className="flex items-center gap-2">
-                                                                            <span className="font-mono font-bold text-slate-900 dark:text-white">
-                                                                                #{v.token}
+                                                                            <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
+                                                                                {g.partnerName}
                                                                             </span>
-                                                                            <span className="font-bold text-slate-800 dark:text-zinc-200 truncate">
-                                                                                {v.patientName}
-                                                                            </span>
-                                                                            <span className="text-[10px] text-slate-400">
-                                                                                ({v.gender || ''} {v.age ? `${v.age}y` : ''})
-                                                                            </span>
+                                                                            {isSelectedPartner && (
+                                                                                <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold uppercase bg-emerald-600 text-white font-mono">
+                                                                                    ACTIVE
+                                                                                </span>
+                                                                            )}
                                                                         </div>
-                                                                        <p className="text-[10.5px] text-slate-500 dark:text-zinc-400 truncate">
-                                                                            {v.testsSummary}
-                                                                        </p>
+                                                                        {g.clinicName && (
+                                                                            <p className="text-[10px] text-slate-500 dark:text-zinc-400 truncate">{g.clinicName}</p>
+                                                                        )}
                                                                     </div>
                                                                 </div>
 
-                                                                <div className="text-right shrink-0">
-                                                                    <span className="font-mono font-extrabold text-slate-900 dark:text-white block">
-                                                                        ₹{Number(v.amountDue).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                                                                    </span>
-                                                                    <span className="text-[9px] uppercase font-bold text-amber-600">
-                                                                        Unsettled
-                                                                    </span>
+                                                                <div className="flex items-center gap-3 shrink-0">
+                                                                    <div className="text-right">
+                                                                        <span className="text-xs font-black text-emerald-700 dark:text-emerald-400 font-mono block">
+                                                                            ₹{Number(g.totalDueToday).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                                                        </span>
+                                                                        <span className="text-[10px] font-medium text-slate-500 dark:text-zinc-400">
+                                                                            {partnerVisits.length} {partnerVisits.length === 1 ? 'Visit' : 'Visits'}
+                                                                        </span>
+                                                                    </div>
+
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            togglePartnerAccordion(g.partnerId);
+                                                                        }}
+                                                                        className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-400 transition-colors cursor-pointer"
+                                                                    >
+                                                                        {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                                                    </button>
                                                                 </div>
                                                             </div>
-                                                        );
-                                                    })}
-                                                </div>
-                                            </div>
 
-                                            {/* Recessed Pod for Amount */}
-                                            <div className={cn("p-3.5 sm:p-4 space-y-1.5", ui.recessedPod)}>
-                                                <div className="flex items-center justify-between">
-                                                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
-                                                        Collection / Settlement Amount (₹) *
-                                                    </label>
-                                                    {amount && selectedVisitsTotal > 0 && (
-                                                        <span className={cn(
-                                                            "text-[10px] font-bold px-2 py-0.5 rounded-full border",
-                                                            parseFloat(amount) >= selectedVisitsTotal
-                                                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                                                                : "bg-amber-50 text-amber-700 border-amber-200"
-                                                        )}>
-                                                            {parseFloat(amount) >= selectedVisitsTotal ? "Full Clearance" : "Partial Collection"}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <div className="relative">
-                                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-2xl sm:text-3xl font-black text-slate-400 dark:text-zinc-500">₹</span>
-                                                    <input
-                                                        type="number"
-                                                        step="0.01"
-                                                        required
-                                                        placeholder="0.00"
-                                                        value={amount}
-                                                        onChange={(e) => setAmount(e.target.value)}
-                                                        className="w-full bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl pl-10 pr-4 py-2.5 text-2xl sm:text-3xl font-black outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-slate-900 dark:text-white tabular-nums shadow-inner"
-                                                    />
-                                                </div>
-                                            </div>
+                                                            {/* Partner Visits List (Accordion Body) */}
+                                                            {isExpanded && (
+                                                                <div className="p-3 bg-slate-50/70 dark:bg-zinc-950/60 border-t border-slate-200/60 dark:border-zinc-800/60 space-y-2">
+                                                                    {/* Action Row */}
+                                                                    <div className="flex items-center justify-between text-[11px] px-1">
+                                                                        <span className="font-semibold text-slate-600 dark:text-zinc-400">
+                                                                            {isSelectedPartner
+                                                                                ? `${partnerSelectedVisits.length}/${partnerVisits.length} selected for settlement`
+                                                                                : `${partnerVisits.length} registered visits today`}
+                                                                        </span>
+                                                                        <div className="flex items-center gap-2">
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    setSelectedPartnerId(g.partnerId);
+                                                                                    selectAllVisitsForPartner(g);
+                                                                                }}
+                                                                                className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer"
+                                                                            >
+                                                                                Select All ({partnerVisits.length})
+                                                                            </button>
+                                                                            <span className="text-slate-300">|</span>
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    setSelectedPartnerId(g.partnerId);
+                                                                                    clearAllVisitsForPartner();
+                                                                                }}
+                                                                                className="text-[11px] font-bold text-slate-500 hover:text-slate-700 cursor-pointer"
+                                                                            >
+                                                                                Clear
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
 
-                                            {/* Payer Particulars */}
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
-                                                    Received From / Payer Representative *
-                                                </label>
-                                                
-                                                {/* Presets */}
-                                                <div className="flex flex-wrap gap-1.5">
-                                                    {QUICK_PAYER_PRESETS.map(preset => (
-                                                        <button
-                                                            key={preset}
-                                                            type="button"
-                                                            onClick={() => setReceivedFrom(`${preset} (${selectedGroup.partnerName})`)}
-                                                            className="text-[10px] font-semibold px-2 py-1 rounded-md bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 text-slate-700 dark:text-zinc-300 transition-colors cursor-pointer"
-                                                        >
-                                                            {preset}
-                                                        </button>
-                                                    ))}
-                                                </div>
+                                                                    {/* Visit Cards */}
+                                                                    <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
+                                                                        {partnerVisits.map(v => {
+                                                                            const isChecked = isSelectedPartner && selectedFactIds.includes(v.receivableFactId);
+                                                                            const alloc = isSelectedPartner ? allocationSummary.visitAllocations.get(v.receivableFactId) : null;
 
-                                                <input
-                                                    type="text"
-                                                    required
-                                                    placeholder="e.g. Ramesh (Compounder for Anjum Hospital)"
-                                                    value={receivedFrom}
-                                                    onChange={(e) => setReceivedFrom(e.target.value)}
-                                                    className="w-full bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl px-3.5 py-2 text-xs font-semibold outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white shadow-2xs"
-                                                />
-                                            </div>
+                                                                            return (
+                                                                                <div
+                                                                                    key={v.receivableFactId}
+                                                                                    onClick={() => {
+                                                                                        if (!isSelectedPartner) {
+                                                                                            selectPartner(g);
+                                                                                        }
+                                                                                        toggleVisitSelection(v.receivableFactId);
+                                                                                    }}
+                                                                                    className={cn(
+                                                                                        "p-2.5 rounded-xl border flex items-center justify-between gap-3 text-xs transition-all cursor-pointer",
+                                                                                        isChecked
+                                                                                            ? "bg-white dark:bg-zinc-900 border-emerald-500/40 shadow-xs ring-1 ring-emerald-500/20"
+                                                                                            : "bg-white/60 dark:bg-zinc-900/40 border-slate-200/80 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-900 opacity-80"
+                                                                                    )}
+                                                                                >
+                                                                                    <div className="flex items-center gap-2.5 min-w-0">
+                                                                                        <input
+                                                                                            type="checkbox"
+                                                                                            checked={isChecked}
+                                                                                            onChange={() => {}}
+                                                                                            className="w-4 h-4 rounded text-emerald-600 focus:ring-0 cursor-pointer"
+                                                                                        />
+                                                                                        <div className="min-w-0">
+                                                                                            <div className="flex items-center gap-2">
+                                                                                                <span className="font-mono font-extrabold text-slate-900 dark:text-white">
+                                                                                                    #{v.token}
+                                                                                                </span>
+                                                                                                <span className="font-bold text-slate-800 dark:text-zinc-200 truncate">
+                                                                                                    {v.patientName}
+                                                                                                </span>
+                                                                                                <span className="text-[10px] text-slate-400">
+                                                                                                    ({v.gender || ''} {v.age ? `${v.age}y` : ''})
+                                                                                                </span>
+                                                                                            </div>
+                                                                                            <p className="text-[10px] text-slate-500 dark:text-zinc-400 truncate max-w-[280px]">
+                                                                                                {v.testsSummary || "Standard Investigation"}
+                                                                                            </p>
+                                                                                        </div>
+                                                                                    </div>
 
-                                            {/* Notes / Purpose */}
-                                            <div className="space-y-1.5">
-                                                <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
-                                                    Remarks / Notes (Optional)
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    placeholder="e.g. Cleared morning patient batch at counter"
-                                                    value={notes}
-                                                    onChange={(e) => setNotes(e.target.value)}
-                                                    className="w-full bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl px-3.5 py-2 text-xs font-semibold outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white shadow-2xs"
-                                                />
-                                            </div>
-                                        </div>
-                                    )}
+                                                                                    {/* Smart Allocation Live Preview Badges */}
+                                                                                    <div className="text-right shrink-0 flex flex-col items-end gap-0.5">
+                                                                                        <span className="font-mono font-bold text-slate-900 dark:text-white">
+                                                                                            ₹{Number(v.amountDue).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                                                                        </span>
 
-                                    {/* STEP 3: SETTLEMENT & FINANCIALS */}
-                                    {selectedGroup && (
-                                        <div className={cn("p-4 sm:p-5 space-y-4 shrink-0", ui.card)}>
-                                            <div className="flex items-center justify-between pb-2 border-b border-black/[0.06] dark:border-white/[0.06]">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-6 h-6 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-xs shadow-xs">
-                                                        3
-                                                    </div>
-                                                    <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-normal">
-                                                        Settlement & Financials
-                                                    </h3>
-                                                </div>
-                                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                                                    Immediate Counter Inflow
-                                                </span>
-                                            </div>
-
-                                            {/* Recessed Net Amount Pod */}
-                                            <div className={cn("p-4 space-y-1", ui.recessedPod)}>
-                                                <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-zinc-400 block">
-                                                    Net Inflow Amount
-                                                </span>
-                                                <div className="flex items-baseline justify-between">
-                                                    <span className="text-xs text-slate-500 dark:text-zinc-400">Ledger & Reception Impact</span>
-                                                    <span className="text-3xl sm:text-4xl font-black text-emerald-600 dark:text-emerald-400 tabular-nums tracking-tight">
-                                                        ₹{amount ? parseFloat(amount).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '0.00'}
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            {/* Inflow Channels */}
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
-                                                    Inflow Channel
-                                                </label>
-                                                <div className="grid grid-cols-3 gap-2">
-                                                    {[
-                                                        { id: 'Cash', label: 'Cash Drawer', icon: Wallet, desc: 'Adds to counter cash' },
-                                                        { id: 'UPI', label: 'UPI / Scan', icon: QrCode, desc: 'Direct online scan' },
-                                                        { id: 'BankTransfer', label: 'Bank / Card', icon: CreditCard, desc: 'Card POS / Direct' }
-                                                    ].map(mode => {
-                                                        const Icon = mode.icon;
-                                                        const isSelected = paymentMode === mode.id;
-                                                        return (
-                                                            <button
-                                                                key={mode.id}
-                                                                type="button"
-                                                                onClick={() => setPaymentMode(mode.id)}
-                                                                className={cn(
-                                                                    "p-3 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer text-center",
-                                                                    isSelected
-                                                                        ? (isDark
-                                                                            ? "bg-zinc-800 border-2 border-emerald-500 text-white shadow-md ring-1 ring-emerald-500/50"
-                                                                            : "bg-white border-2 border-emerald-600 text-emerald-950 shadow-[0_4px_16px_rgba(16,185,129,0.15)] ring-1 ring-emerald-600/30")
-                                                                        : (isDark
-                                                                            ? "bg-zinc-800/60 border-zinc-700/60 hover:bg-zinc-800 text-zinc-400 hover:text-white"
-                                                                            : "bg-white/80 border border-[#D5E2EC] hover:bg-white text-slate-600 hover:text-slate-900 shadow-2xs")
-                                                                )}
-                                                            >
-                                                                <Icon className={cn("w-5 h-5", isSelected ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400")} />
-                                                                <span className="text-xs font-bold leading-none">{mode.label}</span>
-                                                                <span className="text-[9.5px] opacity-70 leading-none">{mode.desc}</span>
-                                                            </button>
-                                                        );
-                                                    })}
-                                                </div>
-                                            </div>
-
-                                            {/* Metadata Attribution Pod */}
-                                            <div className="pt-2 border-t border-slate-100 dark:border-zinc-800/60 flex flex-col sm:flex-row sm:items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400 gap-1">
-                                                <div className="flex items-center gap-1.5">
-                                                    <User className="w-3.5 h-3.5 text-slate-400" />
-                                                    <span>Received By: <strong className="text-slate-700 dark:text-zinc-200">{user?.name || 'Reception Staff'}</strong></span>
-                                                </div>
-                                                <div className="flex items-center gap-1.5">
-                                                    <Clock className="w-3.5 h-3.5 text-slate-400" />
-                                                    <span>Settlement Window: <strong className="text-emerald-600 dark:text-emerald-400">Strictly Same-Day</strong></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* STICKY FOOTER */}
-                                {selectedGroup && (
-                                    <div className={cn("px-6 sm:px-8 py-3.5 border-t flex items-center justify-between shrink-0", ui.footer)}>
-                                        <button
-                                            type="button"
-                                            onClick={onClose}
-                                            className="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white transition-colors cursor-pointer"
-                                        >
-                                            Cancel
-                                        </button>
-
-                                        <button
-                                            type="submit"
-                                            disabled={isSubmitting || !amount || parseFloat(amount) <= 0 || selectedFactIds.length === 0}
-                                            className={cn(
-                                                "py-2.5 px-6 rounded-xl font-bold text-xs flex items-center gap-2 shadow-lg transition-all cursor-pointer active:scale-95",
-                                                isSubmitting || !amount || parseFloat(amount) <= 0 || selectedFactIds.length === 0
-                                                    ? "opacity-50 cursor-not-allowed bg-slate-300 dark:bg-zinc-800 text-slate-500"
-                                                    : "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20"
+                                                                                        {alloc && alloc.isSelected ? (
+                                                                                            alloc.status === 'FULL' ? (
+                                                                                                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-md bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 uppercase font-mono">
+                                                                                                    ✓ CLEARED ₹{alloc.totalAllocated}
+                                                                                                </span>
+                                                                                            ) : alloc.status === 'PARTIAL' ? (
+                                                                                                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-md bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30 uppercase font-mono">
+                                                                                                    PARTIAL: ₹{alloc.totalAllocated} (Due ₹{alloc.remainingDue})
+                                                                                                </span>
+                                                                                            ) : (
+                                                                                                <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-md bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/30 uppercase font-mono">
+                                                                                                    DUE ₹{alloc.remainingDue}
+                                                                                                </span>
+                                                                                            )
+                                                                                        ) : (
+                                                                                            <span className="text-[9px] uppercase font-bold text-slate-400 font-mono">
+                                                                                                UNSETTLED
+                                                                                            </span>
+                                                                                        )}
+                                                                                    </div>
+                                                                                </div>
+                                                                            );
+                                                                        })}
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })
                                             )}
-                                        >
-                                            {isSubmitting ? (
-                                                <>
-                                                    <RefreshCw className="w-4 h-4 animate-spin" />
-                                                    Authorizing...
-                                                </>
+                                        </div>
+                                    </div>
+
+                                    {/* ============================================================ */}
+                                    {/* RIGHT COLUMN: SETTLEMENTS, PARTIAL ENGINE & FINANCIALS      */}
+                                    {/* ============================================================ */}
+                                    <div className="w-full lg:w-[46%] xl:w-[44%] flex flex-col h-full min-h-0 bg-slate-50/50 dark:bg-zinc-900/30">
+                                        {/* Right Column Header */}
+                                        <div className="p-3.5 sm:p-4 border-b border-slate-200/80 dark:border-zinc-800 shrink-0 flex items-center justify-between bg-white/60 dark:bg-zinc-900/40">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-6 h-6 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-xs shadow-xs">
+                                                    2
+                                                </div>
+                                                <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                                                    Settlement & Financials
+                                                </h3>
+                                            </div>
+                                            {selectedGroup && (
+                                                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 truncate max-w-[200px]">
+                                                    {selectedGroup.partnerName} ({selectedFactIds.length} Bills)
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {/* Scrollable Right Form */}
+                                        <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 space-y-4">
+                                            {!selectedGroup ? (
+                                                <div className="py-20 text-center text-slate-400 space-y-2 text-xs">
+                                                    <Building2 className="w-10 h-10 mx-auto opacity-30" />
+                                                    <p className="font-bold">Select a B2B Partner from the left panel</p>
+                                                    <p className="text-[11px]">Click any hospital or doctor partner to load their outstanding patient visits.</p>
+                                                </div>
                                             ) : (
                                                 <>
-                                                    Authorize & Receive ₹{amount ? parseFloat(amount).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '0.00'}
-                                                    <ArrowRight className="w-4 h-4" />
+                                                    {/* 1. SETTLEMENT TERMS (FULL VS PARTIAL) */}
+                                                    <div className={cn("p-4 space-y-3 shrink-0", ui.card)}>
+                                                        <div className="flex items-center justify-between">
+                                                            <label className="text-[10.5px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
+                                                                Settlement Terms & Mode
+                                                            </label>
+                                                            <span className="text-[10.5px] font-mono text-slate-500">
+                                                                Selected Bills Total: <strong className="text-slate-900 dark:text-white">₹{selectedVisitsTotal.toLocaleString()}</strong>
+                                                            </span>
+                                                        </div>
+
+                                                        {/* Segmented Full vs Partial Pill */}
+                                                        <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-200/80 dark:border-zinc-700">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleTermsModeChange('FULL')}
+                                                                className={cn(
+                                                                    "py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5",
+                                                                    termsMode === 'FULL'
+                                                                        ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-xs font-extrabold"
+                                                                        : "text-slate-600 dark:text-zinc-400 hover:text-slate-900"
+                                                                )}
+                                                            >
+                                                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                                                                <span>Full Settle (₹{selectedVisitsTotal.toLocaleString()})</span>
+                                                            </button>
+
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleTermsModeChange('PARTIAL')}
+                                                                className={cn(
+                                                                    "py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5",
+                                                                    termsMode === 'PARTIAL'
+                                                                        ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-xs font-extrabold"
+                                                                        : "text-slate-600 dark:text-zinc-400 hover:text-slate-900"
+                                                                )}
+                                                            >
+                                                                <Percent className="w-3.5 h-3.5 text-amber-600" />
+                                                                <span>Partial Settle</span>
+                                                            </button>
+                                                        </div>
+
+                                                        {/* Amount Input */}
+                                                        <div className={cn("p-3.5 space-y-2", ui.recessedPod)}>
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
+                                                                    Amount Received at Desk Today (₹) *
+                                                                </span>
+                                                                {termsMode === 'PARTIAL' && (
+                                                                    <div className="flex items-center gap-1">
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => applyPercentage(25)}
+                                                                            className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-200 dark:bg-zinc-700 text-slate-700 dark:text-zinc-200 hover:bg-slate-300"
+                                                                        >
+                                                                            25%
+                                                                        </button>
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => applyPercentage(50)}
+                                                                            className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-200 dark:bg-zinc-700 text-slate-700 dark:text-zinc-200 hover:bg-slate-300"
+                                                                        >
+                                                                            50%
+                                                                        </button>
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => applyPercentage(75)}
+                                                                            className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-200 dark:bg-zinc-700 text-slate-700 dark:text-zinc-200 hover:bg-slate-300"
+                                                                        >
+                                                                            75%
+                                                                        </button>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+
+                                                            <div className="relative">
+                                                                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-2xl font-black text-slate-400 dark:text-zinc-500">₹</span>
+                                                                <input
+                                                                    type="number"
+                                                                    step="0.01"
+                                                                    required
+                                                                    placeholder="0.00"
+                                                                    value={amount}
+                                                                    onChange={(e) => setAmount(e.target.value)}
+                                                                    className="w-full bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl pl-9 pr-4 py-2 text-2xl font-black outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white tabular-nums shadow-inner"
+                                                                />
+                                                            </div>
+
+                                                            {termsMode === 'PARTIAL' && (
+                                                                <div className="flex items-center gap-1.5 text-[10.5px] text-emerald-700 dark:text-emerald-400 font-medium pt-0.5">
+                                                                    <Sparkles className="w-3 h-3 shrink-0" />
+                                                                    <span>Smart FIFO Allocation: Automatically clears older patient bills and records partial dues.</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* 2. SECONDARY CONCESSION / WRITE-OFF WAIVER (Pastel Orange Styling) */}
+                                                    <div className="rounded-2xl border border-orange-500/30 bg-orange-500/5 dark:bg-orange-950/20 p-4 space-y-3">
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex items-center gap-2">
+                                                                <Tag className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                                                                <span className="text-xs font-bold text-orange-950 dark:text-orange-200 uppercase tracking-wide">
+                                                                    Secondary Concession / Write-off Waiver
+                                                                </span>
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleConcessionToggle(!hasConcession)}
+                                                                className={cn(
+                                                                    "px-2.5 py-1 rounded-lg text-[10.5px] font-bold transition-all cursor-pointer",
+                                                                    hasConcession
+                                                                        ? "bg-orange-600 text-white shadow-xs"
+                                                                        : "bg-orange-500/10 text-orange-700 dark:text-orange-300 hover:bg-orange-500/20 border border-orange-500/20"
+                                                                )}
+                                                            >
+                                                                {hasConcession ? "Remove Waiver" : "+ Apply Waiver"}
+                                                            </button>
+                                                        </div>
+
+                                                        {hasConcession && (
+                                                            <div className="space-y-3 pt-1 animate-in fade-in duration-200">
+                                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                                                    {/* Concession Amount */}
+                                                                    <div className="space-y-1">
+                                                                        <label className="text-[10px] font-bold uppercase tracking-wider text-orange-800 dark:text-orange-300">
+                                                                            Waiver Amount (₹) *
+                                                                        </label>
+                                                                        <div className="relative">
+                                                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-orange-400">₹</span>
+                                                                            <input
+                                                                                type="number"
+                                                                                step="0.01"
+                                                                                placeholder="0.00"
+                                                                                value={concessionAmount}
+                                                                                onChange={(e) => handleConcessionAmountChange(e.target.value)}
+                                                                                className="w-full bg-white dark:bg-zinc-900 border border-orange-300 dark:border-orange-800 rounded-xl pl-7 pr-3 py-1.5 text-sm font-bold text-orange-950 dark:text-orange-100 outline-none focus:ring-2 focus:ring-orange-500 tabular-nums"
+                                                                            />
+                                                                        </div>
+                                                                    </div>
+
+                                                                    {/* Authorized By */}
+                                                                    <div className="space-y-1">
+                                                                        <label className="text-[10px] font-bold uppercase tracking-wider text-orange-800 dark:text-orange-300">
+                                                                            Authorized By *
+                                                                        </label>
+                                                                        <input
+                                                                            type="text"
+                                                                            placeholder="e.g. Dr. Vasudeva Rao / Lab Owner"
+                                                                            value={concessionAuthorizer}
+                                                                            onChange={(e) => setConcessionAuthorizer(e.target.value)}
+                                                                            className="w-full bg-white dark:bg-zinc-900 border border-orange-300 dark:border-orange-800 rounded-xl px-3 py-1.5 text-xs font-semibold text-orange-950 dark:text-orange-100 outline-none focus:ring-2 focus:ring-orange-500"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Reason Presets */}
+                                                                <div className="space-y-1.5">
+                                                                    <label className="text-[10px] font-bold uppercase tracking-wider text-orange-800 dark:text-orange-300">
+                                                                        Waiver / Concession Reason *
+                                                                    </label>
+                                                                    <div className="flex flex-wrap gap-1">
+                                                                        {CONCESSION_REASONS.map(r => (
+                                                                            <button
+                                                                                key={r}
+                                                                                type="button"
+                                                                                onClick={() => setConcessionReason(r)}
+                                                                                className={cn(
+                                                                                    "text-[9.5px] font-medium px-2 py-0.5 rounded-md transition-colors cursor-pointer",
+                                                                                    concessionReason === r
+                                                                                        ? "bg-orange-600 text-white font-bold"
+                                                                                        : "bg-white/80 dark:bg-zinc-800 text-orange-900 dark:text-orange-200 hover:bg-orange-100"
+                                                                                )}
+                                                                            >
+                                                                                {r}
+                                                                            </button>
+                                                                        ))}
+                                                                    </div>
+                                                                    <input
+                                                                        type="text"
+                                                                        value={concessionReason}
+                                                                        onChange={(e) => setConcessionReason(e.target.value)}
+                                                                        placeholder="Custom concession justification..."
+                                                                        className="w-full bg-white dark:bg-zinc-900 border border-orange-300 dark:border-orange-800 rounded-xl px-3 py-1.5 text-xs text-orange-950 dark:text-orange-100 outline-none"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    {/* 3. FINANCIAL SUMMARY POD */}
+                                                    <div className={cn("p-4 space-y-2", ui.recessedPod)}>
+                                                        <div className="flex justify-between text-xs text-slate-500 dark:text-zinc-400">
+                                                            <span>Gross Tariff Selected:</span>
+                                                            <span className="font-mono font-bold text-slate-800 dark:text-zinc-200">
+                                                                ₹{selectedVisitsTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                                            </span>
+                                                        </div>
+
+                                                        {hasConcession && parseFloat(concessionAmount) > 0 && (
+                                                            <div className="flex justify-between text-xs text-orange-600 dark:text-orange-400 font-semibold">
+                                                                <span>Concession / Write-off:</span>
+                                                                <span className="font-mono font-bold">
+                                                                    -₹{Number(concessionAmount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                                                </span>
+                                                            </div>
+                                                        )}
+
+                                                        <div className="flex justify-between text-xs text-slate-700 dark:text-zinc-300 font-bold pt-1 border-t border-slate-200 dark:border-zinc-800">
+                                                            <span>Net Clearance Target:</span>
+                                                            <span className="font-mono">
+                                                                ₹{allocationSummary.netToClear.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="flex items-baseline justify-between pt-1">
+                                                            <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                                                                Desk Collection Now:
+                                                            </span>
+                                                            <span className="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 tabular-nums">
+                                                                ₹{amount ? parseFloat(amount).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '0.00'}
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="flex justify-between text-xs pt-1 border-t border-slate-200 dark:border-zinc-800">
+                                                            <span className="text-slate-500 dark:text-zinc-400">Balance Remaining Due:</span>
+                                                            <span className={cn(
+                                                                "font-mono font-bold",
+                                                                allocationSummary.remainingDue > 0 ? "text-amber-600" : "text-emerald-600"
+                                                            )}>
+                                                                {allocationSummary.remainingDue > 0
+                                                                    ? `₹${allocationSummary.remainingDue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`
+                                                                    : "₹0.00 (Fully Cleared)"}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* 4. RECEIVED FROM & REMARKS */}
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
+                                                            Received From / Payer Representative *
+                                                        </label>
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {QUICK_PAYER_PRESETS.map(preset => (
+                                                                <button
+                                                                    key={preset}
+                                                                    type="button"
+                                                                    onClick={() => setReceivedFrom(`${preset} (${selectedGroup.partnerName})`)}
+                                                                    className="text-[9.5px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 text-slate-700 dark:text-zinc-300 transition-colors cursor-pointer"
+                                                                >
+                                                                    {preset}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                        <input
+                                                            type="text"
+                                                            required
+                                                            placeholder="e.g. Ramesh (Hospital Compounder)"
+                                                            value={receivedFrom}
+                                                            onChange={(e) => setReceivedFrom(e.target.value)}
+                                                            className="w-full bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl px-3 py-1.5 text-xs font-semibold outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white"
+                                                        />
+                                                    </div>
+
+                                                    {/* Remarks */}
+                                                    <div className="space-y-1">
+                                                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
+                                                            Remarks / Audit Notes (Optional)
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            placeholder="e.g. Morning OPD batch settlement at reception"
+                                                            value={notes}
+                                                            onChange={(e) => setNotes(e.target.value)}
+                                                            className="w-full bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl px-3 py-1.5 text-xs font-semibold outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white"
+                                                        />
+                                                    </div>
+
+                                                    {/* 5. PAYMENT CHANNEL */}
+                                                    <div className="space-y-2">
+                                                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
+                                                            Payment Channel
+                                                        </label>
+                                                        <div className="grid grid-cols-3 gap-2">
+                                                            {[
+                                                                { id: 'Cash', label: 'Cash Drawer', icon: Wallet, desc: 'Adds to counter cash' },
+                                                                { id: 'UPI', label: 'UPI / Scan', icon: QrCode, desc: 'Instant QR' },
+                                                                { id: 'BankTransfer', label: 'Bank / Card', icon: CreditCard, desc: 'POS / Transfer' }
+                                                            ].map(mode => {
+                                                                const Icon = mode.icon;
+                                                                const isSelected = paymentMode === mode.id;
+                                                                return (
+                                                                    <button
+                                                                        key={mode.id}
+                                                                        type="button"
+                                                                        onClick={() => setPaymentMode(mode.id)}
+                                                                        className={cn(
+                                                                            "p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all cursor-pointer text-center",
+                                                                            isSelected
+                                                                                ? (isDark
+                                                                                    ? "bg-zinc-800 border-2 border-emerald-500 text-white shadow-md ring-1 ring-emerald-500/50"
+                                                                                    : "bg-white border-2 border-emerald-600 text-emerald-950 shadow-[0_4px_16px_rgba(16,185,129,0.15)] ring-1 ring-emerald-600/30")
+                                                                                : (isDark
+                                                                                    ? "bg-zinc-800/60 border-zinc-700/60 hover:bg-zinc-800 text-zinc-400 hover:text-white"
+                                                                                    : "bg-white/80 border border-[#D5E2EC] hover:bg-white text-slate-600 hover:text-slate-900 shadow-2xs")
+                                                                        )}
+                                                                    >
+                                                                        <Icon className={cn("w-4 h-4", isSelected ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400")} />
+                                                                        <span className="text-xs font-bold leading-none">{mode.label}</span>
+                                                                        <span className="text-[9px] opacity-70 leading-none">{mode.desc}</span>
+                                                                    </button>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </div>
                                                 </>
                                             )}
-                                        </button>
+                                        </div>
+
+                                        {/* Sticky Footer Action Bar */}
+                                        {selectedGroup && (
+                                            <div className={cn("px-5 py-3 border-t flex items-center justify-between shrink-0", ui.footer)}>
+                                                <button
+                                                    type="button"
+                                                    onClick={onClose}
+                                                    className="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white transition-colors cursor-pointer"
+                                                >
+                                                    Cancel
+                                                </button>
+
+                                                <button
+                                                    type="submit"
+                                                    disabled={isSubmitting || selectedFactIds.length === 0 || ((parseFloat(amount) || 0) <= 0 && (!hasConcession || (parseFloat(concessionAmount) || 0) <= 0))}
+                                                    className={cn(
+                                                        "py-2.5 px-6 rounded-xl font-bold text-xs flex items-center gap-2 shadow-lg transition-all cursor-pointer active:scale-95",
+                                                        isSubmitting || selectedFactIds.length === 0 || ((parseFloat(amount) || 0) <= 0 && (!hasConcession || (parseFloat(concessionAmount) || 0) <= 0))
+                                                            ? "opacity-50 cursor-not-allowed bg-slate-300 dark:bg-zinc-800 text-slate-500"
+                                                            : "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20"
+                                                    )}
+                                                >
+                                                    {isSubmitting ? (
+                                                        <>
+                                                            <RefreshCw className="w-4 h-4 animate-spin" />
+                                                            Authorizing...
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            Authorize & Settle ₹{amount ? parseFloat(amount).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '0.00'}
+                                                            {allocationSummary.remainingDue > 0 && (
+                                                                <span className="text-[10px] opacity-80 font-normal">
+                                                                    (Due: ₹{allocationSummary.remainingDue.toLocaleString('en-IN', { minimumFractionDigits: 0 })})
+                                                                </span>
+                                                            )}
+                                                            <ArrowRight className="w-4 h-4" />
+                                                        </>
+                                                    )}
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
-                                )}
+                                </div>
                             </form>
                         )}
                     </div>
@@ -848,6 +1354,14 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose }) {
                                                     <span>Visits: {item.visitCount} ({item.patientTokens?.join(', ') || 'N/A'})</span>
                                                     <span>•</span>
                                                     <span>Cashier: {item.cashierName}</span>
+                                                    {item.concessionAmount > 0 && (
+                                                        <>
+                                                            <span>•</span>
+                                                            <span className="text-orange-600 dark:text-orange-400 font-bold">
+                                                                Waiver: ₹{Number(item.concessionAmount).toLocaleString()}
+                                                            </span>
+                                                        </>
+                                                    )}
                                                 </div>
                                             </div>
 

@@ -90,31 +90,37 @@ namespace SynOS.Services
             var startUtc = startOfToday.UtcDateTime;
             var endUtc = endOfToday.UtcDateTime;
 
-            // Total Walk-Ins: ALL confirmed retail direct patients registered across all desks in the branch today (excluding uncommitted drafts, cancellations, and corporate B2B prepaid)
-            var branchVisitsQuery = _context.Visits
+            // Base query for all confirmed intake visits in the branch today
+            var confirmedVisitsToday = _context.Visits
                 .Where(v => v.BranchId == branchId 
                          && (v.TokenDate == today || (v.CreatedAt >= startUtc && v.CreatedAt < endUtc))
                          && v.Status != VisitStatus.Cancelled
                          && v.Status != VisitStatus.Draft
-                         && (v.Token == null || !v.Token.StartsWith("D-"))
-                         && v.PaymentCollectionModel != "PartnerCollects"
+                         && (v.Token == null || !v.Token.StartsWith("D-")));
+
+            // Direct Walk-Ins (Retail direct collection / desk credit)
+            var retailWalkInsQuery = confirmedVisitsToday
+                .Where(v => v.PaymentCollectionModel != "PartnerCollects"
                          && v.BillingType != BillingType.PrepaidPartner);
 
-            var walkIns = await branchVisitsQuery.CountAsync();
+            var walkIns = await retailWalkInsQuery.CountAsync();
 
-            var deskVisitsQuery = branchVisitsQuery;
+            // Corporate B2B Prepaid Visits
+            var prepaidVisitsQuery = confirmedVisitsToday
+                .Where(v => v.PaymentCollectionModel == "PartnerCollects"
+                         || v.BillingType == BillingType.PrepaidPartner);
+
             if (userId.HasValue)
             {
-                deskVisitsQuery = deskVisitsQuery.Where(v => v.AssignedReceptionistId == userId.Value || v.CreatedByUserId == userId.Value);
+                prepaidVisitsQuery = prepaidVisitsQuery.Where(v => v.AssignedReceptionistId == userId.Value || v.CreatedByUserId == userId.Value);
             }
             else if (_userContext.CurrentRole == "Receptionist")
             {
                 var currentUserId = _userContext.CurrentUserId;
-                deskVisitsQuery = deskVisitsQuery.Where(v => v.AssignedReceptionistId == currentUserId || v.CreatedByUserId == currentUserId);
+                prepaidVisitsQuery = prepaidVisitsQuery.Where(v => v.AssignedReceptionistId == currentUserId || v.CreatedByUserId == currentUserId);
             }
 
-            var prepaidVisits = await deskVisitsQuery
-                .Where(v => v.PaymentCollectionModel == "PartnerCollects" && (v.Status == VisitStatus.Paid || v.Status == VisitStatus.FullPaid))
+            var prepaidVisits = await prepaidVisitsQuery
                 .Include(v => v.Invoices)
                 .ToListAsync();
 
@@ -125,8 +131,8 @@ namespace SynOS.Services
                 return Math.Max(0m, invTotal - b2bDiscount);
             });
 
-            var finalPrepaidCount = prepaidCount > 0 ? prepaidCount : (stats?.PrepaidCount ?? 0);
-            var finalWalkIns = walkIns > 0 ? walkIns : (stats?.WalkIns ?? 0);
+            var finalPrepaidCount = prepaidCount;
+            var finalWalkIns = walkIns;
 
             var paymentsQuery = _context.Payments
                 .Include(p => p.Invoice)

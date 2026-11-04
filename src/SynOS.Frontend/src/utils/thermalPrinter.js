@@ -1286,6 +1286,8 @@ export function generateThermalB2BSettlementSlipHtml(payload = {}) {
     const partnerName = payload.partnerName || payload.PartnerName || 'B2B Partner';
     const clinicName = payload.clinicName || payload.ClinicName || '';
     const amount = Number(payload.amount || payload.Amount || 0);
+    const concessionAmount = Number(payload.concessionAmount || payload.ConcessionAmount || 0);
+    const concessionReason = payload.concessionReason || payload.ConcessionReason || '';
     const paymentMode = (payload.paymentMode || payload.PaymentMode || 'Cash').toUpperCase();
     const receivedFrom = payload.receivedFrom || payload.ReceivedFrom || 'Partner Representative';
     const cashierName = payload.cashierName || payload.CashierName || 'Reception Staff';
@@ -1381,6 +1383,13 @@ export function generateThermalB2BSettlementSlipHtml(payload = {}) {
 
     <div class="double-divider"></div>
 
+    ${concessionAmount > 0 ? `
+    <div class="flex-between" style="font-size: 10px; margin-top: 3px; color: #b45309;">
+        <span>CONCESSION / WAIVER:</span>
+        <span class="font-bold">- ₹ ${concessionAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+    </div>
+    ${concessionReason ? `<div style="font-size: 8.5px; color: #666; text-align: right; margin-bottom: 2px;">(${concessionReason})</div>` : ''}
+    ` : ''}
     <div style="font-size: 13px; font-weight: 900; display: flex; justify-content: space-between; align-items: center;">
         <span>TOTAL COLLECTED:</span>
         <span>₹ ${amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>

@@ -39,7 +39,7 @@ namespace SynOS.Models.DTOs.Revenue
         public List<Guid> FactIds { get; set; } = new();
 
         [Required]
-        [Range(0.01, (double)decimal.MaxValue, ErrorMessage = "Settlement amount must be greater than zero.")]
+        [Range(0.00, (double)decimal.MaxValue, ErrorMessage = "Settlement amount must be greater than or equal to zero.")]
         public decimal Amount { get; set; }
 
         [Required]
@@ -48,6 +48,11 @@ namespace SynOS.Models.DTOs.Revenue
         public string? ReceivedFrom { get; set; }
 
         public string? Notes { get; set; }
+
+        // Secondary Concession / Write-off
+        public decimal? ConcessionAmount { get; set; }
+        public string? ConcessionReason { get; set; }
+        public string? ConcessionAuthorizer { get; set; }
     }
 
     public class B2BSettlementReceiptDto
@@ -57,6 +62,8 @@ namespace SynOS.Models.DTOs.Revenue
         public string PartnerName { get; set; } = string.Empty;
         public string? ClinicName { get; set; }
         public decimal Amount { get; set; }
+        public decimal? ConcessionAmount { get; set; }
+        public string? ConcessionReason { get; set; }
         public string PaymentMode { get; set; } = "Cash";
         public string? ReceivedFrom { get; set; }
         public string CashierName { get; set; } = string.Empty;

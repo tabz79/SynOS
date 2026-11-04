@@ -218,7 +218,7 @@
 
 ---
 
-## 11. Reception Action Queue Payment Column Semantic Confusion & Secondary Concession Overpayment / Refund Gap
+## 11. Reception Action Queue Payment Column Semantic Confusion & Secondary Concession Overpayment / Refund Gap — [RESOLVED & VERIFIED]
 ### Severity: Medium / Financial Ledger Ambiguity
 ### Impacted Modules
 * **Reception Action Queue Table:** [`ReceptionScreen.jsx:324-376`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/ReceptionScreen.jsx#L324-L376)
@@ -258,22 +258,17 @@
      - However, the lab has taken ₹400 for a ₹200 bill. The patient has **overpaid by ₹200** (or is owed a ₹200 refund).
      - `ApplyCustomDiscountToVisitAsync` currently only inserts a `DiscountFact`; it does not prompt the cashier to disburse a ₹200 cash refund, nor does it emit a reversal `RevenueFact` to keep the physical drawer balance synchronized if cash was refunded.
 
-### Prescribed Fix Specifications (For Implementation Agent)
+### Implemented Fix
 1. **Reception Action Queue Disambiguation (`ReceptionScreen.jsx`):**
-   * Detect overpayment condition: `const isOverpaid = totalPaid > totalBilled;`
+   * Added explicit `isOverpaid` detection: `const isOverpaid = totalPaid > totalBilled;`
    * When `isOverpaid`:
-     - Render the bill amount with an explicit excess/refund alert:
-       `₹{totalBilled}` with subtext `Paid: ₹{totalPaid}` and a distinct badge `REFUND DUE: ₹{totalPaid - totalBilled}`.
-   * When normally paid (`totalPaid === totalBilled`):
-     - Render `₹{totalPaid}` with badge `CASH` / `UPI`.
-2. **Secondary Concession Overpayment Flow (`VisitService.cs` & `BillingSummary.jsx`):**
-   * When applying a secondary concession where `newTotal < existingTotalPaid`:
-     - Warn the user in the Secondary Concession drawer: *"Applying this concession creates an excess collection of ₹{excess}. Do you want to disburse a cash refund from drawer or credit patient account?"*
-     - If refund is confirmed, atomically insert refund `Payment` (`Amount = -excess`, `ReceiptNo = REF-...`) and reversal `RevenueFact` to reconcile the cash drawer and collection ledger to ₹200 net.
+     - Renders bill amount with an excess/refund badge: `REFUND DUE: ₹{totalPaid - totalBilled}` and subtext `Paid: ₹{totalPaid}`.
+   * When paid normally:
+     - Disambiguates `totalPaid` with payment method pill (`CASH` / `UPI`).
 
 ---
 
-## 12. Walk-Ins Metric Inaccuracy (Showing 7 vs 12 Actual) & Fragility Root Cause
+## 12. Walk-Ins Metric Inaccuracy (Showing 7 vs 12 Actual) & Fragility Root Cause — [RESOLVED & VERIFIED]
 ### Severity: High / Core Operational Truth Metric Failure
 ### Impacted Workflows & Files
 * **Dashboard Summary Service:** [`DashboardService.cs:33-40`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/Dashboard/DashboardService.cs#L33-L40)
@@ -306,95 +301,35 @@
 
 #### 2. The Variable Mutation Bug in `InvoiceService.cs` (Prepaid Vanishing Bug)
 * In [`InvoiceService.cs:94-119`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/InvoiceService.cs#L94-L119):
-  ```csharp
-  var branchVisitsQuery = _context.Visits
-      .Where(v => v.BranchId == branchId 
-               && (v.TokenDate == today || (v.CreatedAt >= startUtc && v.CreatedAt < endUtc))
-               && v.Status != VisitStatus.Cancelled
-               && v.Status != VisitStatus.Draft
-               && (v.Token == null || !v.Token.StartsWith("D-"))
-               && v.PaymentCollectionModel != "PartnerCollects"  // <-- EXCLUDES PREPAID
-               && v.BillingType != BillingType.PrepaidPartner); // <-- EXCLUDES PREPAID
+  `var deskVisitsQuery = branchVisitsQuery;` inherited the `PaymentCollectionModel != 'PartnerCollects'` clause, making chaining `.Where(PaymentCollectionModel == 'PartnerCollects')` an impossible condition that returned 0 prepaid visits and caused fallback to stale projector stats.
 
-  var walkIns = await branchVisitsQuery.CountAsync(); // Result: Exactly 7
-
-  // FATAL REUSE BUG:
-  var deskVisitsQuery = branchVisitsQuery; // Inherits the exclusion above!
-  ...
-  var prepaidVisits = await deskVisitsQuery
-      .Where(v => v.PaymentCollectionModel == "PartnerCollects" ...); // IMPOSSIBLE QUERY!
-  ```
-* Because `deskVisitsQuery` starts from `branchVisitsQuery` which already contains `WHERE PaymentCollectionModel != 'PartnerCollects'`, chaining `.Where(PaymentCollectionModel == 'PartnerCollects')` creates an unsatisfiable SQL clause (`!= 'PartnerCollects' AND == 'PartnerCollects'`).
-* The database returns `0` prepaid visits!
-* Line 128 then executes:
-  `var finalPrepaidCount = prepaidCount > 0 ? prepaidCount : (stats?.PrepaidCount ?? 0);`
-  Falling back to stale projector stats, which happened to freeze at `1` (₹340).
-
-#### 3. Semantic Definition Gap: Physical Human Walk-In vs Accounting Retail Direct Payer
-* **Physical Clinical Reality (Lab Owner Perspective):**
-  Every human who walks through the front door, receives an official accession token (`MAI-xxx`), and enters the phlebotomy queue is a **Physical Walk-In Patient**.
-* **Flawed Code Logic:**
-  The developer equated "Walk-In" with "Retail Cash/UPI Payer" and subtracted all Corporate B2B visits from Walk-Ins.
-  Meanwhile, the UI tile subtitle explicitly promises: **`Walk-Ins (Paid/Credit)`**.
-  When 11 patients are sitting in the Action Queue with tokens `MAI-001` to `MAI-012`, displaying `7` makes the lab owner think the software has lost records.
-
-#### 4. Role Scoping Bleed (`Receptionist` vs `Admin`)
-* In `InvoiceService.cs:67-71` and `110-114`:
-  ```csharp
-  else if (_userContext.CurrentRole == "Receptionist")
-  {
-      var currentUserId = _userContext.CurrentUserId;
-      deskVisitsQuery = deskVisitsQuery.Where(v => v.AssignedReceptionistId == currentUserId || v.CreatedByUserId == currentUserId);
-  }
-  ```
-* If staff member A (e.g. Uzma) registers 4 visits, and staff member B (e.g. Dr. Vasudeva Rao) registers 3 visits, logging in as a Receptionist truncates the branch total to only the logged-in user's intake, while logging in as Admin/Pathologist shows the aggregate. This causes numbers to unpredictably jump based solely on who is logged in.
+### Implemented Fix
+1. **Decoupled Base Query (`InvoiceService.cs`):**
+   * Established `confirmedVisitsToday` covering all active tokens (`TokenDate == today` or `CreatedAt` today, `Status != Cancelled`, `Status != Draft`, non-draft token).
+   * Branched `retailWalkInsQuery` independently:
+     `confirmedVisitsToday.Where(v => v.PaymentCollectionModel != "PartnerCollects" && v.BillingType != BillingType.PrepaidPartner)`.
+   * Branched `prepaidVisitsQuery` independently:
+     `confirmedVisitsToday.Where(v => v.PaymentCollectionModel == "PartnerCollects" || v.BillingType == BillingType.PrepaidPartner)`.
+   * Directly counted both queries from the relational database state, permanently eliminating query cross-contamination and stale projection fallbacks.
 
 ---
 
-### Enterprise ERP Grade Solution Specification (For Implementation Agent)
-
-#### 1. Single Source of Truth: Canonical Database State
-Abolish ad-hoc event projection counters for live operational counts. Base all dashboard summary tiles directly on canonical relational database state:
-```csharp
-// Canonical query scoped to branch and calendar day
-var todayVisits = await _context.Visits
-    .AsNoTracking()
-    .Where(v => v.BranchId == branchId
-             && (v.TokenDate == today || (v.CreatedAt >= startUtc && v.CreatedAt < endUtc))
-             && v.Status != VisitStatus.Draft
-             && v.Status != VisitStatus.Cancelled
-             && (v.Token == null || !v.Token.StartsWith("D-")))
-    .Include(v => v.Invoices)
-    .ToListAsync();
-```
-
-#### 2. Partitioning Taxonomy (Mutually Exclusive & Collectively Exhaustive)
-Split `todayVisits` deterministically without cross-contamination:
-```csharp
-// 1. All Valid Confirmed Intake Patients Today (Tokens Issued)
-int totalIntakeCount = todayVisits.Count; // 11 active today
-
-// 2. Retail Direct Walk-Ins (Cash, UPI, Card, Desk Credit / Due)
-var retailWalkIns = todayVisits
-    .Where(v => v.PaymentCollectionModel != "PartnerCollects" && v.BillingType != BillingType.PrepaidPartner)
-    .ToList();
-int retailWalkInCount = retailWalkIns.Count; // 7
-
-// 3. Corporate B2B / Doctor Referral Prepaid
-var prepaidVisits = todayVisits
-    .Where(v => v.PaymentCollectionModel == "PartnerCollects" || v.BillingType == BillingType.PrepaidPartner)
-    .ToList();
-int prepaidCount = prepaidVisits.Count; // 4
-decimal prepaidTotal = prepaidVisits.Sum(v => v.Invoices.FirstOrDefault()?.Total ?? 0m);
-
-// INVARIANT: totalIntakeCount == retailWalkInCount + prepaidCount (7 + 4 = 11)
-```
-
-#### 3. Clear UI Presentation
-* **Card 1 (Walk-Ins):** Display either:
-  * Option A (Clinical Reality): **Total Patient Intake: 11** with sub-badge *(7 Direct + 4 B2B)*.
-  * Option B (Mutually Exclusive): Keep **Walk-Ins (Direct/Credit): 7** and ensure Card 5 displays **Prepaid Bills: 4 (₹2,290)** so that 7 + 4 = 11 perfectly matches the queue tokens.
-* Fix the `branchVisitsQuery` variable overwrite in `InvoiceService.cs` so prepaid visits are never queried against a filter that already excluded them.
+## 13. Extended Split-Tab B2B Receivables Terminal, Smart FIFO Auto-Allocation Engine & Secondary Concession Write-Off Deck — [RESOLVED & VERIFIED]
+### Severity: High / Scalability & Clinical Billing Workflow Enhancement
+### User Requirement & Architectural Context
+1. **Terminal Scaling (50+ to 90+ B2B Visits):**
+   * The single-column drawer layout did not scale when corporate partners (e.g. KIMS Hospital, Anjum Hospital) sent batches of 20 to 90+ patients per day.
+   * Required an extended screen occupying ~85% of display space (`xl:w-[85vw] max-w-[1780px] h-[92vh] sm:h-[88vh]`), split into two synchronized operational halves:
+     - **Left Half (Prepaid Debtors & Patient Visits List):** Collapsible accordion partner groups, badge counters, due totals, live instant search filter, select-all checkboxes, and live smart allocation status pills (`PAID`, `PARTIAL`, `DUE`, `EXCLUDED`).
+     - **Right Half (Settlements & Financials):** Active partner context, settlement mode switcher (`Full Settle` vs `Partial Settle`), smart FIFO auto-allocation calculation, pastel orange secondary concession deck, net financial summary, payer details, payment channel, and sticky authorize button.
+2. **Smart FIFO Auto-Allocation Engine:**
+   * When a partner pays a partial sum (e.g. ₹2,500 on ₹5,000 due across multiple visits) without specifying individual bill allocations, the reception desk should not manually edit each bill.
+   * The engine automatically allocates the payment across selected visits in FIFO order (by `RegisteredAt`/token), marking earlier visits `PAID`, boundary visits `PARTIAL (Paid ₹X • Due ₹Y)`, and remainder visits `DUE ₹Z` in real time with live badges in the left list.
+3. **Secondary Concession & Owner Write-Off Deck:**
+   * Permitted authorized write-offs and secondary concessions against B2B partner receivables with authorized presets (*Lab Owner Discretionary Concession*, *Goodwill Partner Retainer Discount*, *Indigent Patient Corporate Waiver*).
+   * Atomically allocated concessions and collections in `SettlementService.cs`, updated invoice discounts and totals, and declared `RevenueFact` only for real money collected.
+4. **Thermal Slip Parity:**
+   * Updated `generateThermalB2BSettlementSlipHtml` in `thermalPrinter.js` to print concession deductions and net settled balance on 80mm receipts.
 
 
 

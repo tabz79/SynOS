@@ -559,7 +559,9 @@ namespace SynOS.Services.Settlements
         public async Task<B2BSettlementReceiptDto> SettleSameDayB2BReceivablesAsync(SettleSameDayB2BRequestDto request, Guid userId, Guid branchId)
         {
             if (request == null) throw new ArgumentNullException(nameof(request));
-            if (request.Amount <= 0) throw new ArgumentException("Settlement amount must be positive.");
+            decimal concession = Math.Max(0m, request.ConcessionAmount ?? 0m);
+            decimal totalClearance = request.Amount + concession;
+            if (request.Amount < 0 || totalClearance <= 0) throw new ArgumentException("Total settlement clearance (payment + concession) must be positive.");
             if (request.FactIds == null || !request.FactIds.Any()) throw new ArgumentException("No receivable fact IDs selected.");
 
             var today = _labTimeProvider.GetLabToday();
@@ -620,43 +622,62 @@ namespace SynOS.Services.Settlements
                 var receiptNo = $"RCP-B2B-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..6].ToUpper()}";
                 var settledVisitsList = new List<TodayB2BReceivableVisitDto>();
 
-                decimal remaining = request.Amount;
+                decimal remainingPayment = request.Amount;
+                decimal remainingConcession = concession;
 
                 foreach (var fact in facts)
                 {
-                    if (remaining <= 0) break;
+                    var outstanding = fact.Amount - fact.AmountReceived;
+                    if (outstanding <= 0) continue;
+                    if (remainingPayment <= 0 && remainingConcession <= 0) break;
 
                     var v = visits.FirstOrDefault(x => x.VisitId == fact.SourceVisitId);
-                    var outstanding = fact.Amount - fact.AmountReceived;
-                    var apply = Math.Min(remaining, outstanding);
 
-                    fact.AmountReceived += apply;
+                    // Allocate payment first, then concession
+                    var paymentApply = Math.Min(remainingPayment, outstanding);
+                    remainingPayment -= paymentApply;
+
+                    var concessionApply = Math.Min(remainingConcession, outstanding - paymentApply);
+                    remainingConcession -= concessionApply;
+
+                    var totalApply = paymentApply + concessionApply;
+                    if (totalApply <= 0) continue;
+
+                    fact.AmountReceived += totalApply;
                     if (fact.AmountReceived >= fact.Amount)
                     {
                         fact.SettledAt = DateTimeOffset.UtcNow;
                     }
 
-                    remaining -= apply;
                     _context.ReceivableFacts.Update(fact);
 
                     if (v != null)
                     {
                         var invoice = v.Invoices.FirstOrDefault();
-                        if (invoice != null && apply > 0)
+                        if (invoice != null)
                         {
-                            var payment = new Payment
+                            if (paymentApply > 0)
                             {
-                                PaymentId = Guid.NewGuid(),
-                                InvoiceId = invoice.InvoiceId,
-                                Amount = apply,
-                                Method = request.PaymentMode,
-                                ReceiptNo = receiptNo,
-                                ReceivedAt = DateTime.UtcNow,
-                                ReceivedByUserId = userId
-                            };
-                            _context.Payments.Add(payment);
+                                var payment = new Payment
+                                {
+                                    PaymentId = Guid.NewGuid(),
+                                    InvoiceId = invoice.InvoiceId,
+                                    Amount = paymentApply,
+                                    Method = request.PaymentMode,
+                                    ReceiptNo = receiptNo,
+                                    ReceivedAt = DateTime.UtcNow,
+                                    ReceivedByUserId = userId
+                                };
+                                _context.Payments.Add(payment);
+                            }
 
-                            var totalPaid = (invoice.Payments?.Sum(p => p.Amount) ?? 0) + apply;
+                            if (concessionApply > 0)
+                            {
+                                invoice.DiscountAmount += concessionApply;
+                                invoice.Total = Math.Max(0m, invoice.GrossAmount - invoice.DiscountAmount);
+                            }
+
+                            var totalPaid = (invoice.Payments?.Sum(p => p.Amount) ?? 0) + paymentApply;
                             if (totalPaid >= invoice.Total)
                             {
                                 invoice.Status = "Paid";
@@ -682,27 +703,31 @@ namespace SynOS.Services.Settlements
                             Gender = v.Patient?.Gender,
                             TestsSummary = testsSummary,
                             BilledAmount = fact.Amount,
-                            AmountDue = apply,
+                            AmountDue = totalApply,
                             RegisteredAt = v.CreatedAt
                         });
                     }
                 }
 
-                // Declare RevenueFact (Truth Engine)
-                var command = new DeclareRevenueFactCommand
+                // Declare RevenueFact for actual payment received (Truth Engine)
+                if (request.Amount > 0)
                 {
-                    OccurredAt = DateTimeOffset.UtcNow,
-                    Amount = request.Amount,
-                    Currency = "INR",
-                    Direction = RevenueDirection.Inflow,
-                    SourceType = RevenueSourceType.Partner,
-                    SourceReferenceId = receiptNo,
-                    PaymentMode = Enum.TryParse<PaymentMode>(request.PaymentMode, out var pm) ? pm : PaymentMode.Cash,
-                    DeclaredByUserId = userId,
-                    Notes = $"Reception Same-Day B2B Settlement. Partner: {partnerName} | Payer: {request.ReceivedFrom ?? "Representative"} | Notes: {request.Notes ?? "N/A"}"
-                };
+                    var command = new DeclareRevenueFactCommand
+                    {
+                        OccurredAt = DateTimeOffset.UtcNow,
+                        Amount = request.Amount,
+                        Currency = "INR",
+                        Direction = RevenueDirection.Inflow,
+                        SourceType = RevenueSourceType.Partner,
+                        SourceReferenceId = receiptNo,
+                        PaymentMode = Enum.TryParse<PaymentMode>(request.PaymentMode, out var pm) ? pm : PaymentMode.Cash,
+                        DeclaredByUserId = userId,
+                        Notes = $"Reception Same-Day B2B Settlement. Partner: {partnerName} | Payer: {request.ReceivedFrom ?? "Representative"}{(concession > 0 ? $" | Concession: ₹{concession} ({request.ConcessionReason ?? "Waiver"})" : "")} | Notes: {request.Notes ?? "N/A"}"
+                    };
 
-                await _revenueFactWriter.DeclareRevenueFactAsync(command);
+                    await _revenueFactWriter.DeclareRevenueFactAsync(command);
+                }
+
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 
@@ -721,6 +746,8 @@ namespace SynOS.Services.Settlements
                     PartnerName = partnerName,
                     ClinicName = partner?.ClinicName,
                     Amount = request.Amount,
+                    ConcessionAmount = concession > 0 ? concession : null,
+                    ConcessionReason = concession > 0 ? request.ConcessionReason : null,
                     PaymentMode = request.PaymentMode,
                     ReceivedFrom = request.ReceivedFrom,
                     CashierName = cashierName,
