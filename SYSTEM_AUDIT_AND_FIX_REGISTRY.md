@@ -112,3 +112,30 @@
   - Loop verification against `_context.Payments` to safely append adjustment counter suffixes (`-2`, `-3`) on repeat operations.
   - Replaced hardcoded un-scoped receipt strings across all prepaid, batch-edit, and refund payment generations.
 
+---
+
+## 7. User-Specific Collections & Cashier Breakdown in Collection History — [RESOLVED & VERIFIED]
+### User Requirement & Root Causes
+* **Oversight Gap:** In multi-receptionist setups (e.g. Uzma, Ramesh, Dr. Vasudeva Rao), the Lab Owner and Admin had no breakdown of collections by cashier in Collection History (`/finance/revenue/history`).
+* **Missing Receipt Linkage for Same-Day Settlements:** Same-day B2B receivable settlements generate receipt numbers (e.g. `RCP-B2B-...`). `EconomicsIntelligenceService.cs` only attempted `Guid.TryParse`, failing to match string receipts to `Payment` entities and rendering them as generic `COUNTER-RCPT` without cashier association.
+* **Lack of Filter & Identification:** The ledger table lacked cashier attribution, and there was no way to filter or view an individual receptionist's drawer collections, patient bills, and counter settlements.
+
+### Implemented Fix
+1. **Backend Enrichment (`EconomicsIntelligenceService.cs` & `EconomicsController.cs`):**
+   * Extracted string receipt candidates (`f.SourceReferenceId`, `f.ExternalTransactionId`) alongside GUIDs.
+   * Batch loaded `Payments` by `ReceiptNo` (`paymentsByReceiptMap`), resolving invoice, visit, patient, branch, and cashier for all settlements.
+   * Batch loaded `Users` by all declared and received user IDs (`f.DeclaredByUserId`, `payment.ReceivedByUserId`, `visit.CreatedByUserId`, `visit.AssignedReceptionistId`).
+   * Projected `CashierId`, `CashierName`, `CashierRole`, and `CollectedBy` on each returned revenue fact.
+   * Added optional `userId` parameter to `GetRevenueFacts` endpoint and service for backend filtering.
+2. **Staff Cash Drawer Breakdown Strip (`RevenueScreens.jsx`):**
+   * Added interactive Cashier Summary cards above the table showing each staff member's total intake, receipt count, cash, and digital breakdown.
+   * Clicking any cashier card instantly filters the ledger to that staff member with an active ring indicator; includes an "All Staff" reset toggle.
+3. **Dynamic Multi-Dimensional Filter Bar (`FinanceFilterBar.jsx`):**
+   * Added Cashier/Staff dropdown selector (`staffFilter`, `onStaffChange`, `staffOptions`) with staff intake totals.
+   * Dynamically updates top KPI cards (Total Collections, Cash, Digital/UPI, Bank/Card) to reflect the active cashier's receipts and amounts.
+4. **Dedicated 'COLLECTED BY' Table Column & Export/Print:**
+   * Added `COLLECTED BY` column with staff avatar pill, display name, and clinical/administrative role.
+   * Updated CSV download to export `Collected By (Staff)` and `Staff Role`.
+   * Updated A4 printable financial summary modal to include cashier filter tags and staff column.
+
+

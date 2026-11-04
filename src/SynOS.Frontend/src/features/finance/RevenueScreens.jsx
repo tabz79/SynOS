@@ -9,6 +9,7 @@ import {
     Clock, 
     AlertCircle,
     User,
+    UserCheck,
     ArrowRight,
     LayoutDashboard,
     IndianRupee,
@@ -3289,6 +3290,7 @@ export const CollectionHistoryScreen = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [paymentModeFilter, setPaymentModeFilter] = useState('All');
     const [sourceFilter, setSourceFilter] = useState('All');
+    const [cashierFilter, setCashierFilter] = useState('All');
     const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
 
     useEffect(() => {
@@ -3310,9 +3312,58 @@ export const CollectionHistoryScreen = () => {
         }
     };
 
+    // Calculate aggregated cashier breakdown across the active time window
+    const cashierSummaries = useMemo(() => {
+        const map = new Map();
+        history.forEach(r => {
+            if (!isWithinTimeRange(r.occurredAt, presetRange, customDates)) return;
+
+            const name = (r.cashierName || r.collectedBy || 'Staff Desk').trim();
+            const role = (r.cashierRole || 'Reception Staff').trim();
+            const id = r.cashierId || name;
+            const existing = map.get(name) || {
+                id,
+                name,
+                role,
+                total: 0,
+                count: 0,
+                cash: 0,
+                digital: 0,
+                bank: 0
+            };
+            const amt = Number(r.amount) || 0;
+            existing.total += amt;
+            existing.count += 1;
+            const mode = (r.paymentMode || '').toLowerCase();
+            if (mode.includes('cash')) existing.cash += amt;
+            else if (mode.includes('upi') || mode.includes('online')) existing.digital += amt;
+            else existing.bank += amt;
+
+            map.set(name, existing);
+        });
+        return Array.from(map.values()).sort((a, b) => b.total - a.total);
+    }, [history, presetRange, customDates]);
+
+    const staffOptions = useMemo(() => {
+        const opts = [{ value: 'All', label: `All Staff (${cashierSummaries.length})` }];
+        cashierSummaries.forEach(s => {
+            opts.push({
+                value: s.name,
+                label: `${s.name} (₹${s.total.toLocaleString()})`
+            });
+        });
+        return opts;
+    }, [cashierSummaries]);
+
     const filteredHistory = history.filter(row => {
         // Strict client-side date boundary verification
         if (!isWithinTimeRange(row.occurredAt, presetRange, customDates)) return false;
+
+        // Cashier filter
+        if (cashierFilter !== 'All') {
+            const rowCashier = (row.cashierName || row.collectedBy || 'Staff Desk').trim();
+            if (rowCashier.toLowerCase() !== cashierFilter.toLowerCase() && row.cashierId !== cashierFilter) return false;
+        }
 
         if (searchQuery.trim()) {
             const q = searchQuery.toLowerCase();
@@ -3322,7 +3373,8 @@ export const CollectionHistoryScreen = () => {
             const matchRef = (row.sourceReferenceId || '').toLowerCase().includes(q);
             const matchNotes = (row.cleanNotes || row.notes || '').toLowerCase().includes(q);
             const matchType = (row.sourceType || '').toLowerCase().includes(q);
-            if (!matchBill && !matchToken && !matchPatient && !matchRef && !matchNotes && !matchType) return false;
+            const matchCashier = (row.cashierName || row.collectedBy || '').toLowerCase().includes(q);
+            if (!matchBill && !matchToken && !matchPatient && !matchRef && !matchNotes && !matchType && !matchCashier) return false;
         }
         if (paymentModeFilter !== 'All') {
             const mode = (row.paymentMode || '').toLowerCase();
@@ -3345,9 +3397,11 @@ export const CollectionHistoryScreen = () => {
 
     // Tab-Aware CSV Download for Collection History
     const handleDownloadSummary = () => {
-        const headers = ["Date & Time", "Source Category", "Collected Amount (INR)", "Payment Mode", "Bill Number", "Token", "Patient Name", "Audit / Notes"];
+        const headers = ["Date & Time", "Collected By (Staff)", "Staff Role", "Source Category", "Collected Amount (INR)", "Payment Mode", "Bill Number", "Token", "Patient Name", "Audit / Notes"];
         const rows = filteredHistory.map(r => [
             `"${new Date(r.occurredAt).toLocaleString()}"`,
+            `"${(r.cashierName || r.collectedBy || 'Staff Desk').replace(/"/g, '""')}"`,
+            `"${(r.cashierRole || 'Reception Staff').replace(/"/g, '""')}"`,
             `"${(r.sourceType || '').replace(/"/g, '""')}"`,
             r.amount || 0,
             `"${(r.paymentMode || '').replace(/"/g, '""')}"`,
@@ -3389,12 +3443,14 @@ export const CollectionHistoryScreen = () => {
                 </button>
             </div>
 
-            {/* KPI Metric Strip */}
+            {/* KPI Metric Strip (Reflects Filtered Cashier if Selected) */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="p-4 rounded-xl synos-kpi-card">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Total Collections</p>
                     <p className="text-xl font-black text-zinc-900 dark:text-white mt-1">₹{totalCollected.toLocaleString()}</p>
-                    <span className="text-[10px] text-zinc-400 font-medium">{filteredHistory.length} Receipts Reconciled</span>
+                    <span className="text-[10px] text-zinc-400 font-medium">
+                        {cashierFilter !== 'All' ? `${filteredHistory.length} Receipts (${cashierFilter})` : `${filteredHistory.length} Receipts Reconciled`}
+                    </span>
                 </div>
                 <div className="p-4 rounded-xl synos-kpi-card">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-500">Cash Collections</p>
@@ -3413,17 +3469,138 @@ export const CollectionHistoryScreen = () => {
                 </div>
             </div>
 
+            {/* Staff Collection & Cash Drawer Breakdown (Lab Owner & Admin Oversight) */}
+            {cashierSummaries.length > 0 && (
+                <div className="p-4 rounded-2xl synos-dept-card space-y-3">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
+                        <div className="flex items-center gap-2">
+                            <div className="p-1.5 rounded-lg bg-synos-primary/10 text-synos-primary dark:bg-synos-primary/20">
+                                <UserCheck size={16} />
+                            </div>
+                            <div>
+                                <h3 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider">
+                                    Staff Cash Drawer & Intake Breakdown
+                                </h3>
+                                <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                                    Counter receipts, patient bills, and B2B settlements segmented by cashier
+                                </p>
+                            </div>
+                        </div>
+                        {cashierFilter !== 'All' && (
+                            <button
+                                type="button"
+                                onClick={() => setCashierFilter('All')}
+                                className="text-[10px] font-bold text-synos-primary hover:underline cursor-pointer flex items-center gap-1"
+                            >
+                                Reset to All Staff ({cashierSummaries.length})
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Cashier Breakdown Cards Strip */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
+                        {/* All Staff Master Pill */}
+                        <button
+                            type="button"
+                            onClick={() => setCashierFilter('All')}
+                            className={cn(
+                                "flex items-center justify-between p-3 rounded-xl border text-left transition-all cursor-pointer",
+                                cashierFilter === 'All'
+                                    ? "bg-synos-primary/10 border-synos-primary dark:bg-synos-primary/20 shadow-xs"
+                                    : "bg-white dark:bg-zinc-950/70 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
+                            )}
+                        >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                                <div className={cn(
+                                    "w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0",
+                                    cashierFilter === 'All'
+                                        ? "bg-synos-primary text-white"
+                                        : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300"
+                                )}>
+                                    ALL
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate">All Staff</p>
+                                    <p className="text-[10px] text-zinc-500 truncate">{cashierSummaries.length} Cashier Handlers</p>
+                                </div>
+                            </div>
+                            <div className="text-right shrink-0">
+                                <p className="text-xs font-black text-zinc-900 dark:text-white font-mono">
+                                    ₹{cashierSummaries.reduce((acc, s) => acc + s.total, 0).toLocaleString()}
+                                </p>
+                                <p className="text-[10px] text-zinc-500 font-mono">
+                                    {cashierSummaries.reduce((acc, s) => acc + s.count, 0)} txns
+                                </p>
+                            </div>
+                        </button>
+
+                        {/* Individual Staff Cards */}
+                        {cashierSummaries.map((staff) => {
+                            const isSelected = cashierFilter.toLowerCase() === staff.name.toLowerCase() || cashierFilter === staff.id;
+                            const initials = staff.name.split(' ').map(n => n[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || 'ST';
+                            return (
+                                <button
+                                    key={staff.name}
+                                    type="button"
+                                    onClick={() => setCashierFilter(isSelected ? 'All' : staff.name)}
+                                    className={cn(
+                                        "flex items-center justify-between p-3 rounded-xl border text-left transition-all cursor-pointer relative overflow-hidden",
+                                        isSelected
+                                            ? "bg-synos-primary/10 border-synos-primary dark:bg-synos-primary/20 shadow-xs ring-1 ring-synos-primary"
+                                            : "bg-white dark:bg-zinc-950/70 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
+                                    )}
+                                >
+                                    <div className="flex items-center gap-2.5 min-w-0">
+                                        <div className={cn(
+                                            "w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0",
+                                            isSelected
+                                                ? "bg-synos-primary text-white"
+                                                : "bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-900"
+                                        )}>
+                                            {initials}
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate" title={staff.name}>
+                                                {staff.name}
+                                            </p>
+                                            <p className="text-[10px] text-zinc-500 truncate" title={staff.role}>
+                                                {staff.role}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right shrink-0">
+                                        <p className={cn(
+                                            "text-xs font-black font-mono",
+                                            isSelected ? "text-synos-primary" : "text-emerald-600 dark:text-emerald-400"
+                                        )}>
+                                            ₹{staff.total.toLocaleString()}
+                                        </p>
+                                        <div className="flex items-center gap-1 justify-end text-[9px] text-zinc-400 font-mono">
+                                            <span>{staff.count} rpts</span>
+                                            {staff.cash > 0 && <span className="text-emerald-500 font-semibold">• ₹{staff.cash} C</span>}
+                                        </div>
+                                    </div>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
+
             {/* Multi-Dimensional Filters Bar */}
             <FinanceFilterBar
                 searchQuery={searchQuery}
                 onSearchChange={setSearchQuery}
-                searchPlaceholder="Search reference, notes, or category..."
+                searchPlaceholder="Search cashier, patient, bill, reference, or notes..."
                 statusFilter={sourceFilter}
                 onStatusChange={setSourceFilter}
                 statusOptions={['All', 'Counter', 'Doctor Partner', 'Corporate', 'Insurance']}
                 categoryFilter={paymentModeFilter}
                 onCategoryChange={setPaymentModeFilter}
                 categoryOptions={['All', 'Cash', 'UPI', 'BankTransfer', 'Card']}
+                staffFilter={cashierFilter}
+                onStaffChange={setCashierFilter}
+                staffOptions={staffOptions}
             />
 
             {/* Collection History Table */}
@@ -3435,6 +3612,7 @@ export const CollectionHistoryScreen = () => {
                         <thead>
                             <tr className="bg-slate-50/80 dark:bg-zinc-900/50 border-b dark:border-zinc-800 border-slate-300">
                                 <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Date & Time</th>
+                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Collected By</th>
                                 <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Source Category</th>
                                 <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Amount</th>
                                 <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-center">Payment Mode</th>
@@ -3446,6 +3624,21 @@ export const CollectionHistoryScreen = () => {
                             {filteredHistory.map((row) => (
                                 <tr key={row.revenueFactId} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/30 transition-colors">
                                     <td className="p-4 text-xs text-zinc-500 font-mono whitespace-nowrap">{formatDateCompact(row.occurredAt)}</td>
+                                    <td className="p-4">
+                                        <div className="flex items-center gap-2 max-w-[170px]">
+                                            <div className="w-6 h-6 rounded-full bg-slate-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 flex items-center justify-center font-bold text-[9px] shrink-0 border border-slate-300 dark:border-zinc-700">
+                                                {(row.cashierName || row.collectedBy || 'SD').split(' ').map(n => n[0]).filter(Boolean).slice(0, 2).join('').toUpperCase()}
+                                            </div>
+                                            <div className="flex flex-col min-w-0">
+                                                <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate" title={row.cashierName || row.collectedBy || 'Staff Desk'}>
+                                                    {row.cashierName || row.collectedBy || 'Staff Desk'}
+                                                </span>
+                                                <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-medium truncate" title={row.cashierRole || 'Reception Staff'}>
+                                                    {row.cashierRole || 'Reception Staff'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </td>
                                     <td className="p-4 text-xs font-bold dark:text-zinc-200 uppercase tracking-tighter text-synos-primary">
                                         {row.sourceType === 'Partner' && row.notes?.includes('Partner:') 
                                             ? row.notes.split('|')[0].replace('Partner:', '').trim()
@@ -3489,7 +3682,7 @@ export const CollectionHistoryScreen = () => {
                             ))}
                             {filteredHistory.length === 0 && (
                                 <tr>
-                                    <td colSpan="6" className="p-8 text-center text-zinc-500 text-sm italic">No collection history found for the selected period.</td>
+                                    <td colSpan="7" className="p-8 text-center text-zinc-500 text-sm italic">No collection history found for the selected period.</td>
                                 </tr>
                             )}
                         </tbody>
@@ -3507,6 +3700,7 @@ export const CollectionHistoryScreen = () => {
                 dateRangeText={presetRange === 'custom' ? `${customDates?.start || ''} to ${customDates?.end || ''}` : presetRange}
                 categoryLabel="COLLECTION AUDIT TRAIL"
                 filterTags={[
+                    cashierFilter !== 'All' ? `Cashier: ${cashierFilter}` : null,
                     sourceFilter !== 'All' ? `Source: ${sourceFilter}` : null,
                     paymentModeFilter !== 'All' ? `Mode: ${paymentModeFilter}` : null,
                     searchQuery ? `Search: "${searchQuery}"` : null
@@ -3519,6 +3713,7 @@ export const CollectionHistoryScreen = () => {
                 ]}
                 columns={[
                     { key: 'occurredAt', label: 'Date & Time', render: (v) => formatDateCompact(v) },
+                    { key: 'cashierName', label: 'Collected By', render: (v, r) => `${r.cashierName || r.collectedBy || 'Staff Desk'} (${r.cashierRole || 'Staff'})` },
                     { key: 'sourceType', label: 'Source Category', render: (v, r) => r.sourceType === 'Partner' && r.notes?.includes('Partner:') ? r.notes.split('|')[0].replace('Partner:', '').trim() : (v || 'Counter') },
                     { key: 'amount', label: 'Collected (₹)', align: 'right', render: (v) => `₹${Number(v || 0).toLocaleString()}` },
                     { key: 'paymentMode', label: 'Payment Mode', align: 'center', render: (v) => v || 'Cash' },

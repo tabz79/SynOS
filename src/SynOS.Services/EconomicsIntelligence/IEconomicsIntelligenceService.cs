@@ -43,9 +43,9 @@ namespace SynOS.Services.EconomicsIntelligence
         Task<LabProfitabilitySummaryDto> GetLabProfitabilitySummaryAsync(DateTime start, DateTime end, Guid? branchId = null);
 
         /// <summary>
-        /// Retrieves a list of revenue facts for a given time period or preset with enriched metadata.
+        /// Retrieves a list of revenue facts for a given time period or preset with enriched metadata and optional cashier/user filter.
         /// </summary>
-        Task<IEnumerable<object>> GetRevenueFactsAsync(Guid? branchId = null, string? preset = null, DateTime? startDate = null, DateTime? endDate = null);
+        Task<IEnumerable<object>> GetRevenueFactsAsync(Guid? branchId = null, string? preset = null, DateTime? startDate = null, DateTime? endDate = null, Guid? userId = null);
 
         /// <summary>
         /// Backward-compatible overload for explicit date bounds.

@@ -32,9 +32,10 @@ namespace SynOS.Api.Controllers
             [FromQuery] Guid? branchId = null,
             [FromQuery] string? preset = null,
             [FromQuery] DateTime? start = null,
-            [FromQuery] DateTime? end = null)
+            [FromQuery] DateTime? end = null,
+            [FromQuery] Guid? userId = null)
         {
-            var result = await _economicsService.GetRevenueFactsAsync(branchId, preset, start, end);
+            var result = await _economicsService.GetRevenueFactsAsync(branchId, preset, start, end, userId);
             return Ok(result);
         }
 

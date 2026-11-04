@@ -58,14 +58,15 @@ export const FinanceApi = {
     },
 
     /**
-     * Fetches historical revenue facts with branch, preset, and date range support.
+     * Fetches historical revenue facts with branch, preset, date range, and cashier/user support.
      */
-    getRevenueHistory: async (branchId, preset, start, end) => {
+    getRevenueHistory: async (branchId, preset, start, end, userId) => {
         const params = new URLSearchParams();
         if (branchId) params.append('branchId', branchId);
         if (preset) params.append('preset', preset);
         if (start) params.append('start', typeof start === 'string' ? start : (start.toISOString ? start.toISOString() : String(start)));
         if (end) params.append('end', typeof end === 'string' ? end : (end.toISOString ? end.toISOString() : String(end)));
+        if (userId && userId !== 'All') params.append('userId', userId);
         const qs = params.toString();
         const url = `/api/v1/economics/revenue-facts${qs ? `?${qs}` : ''}`;
         const response = await fetch(FinanceApi.withBranchId(url), {

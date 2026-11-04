@@ -819,7 +819,8 @@ namespace SynOS.Services.EconomicsIntelligence
             Guid? branchId = null, 
             string? preset = null, 
             DateTime? startDate = null, 
-            DateTime? endDate = null)
+            DateTime? endDate = null,
+            Guid? userId = null)
         {
             var (startUtc, endUtc) = ResolvePresetDateRange(preset, startDate, endDate);
             if (!startUtc.HasValue && !endUtc.HasValue && string.IsNullOrWhiteSpace(preset) && !startDate.HasValue && !endDate.HasValue)
@@ -840,14 +841,25 @@ namespace SynOS.Services.EconomicsIntelligence
 
             if (rawFacts.Count == 0) return Enumerable.Empty<object>();
 
-            // 1. Extract GUID candidates from SourceReferenceId and Notes
+            // 1. Extract GUID candidates and string receipt candidates from SourceReferenceId and Notes
             var refGuids = new HashSet<Guid>();
+            var receiptCandidates = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             var guidRegex = new System.Text.RegularExpressions.Regex(@"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}");
 
             foreach (var f in rawFacts)
             {
                 if (Guid.TryParse(f.SourceReferenceId, out var g))
                     refGuids.Add(g);
+                else if (!string.IsNullOrWhiteSpace(f.SourceReferenceId))
+                    receiptCandidates.Add(f.SourceReferenceId.Trim());
+
+                if (!string.IsNullOrEmpty(f.ExternalTransactionId))
+                {
+                    if (Guid.TryParse(f.ExternalTransactionId, out var eg))
+                        refGuids.Add(eg);
+                    else
+                        receiptCandidates.Add(f.ExternalTransactionId.Trim());
+                }
 
                 if (!string.IsNullOrEmpty(f.Notes))
                 {
@@ -860,7 +872,7 @@ namespace SynOS.Services.EconomicsIntelligence
                 }
             }
 
-            // 2. Batch load Payments
+            // 2. Batch load Payments by GUID and by ReceiptNo
             var payments = await _context.Payments
                 .AsNoTracking()
                 .Include(p => p.Invoice)
@@ -871,6 +883,21 @@ namespace SynOS.Services.EconomicsIntelligence
                         .ThenInclude(v => v.Branch)
                 .Where(p => refGuids.Contains(p.PaymentId))
                 .ToDictionaryAsync(p => p.PaymentId);
+
+            var paymentsByReceipt = await _context.Payments
+                .AsNoTracking()
+                .Include(p => p.Invoice)
+                    .ThenInclude(i => i.Visit)
+                        .ThenInclude(v => v.Patient)
+                .Include(p => p.Invoice)
+                    .ThenInclude(i => i.Visit)
+                        .ThenInclude(v => v.Branch)
+                .Where(p => receiptCandidates.Contains(p.ReceiptNo))
+                .ToListAsync();
+
+            var paymentsByReceiptMap = paymentsByReceipt
+                .GroupBy(p => p.ReceiptNo, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
 
             // 3. Batch load Invoices
             var invoices = await _context.Invoices
@@ -889,12 +916,27 @@ namespace SynOS.Services.EconomicsIntelligence
                 .Where(r => refGuids.Contains(r.ReceivableFactId))
                 .ToDictionaryAsync(r => r.ReceivableFactId);
 
-            // 5. Batch load Visits (including those referenced by ReceivableFacts)
+            // 5. Batch load Visits (including those referenced by ReceivableFacts, Payments, and Invoices)
             var visitGuids = new HashSet<Guid>(refGuids);
             foreach (var ar in receivables.Values)
             {
                 if (ar.SourceVisitId != Guid.Empty)
                     visitGuids.Add(ar.SourceVisitId);
+            }
+            foreach (var p in payments.Values)
+            {
+                if (p.Invoice != null && p.Invoice.VisitId != Guid.Empty)
+                    visitGuids.Add(p.Invoice.VisitId);
+            }
+            foreach (var p in paymentsByReceipt)
+            {
+                if (p.Invoice != null && p.Invoice.VisitId != Guid.Empty)
+                    visitGuids.Add(p.Invoice.VisitId);
+            }
+            foreach (var inv in invoices.Values)
+            {
+                if (inv.VisitId != Guid.Empty)
+                    visitGuids.Add(inv.VisitId);
             }
 
             var visits = await _context.Visits
@@ -904,19 +946,60 @@ namespace SynOS.Services.EconomicsIntelligence
                 .Where(v => visitGuids.Contains(v.VisitId))
                 .ToDictionaryAsync(v => v.VisitId);
 
+            // 6. Batch load Users for Cashier resolution
+            var allUserGuids = new HashSet<Guid>();
+            foreach (var f in rawFacts)
+            {
+                if (f.DeclaredByUserId != Guid.Empty) allUserGuids.Add(f.DeclaredByUserId);
+            }
+            foreach (var p in payments.Values)
+            {
+                if (p.ReceivedByUserId != Guid.Empty) allUserGuids.Add(p.ReceivedByUserId);
+            }
+            foreach (var p in paymentsByReceipt)
+            {
+                if (p.ReceivedByUserId != Guid.Empty) allUserGuids.Add(p.ReceivedByUserId);
+            }
+            foreach (var v in visits.Values)
+            {
+                if (v.CreatedByUserId.HasValue && v.CreatedByUserId.Value != Guid.Empty) allUserGuids.Add(v.CreatedByUserId.Value);
+                if (v.AssignedReceptionistId.HasValue && v.AssignedReceptionistId.Value != Guid.Empty) allUserGuids.Add(v.AssignedReceptionistId.Value);
+            }
+
+            var users = await _context.Users
+                .AsNoTracking()
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                .Where(u => allUserGuids.Contains(u.UserId))
+                .ToDictionaryAsync(u => u.UserId);
+
             var results = new List<object>();
 
             foreach (var f in rawFacts)
             {
                 SynOS.Models.Entities.Visit? visit = null;
+                SynOS.Models.Entities.Payment? payment = null;
                 string? debtorOrPartner = null;
                 string cleanNotes = "";
 
                 Guid refGuid = Guid.Empty;
                 Guid.TryParse(f.SourceReferenceId, out refGuid);
 
-                // Try Payment
-                if (refGuid != Guid.Empty && payments.TryGetValue(refGuid, out var payment))
+                // Try Payment by GUID or ReceiptNo
+                if (refGuid != Guid.Empty && payments.TryGetValue(refGuid, out var pDirect))
+                {
+                    payment = pDirect;
+                }
+                else if (!string.IsNullOrEmpty(f.SourceReferenceId) && paymentsByReceiptMap.TryGetValue(f.SourceReferenceId, out var pByRcpt))
+                {
+                    payment = pByRcpt;
+                }
+                else if (!string.IsNullOrEmpty(f.ExternalTransactionId) && paymentsByReceiptMap.TryGetValue(f.ExternalTransactionId, out var pByExt))
+                {
+                    payment = pByExt;
+                }
+
+                if (payment != null)
                 {
                     visit = payment.Invoice?.Visit;
                     cleanNotes = payment.Amount < 0 
@@ -956,11 +1039,58 @@ namespace SynOS.Services.EconomicsIntelligence
                         continue;
                 }
 
+                // Resolve Cashier identity
+                SynOS.Models.Entities.User? cashierUser = null;
+                Guid effectiveCashierId = Guid.Empty;
+
+                if (f.DeclaredByUserId != Guid.Empty && users.TryGetValue(f.DeclaredByUserId, out var uDecl))
+                {
+                    cashierUser = uDecl;
+                    effectiveCashierId = f.DeclaredByUserId;
+                }
+                else if (payment != null && payment.ReceivedByUserId != Guid.Empty && users.TryGetValue(payment.ReceivedByUserId, out var uPay))
+                {
+                    cashierUser = uPay;
+                    effectiveCashierId = payment.ReceivedByUserId;
+                }
+                else if (visit?.AssignedReceptionistId.HasValue == true && users.TryGetValue(visit.AssignedReceptionistId.Value, out var uAss))
+                {
+                    cashierUser = uAss;
+                    effectiveCashierId = visit.AssignedReceptionistId.Value;
+                }
+                else if (visit?.CreatedByUserId.HasValue == true && users.TryGetValue(visit.CreatedByUserId.Value, out var uCre))
+                {
+                    cashierUser = uCre;
+                    effectiveCashierId = visit.CreatedByUserId.Value;
+                }
+                else if (f.DeclaredByUserId != Guid.Empty)
+                {
+                    effectiveCashierId = f.DeclaredByUserId;
+                }
+
+                // User/Cashier filter enforcement
+                if (userId.HasValue && userId.Value != Guid.Empty)
+                {
+                    if (effectiveCashierId != userId.Value)
+                        continue;
+                }
+
+                string cashierName = !string.IsNullOrWhiteSpace(cashierUser?.Name)
+                    ? cashierUser.Name
+                    : (!string.IsNullOrWhiteSpace(cashierUser?.Username) ? cashierUser.Username : "Staff Desk");
+                string cashierRole = !string.IsNullOrWhiteSpace(cashierUser?.Designation)
+                    ? cashierUser.Designation
+                    : (cashierUser?.UserRoles?.FirstOrDefault()?.Role?.Name ?? "Reception Staff");
+
                 // Canonical OG Bill Number: ${CleanToken}-${yyMMdd}
                 string rawToken = visit?.Token ?? "";
                 string cleanToken = rawToken.Replace("-", "").Trim().ToUpper();
                 string canonicalBillNo;
-                if (!string.IsNullOrEmpty(cleanToken) && !cleanToken.StartsWith("D"))
+                if (f.SourceReferenceId != null && (f.SourceReferenceId.StartsWith("RCP-", StringComparison.OrdinalIgnoreCase) || f.SourceReferenceId.StartsWith("SYS-", StringComparison.OrdinalIgnoreCase)))
+                {
+                    canonicalBillNo = f.SourceReferenceId;
+                }
+                else if (!string.IsNullOrEmpty(cleanToken) && !cleanToken.StartsWith("D"))
                 {
                     canonicalBillNo = $"{cleanToken}-{f.OccurredAt:yyMMdd}";
                 }
@@ -1003,7 +1133,11 @@ namespace SynOS.Services.EconomicsIntelligence
                     PatientMrn = visit?.Patient?.MRN ?? "",
                     BranchId = visit?.BranchId,
                     BranchName = visit?.Branch?.Name,
-                    ExternalTransactionId = f.ExternalTransactionId
+                    ExternalTransactionId = f.ExternalTransactionId,
+                    CashierId = effectiveCashierId != Guid.Empty ? effectiveCashierId : (Guid?)null,
+                    CashierName = cashierName,
+                    CashierRole = cashierRole,
+                    CollectedBy = cashierName
                 });
             }
 
