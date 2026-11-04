@@ -717,33 +717,80 @@ export function VisitDetails({
         }
     };
 
+    // Enterprise Financials Focus Target Resolver
+    const findFirstFinancialsTarget = () => {
+        // 1. Standard Concession Trigger or open Concession input
+        const standardConcession = document.querySelector('[data-concession-trigger="true"]') ||
+                                   document.getElementById('input-flat-concession') ||
+                                   document.querySelector('[data-financials-focus="true"]');
+        if (standardConcession && standardConcession.offsetParent !== null) return standardConcession;
+
+        // 2. Standard Settlement Mode buttons (Full / Partial)
+        const settlementFull = document.getElementById('btn-settlement-full');
+        if (settlementFull && settlementFull.offsetParent !== null) return settlementFull;
+        const settlementPartial = document.getElementById('btn-settlement-partial');
+        if (settlementPartial && settlementPartial.offsetParent !== null) return settlementPartial;
+
+        // 3. Corporate B2B Mode controls (Discount / Tariff input & Doctor search)
+        const b2bDiscount = document.getElementById('input-b2b-discount');
+        if (b2bDiscount && b2bDiscount.offsetParent !== null) return b2bDiscount;
+        const b2bDoctor = document.getElementById('input-b2b-doctor-search');
+        if (b2bDoctor && b2bDoctor.offsetParent !== null) return b2bDoctor;
+
+        // 4. Payment method selector (Cash/UPI/Card)
+        const paymentMethod = document.querySelector('[data-payment-method="true"]');
+        if (paymentMethod && paymentMethod.offsetParent !== null) return paymentMethod;
+
+        // 5. Any active focusable inside the Financials container
+        const finContainer = document.getElementById('synos-financials-container');
+        if (finContainer) {
+            const candidate = finContainer.querySelector('input:not([disabled]):not([type="hidden"]), button:not([disabled]), [tabindex="0"]');
+            if (candidate && candidate.offsetParent !== null) return candidate;
+        }
+
+        // 6. Action button at modal bottom (e.g. Confirm Corporate B2B Bill / Confirm Visit)
+        const actionBtn = document.getElementById('btn-unified-action') || 
+                          document.getElementById('btn-confirm-visit') ||
+                          document.querySelector('[data-action-submit="true"]');
+        if (actionBtn && actionBtn.offsetParent !== null) return actionBtn;
+
+        return null;
+    };
+
     const handleTestRemoveKeyDown = (e) => {
         if (e.key === 'Tab') {
-            e.preventDefault();
-            e.stopPropagation();
             const allTestButtons = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]'));
             const currentIdx = allTestButtons.indexOf(e.currentTarget);
             if (!e.shiftKey) {
                 // Forward
                 if (currentIdx !== -1 && currentIdx < allTestButtons.length - 1) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     allTestButtons[currentIdx + 1].focus();
                 } else {
                     const outsourceBtn = document.getElementById('btn-outsource-test');
-                    if (outsourceBtn) {
+                    if (outsourceBtn && outsourceBtn.offsetParent !== null) {
+                        e.preventDefault();
+                        e.stopPropagation();
                         outsourceBtn.focus();
                     } else {
-                        const finTarget = document.querySelector('[data-concession-trigger="true"]') ||
-                                          document.querySelector('#input-flat-concession') ||
-                                          document.querySelector('[data-financials-focus="true"]') ||
-                                          document.querySelector('#btn-settlement-full');
-                        if (finTarget) finTarget.focus();
+                        const finTarget = findFirstFinancialsTarget();
+                        if (finTarget) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            finTarget.focus();
+                        }
                     }
                 }
             } else {
                 // Backward
                 if (currentIdx > 0) {
+                    e.preventDefault();
+                    e.stopPropagation();
                     allTestButtons[currentIdx - 1].focus();
                 } else {
+                    e.preventDefault();
+                    e.stopPropagation();
                     const testInput = document.getElementById('input-test-search') || testSearchInputRef?.current;
                     if (testInput) testInput.focus();
                 }
@@ -1560,21 +1607,18 @@ export function VisitDetails({
                                 } else if (e.key === 'Tab') {
                                     setIsSearchFocused(false);
                                     if (!e.shiftKey) {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        const firstRemoveBtn = document.querySelector('[data-test-remove-btn="true"]');
-                                        if (firstRemoveBtn) {
-                                            firstRemoveBtn.focus();
+                                        // Forward Tab: When done entering tests, transition directly to Outsource Test or Financials
+                                        const outsourceBtn = document.getElementById('btn-outsource-test');
+                                        if (outsourceBtn && outsourceBtn.offsetParent !== null) {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            outsourceBtn.focus();
                                         } else {
-                                            const outsourceBtn = document.getElementById('btn-outsource-test');
-                                            if (outsourceBtn) {
-                                                outsourceBtn.focus();
-                                            } else {
-                                                const finTarget = document.querySelector('[data-concession-trigger="true"]') ||
-                                                                  document.querySelector('#input-flat-concession') ||
-                                                                  document.querySelector('[data-financials-focus="true"]') ||
-                                                                  document.querySelector('#btn-settlement-full');
-                                                if (finTarget) finTarget.focus();
+                                            const finTarget = findFirstFinancialsTarget();
+                                            if (finTarget) {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                finTarget.focus();
                                             }
                                         }
                                     } else {
@@ -2041,13 +2085,13 @@ export function VisitDetails({
                             onClick={() => setIsOutsourceFormVisible(true)}
                             onKeyDown={(e) => {
                                 if (e.key === 'Tab' && !e.shiftKey) {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    const finTarget = document.querySelector('[data-concession-trigger="true"]') ||
-                                                      document.querySelector('#input-flat-concession') ||
-                                                      document.querySelector('[data-financials-focus="true"]') ||
-                                                      document.querySelector('#btn-settlement-full');
-                                    if (finTarget) finTarget.focus();
+                                    const finTarget = findFirstFinancialsTarget();
+                                    if (finTarget) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        finTarget.focus();
+                                    }
+                                    // If finTarget is null, DO NOT call e.preventDefault() so native tab proceeds
                                 } else if (e.key === 'Tab' && e.shiftKey) {
                                     e.preventDefault();
                                     e.stopPropagation();

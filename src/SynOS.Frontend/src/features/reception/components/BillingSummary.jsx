@@ -92,6 +92,26 @@ export function BillingSummary({
     }, [b2bDoctorSelectedIndex, showB2BDoctorDropdown]);
 
     const handleB2BDoctorKeyDown = (e) => {
+        if (e.key === 'Tab') {
+            setShowB2BDoctorDropdown(false);
+            if (!e.shiftKey) {
+                const submitBtn = document.getElementById('btn-unified-action') || document.getElementById('btn-confirm-visit');
+                if (submitBtn) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    submitBtn.focus();
+                }
+            } else {
+                const discountInput = document.getElementById('input-b2b-discount');
+                if (discountInput) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    discountInput.focus();
+                }
+            }
+            return;
+        }
+
         if (!showB2BDoctorDropdown) {
             if (e.key === 'ArrowDown' || e.key === 'Enter') {
                 setShowB2BDoctorDropdown(true);
@@ -621,7 +641,7 @@ export function BillingSummary({
     };
 
     return (
-        <div className="flex-1 min-h-0 flex flex-col overflow-hidden space-y-3 h-full">
+        <div id="synos-financials-container" data-section="financials" className="flex-1 min-h-0 flex flex-col overflow-hidden space-y-3 h-full">
             {/* Header */}
             <div className="flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-2.5">
@@ -1405,212 +1425,289 @@ export function BillingSummary({
                     const computedNetClaim = Math.max(0, grossTariff - computedDiscountAmt);
 
                     return (
-                        <div className={cn(
-                            "p-3 rounded-xl border space-y-2.5",
-                            isDark ? "bg-zinc-900/60 border-zinc-800 text-zinc-200 shadow-xs" : "bg-black/[0.04] border-black/5 text-zinc-900 shadow-xs"
-                        )}>
-                            <div className="flex items-center justify-between">
-                                <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-800 dark:text-zinc-200">
-                                    Doctor Discount & Rate
-                                </span>
-                                <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-semibold border border-slate-200 dark:border-zinc-700">
-                                    Doctor Tariff
-                                </span>
-                            </div>
-
-                            <div className="text-xs space-y-2">
-                                <div className="flex justify-between items-center text-zinc-600 dark:text-zinc-400">
-                                    <span>Standard Lab MRP:</span>
-                                    <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
-                                        ₹{grossTariff.toLocaleString()}
+                        <div className="space-y-3">
+                            {/* CARD 1: DOCTOR DISCOUNT & TARIFF */}
+                            <div className={cn(
+                                "p-3.5 rounded-2xl border space-y-3",
+                                isDark ? "bg-zinc-900/60 border-zinc-800 text-zinc-200 shadow-xs" : "bg-black/[0.04] border-black/5 text-zinc-900 shadow-xs"
+                            )}>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-800 dark:text-zinc-200">
+                                        Doctor Discount & Rate
+                                    </span>
+                                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-semibold border border-slate-200 dark:border-zinc-700">
+                                        Doctor Tariff
                                     </span>
                                 </div>
 
-                                {/* Mode Toggle & Input */}
-                                <div className="space-y-1.5 pt-1.5 border-t border-slate-200 dark:border-zinc-800">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
-                                            Discount Type:
+                                <div className="text-xs space-y-2.5">
+                                    <div className="flex justify-between items-center text-zinc-600 dark:text-zinc-400">
+                                        <span>Standard Lab Tariff:</span>
+                                        <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">
+                                            ₹{grossTariff.toLocaleString()}
                                         </span>
-                                        <div className="flex items-center rounded-lg p-0.5 bg-zinc-200/70 dark:bg-zinc-800 text-[10px] font-bold">
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setB2BDiscountType('FLAT');
-                                                    setIsB2BEditing(true);
-                                                    if (isCorrectionIntent && onStageDiscount) {
-                                                        onStageDiscount({
-                                                            type: 'Flat',
-                                                            value: Number(localB2BInput) || 0,
-                                                            reason: 'B2B Partner Concession',
-                                                            isB2B: true
-                                                        });
-                                                    }
-                                                }}
-                                                className={cn(
-                                                    "px-2 py-0.5 rounded transition-all cursor-pointer",
-                                                    b2bDiscountType === 'FLAT'
-                                                        ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-xs"
-                                                        : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
-                                                )}
-                                            >
-                                                Flat (₹)
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setB2BDiscountType('PERCENTAGE');
-                                                    setIsB2BEditing(true);
-                                                    if (isCorrectionIntent && onStageDiscount) {
-                                                        onStageDiscount({
-                                                            type: 'Percentage',
-                                                            value: Number(localB2BInput) || 0,
-                                                            reason: 'B2B Partner Concession',
-                                                            isB2B: true
-                                                        });
-                                                    }
-                                                }}
-                                                className={cn(
-                                                    "px-2 py-0.5 rounded transition-all cursor-pointer",
-                                                    b2bDiscountType === 'PERCENTAGE'
-                                                        ? "bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-xs"
-                                                        : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300"
-                                                )}
-                                            >
-                                                % Off
-                                            </button>
-                                        </div>
                                     </div>
 
-                                    <div className="flex items-center justify-between gap-2">
-                                        <label className="text-[11px] font-semibold text-zinc-600 dark:text-zinc-400">
-                                            {b2bDiscountType === 'PERCENTAGE' ? 'Discount Percentage:' : 'Flat Concession:'}
-                                        </label>
-                                        <div className="flex items-center gap-1.5">
-                                            <span className="text-xs font-bold text-zinc-400">
-                                                {b2bDiscountType === 'FLAT' ? '₹' : '%'}
+                                    {/* Mode Toggle & Input */}
+                                    <div className="space-y-1.5 pt-1.5 border-t border-slate-200 dark:border-zinc-800">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
+                                                Discount Type:
                                             </span>
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                max={b2bDiscountType === 'PERCENTAGE' ? 100 : (grossTariff || 100000)}
-                                                value={isB2BEditing ? localB2BInput : (isCorrectionIntent && stagedDiscount?.value !== undefined && stagedDiscount.isB2B ? String(stagedDiscount.value) : localB2BInput)}
-                                                disabled={!canPerformActions || isProcessing}
-                                                onFocus={(e) => {
-                                                    e.target.select();
-                                                    setIsB2BEditing(true);
-                                                }}
-                                                onChange={(e) => {
-                                                    const raw = e.target.value;
-                                                    const clean = raw.startsWith('0') && raw.length > 1 && !raw.startsWith('0.') ? raw.replace(/^0+/, '') : raw;
-                                                    setLocalB2BInput(clean);
-                                                    setIsB2BEditing(true);
-                                                    if (isCorrectionIntent && onStageDiscount) {
-                                                        onStageDiscount({
-                                                            type: b2bDiscountType === 'PERCENTAGE' ? 'Percentage' : 'Flat',
-                                                            value: Number(clean) || 0,
-                                                            reason: 'B2B Partner Concession',
-                                                            isB2B: true
-                                                        });
-                                                    }
-                                                }}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === 'Enter') {
-                                                        e.preventDefault();
-                                                        handleSaveB2BDiscount(e.target.value, b2bDiscountType);
-                                                    }
-                                                }}
-                                                className={cn(
-                                                    "w-20 h-7 px-2 text-right text-xs font-mono font-bold rounded border outline-none",
-                                                    isDark ? "bg-zinc-900 border-zinc-700 text-zinc-100 focus:border-synos-primary" : "bg-white border-zinc-300 text-zinc-900 focus:border-synos-primary shadow-xs"
-                                                )}
-                                                placeholder="0"
-                                            />
-                                            {isB2BEditing && (
+                                            <div className="flex items-center rounded-lg p-1 bg-slate-200 dark:bg-zinc-700/80 border border-slate-300 dark:border-zinc-600 text-[10px] font-bold shadow-2xs">
                                                 <button
                                                     type="button"
-                                                    onClick={() => handleSaveB2BDiscount(localB2BInput, b2bDiscountType)}
-                                                    className="px-2.5 py-1 bg-synos-primary text-white rounded text-[10px] font-bold hover:bg-synos-primary/90 cursor-pointer shadow-xs active:scale-95"
-                                                >
-                                                    Save
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {b2bDiscountType === 'PERCENTAGE' && rawVal > 0 && (
-                                        <div className="flex justify-between items-center text-[11px] text-zinc-500 dark:text-zinc-400 italic">
-                                            <span>Calculated {rawVal}% Discount:</span>
-                                            <span className="font-mono font-medium">₹{computedDiscountAmt.toLocaleString()}</span>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* BILLED TO DOCTOR (Corporate B2B Billing Entity Override) */}
-                                {(() => {
-                                    const primaryDoctor = snapshot?.billing?.referral?.partner || snapshot?.visit?.referralPartner;
-                                    const overriddenDoctor = snapshot?.billing?.referral?.secondaryPartner || snapshot?.visit?.secondaryReferralPartner;
-                                    const isOverridden = Boolean(overriddenDoctor);
-
-                                    return (
-                                        <div className="pt-2 border-t border-slate-200 dark:border-zinc-800 space-y-1.5">
-                                            <div className="flex items-center justify-between">
-                                                <label className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
-                                                    <span>Billed to Doctor</span>
-                                                    {isOverridden && (
-                                                        <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-bold border border-amber-500/20">
-                                                            Overruled
-                                                        </span>
-                                                    )}
-                                                </label>
-                                                <button
-                                                    type="button"
+                                                    id="btn-b2b-type-flat"
                                                     onClick={() => {
-                                                        setShowB2BDoctorDropdown(false);
-                                                        if (onOpenModal) onOpenModal('b2bBillingDoctor');
+                                                        setB2BDiscountType('FLAT');
+                                                        setIsB2BEditing(true);
+                                                        if (isCorrectionIntent && onStageDiscount) {
+                                                            onStageDiscount({
+                                                                type: 'Flat',
+                                                                value: Number(localB2BInput) || 0,
+                                                                reason: 'B2B Partner Concession',
+                                                                isB2B: true
+                                                            });
+                                                        }
                                                     }}
-                                                    disabled={!canPerformActions || isProcessing}
-                                                    className="text-[10px] font-bold text-synos-primary hover:text-synos-primary/80 flex items-center gap-1 cursor-pointer transition-colors"
-                                                    title="Register & bill a new doctor profile"
+                                                    className={cn(
+                                                        "px-2.5 py-0.5 rounded transition-all cursor-pointer font-bold",
+                                                        b2bDiscountType === 'FLAT'
+                                                            ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-xs"
+                                                            : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"
+                                                    )}
                                                 >
-                                                    <Plus className="w-3 h-3" /> Add Doctor
+                                                    Flat (₹)
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    id="btn-b2b-type-percent"
+                                                    onClick={() => {
+                                                        setB2BDiscountType('PERCENTAGE');
+                                                        setIsB2BEditing(true);
+                                                        if (isCorrectionIntent && onStageDiscount) {
+                                                            onStageDiscount({
+                                                                type: 'Percentage',
+                                                                value: Number(localB2BInput) || 0,
+                                                                reason: 'B2B Partner Concession',
+                                                                isB2B: true
+                                                            });
+                                                        }
+                                                    }}
+                                                    className={cn(
+                                                        "px-2.5 py-0.5 rounded transition-all cursor-pointer font-bold",
+                                                        b2bDiscountType === 'PERCENTAGE'
+                                                            ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-xs"
+                                                            : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"
+                                                    )}
+                                                >
+                                                    % Off
                                                 </button>
                                             </div>
+                                        </div>
 
-                                            {isOverridden ? (
-                                                <div className={cn(
-                                                    "flex items-center justify-between gap-2 p-2 rounded-lg border text-xs font-semibold",
-                                                    isDark ? "bg-zinc-800/60 border-zinc-700 text-zinc-100" : "bg-white border-zinc-200 text-zinc-900 shadow-xs"
-                                                )}>
-                                                    <div className="flex items-center gap-2 min-w-0">
-                                                        <div className="w-2 h-2 rounded-full bg-amber-500 shrink-0"></div>
-                                                        <div className="truncate">
-                                                            <div className="font-bold text-xs truncate">
-                                                                {overriddenDoctor.displayName || overriddenDoctor.name}
-                                                            </div>
-                                                            <div className="text-[10px] text-zinc-400 font-normal truncate">
-                                                                Receivables & ledger will be billed to this doctor
-                                                            </div>
+                                        <div className="flex items-center justify-between gap-2">
+                                            <label htmlFor="input-b2b-discount" className="text-[11px] font-semibold text-zinc-600 dark:text-zinc-400">
+                                                {b2bDiscountType === 'PERCENTAGE' ? 'Discount Percentage:' : 'Flat Concession:'}
+                                            </label>
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="text-xs font-bold text-zinc-400">
+                                                    {b2bDiscountType === 'FLAT' ? '₹' : '%'}
+                                                </span>
+                                                <input
+                                                    id="input-b2b-discount"
+                                                    data-financials-focus="true"
+                                                    type="number"
+                                                    min="0"
+                                                    max={b2bDiscountType === 'PERCENTAGE' ? 100 : (grossTariff || 100000)}
+                                                    value={isB2BEditing ? localB2BInput : (isCorrectionIntent && stagedDiscount?.value !== undefined && stagedDiscount.isB2B ? String(stagedDiscount.value) : localB2BInput)}
+                                                    disabled={!canPerformActions || isProcessing}
+                                                    onFocus={(e) => {
+                                                        e.target.select();
+                                                        setIsB2BEditing(true);
+                                                    }}
+                                                    onChange={(e) => {
+                                                        const raw = e.target.value;
+                                                        const clean = raw.startsWith('0') && raw.length > 1 && !raw.startsWith('0.') ? raw.replace(/^0+/, '') : raw;
+                                                        setLocalB2BInput(clean);
+                                                        setIsB2BEditing(true);
+                                                        if (isCorrectionIntent && onStageDiscount) {
+                                                            onStageDiscount({
+                                                                type: b2bDiscountType === 'PERCENTAGE' ? 'Percentage' : 'Flat',
+                                                                value: Number(clean) || 0,
+                                                                reason: 'B2B Partner Concession',
+                                                                isB2B: true
+                                                            });
+                                                        }
+                                                    }}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') {
+                                                            e.preventDefault();
+                                                            handleSaveB2BDiscount(e.target.value, b2bDiscountType);
+                                                        } else if (e.key === 'Tab') {
+                                                            if (!e.shiftKey) {
+                                                                const nextInput = document.getElementById('input-b2b-doctor-search') ||
+                                                                                  document.getElementById('btn-unified-action');
+                                                                if (nextInput) {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                    nextInput.focus();
+                                                                }
+                                                            } else {
+                                                                const prevBtn = document.getElementById('btn-outsource-test');
+                                                                if (prevBtn) {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                    prevBtn.focus();
+                                                                }
+                                                            }
+                                                        }
+                                                    }}
+                                                    className={cn(
+                                                        "w-20 h-7 px-2 text-right text-xs font-mono font-bold rounded border outline-none synos-focus-input",
+                                                        isDark ? "bg-zinc-900 border-zinc-700 text-zinc-100 focus:border-synos-primary" : "bg-white border-zinc-300 text-zinc-900 focus:border-synos-primary shadow-xs"
+                                                    )}
+                                                    placeholder="0"
+                                                />
+                                                {isB2BEditing && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleSaveB2BDiscount(localB2BInput, b2bDiscountType)}
+                                                        className="px-2.5 py-1 bg-synos-primary text-white rounded text-[10px] font-bold hover:bg-synos-primary/90 cursor-pointer shadow-xs active:scale-95 synos-focus-btn"
+                                                    >
+                                                        Save
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {b2bDiscountType === 'PERCENTAGE' && rawVal > 0 && (
+                                            <div className="flex justify-between items-center text-[11px] text-zinc-500 dark:text-zinc-400 italic">
+                                                <span>Calculated {rawVal}% Discount:</span>
+                                                <span className="font-mono font-medium">₹{computedDiscountAmt.toLocaleString()}</span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Final Doctor Bill Row */}
+                                    <div className="flex justify-between items-center pt-2 border-t border-slate-200 dark:border-zinc-800 font-bold">
+                                        <span className="text-zinc-800 dark:text-zinc-200">Final Doctor Bill:</span>
+                                        <span className="font-mono text-emerald-600 dark:text-emerald-400 text-sm font-extrabold">
+                                            ₹{computedNetClaim.toLocaleString()}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {b2bInfo.enteredBy && (
+                                    <div className="text-[10px] text-zinc-500 dark:text-zinc-400 border-t border-black/5 dark:border-white/5 pt-1">
+                                        Recorded by: <span className="font-semibold text-zinc-700 dark:text-zinc-300">{b2bInfo.enteredBy}</span>
+                                        {b2bInfo.enteredAt && ` on ${new Date(b2bInfo.enteredAt).toLocaleDateString()}`}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* CARD 2: BILLED TO DOCTOR / CLINIC ACCOUNT (Standalone Overrule Card) */}
+                            {(() => {
+                                const primaryDoctor = snapshot?.billing?.referral?.partner || snapshot?.visit?.referralPartner;
+                                const overriddenDoctor = snapshot?.billing?.referral?.secondaryPartner || snapshot?.visit?.secondaryReferralPartner;
+                                const isOverridden = Boolean(overriddenDoctor);
+
+                                return (
+                                    <div className={cn(
+                                        "p-3.5 rounded-2xl border space-y-2.5 transition-all shadow-xs",
+                                        isOverridden
+                                            ? (isDark ? "bg-amber-950/20 border-amber-500/40" : "bg-amber-50/70 border-amber-200")
+                                            : (isDark ? "bg-zinc-900/60 border-zinc-800 text-zinc-200" : "bg-black/[0.04] border-black/5 text-zinc-900")
+                                    )}>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-800 dark:text-zinc-200">
+                                                    Billed to Doctor Account
+                                                </span>
+                                                {isOverridden ? (
+                                                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold border border-amber-500/30">
+                                                        Overruled
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-bold border border-emerald-500/20">
+                                                        Default: Prescribing Doctor
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setShowB2BDoctorDropdown(false);
+                                                    if (onOpenModal) onOpenModal('b2bBillingDoctor');
+                                                }}
+                                                disabled={!canPerformActions || isProcessing}
+                                                className="text-[10px] font-bold text-synos-primary hover:text-synos-primary/80 flex items-center gap-1 cursor-pointer transition-colors"
+                                                title="Register & bill a new doctor profile"
+                                            >
+                                                <Plus className="w-3 h-3" /> Add Doctor
+                                            </button>
+                                        </div>
+
+                                        <p className="text-[10px] text-zinc-500 dark:text-zinc-400 leading-tight">
+                                            Default: Receivables ledger is billed to the prescribing doctor. Select below only to overrule and route to another clinic or hospital account.
+                                        </p>
+
+                                        {isOverridden ? (
+                                            <div className={cn(
+                                                "flex items-center justify-between gap-2 p-2.5 rounded-xl border text-xs font-semibold animate-in fade-in duration-200",
+                                                isDark ? "bg-zinc-900 border-amber-500/30 text-zinc-100" : "bg-white border-amber-300 text-zinc-900 shadow-xs"
+                                            )}>
+                                                <div className="flex items-center gap-2.5 min-w-0">
+                                                    <div className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0 animate-pulse" />
+                                                    <div className="truncate">
+                                                        <div className="font-bold text-xs truncate text-amber-900 dark:text-amber-200">
+                                                            {overriddenDoctor.displayName || overriddenDoctor.name}
+                                                        </div>
+                                                        <div className="text-[10px] text-zinc-500 dark:text-zinc-400 font-normal truncate">
+                                                            Receivables ledger will be billed to this doctor
                                                         </div>
                                                     </div>
-                                                    {canPerformActions && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={handleClearB2BOverrideDoctor}
-                                                            disabled={isProcessing}
-                                                            className="p-1 text-zinc-400 hover:text-rose-500 rounded cursor-pointer transition-colors shrink-0"
-                                                            title="Revert billing back to prescribing doctor"
-                                                        >
-                                                            <X className="w-3.5 h-3.5" />
-                                                        </button>
-                                                    )}
                                                 </div>
-                                            ) : (
+                                                {canPerformActions && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleClearB2BOverrideDoctor}
+                                                        disabled={isProcessing}
+                                                        className="px-2 py-1 rounded text-[11px] font-bold text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 cursor-pointer transition-colors shrink-0 flex items-center gap-1 synos-focus-btn"
+                                                        title="Revert billing back to prescribing doctor"
+                                                    >
+                                                        <X className="w-3 h-3" /> Revert
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                {/* Default Active Indicator */}
+                                                <div className={cn(
+                                                    "flex items-center justify-between p-2 rounded-lg border text-xs font-medium",
+                                                    isDark ? "bg-zinc-900/40 border-zinc-700/60 text-zinc-300" : "bg-white/80 border-slate-200 text-slate-700 shadow-2xs"
+                                                )}>
+                                                    <div className="flex items-center gap-2 min-w-0">
+                                                        <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                                                        <span className="font-semibold text-slate-900 dark:text-white truncate">
+                                                            {primaryDoctor?.displayName || primaryDoctor?.name || "Prescribing Doctor"}
+                                                        </span>
+                                                        <span className="text-[10px] text-zinc-400 dark:text-zinc-500 truncate hidden sm:inline">
+                                                            (Active Ledger Account)
+                                                        </span>
+                                                    </div>
+                                                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shrink-0">
+                                                        Active
+                                                    </span>
+                                                </div>
+
+                                                {/* Overrule Search Input */}
                                                 <div className="relative">
                                                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400 pointer-events-none" />
                                                     <input
+                                                        id="input-b2b-doctor-search"
                                                         type="text"
-                                                        placeholder={primaryDoctor?.displayName || primaryDoctor?.name ? `Default: ${primaryDoctor.displayName || primaryDoctor.name} (or search to overrule)...` : "Search Doctor to Bill..."}
+                                                        placeholder="Search doctor to overrule default account..."
                                                         value={b2bDoctorSearch}
                                                         onFocus={() => setShowB2BDoctorDropdown(true)}
                                                         onChange={(e) => {
@@ -1622,7 +1719,7 @@ export function BillingSummary({
                                                             setTimeout(() => setShowB2BDoctorDropdown(false), 200);
                                                         }}
                                                         disabled={!canPerformActions || isProcessing}
-                                                        className={cn("w-full h-8 pl-8 pr-7 rounded-md text-xs font-medium outline-none border transition-all", ui.input)}
+                                                        className={cn("w-full h-8 pl-8 pr-7 rounded-md text-xs font-medium outline-none border transition-all synos-focus-input", ui.input)}
                                                     />
                                                     {b2bDoctorSearch ? (
                                                         <button
@@ -1699,25 +1796,11 @@ export function BillingSummary({
                                                         </div>
                                                     )}
                                                 </div>
-                                            )}
-                                        </div>
-                                    );
-                                })()}
-
-                                <div className="flex justify-between items-center pt-2 border-t border-slate-200 dark:border-zinc-800 font-bold">
-                                    <span className="text-zinc-800 dark:text-zinc-200">Final Doctor Bill:</span>
-                                    <span className="font-mono text-emerald-600 dark:text-emerald-400 text-sm font-extrabold">
-                                        ₹{computedNetClaim.toLocaleString()}
-                                    </span>
-                                </div>
-                            </div>
-
-                            {b2bInfo.enteredBy && (
-                                <div className="text-[10px] text-zinc-500 dark:text-zinc-400 border-t border-black/5 dark:border-white/5 pt-1">
-                                    Recorded by: <span className="font-semibold text-zinc-700 dark:text-zinc-300">{b2bInfo.enteredBy}</span>
-                                    {b2bInfo.enteredAt && ` on ${new Date(b2bInfo.enteredAt).toLocaleDateString()}`}
-                                </div>
-                            )}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })()}
                         </div>
                     );
                 })()}

@@ -255,13 +255,14 @@ namespace SynOS.Services
 
             if (visit.PaymentCollectionModel == "PartnerCollects" && visit.ReferralPartnerId.HasValue)
             {
+                var receiptNo = await GenerateUniqueReceiptNoAsync("SYS", visit.Token);
                 var payment = new Payment
                 {
                     PaymentId = Guid.NewGuid(),
                     InvoiceId = invoice.InvoiceId,
                     Amount = invoice.Total, 
                     Method = "PartnerAccount",
-                    ReceiptNo = $"SYS-{visit.Token}",
+                    ReceiptNo = receiptNo,
                     ReceivedAt = DateTime.UtcNow,
                     ReceivedByUserId = effectiveUserId
                 };
@@ -1197,13 +1198,14 @@ namespace SynOS.Services
                 var existingPayment = await _context.Payments.FirstOrDefaultAsync(p => p.InvoiceId == invoice.InvoiceId);
                 if (existingPayment == null)
                 {
+                    var receiptNo = await GenerateUniqueReceiptNoAsync("SYS", visit.Token);
                     var payment = new Payment
                     {
                         PaymentId = Guid.NewGuid(),
                         InvoiceId = invoice.InvoiceId,
                         Amount = invoice.Total,
                         Method = "PartnerAccount",
-                        ReceiptNo = $"SYS-{visit.Token}",
+                        ReceiptNo = receiptNo,
                         ReceivedAt = DateTime.UtcNow,
                         ReceivedByUserId = actorUserId
                     };
@@ -1415,13 +1417,14 @@ namespace SynOS.Services
                         ? (cancelDto.RefundMethod.IndexOf("Cash", StringComparison.OrdinalIgnoreCase) >= 0 ? "Cash" : "UPI") 
                         : (firstPayment?.Method ?? "Cash");
 
+                    var refundReceiptNo = await GenerateUniqueReceiptNoAsync("REF-CAN", visit.Token);
                     var refundPayment = new Payment
                     {
                         PaymentId = Guid.NewGuid(),
                         InvoiceId = invoice.InvoiceId,
                         Amount = -netPaid,
                         Method = refundMethod,
-                        ReceiptNo = $"REF-CAN-{DateTime.UtcNow:yyyyMMdd}-{visit.Token}",
+                        ReceiptNo = refundReceiptNo,
                         ReceivedAt = DateTime.UtcNow,
                         ReceivedByUserId = cancelDto.CancelledByUserId
                     };
@@ -2182,13 +2185,14 @@ namespace SynOS.Services
                     // Refund to patient via selected instrument (Cash or UPI)
                     decimal refundAmt = Math.Abs(dto.SettlementDifference);
                     var refundMethod = !string.IsNullOrWhiteSpace(dto.PaymentMethod) ? dto.PaymentMethod : "Cash";
+                    var refundReceiptNo = await GenerateUniqueReceiptNoAsync("REF", visit.Token);
                     var refundPayment = new Payment
                     {
                         PaymentId = Guid.NewGuid(),
                         InvoiceId = invoice.InvoiceId,
                         Amount = -refundAmt, // Negative payment reduces total paid
                         Method = refundMethod,
-                        ReceiptNo = $"REF-{DateTime.UtcNow:yyyyMMdd}-{visit.Token}",
+                        ReceiptNo = refundReceiptNo,
                         ReceivedAt = DateTime.UtcNow,
                         ReceivedByUserId = actorUserId
                     };
@@ -2219,13 +2223,14 @@ namespace SynOS.Services
                     // Additional payment collected at desk
                     decimal dueAmt = dto.SettlementDifference;
                     var addMethod = !string.IsNullOrWhiteSpace(dto.PaymentMethod) ? dto.PaymentMethod : "Cash";
+                    var addReceiptNo = await GenerateUniqueReceiptNoAsync("REC", visit.Token);
                     var addPayment = new Payment
                     {
                         PaymentId = Guid.NewGuid(),
                         InvoiceId = invoice.InvoiceId,
                         Amount = dueAmt,
                         Method = addMethod,
-                        ReceiptNo = $"REC-{DateTime.UtcNow:yyyyMMdd}-{visit.Token}",
+                        ReceiptNo = addReceiptNo,
                         ReceivedAt = DateTime.UtcNow,
                         ReceivedByUserId = actorUserId
                     };
@@ -2266,13 +2271,14 @@ namespace SynOS.Services
                     }
                     else if (invoice.Payments.Count == 0 || invoice.Payments.All(p => p.Method == "PartnerAccount"))
                     {
+                        var partnerReceiptNo = await GenerateUniqueReceiptNoAsync("SYS", visit.Token);
                         var newPartnerPayment = new Payment
                         {
                             PaymentId = Guid.NewGuid(),
                             InvoiceId = invoice.InvoiceId,
                             Amount = invoice.Total,
                             Method = "PartnerAccount",
-                            ReceiptNo = $"SYS-{visit.Token}",
+                            ReceiptNo = partnerReceiptNo,
                             ReceivedAt = DateTime.UtcNow,
                             ReceivedByUserId = actorUserId
                         };
@@ -2518,6 +2524,21 @@ namespace SynOS.Services
                     throw;
                 }
             });
+        }
+
+        private async Task<string> GenerateUniqueReceiptNoAsync(string prefix, string? token)
+        {
+            var cleanToken = (token ?? "TOKEN").Replace(" ", "").Trim();
+            var dateStamp = DateTime.UtcNow.ToString("yyyyMMdd");
+            var baseReceipt = $"{prefix}-{dateStamp}-{cleanToken}";
+            var candidate = baseReceipt;
+            int counter = 1;
+            while (await _context.Payments.AnyAsync(p => p.ReceiptNo == candidate))
+            {
+                counter++;
+                candidate = $"{baseReceipt}-{counter}";
+            }
+            return candidate;
         }
     }
 }

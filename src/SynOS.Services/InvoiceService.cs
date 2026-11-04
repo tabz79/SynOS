@@ -90,13 +90,15 @@ namespace SynOS.Services
             var startUtc = startOfToday.UtcDateTime;
             var endUtc = endOfToday.UtcDateTime;
 
-            // Total Walk-Ins: ALL confirmed patients registered across all desks in the branch today (excluding uncommitted drafts & cancellations)
+            // Total Walk-Ins: ALL confirmed retail direct patients registered across all desks in the branch today (excluding uncommitted drafts, cancellations, and corporate B2B prepaid)
             var branchVisitsQuery = _context.Visits
                 .Where(v => v.BranchId == branchId 
                          && (v.TokenDate == today || (v.CreatedAt >= startUtc && v.CreatedAt < endUtc))
                          && v.Status != VisitStatus.Cancelled
                          && v.Status != VisitStatus.Draft
-                         && (v.Token == null || !v.Token.StartsWith("D-")));
+                         && (v.Token == null || !v.Token.StartsWith("D-"))
+                         && v.PaymentCollectionModel != "PartnerCollects"
+                         && v.BillingType != BillingType.PrepaidPartner);
 
             var walkIns = await branchVisitsQuery.CountAsync();
 

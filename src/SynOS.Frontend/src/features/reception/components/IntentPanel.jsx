@@ -1524,15 +1524,18 @@ export function IntentPanel({ onVisitUpdated }) {
             <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
                 {isLoading && !snapshot && <div className="flex items-center justify-center h-40"><Loader2 className="w-8 h-8 text-synos-primary animate-spin" /></div>}
                 {error && (
-                    <div className="m-4 bg-red-500/10 border border-red-500/50 rounded-lg p-3 text-red-200 text-sm flex items-center justify-between gap-3 animate-in fade-in">
-                        <div className="flex items-center gap-2">
-                            <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
-                            <span>{error}</span>
+                    <div className="mx-4 mt-3 mb-1 bg-slate-100 dark:bg-zinc-800 border-2 border-rose-500/60 dark:border-rose-500/80 rounded-xl p-3 text-slate-900 dark:text-white font-medium text-xs sm:text-sm flex items-center justify-between gap-3 shadow-md animate-in fade-in">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="p-1.5 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 shrink-0">
+                                <AlertCircle className="w-4 h-4 shrink-0" />
+                            </div>
+                            <span className="break-words font-semibold text-slate-900 dark:text-white">{error}</span>
                         </div>
                         <button 
                             type="button" 
                             onClick={() => setError(null)}
-                            className="p-1 hover:bg-red-500/20 rounded transition-colors"
+                            className="p-1 hover:bg-slate-200 dark:hover:bg-zinc-700 rounded-lg transition-colors text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white shrink-0 cursor-pointer"
+                            title="Dismiss error"
                         >
                             <X className="w-4 h-4" />
                         </button>
@@ -2741,6 +2744,8 @@ export function IntentPanel({ onVisitUpdated }) {
                                         );
                                     })()}
                                     <button
+                                        id="btn-unified-action"
+                                        data-action-submit="true"
                                         onClick={handleUnifiedAction}
                                         disabled={!isActionEnabled || isLoading || isActionSubmitting}
                                         className={cn(
