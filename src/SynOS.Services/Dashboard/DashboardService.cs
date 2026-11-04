@@ -45,7 +45,12 @@ namespace SynOS.Services.Dashboard
                 PrepaidBillsCount = revStats.PrepaidBillsCount,
                 PrepaidBillsTotal = revStats.PrepaidBillsTotal,
                 DailyExpensesCashTotal = revStats.DailyExpensesCashTotal,
+                DailyExpensesCashPool = revStats.DailyExpensesCashPool,
+                DailyExpensesCashIndividual = revStats.DailyExpensesCashIndividual,
                 CashDrawerBalance = revStats.CashDrawerBalance,
+                CashDrawerBalancePool = revStats.CashDrawerBalancePool,
+                CashDrawerBalanceIndividual = revStats.CashDrawerBalanceIndividual,
+                PaymentsCashPool = revStats.PaymentsCashPool,
                 
                 // Mapped from Operations Engine
                 PendingReports = opsStats.PendingReports,

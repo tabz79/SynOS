@@ -195,21 +195,18 @@ namespace SynOS.Services
             decimal finalTotal = payments.Any() ? totalPayments : (stats?.Payments ?? 0m);
 
             // Branch Pool Cash Collected (All desks combined for drawer balance calculation)
-            decimal branchCashTotal = finalCash;
-            if (userId.HasValue || _userContext.CurrentRole == "Receptionist")
-            {
-                var allBranchPayments = await _context.Payments
-                    .Include(p => p.Invoice).ThenInclude(i => i.Visit)
-                    .Where(p => p.Invoice != null && p.Invoice.Visit != null 
-                             && p.Invoice.Visit.BranchId == branchId 
-                             && p.Invoice.Visit.Status != VisitStatus.Draft
-                             && (p.Invoice.Visit.Token == null || !p.Invoice.Visit.Token.StartsWith("D-"))
-                             && (p.Invoice.Visit.PaymentCollectionModel != "PartnerCollects" || (p.ReceiptNo != null && p.ReceiptNo.StartsWith("RCP-B2B")))
-                             && (p.Invoice.Visit.BillingType != BillingType.PrepaidPartner || (p.ReceiptNo != null && p.ReceiptNo.StartsWith("RCP-B2B")))
-                             && p.ReceivedAt >= startUtc && p.ReceivedAt < endUtc)
-                    .ToListAsync();
-                branchCashTotal = allBranchPayments.Where(p => isCash(p.Method)).Sum(p => p.Amount);
-            }
+            var allBranchPayments = await _context.Payments
+                .Include(p => p.Invoice).ThenInclude(i => i.Visit)
+                .Where(p => p.Invoice != null && p.Invoice.Visit != null 
+                         && p.Invoice.Visit.BranchId == branchId 
+                         && p.Invoice.Visit.Status != VisitStatus.Draft
+                         && (p.Invoice.Visit.Token == null || !p.Invoice.Visit.Token.StartsWith("D-"))
+                         && (p.Invoice.Visit.PaymentCollectionModel != "PartnerCollects" || (p.ReceiptNo != null && p.ReceiptNo.StartsWith("RCP-B2B")))
+                         && (p.Invoice.Visit.BillingType != BillingType.PrepaidPartner || (p.ReceiptNo != null && p.ReceiptNo.StartsWith("RCP-B2B")))
+                         && p.ReceivedAt >= startUtc && p.ReceivedAt < endUtc)
+                .ToListAsync();
+
+            decimal branchCashTotal = allBranchPayments.Where(p => isCash(p.Method)).Sum(p => p.Amount);
 
             // Branch Pool Daily Cash Expenses (Physical cash disbursed out of the cash drawer today)
             var dailyCashExpenses = await _context.SpendFacts
@@ -218,8 +215,48 @@ namespace SynOS.Services
                          && ((s.RecordedAt >= startUtc && s.RecordedAt < endUtc) || (s.OccurredAt >= startUtc && s.OccurredAt < endUtc)))
                 .SumAsync(s => s.Amount);
 
+            // Individual Cash & Expenses (Physical cash and expenses specifically for active receptionist/user today)
+            var activeUserId = userId ?? (_userContext.CurrentUserId != Guid.Empty ? _userContext.CurrentUserId : (Guid?)null);
+            decimal userCashCollected = activeUserId.HasValue 
+                ? allBranchPayments.Where(p => p.ReceivedByUserId == activeUserId.Value && isCash(p.Method)).Sum(p => p.Amount)
+                : finalCash;
+
+            decimal userDailyCashExpenses = 0m;
+
+            if (activeUserId.HasValue && activeUserId.Value != Guid.Empty)
+            {
+                var userPayables = await _context.OverheadPayableFacts
+                    .Where(p => p.CreatedBy == activeUserId.Value
+                             && p.CreatedAt >= startUtc && p.CreatedAt < endUtc
+                             && p.Status != SynOS.Models.Enums.Payables.VendorPayableStatus.Cancelled)
+                    .ToListAsync();
+
+                if (userPayables.Any())
+                {
+                    var userPrefixes = userPayables.Select(p => $"OHP-{p.OverheadPayableId.ToString().Substring(0, 8)}").ToList();
+                    var userSpendFacts = await _context.SpendFacts
+                        .Where(s => userPrefixes.Any(pfx => s.TransactionReference.StartsWith(pfx)))
+                        .ToListAsync();
+
+                    foreach (var up in userPayables)
+                    {
+                        var pfx = $"OHP-{up.OverheadPayableId.ToString().Substring(0, 8)}";
+                        var sf = userSpendFacts.FirstOrDefault(s => s.TransactionReference.StartsWith(pfx));
+                        if (sf != null && sf.PaymentMethod == PaymentMethod.Cash)
+                        {
+                            userDailyCashExpenses += up.AmountPaid;
+                        }
+                        else if (sf == null && up.AmountPaid > 0)
+                        {
+                            userDailyCashExpenses += up.AmountPaid;
+                        }
+                    }
+                }
+            }
+
             // Cash in Drawer = Branch Cash Collected - Daily Cash Expenses
             decimal cashDrawerBalance = Math.Max(0m, branchCashTotal - dailyCashExpenses);
+            decimal userCashDrawerBalance = Math.Max(0m, userCashCollected - userDailyCashExpenses);
 
             return new RevenueStatsDto
             {
@@ -231,7 +268,12 @@ namespace SynOS.Services
                 PrepaidBillsCount = finalPrepaidCount,
                 PrepaidBillsTotal = prepaidTotal > 0 ? prepaidTotal : (stats?.PrepaidTotal ?? 0m),
                 DailyExpensesCashTotal = dailyCashExpenses,
+                DailyExpensesCashPool = dailyCashExpenses,
+                DailyExpensesCashIndividual = userDailyCashExpenses,
                 CashDrawerBalance = cashDrawerBalance,
+                CashDrawerBalancePool = cashDrawerBalance,
+                CashDrawerBalanceIndividual = userCashDrawerBalance,
+                PaymentsCashPool = branchCashTotal,
                 PendingReports = 0,
                 AvgReportTimeMinutes = 0
             };

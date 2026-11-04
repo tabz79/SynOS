@@ -1,9 +1,26 @@
 import { useLayoutEffect, useRef } from 'react';
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/context/ThemeContext";
-import { Users } from 'lucide-react';
+import { Users, User } from 'lucide-react';
 
-export function RealityTile({ value, label, shortLabel, qualifier, icon: Icon, color = "default", id, style, isHidden, isCollapsed, isPool, scopeBadge }) {
+export function RealityTile({ 
+    value, 
+    label, 
+    shortLabel, 
+    qualifier, 
+    icon: Icon, 
+    color = "default", 
+    id, 
+    style, 
+    isHidden, 
+    isCollapsed, 
+    isPool, 
+    scopeBadge,
+    isDual,
+    individualValue,
+    poolLabel = "Pool Total",
+    individualLabel = "You"
+}) {
     const colorClasses = {
         default: "bg-zinc-200",
         amber: "bg-synos-amber",
@@ -52,70 +69,155 @@ export function RealityTile({ value, label, shortLabel, qualifier, icon: Icon, c
                 isCollapsed ? "px-4 py-2.5 gap-0 h-full" : "p-4 sm:p-5 h-28 sm:h-32 gap-0"
             )}
         >
-            {/* SLOT 1: HEADER + VALUE (Top Section) */}
-            {/* We group Value and Icon together to replicate the original intended design: Value Left, Icon Right. */}
-            {/* But we keep them structurally rigorous. */}
-            <div className="flex justify-between items-start w-full">
-                {/* VALUE (Top Left) */}
-                <span className={cn(
-                    "font-extrabold font-sans tracking-tight group-hover:scale-[1.02] transition-transform duration-300 origin-left block tabular-nums",
-                    ui.text,
-                    isCollapsed
-                        ? "text-2xl sm:text-3xl leading-tight pb-0.5 font-bold"
-                        : value && value.toString().length > 9 ? "text-3xl sm:text-4xl leading-snug"
-                            : value && value.toString().length > 6 ? "text-4xl leading-snug"
-                                : "text-4xl sm:text-5xl leading-tight pb-1"
-                )}>
-                    {value}
-                </span>
-
-                {/* ICON (Top Right) + SCOPE BADGE */}
-                <div className="flex items-center gap-1.5 ml-2">
-                    {isPool ? (
-                        <span 
-                            title="Branch Pool: Consolidated across all reception desks"
-                            className="inline-flex items-center gap-1 text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 shrink-0"
-                        >
-                            <Users className="w-2.5 h-2.5" />
-                            Pool
+            {isCollapsed ? (
+                /* COLLAPSED ROW VIEW */
+                <div className="flex items-center justify-between w-full h-full">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                        {Icon && <Icon className="w-3.5 h-3.5 text-zinc-500 shrink-0" />}
+                        <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 truncate">
+                            {displayLabel}:
                         </span>
-                    ) : scopeBadge ? (
-                        <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border border-zinc-500/20 shrink-0">
-                            {scopeBadge}
+                        <span className={cn("font-bold text-sm tabular-nums", ui.text)}>
+                            {value}
                         </span>
+                        {isDual && (
+                            <span className="text-[10px] text-zinc-400 font-medium">
+                                (Pool)
+                            </span>
+                        )}
+                    </div>
+                    {isDual ? (
+                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-zinc-800 border border-slate-200/60 dark:border-zinc-700/60 text-xs font-bold tabular-nums text-zinc-800 dark:text-zinc-200">
+                            <User className="w-3 h-3 text-zinc-400" />
+                            <span>{individualValue}</span>
+                        </div>
                     ) : null}
-                    <div className={cn("flex shrink-0 justify-center items-center", isCollapsed ? "w-4 h-4 ml-1" : "w-6 h-6 ml-1.5 sm:ml-2")}>
-                        {Icon ? (
-                            <Icon className={cn(
-                                "transition-colors duration-300",
-                                isCollapsed ? "w-4 h-4" : "w-5 h-5 sm:w-6 sm:h-6",
-                                "text-zinc-500 group-hover:text-zinc-700"
-                            )} />
-                        ) : null}
+                </div>
+            ) : isDual ? (
+                /* DUAL METRIC SPLIT LAYOUT (Mockup Option B) */
+                <div className="flex flex-col h-full w-full justify-between">
+                    {/* TOP: Icon Badge + Title + Qualifier */}
+                    <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center gap-2 min-w-0">
+                            <div className={cn(
+                                "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border",
+                                isDark 
+                                    ? "bg-zinc-800/80 text-zinc-300 border-zinc-700/60" 
+                                    : "bg-slate-100 text-zinc-700 border-slate-200/80 shadow-xs"
+                            )}>
+                                {Icon ? <Icon className="w-4 h-4" /> : null}
+                            </div>
+                            <span className={cn(
+                                "font-bold text-xs sm:text-sm tracking-tight truncate",
+                                isDark ? "text-zinc-100" : "text-zinc-900"
+                            )}>
+                                {displayLabel}
+                            </span>
+                        </div>
+                        {qualifier && (
+                            <span className="text-[10px] text-zinc-400 font-mono tracking-wider uppercase hidden sm:inline-block">
+                                {qualifier}
+                            </span>
+                        )}
+                    </div>
+
+                    {/* BOTTOM: Horizontal Split (Pool on Left, You Pod on Right) */}
+                    <div className="flex items-center justify-between w-full mt-auto pt-1 gap-1 sm:gap-2">
+                        {/* Left: Pool Value + Label */}
+                        <div className="flex flex-col min-w-0">
+                            <span className={cn(
+                                "font-extrabold font-sans tracking-tight block tabular-nums leading-tight",
+                                ui.text,
+                                value && value.toString().length > 8 ? "text-xl sm:text-2xl" : "text-2xl sm:text-3xl"
+                            )}>
+                                {value}
+                            </span>
+                            <span className="text-[10px] sm:text-[11px] font-semibold text-zinc-500 tracking-tight mt-0.5 truncate">
+                                {poolLabel}
+                            </span>
+                        </div>
+
+                        {/* Divider */}
+                        <div className="h-8 w-px bg-slate-200 dark:bg-zinc-700/60 shrink-0 self-center mx-1 sm:mx-1.5" />
+
+                        {/* Right: Recessed Pod (You) */}
+                        <div className={cn(
+                            "rounded-xl px-2.5 py-1 sm:px-3 sm:py-1.5 flex flex-col items-center justify-center shrink-0 border transition-all group-hover:scale-[1.02]",
+                            isDark 
+                                ? "bg-zinc-800/90 border-zinc-700/80 shadow-xs" 
+                                : "bg-slate-100/90 border-slate-200/80 shadow-xs"
+                        )}>
+                            <div className="flex items-center gap-1 leading-none">
+                                <User className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                                <span className={cn(
+                                    "font-bold font-sans tracking-tight tabular-nums",
+                                    ui.text,
+                                    individualValue && individualValue.toString().length > 6 ? "text-base sm:text-lg" : "text-lg sm:text-xl"
+                                    )}>
+                                    {individualValue}
+                                </span>
+                            </div>
+                            <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mt-0.5">
+                                {individualLabel}
+                            </span>
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            {/* SPACER (Pushes Label to Bottom) */}
-            <div className="flex-1 min-h-0" />
-
-            {/* SLOT 2: FOOTER (Label) */}
-            <div className="w-full shrink-0">
-                <div className={cn(
-                    "text-zinc-600 transition-colors group-hover:text-zinc-800 flex items-baseline gap-1.5 whitespace-nowrap overflow-hidden",
-                    // Reset margins here
-                    isCollapsed
-                        ? "text-xs font-medium mb-0"
-                        : "text-xs sm:text-sm font-semibold mb-0 normal-case"
-                )}>
-                    <span className="truncate">{displayLabel}</span>
-                    {qualifier && !isCollapsed && (
-                        <span className="opacity-60 font-normal truncate text-xs">
-                            {qualifier}
+            ) : (
+                /* STANDARD SINGLE-METRIC LAYOUT */
+                <>
+                    {/* SLOT 1: HEADER + VALUE (Top Section) */}
+                    <div className="flex justify-between items-start w-full">
+                        {/* VALUE (Top Left) */}
+                        <span className={cn(
+                            "font-extrabold font-sans tracking-tight group-hover:scale-[1.02] transition-transform duration-300 origin-left block tabular-nums",
+                            ui.text,
+                            value && value.toString().length > 9 ? "text-3xl sm:text-4xl leading-snug"
+                                : value && value.toString().length > 6 ? "text-4xl leading-snug"
+                                    : "text-4xl sm:text-5xl leading-tight pb-1"
+                        )}>
+                            {value}
                         </span>
-                    )}
-                </div>
-            </div>
+
+                        {/* ICON (Top Right) + SCOPE BADGE */}
+                        <div className="flex items-center gap-1.5 ml-2">
+                            {isPool ? (
+                                <span 
+                                    title="Branch Pool: Consolidated across all reception desks"
+                                    className="inline-flex items-center gap-1 text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 shrink-0"
+                                >
+                                    <Users className="w-2.5 h-2.5" />
+                                    Pool
+                                </span>
+                            ) : scopeBadge ? (
+                                <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border border-zinc-500/20 shrink-0">
+                                    {scopeBadge}
+                                </span>
+                            ) : null}
+                            <div className="flex shrink-0 justify-center items-center w-6 h-6 ml-1.5 sm:ml-2">
+                                {Icon ? (
+                                    <Icon className="transition-colors duration-300 w-5 h-5 sm:w-6 sm:h-6 text-zinc-500 group-hover:text-zinc-700" />
+                                ) : null}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* SPACER (Pushes Label to Bottom) */}
+                    <div className="flex-1 min-h-0" />
+
+                    {/* SLOT 2: FOOTER (Label) */}
+                    <div className="w-full shrink-0">
+                        <div className="text-zinc-600 transition-colors group-hover:text-zinc-800 flex items-baseline gap-1.5 whitespace-nowrap overflow-hidden text-xs sm:text-sm font-semibold mb-0 normal-case">
+                            <span className="truncate">{displayLabel}</span>
+                            {qualifier && (
+                                <span className="opacity-60 font-normal truncate text-xs">
+                                    {qualifier}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                </>
+            )}
         </div>
     );
 }

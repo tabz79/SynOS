@@ -216,6 +216,61 @@
 5. **Production Build & Verification:**
    * Bundle rebuilt (`index-B8ixeIVB.js`, `index-BObHbOkl.css`), synced to `wwwroot`, and validated with 16/16 test passes.
 
+---
+
+## 11. Reception Action Queue Payment Column Semantic Confusion & Secondary Concession Overpayment / Refund Gap
+### Severity: Medium / Financial Ledger Ambiguity
+### Impacted Modules
+* **Reception Action Queue Table:** [`ReceptionScreen.jsx:324-376`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/ReceptionScreen.jsx#L324-L376)
+* **Secondary Concession Flow:** [`VisitService.cs:667-748`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/VisitService.cs#L667-L748) (`ApplyCustomDiscountToVisitAsync`)
+* **Revenue Engine Settlement Invariant:** [`RevenueEngine.cs:104-126`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/Revenue/RevenueEngine.cs#L104-L126)
+
+### Incident Evidence (Live Audit of Visit `MAI-009`, Patient `Test Patient9`)
+1. **Database Truth (`dbo.Payments` & `dbo.Invoices`):**
+   * **Invoice `837acab6-ff6d-4f34-904f-4bb17714d850`:**
+     - `GrossAmount`: ₹1,000 (LFT ₹600 + CBP ₹400)
+     - `DiscountAmount`: ₹800 (Cumulative concessions applied)
+     - `NetAmount` / `Total`: **₹200**
+   * **Physical Cash Payments (`dbo.Payments`):**
+     - Payment 1: ₹0 (Initial Full Due creation at 14:40:37)
+     - Payment 2: **₹400 Cash** collected at desk by Dr. Vasudeva Rao (`ReceiptNo: REC-20261104-MAI-009` at 14:43:37)
+   * **Collection History Ledger (`/finance/revenue/history`):**
+     - Accurately displays **₹400 PHYSICAL CASH** collected by Dr. Vasudeva Rao (representing the real cash collected into the physical drawer).
+2. **Reception Screen Action Queue Display (`/reception`):**
+   * Displays under `PAYMENT` column: **`₹200 CASH`**.
+
+### Root Cause Analysis
+1. **UI Column Semantic Bug in `ReceptionScreen.jsx`:**
+   * In `ReceptionScreen.jsx` lines 358–363:
+     ```javascript
+     const displayAmount = isDraft
+         ? (totalBilled ? `₹${totalBilled.toLocaleString()}` : "₹0")
+         : (isPartial
+             ? `₹${remainingDue.toLocaleString()}`
+             : (totalBilled ? `₹${totalBilled.toLocaleString()}` : "₹0"));
+     ```
+   * When a visit is fully paid (`remainingDue === 0`), `displayAmount` renders **`totalBilled`** (`row.totalAmount` = ₹200) right next to the badge **`CASH`** (`row.paymentMethod`).
+   * The operator or doctor reads this as *"₹200 was paid in Cash"*, when in reality the patient was billed ₹200, but actually paid **₹400**!
+2. **Post-Collection Concession Overpayment / Refund Gap:**
+   * When a secondary concession or downward visit revision is applied *after* money has already been collected at the desk (`totalPaid > revisedTotal`):
+     - `RevenueEngine` lowers `Invoice.Total` to ₹200.
+     - Because `totalPaid (400) >= totalAmount (200)`, it marks `Status = "Paid"`.
+     - However, the lab has taken ₹400 for a ₹200 bill. The patient has **overpaid by ₹200** (or is owed a ₹200 refund).
+     - `ApplyCustomDiscountToVisitAsync` currently only inserts a `DiscountFact`; it does not prompt the cashier to disburse a ₹200 cash refund, nor does it emit a reversal `RevenueFact` to keep the physical drawer balance synchronized if cash was refunded.
+
+### Prescribed Fix Specifications (For Implementation Agent)
+1. **Reception Action Queue Disambiguation (`ReceptionScreen.jsx`):**
+   * Detect overpayment condition: `const isOverpaid = totalPaid > totalBilled;`
+   * When `isOverpaid`:
+     - Render the bill amount with an explicit excess/refund alert:
+       `₹{totalBilled}` with subtext `Paid: ₹{totalPaid}` and a distinct badge `REFUND DUE: ₹{totalPaid - totalBilled}`.
+   * When normally paid (`totalPaid === totalBilled`):
+     - Render `₹{totalPaid}` with badge `CASH` / `UPI`.
+2. **Secondary Concession Overpayment Flow (`VisitService.cs` & `BillingSummary.jsx`):**
+   * When applying a secondary concession where `newTotal < existingTotalPaid`:
+     - Warn the user in the Secondary Concession drawer: *"Applying this concession creates an excess collection of ₹{excess}. Do you want to disburse a cash refund from drawer or credit patient account?"*
+     - If refund is confirmed, atomically insert refund `Payment` (`Amount = -excess`, `ReceiptNo = REF-...`) and reversal `RevenueFact` to reconcile the cash drawer and collection ledger to ₹200 net.
+
 
 
 

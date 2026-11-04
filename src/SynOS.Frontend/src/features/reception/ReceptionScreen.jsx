@@ -266,22 +266,28 @@ export function ReceptionScreen() {
             scopeBadge: isReceptionist ? "Desk" : undefined
         },
         { 
-            value: `₹${(summary.dailyExpensesCashTotal || 0).toLocaleString()}`, 
+            isDual: true,
+            value: `₹${(summary.dailyExpensesCashPool !== undefined && summary.dailyExpensesCashPool !== null ? summary.dailyExpensesCashPool : (summary.dailyExpensesCashTotal || 0)).toLocaleString()}`, 
+            individualValue: `₹${(summary.dailyExpensesCashIndividual || 0).toLocaleString()}`,
+            poolLabel: "Pool Total",
+            individualLabel: "You",
             label: "Recorded Expenses", 
             shortLabel: "Daily Expenses", 
             qualifier: "Cash Outflow", 
             icon: Receipt, 
-            color: "red",
-            isPool: isReceptionist ? true : undefined 
+            color: "red"
         },
         { 
-            value: `₹${(summary.cashDrawerBalance || 0).toLocaleString()}`, 
+            isDual: true,
+            value: `₹${(summary.cashDrawerBalancePool !== undefined && summary.cashDrawerBalancePool !== null ? summary.cashDrawerBalancePool : (summary.cashDrawerBalance || 0)).toLocaleString()}`, 
+            individualValue: `₹${(summary.cashDrawerBalanceIndividual || 0).toLocaleString()}`,
+            poolLabel: "Pool Total",
+            individualLabel: "You",
             label: "Cash in the Drawer", 
             shortLabel: "Cash Drawer", 
             qualifier: "Physical Balance", 
             icon: Wallet, 
-            color: "emerald",
-            isPool: isReceptionist ? true : undefined 
+            color: "emerald"
         },
     ] : [
         { value: "—", label: "Walk-Ins", qualifier: "(Paid/Credit)", icon: Users, color: "default", isPool: isReceptionist ? true : undefined },
@@ -290,8 +296,8 @@ export function ReceptionScreen() {
         { value: "—", label: "Online Total", icon: ClipboardList, color: "default", scopeBadge: isReceptionist ? "Desk" : undefined },
         { value: "—", label: "Credit Bills", icon: ClipboardList, color: "default", scopeBadge: isReceptionist ? "Desk" : undefined },
         { value: "—", label: "Credit Value", icon: ClipboardList, color: "default", scopeBadge: isReceptionist ? "Desk" : undefined },
-        { value: "—", label: "Recorded Expenses", icon: Receipt, color: "default", isPool: isReceptionist ? true : undefined },
-        { value: "—", label: "Cash in the Drawer", icon: Wallet, color: "default", isPool: isReceptionist ? true : undefined },
+        { isDual: true, value: "—", individualValue: "—", poolLabel: "Pool Total", individualLabel: "You", label: "Recorded Expenses", shortLabel: "Daily Expenses", qualifier: "Cash Outflow", icon: Receipt, color: "default" },
+        { isDual: true, value: "—", individualValue: "—", poolLabel: "Pool Total", individualLabel: "You", label: "Cash in the Drawer", shortLabel: "Cash Drawer", qualifier: "Physical Balance", icon: Wallet, color: "default" },
     ];
 
     // ACTION QUEUE COLUMNS (Strict Backend Truth)
