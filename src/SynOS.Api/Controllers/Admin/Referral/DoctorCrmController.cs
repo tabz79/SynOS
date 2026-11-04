@@ -17,15 +17,18 @@ namespace SynOS.Api.Controllers.Admin.Referral
     {
         private readonly IDoctorCrmService _doctorCrmService;
         private readonly IReferralCommissionGoverningEngine _governingEngine;
+        private readonly IReferralPartnerService _referralPartnerService;
         private readonly IUserContext _userContext;
 
         public DoctorCrmController(
             IDoctorCrmService doctorCrmService,
             IReferralCommissionGoverningEngine governingEngine,
+            IReferralPartnerService referralPartnerService,
             IUserContext userContext)
         {
             _doctorCrmService = doctorCrmService;
             _governingEngine = governingEngine;
+            _referralPartnerService = referralPartnerService;
             _userContext = userContext;
         }
 
@@ -95,6 +98,21 @@ namespace SynOS.Api.Controllers.Admin.Referral
                     _userContext.CurrentUserId);
 
                 return Ok(rule);
+            }
+            catch (System.Collections.Generic.KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
+
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteDoctor(Guid id)
+        {
+            try
+            {
+                await _referralPartnerService.DeleteReferralPartnerAsync(id, _userContext.CurrentUserId);
+                return Ok(new { success = true, message = "Doctor profile deactivated successfully." });
             }
             catch (System.Collections.Generic.KeyNotFoundException ex)
             {

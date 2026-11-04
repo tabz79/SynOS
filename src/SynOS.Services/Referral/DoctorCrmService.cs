@@ -38,7 +38,30 @@ namespace SynOS.Services.Referral
 
         public async Task<DoctorDirectoryPagedResultDto> GetDoctorDirectoryAsync(DoctorDirectoryFilterDto filter)
         {
+            // Auto-deactivate/clean legacy database rows named "SELF" or "SYSTEM_SELF" so they never act as referral doctors
+            var legacySelfPartners = await _context.ReferralPartners
+                .Where(p => (p.Name == "SELF" || p.Name == "SYSTEM_SELF" || p.Name == "SELF WALK-IN" || p.Name == "DIRECT") && p.IsActive)
+                .ToListAsync();
+            if (legacySelfPartners.Any())
+            {
+                foreach (var lp in legacySelfPartners)
+                {
+                    lp.IsActive = false;
+                    lp.Status = PartnerStatus.Suspended;
+                    lp.UpdatedAt = DateTimeOffset.UtcNow;
+                }
+                await _context.SaveChangesAsync();
+            }
+
             var query = _context.ReferralPartners.AsNoTracking();
+
+            // Exclude reserved system sentinels from doctor directory
+            query = query.Where(p => 
+                p.Name.ToUpper() != "SELF" && 
+                p.Name.ToUpper() != "SYSTEM_SELF" && 
+                p.Name.ToUpper() != "SELF WALK-IN" && 
+                p.Name.ToUpper() != "DIRECT"
+            );
 
             // 1. Text Search across Name, Clinic, Location, ContactInfo (speciality, phone)
             if (!string.IsNullOrWhiteSpace(filter.Query))
@@ -55,9 +78,14 @@ namespace SynOS.Services.Referral
             if (!string.IsNullOrWhiteSpace(filter.Status) && filter.Status != "all")
             {
                 if (filter.Status == "active")
-                    query = query.Where(p => p.Status == PartnerStatus.Active || p.Status == PartnerStatus.Draft);
+                    query = query.Where(p => (p.Status == PartnerStatus.Active || p.Status == PartnerStatus.Draft) && p.IsActive);
                 else if (filter.Status == "suspended")
-                    query = query.Where(p => p.Status == PartnerStatus.Suspended);
+                    query = query.Where(p => p.Status == PartnerStatus.Suspended || !p.IsActive);
+            }
+            else if (string.IsNullOrWhiteSpace(filter.Status))
+            {
+                // Default to active partners so deleted/suspended partners do not linger in default view
+                query = query.Where(p => p.IsActive && p.Status != PartnerStatus.Suspended);
             }
 
             // 3. Speciality Filter
@@ -186,7 +214,12 @@ namespace SynOS.Services.Referral
                 items = items.OrderByDescending(i => i.UnmappedTestsCount).ToList();
 
             // Global Directory KPIs
-            var totalDoctors = await _context.ReferralPartners.CountAsync();
+            var totalDoctors = await _context.ReferralPartners
+                .CountAsync(p => p.IsActive && p.Status != PartnerStatus.Suspended && 
+                                  p.Name.ToUpper() != "SELF" && 
+                                  p.Name.ToUpper() != "SYSTEM_SELF" && 
+                                  p.Name.ToUpper() != "SELF WALK-IN" && 
+                                  p.Name.ToUpper() != "DIRECT");
             var activeReferrersThisMonth = await _context.Visits
                 .Where(v => v.IsReferred && v.ReferralPartnerId.HasValue && v.CreatedAt >= startOfMonth)
                 .Select(v => v.ReferralPartnerId!.Value)

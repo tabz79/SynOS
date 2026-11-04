@@ -95,6 +95,16 @@ namespace SynOS.Services.Referral
                 var partner = visit.SecondaryReferralPartner ?? visit.ReferralPartner;
                 if (partner == null) continue;
 
+                // Exclude system sentinels and inactive/suspended partners from learning queue
+                if (string.Equals(partner.Name?.Trim(), "SELF", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(partner.Name?.Trim(), "SYSTEM_SELF", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(partner.Name?.Trim(), "SELF WALK-IN", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(partner.Name?.Trim(), "DIRECT", StringComparison.OrdinalIgnoreCase) ||
+                    !partner.IsActive || partner.Status == PartnerStatus.Suspended)
+                {
+                    continue;
+                }
+
                 Guid partnerId = effectivePartnerId.Value;
 
                 foreach (var order in visit.Orders)
@@ -379,7 +389,13 @@ namespace SynOS.Services.Referral
                     .ThenInclude(t => t.DepartmentMaster)
                 .Include(r => r.Test)
                     .ThenInclude(t => t.TestPricings)
-                .Where(r => r.IsActive);
+                .Where(r => r.IsActive && (r.ReferralPartner == null || (
+                    r.ReferralPartner.IsActive && 
+                    r.ReferralPartner.Status != PartnerStatus.Suspended &&
+                    r.ReferralPartner.Name.ToUpper() != "SELF" &&
+                    r.ReferralPartner.Name.ToUpper() != "SYSTEM_SELF" &&
+                    r.ReferralPartner.Name.ToUpper() != "SELF WALK-IN" &&
+                    r.ReferralPartner.Name.ToUpper() != "DIRECT")));
 
             if (!string.IsNullOrWhiteSpace(query))
             {

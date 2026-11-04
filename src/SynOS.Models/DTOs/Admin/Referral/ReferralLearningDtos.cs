@@ -12,6 +12,7 @@ namespace SynOS.Models.DTOs.Admin.Referral
         public string TestName { get; set; } = string.Empty;
         public string DepartmentName { get; set; } = string.Empty;
         public decimal Price { get; set; }
+        public decimal BasePrice => Price;
         public int PrescribedCount { get; set; }
         public DateTimeOffset FirstPrescribedAt { get; set; }
         public DateTimeOffset LastPrescribedAt { get; set; }

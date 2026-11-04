@@ -892,6 +892,19 @@ export const FinanceApi = {
         return response.json();
     },
 
+    deleteDoctor: async (id) => {
+        try {
+            const response = await fetch(FinanceApi.withBranchId(`/api/v1/admin/doctor-crm/${id}`), {
+                method: 'DELETE',
+                headers: FinanceApi.getHeaders()
+            });
+            if (response.ok) return true;
+        } catch (e) {
+            console.warn("Doctor CRM delete endpoint failed, falling back to partner deactivate", e);
+        }
+        return FinanceApi.deactivateReferralPartner(id);
+    },
+
     getSettlementHistory: async () => {
         // We'll use a combined feed of SpendFacts and RevenueFacts with 'Referral' or 'Partner' source
         const response = await fetch(FinanceApi.withBranchId('/api/v1/economics/settlement-history?category=Referral'), {

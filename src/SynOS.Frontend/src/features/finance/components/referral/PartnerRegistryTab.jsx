@@ -631,6 +631,10 @@ export const PartnerRegistryTab = ({ defaultPartnerType = null, isRmpOnly = fals
                     doctorId={selectedDoctorId}
                     onClose={() => setSelectedDoctorId(null)}
                     onRateLearned={loadDirectory}
+                    onDoctorDeleted={() => {
+                        setSelectedDoctorId(null);
+                        loadDirectory();
+                    }}
                 />
             )}
 
@@ -788,10 +792,11 @@ const DoctorDepartmentCard = ({ doctor, onOpenProfile, onEdit }) => {
 /* -------------------------------------------------------------------------- */
 /* SLIDE-OUT DOCTOR PROFILE DRAWER (360° PROFILE & RATE CARD)                  */
 /* -------------------------------------------------------------------------- */
-const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
+const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned, onDoctorDeleted }) => {
     const [profileData, setProfileData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('rates');
+    const [isDeletingDoctor, setIsDeletingDoctor] = useState(false);
     
     const [quickLearnInputs, setQuickLearnInputs] = useState({});
     const [savingTestId, setSavingTestId] = useState(null);
@@ -992,16 +997,37 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
         }
     };
 
+    const handleDeleteDoctor = async () => {
+        const docName = doc.name || 'this doctor';
+        if (!window.confirm(`Are you sure you want to delete profile for "${docName}"? This will suspend their partner profile and remove them from active doctor queues.`)) {
+            return;
+        }
+
+        try {
+            setIsDeletingDoctor(true);
+            await FinanceApi.deleteDoctor(doctorId);
+            if (onDoctorDeleted) {
+                onDoctorDeleted(doctorId);
+            } else {
+                if (onRateLearned) onRateLearned();
+                onClose();
+            }
+        } catch (err) {
+            alert(err.message || "Failed to delete doctor profile.");
+        } finally {
+            setIsDeletingDoctor(false);
+        }
+    };
+
     if (!doctorId) return null;
 
     return (
-        <div className="fixed inset-0 z-[120] flex justify-end bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+        <div className="fixed top-12 bottom-0 left-0 right-0 z-40 flex justify-end p-2 sm:p-3 md:p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
             <div 
-                className="w-full bg-white dark:bg-zinc-950 h-full shadow-2xl border-l border-slate-200 dark:border-zinc-800 flex flex-col animate-in slide-in-from-right duration-300 overflow-hidden"
-                style={{ width: '55vw', minWidth: 'min(850px, 100vw)', maxWidth: '1400px' }}
+                className="w-full md:w-[70vw] lg:w-[58vw] xl:w-[52vw] min-w-[580px] max-w-[1100px] bg-slate-100 dark:bg-zinc-950 h-full shadow-2xl border border-slate-200/90 dark:border-zinc-800 flex flex-col rounded-[24px] overflow-hidden animate-in slide-in-from-right duration-300"
             >
                 {/* DRAWER TOP BAR */}
-                <div className="px-6 py-4 border-b border-black/[0.05] dark:border-white/[0.05] bg-slate-50/70 dark:bg-zinc-900/60 flex items-center justify-between shrink-0">
+                <div className="px-6 py-4 border-b border-slate-200/90 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center justify-between shrink-0 rounded-t-[24px]">
                     {loading || !profileData ? (
                         <div className="flex items-center gap-3 animate-pulse">
                             <div className="w-11 h-11 rounded-2xl bg-slate-200 dark:bg-zinc-800" />
@@ -1038,20 +1064,34 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                         </div>
                     )}
 
-                    <button 
-                        onClick={onClose}
-                        className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-all ml-3 shrink-0"
-                        title="Close File"
-                    >
-                        <X size={20} />
-                    </button>
+                    <div className="flex items-center gap-2 shrink-0 ml-3">
+                        {profileData && (
+                            <button
+                                type="button"
+                                onClick={handleDeleteDoctor}
+                                disabled={isDeletingDoctor}
+                                className="px-3 py-1.5 rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-2xs"
+                                title="Delete Doctor Profile"
+                            >
+                                {isDeletingDoctor ? <Loader2 size={13} className="animate-spin" /> : <Trash2 size={13} />}
+                                <span>Delete Profile</span>
+                            </button>
+                        )}
+                        <button 
+                            onClick={onClose}
+                            className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-all cursor-pointer"
+                            title="Close File"
+                        >
+                            <X size={20} />
+                        </button>
+                    </div>
                 </div>
 
                 {/* COMMERCIAL SUMMARY METRIC PODS */}
                 {profileData && (
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 px-6 py-3.5 bg-slate-50/50 dark:bg-zinc-900/30 border-b border-black/[0.05] dark:border-white/[0.05] shrink-0">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 px-6 py-3.5 bg-slate-50/90 dark:bg-zinc-900/50 border-b border-slate-200/80 dark:border-zinc-800 shrink-0">
                         {/* Pod 1: Patients */}
-                        <div className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs">
+                        <div className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-xs">
                             <div className="flex items-center justify-between text-zinc-400 mb-1">
                                 <span className="text-[10px] font-extrabold uppercase tracking-wider">Patients</span>
                                 <Users size={14} className="text-blue-500" />
@@ -1063,7 +1103,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                         </div>
 
                         {/* Pod 2: Gross Revenue */}
-                        <div className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs">
+                        <div className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-xs">
                             <div className="flex items-center justify-between text-zinc-400 mb-1">
                                 <span className="text-[10px] font-extrabold uppercase tracking-wider">Revenue</span>
                                 <IndianRupee size={14} className="text-indigo-500" />
@@ -1075,7 +1115,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                         </div>
 
                         {/* Pod 3: Earned Commission */}
-                        <div className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs">
+                        <div className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-xs">
                             <div className="flex items-center justify-between text-zinc-400 mb-1">
                                 <span className="text-[10px] font-extrabold uppercase tracking-wider">Earned</span>
                                 <Award size={14} className="text-emerald-500" />
@@ -1087,7 +1127,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                         </div>
 
                         {/* Pod 4: Due Payout */}
-                        <div className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-2xs">
+                        <div className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-xs">
                             <div className="flex items-center justify-between text-zinc-400 mb-1">
                                 <span className="text-[10px] font-extrabold uppercase tracking-wider">Due Payout</span>
                                 <CreditCard size={14} className="text-amber-500" />
@@ -1101,7 +1141,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                 )}
 
                 {/* DRAWER TABS */}
-                <div className="flex items-center gap-2 px-6 pt-2 border-b border-black/[0.05] dark:border-white/[0.05] shrink-0">
+                <div className="flex items-center gap-2 px-6 pt-2 bg-white dark:bg-zinc-900 border-b border-slate-200/90 dark:border-zinc-800 shrink-0">
                     {[
                         { 
                             id: 'rates', 
@@ -1116,7 +1156,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={cn(
-                                "flex items-center gap-1.5 px-3.5 py-2.5 border-b-2 text-xs font-bold transition-all whitespace-nowrap",
+                                "flex items-center gap-1.5 px-3.5 py-2.5 border-b-2 text-xs font-bold transition-all whitespace-nowrap cursor-pointer",
                                 activeTab === tab.id 
                                     ? "border-synos-primary text-synos-primary" 
                                     : "border-transparent text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
@@ -1138,7 +1178,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                 </div>
 
                 {/* DRAWER BODY */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6 bg-slate-100 dark:bg-zinc-950 custom-scrollbar rounded-b-[24px]">
                     {loading || !profileData ? (
                         <div className="flex flex-col items-center justify-center h-48 gap-3 text-zinc-400">
                             <Loader2 size={24} className="animate-spin text-synos-primary" />
@@ -1169,18 +1209,19 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                                     const input = quickLearnInputs[test.testId] || { type: 'Percentage', value: doc.defaultCommissionPercentage ?? 10 };
                                                     const isSaving = savingTestId === test.testId;
                                                     const numVal = parseFloat(input.value) || 0;
+                                                    const basePrice = Number(test.basePrice ?? test.price ?? 0);
                                                     const previewPayout = input.type === 'Percentage'
-                                                        ? (test.basePrice * numVal) / 100
+                                                        ? (basePrice * numVal) / 100
                                                         : numVal;
 
                                                     return (
                                                         <div 
                                                             key={test.testId}
-                                                            className="p-3.5 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/80 dark:border-amber-900/40 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs"
+                                                            className="p-4 bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 border-l-4 border-l-amber-500 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs"
                                                         >
                                                             <div className="space-y-1 min-w-0 flex-1">
                                                                 <div className="flex items-center gap-2 flex-wrap">
-                                                                    <span className="font-mono text-[10px] font-bold bg-white dark:bg-zinc-800 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300">
+                                                                    <span className="font-mono text-[10px] font-bold bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300">
                                                                         {test.testCode}
                                                                     </span>
                                                                     <span className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-white truncate">
@@ -1190,7 +1231,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                                                 <div className="flex items-center gap-2 text-[11px] text-zinc-500 flex-wrap">
                                                                     <span className="font-medium">{test.departmentName}</span>
                                                                     <span>•</span>
-                                                                    <span className="font-bold text-zinc-700 dark:text-zinc-300">MRP: ₹{Number(test.basePrice || 0).toLocaleString('en-IN')}</span>
+                                                                    <span className="font-bold text-zinc-700 dark:text-zinc-300">Lab Tariff: ₹{basePrice.toLocaleString('en-IN')}</span>
                                                                     <span>•</span>
                                                                     <span className="text-emerald-600 dark:text-emerald-400 font-bold">
                                                                         Yields ₹{previewPayout.toFixed(2)} / test
@@ -1199,7 +1240,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                                             </div>
 
                                                             <div className="flex items-center gap-2 shrink-0">
-                                                                <div className="flex items-center bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg overflow-hidden p-0.5 shadow-2xs">
+                                                                <div className="flex items-center bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg overflow-hidden p-0.5 shadow-2xs">
                                                                     <button
                                                                         type="button"
                                                                         onClick={() => setQuickLearnInputs({
@@ -1207,8 +1248,8 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                                                             [test.testId]: { ...input, type: 'Percentage' }
                                                                         })}
                                                                         className={cn(
-                                                                            "px-2.5 py-1 text-xs font-bold rounded transition-all",
-                                                                            input.type === 'Percentage' ? "bg-synos-primary text-white shadow-2xs" : "text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+                                                                            "px-2.5 py-1 text-xs font-bold rounded transition-all cursor-pointer",
+                                                                            input.type === 'Percentage' ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs font-extrabold" : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
                                                                         )}
                                                                     >
                                                                         %
@@ -1220,8 +1261,8 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                                                             [test.testId]: { ...input, type: 'Flat' }
                                                                         })}
                                                                         className={cn(
-                                                                            "px-2.5 py-1 text-xs font-bold rounded transition-all",
-                                                                            input.type === 'Flat' ? "bg-synos-primary text-white shadow-2xs" : "text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+                                                                            "px-2.5 py-1 text-xs font-bold rounded transition-all cursor-pointer",
+                                                                            input.type === 'Flat' ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs font-extrabold" : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
                                                                         )}
                                                                     >
                                                                         ₹ Flat
@@ -1236,13 +1277,13 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                                                         ...quickLearnInputs,
                                                                         [test.testId]: { ...input, value: e.target.value }
                                                                     })}
-                                                                    className="w-20 px-2.5 py-1.5 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg text-xs font-bold text-center outline-none focus:ring-1 focus:ring-synos-primary"
+                                                                    className="w-20 px-2.5 py-1.5 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-lg text-xs font-bold text-center outline-none focus:ring-1 focus:ring-synos-primary"
                                                                 />
 
                                                                 <button
                                                                     onClick={() => handleQuickLearnRate(test.testId)}
                                                                     disabled={isSaving}
-                                                                    className="px-3.5 py-1.5 bg-synos-primary hover:brightness-105 text-white rounded-lg text-xs font-bold transition-all disabled:opacity-50 shadow-xs flex items-center gap-1.5"
+                                                                    className="px-3.5 py-1.5 bg-synos-primary hover:brightness-105 text-white rounded-lg text-xs font-bold transition-all disabled:opacity-50 shadow-xs flex items-center gap-1.5 cursor-pointer"
                                                                 >
                                                                     {isSaving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
                                                                     <span>{isSaving ? "Locking..." : "Lock Rate"}</span>
@@ -1269,14 +1310,14 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                         </div>
 
                                         {rateCardList.length === 0 ? (
-                                            <div className="p-8 text-center synos-dept-card rounded-2xl space-y-1.5 border border-dashed border-slate-300 dark:border-zinc-800">
+                                            <div className="p-8 text-center bg-white dark:bg-zinc-900 rounded-2xl space-y-1.5 border border-dashed border-slate-300 dark:border-zinc-800 shadow-xs">
                                                 <p className="text-xs font-bold text-zinc-700 dark:text-zinc-300">No Custom Test Rates Configured</p>
                                                 <p className="text-xs text-zinc-400">
                                                     This doctor currently receives the standard default {doc.defaultCommissionPercentage ?? 10}% commission across all tests.
                                                 </p>
                                             </div>
                                         ) : (
-                                            <div className="synos-dept-card rounded-xl overflow-hidden border border-slate-200 dark:border-zinc-800 shadow-2xs">
+                                            <div className="bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden border border-slate-200/90 dark:border-zinc-800 shadow-xs">
                                                 {/* INLINE SEARCH & FILTER TOOLBAR */}
                                                 <div className="px-4 py-3 bg-slate-50/90 dark:bg-zinc-900/60 border-b border-zinc-200/80 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-2.5">
                                                     <div className="flex flex-wrap items-center gap-2 flex-1 min-w-[280px]">
@@ -1569,8 +1610,8 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
 
                             {/* TAB 2: DEMOGRAPHICS */}
                             {activeTab === 'demographics' && demographicsForm && (
-                                <form onSubmit={handleSaveDemographics} className="space-y-5">
-                                    <div className="flex items-center justify-between pb-2 border-b border-black/[0.05] dark:border-white/[0.05]">
+                                <form onSubmit={handleSaveDemographics} className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/90 dark:border-zinc-800 shadow-xs space-y-5">
+                                    <div className="flex items-center justify-between pb-3 border-b border-black/[0.05] dark:border-white/[0.05]">
                                         <span className="text-xs font-extrabold uppercase tracking-wider text-zinc-900 dark:text-white">Profile & Commercial Attribution</span>
                                         {demoSuccess && (
                                             <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
@@ -1587,7 +1628,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                                 value={demographicsForm.speciality || ''}
                                                 onChange={(e) => setDemographicsForm({...demographicsForm, speciality: e.target.value})}
                                                 placeholder="e.g. Cardiologist"
-                                                className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-semibold outline-none focus:ring-1 focus:ring-synos-primary"
+                                                className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs font-semibold outline-none focus:ring-1 focus:ring-synos-primary"
                                             />
                                         </div>
 
@@ -1598,7 +1639,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                                 value={demographicsForm.registrationNumber || ''}
                                                 onChange={(e) => setDemographicsForm({...demographicsForm, registrationNumber: e.target.value})}
                                                 placeholder="e.g. MCI-58291"
-                                                className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-semibold outline-none focus:ring-1 focus:ring-synos-primary"
+                                                className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs font-semibold outline-none focus:ring-1 focus:ring-synos-primary"
                                             />
                                         </div>
 
@@ -1609,7 +1650,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                                 value={demographicsForm.phone || ''}
                                                 onChange={(e) => setDemographicsForm({...demographicsForm, phone: e.target.value})}
                                                 placeholder="9876543210"
-                                                className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-semibold outline-none focus:ring-1 focus:ring-synos-primary"
+                                                className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs font-semibold outline-none focus:ring-1 focus:ring-synos-primary"
                                             />
                                         </div>
 
@@ -1620,7 +1661,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                                 value={demographicsForm.clinicAddress || doc.location || ''}
                                                 onChange={(e) => setDemographicsForm({...demographicsForm, clinicAddress: e.target.value, location: e.target.value})}
                                                 placeholder="Location / Area"
-                                                className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-semibold outline-none focus:ring-1 focus:ring-synos-primary"
+                                                className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs font-semibold outline-none focus:ring-1 focus:ring-synos-primary"
                                             />
                                         </div>
 
@@ -1631,7 +1672,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                                 value={demographicsForm.upiId || ''}
                                                 onChange={(e) => setDemographicsForm({...demographicsForm, upiId: e.target.value})}
                                                 placeholder="doctor@okhdfcbank"
-                                                className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-semibold outline-none focus:ring-1 focus:ring-synos-primary"
+                                                className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs font-semibold outline-none focus:ring-1 focus:ring-synos-primary"
                                             />
                                         </div>
 
@@ -1642,7 +1683,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                                 value={demographicsForm.accountNumber ? `${demographicsForm.accountNumber} (${demographicsForm.ifscCode || ''})` : ''}
                                                 onChange={(e) => setDemographicsForm({...demographicsForm, accountNumber: e.target.value})}
                                                 placeholder="A/C Number & IFSC"
-                                                className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-semibold outline-none focus:ring-1 focus:ring-synos-primary"
+                                                className="w-full px-3 py-2 bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs font-semibold outline-none focus:ring-1 focus:ring-synos-primary"
                                             />
                                         </div>
                                     </div>
@@ -1651,7 +1692,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                         <button
                                             type="submit"
                                             disabled={savingDemographics}
-                                            className="px-5 py-2.5 bg-synos-primary text-white rounded-xl text-xs font-bold hover:brightness-105 transition-all disabled:opacity-50 shadow-xs flex items-center gap-1.5"
+                                            className="px-5 py-2.5 bg-synos-primary text-white rounded-xl text-xs font-bold hover:brightness-105 transition-all disabled:opacity-50 shadow-xs flex items-center gap-1.5 cursor-pointer"
                                         >
                                             {savingDemographics ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
                                             <span>{savingDemographics ? "Saving..." : "Save Demographics"}</span>
@@ -1662,23 +1703,23 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
 
                             {/* TAB 3: VISITS */}
                             {activeTab === 'visits' && (
-                                <div className="space-y-3">
+                                <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/90 dark:border-zinc-800 shadow-xs space-y-4">
                                     <span className="type-section-header uppercase">Recent Referred Visits</span>
                                     {recentVisitsList.length === 0 ? (
-                                        <div className="p-6 text-center synos-dept-card rounded-xl">
+                                        <div className="p-8 text-center bg-slate-50 dark:bg-zinc-800/40 border border-dashed border-slate-200 dark:border-zinc-800 rounded-xl">
                                             <span className="type-meta text-xs">No visits recorded yet.</span>
                                         </div>
                                     ) : (
-                                        <div className="space-y-2">
+                                        <div className="space-y-2.5">
                                             {recentVisitsList.map(visit => (
                                                 <div 
                                                     key={visit.visitId}
-                                                    className="synos-dept-card p-3 rounded-xl flex items-center justify-between"
+                                                    className="p-3.5 bg-slate-50 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-700/60 rounded-xl flex items-center justify-between"
                                                 >
                                                     <div>
                                                         <div className="flex items-center gap-2">
-                                                            <span className="type-code text-xs text-synos-primary">{visit.token}</span>
-                                                            <span className="type-value !text-xs">{visit.patientName}</span>
+                                                            <span className="type-code text-xs text-synos-primary font-bold">{visit.token}</span>
+                                                            <span className="type-value !text-xs font-bold text-zinc-900 dark:text-white">{visit.patientName}</span>
                                                             <span className="type-meta text-[11px]">({visit.age}y / {visit.gender || 'N/A'})</span>
                                                         </div>
                                                         <p className="type-meta text-[11px] mt-0.5 line-clamp-1">
@@ -1686,8 +1727,8 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                                         </p>
                                                     </div>
                                                     <div className="text-right">
-                                                        <span className="type-value !text-xs block">₹{visit.totalBill}</span>
-                                                        <span className="type-meta text-[10px] text-zinc-500">
+                                                        <span className="type-value !text-xs block font-bold text-zinc-900 dark:text-white">₹{visit.totalBill}</span>
+                                                        <span className="type-meta text-[10px] text-zinc-500 font-semibold">
                                                             {visit.commissionStatus} {visit.commissionAmount > 0 && `(₹${visit.commissionAmount})`}
                                                         </span>
                                                     </div>
@@ -1700,26 +1741,26 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
 
                             {/* TAB 4: MIX */}
                             {activeTab === 'mix' && (
-                                <div className="space-y-3">
+                                <div className="p-6 bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200/90 dark:border-zinc-800 shadow-xs space-y-4">
                                     <span className="type-section-header uppercase">Top Prescribed Tests</span>
                                     {topTestsList.length === 0 ? (
-                                        <div className="p-6 text-center synos-dept-card rounded-xl">
+                                        <div className="p-8 text-center bg-slate-50 dark:bg-zinc-800/40 border border-dashed border-slate-200 dark:border-zinc-800 rounded-xl">
                                             <span className="type-meta text-xs">No prescription history recorded yet.</span>
                                         </div>
                                     ) : (
-                                        <div className="space-y-2">
+                                        <div className="space-y-2.5">
                                             {topTestsList.map(t => (
                                                 <div 
                                                     key={t.testId}
-                                                    className="synos-dept-card p-3 rounded-xl flex items-center justify-between"
+                                                    className="p-3.5 bg-slate-50 dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-700/60 rounded-xl flex items-center justify-between"
                                                 >
                                                     <div>
-                                                        <p className="type-value !text-xs">{t.testName}</p>
-                                                        <p className="type-meta text-[11px]">{t.departmentName} • {t.prescribedCount || t.prescriptionCount || 0} Prescriptions</p>
+                                                        <p className="type-value !text-xs font-bold text-zinc-900 dark:text-white">{t.testName}</p>
+                                                        <p className="type-meta text-[11px] text-zinc-500 font-medium">{t.departmentName} • {t.prescribedCount || t.prescriptionCount || 0} Prescriptions</p>
                                                     </div>
                                                     <div className="text-right">
-                                                        <span className="type-value !text-xs block">₹{Number(t.totalRevenue || t.totalRevenueGenerated || 0).toLocaleString()}</span>
-                                                        <span className="type-meta text-[10px]">Total Revenue</span>
+                                                        <span className="type-value !text-xs block font-bold text-zinc-900 dark:text-white">₹{Number(t.totalRevenue || t.totalRevenueGenerated || 0).toLocaleString()}</span>
+                                                        <span className="type-meta text-[10px] text-zinc-500 font-medium">Total Revenue</span>
                                                     </div>
                                                 </div>
                                             ))}
