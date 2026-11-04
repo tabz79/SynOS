@@ -138,7 +138,7 @@ const DoctorLearnedCard = ({
                                 {group.doctorName}
                             </h4>
                             <span className="px-2.5 py-0.5 text-[10px] font-extrabold rounded-md bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                                {totalCount} Learned Rate{totalCount !== 1 ? 's' : ''}
+                                {totalCount} Mapped Cut{totalCount !== 1 ? 's' : ''}
                             </span>
                         </div>
                         <div className="flex items-center gap-3 text-[11px] text-zinc-500 mt-0.5 flex-wrap">
@@ -172,7 +172,7 @@ const DoctorLearnedCard = ({
                                     placeholder="Filter by investigation or test code..."
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
-                                    className="w-full pl-8.5 pr-7 py-1.5 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-medium outline-none focus:ring-1 focus:ring-synos-primary text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 transition-all shadow-2xs"
+                                    className="w-full pl-10 pr-7 py-1.5 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-medium outline-none focus:ring-1 focus:ring-synos-primary text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 transition-all shadow-2xs"
                                 />
                                 {search && (
                                     <button
@@ -451,6 +451,417 @@ const DoctorLearnedCard = ({
                                                             </button>
                                                         </div>
                                                     )}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+// ============================================================================
+// DOCTOR UNMAPPED CARD (WITH ISOLATED SEARCH & FILTERS)
+// ============================================================================
+const DoctorUnmappedCard = ({
+    group,
+    isCollapsed,
+    onToggleCollapse,
+    stagedRates,
+    handleRateChange,
+    commitDoctorRules,
+    commitSingleRule,
+    savingKey
+}) => {
+    const [search, setSearch] = useState('');
+    const [selectedDept, setSelectedDept] = useState('ALL');
+    const [selectedRateType, setSelectedRateType] = useState('ALL'); // 'ALL' | 'Percentage' | 'Flat'
+
+    const unmappedTests = group.unmappedTests || [];
+    const totalCount = unmappedTests.length;
+    const isSavingDoctor = savingKey === group.referralPartnerId;
+
+    // Unique departments with counts
+    const departmentStats = useMemo(() => {
+        const counts = {};
+        unmappedTests.forEach(t => {
+            const dept = t.departmentName || 'General Diagnostics';
+            counts[dept] = (counts[dept] || 0) + 1;
+        });
+        return Object.keys(counts).sort().map(name => ({
+            name,
+            count: counts[name]
+        }));
+    }, [unmappedTests]);
+
+    // Rate type counts based on current staged rates
+    const rateTypeStats = useMemo(() => {
+        let pct = 0;
+        let flat = 0;
+        unmappedTests.forEach(t => {
+            const key = `${group.referralPartnerId}_${t.testId}`;
+            const staged = stagedRates[key];
+            const isFlat = staged?.type === 'Flat';
+            if (isFlat) flat++;
+            else pct++;
+        });
+        return { pct, flat };
+    }, [unmappedTests, stagedRates, group.referralPartnerId]);
+
+    const isFilterActive = Boolean(search.trim()) || selectedDept !== 'ALL' || selectedRateType !== 'ALL';
+
+    const resetFilters = () => {
+        setSearch('');
+        setSelectedDept('ALL');
+        setSelectedRateType('ALL');
+    };
+
+    // Filtered unmapped tests
+    const filteredTests = useMemo(() => {
+        return unmappedTests.filter(test => {
+            // 1. Investigation / Code / Name search
+            if (search.trim()) {
+                const q = search.toLowerCase().trim();
+                const matchName = test.testName?.toLowerCase().includes(q);
+                const matchCode = test.testCode?.toLowerCase().includes(q);
+                const matchDept = test.departmentName?.toLowerCase().includes(q);
+                if (!matchName && !matchCode && !matchDept) return false;
+            }
+
+            // 2. Department filter
+            if (selectedDept !== 'ALL') {
+                const dept = test.departmentName || 'General Diagnostics';
+                if (dept !== selectedDept) return false;
+            }
+
+            // 3. Rate type filter (Percentage vs Flat)
+            if (selectedRateType !== 'ALL') {
+                const key = `${group.referralPartnerId}_${test.testId}`;
+                const staged = stagedRates[key];
+                const isFlat = staged?.type === 'Flat';
+                if (selectedRateType === 'Percentage' && isFlat) return false;
+                if (selectedRateType === 'Flat' && !isFlat) return false;
+            }
+
+            return true;
+        });
+    }, [unmappedTests, search, selectedDept, selectedRateType, stagedRates, group.referralPartnerId]);
+
+    return (
+        <div className="synos-dept-card rounded-2xl overflow-hidden transition-all shadow-xs border border-slate-200/80 dark:border-zinc-800">
+            {/* DOCTOR / CLINIC ACCORDION HEADER */}
+            <div 
+                onClick={onToggleCollapse}
+                className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-zinc-50/70 dark:bg-zinc-900/40 border-b border-zinc-100 dark:border-zinc-900 cursor-pointer hover:bg-slate-100/60 dark:hover:bg-zinc-800/40 transition-colors select-none"
+            >
+                <div className="flex items-start sm:items-center gap-3.5">
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleCollapse();
+                        }}
+                        className="p-1.5 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors shrink-0 mt-0.5 sm:mt-0"
+                    >
+                        {isCollapsed ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
+                    </button>
+                    <div className="w-10 h-10 rounded-xl bg-synos-primary/10 text-synos-primary flex items-center justify-center shrink-0">
+                        <Stethoscope size={20} />
+                    </div>
+                    <div>
+                        <div className="flex items-center gap-2.5 flex-wrap">
+                            <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                                {group.doctorName}
+                            </h4>
+                            <span className="px-2.5 py-0.5 text-[10px] font-extrabold rounded-md bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                                {totalCount} Test{totalCount > 1 ? 's' : ''} to Map
+                            </span>
+                            {group.totalPendingVisits > 0 && (
+                                <span className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-blue-500/10 text-blue-600 border border-blue-500/20">
+                                    {group.totalPendingVisits} Pending Visit{group.totalPendingVisits > 1 ? 's' : ''}
+                                </span>
+                            )}
+                        </div>
+                        <div className="flex items-center gap-3 text-[11px] text-zinc-500 mt-0.5 flex-wrap">
+                            {group.clinicName && (
+                                <span className="flex items-center gap-1 font-medium">
+                                    <Building2 size={12} />
+                                    {group.clinicName}
+                                </span>
+                            )}
+                            {group.contactInfo && (
+                                <span>• {group.contactInfo}</span>
+                            )}
+                            <span>• Partner Default: <b>{group.defaultCommissionPercentage}%</b></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-2 self-end sm:self-auto">
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            commitDoctorRules(group);
+                        }}
+                        disabled={isSavingDoctor}
+                        className="flex items-center gap-1.5 px-4 py-2 bg-synos-primary hover:bg-synos-primary/90 text-white rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 disabled:opacity-50 cursor-pointer"
+                    >
+                        {isSavingDoctor ? (
+                            <Loader2 size={13} className="animate-spin" />
+                        ) : (
+                            <Save size={13} />
+                        )}
+                        <span>Confirm Doctor's Rates</span>
+                    </button>
+                </div>
+            </div>
+
+            {/* EXPANDED CONTENT AREA */}
+            {!isCollapsed && (
+                <div>
+                    {/* INLINE DEDICATED SEARCH & FILTERS TOOLBAR */}
+                    <div className="px-5 py-3.5 bg-slate-50/90 dark:bg-zinc-900/60 border-b border-zinc-200/80 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
+                            {/* 1. Search Investigation / Code */}
+                            <div className="relative flex-1 min-w-[200px] max-w-sm group">
+                                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-synos-primary transition-colors" />
+                                <input
+                                    type="text"
+                                    placeholder="Filter by investigation or test code..."
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    className="w-full pl-10 pr-7 py-1.5 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-medium outline-none focus:ring-1 focus:ring-synos-primary text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 transition-all shadow-2xs"
+                                />
+                                {search && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setSearch('')}
+                                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-0.5"
+                                        title="Clear search"
+                                    >
+                                        <X size={12} />
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* 2. Department Filter Dropdown */}
+                            <div className="flex items-center gap-1.5 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl px-2.5 py-1.5 shadow-2xs">
+                                <Filter size={13} className="text-zinc-400 shrink-0" />
+                                <select
+                                    value={selectedDept}
+                                    onChange={(e) => setSelectedDept(e.target.value)}
+                                    className="bg-transparent text-xs font-semibold text-zinc-700 dark:text-zinc-300 outline-none cursor-pointer pr-1"
+                                >
+                                    <option value="ALL">All Departments ({totalCount})</option>
+                                    {departmentStats.map(d => (
+                                        <option key={d.name} value={d.name}>
+                                            {d.name} ({d.count})
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* 3. Rate Type Filter Pill Group */}
+                            <div className="inline-flex items-center bg-slate-200/70 dark:bg-zinc-800 p-0.5 rounded-xl border border-slate-300/60 dark:border-zinc-700 text-xs font-bold">
+                                <button
+                                    type="button"
+                                    onClick={() => setSelectedRateType('ALL')}
+                                    className={cn(
+                                        "px-2.5 py-1 rounded-lg transition-all text-xs cursor-pointer",
+                                        selectedRateType === 'ALL'
+                                            ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-2xs font-extrabold"
+                                            : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+                                    )}
+                                >
+                                    All Types ({totalCount})
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setSelectedRateType('Percentage')}
+                                    className={cn(
+                                        "px-2.5 py-1 rounded-lg transition-all text-xs cursor-pointer",
+                                        selectedRateType === 'Percentage'
+                                            ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-2xs font-extrabold"
+                                            : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+                                    )}
+                                >
+                                    % ({rateTypeStats.pct})
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setSelectedRateType('Flat')}
+                                    className={cn(
+                                        "px-2.5 py-1 rounded-lg transition-all text-xs cursor-pointer",
+                                        selectedRateType === 'Flat'
+                                            ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-2xs font-extrabold"
+                                            : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+                                    )}
+                                >
+                                    ₹ Flat ({rateTypeStats.flat})
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Right side: Matching Count & Reset Action */}
+                        <div className="flex items-center gap-2 text-xs shrink-0">
+                            <span className="text-zinc-400 font-medium text-[11px]">
+                                Showing <b className="text-zinc-800 dark:text-zinc-200 font-bold">{filteredTests.length}</b> of {totalCount}
+                            </span>
+                            {isFilterActive && (
+                                <button
+                                    type="button"
+                                    onClick={resetFilters}
+                                    className="text-[11px] font-bold text-synos-primary hover:underline ml-1 cursor-pointer"
+                                >
+                                    Reset Filters
+                                </button>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* UNMAPPED TESTS TABLE */}
+                    <div className="p-0 overflow-x-auto">
+                        {filteredTests.length === 0 ? (
+                            <div className="py-12 text-center text-zinc-400 space-y-2">
+                                <p className="text-xs font-bold text-zinc-600 dark:text-zinc-300">
+                                    No unmapped tests match your search / filter criteria
+                                </p>
+                                <p className="text-[11px] text-zinc-400">
+                                    Try modifying the test name, selecting a different department, or clearing filters.
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={resetFilters}
+                                    className="inline-flex items-center gap-1 px-3 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg text-xs font-bold mt-1 cursor-pointer"
+                                >
+                                    <X size={12} /> Clear Filters
+                                </button>
+                            </div>
+                        ) : (
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="border-b border-zinc-100 dark:border-zinc-900 bg-zinc-50/20 dark:bg-zinc-900/10 text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
+                                        <th className="py-3 px-5">Investigation / Test</th>
+                                        <th className="py-3 px-4">Department</th>
+                                        <th className="py-3 px-4 text-right">MRP (₹)</th>
+                                        <th className="py-3 px-4 text-center">Prescribed</th>
+                                        <th className="py-3 px-4">Rate Type</th>
+                                        <th className="py-3 px-4">Commission Cut</th>
+                                        <th className="py-3 px-4 text-right">Preview Payout</th>
+                                        <th className="py-3 px-5 text-right">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80 text-xs font-medium">
+                                    {filteredTests.map(test => {
+                                        const key = `${group.referralPartnerId}_${test.testId}`;
+                                        const staged = stagedRates[key] || { type: 'Percentage', value: '' };
+                                        const isRowSaving = savingKey === key;
+                                        
+                                        const numVal = parseFloat(staged.value);
+                                        let previewPayout = 0;
+                                        if (!isNaN(numVal) && numVal > 0) {
+                                            if (staged.type === 'Percentage') {
+                                                previewPayout = (test.price * numVal) / 100;
+                                            } else {
+                                                previewPayout = numVal;
+                                            }
+                                        }
+
+                                        return (
+                                            <tr key={test.testId} className="hover:bg-zinc-50/60 dark:hover:bg-zinc-900/30 transition-colors">
+                                                <td className="py-3.5 px-5">
+                                                    <div className="font-bold text-zinc-900 dark:text-zinc-100">
+                                                        {test.testName}
+                                                    </div>
+                                                    <div className="text-[10px] text-zinc-400 font-mono">
+                                                        {test.testCode}
+                                                    </div>
+                                                </td>
+                                                <td className="py-3.5 px-4 text-zinc-500">
+                                                    {test.departmentName || 'General'}
+                                                </td>
+                                                <td className="py-3.5 px-4 text-right font-bold text-zinc-700 dark:text-zinc-300 font-mono">
+                                                    ₹{Number(test.price).toLocaleString()}
+                                                </td>
+                                                <td className="py-3.5 px-4 text-center">
+                                                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                                                        {test.prescribedCount}x
+                                                    </span>
+                                                </td>
+                                                <td className="py-3.5 px-4">
+                                                    <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-900 p-0.5 rounded-lg w-fit">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleRateChange(group.referralPartnerId, test.testId, 'type', 'Percentage')}
+                                                            className={cn(
+                                                                "flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all",
+                                                                staged.type === 'Percentage'
+                                                                    ? "bg-white dark:bg-zinc-800 text-synos-primary shadow-xs"
+                                                                    : "text-zinc-500 hover:text-zinc-800"
+                                                            )}
+                                                        >
+                                                            <Percent size={11} />
+                                                            <span>%</span>
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleRateChange(group.referralPartnerId, test.testId, 'type', 'Flat')}
+                                                            className={cn(
+                                                                "flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all",
+                                                                staged.type === 'Flat'
+                                                                    ? "bg-white dark:bg-zinc-800 text-synos-primary shadow-xs"
+                                                                    : "text-zinc-500 hover:text-zinc-800"
+                                                            )}
+                                                        >
+                                                            <IndianRupee size={11} />
+                                                            <span>Flat</span>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                                <td className="py-3.5 px-4">
+                                                    <div className="relative w-28">
+                                                        <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400 font-bold text-xs pointer-events-none">
+                                                            {staged.type === 'Percentage' ? '%' : '₹'}
+                                                        </span>
+                                                        <input
+                                                            type="number"
+                                                            step={staged.type === 'Percentage' ? '1' : '10'}
+                                                            placeholder="0"
+                                                            value={staged.value ?? ''}
+                                                            onChange={(e) => handleRateChange(group.referralPartnerId, test.testId, 'value', e.target.value)}
+                                                            className="w-full pl-7 pr-3 py-1.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-xs font-bold text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-synos-primary/20 focus:border-synos-primary outline-none transition-all"
+                                                        />
+                                                    </div>
+                                                </td>
+                                                <td className="py-3.5 px-4 text-right">
+                                                    <span className={cn(
+                                                        "font-mono font-bold text-xs",
+                                                        previewPayout > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-zinc-400"
+                                                    )}>
+                                                        ₹{previewPayout.toFixed(2)}
+                                                    </span>
+                                                </td>
+                                                <td className="py-3.5 px-5 text-right">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => commitSingleRule(group.referralPartnerId, test)}
+                                                        disabled={isRowSaving || !staged.value}
+                                                        className="inline-flex items-center gap-1 px-3 py-1.5 bg-zinc-900 hover:bg-black dark:bg-zinc-800 dark:hover:bg-zinc-700 text-white rounded-lg text-[11px] font-bold transition-all disabled:opacity-30 disabled:pointer-events-none active:scale-95"
+                                                        title="Lock Rate for this test"
+                                                    >
+                                                        {isRowSaving ? (
+                                                            <Loader2 size={12} className="animate-spin" />
+                                                        ) : (
+                                                            <Check size={12} />
+                                                        )}
+                                                        <span>Lock</span>
+                                                    </button>
                                                 </td>
                                             </tr>
                                         );
@@ -781,7 +1192,7 @@ export const ReferralRateQueueTab = ({ onUpdateCount }) => {
                         )}
                     >
                         <Zap size={15} />
-                        <span>Unmapped Rate Queue</span>
+                        <span>Unmapped Commission Cut</span>
                         {totalUnmappedInQueue > 0 && (
                             <span className="ml-1.5 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-500/10 text-amber-600 border border-amber-500/20">
                                 {totalUnmappedInQueue}
@@ -798,7 +1209,7 @@ export const ReferralRateQueueTab = ({ onUpdateCount }) => {
                         )}
                     >
                         <BookOpen size={15} />
-                        <span>Learned Rate Cards</span>
+                        <span>Mapped Commission Cut</span>
                         {learnedRules.length > 0 && (
                             <span className="ml-1.5 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-500/10 text-synos-primary border border-blue-500/20">
                                 {learnedRules.length}
@@ -904,216 +1315,30 @@ export const ReferralRateQueueTab = ({ onUpdateCount }) => {
                                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-synos-primary text-white text-xs font-bold rounded-xl shadow-md hover:bg-synos-primary/90 transition-all"
                             >
                                 <BookOpen size={14} />
-                                <span>View Learned Rate Cards</span>
+                                <span>View Mapped Commission Cut</span>
                             </button>
                         </div>
                     ) : (
                         <div className="space-y-4">
-                            {filteredQueue.map(group => {
-                                const isCollapsed = collapsedDoctors[group.referralPartnerId];
-                                const unmappedCount = group.unmappedTests?.length || 0;
-                                const isSavingDoctor = savingKey === group.referralPartnerId;
-
-                                return (
-                                    <div 
-                                        key={group.referralPartnerId}
-                                        className="synos-dept-card rounded-2xl overflow-hidden transition-all"
-                                    >
-                                        {/* DOCTOR HEADER CARD */}
-                                        <div className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-zinc-50/50 dark:bg-zinc-900/30 border-b border-zinc-100 dark:border-zinc-900">
-                                            <div className="flex items-start sm:items-center gap-3">
-                                                <button
-                                                    onClick={() => toggleDoctorCollapse(group.referralPartnerId)}
-                                                    className="p-1.5 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 transition-colors"
-                                                >
-                                                    {isCollapsed ? <ChevronDown size={18} /> : <ChevronUp size={18} />}
-                                                </button>
-                                                <div className="w-10 h-10 rounded-xl bg-synos-primary/10 text-synos-primary flex items-center justify-center shrink-0">
-                                                    <Stethoscope size={20} />
-                                                </div>
-                                                <div>
-                                                    <div className="flex items-center gap-2">
-                                                        <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                                                            {group.doctorName}
-                                                        </h4>
-                                                        <span className="px-2 py-0.5 text-[10px] font-extrabold rounded-md bg-amber-500/10 text-amber-600 border border-amber-500/20">
-                                                            {unmappedCount} Test{unmappedCount > 1 ? 's' : ''} to Map
-                                                        </span>
-                                                        {group.totalPendingVisits > 0 && (
-                                                            <span className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-blue-500/10 text-blue-600 border border-blue-500/20">
-                                                                {group.totalPendingVisits} Pending Visit{group.totalPendingVisits > 1 ? 's' : ''}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <div className="flex items-center gap-3 text-[11px] text-zinc-500 mt-0.5">
-                                                        {group.clinicName && (
-                                                            <span className="flex items-center gap-1">
-                                                                <Building2 size={12} />
-                                                                {group.clinicName}
-                                                            </span>
-                                                        )}
-                                                        {group.contactInfo && (
-                                                            <span>• {group.contactInfo}</span>
-                                                        )}
-                                                        <span>• Partner Default: {group.defaultCommissionPercentage}%</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div className="flex items-center gap-2 self-end sm:self-auto">
-                                                <button
-                                                    onClick={() => commitDoctorRules(group)}
-                                                    disabled={isSavingDoctor}
-                                                    className="flex items-center gap-1.5 px-4 py-2 bg-synos-primary hover:bg-synos-primary/90 text-white rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 disabled:opacity-50"
-                                                >
-                                                    {isSavingDoctor ? (
-                                                        <Loader2 size={13} className="animate-spin" />
-                                                    ) : (
-                                                        <Save size={13} />
-                                                    )}
-                                                    <span>Confirm Doctor's Rates</span>
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        {/* UNMAPPED TESTS TABLE */}
-                                        {!isCollapsed && (
-                                            <div className="p-0 overflow-x-auto">
-                                                <table className="w-full text-left border-collapse">
-                                                    <thead>
-                                                        <tr className="border-b border-zinc-100 dark:border-zinc-900 bg-zinc-50/20 dark:bg-zinc-900/10 text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
-                                                            <th className="py-3 px-5">Investigation / Test</th>
-                                                            <th className="py-3 px-4">Department</th>
-                                                            <th className="py-3 px-4 text-right">MRP (₹)</th>
-                                                            <th className="py-3 px-4 text-center">Prescribed</th>
-                                                            <th className="py-3 px-4">Rate Type</th>
-                                                            <th className="py-3 px-4">Commission Cut</th>
-                                                            <th className="py-3 px-4 text-right">Preview Payout</th>
-                                                            <th className="py-3 px-5 text-right">Action</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80 text-xs font-medium">
-                                                        {group.unmappedTests.map(test => {
-                                                            const key = `${group.referralPartnerId}_${test.testId}`;
-                                                            const staged = stagedRates[key] || { type: 'Percentage', value: '' };
-                                                            const isRowSaving = savingKey === key;
-                                                            
-                                                            const numVal = parseFloat(staged.value);
-                                                            let previewPayout = 0;
-                                                            if (!isNaN(numVal) && numVal > 0) {
-                                                                if (staged.type === 'Percentage') {
-                                                                    previewPayout = (test.price * numVal) / 100;
-                                                                } else {
-                                                                    previewPayout = numVal;
-                                                                }
-                                                            }
-
-                                                            return (
-                                                                <tr key={test.testId} className="hover:bg-zinc-50/60 dark:hover:bg-zinc-900/30 transition-colors">
-                                                                    <td className="py-3.5 px-5">
-                                                                        <div className="font-bold text-zinc-900 dark:text-zinc-100">
-                                                                            {test.testName}
-                                                                        </div>
-                                                                        <div className="text-[10px] text-zinc-400 font-mono">
-                                                                            {test.testCode}
-                                                                        </div>
-                                                                    </td>
-                                                                    <td className="py-3.5 px-4 text-zinc-500">
-                                                                        {test.departmentName || 'General'}
-                                                                    </td>
-                                                                    <td className="py-3.5 px-4 text-right font-bold text-zinc-700 dark:text-zinc-300 font-mono">
-                                                                        ₹{Number(test.price).toLocaleString()}
-                                                                    </td>
-                                                                    <td className="py-3.5 px-4 text-center">
-                                                                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-                                                                            {test.prescribedCount}x
-                                                                        </span>
-                                                                    </td>
-                                                                    <td className="py-3.5 px-4">
-                                                                        <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-900 p-0.5 rounded-lg w-fit">
-                                                                            <button
-                                                                                type="button"
-                                                                                onClick={() => handleRateChange(group.referralPartnerId, test.testId, 'type', 'Percentage')}
-                                                                                className={cn(
-                                                                                    "flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all",
-                                                                                    staged.type === 'Percentage'
-                                                                                        ? "bg-white dark:bg-zinc-800 text-synos-primary shadow-xs"
-                                                                                        : "text-zinc-500 hover:text-zinc-800"
-                                                                                )}
-                                                                            >
-                                                                                <Percent size={11} />
-                                                                                <span>%</span>
-                                                                            </button>
-                                                                            <button
-                                                                                type="button"
-                                                                                onClick={() => handleRateChange(group.referralPartnerId, test.testId, 'type', 'Flat')}
-                                                                                className={cn(
-                                                                                    "flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all",
-                                                                                    staged.type === 'Flat'
-                                                                                        ? "bg-white dark:bg-zinc-800 text-synos-primary shadow-xs"
-                                                                                        : "text-zinc-500 hover:text-zinc-800"
-                                                                                )}
-                                                                            >
-                                                                                <IndianRupee size={11} />
-                                                                                <span>Flat</span>
-                                                                            </button>
-                                                                        </div>
-                                                                    </td>
-                                                                    <td className="py-3.5 px-4">
-                                                                        <div className="relative w-28">
-                                                                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-400 font-bold text-xs pointer-events-none">
-                                                                                {staged.type === 'Percentage' ? '%' : '₹'}
-                                                                            </span>
-                                                                            <input
-                                                                                type="number"
-                                                                                step={staged.type === 'Percentage' ? '1' : '10'}
-                                                                                placeholder="0"
-                                                                                value={staged.value ?? ''}
-                                                                                onChange={(e) => handleRateChange(group.referralPartnerId, test.testId, 'value', e.target.value)}
-                                                                                className="w-full pl-7 pr-3 py-1.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-xs font-bold text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-synos-primary/20 focus:border-synos-primary outline-none transition-all"
-                                                                            />
-                                                                        </div>
-                                                                    </td>
-                                                                    <td className="py-3.5 px-4 text-right">
-                                                                        <span className={cn(
-                                                                            "font-mono font-bold text-xs",
-                                                                            previewPayout > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-zinc-400"
-                                                                        )}>
-                                                                            ₹{previewPayout.toFixed(2)}
-                                                                        </span>
-                                                                    </td>
-                                                                    <td className="py-3.5 px-5 text-right">
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() => commitSingleRule(group.referralPartnerId, test)}
-                                                                            disabled={isRowSaving || !staged.value}
-                                                                            className="inline-flex items-center gap-1 px-3 py-1.5 bg-zinc-900 hover:bg-black dark:bg-zinc-800 dark:hover:bg-zinc-700 text-white rounded-lg text-[11px] font-bold transition-all disabled:opacity-30 disabled:pointer-events-none active:scale-95"
-                                                                            title="Lock Rate for this test"
-                                                                        >
-                                                                            {isRowSaving ? (
-                                                                                <Loader2 size={12} className="animate-spin" />
-                                                                            ) : (
-                                                                                <Check size={12} />
-                                                                            )}
-                                                                            <span>Lock</span>
-                                                                        </button>
-                                                                    </td>
-                                                                </tr>
-                                                            );
-                                                        })}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
+                            {filteredQueue.map(group => (
+                                <DoctorUnmappedCard
+                                    key={group.referralPartnerId}
+                                    group={group}
+                                    isCollapsed={Boolean(collapsedDoctors[group.referralPartnerId])}
+                                    onToggleCollapse={() => toggleDoctorCollapse(group.referralPartnerId)}
+                                    stagedRates={stagedRates}
+                                    handleRateChange={handleRateChange}
+                                    commitDoctorRules={commitDoctorRules}
+                                    commitSingleRule={commitSingleRule}
+                                    savingKey={savingKey}
+                                />
+                            ))}
                         </div>
                     )}
                 </div>
             )}
 
-            {/* TAB: LEARNED RATE CARDS */}
+            {/* TAB: MAPPED COMMISSION CUT */}
             {subTab === 'rate-cards' && (
                 <div className="space-y-6">
                     {/* ACTION & SEARCH BAR */}
@@ -1122,7 +1347,7 @@ export const ReferralRateQueueTab = ({ onUpdateCount }) => {
                             <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-synos-primary transition-colors" />
                             <input 
                                 type="text" 
-                                placeholder="Search learned rates by doctor or test..." 
+                                placeholder="Search mapped rates by doctor or test..." 
                                 value={ruleSearch}
                                 onChange={(e) => {
                                     setRuleSearch(e.target.value);
@@ -1143,7 +1368,7 @@ export const ReferralRateQueueTab = ({ onUpdateCount }) => {
                         </div>
                     </div>
 
-                    {/* DOCTOR / CLINIC ACCORDION LIST FOR LEARNED RATE CARDS */}
+                    {/* DOCTOR / CLINIC ACCORDION LIST FOR MAPPED COMMISSION CUT */}
                     {loadingRules ? (
                         <div className="py-20 flex flex-col items-center justify-center gap-3 text-zinc-400">
                             <Loader2 size={32} className="animate-spin text-synos-primary" />
@@ -1154,9 +1379,9 @@ export const ReferralRateQueueTab = ({ onUpdateCount }) => {
                             <div className="w-16 h-16 rounded-3xl bg-blue-500/10 text-synos-primary flex items-center justify-center mx-auto">
                                 <BookOpen size={32} />
                             </div>
-                            <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">No Learned Rate Cards Found</h3>
+                            <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">No Mapped Commission Cuts Found</h3>
                             <p className="text-xs text-zinc-500 max-w-md mx-auto">
-                                {ruleSearch ? `No learned doctor rates match "${ruleSearch}".` : "No customized doctor rate cards have been learned yet. Lock rates from the Unmapped Queue to build doctor rate cards."}
+                                {ruleSearch ? `No mapped doctor rates match "${ruleSearch}".` : "No customized doctor commission cuts have been mapped yet. Lock rates from the Unmapped Commission Cut queue to build doctor rate cards."}
                             </p>
                         </div>
                     ) : (

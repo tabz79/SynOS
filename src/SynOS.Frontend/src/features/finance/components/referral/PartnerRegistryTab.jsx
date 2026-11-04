@@ -1288,7 +1288,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                                                 placeholder="Search test name or code..."
                                                                 value={rateCardSearch}
                                                                 onChange={(e) => setRateCardSearch(e.target.value)}
-                                                                className="w-full pl-8.5 pr-7 py-1.5 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-medium outline-none focus:ring-1 focus:ring-synos-primary text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 shadow-2xs"
+                                                                className="w-full pl-10 pr-7 py-1.5 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl text-xs font-medium outline-none focus:ring-1 focus:ring-synos-primary text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 shadow-2xs"
                                                             />
                                                             {rateCardSearch && (
                                                                 <button

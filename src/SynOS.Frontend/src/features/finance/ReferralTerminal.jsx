@@ -63,7 +63,7 @@ export const ReferralTerminal = () => {
 
     const tabs = [
         { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-        { id: 'rate-queue', label: 'Rate Queue', icon: Zap, badge: unmappedQueueCount },
+        { id: 'rate-queue', label: 'Referral Commissions', icon: Zap, badge: unmappedQueueCount },
         { id: 'registry', label: 'Doctor Registry', icon: Users },
         { id: 'rmp', label: 'RMP Partners', icon: Users },
         { id: 'payouts', label: 'Pending Payouts', icon: ArrowUpRight },
