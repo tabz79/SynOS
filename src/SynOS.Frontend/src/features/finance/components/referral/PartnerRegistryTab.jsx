@@ -1398,7 +1398,7 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                                                 <tr className="border-b border-black/[0.05] dark:border-white/[0.05] bg-slate-50 dark:bg-zinc-900/60 text-[10px] font-extrabold uppercase text-zinc-400 tracking-wider">
                                                                     <th className="py-3 px-4">Test / Investigation</th>
                                                                     <th className="py-3 px-3">Department</th>
-                                                                    <th className="py-3 px-3 text-right">MRP (Base ₹)</th>
+                                                                    <th className="py-3 px-3 text-right">Lab Tariff (₹)</th>
                                                                     <th className="py-3 px-4 text-center">Commission Cut</th>
                                                                     <th className="py-3 px-3 text-right">Doctor Payout</th>
                                                                     <th className="py-3 px-3 text-center">Status</th>
@@ -1450,13 +1450,13 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                                                         <td className="py-3 px-4 text-center">
                                                                             {isEditing ? (
                                                                                 <div className="inline-flex items-center gap-1.5">
-                                                                                    <div className="flex items-center bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg p-0.5 shadow-2xs">
+                                                                                    <div className="flex items-center bg-slate-200/90 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 rounded-xl p-0.5 shadow-inner">
                                                                                         <button
                                                                                             type="button"
                                                                                             onClick={() => setEditRuleInput({ ...editRuleInput, type: 'Percentage' })}
                                                                                             className={cn(
-                                                                                                "px-2 py-0.5 text-[10px] font-bold rounded transition-all",
-                                                                                                editRuleInput.type === 'Percentage' ? "bg-synos-primary text-white" : "text-zinc-400 hover:text-zinc-600"
+                                                                                                "px-2 py-0.5 text-[10px] font-bold rounded-lg transition-all cursor-pointer",
+                                                                                                editRuleInput.type === 'Percentage' ? "bg-white dark:bg-zinc-950 text-synos-primary shadow-xs font-extrabold" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
                                                                                             )}
                                                                                         >
                                                                                             %
@@ -1465,11 +1465,11 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned }) => {
                                                                                             type="button"
                                                                                             onClick={() => setEditRuleInput({ ...editRuleInput, type: 'Flat' })}
                                                                                             className={cn(
-                                                                                                "px-2 py-0.5 text-[10px] font-bold rounded transition-all",
-                                                                                                editRuleInput.type === 'Flat' ? "bg-synos-primary text-white" : "text-zinc-400 hover:text-zinc-600"
+                                                                                                "px-2 py-0.5 text-[10px] font-bold rounded-lg transition-all cursor-pointer",
+                                                                                                editRuleInput.type === 'Flat' ? "bg-white dark:bg-zinc-950 text-synos-primary shadow-xs font-extrabold" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
                                                                                             )}
                                                                                         >
-                                                                                            ₹
+                                                                                            ₹ Flat
                                                                                         </button>
                                                                                     </div>
                                                                                     <input

@@ -166,7 +166,7 @@ export const ReferralTerminal = () => {
         let filename = `synos_referral_${tab}_${new Date().toISOString().slice(0, 10)}.csv`;
 
         if (tab === 'rate-queue') {
-            headers = ["Doctor Name", "Clinic", "Test Name", "Test Code", "Department", "MRP (INR)", "Times Prescribed"];
+            headers = ["Doctor Name", "Clinic", "Test Name", "Test Code", "Department", "Lab Tariff (INR)", "Times Prescribed"];
             (data || []).forEach(g => {
                 (g.unmappedTests || []).forEach(t => {
                     rows.push([
@@ -292,7 +292,7 @@ export const ReferralTerminal = () => {
                     { key: 'clinicName', label: 'Hospital / Clinic' },
                     { key: 'testName', label: 'Investigation' },
                     { key: 'department', label: 'Department' },
-                    { key: 'price', label: 'MRP (₹)', align: 'right', render: (v) => `₹${Number(v || 0).toLocaleString()}` },
+                    { key: 'price', label: 'Lab Tariff (₹)', align: 'right', render: (v) => `₹${Number(v || 0).toLocaleString()}` },
                     { key: 'prescribedCount', label: 'Prescribed', align: 'center', render: (v) => `${v}x` }
                 ],
                 data: flatList,

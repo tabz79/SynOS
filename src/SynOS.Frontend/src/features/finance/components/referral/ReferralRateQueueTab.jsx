@@ -285,7 +285,7 @@ const DoctorLearnedCard = ({
                                     <tr className="border-b border-zinc-100 dark:border-zinc-900 bg-zinc-50/40 dark:bg-zinc-900/20 text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
                                         <th className="py-3 px-5">Investigation / Test</th>
                                         <th className="py-3 px-4">Department</th>
-                                        <th className="py-3 px-4 text-right">MRP (₹)</th>
+                                        <th className="py-3 px-4 text-right">Lab Tariff (₹)</th>
                                         <th className="py-3 px-4 text-center">Rate Type</th>
                                         <th className="py-3 px-4 text-right">Commission Cut</th>
                                         <th className="py-3 px-4 text-right">Payout / Test</th>
@@ -333,7 +333,7 @@ const DoctorLearnedCard = ({
                                                     {rule.departmentName || 'General'}
                                                 </td>
 
-                                                {/* MRP */}
+                                                {/* Lab Tariff */}
                                                 <td className="py-3.5 px-4 text-right font-mono font-bold text-zinc-700 dark:text-zinc-300">
                                                     ₹{Number(rule.testPrice || 0).toLocaleString('en-IN')}
                                                 </td>
@@ -341,13 +341,13 @@ const DoctorLearnedCard = ({
                                                 {/* Rate Type */}
                                                 <td className="py-3.5 px-4 text-center">
                                                     {isEditing ? (
-                                                        <div className="inline-flex items-center bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg p-0.5 shadow-2xs">
+                                                        <div className="inline-flex items-center bg-slate-200/90 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 rounded-xl p-1 shadow-inner">
                                                             <button
                                                                 type="button"
                                                                 onClick={() => setEditRuleState({ ...editRuleState, type: 'Percentage' })}
                                                                 className={cn(
-                                                                    "px-2.5 py-1 text-[10px] font-bold rounded transition-all cursor-pointer",
-                                                                    editRuleState.type === 'Percentage' ? "bg-synos-primary text-white shadow-2xs" : "text-zinc-400 hover:text-zinc-600"
+                                                                    "px-2.5 py-1 text-[10px] font-bold rounded-lg transition-all cursor-pointer",
+                                                                    editRuleState.type === 'Percentage' ? "bg-white dark:bg-zinc-950 text-synos-primary shadow-xs font-extrabold" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
                                                                 )}
                                                             >
                                                                 %
@@ -356,8 +356,8 @@ const DoctorLearnedCard = ({
                                                                 type="button"
                                                                 onClick={() => setEditRuleState({ ...editRuleState, type: 'Flat' })}
                                                                 className={cn(
-                                                                    "px-2.5 py-1 text-[10px] font-bold rounded transition-all cursor-pointer",
-                                                                    editRuleState.type === 'Flat' ? "bg-synos-primary text-white shadow-2xs" : "text-zinc-400 hover:text-zinc-600"
+                                                                    "px-2.5 py-1 text-[10px] font-bold rounded-lg transition-all cursor-pointer",
+                                                                    editRuleState.type === 'Flat' ? "bg-white dark:bg-zinc-950 text-synos-primary shadow-xs font-extrabold" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
                                                                 )}
                                                             >
                                                                 ₹ Flat
@@ -749,7 +749,7 @@ const DoctorUnmappedCard = ({
                                     <tr className="border-b border-zinc-100 dark:border-zinc-900 bg-zinc-50/20 dark:bg-zinc-900/10 text-[10px] uppercase font-bold text-zinc-400 tracking-wider">
                                         <th className="py-3 px-5">Investigation / Test</th>
                                         <th className="py-3 px-4">Department</th>
-                                        <th className="py-3 px-4 text-right">MRP (₹)</th>
+                                        <th className="py-3 px-4 text-right">Lab Tariff (₹)</th>
                                         <th className="py-3 px-4 text-center">Prescribed</th>
                                         <th className="py-3 px-4">Rate Type</th>
                                         <th className="py-3 px-4">Commission Cut</th>
@@ -795,15 +795,15 @@ const DoctorUnmappedCard = ({
                                                     </span>
                                                 </td>
                                                 <td className="py-3.5 px-4">
-                                                    <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-900 p-0.5 rounded-lg w-fit">
+                                                    <div className="flex items-center gap-1 bg-slate-200/90 dark:bg-zinc-800 p-1 rounded-xl border border-slate-300 dark:border-zinc-700/80 shadow-inner w-fit">
                                                         <button
                                                             type="button"
                                                             onClick={() => handleRateChange(group.referralPartnerId, test.testId, 'type', 'Percentage')}
                                                             className={cn(
-                                                                "flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all",
+                                                                "flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer",
                                                                 staged.type === 'Percentage'
-                                                                    ? "bg-white dark:bg-zinc-800 text-synos-primary shadow-xs"
-                                                                    : "text-zinc-500 hover:text-zinc-800"
+                                                                    ? "bg-white dark:bg-zinc-950 text-synos-primary shadow-xs font-extrabold"
+                                                                    : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
                                                             )}
                                                         >
                                                             <Percent size={11} />
@@ -813,10 +813,10 @@ const DoctorUnmappedCard = ({
                                                             type="button"
                                                             onClick={() => handleRateChange(group.referralPartnerId, test.testId, 'type', 'Flat')}
                                                             className={cn(
-                                                                "flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all",
+                                                                "flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer",
                                                                 staged.type === 'Flat'
-                                                                    ? "bg-white dark:bg-zinc-800 text-synos-primary shadow-xs"
-                                                                    : "text-zinc-500 hover:text-zinc-800"
+                                                                    ? "bg-white dark:bg-zinc-950 text-synos-primary shadow-xs font-extrabold"
+                                                                    : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
                                                             )}
                                                         >
                                                             <IndianRupee size={11} />

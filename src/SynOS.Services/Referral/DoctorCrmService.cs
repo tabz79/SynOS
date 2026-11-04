@@ -269,7 +269,9 @@ namespace SynOS.Services.Referral
                     TestCode = r.Test?.TestCode ?? string.Empty,
                     TestName = r.Test?.TestName ?? "Investigation",
                     DepartmentName = r.Test?.DepartmentMaster?.Name ?? "General Diagnostics",
-                    TestPrice = r.Test?.TestPricings.FirstOrDefault()?.BasePrice ?? 0,
+                    TestPrice = r.Test?.TestPricings.Where(tp => tp.EffectiveFrom <= DateTime.UtcNow).OrderByDescending(tp => tp.EffectiveFrom).Select(tp => tp.BasePrice).FirstOrDefault() 
+                                ?? r.Test?.TestPricings.OrderByDescending(tp => tp.CreatedAt).Select(tp => tp.BasePrice).FirstOrDefault() 
+                                ?? 0,
                     CommissionType = r.CommissionType,
                     CommissionValue = r.CommissionValue,
                     EffectiveFrom = r.EffectiveFrom,
@@ -291,7 +293,11 @@ namespace SynOS.Services.Referral
                     TestCode = g.Key.TestCode,
                     TestName = g.Key.TestName,
                     DepartmentName = g.Key.DeptName,
-                    Price = g.SelectMany(x => x.t.TestPricings).Select(p => p.BasePrice).FirstOrDefault(),
+                    Price = g.SelectMany(x => x.t.TestPricings).Where(tp => tp.EffectiveFrom <= DateTime.UtcNow).OrderByDescending(tp => tp.EffectiveFrom).Select(p => p.BasePrice).FirstOrDefault() > 0
+                        ? g.SelectMany(x => x.t.TestPricings).Where(tp => tp.EffectiveFrom <= DateTime.UtcNow).OrderByDescending(tp => tp.EffectiveFrom).Select(p => p.BasePrice).FirstOrDefault()
+                        : (g.SelectMany(x => x.t.TestPricings).OrderByDescending(tp => tp.CreatedAt).Select(p => p.BasePrice).FirstOrDefault() > 0 
+                            ? g.SelectMany(x => x.t.TestPricings).OrderByDescending(tp => tp.CreatedAt).Select(p => p.BasePrice).FirstOrDefault() 
+                            : g.Where(x => x.o.Price > 0).Select(x => x.o.Price).FirstOrDefault()),
                     PrescribedCount = g.Count(),
                     FirstPrescribedAt = g.Min(x => x.v.CreatedAt),
                     LastPrescribedAt = g.Max(x => x.v.CreatedAt),

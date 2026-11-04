@@ -126925,7 +126925,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                                         }),
                                         r.jsx("th", {
                                           className: "py-3 px-3 text-right",
-                                          children: "MRP (Base \u20B9)"
+                                          children: "Lab Tariff (\u20B9)"
                                         }),
                                         r.jsx("th", {
                                           className: "py-3 px-4 text-center",
@@ -126983,7 +126983,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                                               className: "inline-flex items-center gap-1.5",
                                               children: [
                                                 r.jsxs("div", {
-                                                  className: "flex items-center bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg p-0.5 shadow-2xs",
+                                                  className: "flex items-center bg-slate-200/90 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 rounded-xl p-0.5 shadow-inner",
                                                   children: [
                                                     r.jsx("button", {
                                                       type: "button",
@@ -126991,7 +126991,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                                                         ...I,
                                                         type: "Percentage"
                                                       }),
-                                                      className: we("px-2 py-0.5 text-[10px] font-bold rounded transition-all", I.type === "Percentage" ? "bg-synos-primary text-white" : "text-zinc-400 hover:text-zinc-600"),
+                                                      className: we("px-2 py-0.5 text-[10px] font-bold rounded-lg transition-all cursor-pointer", I.type === "Percentage" ? "bg-white dark:bg-zinc-950 text-synos-primary shadow-xs font-extrabold" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"),
                                                       children: "%"
                                                     }),
                                                     r.jsx("button", {
@@ -127000,8 +127000,8 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                                                         ...I,
                                                         type: "Flat"
                                                       }),
-                                                      className: we("px-2 py-0.5 text-[10px] font-bold rounded transition-all", I.type === "Flat" ? "bg-synos-primary text-white" : "text-zinc-400 hover:text-zinc-600"),
-                                                      children: "\u20B9"
+                                                      className: we("px-2 py-0.5 text-[10px] font-bold rounded-lg transition-all cursor-pointer", I.type === "Flat" ? "bg-white dark:bg-zinc-950 text-synos-primary shadow-xs font-extrabold" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"),
+                                                      children: "\u20B9 Flat"
                                                     })
                                                   ]
                                                 }),
@@ -130539,7 +130539,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                         }),
                         r.jsx("th", {
                           className: "py-3 px-4 text-right",
-                          children: "MRP (\u20B9)"
+                          children: "Lab Tariff (\u20B9)"
                         }),
                         r.jsx("th", {
                           className: "py-3 px-4 text-center",
@@ -130598,7 +130598,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                           r.jsx("td", {
                             className: "py-3.5 px-4 text-center",
                             children: G ? r.jsxs("div", {
-                              className: "inline-flex items-center bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg p-0.5 shadow-2xs",
+                              className: "inline-flex items-center bg-slate-200/90 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 rounded-xl p-1 shadow-inner",
                               children: [
                                 r.jsx("button", {
                                   type: "button",
@@ -130606,7 +130606,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                     ...a,
                                     type: "Percentage"
                                   }),
-                                  className: we("px-2.5 py-1 text-[10px] font-bold rounded transition-all cursor-pointer", a.type === "Percentage" ? "bg-synos-primary text-white shadow-2xs" : "text-zinc-400 hover:text-zinc-600"),
+                                  className: we("px-2.5 py-1 text-[10px] font-bold rounded-lg transition-all cursor-pointer", a.type === "Percentage" ? "bg-white dark:bg-zinc-950 text-synos-primary shadow-xs font-extrabold" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"),
                                   children: "%"
                                 }),
                                 r.jsx("button", {
@@ -130615,7 +130615,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                     ...a,
                                     type: "Flat"
                                   }),
-                                  className: we("px-2.5 py-1 text-[10px] font-bold rounded transition-all cursor-pointer", a.type === "Flat" ? "bg-synos-primary text-white shadow-2xs" : "text-zinc-400 hover:text-zinc-600"),
+                                  className: we("px-2.5 py-1 text-[10px] font-bold rounded-lg transition-all cursor-pointer", a.type === "Flat" ? "bg-white dark:bg-zinc-950 text-synos-primary shadow-xs font-extrabold" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"),
                                   children: "\u20B9 Flat"
                                 })
                               ]
@@ -131061,7 +131061,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                         }),
                         r.jsx("th", {
                           className: "py-3 px-4 text-right",
-                          children: "MRP (\u20B9)"
+                          children: "Lab Tariff (\u20B9)"
                         }),
                         r.jsx("th", {
                           className: "py-3 px-4 text-center",
@@ -131134,12 +131134,12 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                           r.jsx("td", {
                             className: "py-3.5 px-4",
                             children: r.jsxs("div", {
-                              className: "flex items-center gap-1 bg-zinc-100 dark:bg-zinc-900 p-0.5 rounded-lg w-fit",
+                              className: "flex items-center gap-1 bg-slate-200/90 dark:bg-zinc-800 p-1 rounded-xl border border-slate-300 dark:border-zinc-700/80 shadow-inner w-fit",
                               children: [
                                 r.jsxs("button", {
                                   type: "button",
                                   onClick: () => a(t.referralPartnerId, v.testId, "type", "Percentage"),
-                                  className: we("flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all", F.type === "Percentage" ? "bg-white dark:bg-zinc-800 text-synos-primary shadow-xs" : "text-zinc-500 hover:text-zinc-800"),
+                                  className: we("flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer", F.type === "Percentage" ? "bg-white dark:bg-zinc-950 text-synos-primary shadow-xs font-extrabold" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"),
                                   children: [
                                     r.jsx(bh, {
                                       size: 11
@@ -131152,7 +131152,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                 r.jsxs("button", {
                                   type: "button",
                                   onClick: () => a(t.referralPartnerId, v.testId, "type", "Flat"),
-                                  className: we("flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-bold transition-all", F.type === "Flat" ? "bg-white dark:bg-zinc-800 text-synos-primary shadow-xs" : "text-zinc-500 hover:text-zinc-800"),
+                                  className: we("flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer", F.type === "Flat" ? "bg-white dark:bg-zinc-950 text-synos-primary shadow-xs font-extrabold" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"),
                                   children: [
                                     r.jsx(Es, {
                                       size: 11
@@ -131907,7 +131907,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
         "Test Name",
         "Test Code",
         "Department",
-        "MRP (INR)",
+        "Lab Tariff (INR)",
         "Times Prescribed"
       ], (H || []).forEach((te) => {
         (te.unmappedTests || []).forEach((ie) => {
@@ -132084,7 +132084,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
             },
             {
               key: "price",
-              label: "MRP (\u20B9)",
+              label: "Lab Tariff (\u20B9)",
               align: "right",
               render: ($) => `\u20B9${Number($ || 0).toLocaleString()}`
             },

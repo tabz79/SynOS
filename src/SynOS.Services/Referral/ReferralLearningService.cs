@@ -40,7 +40,37 @@ namespace SynOS.Services.Referral
                 activeRules.Select(r => (r.ReferralPartnerId, r.TestId))
             );
 
-            // 2. Fetch all visits with referrals and their orders
+            // 2. Pre-fetch active test catalog pricings (Lab Tariff)
+            var now = DateTime.UtcNow;
+            var allTestPricings = await _context.TestPricings
+                .AsNoTracking()
+                .OrderByDescending(tp => tp.EffectiveFrom)
+                .ThenByDescending(tp => tp.CreatedAt)
+                .ToListAsync();
+
+            var activePriceMap = allTestPricings
+                .GroupBy(tp => tp.TestId)
+                .ToDictionary(
+                    g => g.Key, 
+                    g => g.Where(p => p.EffectiveFrom <= now && (p.EffectiveTo == null || p.EffectiveTo >= now)).Select(p => p.BasePrice).FirstOrDefault() > 0
+                        ? g.Where(p => p.EffectiveFrom <= now && (p.EffectiveTo == null || p.EffectiveTo >= now)).Select(p => p.BasePrice).FirstOrDefault()
+                        : g.Select(p => p.BasePrice).FirstOrDefault()
+                );
+
+            // Pre-fetch parent profile prices for child tests
+            var profileParentPricings = await (
+                from pm in _context.ProfileMaps.AsNoTracking()
+                join pt in _context.Tests.AsNoTracking() on pm.ParentTestId equals pt.TestId
+                from tp in pt.TestPricings.OrderByDescending(p => p.EffectiveFrom).Take(1).DefaultIfEmpty()
+                where tp != null && tp.BasePrice > 0
+                select new { pm.ChildTestId, tp.BasePrice }
+            ).ToListAsync();
+
+            var parentPriceMap = profileParentPricings
+                .GroupBy(x => x.ChildTestId)
+                .ToDictionary(g => g.Key, g => g.First().BasePrice);
+
+            // 3. Fetch all visits with referrals and their orders
             var referredVisits = await _context.Visits
                 .AsNoTracking()
                 .Include(v => v.ReferralPartner)
@@ -48,6 +78,9 @@ namespace SynOS.Services.Referral
                 .Include(v => v.Orders)
                     .ThenInclude(o => o.Test)
                         .ThenInclude(t => t.DepartmentMaster)
+                .Include(v => v.Orders)
+                    .ThenInclude(o => o.Test)
+                        .ThenInclude(t => t.TestPricings)
                 .Where(v => v.IsReferred && (v.ReferralPartnerId != null || v.SecondaryReferralPartnerId != null))
                 .OrderByDescending(v => v.CreatedAt)
                 .ToListAsync();
@@ -96,13 +129,27 @@ namespace SynOS.Services.Referral
                     var existingTest = docGroup.UnmappedTests.FirstOrDefault(t => t.TestId == order.TestId);
                     if (existingTest == null)
                     {
+                        decimal labTariff = 0;
+                        if (activePriceMap.TryGetValue(order.TestId, out var catalogPrice) && catalogPrice > 0)
+                        {
+                            labTariff = catalogPrice;
+                        }
+                        else if (order.Price > 0)
+                        {
+                            labTariff = order.Price;
+                        }
+                        else if (parentPriceMap.TryGetValue(order.TestId, out var pPrice) && pPrice > 0)
+                        {
+                            labTariff = pPrice;
+                        }
+
                         docGroup.UnmappedTests.Add(new PendingLearningTestDto
                         {
                             TestId = order.TestId,
                             TestCode = order.Test.TestCode,
                             TestName = order.Test.TestName,
                             DepartmentName = order.Test.DepartmentMaster?.Name ?? "General Diagnostics",
-                            Price = order.Price > 0 ? order.Price : 0,
+                            Price = labTariff,
                             PrescribedCount = 1,
                             FirstPrescribedAt = visit.CreatedAt,
                             LastPrescribedAt = visit.CreatedAt,
@@ -112,10 +159,43 @@ namespace SynOS.Services.Referral
                     else
                     {
                         existingTest.PrescribedCount++;
+                        if (existingTest.Price <= 0 && order.Price > 0)
+                        {
+                            existingTest.Price = order.Price;
+                        }
                         if (visit.CreatedAt < existingTest.FirstPrescribedAt)
                             existingTest.FirstPrescribedAt = visit.CreatedAt;
                         if (visit.CreatedAt > existingTest.LastPrescribedAt)
                             existingTest.LastPrescribedAt = visit.CreatedAt;
+                    }
+                }
+            }
+
+            // Fallback for any remaining zero-price tests across entire Orders history
+            var zeroPriceTestIds = doctorGroups.Values
+                .SelectMany(g => g.UnmappedTests)
+                .Where(t => t.Price <= 0)
+                .Select(t => t.TestId)
+                .Distinct()
+                .ToList();
+
+            if (zeroPriceTestIds.Any())
+            {
+                var historicalPrices = await _context.Orders
+                    .AsNoTracking()
+                    .Where(o => zeroPriceTestIds.Contains(o.TestId) && o.Price > 0)
+                    .GroupBy(o => o.TestId)
+                    .Select(g => new { TestId = g.Key, Price = g.OrderByDescending(x => x.CreatedAt).Select(x => x.Price).FirstOrDefault() })
+                    .ToDictionaryAsync(x => x.TestId, x => x.Price);
+
+                foreach (var g in doctorGroups.Values)
+                {
+                    foreach (var t in g.UnmappedTests.Where(t => t.Price <= 0))
+                    {
+                        if (historicalPrices.TryGetValue(t.TestId, out var histPrice) && histPrice > 0)
+                        {
+                            t.Price = histPrice;
+                        }
                     }
                 }
             }
@@ -235,22 +315,58 @@ namespace SynOS.Services.Referral
                 .OrderBy(r => r.Test != null ? r.Test.TestName : "")
                 .ToListAsync();
 
-            return rules.Select(r => new DoctorLearnedRuleReadDto
+            var zeroTestIds = rules
+                .Where(r => r.Test?.TestPricings == null || !r.Test.TestPricings.Any(p => p.BasePrice > 0))
+                .Select(r => r.TestId)
+                .Distinct()
+                .ToList();
+
+            var fallbackPrices = new Dictionary<Guid, decimal>();
+            if (zeroTestIds.Any())
             {
-                RuleId = r.RuleId,
-                ReferralPartnerId = r.ReferralPartnerId,
-                DoctorName = r.ReferralPartner?.Name ?? "",
-                ClinicName = r.ReferralPartner?.ClinicName ?? "",
-                DefaultCommissionPercentage = r.ReferralPartner?.DefaultCommissionPercentage ?? 0,
-                TestId = r.TestId,
-                TestCode = r.Test?.TestCode ?? "",
-                TestName = r.Test?.TestName ?? "Diagnostic Test",
-                DepartmentName = r.Test?.DepartmentMaster?.Name ?? "General Diagnostics",
-                TestPrice = r.Test?.TestPricings.OrderByDescending(p => p.EffectiveFrom).FirstOrDefault()?.BasePrice ?? 0,
-                CommissionType = r.CommissionType,
-                CommissionValue = r.CommissionValue,
-                EffectiveFrom = r.EffectiveFrom,
-                IsActive = r.IsActive
+                fallbackPrices = await _context.Orders
+                    .AsNoTracking()
+                    .Where(o => zeroTestIds.Contains(o.TestId) && o.Price > 0)
+                    .GroupBy(o => o.TestId)
+                    .Select(g => new { TestId = g.Key, Price = g.OrderByDescending(x => x.CreatedAt).Select(x => x.Price).FirstOrDefault() })
+                    .ToDictionaryAsync(x => x.TestId, x => x.Price);
+            }
+
+            var now = DateTime.UtcNow;
+            return rules.Select(r => {
+                var activePrice = r.Test?.TestPricings?
+                    .Where(p => p.EffectiveFrom <= now && (p.EffectiveTo == null || p.EffectiveTo >= now))
+                    .OrderByDescending(p => p.EffectiveFrom)
+                    .Select(p => p.BasePrice)
+                    .FirstOrDefault() ?? 0;
+
+                if (activePrice <= 0 && r.Test?.TestPricings != null && r.Test.TestPricings.Any())
+                {
+                    activePrice = r.Test.TestPricings.OrderByDescending(p => p.CreatedAt).Select(p => p.BasePrice).FirstOrDefault();
+                }
+
+                if (activePrice <= 0 && fallbackPrices.TryGetValue(r.TestId, out var fbPrice))
+                {
+                    activePrice = fbPrice;
+                }
+
+                return new DoctorLearnedRuleReadDto
+                {
+                    RuleId = r.RuleId,
+                    ReferralPartnerId = r.ReferralPartnerId,
+                    DoctorName = r.ReferralPartner?.Name ?? "",
+                    ClinicName = r.ReferralPartner?.ClinicName ?? "",
+                    DefaultCommissionPercentage = r.ReferralPartner?.DefaultCommissionPercentage ?? 0,
+                    TestId = r.TestId,
+                    TestCode = r.Test?.TestCode ?? "",
+                    TestName = r.Test?.TestName ?? "Diagnostic Test",
+                    DepartmentName = r.Test?.DepartmentMaster?.Name ?? "General Diagnostics",
+                    TestPrice = activePrice,
+                    CommissionType = r.CommissionType,
+                    CommissionValue = r.CommissionValue,
+                    EffectiveFrom = r.EffectiveFrom,
+                    IsActive = r.IsActive
+                };
             }).ToList();
         }
 
@@ -277,22 +393,58 @@ namespace SynOS.Services.Referral
                                .Take(200)
                                .ToListAsync();
 
-            return rules.Select(r => new DoctorLearnedRuleReadDto
+            var zeroTestIds = rules
+                .Where(r => r.Test?.TestPricings == null || !r.Test.TestPricings.Any(p => p.BasePrice > 0))
+                .Select(r => r.TestId)
+                .Distinct()
+                .ToList();
+
+            var fallbackPrices = new Dictionary<Guid, decimal>();
+            if (zeroTestIds.Any())
             {
-                RuleId = r.RuleId,
-                ReferralPartnerId = r.ReferralPartnerId,
-                DoctorName = r.ReferralPartner?.Name ?? "",
-                ClinicName = r.ReferralPartner?.ClinicName ?? "",
-                DefaultCommissionPercentage = r.ReferralPartner?.DefaultCommissionPercentage ?? 0,
-                TestId = r.TestId,
-                TestCode = r.Test?.TestCode ?? "",
-                TestName = r.Test?.TestName ?? "Diagnostic Test",
-                DepartmentName = r.Test?.DepartmentMaster?.Name ?? "General Diagnostics",
-                TestPrice = r.Test?.TestPricings.OrderByDescending(p => p.EffectiveFrom).FirstOrDefault()?.BasePrice ?? 0,
-                CommissionType = r.CommissionType,
-                CommissionValue = r.CommissionValue,
-                EffectiveFrom = r.EffectiveFrom,
-                IsActive = r.IsActive
+                fallbackPrices = await _context.Orders
+                    .AsNoTracking()
+                    .Where(o => zeroTestIds.Contains(o.TestId) && o.Price > 0)
+                    .GroupBy(o => o.TestId)
+                    .Select(g => new { TestId = g.Key, Price = g.OrderByDescending(x => x.CreatedAt).Select(x => x.Price).FirstOrDefault() })
+                    .ToDictionaryAsync(x => x.TestId, x => x.Price);
+            }
+
+            var now = DateTime.UtcNow;
+            return rules.Select(r => {
+                var activePrice = r.Test?.TestPricings?
+                    .Where(p => p.EffectiveFrom <= now && (p.EffectiveTo == null || p.EffectiveTo >= now))
+                    .OrderByDescending(p => p.EffectiveFrom)
+                    .Select(p => p.BasePrice)
+                    .FirstOrDefault() ?? 0;
+
+                if (activePrice <= 0 && r.Test?.TestPricings != null && r.Test.TestPricings.Any())
+                {
+                    activePrice = r.Test.TestPricings.OrderByDescending(p => p.CreatedAt).Select(p => p.BasePrice).FirstOrDefault();
+                }
+
+                if (activePrice <= 0 && fallbackPrices.TryGetValue(r.TestId, out var fbPrice))
+                {
+                    activePrice = fbPrice;
+                }
+
+                return new DoctorLearnedRuleReadDto
+                {
+                    RuleId = r.RuleId,
+                    ReferralPartnerId = r.ReferralPartnerId,
+                    DoctorName = r.ReferralPartner?.Name ?? "",
+                    ClinicName = r.ReferralPartner?.ClinicName ?? "",
+                    DefaultCommissionPercentage = r.ReferralPartner?.DefaultCommissionPercentage ?? 0,
+                    TestId = r.TestId,
+                    TestCode = r.Test?.TestCode ?? "",
+                    TestName = r.Test?.TestName ?? "Diagnostic Test",
+                    DepartmentName = r.Test?.DepartmentMaster?.Name ?? "General Diagnostics",
+                    TestPrice = activePrice,
+                    CommissionType = r.CommissionType,
+                    CommissionValue = r.CommissionValue,
+                    EffectiveFrom = r.EffectiveFrom,
+                    IsActive = r.IsActive
+                };
             }).ToList();
         }
 
