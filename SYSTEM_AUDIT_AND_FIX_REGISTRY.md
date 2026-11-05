@@ -437,6 +437,47 @@
 4. **Architectural Guardrails in `AGENTS.md` and `.agents/AGENTS.md`:**
    Enshrined Rule 4/5 as a mandatory invariant contract forbidding future agents from stripping B2B/credit visits from `WalkInsToday`.
 
+---
+
+## 16. Accidental Hijacking of Prepaid Visits by `OVERPAID` / `Refund Due` Badge — [RESOLVED & VERIFIED]
+### Severity: High / Front-Desk UI Pollution & Financial State Distortion
+### Impacted Files & Commit
+* **Polluting Commit:** `5fd7ea68` (*"feat(reception): implement extended split tab B2B terminal with smart FIFO partial allocation and secondary concession write-off"*)
+* **Impacted File:** [`ReceptionScreen.jsx:328-386`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/ReceptionScreen.jsx#L328-L386)
+* **Backend Projection:** [`OperationsEngine.cs:292-296, 421-425`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/Operations/OperationsEngine.cs#L292-L296)
+
+### Incident Evidence (Live Audit of Visit `MAI-001`)
+* **What the User Expected:**
+  ```
+  ₹4,500  [PREPAID]
+  Dr Test Partner 3
+  ```
+* **What Rendered in the UI Before Fix:**
+  ```
+  ₹4,500  [OVERPAID]
+  Refund Due: ₹1,500 (Paid: ₹6,000)
+  Dr Test Partner 3
+  ```
+* **The Problem:** The patient paid ₹0 at the counter because it is a Corporate B2B referral billed directly to the doctor's monthly institutional account. Yet the reception queue falsely declared the patient had "overpaid" and was due a ₹1,500 cash refund from the drawer!
+
+### Forensic Root Cause Analysis
+1. **Un-Scoped `isOverpaid` Check:**
+   `isOverpaid` was evaluated without checking `!isPrepaid` and placed before `isPrepaid` in the evaluation chain, hijacking all prepaid visits with contracted partner discounts.
+2. **Backend Numbers Mismatch on Prepaid B2B:**
+   `TotalAmount` was projected as contracted net (₹4,500), but `TotalPaid` was summed from the gross invoice payment entry (₹6,000), triggering false overpayment arithmetic.
+
+### Implemented Fix
+1. **Frontend Scoping (`ReceptionScreen.jsx`):**
+   * Scoped `isOverpaid` strictly to non-prepaid, non-draft visits:
+     `const isOverpaid = !isDraft && !isPrepaid && totalPaid > totalBilled && totalBilled > 0;`
+   * Ensured `isPrepaid` is evaluated first in badge prioritization.
+   * Suppressed `Refund Due` subtext completely when `isPrepaid` is true, displaying the clean partner name (`row.referrerName`).
+2. **Backend Projection Alignment (`OperationsEngine.cs`):**
+   * Projected `TotalPaid = TotalAmount` and `RemainingDue = 0` for `visit.PaymentCollectionModel == "PartnerCollects"`.
+   * Restored the clean clinical display:
+     `₹4,500 [PREPAID]` with subtext `Dr Test Partner 3`.
+
+
 
 
 

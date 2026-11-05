@@ -331,16 +331,17 @@ export function ReceptionScreen() {
             render: (row) => {
                 const totalBilled = Number(row.totalAmount || 0);
                 const totalPaid = Number(row.totalPaid || 0);
-                const isOverpaid = totalPaid > totalBilled && totalBilled > 0;
-                const remainingDue = row.remainingDue !== undefined ? Number(row.remainingDue) : Math.max(0, totalBilled - totalPaid);
                 
                 const isDraft = (row.token && row.token.toUpperCase().startsWith("D-")) || 
                                 (row.paymentMethod || "").toLowerCase() === "draft" || 
                                 (row.operationalStatus || "").toLowerCase() === "draft";
                 const isPrepaid = !isDraft && (row.paymentMethod === "Prepaid" || (row.paymentDisplay && row.paymentDisplay.startsWith("Prepaid")));
-                const isPartial = !isDraft && !isOverpaid && (row.paymentMethod === "Partial Due" || (row.paymentDisplay && row.paymentDisplay.includes("Partial")) || (totalPaid > 0 && remainingDue > 0));
-                const isPaid = !isDraft && !isPrepaid && !isPartial && (row.paymentMethod === "Paid" || row.paymentMethod === "Cash" || row.paymentMethod === "UPI" || row.paymentMethod === "Card" || (remainingDue === 0 && totalBilled > 0));
-                const isFullDue = !isDraft && !isPrepaid && !isPaid && !isPartial && (totalPaid === 0 && (remainingDue > 0 || (row.paymentMethod || '').toLowerCase().includes('due') || (row.paymentMethod || '').toLowerCase().includes('credit')));
+                // Enterprise scoping: isOverpaid applies strictly to retail direct desk collections exceeding billed total. NEVER hijack Corporate B2B Prepaid visits.
+                const isOverpaid = !isDraft && !isPrepaid && totalPaid > totalBilled && totalBilled > 0;
+                const remainingDue = row.remainingDue !== undefined ? Number(row.remainingDue) : Math.max(0, totalBilled - totalPaid);
+                const isPartial = !isDraft && !isPrepaid && !isOverpaid && (row.paymentMethod === "Partial Due" || (row.paymentDisplay && row.paymentDisplay.includes("Partial")) || (totalPaid > 0 && remainingDue > 0));
+                const isPaid = !isDraft && !isPrepaid && !isPartial && !isOverpaid && (row.paymentMethod === "Paid" || row.paymentMethod === "Cash" || row.paymentMethod === "UPI" || row.paymentMethod === "Card" || (remainingDue === 0 && totalBilled > 0));
+                const isFullDue = !isDraft && !isPrepaid && !isPaid && !isPartial && !isOverpaid && (totalPaid === 0 && (remainingDue > 0 || (row.paymentMethod || '').toLowerCase().includes('due') || (row.paymentMethod || '').toLowerCase().includes('credit')));
 
                 const badgeBase = "text-[10px] px-1.5 py-0.5 rounded font-mono leading-none border uppercase tracking-wide shrink-0 font-bold";
                 let badgeColor = "bg-zinc-500/10 dark:text-zinc-400 text-zinc-600 border-zinc-500/20";
@@ -349,12 +350,12 @@ export function ReceptionScreen() {
                 if (isDraft) {
                     badgeColor = "bg-amber-500/10 dark:text-amber-400 text-amber-600 border-amber-500/20";
                     badgeText = "DRAFT";
-                } else if (isOverpaid) {
-                    badgeColor = "bg-rose-500/15 dark:text-rose-300 text-rose-700 border-rose-500/30";
-                    badgeText = "OVERPAID";
                 } else if (isPrepaid) {
                     badgeColor = "bg-red-500/10 dark:text-red-400 text-red-600 border-red-500/20";
                     badgeText = "PREPAID";
+                } else if (isOverpaid) {
+                    badgeColor = "bg-rose-500/15 dark:text-rose-300 text-rose-700 border-rose-500/30";
+                    badgeText = "OVERPAID";
                 } else if (isPartial) {
                     badgeColor = "bg-amber-500/10 dark:text-amber-400 text-amber-600 border-amber-500/20";
                     badgeText = "PARTIAL DUE";
@@ -381,7 +382,7 @@ export function ReceptionScreen() {
                                 {badgeText}
                             </span>
                         </div>
-                        {isOverpaid ? (
+                        {!isPrepaid && isOverpaid ? (
                             <span className="type-meta text-rose-600 dark:text-rose-400 text-[10px] font-mono font-bold">
                                 Refund Due: ₹{(totalPaid - totalBilled).toLocaleString()} (Paid: ₹{totalPaid.toLocaleString()})
                             </span>

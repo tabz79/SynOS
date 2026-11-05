@@ -292,8 +292,12 @@ namespace SynOS.Services.Operations
                     TotalAmount = (visit.PaymentCollectionModel == "PartnerCollects")
                         ? Math.Max(0m, ((invoice?.GrossAmount > 0 ? invoice.GrossAmount : invoice?.Total) ?? 0m) - ((visit.B2BDiscountAmount.HasValue && visit.B2BDiscountAmount.Value > 0) ? visit.B2BDiscountAmount.Value : (invoice?.DiscountAmount ?? 0m)))
                         : ((invoice?.Total > 0 ? invoice.Total : (visit.Orders?.Where(o => o.ParentOrderId == null && o.Status != OrderStatus.Cancelled).Sum(o => o.Price) ?? 0m))),
-                    TotalPaid = invoice?.Payments.Sum(p => p.Amount) ?? 0m,
-                    RemainingDue = Math.Max(0m, (invoice?.Total ?? 0m) - (invoice?.Payments.Sum(p => p.Amount) ?? 0m)),
+                    TotalPaid = (visit.PaymentCollectionModel == "PartnerCollects")
+                        ? Math.Max(0m, ((invoice?.GrossAmount > 0 ? invoice.GrossAmount : invoice?.Total) ?? 0m) - ((visit.B2BDiscountAmount.HasValue && visit.B2BDiscountAmount.Value > 0) ? visit.B2BDiscountAmount.Value : (invoice?.DiscountAmount ?? 0m)))
+                        : (invoice?.Payments.Sum(p => p.Amount) ?? 0m),
+                    RemainingDue = (visit.PaymentCollectionModel == "PartnerCollects")
+                        ? 0m
+                        : Math.Max(0m, (invoice?.Total ?? 0m) - (invoice?.Payments.Sum(p => p.Amount) ?? 0m)),
                     PaymentMethod = DerivePaymentMethod(visit, invoice),
                     ReferrerName = visit.ReferralPartner?.Name ?? "Self",
 
@@ -421,8 +425,12 @@ namespace SynOS.Services.Operations
                 TotalAmount = (visit.PaymentCollectionModel == "PartnerCollects")
                     ? Math.Max(0m, ((invoice?.GrossAmount > 0 ? invoice.GrossAmount : invoice?.Total) ?? 0m) - ((visit.B2BDiscountAmount.HasValue && visit.B2BDiscountAmount.Value > 0) ? visit.B2BDiscountAmount.Value : (invoice?.DiscountAmount ?? 0m)))
                     : ((invoice?.Total > 0 ? invoice.Total : (visit.Orders?.Where(o => o.ParentOrderId == null && o.Status != OrderStatus.Cancelled).Sum(o => o.Price) ?? 0m))),
-                TotalPaid = invoice?.Payments.Sum(p => p.Amount) ?? 0m,
-                RemainingDue = Math.Max(0m, (invoice?.Total ?? 0m) - (invoice?.Payments.Sum(p => p.Amount) ?? 0m)),
+                TotalPaid = (visit.PaymentCollectionModel == "PartnerCollects")
+                    ? Math.Max(0m, ((invoice?.GrossAmount > 0 ? invoice.GrossAmount : invoice?.Total) ?? 0m) - ((visit.B2BDiscountAmount.HasValue && visit.B2BDiscountAmount.Value > 0) ? visit.B2BDiscountAmount.Value : (invoice?.DiscountAmount ?? 0m)))
+                    : (invoice?.Payments.Sum(p => p.Amount) ?? 0m),
+                RemainingDue = (visit.PaymentCollectionModel == "PartnerCollects")
+                    ? 0m
+                    : Math.Max(0m, (invoice?.Total ?? 0m) - (invoice?.Payments.Sum(p => p.Amount) ?? 0m)),
                 PaymentMethod = DerivePaymentMethod(visit, invoice),
                 ReferrerName = visit.ReferralPartner?.Name ?? "Self",
 
