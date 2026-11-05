@@ -150,8 +150,8 @@ export function ReceptionOptionsPanel({
         },
         {
             id: 'refunds-terminal',
-            title: 'Refunds & Claims Terminal',
-            desc: 'Disburse partial refunds, settle "Refund Later" queue & print vouchers',
+            title: 'Change Due & Patient Refunds',
+            desc: 'Settle drawer change due, counter cash balances & patient refund claims',
             icon: RotateCcw,
             iconBg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20',
             onClick: () => setActiveView('refunds')

@@ -29,6 +29,11 @@ namespace SynOS.Models.DTOs
         public string? ReceiptNo { get; set; }
 
         public Guid ReceivedByUserId { get; set; }
+
+        /// <summary>
+        /// When true (e.g. tender cash change withheld at desk due to drawer shortage), allows full physical cash amount to be recorded.
+        /// </summary>
+        public bool AllowOverpayment { get; set; } = false;
     }
 }
 

@@ -490,7 +490,7 @@ export const RevenueTerminal = () => {
     { id: 'receivables', label: 'Pending Receivables', icon: Clock },
     { id: 'corrections', label: 'Visit Corrections', icon: ShieldCheck },
     { id: 'cancellations', label: 'Cancellations & Refunds', icon: Ban },
-    { id: 'refunds', label: 'Refund Claims Terminal', icon: RotateCcw },
+    { id: 'refunds', label: 'Change Due & Patient Refunds', icon: RotateCcw },
     { id: 'history', label: 'Collection History', icon: History },
     { id: 'drawers', label: 'Cash Drawer Ledgers', icon: Wallet }
   ];
@@ -521,8 +521,8 @@ export const RevenueTerminal = () => {
       subtitle: "Track voided investigations, refunded receipts, and cancelled invoices."
     },
     refunds: {
-      title: "Refund Claims Terminal & Liabilities",
-      subtitle: "Track, disburse, and settle outstanding patient refund claims with audit slip printing."
+      title: "Change Due & Patient Refunds Terminal",
+      subtitle: "Track, disburse, and settle counter change due & outstanding patient refund claims with audit slip printing."
     },
     history: {
       title: "Collection History",
@@ -3885,10 +3885,10 @@ export const CancellationsRefundsScreen = () => {
                 <button
                     onClick={() => navigate('/finance/revenue/refunds')}
                     className="px-3 py-1.5 rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-xs font-bold text-amber-700 dark:text-amber-400 transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
-                    title="Open Refund Claims Terminal"
+                    title="Open Change Due & Patient Refunds Terminal"
                 >
                     <RotateCcw className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                    <span>Refund Claims Terminal {pendingRefundCount > 0 ? `(${pendingRefundCount} Due)` : ''}</span>
+                    <span>Change Due & Refunds {pendingRefundCount > 0 ? `(${pendingRefundCount} Due)` : ''}</span>
                 </button>
                 <button
                     onClick={handleDownloadSummary}
@@ -4355,13 +4355,13 @@ export const RefundClaimsTerminalScreen = () => {
             <div className="flex items-center justify-between">
                 <div>
                     <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        Refund Claims Terminal & Patient Liabilities
+                        Change Due & Patient Refunds Terminal
                         <span className="text-xs font-mono font-bold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full">
                             #POS-REFUNDS
                         </span>
                     </h2>
                     <p className="text-xs text-slate-500 dark:text-zinc-400">
-                        Settle pending "Refund Later" counter claims, track outbound patient cash/digital disbursements, and verify settlement slips.
+                        Settle counter drawer change due, process visit cancellation claims, and print settlement slips.
                     </p>
                 </div>
                 <div className="flex items-center gap-2">

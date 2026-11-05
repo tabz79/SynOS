@@ -767,17 +767,24 @@ export const ReceptionApi = {
      * @param {string} mode - 'Cash', 'Card', 'UPI'
      * @returns {Promise<void>}
      */
-    collectPayment: async (visitId, amount, mode = 'Cash') => {
+    collectPayment: async (visitIdOrPayload, amount, mode = 'Cash') => {
         // PER RECEPTION CONTROLLER: POST /api/v1/reception/complete-payment
-        // DTO: ReceptionCompletePaymentRequest { VisitId, Amount, Method }
+        // DTO: ReceptionCompletePaymentRequest { VisitId, Amount, Method, Notes, TenderedAmount, ChangeDue, SplitPayments }
+        let bodyPayload;
+        if (typeof visitIdOrPayload === 'object' && visitIdOrPayload !== null) {
+            bodyPayload = visitIdOrPayload;
+        } else {
+            bodyPayload = {
+                VisitId: visitIdOrPayload,
+                Amount: amount,
+                Method: mode
+            };
+        }
+
         const response = await fetch(ReceptionApi.withBranchId('/api/v1/reception/complete-payment'), {
             method: 'POST',
             headers: ReceptionApi.getHeaders(),
-            body: JSON.stringify({
-                VisitId: visitId,
-                Amount: amount,
-                Method: mode
-            })
+            body: JSON.stringify(bodyPayload)
         });
         if (!response.ok) {
             let errorMessage = 'Failed to collect payment';

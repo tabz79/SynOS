@@ -68,8 +68,11 @@ export function ReceptionRefundTerminal({
             const pendingDue = Number(c.balancePendingRefund || 0);
             const isSettled = c.refundStatus === 'Settled' || (pendingDue === 0 && Number(c.refundedAmount || 0) > 0);
             const isPending = pendingDue > 0 || c.refundStatus === 'Pending' || c.refundStatus === 'PartiallySettled';
+            const isChangeDue = c.claimType === 'CHANGE_DUE';
 
             if (filter === 'Pending' && !isPending) return false;
+            if (filter === 'ChangeDue' && !isChangeDue) return false;
+            if (filter === 'Cancellations' && isChangeDue) return false;
             if (filter === 'Settled' && !isSettled) return false;
 
             if (searchQuery.trim()) {
@@ -87,6 +90,8 @@ export function ReceptionRefundTerminal({
 
     // KPI Summary Calculations
     const totalPendingCount = cancellations.filter(c => Number(c.balancePendingRefund || 0) > 0 || c.refundStatus === 'Pending' || c.refundStatus === 'PartiallySettled').length;
+    const changeDueCount = cancellations.filter(c => c.claimType === 'CHANGE_DUE' && (Number(c.balancePendingRefund || 0) > 0 || c.refundStatus === 'Pending')).length;
+    const cancellationsCount = cancellations.filter(c => c.claimType !== 'CHANGE_DUE' && (Number(c.balancePendingRefund || 0) > 0 || c.refundStatus === 'Pending')).length;
     const totalPendingAmount = cancellations.reduce((sum, c) => sum + Number(c.balancePendingRefund || 0), 0);
     const totalSettledTodayAmount = cancellations.reduce((sum, c) => sum + Number(c.refundedAmount || 0), 0);
 
@@ -95,7 +100,7 @@ export function ReceptionRefundTerminal({
         const pending = Number(claim.balancePendingRefund || 0);
         setDisburseAmount(pending > 0 ? String(pending) : String(claim.totalAmountPaid || claim.refundedAmount || '0'));
         setPaymentMethod('Cash');
-        setDisburseNotes(`Refund balance collected by patient at desk`);
+        setDisburseNotes(claim.claimType === 'CHANGE_DUE' ? `Counter tender change returned to patient at desk` : `Refund balance collected by patient at desk`);
     };
 
     const handleConfirmDisburse = async () => {
@@ -169,13 +174,13 @@ export function ReceptionRefundTerminal({
                     </div>
                     <div>
                         <div className="flex items-center gap-2">
-                            <h2 className="font-bold text-base text-slate-900 dark:text-white">Refunds & Claims Terminal</h2>
+                            <h2 className="font-bold text-base text-slate-900 dark:text-white">Change Due & Patient Refunds</h2>
                             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/20 font-mono">
-                                #REF-CLAIM
+                                #CHG-REFUND
                             </span>
                         </div>
                         <p className="text-xs text-slate-500 dark:text-zinc-400">
-                            Disburse patient refunds, settle 'Refund Later' claims, and balance cash drawers
+                            Disburse drawer change due, settle 'Change Due Later' queue, and process visit cancellations
                         </p>
                     </div>
                 </div>
@@ -259,7 +264,9 @@ export function ReceptionRefundTerminal({
                 <div className="flex items-center gap-1.5 p-1 rounded-xl bg-slate-200/60 dark:bg-zinc-800/70 border border-slate-300/50 dark:border-zinc-700/60">
                     {[
                         { id: 'Pending', label: `Pending Claims (${totalPendingCount})` },
-                        { id: 'All', label: `All Cancellations (${cancellations.length})` },
+                        { id: 'ChangeDue', label: `Change Due (${changeDueCount})` },
+                        { id: 'Cancellations', label: `Cancellations (${cancellationsCount})` },
+                        { id: 'All', label: `All Claims (${cancellations.length})` },
                         { id: 'Settled', label: 'Settled' }
                     ].map(tab => (
                         <button
@@ -296,15 +303,15 @@ export function ReceptionRefundTerminal({
                     {loading ? (
                         <div className="flex flex-col items-center justify-center p-12 text-slate-400 gap-2">
                             <Loader2 className="w-6 h-6 animate-spin text-amber-500" />
-                            <span className="text-xs font-medium">Scanning cancellation claims ledger...</span>
+                            <span className="text-xs font-medium">Scanning claims & change ledger...</span>
                         </div>
                     ) : filteredClaims.length === 0 ? (
                         <div className="flex flex-col items-center justify-center p-12 text-center">
                             <CheckCircle2 className="w-10 h-10 text-emerald-500 mb-2 opacity-80" />
-                            <h3 className="font-bold text-sm text-slate-800 dark:text-zinc-200">No Pending Refund Claims Found</h3>
+                            <h3 className="font-bold text-sm text-slate-800 dark:text-zinc-200">No Pending Claims or Change Due</h3>
                             <p className="text-xs text-slate-500 dark:text-zinc-400 max-w-sm mt-1">
                                 {filter === 'Pending' 
-                                    ? "All patient cancellations for this shift are fully settled. There are no outstanding refund liabilities." 
+                                    ? "All patient change dues and cancellations for this shift are fully settled. There are no outstanding liabilities." 
                                     : "No records matching the selected search query."}
                             </p>
                         </div>
@@ -313,10 +320,10 @@ export function ReceptionRefundTerminal({
                             <thead>
                                 <tr className={ui.tableHeader}>
                                     <th className="py-3 px-4 font-bold">TOKEN & PATIENT</th>
-                                    <th className="py-3 px-4 font-bold">CANCELLATION REASON</th>
-                                    <th className="py-3 px-4 font-bold">ORIGINAL BILLED</th>
+                                    <th className="py-3 px-4 font-bold">TYPE & REASON</th>
+                                    <th className="py-3 px-4 font-bold">TENDERED / BILLED</th>
                                     <th className="py-3 px-4 font-bold">DISBURSED</th>
-                                    <th className="py-3 px-4 font-bold">BALANCE PENDING</th>
+                                    <th className="py-3 px-4 font-bold">BALANCE DUE</th>
                                     <th className="py-3 px-4 font-bold text-right">ACTION</th>
                                 </tr>
                             </thead>
@@ -324,6 +331,7 @@ export function ReceptionRefundTerminal({
                                 {filteredClaims.map((claim) => {
                                     const pending = Number(claim.balancePendingRefund || 0);
                                     const hasPending = pending > 0 || claim.refundStatus === 'Pending' || claim.refundStatus === 'PartiallySettled';
+                                    const isChange = claim.claimType === 'CHANGE_DUE';
 
                                     return (
                                         <tr key={claim.cancelId} className={ui.tableRow}>
@@ -343,6 +351,17 @@ export function ReceptionRefundTerminal({
                                                 </div>
                                             </td>
                                             <td className="py-3 px-4">
+                                                <div className="flex items-center gap-1.5 mb-0.5">
+                                                    {isChange ? (
+                                                        <span className="px-1.5 py-0.2 rounded text-[9.5px] font-extrabold uppercase bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30">
+                                                            Counter Change Due
+                                                        </span>
+                                                    ) : (
+                                                        <span className="px-1.5 py-0.2 rounded text-[9.5px] font-extrabold uppercase bg-rose-500/15 text-rose-800 dark:text-rose-300 border border-rose-500/30">
+                                                            Visit Cancellation
+                                                        </span>
+                                                    )}
+                                                </div>
                                                 <span className="text-slate-700 dark:text-zinc-300 font-medium block">
                                                     {claim.reason}
                                                 </span>
@@ -374,7 +393,7 @@ export function ReceptionRefundTerminal({
                                                         onClick={() => handleOpenDisburse(claim)}
                                                         className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-xs active:scale-95 transition-all cursor-pointer inline-flex items-center gap-1"
                                                     >
-                                                        <span>Disburse Refund</span>
+                                                        <span>{isChange ? "Disburse Change" : "Disburse Refund"}</span>
                                                         <ChevronRight className="w-3.5 h-3.5" />
                                                     </button>
                                                 ) : (
@@ -421,7 +440,9 @@ export function ReceptionRefundTerminal({
                                     <Banknote className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-sm">Disburse Patient Refund</h3>
+                                    <h3 className="font-bold text-sm">
+                                        {selectedClaim.claimType === 'CHANGE_DUE' ? 'Disburse Counter Change' : 'Disburse Patient Refund'}
+                                    </h3>
                                     <p className="text-xs text-slate-500">Token: <span className="font-mono font-bold text-slate-800 dark:text-zinc-200">{selectedClaim.visitToken}</span></p>
                                 </div>
                             </div>
@@ -575,7 +596,9 @@ export function ReceptionRefundTerminal({
                         {/* Voucher Receipt Content */}
                         <div className="p-4 rounded-xl bg-slate-50 dark:bg-zinc-950 border border-dashed border-slate-300 dark:border-zinc-700 font-mono text-xs space-y-2">
                             <div className="text-center pb-2 border-b border-dashed border-slate-200 dark:border-zinc-800">
-                                <span className="font-bold text-sm block">PATIENT REFUND RECEIPT</span>
+                                <span className="font-bold text-sm block">
+                                    {settlementReceipt.claimType === 'CHANGE_DUE' ? 'PATIENT CHANGE SETTLEMENT RECEIPT' : 'PATIENT REFUND RECEIPT'}
+                                </span>
                                 <span className="text-[10px] text-slate-500">{new Date(settlementReceipt.disbursedAt).toLocaleString()}</span>
                             </div>
                             <div className="flex justify-between">

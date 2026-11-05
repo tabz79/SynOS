@@ -903,6 +903,25 @@ namespace SynOS.Services
                 };
                 await _context.SaveChangesAsync();
             }
+            else if (request.SplitPayments != null && request.SplitPayments.Any(p => p.Amount > 0))
+            {
+                // Multi-method / Split payment handling (e.g. Cash + UPI)
+                Payment? lastPayment = null;
+                foreach (var sp in request.SplitPayments.Where(p => p.Amount > 0))
+                {
+                    var spDto = new PaymentRequestDto
+                    {
+                        Amount = sp.Amount,
+                        Method = sp.Method,
+                        ReceiptNo = request.ReceiptNo ?? $"RCP-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpper()}",
+                        ReceivedByUserId = userId,
+                        Notes = request.Notes,
+                        AllowOverpayment = request.AllowOverpayment || request.IsChangeRetainedAsDue
+                    };
+                    lastPayment = await _invoiceService.RecordPaymentAsync(invoiceId, spDto);
+                }
+                payment = lastPayment ?? throw new InvalidOperationException("No valid split payments provided.");
+            }
             else
             {
                 var paymentDto = new PaymentRequestDto
@@ -910,7 +929,9 @@ namespace SynOS.Services
                     Amount = request.Amount,
                     Method = request.Method,
                     ReceiptNo = request.ReceiptNo,
-                    ReceivedByUserId = userId
+                    ReceivedByUserId = userId,
+                    Notes = request.Notes,
+                    AllowOverpayment = request.AllowOverpayment || request.IsChangeRetainedAsDue || (request.ChangeDue.HasValue && request.ChangeDue.Value > 0)
                 };
 
                 payment = await _invoiceService.RecordPaymentAsync(invoiceId, paymentDto);

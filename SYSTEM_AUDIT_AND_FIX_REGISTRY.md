@@ -814,6 +814,218 @@ isCollapsed ? "px-4 py-2.5 gap-0 h-full" : "p-4 sm:p-5 h-28 sm:h-32 gap-0"
      - **Nested Visit Cards:** Distinct recessed pod (`bg-[#F4F7FA] dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-700/60`).
    * Eliminates the washed-out white bleed and restores the tactile, high-contrast, professional SynOS aesthetic.
 
+---
+
+## 21. Accounts Payable Terminal Single-Column Collapse & History Tab Width Lock — [AUDITED & SPECIFIED]
+### Severity: High / Front-Desk Layout Regression & Terminal Usability Defect
+### Impacted Files & Commits
+* **Original 2-Column Widescreen Implementation:** Commit `4825b2a9` (*"feat(reception): facelift expense drawer, wire branch pool metrics, and add cash in drawer tracking"*)
+* **Regressive Single-Column Collapse:** Commit `f89ad92a` (*"feat(reception): compact single-column layout for Record Expense and dynamic width expansion on History/Metrics"*)
+* **Width Trapping & Embedding in Options Panel:** Commit `cc2a9af4` (*"feat(reception): implement seamless in-drawer view morphing and universal Return to Reception button for HR"*)
+* **Impacted Files:**
+  - [`ReceptionExpenseDrawer.jsx:415-430, 530-545, 915-930`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/components/ReceptionExpenseDrawer.jsx#L415-L430)
+  - [`ReceptionOptionsPanel.jsx:99-118, 225-240`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/components/ReceptionOptionsPanel.jsx#L99-L118)
+* **Visual Evidence:** Screenshot [`media_1793864919655_569d9c0a.png`](file:///Users/tabrez/.gemini/antigravity/brain/13b1c467-601a-446d-9a79-6ae6a930fb8a/.user_uploaded/media_1793864919655_569d9c0a.png)
+
+### Incident Evidence (Screenshot Audit)
+* **Current Observed State:**
+  - `Accounts Payable Terminal #EXP-RECEPTION` is rendered as a narrow, single-column panel.
+  - Step 1 (`Expense Classification & Stream`), Step 2 (`Outflow Particulars`), and Step 3 (`Settlement & Financials`) are stacked vertically on top of each other in a single narrow column (`space-y-4`).
+  - Switching to Tab 2 (`2 Live & 7D History`) or Tab 3 (`3 Visual Metrics`) **fails to expand the drawer**. The drawer stays trapped at `max-w-[880px]`, squishing the audit table and Argon metric charts into an unreadable narrow slice.
+* **Original Designed Behavior:**
+  - The drawer was originally an **85vw expanded window (`max-w-[1780px]`)**, matching the two-column cockpit layout of `IntentPanel`:
+    - **Left Half (7 cols / 12):** Step 1 (`Expense Classification & Stream`) + Step 2 (`Outflow Particulars`).
+    - **Right Half (5 cols / 12):** Step 3 (`Settlement & Financials`).
+  - When switching to Tab 2 (`Live & 7D History`) or Tab 3 (`Visual Metrics`), the full 85vw width provided ample space for high-density transactional ledgers and financial breakdown charts.
+
+### Forensic Root Cause Analysis: Commit-by-Commit Regression Trace
+
+1. **Commit `4825b2a9` (Original Balanced 2-Column Layout):**
+   * The drawer was styled with:
+     ```jsx
+     <div className="w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[86vw] xl:w-[85vw] 2xl:w-[85vw] max-w-[1780px] h-full ...">
+     ```
+   * Tab 1 (`record`) had a balanced 12-column grid:
+     ```jsx
+     <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 xl:gap-6 items-stretch flex-1 min-h-0 overflow-hidden">
+         {/* LEFT COLUMN (7 COLS): OUTFLOW PARTICULARS */}
+         <div className="lg:col-span-7 flex flex-col gap-3 h-full min-h-0 overflow-y-auto pr-1">
+             <Step1_Classification />
+             <Step2_Particulars />
+         </div>
+         {/* RIGHT COLUMN (5 COLS): SETTLEMENT & FINANCIALS */}
+         <div className="lg:col-span-5 flex flex-col gap-3 h-full min-h-0 overflow-y-auto pr-1">
+             <Step3_SettlementAndFinancials />
+         </div>
+     </div>
+     ```
+
+2. **Commit `f89ad92a` (Destructive Single-Column Flattening):**
+   * The developer arbitrarily dismantled the 12-column grid:
+     ```diff
+     - <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 xl:gap-6 items-stretch flex-1 min-h-0 overflow-hidden">
+     -     <div className="lg:col-span-7 flex flex-col gap-3 h-full min-h-0 overflow-y-auto pr-1">
+     + <div className="p-4 sm:p-6 w-full flex-1 min-h-0 overflow-y-auto space-y-4 animate-in fade-in duration-300 pr-1.5 sm:pr-3">
+     ```
+   * Step 3 (`Settlement & Financials`) was moved from its dedicated right half and appended directly beneath Step 2 with the code comment:
+     `{/* STEP 3: SETTLEMENT & FINANCIALS (Brought to Area 4 under Step 2) */}`.
+   * Drawer width was artificially shrunken on Tab 1 to `max-w-[740px]`, attempting to dynamically morph width when switching to Tab 2 (`history`) or Tab 3 (`metrics`).
+
+3. **Commit `cc2a9af4` (Width Trapping Inside `ReceptionOptionsPanel`):**
+   * The expense drawer was embedded inside `ReceptionOptionsPanel` with `embedded={true}`.
+   * In `ReceptionOptionsPanel.jsx:101-102`:
+     ```javascript
+     if (activeView === 'expense') {
+         viewWidthClasses = "w-[96vw] sm:w-[92vw] md:w-[75vw] lg:w-[50vw] xl:w-[44vw] 2xl:w-[40vw] min-w-[580px] max-w-[880px]";
+     }
+     ```
+   * **Root Cause of Non-Expansion:** The outer wrapper `ReceptionOptionsPanel` governs the width of the sliding drawer container. However, `ReceptionOptionsPanel` has **zero state awareness** of `activeTab` inside `ReceptionExpenseDrawer`.
+   * When the user clicks `[2 Live & 7D History]`, `ReceptionExpenseDrawer` internally changes `activeTab = 'history'`, but its parent container remains hard-locked at `max-w-[880px]`. The drawer cannot expand to the wide 85vw canvas!
+
+### Enterprise-Grade Fix Specification (For Implementation Agent)
+
+1. **Restore Canonical 2-Column Split Layout for Tab 1 (`ReceptionExpenseDrawer.jsx`):**
+   * Reinstate the widescreen 12-column cockpit layout:
+     ```jsx
+     <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 xl:gap-6 items-stretch flex-1 min-h-0 overflow-hidden">
+         {/* LEFT HALF (7 COLS): Steps 1 & 2 */}
+         <div className="lg:col-span-7 flex flex-col gap-3 h-full min-h-0 overflow-y-auto pr-1">
+             {/* Step 1: Expense Classification & Stream */}
+             {/* Step 2: Outflow Particulars */}
+         </div>
+
+         {/* RIGHT HALF (5 COLS): Step 3 */}
+         <div className="lg:col-span-5 flex flex-col gap-3 h-full min-h-0 overflow-y-auto pr-1">
+             {/* Step 3: Settlement & Financials (Net Amount, Channel, Settle Now, Drawer Attribution) */}
+         </div>
+     </div>
+     ```
+
+2. **Universal Widescreen Canvas Contract (`ReceptionOptionsPanel.jsx` & `ReceptionExpenseDrawer.jsx`):**
+   * Either:
+     - **Option A (Consistent Wide Workspace):** Set `activeView === 'expense'` to standard widescreen `85vw` (`w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[86vw] xl:w-[85vw] 2xl:w-[85vw] max-w-[1780px]`), identical to `activeView === 'b2b'` and `IntentPanel`. This provides a stable, un-cramped surface for both the 2-column Record view and the 7-day History/Metrics tables without disorienting width reflows.
+     - **Option B (Tab-Aware Dynamic Width Sync):** Pass an `onTabChange` callback from `ReceptionExpenseDrawer` up to `ReceptionOptionsPanel`, dynamically switching `viewWidthClasses` from `w-[85vw]` to `w-[90vw]` when activeTab is `'history'` or `'metrics'`.
+   * **Recommended:** Option A provides rock-solid ERP layout consistency, matching `IntentPanel` and eliminating container constraint bugs permanently.
+
+---
+
+## 22. Reality Summary Multi-Digit Financial Overflow & Badge Boundary Bleed — [AUDITED & SPECIFIED]
+### Severity: High / Financial Display Truncation & Layout Rupture
+### Impacted Files & Component
+* **Component:** [`RealitySummary.jsx:150-195`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/components/layout/RealitySummary.jsx#L150-L195) (`RealityTile` Single-Metric Layout)
+* **Parent Screen:** [`ReceptionScreen.jsx:465-485`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/ReceptionScreen.jsx#L465-L485)
+* **Visual Evidence:** Laptop screenshot [`media_1793866549974_564983b4.png`](file:///Users/tabrez/.gemini/antigravity/brain/13b1c467-601a-446d-9a79-6ae6a930fb8a/.user_uploaded/media_1793866549974_564983b4.png) (6-card single row on laptop screen)
+
+### Incident Evidence (Laptop Math & Geometry)
+* **Viewport Reality on 1366px Laptop:**
+  - Screen Width: ~1366px.
+  - Active Layout: Main work area on left (~75% or flex-1) + `Live Stream` on right (`w-[290px]` to `w-[340px]`).
+  - Available width for Reality Summary row: **~980px to 1020px**.
+  - In a 6-card row (`grid-cols-6`) with 5 column gaps (16px each = 80px):
+    - Each card's outer width is **~150px to 158px**.
+    - With card padding (`p-4` = 32px horizontal padding), **net available content width is only ~118px to 126px**.
+* **What Happens with 5-Digit & 6-Digit Numbers:**
+  - 5-digit number: `₹25,000` (7 characters).
+  - 6-digit number: `₹1,25,000` (9 characters).
+  - In `RealityTile`, the font size for numbers under 10 characters evaluates to `text-4xl` (36px, `font-extrabold`).
+  - A 9-character string at 36px font size requires **~180px to 200px** of horizontal space.
+  - Alongside the number on the **same horizontal flex row**, the card attempts to render:
+    - Margin: `ml-2` (8px).
+    - Scope Badge: `[ DESK ]` or `[ POOL ]` (~44px).
+    - Icon Container: `w-6 h-6 ml-2` (~32px).
+    - Total badge + icon footprint: **~84px**.
+  - Combined required width: **200px + 84px = 284px**.
+  - Available width: **118px**. Deficit: **166px!**
+* **The Observed Failure:**
+  - Because `RealityTile` lacks `overflow-hidden` and places the number and badges on the same horizontal row (`flex justify-between items-start w-full`), the expanding number **physically pushes the `DESK`/`POOL` badge and icon off the right edge of the card**, bleeding directly into the adjacent tile or screen margins!
+  - If a 6-digit number occurs (`₹1,25,000`), the number itself gets clipped or wraps awkwardly into multi-line numbers (`₹1,2` on line 1, `5,000` on line 2), destroying executive readability.
+
+### Forensic Root Cause Analysis
+
+1. **Horizontal Space Contention (Number & Metadata on Same Line):**
+   ```jsx
+   {/* SLOT 1: HEADER + VALUE (Side-by-side in same flex container) */}
+   <div className="flex justify-between items-start w-full">
+       <span className={cn("font-extrabold font-sans text-4xl ...")}>
+           {value}
+       </span>
+       <div className="flex items-center gap-1.5 ml-2">
+           {scopeBadge && <span>{scopeBadge}</span>}
+           {Icon && <Icon className="w-6 h-6" />}
+       </div>
+   </div>
+   ```
+   * The number and the badges/icons are forced to compete for the same 118px horizontal line. As soon as the number exceeds 4 characters (e.g. `₹1,000`), the row overflows.
+
+2. **Inadequate Font Breakpoints for Dense Grids:**
+   ```javascript
+   value && value.toString().length > 9 ? "text-3xl sm:text-4xl leading-snug"
+       : value && value.toString().length > 6 ? "text-4xl leading-snug"
+           : "text-4xl sm:text-5xl leading-tight pb-1"
+   ```
+   * Even a 6-digit number (`₹1,25,000` = 9 chars) is treated with `text-4xl` (36px), which is massive for a card that is only 150px wide.
+
+3. **Absence of Overflow Boundary Containment:**
+   * Neither the card container nor the top header row has `overflow-hidden` or flex min-width constraints (`min-w-0`), allowing absolute visual bleed across card boundaries.
+
+---
+
+### Enterprise-Grade Fix Specification (For Implementation Agent)
+
+1. **Vertical Slot Separation Architecture (3-Tier Layout):**
+   * Decouple the metadata (Badge + Icon) from the financial number. Move the metadata to a dedicated top header row, giving the financial number **100% of the card's width**:
+     ```jsx
+     <div className="flex flex-col h-full justify-between overflow-hidden">
+         {/* TIER 1: TOP METADATA HEADER (Badge + Icon) */}
+         <div className="flex items-center justify-between w-full h-5 shrink-0 mb-1">
+             <div className="flex items-center gap-1 min-w-0">
+                 {scopeBadge && (
+                     <span className="text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border border-zinc-500/20 truncate">
+                         {scopeBadge}
+                     </span>
+                 )}
+                 {isPool && (
+                     <span className="text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 truncate">
+                         Pool
+                     </span>
+                 )}
+             </div>
+             {Icon && <Icon className="w-4 h-4 text-zinc-400 shrink-0" />}
+         </div>
+
+         {/* TIER 2: CENTER NUMERIC VALUE (100% Width to Itself) */}
+         <div className="flex-1 flex items-center min-w-0 w-full overflow-hidden">
+             <span 
+                 title={String(value)}
+                 className={cn(
+                     "font-extrabold font-sans tracking-tight block tabular-nums truncate w-full text-left",
+                     ui.text,
+                     // Responsive Dynamic Font Scaling
+                     strLen > 8 ? "text-xl sm:text-2xl" :
+                     strLen > 6 ? "text-2xl sm:text-3xl" :
+                     strLen > 4 ? "text-3xl sm:text-4xl" : "text-4xl sm:text-5xl"
+                 )}
+             >
+                 {value}
+             </span>
+         </div>
+
+         {/* TIER 3: BOTTOM FOOTER (Label) */}
+         <div className="w-full shrink-0 pt-1 border-t border-black/[0.04] dark:border-white/[0.04]">
+             <span title={displayLabel} className="text-zinc-500 text-xs font-semibold truncate block">
+                 {displayLabel}
+             </span>
+         </div>
+     </div>
+     ```
+
+2. **Benefits of the 3-Tier Architecture:**
+   * **Zero Badge Displacement:** The badges and icons sit in Tier 1. Even if the number in Tier 2 becomes 7 or 8 digits (`₹15,00,000`), it **physically cannot push the badges or icons out of the card**.
+   * **Unconstrained Number Width:** The number has the full 118px width without sharing space with badges.
+   * **Automatic Fluid Scaling:** With `truncate` and dynamic font scaling (`text-xl` for 6+ digits, `text-2xl` for 5 digits), 5-digit and 6-digit sums render crisp, legible, and completely confined within the card borders on any laptop or desktop screen.
+
+
+
 
 
 

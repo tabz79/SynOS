@@ -3,6 +3,7 @@ import { Tag, X, Loader2, IndianRupee, Lock, AlertCircle, Smartphone, CreditCard
 import { ReceptionApi } from '@/api/reception'
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/context/ThemeContext'
+import { PosCashTenderModule } from './PosCashTenderModule'
 
 // Safe extractor for B2B discount state handling case variations (b2b, b2B, B2B)
 export const extractB2BInfo = (snap) => {
@@ -38,7 +39,20 @@ export function BillingSummary({
     setIsPartialPayment,
     customPaymentAmount = '',
     setCustomPaymentAmount,
-    referralPartners = []
+    referralPartners = [],
+    // POS Cash Tender & Split Payment Props
+    tenderedAmount = '',
+    setTenderedAmount,
+    changeReturnedNow = '',
+    setChangeReturnedNow,
+    isChangeRetainedAsDue = false,
+    setIsChangeRetainedAsDue,
+    isSplitPayment = false,
+    setIsSplitPayment,
+    splitCashAmount = '',
+    setSplitCashAmount,
+    splitUpiAmount = '',
+    setSplitUpiAmount
 }) {
     // Local UI State
     const [isProcessing, setIsProcessing] = useState(false);
@@ -2246,10 +2260,13 @@ export function BillingSummary({
                                 <button
                                     key={method}
                                     type="button"
-                                    onClick={() => setPaymentMethod && setPaymentMethod(method)}
+                                    onClick={() => {
+                                        if (setPaymentMethod) setPaymentMethod(method);
+                                        if (setIsSplitPayment) setIsSplitPayment(false);
+                                    }}
                                     className={cn(
                                         "flex flex-col items-center justify-center py-2.5 rounded-xl border text-sm font-bold tracking-normal transition-all active:scale-95 cursor-pointer synos-focus-btn",
-                                        paymentMethod === method
+                                        (!isSplitPayment && paymentMethod === method)
                                             ? ui.method.active
                                             : ui.method.inactive
                                     )}
@@ -2261,6 +2278,27 @@ export function BillingSummary({
                                 </button>
                             ))}
                         </div>
+
+                        {/* POS Cash Tender & Split Calculator (Native Cashier Module) */}
+                        {(paymentMethod === 'Cash' || isSplitPayment) && (
+                            <div className="pt-1.5">
+                                <PosCashTenderModule
+                                    billAmount={displayAmountToCollect}
+                                    tenderedAmount={tenderedAmount}
+                                    onTenderChange={(val) => setTenderedAmount && setTenderedAmount(val)}
+                                    changeReturnedNow={changeReturnedNow}
+                                    onChangeReturnedNowChange={(val) => setChangeReturnedNow && setChangeReturnedNow(val)}
+                                    isChangeRetainedAsDue={isChangeRetainedAsDue}
+                                    onToggleChangeRetained={() => setIsChangeRetainedAsDue && setIsChangeRetainedAsDue(prev => !prev)}
+                                    isSplitPayment={isSplitPayment}
+                                    onToggleSplitPayment={() => setIsSplitPayment && setIsSplitPayment(prev => !prev)}
+                                    splitCashAmount={splitCashAmount}
+                                    onSplitCashChange={(val) => setSplitCashAmount && setSplitCashAmount(val)}
+                                    splitUpiAmount={splitUpiAmount}
+                                    onSplitUpiChange={(val) => setSplitUpiAmount && setSplitUpiAmount(val)}
+                                />
+                            </div>
+                        )}
                     </div>
                 )}
 

@@ -98,6 +98,7 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose, embedded = fals
     const [concessionReason, setConcessionReason] = useState('Director / Owner Direct Waiver');
     const [concessionAuthorizer, setConcessionAuthorizer] = useState('');
     const [paymentMode, setPaymentMode] = useState('Cash'); // 'Cash' | 'UPI' | 'BankTransfer'
+    const [b2bTenderAmount, setB2bTenderAmount] = useState('');
     const [receivedFrom, setReceivedFrom] = useState('');
     const [notes, setNotes] = useState('');
 
@@ -1266,6 +1267,30 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose, embedded = fals
                                                                 );
                                                             })}
                                                         </div>
+
+                                                        {paymentMode === 'Cash' && (
+                                                            <div className={cn("p-3 rounded-xl border space-y-1.5 mt-2", ui.recessedPod)}>
+                                                                <div className="flex items-center justify-between text-[10.5px] font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wide">
+                                                                    <span>Cash Tendered by Representative (₹)</span>
+                                                                    {Number(b2bTenderAmount) > Number(amount) && (
+                                                                        <span className="text-emerald-600 dark:text-emerald-400 font-extrabold font-mono">
+                                                                            Return Change: ₹{(Number(b2bTenderAmount) - Number(amount)).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                <div className="relative">
+                                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">₹</span>
+                                                                    <input
+                                                                        type="number"
+                                                                        min="0"
+                                                                        value={b2bTenderAmount}
+                                                                        onChange={(e) => setB2bTenderAmount(e.target.value)}
+                                                                        placeholder={amount || "0.00"}
+                                                                        className={cn("w-full h-8 pl-7 pr-3 rounded-lg text-xs font-mono font-bold outline-none", ui.input)}
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </>
                                             )}

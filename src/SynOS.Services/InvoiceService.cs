@@ -316,8 +316,16 @@ namespace SynOS.Services
             decimal recordedAmount = paymentDto.Amount;
             if (paymentDto.Amount > remainingDue)
             {
-                _logger.LogWarning("Payment amount {Amount} exceeds remaining due {Remaining}. Truncating to remaining amount.", paymentDto.Amount, remainingDue);
-                recordedAmount = remainingDue;
+                if (paymentDto.AllowOverpayment || (paymentDto.Notes != null && paymentDto.Notes.Contains("Change Due", StringComparison.OrdinalIgnoreCase)))
+                {
+                    _logger.LogInformation("Recording full physical tender payment {Amount} exceeding remaining due {Remaining} for counter change due tracking.", paymentDto.Amount, remainingDue);
+                    recordedAmount = paymentDto.Amount;
+                }
+                else
+                {
+                    _logger.LogWarning("Payment amount {Amount} exceeds remaining due {Remaining}. Truncating to remaining amount.", paymentDto.Amount, remainingDue);
+                    recordedAmount = remainingDue;
+                }
             }
 
             if (recordedAmount <= 0)

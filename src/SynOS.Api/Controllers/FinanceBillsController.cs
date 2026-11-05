@@ -1101,7 +1101,7 @@ namespace SynOS.Api.Controllers
 
             var list = await query.OrderByDescending(c => c.CancelledAt).Take(500).ToListAsync();
 
-            var result = list.Select(c =>
+            var cancellationItems = list.Select(c =>
             {
                 var visit = c.Visit;
                 var invoices = visit?.Invoices ?? new List<Invoice>();
@@ -1114,6 +1114,7 @@ namespace SynOS.Api.Controllers
                 return new
                 {
                     CancelId = c.CancelId,
+                    ClaimType = "CANCELLATION",
                     BillNumber = FormatBillNumber(visit?.Token, visit?.Branch?.Code, c.CancelledAt),
                     VisitId = c.VisitId,
                     CancelledAt = c.CancelledAt,
@@ -1143,17 +1144,97 @@ namespace SynOS.Api.Controllers
                     SettlementReceiptNo = c.SettlementReceiptNo,
                     SettlementNotes = c.SettlementNotes
                 };
-            });
+            }).ToList();
+
+            // 2. Also query active retail direct visits where totalPaid > totalBilled (Change Due / Overpaid visits)
+            var overpaidVisitsQuery = _context.Visits
+                .Include(v => v.Patient)
+                .Include(v => v.Branch)
+                .Include(v => v.ReferralPartner)
+                .Include(v => v.Invoices)
+                    .ThenInclude(i => i.Payments)
+                        .ThenInclude(p => p.ReceivedBy)
+                .Where(v => v.Status != VisitStatus.Cancelled 
+                         && v.Status != VisitStatus.Draft
+                         && (v.Token == null || !v.Token.StartsWith("D-"))
+                         && v.BillingType != BillingType.PrepaidPartner
+                         && v.PaymentCollectionModel != "PartnerCollects")
+                .AsNoTracking();
+
+            if (startUtc.HasValue)
+            {
+                overpaidVisitsQuery = overpaidVisitsQuery.Where(v => v.CreatedAt >= startUtc.Value);
+            }
+            if (endUtc.HasValue)
+            {
+                overpaidVisitsQuery = overpaidVisitsQuery.Where(v => v.CreatedAt <= endUtc.Value);
+            }
+
+            var candidateVisits = await overpaidVisitsQuery.OrderByDescending(v => v.CreatedAt).Take(200).ToListAsync();
+
+            var changeDueItems = candidateVisits
+                .Where(v =>
+                {
+                    var invoices = v.Invoices ?? new List<Invoice>();
+                    var payments = invoices.SelectMany(i => i.Payments).ToList();
+                    var totalPaid = payments.Where(p => p.Amount > 0).Sum(p => p.Amount);
+                    var refunds = payments.Where(p => p.Amount < 0).Sum(p => Math.Abs(p.Amount));
+                    var totalBilled = invoices.Sum(i => i.Total);
+                    var netExcess = totalPaid - totalBilled - refunds;
+                    return netExcess > 0;
+                })
+                .Select(v =>
+                {
+                    var invoices = v.Invoices ?? new List<Invoice>();
+                    var payments = invoices.SelectMany(i => i.Payments).ToList();
+                    var totalPaid = payments.Where(p => p.Amount > 0).Sum(p => p.Amount);
+                    var refunds = payments.Where(p => p.Amount < 0).Sum(p => Math.Abs(p.Amount));
+                    var totalBilled = invoices.Sum(i => i.Total);
+                    var netExcess = totalPaid - totalBilled - refunds;
+                    var lastPayment = payments.OrderByDescending(p => p.ReceivedAt).FirstOrDefault();
+
+                    return new
+                    {
+                        CancelId = v.VisitId, // Use VisitId as identifier for Change Due
+                        ClaimType = "CHANGE_DUE",
+                        BillNumber = FormatBillNumber(v.Token, v.Branch?.Code, v.CreatedAt),
+                        VisitId = v.VisitId,
+                        CancelledAt = lastPayment?.ReceivedAt ?? v.CreatedAt,
+                        Reason = "Counter Cash Tender Change Due (Drawer Shortage)",
+                        Notes = lastPayment?.ReceiptNo != null ? $"Cash Tender Receipt: {lastPayment.ReceiptNo}" : "Patient tendered cash; change retained as due",
+                        CancelledByName = lastPayment?.ReceivedBy?.Name ?? "Desk Cashier",
+                        VisitToken = v.Token ?? "WALK-IN",
+                        PatientName = v.Patient != null ? $"{v.Patient.FirstName} {v.Patient.LastName}".Trim() : "Direct Patient",
+                        PatientPhone = v.Patient?.CurrentPhoneNumber ?? "",
+                        PatientMrn = v.Patient?.MRN ?? "",
+                        BranchId = v.BranchId,
+                        BranchName = v.Branch?.Name ?? "Main Facility",
+                        ReferralPartnerName = v.ReferralPartner?.Name,
+                        TotalBilled = totalBilled,
+                        TotalAmountPaid = totalPaid,
+                        RefundedAmount = refunds,
+                        ImmediateRefundPaid = refunds,
+                        BalancePendingRefund = Math.Max(0m, netExcess),
+                        RefundStatus = netExcess <= 0 ? "Settled" : "Pending",
+                        RefundMethod = "Cash",
+                        HasRefund = true,
+                        FinalSettledAt = (DateTime?)null,
+                        SettlementReceiptNo = (string?)null,
+                        SettlementNotes = (string?)null
+                    };
+                }).ToList();
+
+            var combined = cancellationItems.Concat(changeDueItems).OrderByDescending(r => r.CancelledAt).AsEnumerable();
 
             if (branchId.HasValue && branchId.Value != Guid.Empty)
             {
-                result = result.Where(r => r.BranchId == branchId.Value);
+                combined = combined.Where(r => r.BranchId == branchId.Value);
             }
 
             if (!string.IsNullOrWhiteSpace(search))
             {
                 var q = search.Trim().ToLower();
-                result = result.Where(r =>
+                combined = combined.Where(r =>
                     (r.VisitToken?.ToLower().Contains(q) ?? false) ||
                     (r.PatientName?.ToLower().Contains(q) ?? false) ||
                     (r.CancelledByName?.ToLower().Contains(q) ?? false) ||
@@ -1162,7 +1243,7 @@ namespace SynOS.Api.Controllers
                 );
             }
 
-            return Ok(result.ToList());
+            return Ok(combined.ToList());
         }
 
         [HttpPost("cancellations/{cancelId}/disburse-refund")]
@@ -1180,7 +1261,86 @@ namespace SynOS.Api.Controllers
 
             if (cancellation == null)
             {
-                return NotFound(new { message = $"Cancellation record {cancelId} not found." });
+                // Check if cancelId is a direct VisitId for Change Due / Overpaid visits
+                var overpaidVisit = await _context.Visits
+                    .Include(v => v.Patient)
+                    .Include(v => v.Invoices)
+                        .ThenInclude(i => i.Payments)
+                    .FirstOrDefaultAsync(v => v.VisitId == cancelId);
+
+                if (overpaidVisit != null)
+                {
+                    var overpaidInvoice = overpaidVisit.Invoices.FirstOrDefault();
+                    if (overpaidInvoice == null)
+                    {
+                        return BadRequest(new { message = "Associated invoice not found for this visit." });
+                    }
+
+                    var pms = overpaidInvoice.Payments.ToList();
+                    var tp = pms.Where(p => p.Amount > 0).Sum(p => p.Amount);
+                    var rf = pms.Where(p => p.Amount < 0).Sum(p => Math.Abs(p.Amount));
+                    var tb = overpaidInvoice.Total;
+                    var pendingChange = Math.Max(0m, tp - tb - rf);
+
+                    if (pendingChange <= 0)
+                    {
+                        return BadRequest(new { message = "This visit has no pending change due balance to disburse." });
+                    }
+
+                    var amtToDisburse = request.Amount > 0 ? Math.Min(request.Amount, pendingChange) : pendingChange;
+                    var uIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value 
+                                      ?? User.FindFirst("sub")?.Value;
+                    Guid uId = Guid.Empty;
+                    if (uIdClaim != null && Guid.TryParse(uIdClaim, out var pId)) uId = pId;
+                    else uId = await _context.Users.OrderBy(u => u.CreatedAt).Select(u => u.UserId).FirstOrDefaultAsync();
+
+                    var meth = !string.IsNullOrWhiteSpace(request.PaymentMethod) ? request.PaymentMethod : "Cash";
+                    var rNo = $"CHG-DISB-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..6].ToUpper()}";
+
+                    var changeDisbPayment = new Payment
+                    {
+                        PaymentId = Guid.NewGuid(),
+                        InvoiceId = overpaidInvoice.InvoiceId,
+                        Amount = -amtToDisburse,
+                        Method = meth,
+                        ReceiptNo = rNo,
+                        ReceivedAt = DateTime.UtcNow,
+                        ReceivedByUserId = uId
+                    };
+                    _context.Payments.Add(changeDisbPayment);
+
+                    await _revenueFactWriter.DeclareRevenueFactAsync(new SynOS.Models.DTOs.Revenue.DeclareRevenueFactCommand
+                    {
+                        OccurredAt = DateTimeOffset.UtcNow,
+                        Amount = amtToDisburse,
+                        Currency = "INR",
+                        Direction = RevenueDirection.Reversal,
+                        SourceType = RevenueSourceType.Patient,
+                        SourceReferenceId = overpaidVisit.VisitId.ToString(),
+                        PaymentMode = meth.IndexOf("Cash", StringComparison.OrdinalIgnoreCase) >= 0 
+                            ? PaymentMode.Cash 
+                            : PaymentMode.UPI,
+                        DeclaredByUserId = uId,
+                        Notes = $"Disbursed counter change due for visit {overpaidVisit.Token}: {request.Notes}",
+                        ExternalTransactionId = rNo
+                    });
+
+                    await _context.SaveChangesAsync();
+
+                    return Ok(new
+                    {
+                        success = true,
+                        receiptNo = rNo,
+                        amountDisbursed = amtToDisburse,
+                        remainingBalance = Math.Max(0m, pendingChange - amtToDisburse),
+                        refundStatus = (pendingChange - amtToDisburse) <= 0 ? "Settled" : "PartiallySettled",
+                        paymentMethod = meth,
+                        disbursedAt = DateTime.UtcNow,
+                        claimType = "CHANGE_DUE"
+                    });
+                }
+
+                return NotFound(new { message = $"Refund or change due record {cancelId} not found." });
             }
 
             var visit = cancellation.Visit;

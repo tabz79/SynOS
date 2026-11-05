@@ -50,6 +50,13 @@ export function IntentPanel({ onVisitUpdated }) {
     const modeSwitchVersionRef = useRef(0);
     // STAGE 2: Payment Method State (Lifted for Footer Access)
     const [paymentMethod, setPaymentMethod] = useState('Cash');
+    // POS Cash Tender & Split Payment States
+    const [tenderedAmount, setTenderedAmount] = useState('');
+    const [changeReturnedNow, setChangeReturnedNow] = useState('');
+    const [isChangeRetainedAsDue, setIsChangeRetainedAsDue] = useState(false);
+    const [isSplitPayment, setIsSplitPayment] = useState(false);
+    const [splitCashAmount, setSplitCashAmount] = useState('');
+    const [splitUpiAmount, setSplitUpiAmount] = useState('');
     // Scoped Quick-Add Modal State: null | 'referral' | 'insurance' | 'corporate' | 'discountReason'
     const [activeModal, setActiveModal] = useState(null);
     const [createdDiscountReason, setCreatedDiscountReason] = useState(null);
@@ -1126,19 +1133,68 @@ export function IntentPanel({ onVisitUpdated }) {
                 const effectiveAmount = isFullDueSelected ? 0 : (isPartialValid ? numCustom : remainingDue);
                 const methodToUse = isFullDueSelected ? 'Unpaid / Credit' : paymentMethod;
 
-                const res = await ReceptionApi.collectPayment(snapshot.visit.visitId, effectiveAmount, methodToUse);
+                let paymentPayload;
+                let paidAmountDisplay = effectiveAmount;
+
+                if (isSplitPayment && (Number(splitCashAmount) + Number(splitUpiAmount) === effectiveAmount)) {
+                    paymentPayload = {
+                        VisitId: snapshot.visit.visitId,
+                        Amount: effectiveAmount,
+                        Method: 'Split (Cash+UPI)',
+                        SplitPayments: [
+                            { Amount: Number(splitCashAmount), Method: 'Cash' },
+                            { Amount: Number(splitUpiAmount), Method: 'UPI' }
+                        ],
+                        Notes: `Split: Cash ₹${splitCashAmount}, UPI ₹${splitUpiAmount}`
+                    };
+                    paidAmountDisplay = effectiveAmount;
+                } else if (paymentMethod === 'Cash' && isChangeRetainedAsDue && Number(tenderedAmount) > effectiveAmount) {
+                    const retNow = Number(changeReturnedNow) || 0;
+                    const changeDueVal = Math.max(0, Number(tenderedAmount) - effectiveAmount - retNow);
+
+                    paymentPayload = {
+                        VisitId: snapshot.visit.visitId,
+                        Amount: Number(tenderedAmount),
+                        Method: 'Cash',
+                        TenderedAmount: Number(tenderedAmount),
+                        ChangeReturned: retNow,
+                        ChangeDue: changeDueVal,
+                        IsChangeRetainedAsDue: true,
+                        AllowOverpayment: true,
+                        Notes: `Cash Tendered: ₹${tenderedAmount}, Change Due: ₹${changeDueVal} (Drawer Shortage)`
+                    };
+                    paidAmountDisplay = Number(tenderedAmount);
+                } else {
+                    paymentPayload = {
+                        VisitId: snapshot.visit.visitId,
+                        Amount: effectiveAmount,
+                        Method: methodToUse,
+                        TenderedAmount: Number(tenderedAmount) || effectiveAmount,
+                        ChangeReturned: Math.max(0, (Number(tenderedAmount) || effectiveAmount) - effectiveAmount),
+                        ChangeDue: 0
+                    };
+                    paidAmountDisplay = effectiveAmount;
+                }
+
+                const res = await ReceptionApi.collectPayment(paymentPayload);
 
                 const currentPaid = snapshot?.billing?.totalPaid || 0;
                 await loadSnapshot();
 
                 setIsPartialPayment(false);
                 setCustomPaymentAmount('');
+                setTenderedAmount('');
+                setChangeReturnedNow('');
+                setIsChangeRetainedAsDue(false);
+                setIsSplitPayment(false);
+                setSplitCashAmount('');
+                setSplitUpiAmount('');
 
                 setPostProcessingSession({
                     visitId: snapshot.visit.visitId,
                     token: res?.token || snapshot.visit.token || snapshot.visit.visitToken,
                     billingMode: 'Standard',
-                    paidAmount: currentPaid + effectiveAmount,
+                    paidAmount: currentPaid + paidAmountDisplay,
                     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 });
                 setSelectedDocFormat('thermal');
@@ -1489,6 +1545,12 @@ export function IntentPanel({ onVisitUpdated }) {
                     mainActionLabel = `Confirm Visit (Full Due ₹${remainingDue.toLocaleString()})`;
                 } else if (isPartialValid) {
                     mainActionLabel = `Accept Partial (₹${payNowAmount.toLocaleString()}) • Due ₹${balanceRemaining.toLocaleString()}`;
+                } else if (isSplitPayment && (Number(splitCashAmount) + Number(splitUpiAmount) === payNowAmount)) {
+                    mainActionLabel = `Accept Split Payment (₹${Number(splitCashAmount).toLocaleString()} Cash + ₹${Number(splitUpiAmount).toLocaleString()} UPI)`;
+                } else if (paymentMethod === 'Cash' && isChangeRetainedAsDue && Number(tenderedAmount) > payNowAmount) {
+                    const retNow = Number(changeReturnedNow) || 0;
+                    const changeDueVal = Math.max(0, Number(tenderedAmount) - payNowAmount - retNow);
+                    mainActionLabel = `Accept ₹${Number(tenderedAmount).toLocaleString()} Cash • ₹${changeDueVal.toLocaleString()} Change Due to Patient`;
                 } else {
                     mainActionLabel = `Accept Payment (₹${remainingDue.toLocaleString()})`;
                 }
@@ -2549,6 +2611,18 @@ export function IntentPanel({ onVisitUpdated }) {
                                                 customPaymentAmount={customPaymentAmount}
                                                 setCustomPaymentAmount={setCustomPaymentAmount}
                                                 referralPartners={referralPartners}
+                                                tenderedAmount={tenderedAmount}
+                                                setTenderedAmount={setTenderedAmount}
+                                                changeReturnedNow={changeReturnedNow}
+                                                setChangeReturnedNow={setChangeReturnedNow}
+                                                isChangeRetainedAsDue={isChangeRetainedAsDue}
+                                                setIsChangeRetainedAsDue={setIsChangeRetainedAsDue}
+                                                isSplitPayment={isSplitPayment}
+                                                setIsSplitPayment={setIsSplitPayment}
+                                                splitCashAmount={splitCashAmount}
+                                                setSplitCashAmount={setSplitCashAmount}
+                                                splitUpiAmount={splitUpiAmount}
+                                                setSplitUpiAmount={setSplitUpiAmount}
                                             />
                                         </div>
                                     </div>
