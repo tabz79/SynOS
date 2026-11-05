@@ -215,16 +215,22 @@ namespace SynOS.Services
                     Discount = o.Discount
                 }).ToListAsync();
 
-            // Emit Operational Event: VISIT_STARTED
-            await _operationalEventWriter.WriteEventAsync(
-                BranchEventType.VISIT_STARTED,
-                _userContext.CurrentBranchId.ToString(), // FIX: Use context
-                visit.VisitId.ToString(),
-                visit.Token,
-                $"Visit started for {patient?.FirstName} {patient?.LastName}",
-                "User",
-                actorUserId.ToString()
-            );
+            // Emit Operational Event: VISIT_STARTED (Only for confirmed, non-draft visits)
+            bool isDraftVisit = visit.Status == VisitStatus.Draft || 
+                                (visit.Token != null && visit.Token.StartsWith("D-", StringComparison.OrdinalIgnoreCase));
+
+            if (!isDraftVisit)
+            {
+                await _operationalEventWriter.WriteEventAsync(
+                    BranchEventType.VISIT_STARTED,
+                    _userContext.CurrentBranchId.ToString(), // FIX: Use context
+                    visit.VisitId.ToString(),
+                    visit.Token,
+                    $"Visit started for {patient?.FirstName} {patient?.LastName}",
+                    "User",
+                    actorUserId.ToString()
+                );
+            }
 
             return new ReceptionStartVisitResponse
             {

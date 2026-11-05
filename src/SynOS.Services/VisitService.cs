@@ -1502,29 +1502,35 @@ namespace SynOS.Services
             await _auditService.LogAsync(cancelDto.CancelledByUserId, "CancelVisit", "Visit", visitId, cancellation);
             
             // ENRICHED EVENT for Cancellation
-            string actorName = await GetActorNameAsync(cancelDto.CancelledByUserId);
-            string patientName = $"{visit.Patient.FirstName} {visit.Patient.LastName}";
-            
-            await _operationalEventWriter.WriteEventAsync(
-                BranchEventType.VISIT_CANCELLED,
-                visit.BranchId.HasValue ? visit.BranchId.Value.ToString() : "GLOBAL",
-                visit.VisitId.ToString(),
-                visit.Token,
-                $"Visit Cancelled: {cancelDto.Reason}. Refund: ₹{totalRefunded}",
-                actorName,
-                cancelDto.CancelledByUserId.ToString(),
-                true, null, null,
-                TimelineVisibility.Surface,
-                visit.VisitId,
-                JsonSerializer.Serialize(new { 
-                    PatientName = patientName, 
-                    ActorName = actorName, 
-                    Status = "Cancelled", 
-                    TotalRefunded = totalRefunded, 
-                    RefundMethod = refundMethod,
-                    Reason = cancelDto.Reason 
-                })
-            );
+            // Only emit VISIT_CANCELLED to public branch timeline if this was a confirmed visit with an official token.
+            // If it was an uncommitted draft (Token starts with D-), do NOT broadcast to the whole branch timeline.
+            bool isDraft = visit.Token != null && visit.Token.StartsWith("D-", StringComparison.OrdinalIgnoreCase);
+            if (!isDraft)
+            {
+                string actorName = await GetActorNameAsync(cancelDto.CancelledByUserId);
+                string patientName = $"{visit.Patient?.FirstName} {visit.Patient?.LastName}".Trim();
+                
+                await _operationalEventWriter.WriteEventAsync(
+                    BranchEventType.VISIT_CANCELLED,
+                    visit.BranchId.HasValue ? visit.BranchId.Value.ToString() : "GLOBAL",
+                    visit.VisitId.ToString(),
+                    visit.Token,
+                    $"Visit Cancelled: {cancelDto.Reason}. Refund: ₹{totalRefunded}",
+                    actorName,
+                    cancelDto.CancelledByUserId.ToString(),
+                    true, null, null,
+                    TimelineVisibility.Surface,
+                    visit.VisitId,
+                    JsonSerializer.Serialize(new { 
+                        PatientName = patientName, 
+                        ActorName = actorName, 
+                        Status = "Cancelled", 
+                        TotalRefunded = totalRefunded, 
+                        RefundMethod = refundMethod,
+                        Reason = cancelDto.Reason 
+                    })
+                );
+            }
 
             return cancellation;
         }

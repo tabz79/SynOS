@@ -45,6 +45,22 @@ namespace SynOS.Api.Services
                                 return;
                             }
 
+                            // --- DRAFT DESK ISOLATION GUARD ---
+                            // If the visit is an unfinalized draft, it represents private keystrokes in flight on a single desk.
+                            // NEVER broadcast draft deltas to the branch group, department, or other receptionists!
+                            bool isDraft = (!delta.IsFinalized) || 
+                                           (delta.Token != null && delta.Token.StartsWith("D-", StringComparison.OrdinalIgnoreCase)) ||
+                                           string.Equals(delta.OperationalStatus, "Draft", StringComparison.OrdinalIgnoreCase);
+
+                            if (isDraft)
+                            {
+                                if (delta.AssignedToUserId.HasValue && delta.AssignedToUserId.Value != Guid.Empty)
+                                {
+                                    await _hubContext.Clients.User(delta.AssignedToUserId.Value.ToString()).SendAsync("ActionQueueDeltaReceived", delta);
+                                }
+                                return; // Strictly isolate draft from Branch-{branchId}, BranchAdmins, or Dept groups!
+                            }
+
                             // 1. Target Receptionist (Private Desktop)
                             if (delta.AssignedToUserId.HasValue && delta.AssignedToUserId.Value != Guid.Empty)
                             {

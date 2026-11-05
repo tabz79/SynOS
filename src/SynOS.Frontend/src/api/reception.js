@@ -61,6 +61,7 @@ export const ReceptionApi = {
             referrerName: row.referrerName || row.ReferrerName,
             operationalStatus: row.operationalStatus || row.OperationalStatus,
             isFinalized: row.isFinalized || row.IsFinalized,
+            assignedToUserId: row.assignedToUserId || row.AssignedToUserId || row.assignedUserId || row.AssignedUserId,
             assignedResource: row.assignedResource || row.AssignedResource,
             assignedPhlebotomistId: row.assignedPhlebotomistId || row.assignedUserId || row.AssignedUserId,
             assignedPhlebotomistName: row.assignedPhlebotomistName || row.assignedUserName || row.AssignedUserName,

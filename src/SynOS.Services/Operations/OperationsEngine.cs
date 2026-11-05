@@ -183,10 +183,21 @@ namespace SynOS.Services.Operations
                                 (includeHistory && terminalStatuses.Contains(v.Status) && v.TokenDate >= startDate && v.TokenDate < today)
                             ));
 
+            // DRAFT DESK ISOLATION INVARIANT (Zero-Seepage Rule):
+            // Unfinalized drafts represent keystrokes in flight at a single desk.
+            // Draft visits (Status == Draft or Token starting with D-) must strictly ONLY be visible 
+            // to the specific receptionist/user who created the draft (AssignedReceptionistId == currentUserId).
+            var currentUserId = _userContext.CurrentUserId;
             if (_userContext.CurrentRole == "Receptionist")
             {
-                var currentUserId = _userContext.CurrentUserId;
                 visitQuery = visitQuery.Where(v => v.AssignedReceptionistId == currentUserId);
+            }
+            else
+            {
+                visitQuery = visitQuery.Where(v => 
+                    (v.Status != VisitStatus.Draft && (v.Token == null || !v.Token.StartsWith("D-"))) || 
+                    v.AssignedReceptionistId == currentUserId
+                );
             }
 
             // Fetch Data Graph (No Tracking for Read-Only Projection)

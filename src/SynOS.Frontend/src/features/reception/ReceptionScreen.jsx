@@ -110,12 +110,28 @@ export function ReceptionScreen() {
                 if (!deltaRow) return;
 
                 const normalized = normalizeQueueData([deltaRow])[0];
+                if (!normalized) return;
+
                 console.log("ReceptionScreen: Delta Received", { 
                     visitId: normalized.visitId, 
                     token: normalized.token, 
                     status: normalized.operationalStatus,
                     isFinalized: normalized.isFinalized 
                 });
+
+                // MULTI-DESK DRAFT ISOLATION INVARIANT (Zero-Seepage Rule):
+                // If this visit is an unfinalized draft, it belongs strictly and only to the desk that created it.
+                // Discard foreign drafts created by other receptionists or admins on other workstations!
+                const isDraft = !normalized.isFinalized || 
+                                Boolean(normalized.token?.startsWith('D-')) || 
+                                normalized.operationalStatus === 'Draft';
+
+                const currentUserId = user?.id;
+                const draftOwnerId = normalized.assignedToUserId;
+                if (isDraft && draftOwnerId && currentUserId && String(draftOwnerId).toLowerCase() !== String(currentUserId).toLowerCase()) {
+                    console.log("ReceptionScreen: Discarded foreign draft delta from desk", draftOwnerId);
+                    return;
+                }
 
                 setActionQueue(prev => {
                     const exists = prev.some(r => r.visitId === normalized.visitId);
