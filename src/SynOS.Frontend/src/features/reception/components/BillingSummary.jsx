@@ -572,6 +572,12 @@ export function BillingSummary({
             });
             setIsB2BEditing(false);
             if (onVisitUpdated) onVisitUpdated();
+
+            // Seamless focus forwarding: advance to primary confirm button or next input
+            setTimeout(() => {
+                const target = document.getElementById('btn-unified-action') || document.getElementById('input-b2b-doctor-search');
+                target?.focus();
+            }, 50);
         } catch (err) {
             console.error("Failed to update B2B discount rate", err);
             alert("Failed to update B2B discount rate: " + err.message);
@@ -1785,10 +1791,15 @@ export function BillingSummary({
                                                     min="0"
                                                     max={b2bDiscountType === 'PERCENTAGE' ? 100 : (grossTariff || 100000)}
                                                     value={isB2BEditing ? localB2BInput : (isCorrectionIntent && stagedDiscount?.value !== undefined && stagedDiscount.isB2B ? String(stagedDiscount.value) : localB2BInput)}
-                                                    disabled={!canPerformActions || isProcessing}
+                                                    readOnly={!canPerformActions || isProcessing}
                                                     onFocus={(e) => {
                                                         e.target.select();
                                                         setIsB2BEditing(true);
+                                                    }}
+                                                    onBlur={(e) => {
+                                                        if (isB2BEditing && !isProcessing) {
+                                                            handleSaveB2BDiscount(e.target.value, b2bDiscountType);
+                                                        }
                                                     }}
                                                     onChange={(e) => {
                                                         const raw = e.target.value;
@@ -1808,23 +1819,6 @@ export function BillingSummary({
                                                         if (e.key === 'Enter') {
                                                             e.preventDefault();
                                                             handleSaveB2BDiscount(e.target.value, b2bDiscountType);
-                                                        } else if (e.key === 'Tab') {
-                                                            if (!e.shiftKey) {
-                                                                const nextInput = document.getElementById('input-b2b-doctor-search') ||
-                                                                                  document.getElementById('btn-unified-action');
-                                                                if (nextInput) {
-                                                                    e.preventDefault();
-                                                                    e.stopPropagation();
-                                                                    nextInput.focus();
-                                                                }
-                                                            } else {
-                                                                const prevBtn = document.getElementById('btn-outsource-test');
-                                                                if (prevBtn) {
-                                                                    e.preventDefault();
-                                                                    e.stopPropagation();
-                                                                    prevBtn.focus();
-                                                                }
-                                                            }
                                                         }
                                                     }}
                                                     className={cn(
@@ -1836,6 +1830,7 @@ export function BillingSummary({
                                                 {isB2BEditing && (
                                                     <button
                                                         type="button"
+                                                        tabIndex={0}
                                                         onClick={() => handleSaveB2BDiscount(localB2BInput, b2bDiscountType)}
                                                         className="px-2.5 py-1 bg-synos-primary text-white rounded text-[10px] font-bold hover:bg-synos-primary/90 cursor-pointer shadow-xs active:scale-95 synos-focus-btn"
                                                     >

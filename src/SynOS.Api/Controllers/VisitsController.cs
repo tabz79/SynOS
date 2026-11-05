@@ -167,7 +167,7 @@ namespace SynOS.Api.Controllers
             try
             {
                 // Get UserId from claims and set it in the DTO
-                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? User.FindFirst("sub")?.Value;
                 if (userIdClaim == null || !Guid.TryParse(userIdClaim, out var userId))
                 {
                     return Unauthorized(new { message = "User ID not found or invalid." });

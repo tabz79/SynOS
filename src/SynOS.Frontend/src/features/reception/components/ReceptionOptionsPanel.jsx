@@ -17,7 +17,9 @@ import {
     AlertCircle,
     Calendar,
     CalendarDays,
-    Loader2
+    Loader2,
+    RotateCcw,
+    Wallet
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/context/ThemeContext';
@@ -29,6 +31,8 @@ import { AttendanceCalendar } from '@/features/finance/components/workforce/Atte
 import { ReceptionExpenseDrawer } from './ReceptionExpenseDrawer';
 import { ReceptionB2BReceivablesDrawer } from './ReceptionB2BReceivablesDrawer';
 import { StockRequestPanel } from '@/features/inventory/StockRequestPanel';
+import { ReceptionRefundTerminal } from './ReceptionRefundTerminal';
+import { ReceptionCashDrawerLedger } from './ReceptionCashDrawerLedger';
 
 export function ReceptionOptionsPanel({
     isOpen,
@@ -98,6 +102,10 @@ export function ReceptionOptionsPanel({
         viewWidthClasses = "w-[96vw] sm:w-[92vw] md:w-[75vw] lg:w-[50vw] xl:w-[44vw] 2xl:w-[40vw] min-w-[580px] max-w-[880px]";
     } else if (activeView === 'b2b') {
         viewWidthClasses = "w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[86vw] xl:w-[85vw] 2xl:w-[85vw] max-w-[1780px]";
+    } else if (activeView === 'ledger') {
+        viewWidthClasses = "w-[96vw] sm:w-[94vw] md:w-[88vw] lg:w-[85vw] xl:w-[80vw] 2xl:w-[75vw] max-w-[1450px]";
+    } else if (activeView === 'refunds') {
+        viewWidthClasses = "w-[96vw] sm:w-[94vw] md:w-[88vw] lg:w-[85vw] xl:w-[80vw] 2xl:w-[75vw] max-w-[1450px]";
     } else if (activeView === 'stock') {
         viewWidthClasses = "w-[96vw] sm:w-[92vw] md:w-[460px] lg:w-[500px] max-w-[540px]";
     } else if (activeView === 'leave') {
@@ -126,6 +134,22 @@ export function ReceptionOptionsPanel({
             icon: Receipt,
             iconBg: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20',
             onClick: () => setActiveView('expense')
+        },
+        {
+            id: 'cash-drawer-ledger',
+            title: 'My Cash Drawer Ledger',
+            desc: 'Shift cash journal, petty-cash breakdown & handover slip',
+            icon: Wallet,
+            iconBg: 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20',
+            onClick: () => setActiveView('ledger')
+        },
+        {
+            id: 'refunds-terminal',
+            title: 'Refunds & Claims Terminal',
+            desc: 'Disburse partial refunds, settle "Refund Later" queue & print vouchers',
+            icon: RotateCcw,
+            iconBg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20',
+            onClick: () => setActiveView('refunds')
         },
         {
             id: 'patient-directory',
@@ -213,6 +237,34 @@ export function ReceptionOptionsPanel({
                         setActiveView('menu');
                         onDataUpdated?.();
                     }}
+                />
+            )}
+
+            {/* VIEW 2B: CASH DRAWER LEDGER EMBEDDED */}
+            {activeView === 'ledger' && (
+                <ReceptionCashDrawerLedger
+                    isOpen={true}
+                    embedded={true}
+                    onClose={onClose}
+                    onBack={() => {
+                        setActiveView('menu');
+                        onDataUpdated?.();
+                    }}
+                    onDataUpdated={onDataUpdated}
+                />
+            )}
+
+            {/* VIEW 2C: REFUNDS & CLAIMS TERMINAL EMBEDDED */}
+            {activeView === 'refunds' && (
+                <ReceptionRefundTerminal
+                    isOpen={true}
+                    embedded={true}
+                    onClose={onClose}
+                    onBack={() => {
+                        setActiveView('menu');
+                        onDataUpdated?.();
+                    }}
+                    onDataUpdated={onDataUpdated}
                 />
             )}
 

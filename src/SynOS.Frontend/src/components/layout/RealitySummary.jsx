@@ -61,39 +61,15 @@ export function RealityTile({
             }}
             title={tileTitle}
             className={cn(
-                "rounded-xl transition-[transform,opacity] duration-300 group cursor-default flex flex-col",
+                "rounded-xl transition-[transform,opacity] duration-300 group cursor-default flex flex-col justify-between",
                 "isolation-auto relative z-10",
                 ui.card,
-                isHidden && "opacity-0 pointer-events-none",
-                // Grid Height Standardization
-                isCollapsed ? "px-4 py-2.5 gap-0 h-full" : "p-4 sm:p-5 h-28 sm:h-32 gap-0"
+                isHidden && "opacity-0 pointer-events-none hidden",
+                // Grid Height Standardization: Preserve full card height in both expanded and collapsed views
+                "p-3.5 sm:p-4 h-28 sm:h-32 gap-0"
             )}
         >
-            {isCollapsed ? (
-                /* COLLAPSED ROW VIEW */
-                <div className="flex items-center justify-between w-full h-full">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                        {Icon && <Icon className="w-3.5 h-3.5 text-zinc-500 shrink-0" />}
-                        <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 truncate">
-                            {displayLabel}:
-                        </span>
-                        <span className={cn("font-bold text-sm tabular-nums", ui.text)}>
-                            {value}
-                        </span>
-                        {isDual && (
-                            <span className="text-[10px] text-zinc-400 font-medium">
-                                (Pool)
-                            </span>
-                        )}
-                    </div>
-                    {isDual ? (
-                        <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-slate-100 dark:bg-zinc-800 border border-slate-200/60 dark:border-zinc-700/60 text-xs font-bold tabular-nums text-zinc-800 dark:text-zinc-200">
-                            <User className="w-3 h-3 text-zinc-400" />
-                            <span>{individualValue}</span>
-                        </div>
-                    ) : null}
-                </div>
-            ) : isDual ? (
+            {isDual ? (
                 /* DUAL METRIC SPLIT LAYOUT (Mockup Option B) */
                 <div className="flex flex-col h-full w-full justify-between">
                     {/* TOP: Icon Badge + Title */}
@@ -304,7 +280,7 @@ export function RealitySummary({ tiles = [], isCollapsed }) {
             className={cn(
                 "grid transition-none", // Removed will-change-transform (Fixes Pixelated Text)
                 isCollapsed
-                    ? "grid-cols-6 grid-rows-[auto_0px] gap-x-4 gap-y-0 pb-0 overflow-hidden" // Only clip when collapsed (hiding row 2)
+                    ? "grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-3.5 pb-0"
                     : "grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-4 p-1" // Bold prominent 2x4 card grid
             )}
         >
@@ -313,10 +289,8 @@ export function RealitySummary({ tiles = [], isCollapsed }) {
                     key={idx}
                     ref={el => tileRefs.current.set(idx, el)}
                     className={cn(
-                        // Wrapper div for grid positioning (FLIP target)
-                        // Tiles 7 & 8 in Collapsed Mode:
-                        // They are in Row 2. We hide them via opacity.
-                        // Container overflow-hidden clips them.
+                        // Hide tiles 7 & 8 completely when collapsed so 1 single row of 6 full-sized cards is rendered
+                        isCollapsed && idx >= 6 && "hidden"
                     )}
                 >
                     <RealityTile

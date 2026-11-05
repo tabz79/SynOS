@@ -441,7 +441,16 @@ export function IntentPanel({ onVisitUpdated }) {
     const [cancelReason, setCancelReason] = useState('Patient unable to wait / Long queue');
     const [cancelNotes, setCancelNotes] = useState('');
     const [cancelRefundMethod, setCancelRefundMethod] = useState('Cash Refund');
+    const [immediateRefundInput, setImmediateRefundInput] = useState('');
     const [isCancelling, setIsCancelling] = useState(false);
+
+    // Synchronize immediate refund input with total paid when modal opens
+    useEffect(() => {
+        if (isCancelModalOpen) {
+            const paid = Number(snapshot?.billing?.totalPaid || 0);
+            setImmediateRefundInput(paid > 0 ? String(paid) : '0');
+        }
+    }, [isCancelModalOpen, snapshot?.billing?.totalPaid]);
 
     const handleCancelVisit = async () => {
         const visitId = currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id;
@@ -453,10 +462,13 @@ export function IntentPanel({ onVisitUpdated }) {
 
         setIsCancelling(true);
         try {
+            const totalPaid = Number(snapshot?.billing?.totalPaid || 0);
+            const immediateAmt = immediateRefundInput === '' ? totalPaid : Math.min(totalPaid, Math.max(0, Number(immediateRefundInput)));
             await ReceptionApi.cancelVisit(visitId, {
                 reason: cancelReason,
                 notes: cancelNotes,
-                refundMethod: cancelRefundMethod
+                refundMethod: cancelRefundMethod,
+                immediateRefundAmount: immediateAmt
             });
             setIsCancelModalOpen(false);
             handleCloseAndReset();
@@ -3510,12 +3522,75 @@ export function IntentPanel({ onVisitUpdated }) {
                                 <span className="font-mono font-bold">₹{Number(snapshot?.billing?.netAmount || 0).toLocaleString()}</span>
                             </div>
                             <div className="flex justify-between items-center pt-1 border-t border-zinc-200 dark:border-zinc-700">
-                                <span className="font-bold text-rose-600 dark:text-rose-400">Amount to Refund:</span>
+                                <span className="font-bold text-rose-600 dark:text-rose-400">Total Paid Amount:</span>
                                 <span className="font-mono font-black text-sm text-rose-600 dark:text-rose-400">
                                     ₹{Number(snapshot?.billing?.totalPaid || 0).toLocaleString()}
                                 </span>
                             </div>
                         </div>
+
+                        {/* Split Refund & Payout Controls (When Paid > 0) */}
+                        {Number(snapshot?.billing?.totalPaid || 0) > 0 && (
+                            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 space-y-2.5">
+                                <div className="flex items-center justify-between">
+                                    <label className="text-xs font-bold text-amber-900 dark:text-amber-300">
+                                        Immediate Refund Payout (₹)
+                                    </label>
+                                    <div className="flex items-center gap-1.5">
+                                        <button
+                                            type="button"
+                                            onClick={() => setImmediateRefundInput(String(Number(snapshot?.billing?.totalPaid || 0)))}
+                                            className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-600/20 hover:bg-amber-600/30 text-amber-800 dark:text-amber-300 border border-amber-500/30 cursor-pointer"
+                                        >
+                                            Full
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setImmediateRefundInput('0')}
+                                            className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-600/20 hover:bg-rose-600/30 text-rose-800 dark:text-rose-300 border border-rose-500/30 cursor-pointer"
+                                        >
+                                            Refund Later
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="flex gap-2 items-center">
+                                    <div className="relative flex-1">
+                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-zinc-400">₹</span>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            max={Number(snapshot?.billing?.totalPaid || 0)}
+                                            value={immediateRefundInput}
+                                            onChange={(e) => setImmediateRefundInput(e.target.value)}
+                                            className={cn(
+                                                "w-full pl-7 pr-3 py-1.5 text-xs font-bold rounded-lg border outline-none font-mono",
+                                                isDark ? "bg-zinc-950 border-amber-500/40 text-white focus:border-amber-400" : "bg-white border-amber-300 text-slate-900 focus:border-amber-500"
+                                            )}
+                                        />
+                                    </div>
+                                    <select
+                                        value={cancelRefundMethod}
+                                        onChange={(e) => setCancelRefundMethod(e.target.value)}
+                                        className={cn(
+                                            "px-2.5 py-1.5 text-xs font-semibold rounded-lg border outline-none",
+                                            isDark ? "bg-zinc-950 border-zinc-700 text-white" : "bg-white border-zinc-300 text-slate-900"
+                                        )}
+                                    >
+                                        <option value="Cash Refund">Cash Drawer</option>
+                                        <option value="UPI Refund">UPI / Online</option>
+                                    </select>
+                                </div>
+
+                                {Number(snapshot?.billing?.totalPaid || 0) > Number(immediateRefundInput || 0) && (
+                                    <div className="text-[11px] font-medium text-amber-800 dark:text-amber-200 flex items-center justify-between pt-1 border-t border-amber-500/20">
+                                        <span>Pending Refund Due (Refund Later):</span>
+                                        <span className="font-mono font-bold text-rose-600 dark:text-rose-400">
+                                            ₹{(Number(snapshot?.billing?.totalPaid || 0) - Number(immediateRefundInput || 0)).toLocaleString()}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         {/* Reason Selection */}
                         <div className="space-y-2">
@@ -3591,7 +3666,15 @@ export function IntentPanel({ onVisitUpdated }) {
                                 className="px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white transition-all shadow-md active:scale-95 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                             >
                                 {isCancelling ? <Loader2 className="w-4 h-4 animate-spin" /> : <Ban className="w-4 h-4" />}
-                                <span>{Number(snapshot?.billing?.totalPaid || 0) > 0 ? `Cancel & Refund ₹${Number(snapshot?.billing?.totalPaid || 0).toLocaleString()}` : "Confirm Cancellation"}</span>
+                                <span>
+                                    {Number(snapshot?.billing?.totalPaid || 0) > 0 
+                                        ? (Number(immediateRefundInput || 0) === 0 
+                                            ? `Cancel & Queue Full Refund Later (₹${Number(snapshot?.billing?.totalPaid || 0).toLocaleString()})`
+                                            : (Number(immediateRefundInput || 0) < Number(snapshot?.billing?.totalPaid || 0)
+                                                ? `Pay ₹${Number(immediateRefundInput || 0).toLocaleString()} & Queue ₹${(Number(snapshot?.billing?.totalPaid || 0) - Number(immediateRefundInput || 0)).toLocaleString()} Later`
+                                                : `Cancel & Refund ₹${Number(snapshot?.billing?.totalPaid || 0).toLocaleString()}`))
+                                        : "Confirm Cancellation"}
+                                </span>
                             </button>
                         </div>
                     </div>

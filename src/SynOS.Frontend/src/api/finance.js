@@ -184,6 +184,39 @@ export const FinanceApi = {
     },
 
     /**
+     * Disburses a full or partial pending refund for a cancelled visit.
+     */
+    disburseCancellationRefund: async (cancelId, payload) => {
+        const url = FinanceApi.withBranchId(`/api/v1/finance/bills/cancellations/${cancelId}/disburse-refund`);
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: FinanceApi.getHeaders(),
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || "Failed to disburse cancellation refund");
+        }
+        return response.json();
+    },
+
+    /**
+     * Fetches current cashier's user-specific cash drawer journal, shift stats, and running balance.
+     */
+    getMyCashDrawerLedger: async (params = {}) => {
+        const query = new URLSearchParams();
+        if (params.date) query.append('date', params.date);
+        if (params.userId) query.append('userId', params.userId);
+        const qs = query.toString() ? `?${query.toString()}` : '';
+        const url = FinanceApi.withBranchId(`/api/v1/finance/bills/cash-drawer/my-ledger${qs}`);
+        const response = await fetch(url, {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load cash drawer shift ledger");
+        return response.json();
+    },
+
+    /**
      * Fetches detailed data for an A4 Patient Tax Invoice / Bill.
      */
     getInvoiceDocument: async (invoiceId) => {

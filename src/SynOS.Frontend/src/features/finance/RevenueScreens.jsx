@@ -3784,8 +3784,12 @@ export const CancellationsRefundsScreen = () => {
     const filteredCancellations = useMemo(() => {
         return cancellations.filter(c => {
             const hasRef = Number(c.refundedAmount || 0) > 0;
+            const pendingDue = Number(c.balancePendingRefund || 0);
+            const isPending = pendingDue > 0 || c.refundStatus === 'Pending' || c.refundStatus === 'PartiallySettled';
+
+            if (refundFilter === 'PendingRefund' && !isPending) return false;
             if (refundFilter === 'WithRefund' && !hasRef) return false;
-            if (refundFilter === 'WithoutRefund' && hasRef) return false;
+            if (refundFilter === 'WithoutRefund' && (hasRef || isPending)) return false;
 
             if (searchQuery.trim()) {
                 const q = searchQuery.toLowerCase();
@@ -3805,7 +3809,9 @@ export const CancellationsRefundsScreen = () => {
     const totalCancelled = filteredCancellations.length;
     const totalRefunded = filteredCancellations.reduce((sum, c) => sum + (Number(c.refundedAmount) || 0), 0);
     const totalBilled = filteredCancellations.reduce((sum, c) => sum + (Number(c.totalBilled) || 0), 0);
-    const withRefundCount = filteredCancellations.filter(c => Number(c.refundedAmount || 0) > 0).length;
+    const withRefundCount = cancellations.filter(c => Number(c.refundedAmount || 0) > 0).length;
+    const pendingRefundCount = cancellations.filter(c => Number(c.balancePendingRefund || 0) > 0 || c.refundStatus === 'Pending' || c.refundStatus === 'PartiallySettled').length;
+    const totalPendingAmount = cancellations.reduce((sum, c) => sum + Number(c.balancePendingRefund || 0), 0);
 
     // CSV Export
     const handleDownloadSummary = () => {
@@ -3897,11 +3903,11 @@ export const CancellationsRefundsScreen = () => {
             <div className="space-y-3 p-4 rounded-2xl bg-zinc-100 dark:bg-zinc-900/50 border dark:border-zinc-800 border-zinc-200">
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
                     <div className="flex items-center gap-1 overflow-x-auto pb-1 lg:pb-0 no-scrollbar">
-                        {['All', 'WithRefund', 'WithoutRefund'].map(f => (
+                        {['All', 'PendingRefund', 'WithRefund', 'WithoutRefund'].map(f => (
                             <FilterTab 
                                 key={f} 
-                                label={f === 'All' ? 'All Cancellations' : (f === 'WithRefund' ? 'Refunds Issued' : 'Zero Refund / Unpaid')} 
-                                count={f === 'All' ? cancellations.length : (f === 'WithRefund' ? withRefundCount : (cancellations.length - withRefundCount))} 
+                                label={f === 'All' ? 'All Cancellations' : (f === 'PendingRefund' ? 'Pending Refund Later' : (f === 'WithRefund' ? 'Refunds Issued' : 'Zero Refund / Unpaid'))} 
+                                count={f === 'All' ? cancellations.length : (f === 'PendingRefund' ? pendingRefundCount : (f === 'WithRefund' ? withRefundCount : (cancellations.length - (withRefundCount + pendingRefundCount))))} 
                                 isActive={refundFilter === f} 
                                 onClick={() => setRefundFilter(f)} 
                             />
@@ -4007,14 +4013,19 @@ export const CancellationsRefundsScreen = () => {
                                                 )}
                                             </td>
                                             <td className="py-3.5 px-4 text-center">
-                                                <span className={cn(
-                                                    "text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase tracking-wider",
-                                                    hasRefund
-                                                        ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
-                                                        : "bg-zinc-500/10 text-zinc-500 border-zinc-500/20"
-                                                )}>
-                                                    {hasRefund ? "Refunded" : "Cancelled"}
-                                                </span>
+                                                {Number(c.balancePendingRefund || 0) > 0 ? (
+                                                    <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full border uppercase tracking-wider bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/25">
+                                                        ₹{Number(c.balancePendingRefund).toLocaleString()} Due
+                                                    </span>
+                                                ) : hasRefund ? (
+                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase tracking-wider bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20">
+                                                        Refunded
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase tracking-wider bg-zinc-500/10 text-zinc-500 border-zinc-500/20">
+                                                        Cancelled
+                                                    </span>
+                                                )}
                                             </td>
                                             <td className="py-3.5 px-4 text-center">
                                                 <button

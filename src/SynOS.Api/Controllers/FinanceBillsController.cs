@@ -10,7 +10,9 @@ using SynOS.Data;
 using SynOS.Models.Entities;
 using SynOS.Models.Entities.Payments;
 using SynOS.Models.Entities.Revenue;
+using SynOS.Models.Entities.SpendEngine;
 using SynOS.Models.Enums;
+using SynOS.Models.DTOs.Finance;
 using SynOS.Services.Revenue;
 using SynOS.Services.Time;
 
@@ -1126,9 +1128,20 @@ namespace SynOS.Api.Controllers
                     BranchName = visit?.Branch?.Name ?? "Main Facility",
                     ReferralPartnerName = visit?.ReferralPartner?.Name,
                     TotalBilled = totalBilled,
-                    RefundedAmount = refunds > 0 ? refunds : (totalPaid > 0 ? totalPaid : 0m),
+                    TotalAmountPaid = c.TotalAmountPaid > 0 ? c.TotalAmountPaid : totalPaid,
+                    RefundedAmount = refunds > 0 ? refunds : c.ImmediateRefundPaid,
+                    ImmediateRefundPaid = c.ImmediateRefundPaid > 0 ? c.ImmediateRefundPaid : refunds,
+                    BalancePendingRefund = c.BalancePendingRefund > 0 
+                        ? c.BalancePendingRefund 
+                        : (c.RefundStatus == "Pending" || (string.IsNullOrEmpty(c.RefundStatus) && totalPaid > 0 && refunds < totalPaid) ? Math.Max(0m, totalPaid - refunds) : 0m),
+                    RefundStatus = !string.IsNullOrEmpty(c.RefundStatus) && c.RefundStatus != "None"
+                        ? c.RefundStatus 
+                        : (refunds >= totalPaid && totalPaid > 0 ? "Settled" : (refunds > 0 ? "PartiallySettled" : (totalPaid > 0 ? "Pending" : "None"))),
                     RefundMethod = refundMethod,
-                    HasRefund = refunds > 0 || totalPaid > 0
+                    HasRefund = refunds > 0 || c.BalancePendingRefund > 0 || totalPaid > 0,
+                    FinalSettledAt = c.FinalSettledAt,
+                    SettlementReceiptNo = c.SettlementReceiptNo,
+                    SettlementNotes = c.SettlementNotes
                 };
             });
 
@@ -1150,6 +1163,321 @@ namespace SynOS.Api.Controllers
             }
 
             return Ok(result.ToList());
+        }
+
+        [HttpPost("cancellations/{cancelId}/disburse-refund")]
+        public async Task<IActionResult> DisburseCancellationRefund(
+            Guid cancelId,
+            [FromBody] DisburseRefundRequestDto request)
+        {
+            var cancellation = await _context.VisitCancellations
+                .Include(c => c.Visit)
+                    .ThenInclude(v => v.Patient)
+                .Include(c => c.Visit)
+                    .ThenInclude(v => v.Invoices)
+                        .ThenInclude(i => i.Payments)
+                .FirstOrDefaultAsync(c => c.CancelId == cancelId);
+
+            if (cancellation == null)
+            {
+                return NotFound(new { message = $"Cancellation record {cancelId} not found." });
+            }
+
+            var visit = cancellation.Visit;
+            if (visit == null)
+            {
+                return BadRequest(new { message = "Associated visit not found." });
+            }
+
+            var invoice = visit.Invoices.FirstOrDefault();
+            if (invoice == null)
+            {
+                return BadRequest(new { message = "Associated invoice not found." });
+            }
+
+            // Determine current pending balance
+            var payments = invoice.Payments.ToList();
+            var totalPaid = payments.Where(p => p.Amount > 0).Sum(p => p.Amount);
+            var alreadyRefunded = payments.Where(p => p.Amount < 0).Sum(p => Math.Abs(p.Amount));
+            var maxRefundable = Math.Max(0m, totalPaid - alreadyRefunded);
+
+            var effectivePending = cancellation.BalancePendingRefund > 0 ? cancellation.BalancePendingRefund : maxRefundable;
+            if (effectivePending <= 0)
+            {
+                return BadRequest(new { message = "This cancellation has no pending refund balance to disburse." });
+            }
+
+            var amountToDisburse = request.Amount > 0 ? Math.Min(request.Amount, effectivePending) : effectivePending;
+            if (amountToDisburse <= 0)
+            {
+                return BadRequest(new { message = "Disbursement amount must be greater than zero." });
+            }
+
+            // Resolve actor userId
+            var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value 
+                              ?? User.FindFirst("sub")?.Value;
+            Guid userId = Guid.Empty;
+            if (userIdClaim != null && Guid.TryParse(userIdClaim, out var parsedId))
+            {
+                userId = parsedId;
+            }
+            else
+            {
+                userId = await _context.Users.OrderBy(u => u.CreatedAt).Select(u => u.UserId).FirstOrDefaultAsync();
+            }
+
+            var method = !string.IsNullOrWhiteSpace(request.PaymentMethod) ? request.PaymentMethod : "Cash";
+            var receiptNo = $"REF-DISB-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..6].ToUpper()}";
+
+            var refundPayment = new Payment
+            {
+                PaymentId = Guid.NewGuid(),
+                InvoiceId = invoice.InvoiceId,
+                Amount = -amountToDisburse,
+                Method = method,
+                ReceiptNo = receiptNo,
+                ReceivedAt = DateTime.UtcNow,
+                ReceivedByUserId = userId
+            };
+            _context.Payments.Add(refundPayment);
+
+            // Update cancellation record
+            cancellation.TotalAmountPaid = totalPaid;
+            cancellation.ImmediateRefundPaid = alreadyRefunded + amountToDisburse;
+            cancellation.BalancePendingRefund = Math.Max(0m, effectivePending - amountToDisburse);
+            cancellation.RefundStatus = cancellation.BalancePendingRefund <= 0 ? "Settled" : "PartiallySettled";
+            cancellation.FinalSettledAt = DateTime.UtcNow;
+            cancellation.FinalSettledByUserId = userId;
+            cancellation.SettlementReceiptNo = receiptNo;
+            if (!string.IsNullOrWhiteSpace(request.Notes))
+            {
+                cancellation.SettlementNotes = string.IsNullOrWhiteSpace(cancellation.SettlementNotes)
+                    ? request.Notes
+                    : $"{cancellation.SettlementNotes}; {request.Notes}";
+            }
+
+            // Declare Outflow RevenueFact
+            await _revenueFactWriter.DeclareRevenueFactAsync(new SynOS.Models.DTOs.Revenue.DeclareRevenueFactCommand
+            {
+                OccurredAt = DateTimeOffset.UtcNow,
+                Amount = amountToDisburse,
+                Currency = "INR",
+                Direction = RevenueDirection.Reversal,
+                SourceType = RevenueSourceType.Patient,
+                SourceReferenceId = cancellation.CancelId.ToString(),
+                PaymentMode = method.IndexOf("Cash", StringComparison.OrdinalIgnoreCase) >= 0 
+                    ? PaymentMode.Cash 
+                    : PaymentMode.UPI,
+                DeclaredByUserId = userId,
+                Notes = $"Disbursed pending refund for cancelled visit {visit.Token}: {request.Notes}",
+                ExternalTransactionId = receiptNo
+            });
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                success = true,
+                receiptNo = receiptNo,
+                amountDisbursed = amountToDisburse,
+                remainingBalance = cancellation.BalancePendingRefund,
+                refundStatus = cancellation.RefundStatus,
+                paymentMethod = method,
+                disbursedAt = DateTime.UtcNow
+            });
+        }
+
+        [HttpGet("cash-drawer/my-ledger")]
+        public async Task<IActionResult> GetMyCashDrawerLedger(
+            [FromQuery] DateTime? date = null,
+            [FromQuery] Guid? userId = null)
+        {
+            // 1. Resolve user ID
+            Guid effectiveUserId = Guid.Empty;
+            if (userId.HasValue && userId.Value != Guid.Empty)
+            {
+                effectiveUserId = userId.Value;
+            }
+            else
+            {
+                var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value 
+                                  ?? User.FindFirst("sub")?.Value;
+                if (userIdClaim != null && Guid.TryParse(userIdClaim, out var parsedId))
+                {
+                    effectiveUserId = parsedId;
+                }
+                else
+                {
+                    effectiveUserId = await _context.Users.OrderBy(u => u.CreatedAt).Select(u => u.UserId).FirstOrDefaultAsync();
+                }
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == effectiveUserId);
+            var userName = user != null && !string.IsNullOrEmpty(user.Name) ? user.Name : (user?.Username ?? "Desk Cashier");
+
+            // 2. Resolve date range
+            var targetDate = date ?? _labTimeProvider.GetLabNow();
+            var startUtc = targetDate.Date.ToUniversalTime();
+            var endUtc = startUtc.AddDays(1);
+
+            // 3. Query all Cash Payments received by this user today
+            var cashPayments = await _context.Payments
+                .Include(p => p.Invoice)
+                    .ThenInclude(i => i.Visit)
+                        .ThenInclude(v => v.Patient)
+                .Include(p => p.Invoice)
+                    .ThenInclude(i => i.Visit)
+                        .ThenInclude(v => v.ReferralPartner)
+                .Include(p => p.Invoice)
+                    .ThenInclude(i => i.Visit)
+                        .ThenInclude(v => v.Orders)
+                            .ThenInclude(o => o.Test)
+                .Where(p => p.ReceivedByUserId == effectiveUserId 
+                         && p.Method.ToLower().Contains("cash")
+                         && p.ReceivedAt >= startUtc && p.ReceivedAt < endUtc)
+                .OrderBy(p => p.ReceivedAt)
+                .AsNoTracking()
+                .ToListAsync();
+
+            // 4. Query all Cash Daily Expenses recorded by this user today
+            var userPayables = await _context.OverheadPayableFacts
+                .Where(p => p.CreatedBy == effectiveUserId
+                         && p.CreatedAt >= startUtc && p.CreatedAt < endUtc
+                         && p.Status != SynOS.Models.Enums.Payables.VendorPayableStatus.Cancelled)
+                .OrderBy(p => p.CreatedAt)
+                .AsNoTracking()
+                .ToListAsync();
+
+            List<SpendFact> userSpendFacts = new();
+            if (userPayables.Any())
+            {
+                var userPrefixes = userPayables.Select(p => $"OHP-{p.OverheadPayableId.ToString().Substring(0, 8)}").ToList();
+                userSpendFacts = await _context.SpendFacts
+                    .Where(s => userPrefixes.Any(pfx => s.TransactionReference.StartsWith(pfx)))
+                    .AsNoTracking()
+                    .ToListAsync();
+            }
+
+            // 5. Build unified transaction items
+            var transactions = new List<CashDrawerLedgerItemDto>();
+
+            foreach (var p in cashPayments)
+            {
+                var visit = p.Invoice?.Visit;
+                var patientName = visit?.Patient != null ? $"{visit.Patient.FirstName} {visit.Patient.LastName}".Trim() : "Direct Patient";
+                var isRefund = p.Amount < 0;
+                var isB2B = visit != null && (visit.PaymentCollectionModel == "PartnerCollects" || (visit.ReferralPartnerId != null && p.ReceiptNo.StartsWith("REC-B2B")));
+                var testNames = visit?.Orders?.Select(o => o.Test?.TestName).Where(n => !string.IsNullOrEmpty(n)).Take(2).ToList() ?? new List<string?>();
+                var testSummary = testNames.Any() ? string.Join(", ", testNames) : "Clinical Investigation";
+
+                string type;
+                string category;
+                string particulars;
+
+                if (isRefund)
+                {
+                    type = "PATIENT_REFUND";
+                    category = "Outflow";
+                    particulars = $"Refund to {patientName} (Token: {visit?.Token ?? "Cancelled"})";
+                }
+                else if (isB2B)
+                {
+                    type = "B2B_CASH";
+                    category = "Inflow";
+                    particulars = $"B2B Partner Inflow: {visit?.ReferralPartner?.Name ?? "Referral Partner"} ({patientName})";
+                }
+                else
+                {
+                    type = "PATIENT_CASH";
+                    category = "Inflow";
+                    particulars = $"{patientName} • {testSummary} ({visit?.Token ?? "Walk-In"})";
+                }
+
+                transactions.Add(new CashDrawerLedgerItemDto
+                {
+                    Id = p.PaymentId.ToString(),
+                    Timestamp = p.ReceivedAt,
+                    Type = type,
+                    Category = category,
+                    ReferenceNo = p.ReceiptNo,
+                    Token = visit?.Token,
+                    Particulars = particulars,
+                    Amount = Math.Abs(p.Amount),
+                    InflowAmount = p.Amount > 0 ? p.Amount : 0m,
+                    OutflowAmount = p.Amount < 0 ? Math.Abs(p.Amount) : 0m,
+                    PaymentMethod = "Cash",
+                    Notes = p.ReceiptNo
+                });
+            }
+
+            foreach (var up in userPayables)
+            {
+                var pfx = $"OHP-{up.OverheadPayableId.ToString().Substring(0, 8)}";
+                var sf = userSpendFacts.FirstOrDefault(s => s.TransactionReference.StartsWith(pfx));
+                bool isCashExpense = (sf != null && sf.PaymentMethod == PaymentMethod.Cash) || (sf == null && up.AmountPaid > 0);
+                if (isCashExpense)
+                {
+                    transactions.Add(new CashDrawerLedgerItemDto
+                    {
+                        Id = up.OverheadPayableId.ToString(),
+                        Timestamp = up.CreatedAt,
+                        Type = "DAILY_EXPENSE",
+                        Category = "Outflow",
+                        ReferenceNo = $"EXP-{up.OverheadPayableId.ToString()[..8].ToUpper()}",
+                        Token = null,
+                        Particulars = $"Expense: {(!string.IsNullOrEmpty(up.Description) ? up.Description : "Petty Cash")} • {up.Category}",
+                        Amount = up.AmountPaid,
+                        InflowAmount = 0m,
+                        OutflowAmount = up.AmountPaid,
+                        PaymentMethod = "Cash",
+                        Notes = up.Description
+                    });
+                }
+            }
+
+            // Sort chronologically ascending
+            transactions = transactions.OrderBy(t => t.Timestamp).ToList();
+
+            // Compute running balance
+            decimal running = 0m;
+            foreach (var t in transactions)
+            {
+                running += (t.InflowAmount - t.OutflowAmount);
+                t.RunningBalance = running;
+            }
+
+            var totalInflow = transactions.Sum(t => t.InflowAmount);
+            var totalOutflow = transactions.Sum(t => t.OutflowAmount);
+            var patientCashTotal = transactions.Where(t => t.Type == "PATIENT_CASH").Sum(t => t.InflowAmount);
+            var b2bCashTotal = transactions.Where(t => t.Type == "B2B_CASH").Sum(t => t.InflowAmount);
+            var expenseOutflowTotal = transactions.Where(t => t.Type == "DAILY_EXPENSE").Sum(t => t.OutflowAmount);
+            var refundOutflowTotal = transactions.Where(t => t.Type == "PATIENT_REFUND").Sum(t => t.OutflowAmount);
+            var netCash = Math.Max(0m, totalInflow - totalOutflow);
+
+            return Ok(new
+            {
+                userId = effectiveUserId,
+                userName = userName,
+                shiftDate = targetDate.ToString("yyyy-MM-dd"),
+                openingFloat = 0.00m,
+                totalInflow = totalInflow,
+                totalOutflow = totalOutflow,
+                netCashInDrawer = netCash,
+                inflowBreakdown = new
+                {
+                    patientDeskCash = patientCashTotal,
+                    b2bPartnerCash = b2bCashTotal,
+                    otherInflows = totalInflow - (patientCashTotal + b2bCashTotal)
+                },
+                outflowBreakdown = new
+                {
+                    dailyExpensesCash = expenseOutflowTotal,
+                    refundsCash = refundOutflowTotal,
+                    otherOutflows = totalOutflow - (expenseOutflowTotal + refundOutflowTotal)
+                },
+                transactionCount = transactions.Count,
+                transactions = transactions
+            });
         }
 
         #endregion

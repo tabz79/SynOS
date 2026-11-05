@@ -568,6 +568,254 @@
    * In `StartVisitAsync`, suppressed `BranchEventType.VISIT_STARTED` emission when `visit.Status == VisitStatus.Draft || visit.Token.StartsWith("D-")`.
    * In `CancelVisitAsync`, suppressed `BranchEventType.VISIT_CANCELLED` timeline broadcast for draft visits (`visit.Token.StartsWith("D-")`).
 
+---
+
+## 18. Reception Desk Keyboard Trapping & Focus Reset on B2B Concession Entry — [RESOLVED & VERIFIED]
+### Severity: High / Front-Desk Operational Throughput & Ergonomics Failure
+### Impacted Module & Files
+* **Component:** [`BillingSummary.jsx:1810-1845`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/components/BillingSummary.jsx#L1810-L1845) (`input-b2b-discount` input & `handleSaveB2BDiscount`)
+* **Focus Orchestration:** [`VisitDetails.jsx:710-755`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/components/VisitDetails.jsx#L710-L755) (`findFirstFinancialsTarget`)
+* **Video Evidence:** `/Users/tabrez/Downloads/export-1793854190948.mp4` (Duration: 47.6s)
+
+### Incident Evidence (Video Breakdown: Frame by Frame)
+1. **Intake Setup (0:00 - 0:18):**
+   * Patient: `Test Patient1`, Billing Mode: `Corporate B2B (Prepaid)`, Doctor: `Dr. Khaleeq`, Test: `LFT - LIVER FUNCTION TEST` (Gross: ₹600).
+2. **Concession Input (0:19 - 0:24):**
+   * In Financials Section 3, user enters `100` into `Flat Concession` input (`id="input-b2b-discount"`).
+   * A blue `Save` button conditionally appears next to the input (`{isB2BEditing && <button>Save</button>}`).
+3. **Tab Key Hijack & Save Skip (0:24 - 0:30):**
+   * User presses `Tab` expecting focus to move to the `Save` button.
+   * **Observed Failure:** Focus completely skips `Save` and jumps directly into `Search doctor to overrule default account...` (`id="input-b2b-doctor-search"`), popping open the suggestion dropdown (`DR.B.DURGA SURESH`, `Dr Test Partner 3`, etc.).
+   * The next `Tab` press jumps past the dropdown to the primary submit button `Confirm Corporate B2B Bill (₹0)` at the bottom of the modal.
+4. **Enter Key Focus Destruction (0:31 - 0:45):**
+   * User Shift-Tabs back to the `100` Flat Concession input and hits the `Enter` key.
+   * The concession of ₹100 applies immediately (Net Doctor Bill drops to ₹500, `isB2BEditing` becomes false, `Save` button unmounts).
+   * **Observed Failure:** The moment `Enter` commits the discount, keyboard focus is completely destroyed (`activeElement` resets to `document.body`). There is no active focus ring on screen.
+   * The user presses `Tab` again: because focus was lost to `document.body`, the browser's tab order cycles from the very top of the entire modal (Patient Identification, MRN, Test Search, etc.). The user is forced to manually click with the mouse or loop through all previous form elements to reach `Confirm Corporate B2B Bill`.
+
+### Forensic Root Cause Analysis
+
+1. **Explicit Tab Interception Hijacking (`BillingSummary.jsx:1820-1835`):**
+   ```javascript
+   } else if (e.key === 'Tab') {
+       if (!e.shiftKey) {
+           const nextInput = document.getElementById('input-b2b-doctor-search') ||
+                             document.getElementById('btn-unified-action');
+           if (nextInput) {
+               e.preventDefault();
+               e.stopPropagation();
+               nextInput.focus();
+           }
+       }
+   ```
+   * **Mechanism:** When the user types a discount, `isB2BEditing` is `true`, causing `<button>Save</button>` to render immediately after `<input id="input-b2b-discount">` in the DOM.
+   * In standard browser tab navigation, `Tab` would naturally focus this `Save` button. However, the custom `onKeyDown` explicitly executed `e.preventDefault()` and forcibly jumped to `input-b2b-doctor-search`. It was physically impossible for a keyboard-only user to tab into the `Save` button.
+
+2. **DOM Disabling Blurs Active Element to `document.body` (`BillingSummary.jsx:1788` & `555-575`):**
+   ```javascript
+   // Inside input:
+   disabled={!canPerformActions || isProcessing}
+
+   // Inside handleSaveB2BDiscount:
+   setIsProcessing(true);
+   try {
+       await ReceptionApi.updateB2BDiscountRate(...);
+       setIsB2BEditing(false);
+       if (onVisitUpdated) onVisitUpdated();
+   } finally {
+       setIsProcessing(false);
+   }
+   ```
+   * **Mechanism:** When `Enter` is pressed, `handleSaveB2BDiscount` sets `isProcessing = true`.
+   * Under W3C HTML specifications, setting `disabled = true` on the currently focused element causes the browser to immediately blur the element and reset focus to `document.body`.
+   * Unmounting the `Save` button (`isB2BEditing = false`) further invalidates any local references.
+   * When `onVisitUpdated()` reloads visit state and re-renders the component tree, there is zero focus-restoration logic. The active element remains `document.body`, causing subsequent `Tab` keystrokes to restart at the beginning of the modal.
+
+### Why This is Fragile (Anti-Patterns in Front-Desk UI)
+1. **Hardcoded Element ID Leaps:** Hardcoding `getElementById('input-b2b-doctor-search')` inside `Tab` key handlers breaks whenever any UI element (badges, buttons, alerts, helper text) is inserted between the inputs.
+2. **Manual Save Button Anti-Pattern:** Requiring a front-desk operator to manually click or tab to a separate "Save" button just to confirm a single discount number is an obsolete modal anti-pattern. In high-speed ERP intake (Epic / Cerner), discount entries auto-commit on `Enter` or `Blur`.
+
+### Enterprise-Grade Fix Specification (For Implementation Agent)
+
+1. **Auto-Commit on Enter & Natural Tab Flow (`BillingSummary.jsx`):**
+   * Remove the hardcoded `Tab` override on `input-b2b-discount`. Allow the browser to follow natural, accessible DOM tab flow.
+   * If the user types a discount and presses `Tab` or `Blur`, auto-stage/save the value seamlessly without requiring a separate click.
+   * If the user presses `Enter` on `input-b2b-discount`:
+     - Save/commit the discount immediately.
+     - **Forward-Advance Focus:** Programmatically advance focus directly to the next logical action target:
+       ```javascript
+       const forwardTarget = document.getElementById('input-b2b-doctor-search') || 
+                             document.getElementById('btn-unified-action');
+       forwardTarget?.focus();
+       ```
+
+2. **Eliminate Focus-Killing `disabled` State during Processing:**
+   * Instead of setting `disabled={isProcessing}` on the input (which forces the browser to eject focus to `body`), use `readOnly={isProcessing}` or visual loading indicators (`aria-busy="true"`).
+   * This guarantees that even during async API round-trips with `onVisitUpdated()`, the browser never drops focus to `document.body`.
+
+3. **Post-Update Focus Restoration Guard:**
+   * In `handleSaveB2BDiscount`:
+     ```javascript
+     const nextTargetId = 'btn-unified-action'; // Fast-path straight to Confirm Corporate B2B Bill
+     try {
+         await ReceptionApi.updateB2BDiscountRate(...);
+         if (onVisitUpdated) await onVisitUpdated();
+     } finally {
+         setTimeout(() => {
+             const target = document.getElementById(nextTargetId);
+             target?.focus();
+         }, 50);
+     }
+     ```
+   * Fast-path keyboard operator: Type `100` -> Hit `Enter` -> Discount saves -> Focus immediately lands on `Confirm Corporate B2B Bill` -> Hit `Enter` -> Done in 2 seconds without touching the mouse.
+
+---
+
+## 19. Reality Summary Card Height Squishing on Minimize — [RESOLVED & VERIFIED]
+### Severity: Medium / Visual Ergonomics & Layout Consistency
+### Impacted Module & Files
+* **Component:** [`RealitySummary.jsx:70-130, 240-310`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/components/layout/RealitySummary.jsx#L70-L130)
+* **Parent Screen:** [`ReceptionScreen.jsx:465-485`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/ReceptionScreen.jsx#L465-L485)
+* **Video Evidence:** `/Users/tabrez/Downloads/export-1793855122783.mp4` (Duration: 12.6s)
+
+### Incident Evidence (Video Breakdown)
+* **Default State (0:00 - 0:02):**
+  - Reality Summary renders 8 KPI cards in a 2-row x 4-column grid (`Walk-Ins`, `Cash Collected`, `Online Payments`, `Online Total`, `Prepaid Bills Issued`, `Prepaid Total`, `Recorded Expenses`, `Cash in the Drawer`).
+  - Cards have standard full dimensions (`h-28 sm:h-32`), prominent 4xl/5xl numeric values, top-right icons, and bottom label footers.
+* **Minimized State Failure (0:03 - 0:12):**
+  - User clicks the collapse chevron on Reality Summary.
+  - Cards collapse into 6 cards in 1 row, but their height collapses into an ultra-narrow ~25px ribbon pill (`px-4 py-2.5 gap-0 h-full`).
+  - Text shrinks to tiny 12px font (`Icon Label: Value`), stripping away the card aesthetic and making numbers difficult to read at a glance.
+* **The User Expectation:**
+  - Minimizing should save vertical screen space by **eliminating the second row of cards** (reducing from 8 cards across 2 rows to 6 primary cards in 1 row).
+  - The 6 cards in that single row **must preserve their standard full card height (`h-28 sm:h-32`) and prominent typography**, rather than compressing into narrow ribbon pills.
+
+### Forensic Root Cause Analysis
+In [`RealitySummary.jsx:70-130`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/components/layout/RealitySummary.jsx#L70-L130):
+```javascript
+// Line 80: Height condition strips full card height:
+isCollapsed ? "px-4 py-2.5 gap-0 h-full" : "p-4 sm:p-5 h-28 sm:h-32 gap-0"
+
+// Line 88: Complete layout swap to horizontal single-line pill:
+{isCollapsed ? (
+    <div className="flex items-center justify-between w-full h-full">
+        <div className="flex items-center gap-1.5 min-w-0">
+            {Icon && <Icon className="w-3.5 h-3.5 text-zinc-500 shrink-0" />}
+            <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 truncate">
+                {displayLabel}:
+            </span>
+            <span className={cn("font-bold text-sm tabular-nums", ui.text)}>
+                {value}
+            </span>
+...
+```
+* When `isCollapsed` is true, the component completely unmounts the standard vertical card layout and swaps in a single-line horizontal flex pill.
+* In the grid container ([`RealitySummary.jsx:298-305`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/components/layout/RealitySummary.jsx#L298-L305)), `isCollapsed` sets `grid-cols-6 grid-rows-[auto_0px]`, which is the correct 6-column single-row structure, but the card interior artificially deflates into a micro-ribbon.
+
+### Enterprise-Grade Fix Specification (For Implementation Agent)
+1. **Preserve Card Height & Layout Contract in Collapsed Mode:**
+   * In `RealityTile`, preserve standard card dimensions regardless of `isCollapsed`:
+     ```javascript
+     // Retain consistent full card height:
+     className={cn(
+         "rounded-xl transition-[transform,opacity] duration-300 group cursor-default flex flex-col",
+         ui.card,
+         "p-3.5 sm:p-4 h-28 sm:h-30 gap-0", // Height preserved across both states
+         isHidden && "opacity-0 pointer-events-none"
+     )}
+     ```
+   * Remove the layout swap that replaces cards with horizontal text pills. The cards in the 6-column collapsed row must render the same bold, readable metrics and icons as the expanded view.
+2. **Container Row Preservation (`RealitySummary.jsx`):**
+   * Keep `isCollapsed ? "grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 p-1" : "grid-cols-2 md:grid-cols-4 gap-3.5 sm:gap-4 p-1"`.
+   * Cards 7 & 8 (`idx >= 6`) are cleanly unmounted/hidden when `isCollapsed` is true, saving exactly one row of screen real estate (~130px) without shrinking the height of cards 1 through 6.
+
+---
+
+## 20. Accounts Receivable Terminal Accordion Lock & Visual Contrast Bleed — [RESOLVED & VERIFIED]
+### Severity: High / Front-Desk Usability & Design System Non-Compliance
+### Impacted Module & Files
+* **Component:** [`ReceptionB2BReceivablesDrawer.jsx:60-76, 715-795`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/components/ReceptionB2BReceivablesDrawer.jsx#L60-L76)
+* **Video Evidence:** `/Users/tabrez/Downloads/export-1793855598096.mp4` (Duration: 31.7s)
+* **Design System Benchmark:** User screenshot [`media_1793855756740_5b9bb50e.png`](file:///Users/tabrez/.gemini/antigravity/brain/13b1c467-601a-446d-9a79-6ae6a930fb8a/.user_uploaded/media_1793855756740_5b9bb50e.png) (Finance > Bills & Collections)
+
+### Incident Evidence (Video Breakdown)
+* **Accordion Lock Bug (0:00 - 0:25):**
+  - User opens `Accounts Receivable Terminal #REC-B2B`.
+  - Partner 1 (`Dr Test Partner 3`, Active, ₹4,877) is expanded, showing 2 visits (`MAI-001`, `MAI-003`).
+  - User clicks the collapse chevron on `Dr Test Partner 3` to minimize it. **Nothing happens.** The card refuses to collapse.
+  - User clicks the second partner (`DR. B.DURGA SURESH, MS.`, ₹550).
+  - Suddenly, `Dr Test Partner 3` collapses and `DR. B.DURGA SURESH, MS.` expands.
+  - Now, user clicks the collapse chevron on `DR. B.DURGA SURESH, MS.` to minimize it. **Again, nothing happens.**
+* **Visual Contrast Bleed (0:00 - 0:31):**
+  - The entire terminal background, column containers, debtor cards, and nested visit cards are rendered in near-identical shades of translucent white (`bg-white/40`, `bg-white/60`, `bg-white/80`, `bg-white/90`).
+  - The cards blend into the canvas with weak borders, appearing washed-out and visually flat.
+* **Design Benchmark Contrast ([`media_1793855756740_5b9bb50e.png`](file:///Users/tabrez/.gemini/antigravity/brain/13b1c467-601a-446d-9a79-6ae6a930fb8a/.user_uploaded/media_1793855756740_5b9bb50e.png)):**
+  - In native SynOS screens (such as *Bills & Collections*), the workspace background is a calm, distinct slate-gray tone (`#EBF1F6` / `bg-slate-100` / `bg-[#F0F4F8]`).
+  - Cards are solid, crisp white (`bg-white`), framed with crisp borders and soft shadows, creating clear depth hierarchy.
+
+### Forensic Root Cause Analysis
+
+1. **The Accordion Logic Lock (`ReceptionB2BReceivablesDrawer.jsx:719`):**
+   ```javascript
+   const isSelectedPartner = selectedPartnerId === g.partnerId;
+   const isExpanded = expandedPartnerIds.has(g.partnerId) || isSelectedPartner; // ❌ HARDCODED OVERRIDE
+   ```
+   * **Mechanism:** When a partner is selected, `isSelectedPartner` is `true`.
+   * Because of `|| isSelectedPartner`, `isExpanded` is **permanently true**.
+   * Clicking the chevron calls `togglePartnerAccordion(g.partnerId)`, which toggles the ID in `expandedPartnerIds`. But because `isSelectedPartner` is still `true`, the expression `expandedPartnerIds.has(id) || true` always evaluates to `true`! The active card cannot be minimized.
+   * When the user clicks a *different* partner, `isSelectedPartner` shifts to the new partner, unlocking the previous card and causing it to abruptly collapse based on the earlier toggles.
+
+2. **White-on-White Aesthetic Bleed (`ReceptionB2BReceivablesDrawer.jsx:69-75`):**
+   ```javascript
+   panel: "bg-[radial-gradient(ellipse_at_top,_#EAF2F9_0%,_#DCE7F2_50%,_#CEDCE8_100%)]",
+   header: "bg-white/70 backdrop-blur-md border-b border-slate-200/80",
+   card: "bg-white/90 border border-[#D5E2EC] shadow-[0_4px_16px_rgba(15,35,60,0.06)]",
+   leftColumn: "bg-white/40 border-r border-slate-200/80",
+   partnerCard: "bg-white/80 border-slate-200",
+   nestedVisitCard: "bg-slate-50/70"
+   ```
+   * High translucency (`/40`, `/70`, `/80`) and lack of a solid slate canvas background creates a low-contrast, bleached appearance where boundaries disappear.
+
+### Enterprise-Grade Fix Specification (For Implementation Agent)
+
+1. **Decouple Selection from Accordion Expansion (`ReceptionB2BReceivablesDrawer.jsx`):**
+   * Change `expandedPartnerIds` from a passive Set to an explicit source of truth for open/close state:
+     ```javascript
+     // Partner expansion is governed solely by expandedPartnerIds:
+     const isExpanded = expandedPartnerIds.has(g.partnerId);
+     ```
+   * In `selectPartner(group)`:
+     ```javascript
+     const selectPartner = (group) => {
+         setSelectedPartnerId(group.partnerId);
+         // Open accordion if not already open, but allow subsequent user toggle
+         setExpandedPartnerIds(prev => new Set([...prev, group.partnerId]));
+         ...
+     };
+     ```
+   * In `togglePartnerAccordion`:
+     ```javascript
+     const togglePartnerAccordion = (partnerId) => {
+         setExpandedPartnerIds(prev => {
+             const next = new Set(prev);
+             if (next.has(partnerId)) next.delete(partnerId);
+             else next.add(partnerId);
+             return next;
+         });
+     };
+     ```
+   * Now clicking the minimize chevron on *any* card (active or inactive) immediately toggles it closed or open without interference.
+
+2. **Align with Native SynOS Slate Canvas & Crisp Card System:**
+   * Adopt the proven color palette from [`Bills & Collections`](file:///Users/tabrez/.gemini/antigravity/brain/13b1c467-601a-446d-9a79-6ae6a930fb8a/.user_uploaded/media_1793855756740_5b9bb50e.png):
+     - **Drawer Base Canvas:** Solid cool slate-gray (`bg-[#F0F4F8]` or `bg-slate-100/90`).
+     - **Left Column & Work Area:** Slate surface (`bg-[#EBF1F6]/60 dark:bg-zinc-950/40`).
+     - **Debtor Partner Cards:** Solid crisp white (`bg-white dark:bg-zinc-900`) with distinct border (`border-slate-300/80 dark:border-zinc-700`) and elevated shadow (`shadow-sm hover:shadow-md`).
+     - **Nested Visit Cards:** Distinct recessed pod (`bg-[#F4F7FA] dark:bg-zinc-800/60 border border-slate-200/80 dark:border-zinc-700/60`).
+   * Eliminates the washed-out white bleed and restores the tactile, high-contrast, professional SynOS aesthetic.
+
+
+
 
 
 

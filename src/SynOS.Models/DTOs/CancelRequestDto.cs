@@ -9,6 +9,7 @@ namespace SynOS.Models.DTOs
         public string Reason { get; set; } = string.Empty;
         public string? Notes { get; set; }
         public string? RefundMethod { get; set; }
+        public decimal? ImmediateRefundAmount { get; set; }
 
         [Required]
         public Guid CancelledByUserId { get; set; }

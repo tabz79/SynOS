@@ -29,5 +29,33 @@ namespace SynOS.Models.Entities
         public User? CancelledBy { get; set; }
 
         public DateTime CancelledAt { get; set; } = DateTime.UtcNow;
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal TotalAmountPaid { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal ImmediateRefundPaid { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal BalancePendingRefund { get; set; }
+
+        [StringLength(50)]
+        public string RefundStatus { get; set; } = "None"; // "None" | "Settled" | "Pending" | "PartiallySettled"
+
+        [StringLength(50)]
+        public string? ImmediateRefundMethod { get; set; }
+
+        public DateTime? FinalSettledAt { get; set; }
+
+        public Guid? FinalSettledByUserId { get; set; }
+
+        [ForeignKey("FinalSettledByUserId")]
+        public User? FinalSettledBy { get; set; }
+
+        [StringLength(64)]
+        public string? SettlementReceiptNo { get; set; }
+
+        [Column(TypeName = "nvarchar(max)")]
+        public string? SettlementNotes { get; set; }
     }
 }

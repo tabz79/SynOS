@@ -694,6 +694,52 @@ BEGIN
       AND rf.SettledAt IS NULL
       AND rf.AmountReceived = 0;
 END
+
+-- 28. Add Partial / Pending Refund Tracking columns to VisitCancellations
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('VisitCancellations') AND name = 'TotalAmountPaid')
+BEGIN
+    ALTER TABLE [VisitCancellations] ADD [TotalAmountPaid] decimal(18,2) NOT NULL DEFAULT 0;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('VisitCancellations') AND name = 'ImmediateRefundPaid')
+BEGIN
+    ALTER TABLE [VisitCancellations] ADD [ImmediateRefundPaid] decimal(18,2) NOT NULL DEFAULT 0;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('VisitCancellations') AND name = 'BalancePendingRefund')
+BEGIN
+    ALTER TABLE [VisitCancellations] ADD [BalancePendingRefund] decimal(18,2) NOT NULL DEFAULT 0;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('VisitCancellations') AND name = 'RefundStatus')
+BEGIN
+    ALTER TABLE [VisitCancellations] ADD [RefundStatus] nvarchar(50) NOT NULL DEFAULT 'None';
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('VisitCancellations') AND name = 'ImmediateRefundMethod')
+BEGIN
+    ALTER TABLE [VisitCancellations] ADD [ImmediateRefundMethod] nvarchar(50) NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('VisitCancellations') AND name = 'FinalSettledAt')
+BEGIN
+    ALTER TABLE [VisitCancellations] ADD [FinalSettledAt] datetime2 NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('VisitCancellations') AND name = 'FinalSettledByUserId')
+BEGIN
+    ALTER TABLE [VisitCancellations] ADD [FinalSettledByUserId] uniqueidentifier NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('VisitCancellations') AND name = 'SettlementReceiptNo')
+BEGIN
+    ALTER TABLE [VisitCancellations] ADD [SettlementReceiptNo] nvarchar(64) NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('VisitCancellations') AND name = 'SettlementNotes')
+BEGIN
+    ALTER TABLE [VisitCancellations] ADD [SettlementNotes] nvarchar(max) NULL;
+END
 ";
             context.Database.ExecuteSqlRaw(sql);
         }

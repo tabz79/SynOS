@@ -66,13 +66,12 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose, embedded = fals
         subtitle: "text-zinc-400"
     } : {
         panel: cn(
-            "bg-[radial-gradient(ellipse_at_top,_#EAF2F9_0%,_#DCE7F2_50%,_#CEDCE8_100%)]",
-            "border-l border-white/80 shadow-[-20px_0_60px_rgba(15,35,60,0.18)] z-30"
+            "bg-[#F0F4F8] border-l border-slate-300 shadow-[-20px_0_60px_rgba(15,35,60,0.18)] z-30"
         ),
-        header: "bg-white/70 backdrop-blur-md border-b border-slate-200/80",
-        footer: "bg-white/90 backdrop-blur-md border-t border-slate-200/80 shadow-[0_-4px_20px_-10px_rgba(15,35,60,0.15)]",
-        card: "bg-white/90 border border-[#D5E2EC] shadow-[0_4px_16px_rgba(15,35,60,0.06)] rounded-2xl",
-        recessedPod: "rounded-xl border border-[#DCE7F2] bg-[#F2F7FA] shadow-[inset_0_1px_3px_rgba(15,35,60,0.06)]",
+        header: "bg-white border-b border-slate-200/90 shadow-2xs",
+        footer: "bg-white border-t border-slate-200/90 shadow-[0_-4px_20px_-10px_rgba(15,35,60,0.08)]",
+        card: "bg-white border border-slate-200 shadow-xs rounded-2xl",
+        recessedPod: "rounded-xl border border-slate-200 bg-[#F8FAFC] shadow-2xs",
         title: "text-slate-900",
         subtitle: "text-slate-500"
     };
@@ -716,7 +715,8 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose, embedded = fals
                                             ) : (
                                                 filteredGroups.map(g => {
                                                     const isSelectedPartner = selectedPartnerId === g.partnerId;
-                                                    const isExpanded = expandedPartnerIds.has(g.partnerId) || isSelectedPartner;
+                                                    // Partner expansion is governed solely by expandedPartnerIds
+                                                    const isExpanded = expandedPartnerIds.has(g.partnerId);
                                                     const partnerVisits = g.visits || [];
                                                     const partnerSelectedVisits = partnerVisits.filter(v => selectedFactIds.includes(v.receivableFactId));
                                                     const isAllSelected = partnerVisits.length > 0 && partnerSelectedVisits.length === partnerVisits.length;
@@ -727,8 +727,8 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose, embedded = fals
                                                             className={cn(
                                                                 "rounded-2xl border transition-all overflow-hidden",
                                                                 isSelectedPartner
-                                                                    ? "border-emerald-500/70 dark:border-emerald-500/50 shadow-md bg-white dark:bg-zinc-900"
-                                                                    : "border-slate-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/60 hover:border-slate-300"
+                                                                    ? "border-emerald-500 shadow-md bg-white dark:bg-zinc-900 ring-2 ring-emerald-500/10"
+                                                                    : "border-slate-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-2xs hover:border-slate-400"
                                                             )}
                                                         >
                                                             {/* Partner Accordion Header */}
@@ -851,8 +851,8 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose, embedded = fals
                                                                                     className={cn(
                                                                                         "p-2.5 rounded-xl border flex items-center justify-between gap-3 text-xs transition-all cursor-pointer",
                                                                                         isChecked
-                                                                                            ? "bg-white dark:bg-zinc-900 border-emerald-500/40 shadow-xs ring-1 ring-emerald-500/20"
-                                                                                            : "bg-white/60 dark:bg-zinc-900/40 border-slate-200/80 dark:border-zinc-800 hover:bg-white dark:hover:bg-zinc-900 opacity-80"
+                                                                                            ? "bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-500/50 shadow-xs ring-1 ring-emerald-500/20"
+                                                                                            : "bg-[#F4F7FA] dark:bg-zinc-800/60 border-slate-200 dark:border-zinc-700/60 hover:bg-white dark:hover:bg-zinc-800 text-slate-800 dark:text-zinc-200"
                                                                                     )}
                                                                                 >
                                                                                     <div className="flex items-center gap-2.5 min-w-0">

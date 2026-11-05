@@ -1430,41 +1430,84 @@ namespace SynOS.Services
 
                 // Refund logic: Calculate exact net paid amount
                 var netPaid = invoice.Payments.Sum(p => p.Amount);
+                decimal immediateRefund = 0m;
+                decimal balancePending = 0m;
+                string refundStatus = "None";
+
                 if (netPaid > 0)
                 {
-                    totalRefunded = netPaid;
+                    // Check if immediate refund amount is explicitly specified (support for split refund / refund later)
+                    immediateRefund = cancelDto.ImmediateRefundAmount.HasValue
+                        ? Math.Clamp(cancelDto.ImmediateRefundAmount.Value, 0m, netPaid)
+                        : netPaid;
+                    balancePending = Math.Max(0m, netPaid - immediateRefund);
+
+                    if (balancePending == 0m)
+                    {
+                        refundStatus = "Settled";
+                    }
+                    else if (immediateRefund > 0m)
+                    {
+                        refundStatus = "PartiallySettled";
+                    }
+                    else
+                    {
+                        refundStatus = "Pending"; // 100% to be refunded later
+                    }
+
                     var firstPayment = invoice.Payments.FirstOrDefault(p => p.Amount > 0);
                     refundMethod = !string.IsNullOrWhiteSpace(cancelDto.RefundMethod) 
                         ? (cancelDto.RefundMethod.IndexOf("Cash", StringComparison.OrdinalIgnoreCase) >= 0 ? "Cash" : "UPI") 
                         : (firstPayment?.Method ?? "Cash");
 
-                    var refundReceiptNo = await GenerateUniqueReceiptNoAsync("REF-CAN", visit.Token);
-                    var refundPayment = new Payment
-                    {
-                        PaymentId = Guid.NewGuid(),
-                        InvoiceId = invoice.InvoiceId,
-                        Amount = -netPaid,
-                        Method = refundMethod,
-                        ReceiptNo = refundReceiptNo,
-                        ReceivedAt = DateTime.UtcNow,
-                        ReceivedByUserId = cancelDto.CancelledByUserId
-                    };
-                    _context.Payments.Add(refundPayment);
+                    cancellation.TotalAmountPaid = netPaid;
+                    cancellation.ImmediateRefundPaid = immediateRefund;
+                    cancellation.BalancePendingRefund = balancePending;
+                    cancellation.RefundStatus = refundStatus;
+                    cancellation.ImmediateRefundMethod = immediateRefund > 0 ? refundMethod : "None";
 
-                    // Declare Outflow RevenueFact for Cash/Online drawer truth
-                    await _revenueFactWriter.DeclareRevenueFactAsync(new SynOS.Models.DTOs.Revenue.DeclareRevenueFactCommand
+                    if (immediateRefund > 0)
                     {
-                        OccurredAt = DateTimeOffset.UtcNow,
-                        Amount = totalRefunded,
-                        Currency = "INR",
-                        Direction = RevenueDirection.Reversal,
-                        SourceType = RevenueSourceType.Patient,
-                        SourceReferenceId = cancellation.CancelId.ToString(),
-                        PaymentMode = refundMethod.IndexOf("Cash", StringComparison.OrdinalIgnoreCase) >= 0 ? PaymentMode.Cash : PaymentMode.UPI,
-                        DeclaredByUserId = cancelDto.CancelledByUserId,
-                        Notes = $"Refund for cancelled visit {visit.Token}: {cancelDto.Reason}",
-                        ExternalTransactionId = $"REF-CAN-{DateTime.UtcNow:yyyyMMdd}-{visit.Token}"
-                    });
+                        totalRefunded = immediateRefund;
+                        var refundReceiptNo = await GenerateUniqueReceiptNoAsync("REF-CAN", visit.Token);
+                        var refundPayment = new Payment
+                        {
+                            PaymentId = Guid.NewGuid(),
+                            InvoiceId = invoice.InvoiceId,
+                            Amount = -immediateRefund,
+                            Method = refundMethod,
+                            ReceiptNo = refundReceiptNo,
+                            ReceivedAt = DateTime.UtcNow,
+                            ReceivedByUserId = cancelDto.CancelledByUserId
+                        };
+                        _context.Payments.Add(refundPayment);
+
+                        if (balancePending == 0m)
+                        {
+                            cancellation.FinalSettledAt = DateTime.UtcNow;
+                            cancellation.FinalSettledByUserId = cancelDto.CancelledByUserId;
+                            cancellation.SettlementReceiptNo = refundReceiptNo;
+                        }
+
+                        // Declare Outflow RevenueFact for Cash/Online drawer truth
+                        await _revenueFactWriter.DeclareRevenueFactAsync(new SynOS.Models.DTOs.Revenue.DeclareRevenueFactCommand
+                        {
+                            OccurredAt = DateTimeOffset.UtcNow,
+                            Amount = totalRefunded,
+                            Currency = "INR",
+                            Direction = RevenueDirection.Reversal,
+                            SourceType = RevenueSourceType.Patient,
+                            SourceReferenceId = cancellation.CancelId.ToString(),
+                            PaymentMode = refundMethod.IndexOf("Cash", StringComparison.OrdinalIgnoreCase) >= 0 ? PaymentMode.Cash : PaymentMode.UPI,
+                            DeclaredByUserId = cancelDto.CancelledByUserId,
+                            Notes = $"Immediate refund for cancelled visit {visit.Token}: {cancelDto.Reason}",
+                            ExternalTransactionId = $"REF-CAN-{DateTime.UtcNow:yyyyMMdd}-{visit.Token}"
+                        });
+                    }
+                }
+                else
+                {
+                    cancellation.RefundStatus = "None";
                 }
 
                 // If B2B partner receivable existed for this visit, settle/void it
