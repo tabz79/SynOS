@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { cn } from "@/lib/utils"
 import { useFlipGroup } from "@/hooks/useSynOSMotion"
-import { Plus, Users, ClipboardList, Bed, Clock, Loader2, ChevronDown, Package, Receipt, Wallet, TrendingDown, ArrowDownLeft } from 'lucide-react'
+import { Plus, Users, ClipboardList, Bed, Clock, Loader2, ChevronDown, Package, Receipt, Wallet, TrendingDown, ArrowDownLeft, SlidersHorizontal } from 'lucide-react'
 import { StockRequestPanel } from '../inventory/StockRequestPanel'
 import { SystemBar } from '@/components/layout/SystemBar'
 import { RealitySummary } from '@/components/layout/RealitySummary'
@@ -12,6 +12,7 @@ import { TokenCell, PatientCell, StatusCell } from '@/components/layout/ActionQu
 import { IntentPanel } from '@/features/reception/components/IntentPanel'
 import { ReceptionExpenseDrawer } from '@/features/reception/components/ReceptionExpenseDrawer'
 import { ReceptionB2BReceivablesDrawer } from '@/features/reception/components/ReceptionB2BReceivablesDrawer'
+import { ReceptionOptionsPanel } from '@/features/reception/components/ReceptionOptionsPanel'
 import { useReceptionDrawer } from '@/features/reception/hooks/useReceptionPanelUI'
 import { ReceptionApi, prewarmReceptionCatalogs } from '@/api/reception'
 import { FinanceApi } from '@/api/finance'
@@ -34,6 +35,7 @@ export function ReceptionScreen() {
     const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
     const [isExpenseDrawerOpen, setIsExpenseDrawerOpen] = useState(false);
     const [isB2BReceivablesOpen, setIsB2BReceivablesOpen] = useState(false);
+    const [isOptionsPanelOpen, setIsOptionsPanelOpen] = useState(false);
     const [todayB2BPendingCount, setTodayB2BPendingCount] = useState(0);
 
     // History State (Phase 5)
@@ -444,7 +446,7 @@ export function ReceptionScreen() {
                 <div className="flex h-full gap-4">
                     {/* Main Dashboard Panel - STABLE WIDTH, NO CONTRACTION/EXPANSION REF-LOW */}
                     <div className="flex-1 flex flex-col min-h-0 min-w-0">
-                        <div className={`flex flex-col h-full transition-opacity duration-200 ${(isIntentPanelOpen || isInventoryModalOpen || isExpenseDrawerOpen || isB2BReceivablesOpen) ? 'opacity-35 pointer-events-none' : 'opacity-100'}`}>
+                        <div className={`flex flex-col h-full transition-opacity duration-200 ${(isIntentPanelOpen || isInventoryModalOpen || isExpenseDrawerOpen || isB2BReceivablesOpen || isOptionsPanelOpen) ? 'opacity-35 pointer-events-none' : 'opacity-100'}`}>
                             <div
                                 ref={summaryRef}
                                 className="mb-2.5 shrink-0"
@@ -493,56 +495,27 @@ export function ReceptionScreen() {
 
                                     <div className="flex items-center gap-2">
                                         <button
-                                            onClick={() => setIsB2BReceivablesOpen(true)}
+                                            onClick={() => setIsOptionsPanelOpen(true)}
                                             className={cn(
-                                                "px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition-colors duration-200 flex items-center gap-2 pointer-events-auto active:scale-95 border",
-                                                theme === 'dark' 
-                                                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:text-white hover:bg-emerald-500/20" 
-                                                    : "bg-emerald-50 text-emerald-700 border-emerald-200 hover:text-emerald-900 hover:bg-emerald-100"
+                                                "px-3.5 py-2 rounded-lg text-sm font-bold shadow-lg transition-all duration-200 flex items-center gap-2 pointer-events-auto active:scale-95 border cursor-pointer",
+                                                isOptionsPanelOpen
+                                                    ? (theme === 'dark' ? "bg-zinc-800 text-white border-zinc-700" : "bg-slate-200 text-slate-900 border-slate-300")
+                                                    : (theme === 'dark' ? "bg-zinc-900 text-zinc-300 border-white/10 hover:text-white hover:bg-zinc-800" : "bg-white text-zinc-700 border-zinc-200 hover:text-zinc-900 hover:bg-zinc-50")
                                             )}
+                                            title="Quick Desk Options, Workflows & Staff HR Portal"
                                         >
-                                            <ArrowDownLeft className="w-4 h-4" />
-                                            Record B2B Receivables
+                                            <SlidersHorizontal className="w-4 h-4 text-synos-primary" />
+                                            <span>Options</span>
                                             {todayB2BPendingCount > 0 && (
-                                                <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-emerald-600 text-white">
+                                                <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-emerald-600 text-white animate-pulse">
                                                     {todayB2BPendingCount}
                                                 </span>
                                             )}
                                         </button>
                                         <button
-                                            onClick={() => setIsExpenseDrawerOpen(true)}
-                                            className={cn(
-                                                "px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition-colors duration-200 flex items-center gap-2 pointer-events-auto active:scale-95 border",
-                                                theme === 'dark' ? "bg-rose-500/10 text-rose-400 border-rose-500/20 hover:text-white hover:bg-rose-500/20" : "bg-rose-50 text-rose-700 border-rose-200 hover:text-rose-900 hover:bg-rose-100"
-                                            )}
-                                        >
-                                            <Receipt className="w-4 h-4" />
-                                            Record Expense
-                                        </button>
-                                        <button
-                                            onClick={() => navigate('/admin/patients')}
-                                            className={cn(
-                                                "px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition-colors duration-200 flex items-center gap-2 pointer-events-auto active:scale-95 border",
-                                                theme === 'dark' ? "bg-zinc-900 text-zinc-400 border-white/5 hover:text-white hover:bg-zinc-800" : "bg-white text-zinc-600 border-zinc-200 hover:text-zinc-900 hover:bg-zinc-50"
-                                            )}
-                                        >
-                                            <Users className="w-4 h-4" />
-                                            Patient Directory
-                                        </button>
-                                        <button
-                                            onClick={() => setIsInventoryModalOpen(true)}
-                                            className={cn(
-                                                "px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition-colors duration-200 flex items-center gap-2 pointer-events-auto active:scale-95 border",
-                                                theme === 'dark' ? "bg-zinc-900 text-zinc-400 border-white/5 hover:text-white hover:bg-zinc-800" : "bg-white text-zinc-600 border-zinc-200 hover:text-zinc-900 hover:bg-zinc-50"
-                                            )}
-                                        >
-                                            <Package className="w-4 h-4" />
-                                            Request Stock
-                                        </button>
-                                        <button
                                             onClick={openCreateIntent}
                                             className={cn(
-                                                "px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition-colors duration-200 flex items-center gap-2 pointer-events-auto active:scale-95",
+                                                "px-4 py-2 rounded-lg text-sm font-bold shadow-lg transition-colors duration-200 flex items-center gap-2 pointer-events-auto active:scale-95 cursor-pointer",
                                                 theme === 'dark' ? "bg-zinc-100 text-zinc-900 hover:bg-white shadow-black/40" : "bg-zinc-800 text-white hover:bg-zinc-700 shadow-black/20"
                                             )}
                                         >
@@ -568,13 +541,50 @@ export function ReceptionScreen() {
                     {/* Activity Stream Column when Drawer is closed */}
                     <div className={cn(
                         "w-[220px] md:w-[250px] lg:w-[290px] xl:w-[340px] 2xl:w-[380px] flex flex-col min-h-0 transition-opacity duration-200 shrink-0",
-                        (isIntentPanelOpen || isInventoryModalOpen || isExpenseDrawerOpen || isB2BReceivablesOpen) ? "hidden" : "flex"
+                        (isIntentPanelOpen || isInventoryModalOpen || isExpenseDrawerOpen || isB2BReceivablesOpen || isOptionsPanelOpen) ? "hidden" : "flex"
                     )}>
                         <ActivityStream serverTime={serverTimeAnchor} />
                     </div>
 
                     {/* GPU-Accelerated Registration Panel Drawer */}
                     <IntentPanel onVisitUpdated={refreshDashboard} />
+                    <ReceptionOptionsPanel
+                        isOpen={isOptionsPanelOpen}
+                        onClose={() => setIsOptionsPanelOpen(false)}
+                        onOpenB2BReceivables={() => {
+                            setIsOptionsPanelOpen(false);
+                            setIsB2BReceivablesOpen(true);
+                        }}
+                        onOpenExpenseDrawer={() => {
+                            setIsOptionsPanelOpen(false);
+                            setIsExpenseDrawerOpen(true);
+                        }}
+                        onOpenPatientDirectory={() => {
+                            setIsOptionsPanelOpen(false);
+                            navigate('/admin/patients');
+                        }}
+                        onOpenStockRequest={() => {
+                            setIsOptionsPanelOpen(false);
+                            setIsInventoryModalOpen(true);
+                        }}
+                        onOpenMyHr={() => {
+                            setIsOptionsPanelOpen(false);
+                            navigate('/my-hr');
+                        }}
+                        onOpenAttendance={() => {
+                            setIsOptionsPanelOpen(false);
+                            navigate('/my-hr/attendance');
+                        }}
+                        onOpenLeave={() => {
+                            setIsOptionsPanelOpen(false);
+                            navigate('/my-hr/leave');
+                        }}
+                        onOpenRequests={() => {
+                            setIsOptionsPanelOpen(false);
+                            navigate('/my-hr/requests');
+                        }}
+                        pendingB2BCount={todayB2BPendingCount}
+                    />
                     <StockRequestPanel
                         isOpen={isInventoryModalOpen}
                         onClose={() => setIsInventoryModalOpen(false)}
