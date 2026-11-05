@@ -116,6 +116,17 @@ BEGIN
     ALTER TABLE [Visits] ADD [B2BDiscountEnteredAt] datetimeoffset NULL;
 END
 
+-- 4. Add columns to Payments if they don't exist
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Payments') AND name = 'TenderedAmount')
+BEGIN
+    ALTER TABLE [Payments] ADD [TenderedAmount] decimal(12, 2) NULL;
+END
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('Payments') AND name = 'ChangeReturned')
+BEGIN
+    ALTER TABLE [Payments] ADD [ChangeReturned] decimal(12, 2) NULL;
+END
+
 -- 4. Add columns to DiscountMasters if they don't exist
 IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('DiscountMasters') AND name = 'Code')
 BEGIN

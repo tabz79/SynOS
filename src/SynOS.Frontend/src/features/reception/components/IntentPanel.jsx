@@ -1014,6 +1014,7 @@ export function IntentPanel({ onVisitUpdated }) {
             setIsActionSubmitting(true);
             try {
                 const res = await ReceptionApi.markVisitAsPrepaid(snapshot.visit.visitId);
+                if (onVisitUpdated) onVisitUpdated();
                 await loadSnapshot();
                 setPostProcessingSession({
                     visitId: snapshot.visit.visitId,
@@ -1064,6 +1065,7 @@ export function IntentPanel({ onVisitUpdated }) {
                     await ReceptionApi.collectPayment(snapshot.visit.visitId, coPay, paymentMethod).catch(err => console.warn("Co-Pay collection:", err));
                 }
 
+                if (onVisitUpdated) onVisitUpdated();
                 await loadSnapshot();
                 setPostProcessingSession({
                     visitId: snapshot.visit.visitId,
@@ -1107,6 +1109,7 @@ export function IntentPanel({ onVisitUpdated }) {
                 });
 
                 const res = await ReceptionApi.markVisitAsCorporate(snapshot.visit.visitId);
+                if (onVisitUpdated) onVisitUpdated();
 
                 await loadSnapshot();
                 setPostProcessingSession({
@@ -1182,6 +1185,7 @@ export function IntentPanel({ onVisitUpdated }) {
                 }
 
                 const res = await ReceptionApi.collectPayment(paymentPayload);
+                if (onVisitUpdated) onVisitUpdated();
 
                 const currentPaid = snapshot?.billing?.totalPaid || 0;
                 await loadSnapshot();
@@ -1558,12 +1562,17 @@ export function IntentPanel({ onVisitUpdated }) {
                     mainActionLabel = `Accept Partial (₹${payNowAmount.toLocaleString()}) • Due ₹${balanceRemaining.toLocaleString()}`;
                 } else if (isSplitPayment && (Number(splitCashAmount) + Number(splitUpiAmount) === payNowAmount)) {
                     mainActionLabel = `Accept Split Payment (₹${Number(splitCashAmount).toLocaleString()} Cash + ₹${Number(splitUpiAmount).toLocaleString()} UPI)`;
-                } else if (paymentMethod === 'Cash' && isChangeRetainedAsDue && Number(tenderedAmount) > payNowAmount) {
-                    const retNow = Number(changeReturnedNow) || 0;
-                    const changeDueVal = Math.max(0, Number(tenderedAmount) - payNowAmount - retNow);
-                    mainActionLabel = `Accept ₹${Number(tenderedAmount).toLocaleString()} Cash • ₹${changeDueVal.toLocaleString()} Change Due to Patient`;
+                } else if (paymentMethod === 'Cash' && Number(tenderedAmount) > payNowAmount) {
+                    if (isChangeRetainedAsDue) {
+                        const retNow = Number(changeReturnedNow) || 0;
+                        const changeDueVal = Math.max(0, Number(tenderedAmount) - payNowAmount - retNow);
+                        mainActionLabel = `Accept ₹${Number(tenderedAmount).toLocaleString()} Cash • ₹${changeDueVal.toLocaleString()} Change Due to Patient`;
+                    } else {
+                        const changeToReturn = Number(tenderedAmount) - payNowAmount;
+                        mainActionLabel = `Accept ₹${Number(tenderedAmount).toLocaleString()} and Return ₹${changeToReturn.toLocaleString()}`;
+                    }
                 } else {
-                    mainActionLabel = `Accept Payment (₹${remainingDue.toLocaleString()})`;
+                    mainActionLabel = `Accept Payment (₹${payNowAmount.toLocaleString()})`;
                 }
                 isActionEnabled = true;
             }

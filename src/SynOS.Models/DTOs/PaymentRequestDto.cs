@@ -34,6 +34,9 @@ namespace SynOS.Models.DTOs
         /// When true (e.g. tender cash change withheld at desk due to drawer shortage), allows full physical cash amount to be recorded.
         /// </summary>
         public bool AllowOverpayment { get; set; } = false;
+
+        public decimal? TenderedAmount { get; set; }
+        public decimal? ChangeReturned { get; set; }
     }
 }
 

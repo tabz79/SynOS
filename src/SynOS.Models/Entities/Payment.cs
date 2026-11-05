@@ -18,6 +18,12 @@ namespace SynOS.Models.Entities
         [Column(TypeName = "decimal(12, 2)")]
         public decimal Amount { get; set; }
 
+        [Column(TypeName = "decimal(12, 2)")]
+        public decimal? TenderedAmount { get; set; }
+
+        [Column(TypeName = "decimal(12, 2)")]
+        public decimal? ChangeReturned { get; set; }
+
         [Required]
         [StringLength(50)]
         public string Method { get; set; } = string.Empty;

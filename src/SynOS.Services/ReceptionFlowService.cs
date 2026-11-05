@@ -931,7 +931,9 @@ namespace SynOS.Services
                     ReceiptNo = request.ReceiptNo,
                     ReceivedByUserId = userId,
                     Notes = request.Notes,
-                    AllowOverpayment = request.AllowOverpayment || request.IsChangeRetainedAsDue || (request.ChangeDue.HasValue && request.ChangeDue.Value > 0)
+                    AllowOverpayment = request.AllowOverpayment || request.IsChangeRetainedAsDue || (request.ChangeDue.HasValue && request.ChangeDue.Value > 0),
+                    TenderedAmount = request.TenderedAmount,
+                    ChangeReturned = request.ChangeReturned
                 };
 
                 payment = await _invoiceService.RecordPaymentAsync(invoiceId, paymentDto);

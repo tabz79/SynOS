@@ -19,6 +19,8 @@ namespace SynOS.Models.DTOs.Finance
         public string? Token { get; set; }
         public string Particulars { get; set; } = string.Empty;
         public decimal Amount { get; set; }
+        public decimal? TenderedAmount { get; set; }
+        public decimal? ChangeReturned { get; set; }
         public decimal InflowAmount { get; set; }
         public decimal OutflowAmount { get; set; }
         public decimal RunningBalance { get; set; }

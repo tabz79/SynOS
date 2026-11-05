@@ -1182,6 +1182,87 @@ isCollapsed ? "px-4 py-2.5 gap-0 h-full" : "p-4 sm:p-5 h-28 sm:h-32 gap-0"
      - Render an amber liability badge:
        `Change Due to Patient: ₹150 (Pending Counter Claim)` alongside `Desk Collection: ₹500`.
 
+---
+
+## 26. Counter Cash Tender & Change Return Architecture: Button Semantics, Missing Denomination Flow in Cash Drawer Ledger & Reality Summary Stagnation — [RESOLVED & VERIFIED]
+### Severity: High / Operational Cashier Usability, Cash Reconciliation Integrity & POS ERP Standard
+### Impacted Files & Endpoints
+* **Action Button & Unified Handler:** [`IntentPanel.jsx:1168-1185, 1550-1558`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/components/IntentPanel.jsx#L1168-L1185) (`mainActionLabel`, `handleUnifiedAction`)
+* **POS Cash Tender Component:** [`PosCashTenderModule.jsx:265-285`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/components/PosCashTenderModule.jsx#L265-L285)
+* **Cash Drawer Shift Ledger:** [`FinanceBillsController.cs:1500-1588`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Controllers/FinanceBillsController.cs#L1500-L1588) (`GET /api/v1/finance/bills/cash-drawer/my-ledger`)
+* **Payment Domain & Service:** [`Payment.cs:7-36`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Models/Entities/Payment.cs#L7-L36), [`InvoiceService.cs:292-355`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/InvoiceService.cs#L292-L355), [`ReceptionFlowService.cs:926-938`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/ReceptionFlowService.cs#L926-L938)
+* **Reception Screen Synchronization:** [`ReceptionScreen.jsx:55-80, 566`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/ReceptionScreen.jsx#L55-L80)
+* **Visual Evidence:** Screenshot [`media_1793877127657_2b012e0f.png`](file:///Users/tabrez/.gemini/antigravity/brain/13b1c467-601a-446d-9a79-6ae6a930fb8a/.user_uploaded/media_1793877127657_2b012e0f.png)
+
+### Incident Evidence & User Scenarios
+1. **Scenario A (Screenshot Reproduction):**
+   - Bill: ₹400 test, minus ₹50 discount = **₹350 Net Amount to Collect**.
+   - Cash Tendered: Patient gives a standard Indian **₹500 note**. Receptionist selects the ₹500 chip.
+   - Calculator Output: Correctly computes and displays in green: `Change to Return (₹): Return to Patient: ₹150.00`.
+   - **Flaw 1 (Incorrect Button Text):** The bottom primary submit button displays:
+     `Accept Payment (₹350) ->` instead of `Accept 500 and Return 150` (or `Accept ₹500 & Return ₹150`).
+   - **Flaw 2 (Skipped Physical Cash Movement in Ledger):** Because the app sends `Amount: 350`, the cash drawer ledger only records `₹350 Inflow`. The ₹500 physical note in and the ₹150 change return out are completely erased from the ledger record.
+2. **Scenario B (Action Queue Resume ₹1000 Bill, Tendered ₹2000):**
+   - Bill in Action Queue: ₹1,000.
+   - Patient tenders ₹2,000. POS calculator instructs to return/refund ₹1,000.
+   - User completes payment, but observes that the **Cash in the Drawer Reality Summary Card does not update**.
+
+### Forensic Root Cause Analysis
+
+1. **Button Semantic Disconnect (`IntentPanel.jsx:1550-1558`):**
+   ```javascript
+   // CURRENT DEFECTIVE CODE:
+   } else if (paymentMethod === 'Cash' && isChangeRetainedAsDue && Number(tenderedAmount) > payNowAmount) {
+       const retNow = Number(changeReturnedNow) || 0;
+       const changeDueVal = Math.max(0, Number(tenderedAmount) - payNowAmount - retNow);
+       mainActionLabel = `Accept ₹${Number(tenderedAmount).toLocaleString()} Cash • ₹${changeDueVal.toLocaleString()} Change Due to Patient`;
+   } else {
+       mainActionLabel = `Accept Payment (₹${remainingDue.toLocaleString()})`;
+   }
+   ```
+   * The button label only reacts to `tenderedAmount > payNowAmount` if `isChangeRetainedAsDue` is TRUE (the drawer shortage checkbox is checked).
+   * In normal daily operations where change **is** given back immediately to the patient, `isChangeRetainedAsDue` is FALSE.
+   * As a result, the logic drops through to `else`, hardcoding `Accept Payment (₹350)` (or `Accept Payment (₹1,000)`). The cashier gets no confirmation that they are accepting ₹500 and returning ₹150 change.
+
+2. **Reality Summary Stagnation via Missing Event Callback (`IntentPanel.jsx:1179-1185`):**
+   * In `IntentPanel.jsx`, `handleUnifiedAction` executes:
+     ```javascript
+     const res = await ReceptionApi.collectPayment(paymentPayload);
+     const currentPaid = snapshot?.billing?.totalPaid || 0;
+     await loadSnapshot();
+     // ❌ MISSING: if (onVisitUpdated) onVisitUpdated();
+     setPostProcessingSession({ ... });
+     ```
+   * While `handleCloseAndReset()` and `handleDeleteVisit()` invoke `onVisitUpdated()`, the actual payment completion handler **never calls `onVisitUpdated()`**.
+   * Consequently, `ReceptionScreen`'s `refreshDashboard()` is never triggered. The parent `summary` state stays frozen, leaving the "Cash in the Drawer" and "Cash Collected" cards at old values until a manual page reload.
+
+3. **Concealment of Physical Cash Notes in Cash Drawer Ledger (`Payment.cs`, `FinanceBillsController.cs`):**
+   * The database entity `Payment` (`dbo.Payments`) only contains a single `Amount` column.
+   * When ₹500 is tendered for a ₹350 bill, `IntentPanel` transmits `Amount: 350`, throwing away `TenderedAmount` and `ChangeReturned`.
+   * In `FinanceBillsController.cs:1573-1588`, the shift ledger queries `p.Amount` and logs a single row:
+     `PATIENT_CASH • Inflow: ₹350.00`.
+   * In hospital & retail ERP standards (Epic, SAP POS), the cash drawer journal must track the physical movement of tender:
+     - Gross Physical Cash Tendered In: `+₹500.00`
+     - Physical Change Returned Out: `-₹150.00`
+     - Net Settlement: `+₹350.00`
+   * Without this, cashier cash counting at shift close cannot reconcile denominations (e.g. why there is a ₹500 note in the till when all bills were under ₹400).
+
+### Implemented Fix
+1. **Button Label Dynamic Tender Semantics (`IntentPanel.jsx`):**
+   - When `paymentMethod === 'Cash' && Number(tenderedAmount) > payNowAmount`:
+     - If `isChangeRetainedAsDue`: `Accept ₹{Number(tenderedAmount).toLocaleString()} Cash • ₹{changeDueVal.toLocaleString()} Change Due to Patient`
+     - Else: `Accept ₹{Number(tenderedAmount).toLocaleString()} and Return ₹{changeToReturn.toLocaleString()}`
+   - Cashiers now have unambiguous button confirmation showing the exact cash accepted and change returned to the patient.
+2. **Real-Time Reality Summary Dashboard Synchronization (`IntentPanel.jsx`):**
+   - Added `if (onVisitUpdated) onVisitUpdated();` immediately following `ReceptionApi.collectPayment`, `markVisitAsPrepaid`, `markVisitAsInsurance`, and `markVisitAsCorporate`.
+   - Triggers instantaneous dashboard refresh (`refreshDashboard()`), keeping the Reality Summary Cards (Cash Collected, Cash in Drawer, Prepaid Bills, Total Intake) 100% current in real-time.
+3. **Physical Denomination & Change Tracking in Backend & Shift Ledger:**
+   - Added `TenderedAmount` and `ChangeReturned` nullable `decimal(12,2)` columns to `dbo.Payments` via `DbInitializer.cs` and `Payment.cs`.
+   - Wired `TenderedAmount` and `ChangeReturned` through `PaymentRequestDto.cs`, `InvoiceService.cs`, and `ReceptionFlowService.cs`.
+   - In `FinanceBillsController.cs` (`GetMyCashDrawerLedger`), mapped `TenderedAmount` and `ChangeReturned` onto `CashDrawerLedgerItemDto` and updated `Particulars` for cash tender settlements:
+     `{patientName} • {testSummary} (Tendered: ₹{p.TenderedAmount:N2}, Change: ₹{changeRet:N2})` with net settlement in `InflowAmount`.
+
+
 
 
 

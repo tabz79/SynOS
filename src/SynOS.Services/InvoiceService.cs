@@ -344,6 +344,8 @@ namespace SynOS.Services
                 PaymentId = Guid.NewGuid(),
                 InvoiceId = invoice.InvoiceId,
                 Amount = recordedAmount,
+                TenderedAmount = paymentDto.TenderedAmount,
+                ChangeReturned = paymentDto.ChangeReturned,
                 Method = !string.IsNullOrWhiteSpace(paymentDto.Method) ? paymentDto.Method : "Cash",
                 ReceiptNo = !string.IsNullOrEmpty(paymentDto.ReceiptNo) 
                     ? paymentDto.ReceiptNo 

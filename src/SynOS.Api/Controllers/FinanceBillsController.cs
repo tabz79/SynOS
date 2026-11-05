@@ -1567,7 +1567,15 @@ namespace SynOS.Api.Controllers
                 {
                     type = "PATIENT_CASH";
                     category = "Inflow";
-                    particulars = $"{patientName} • {testSummary} ({visit?.Token ?? "Walk-In"})";
+                    if (p.TenderedAmount.HasValue && p.TenderedAmount.Value > p.Amount)
+                    {
+                        var changeRet = p.ChangeReturned ?? (p.TenderedAmount.Value - p.Amount);
+                        particulars = $"{patientName} • {testSummary} (Tendered: ₹{p.TenderedAmount.Value:N2}, Change: ₹{changeRet:N2})";
+                    }
+                    else
+                    {
+                        particulars = $"{patientName} • {testSummary} ({visit?.Token ?? "Walk-In"})";
+                    }
                 }
 
                 transactions.Add(new CashDrawerLedgerItemDto
@@ -1580,6 +1588,8 @@ namespace SynOS.Api.Controllers
                     Token = visit?.Token,
                     Particulars = particulars,
                     Amount = Math.Abs(p.Amount),
+                    TenderedAmount = p.TenderedAmount,
+                    ChangeReturned = p.ChangeReturned,
                     InflowAmount = p.Amount > 0 ? p.Amount : 0m,
                     OutflowAmount = p.Amount < 0 ? Math.Abs(p.Amount) : 0m,
                     PaymentMethod = "Cash",
