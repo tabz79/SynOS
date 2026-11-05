@@ -49677,9 +49677,9 @@ Details: ${A.inner}`);
     const ie = (u == null ? void 0 : u.filter((ye) => {
       var _a2;
       return ye.dateGroup === "Today" && !((_a2 = ye.token) == null ? void 0 : _a2.toUpperCase().startsWith("D-")) && (ye.operationalStatus || "").toLowerCase() !== "draft" && (ye.status || "").toLowerCase() !== "draft";
-    })) || [], he = A && (Number(A.walkInsToday) || ie.length) || 0, Ie = A ? [
+    })) || [], he = A ? Number(A.walkInsToday) > 0 ? Number(A.walkInsToday) : ie.length > 0 ? ie.length : Number(A.walkInsToday) || 0 : ie.length || 0, Ie = A ? [
       {
-        value: (A.walkInsToday !== void 0 && A.walkInsToday !== null ? A.walkInsToday : he).toString(),
+        value: he.toString(),
         label: "Walk-Ins",
         qualifier: "Paid/Credit",
         icon: fs,

@@ -104,6 +104,12 @@ The reception intake pipeline operates on three distinct, production-locked bill
   * Invariants in `RevenueEngine.cs`
 * Every PR/commit touching billing or revenue must pass `dotnet test tests/SynOS.Tests/SynOS.Tests.csproj --filter "ProductionValidationTests"`.
 
+### 4. Canonical Total Patient Intake (Walk-Ins) Metric Invariant (Zero-Regression Rule)
+* **Clinical Contract:** In clinical hospital and diagnostic lab operations, Card 1 (`Walk-Ins`, qualifier `Paid/Credit`) represents the **front-door physical patient volume** across all desks in the branch for today.
+  * Every confirmed patient who receives an official accession token (`MAI-xxx`), is not an uncommitted draft (`v.Status != Draft` and `!v.Token.StartsWith('D-')`), and has not been cancelled (`v.Status != Cancelled`) MUST be counted in `WalkInsToday`.
+  * **PROHIBITION:** NEVER subtract, exclude, or strip Corporate B2B (Prepaid) referral visits or desk credit (Full Due) visits from `WalkInsToday`. Physical humans do not vanish from the clinic simply because their bill is settled by a corporate partner or billed on credit. B2B financial accounting is tracked independently in Tile 5 (`Prepaid Bills Issued`).
+  * In `ReceptionScreen.jsx`, Card 1 must retain double-layered fallback resilience: if `summary.walkInsToday` is 0 but confirmed tokens exist in `todayNonDraftQueue`, it seamlessly renders the active queue length.
+
 ---
 
 ## 🛠️ Build & Verification Protocol

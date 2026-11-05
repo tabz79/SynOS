@@ -225,6 +225,7 @@ namespace SynOS.Services
                            where
                                EF.Functions.Like(p.MRN, $"%{q}%")
                                || EF.Functions.Like((p.FirstName + " " + p.LastName), $"%{q}%")
+                               || EF.Functions.Like(p.CurrentPhoneNumber, $"%{q}%")
                                || (a != null && EF.Functions.Like((a.FirstName + " " + a.LastName), $"%{q}%"))
                                || (ph != null && EF.Functions.Like(ph.PhoneNumber, $"%{q}%"))
 
@@ -251,8 +252,8 @@ namespace SynOS.Services
                     Gender = p.Gender,
                     CreatedAt = p.CreatedAt,
                     
-                    // IMPORTANT: expose ACTIVE phone
-                    CurrentPhoneNumber = ph != null ? ph.PhoneNumber : null,
+                    // Fallback to p.CurrentPhoneNumber if ph (phone history record) is null or empty
+                    CurrentPhoneNumber = ph != null && !string.IsNullOrWhiteSpace(ph.PhoneNumber) ? ph.PhoneNumber : p.CurrentPhoneNumber,
 
                     LastVisitDate = _context.Visits
                         .Where(v => v.PatientId == p.PatientId)

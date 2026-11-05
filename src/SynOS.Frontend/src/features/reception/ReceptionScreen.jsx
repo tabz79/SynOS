@@ -218,11 +218,17 @@ export function ReceptionScreen() {
         (r.status || '').toLowerCase() !== 'draft'
     ) || [];
 
-    const effectiveWalkIns = summary ? (Number(summary.walkInsToday) || todayNonDraftQueue.length || 0) : 0;
+    // Enterprise Resilience: ensure Walk-Ins KPI reflects canonical physical patient intake across all desks.
+    // If backend reports > 0, use it. If backend lag reports 0 while tokens sit in today's active queue, seamlessly reflect queue length.
+    const effectiveWalkIns = summary 
+        ? ((Number(summary.walkInsToday) > 0) 
+            ? Number(summary.walkInsToday) 
+            : (todayNonDraftQueue.length > 0 ? todayNonDraftQueue.length : (Number(summary.walkInsToday) || 0)))
+        : (todayNonDraftQueue.length || 0);
 
     const realityTiles = summary ? [
         { 
-            value: (summary.walkInsToday !== undefined && summary.walkInsToday !== null ? summary.walkInsToday : effectiveWalkIns).toString(), 
+            value: effectiveWalkIns.toString(), 
             label: "Walk-Ins", 
             qualifier: "Paid/Credit", 
             icon: Users, 

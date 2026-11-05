@@ -48,3 +48,12 @@
   * `SynOS_Setup.iss` configures `UninstallForm.FormStyle := fsStayOnTop` so that the custom data decommission dialog form is rendered in the foreground on Windows.
 * **Verification Check on Code Edits:**
   * Keep `fsStayOnTop` enabled on `UninstallForm` in `SynOS_Setup.iss`.
+
+---
+
+### Rule 5: Canonical Total Patient Intake (Walk-Ins) Metric Invariant
+* **Goal:** Ensure the top-left executive KPI (`Walk-Ins (Paid/Credit)`) always represents the true physical front-door patient intake across all desks in the branch for the calendar day.
+* **Implementation Details:**
+  * In `InvoiceService.cs` (`GetDailyRevenueStatsAsync`), `totalIntakeWalkIns` counts all confirmed visits with non-draft tokens (`Token != null && !Token.StartsWith("D-")`), `Status != VisitStatus.Draft`, and `Status != VisitStatus.Cancelled`.
+  * **PROHIBITION:** NEVER subtract or filter out Corporate B2B (Prepaid) or Credit visits from `WalkInsToday`. Physical patients are always walk-ins regardless of financial payer model.
+  * In `ReceptionScreen.jsx`, `effectiveWalkIns` retains double-layered fallback resilience: if `summary.walkInsToday` is 0 but confirmed tokens exist in `todayNonDraftQueue`, it seamlessly renders the active queue count.

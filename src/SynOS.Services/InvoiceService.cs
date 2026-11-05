@@ -90,7 +90,16 @@ namespace SynOS.Services
             var startUtc = startOfToday.UtcDateTime;
             var endUtc = endOfToday.UtcDateTime;
 
-            // Base query for all confirmed intake visits in the branch today
+            // =========================================================================================
+            // 🏛️ ENTERPRISE HEALTHCARE ERP INVARIANT: TOTAL PATIENT INTAKE (WALK-INS)
+            // =========================================================================================
+            // In clinical diagnostic labs, EVERY physical human patient acceded through the front door who
+            // receives an official daily token (e.g. MAI-001, MAI-002) and enters the active queue
+            // is a WALK-IN PATIENT. 
+            // DO NOT filter by payment method or billing type (e.g. stripping B2B Prepaid or Credit).
+            // Direct Walk-Ins, Desk Credit (Full Due), and Corporate B2B Referrals are ALL Walk-Ins.
+            // B2B financial accounting is tracked separately in PrepaidBillsCount and PrepaidBillsTotal.
+            // =========================================================================================
             var confirmedVisitsToday = _context.Visits
                 .Where(v => v.BranchId == branchId 
                          && (v.TokenDate == today || (v.CreatedAt >= startUtc && v.CreatedAt < endUtc))
@@ -98,12 +107,7 @@ namespace SynOS.Services
                          && v.Status != VisitStatus.Draft
                          && (v.Token == null || !v.Token.StartsWith("D-")));
 
-            // Direct Walk-Ins (Retail direct collection / desk credit)
-            var retailWalkInsQuery = confirmedVisitsToday
-                .Where(v => v.PaymentCollectionModel != "PartnerCollects"
-                         && v.BillingType != BillingType.PrepaidPartner);
-
-            var walkIns = await retailWalkInsQuery.CountAsync();
+            var totalIntakeWalkIns = await confirmedVisitsToday.CountAsync();
 
             // Corporate B2B Prepaid Visits
             var prepaidVisitsQuery = confirmedVisitsToday
@@ -132,7 +136,7 @@ namespace SynOS.Services
             });
 
             var finalPrepaidCount = prepaidCount;
-            var finalWalkIns = walkIns;
+            var finalWalkIns = totalIntakeWalkIns;
 
             var paymentsQuery = _context.Payments
                 .Include(p => p.Invoice)

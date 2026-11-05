@@ -331,6 +331,114 @@
 4. **Thermal Slip Parity:**
    * Updated `generateThermalB2BSettlementSlipHtml` in `thermalPrinter.js` to print concession deductions and net settled balance on 80mm receipts.
 
+---
+
+## 14. Patient Search Phone Number Stripping (`No Mobile` Badge Defect) — [RESOLVED & VERIFIED]
+### Severity: Medium / Operational Intake Verification Defect
+### Impacted Workflows & Files
+* **Patient Search Service:** [`PatientService.cs:193-270`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/PatientService.cs#L193-L270) (`SearchPatientsAsync`)
+* **Patients API Controller:** [`PatientsController.cs:41-45`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Controllers/PatientsController.cs#L41-L45) (`GET /api/v1/patients?q=...`)
+* **Patient Identification Component:** [`PatientIdentification.jsx:90-91`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/components/PatientIdentification.jsx#L90-L91)
+* **Rich Patient Card UI:** [`RichPatientCard.jsx:82, 287`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/components/patient/RichPatientCard.jsx#L82)
+
+### Incident & Evidence
+* **Visual Bug:** When searching for patients in the Registration modal (e.g. typing query `test`), all matched patient cards display a grey `No Mobile` pill:
+  - `Test Patient3` (`MRN: A00003`) $\rightarrow$ displays `No Mobile`
+  - `Test Patient7` (`MRN: A00007`) $\rightarrow$ displays `No Mobile`
+  - `Test Patient5` (`MRN: A00005`) $\rightarrow$ displays `No Mobile`
+  - `Test Patient6` (`MRN: A00006`) $\rightarrow$ displays `No Mobile`
+  - `Test Patient9` (`MRN: A00009`) $\rightarrow$ displays `No Mobile`
+* **Database Truth vs Direct Endpoint Audit:**
+  - In `dbo.Patients`, every single one of these patients has their mobile number recorded in the `CurrentPhoneNumber` column:
+    - `Test Patient3`: `"555-0102"`
+    - `Test Patient9`: `"555-0108"`
+  - Direct lookup via `GET /api/v1/patients/8554ac52-dfbf-484a-8476-1b482aac2baa` (`A00003`) returns:
+    ```json
+    {
+      "mrn": "A00003",
+      "firstName": "Test",
+      "lastName": "Patient3",
+      "currentPhoneNumber": "555-0102"
+    }
+    ```
+  - However, searching via `GET /api/v1/patients?q=test` returns:
+    ```json
+    {
+      "mrn": "A00003",
+      "firstName": "Test",
+      "lastName": "Patient3",
+      "currentPhoneNumber": null
+    }
+    ```
+
+### Forensic Root Cause Analysis
+1. **Disregard of Entity Table Column in Projection:**
+   In `PatientService.cs:236-256` (`SearchPatientsAsync`), the projection evaluated `CurrentPhoneNumber = ph != null ? ph.PhoneNumber : null`. For patients whose mobile was saved directly in `dbo.Patients.CurrentPhoneNumber`, `ph` was `null`, setting `CurrentPhoneNumber = null`.
+2. **Search By Mobile Filter Blind Spot:**
+   `p.CurrentPhoneNumber` was omitted from the `WHERE` search filter, so searching by phone number missed patients lacking a separate `PatientPhoneHistories` row.
+
+### Implemented Fix
+* Updated `SearchPatientsAsync` in `PatientService.cs`:
+  - Projection fallback: `CurrentPhoneNumber = ph != null && !string.IsNullOrWhiteSpace(ph.PhoneNumber) ? ph.PhoneNumber : p.CurrentPhoneNumber`.
+  - Added `EF.Functions.Like(p.CurrentPhoneNumber, $"%{q}%")` into search filter criteria.
+
+---
+
+## 15. Zero Walk-Ins Card Reproduction on Day-Start B2B Intake & Enterprise Metric Redefinition — [RESOLVED & VERIFIED]
+### Severity: High / Core Executive Reality Inaccuracy
+### Impacted Modules
+* **Invoice Service Metric Query:** [`InvoiceService.cs:94-140`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/InvoiceService.cs#L94-L140) (`GetDailyRevenueStatsAsync`)
+* **Reception UI Reality Tile:** [`ReceptionScreen.jsx:221-231`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/ReceptionScreen.jsx#L221-L231)
+* **Architectural Invariants:** [`AGENTS.md`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/AGENTS.md) & [`.agents/AGENTS.md`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/.agents/AGENTS.md)
+
+### Incident Evidence (Live 05-Nov-2026 Morning Audit)
+* **Live State:** It is the start of the clinical shift on Nov 5, 2026.
+* **Queue Reality:** Exactly 1 patient has arrived and been registered:
+  - Token: `MAI-001`
+  - Patient: `Test Patient5` (41y/M)
+  - Test: `MRI_NECK`
+  - Payment: `₹4,500 PREPAID` (Referred by Dr Test Partner 3)
+* **What the Top Tiles Display:**
+  - **Walk-Ins (Paid/Credit):** `0`
+  - **Prepaid Bills Issued:** `1` (₹4,500)
+* **The Problem:** The lab has 1 real human patient sitting in the reception queue holding token `MAI-001`, but the primary executive card told the lab owner that there are **0 Walk-Ins**.
+
+### Root Cause: Flawed Metric Assumption
+* Developers assumed only patients paying retail cash/UPI out-of-pocket are "Walk-Ins", and stripped Corporate B2B referral patients out of the count.
+* Whenever the first patient of the day is a B2B referral, the Walk-Ins tile displayed `0` despite a populated action queue.
+
+### Enterprise-Grade Architecture Solution (Permanent Fix)
+1. **Redefined Card 1 as Canonical "Total Patient Intake":**
+   In healthcare ERPs (Cerner, Epic, SRL), the top-left executive KPI represents the **physical front-door volume** across all desks in the branch for today:
+   ```csharp
+   // Total Confirmed Patients Acceded Today across the Branch
+   var confirmedVisitsToday = _context.Visits
+       .Where(v => v.BranchId == branchId 
+                && (v.TokenDate == today || (v.CreatedAt >= startUtc && v.CreatedAt < endUtc))
+                && v.Status != VisitStatus.Cancelled
+                && v.Status != VisitStatus.Draft
+                && (v.Token == null || !v.Token.StartsWith("D-")));
+
+   var totalIntakeWalkIns = await confirmedVisitsToday.CountAsync();
+   var finalWalkIns = totalIntakeWalkIns;
+   ```
+2. **Financial Stream Partitioning in Subsequent Cards:**
+   - **Tile 1 (Volume):** **Total Intake (Walk-Ins): 1** *(Token MAI-001)*.
+   - **Tile 2 (Cash Flow):** **Cash Collected: ₹0**.
+   - **Tile 5 (B2B Ledger):** **Prepaid Bills Issued: 1 (₹4,500)**.
+3. **Double-Layered Frontend Fallback Resilience (`ReceptionScreen.jsx`):**
+   ```javascript
+   const effectiveWalkIns = summary 
+       ? ((Number(summary.walkInsToday) > 0) 
+           ? Number(summary.walkInsToday) 
+           : (todayNonDraftQueue.length > 0 ? todayNonDraftQueue.length : (Number(summary.walkInsToday) || 0)))
+       : (todayNonDraftQueue.length || 0);
+   ```
+4. **Architectural Guardrails in `AGENTS.md` and `.agents/AGENTS.md`:**
+   Enshrined Rule 4/5 as a mandatory invariant contract forbidding future agents from stripping B2B/credit visits from `WalkInsToday`.
+
+
+
 
 
 
