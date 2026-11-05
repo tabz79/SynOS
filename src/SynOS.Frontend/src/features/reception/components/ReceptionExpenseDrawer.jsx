@@ -416,11 +416,7 @@ export function ReceptionExpenseDrawer({ isOpen, onClose, embedded = false, onBa
             <div 
                 className={cn(
                     "h-full flex flex-col overflow-hidden rounded-[24px] transition-all duration-300 ease-in-out z-30",
-                    embedded ? "w-full border-none shadow-none" : (
-                        activeTab === 'record'
-                            ? "w-full sm:w-[92vw] md:w-[75vw] lg:w-[50vw] xl:w-[44vw] 2xl:w-[40vw] min-w-[580px] max-w-[880px] border border-white/80 dark:border-white/10 shadow-2xl"
-                            : "w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[86vw] xl:w-[85vw] 2xl:w-[85vw] max-w-[1780px] border border-white/80 dark:border-white/10 shadow-2xl"
-                    ),
+                    embedded ? "w-full border-none shadow-none" : "w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[86vw] xl:w-[85vw] 2xl:w-[85vw] max-w-[1780px] border border-white/80 dark:border-white/10 shadow-2xl",
                     ui.panel
                 )}
             >
@@ -530,10 +526,13 @@ export function ReceptionExpenseDrawer({ isOpen, onClose, embedded = false, onBa
                     </div>
                 )}
 
-                {/* 3. TAB 1: NATIVE INTENTPANEL RECORD EXPENSE WORKBENCH */}
+                {/* 3. TAB 1: NATIVE INTENTPANEL RECORD EXPENSE WORKBENCH (2-Column 12-Col Widescreen Layout) */}
                 {activeTab === 'record' && (
                     <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-                        <div className="p-4 sm:p-6 w-full flex-1 min-h-0 overflow-y-auto space-y-4 animate-in fade-in duration-300 pr-1.5 sm:pr-3">
+                        <div className="p-4 sm:p-6 w-full flex-1 min-h-0 overflow-hidden animate-in fade-in duration-300">
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 xl:gap-6 items-stretch h-full min-h-0 overflow-hidden">
+                                {/* LEFT HALF (7 COLS): STEPS 1 & 2 */}
+                                <div className="lg:col-span-7 flex flex-col gap-4 h-full min-h-0 overflow-y-auto pr-1">
                                     {/* STEP 1: EXPENSE CLASSIFICATION & STREAM */}
                                     <div className={cn("p-4 sm:p-5 space-y-3 shrink-0", ui.card)}>
                                         <div className="flex items-center justify-between">
@@ -914,10 +913,13 @@ export function ReceptionExpenseDrawer({ isOpen, onClose, embedded = false, onBa
                                                 className="w-full bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-xs font-semibold outline-none focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white shadow-2xs"
                                             />
                                         </div>
-                            </div>
+                                    </div>
+                                </div>
 
-                            {/* STEP 3: SETTLEMENT & FINANCIALS (Brought to Area 4 under Step 2) */}
-                            <div className={cn("p-4 sm:p-5 space-y-4 shrink-0", ui.card)}>
+                                {/* RIGHT HALF (5 COLS): STEP 3 SETTLEMENT & FINANCIALS */}
+                                <div className="lg:col-span-5 flex flex-col gap-4 h-full min-h-0 overflow-y-auto pr-1">
+                                    {/* STEP 3: SETTLEMENT & FINANCIALS */}
+                                    <div className={cn("p-4 sm:p-5 space-y-4 shrink-0", ui.card)}>
                                 <div className="flex items-center justify-between pb-2 border-b border-black/[0.06] dark:border-white/[0.06]">
                                     <div className="flex items-center gap-2">
                                         <div className="w-6 h-6 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-xs shadow-xs">
@@ -1012,6 +1014,8 @@ export function ReceptionExpenseDrawer({ isOpen, onClose, embedded = false, onBa
                                             {form.paymentMethod === 'Cash' ? 'Reception Cash Drawer' : form.paymentMethod}
                                         </span>
                                     </div>
+                                </div>
+                            </div>
                                 </div>
                             </div>
                         </div>

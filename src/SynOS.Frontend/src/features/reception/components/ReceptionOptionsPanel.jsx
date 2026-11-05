@@ -99,7 +99,7 @@ export function ReceptionOptionsPanel({
     // Smooth width morphing based on active view on the SAME sliding surface
     let viewWidthClasses = "w-[96vw] sm:w-[92vw] md:w-[440px] lg:w-[460px] xl:w-[480px] max-w-[520px]";
     if (activeView === 'expense') {
-        viewWidthClasses = "w-[96vw] sm:w-[92vw] md:w-[75vw] lg:w-[50vw] xl:w-[44vw] 2xl:w-[40vw] min-w-[580px] max-w-[880px]";
+        viewWidthClasses = "w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[86vw] xl:w-[85vw] 2xl:w-[85vw] max-w-[1780px]";
     } else if (activeView === 'b2b') {
         viewWidthClasses = "w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[86vw] xl:w-[85vw] 2xl:w-[85vw] max-w-[1780px]";
     } else if (activeView === 'ledger') {

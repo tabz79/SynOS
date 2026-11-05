@@ -132,59 +132,60 @@ export function RealityTile({
                     </div>
                 </div>
             ) : (
-                /* STANDARD SINGLE-METRIC LAYOUT */
-                <>
-                    {/* SLOT 1: HEADER + VALUE (Top Section) */}
-                    <div className="flex justify-between items-start w-full">
-                        {/* VALUE (Top Left) */}
-                        <span className={cn(
-                            "font-extrabold font-sans tracking-tight group-hover:scale-[1.02] transition-transform duration-300 origin-left block tabular-nums",
-                            ui.text,
-                            value && value.toString().length > 9 ? "text-3xl sm:text-4xl leading-snug"
-                                : value && value.toString().length > 6 ? "text-4xl leading-snug"
-                                    : "text-4xl sm:text-5xl leading-tight pb-1"
-                        )}>
-                            {value}
-                        </span>
-
-                        {/* ICON (Top Right) + SCOPE BADGE */}
-                        <div className="flex items-center gap-1.5 ml-2">
+                /* STANDARD SINGLE-METRIC LAYOUT (3-Tier Vertical Slot Separation) */
+                <div className="flex flex-col h-full w-full justify-between overflow-hidden">
+                    {/* TIER 1: TOP METADATA HEADER (Badge + Icon) */}
+                    <div className="flex items-center justify-between w-full h-5 shrink-0 mb-1">
+                        <div className="flex items-center gap-1 min-w-0">
                             {isPool ? (
                                 <span 
                                     title="Branch Pool: Consolidated across all reception desks"
-                                    className="inline-flex items-center gap-1 text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 shrink-0"
+                                    className="inline-flex items-center gap-1 text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 shrink-0 truncate"
                                 >
                                     <Users className="w-2.5 h-2.5" />
                                     Pool
                                 </span>
                             ) : scopeBadge ? (
-                                <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border border-zinc-500/20 shrink-0">
+                                <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border border-zinc-500/20 shrink-0 truncate">
                                     {scopeBadge}
                                 </span>
                             ) : null}
-                            <div className="flex shrink-0 justify-center items-center w-6 h-6 ml-1.5 sm:ml-2">
-                                {Icon ? (
-                                    <Icon className="transition-colors duration-300 w-5 h-5 sm:w-6 sm:h-6 text-zinc-500 group-hover:text-zinc-700" />
-                                ) : null}
-                            </div>
+                        </div>
+                        <div className="flex shrink-0 items-center justify-end">
+                            {Icon ? (
+                                <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors" />
+                            ) : null}
                         </div>
                     </div>
 
-                    {/* SPACER (Pushes Label to Bottom) */}
-                    <div className="flex-1 min-h-0" />
+                    {/* TIER 2: CENTER NUMERIC VALUE (100% Width to Itself) */}
+                    <div className="flex-1 flex items-center min-w-0 w-full overflow-hidden my-auto">
+                        <span 
+                            title={String(value)}
+                            className={cn(
+                                "font-extrabold font-sans tracking-tight block tabular-nums truncate w-full text-left",
+                                ui.text,
+                                (value ? value.toString().length : 0) > 8 ? "text-xl sm:text-2xl" :
+                                (value ? value.toString().length : 0) > 6 ? "text-2xl sm:text-3xl" :
+                                (value ? value.toString().length : 0) > 4 ? "text-3xl sm:text-4xl" : "text-4xl sm:text-5xl"
+                            )}
+                        >
+                            {value}
+                        </span>
+                    </div>
 
-                    {/* SLOT 2: FOOTER (Label) */}
-                    <div className="w-full shrink-0">
-                        <div className="text-zinc-600 transition-colors group-hover:text-zinc-800 flex items-baseline gap-1.5 whitespace-nowrap overflow-hidden text-xs sm:text-sm font-semibold mb-0 normal-case">
+                    {/* TIER 3: BOTTOM FOOTER (Label) */}
+                    <div className="w-full shrink-0 pt-1 border-t border-black/[0.04] dark:border-white/[0.04]">
+                        <div className="text-zinc-500 dark:text-zinc-400 transition-colors group-hover:text-zinc-700 dark:group-hover:text-zinc-200 flex items-baseline gap-1.5 whitespace-nowrap overflow-hidden text-xs font-semibold normal-case">
                             <span className="truncate">{displayLabel}</span>
                             {qualifier && (
-                                <span className="opacity-60 font-normal truncate text-xs">
+                                <span className="opacity-60 font-normal truncate text-[11px]">
                                     {qualifier}
                                 </span>
                             )}
                         </div>
                     </div>
-                </>
+                </div>
             )}
         </div>
     );

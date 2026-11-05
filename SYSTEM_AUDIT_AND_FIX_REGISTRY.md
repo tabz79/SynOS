@@ -816,7 +816,7 @@ isCollapsed ? "px-4 py-2.5 gap-0 h-full" : "p-4 sm:p-5 h-28 sm:h-32 gap-0"
 
 ---
 
-## 21. Accounts Payable Terminal Single-Column Collapse & History Tab Width Lock — [AUDITED & SPECIFIED]
+## 21. Accounts Payable Terminal Single-Column Collapse & History Tab Width Lock — [RESOLVED & VERIFIED]
 ### Severity: High / Front-Desk Layout Regression & Terminal Usability Defect
 ### Impacted Files & Commits
 * **Original 2-Column Widescreen Implementation:** Commit `4825b2a9` (*"feat(reception): facelift expense drawer, wire branch pool metrics, and add cash in drawer tracking"*)
@@ -909,7 +909,7 @@ isCollapsed ? "px-4 py-2.5 gap-0 h-full" : "p-4 sm:p-5 h-28 sm:h-32 gap-0"
 
 ---
 
-## 22. Reality Summary Multi-Digit Financial Overflow & Badge Boundary Bleed — [AUDITED & SPECIFIED]
+## 22. Reality Summary Multi-Digit Financial Overflow & Badge Boundary Bleed — [RESOLVED & VERIFIED]
 ### Severity: High / Financial Display Truncation & Layout Rupture
 ### Impacted Files & Component
 * **Component:** [`RealitySummary.jsx:150-195`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/components/layout/RealitySummary.jsx#L150-L195) (`RealityTile` Single-Metric Layout)

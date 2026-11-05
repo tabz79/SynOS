@@ -4569,7 +4569,6 @@ export const RefundClaimsTerminalScreen = () => {
 // =========================================================================
 export const CashDrawerLedgersScreen = () => {
     const { user } = useAuth();
-    const { isDark } = useTheme();
     const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
 
     const [cashiers, setCashiers] = useState([]);
