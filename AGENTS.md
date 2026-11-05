@@ -110,6 +110,21 @@ The reception intake pipeline operates on three distinct, production-locked bill
   * **PROHIBITION:** NEVER subtract, exclude, or strip Corporate B2B (Prepaid) referral visits or desk credit (Full Due) visits from `WalkInsToday`. Physical humans do not vanish from the clinic simply because their bill is settled by a corporate partner or billed on credit. B2B financial accounting is tracked independently in Tile 5 (`Prepaid Bills Issued`).
   * In `ReceptionScreen.jsx`, Card 1 must retain double-layered fallback resilience: if `summary.walkInsToday` is 0 but confirmed tokens exist in `todayNonDraftQueue`, it seamlessly renders the active queue length.
 
+### 5. Action Queue Payment Semantics & Corporate B2B Protection Invariant (Zero-Pollution Rule)
+* **Clinical Contract:** The Action Queue (`ReceptionScreen.jsx`) table represents the real-time front-desk ledger. The `PAYMENT` column must strictly observe the canonical 6-state hierarchy:
+  1. `DRAFT`: Uncommitted visits with temporary tokens (`D-xxx`).
+  2. `PREPAID`: Corporate B2B referral visits billed to partner accounts (`PaymentCollectionModel == "PartnerCollects"` or `BillingType == PrepaidPartner`).
+     - Subtext MUST display the referring doctor/partner name (`row.referrerName`).
+     - **PROHIBITION:** NEVER overwrite or hijack `PREPAID` visits with `OVERPAID`, `REFUND DUE`, or desk cash alerts. Corporate partner bills are settled via B2B receivables, not desk counter refunds.
+  3. `OVERPAID`: Applies STRICTLY and ONLY to retail direct desk collections (`!isPrepaid && !isDraft`) where physical money collected exceeds the revised bill total (`totalPaid > totalBilled`).
+  4. `PARTIAL DUE`: Active retail visits with partial desk payments (`totalPaid > 0 && remainingDue > 0`). Displays `remainingDue` in main text with green `Paid: ₹{totalPaid}` subtext.
+  5. `FULL DUE`: 100% counter credit visits (`totalPaid === 0 && remainingDue > 0`). Rendered in pastel orange (`bg-orange-500/15 text-orange-700`).
+  6. `PAID` / Method: Fully cleared desk visits (`Cash`, `UPI`, `Card`).
+* **PROHIBITION FOR AI CODING AGENTS & DEVELOPERS:**
+  - **DO NOT** alter the order of this evaluation chain.
+  - **DO NOT** omit `!isPrepaid` from `isOverpaid`.
+  - **DO NOT** inject ad-hoc refund or collection notices that distort B2B partner attribution.
+
 ---
 
 ## 🛠️ Build & Verification Protocol

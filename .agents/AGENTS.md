@@ -57,3 +57,12 @@
   * In `InvoiceService.cs` (`GetDailyRevenueStatsAsync`), `totalIntakeWalkIns` counts all confirmed visits with non-draft tokens (`Token != null && !Token.StartsWith("D-")`), `Status != VisitStatus.Draft`, and `Status != VisitStatus.Cancelled`.
   * **PROHIBITION:** NEVER subtract or filter out Corporate B2B (Prepaid) or Credit visits from `WalkInsToday`. Physical patients are always walk-ins regardless of financial payer model.
   * In `ReceptionScreen.jsx`, `effectiveWalkIns` retains double-layered fallback resilience: if `summary.walkInsToday` is 0 but confirmed tokens exist in `todayNonDraftQueue`, it seamlessly renders the active queue count.
+
+---
+
+### Rule 6: Action Queue Payment Semantics & Corporate B2B Protection Invariant
+* **Goal:** Prevent future coding agents or feature edits from polluting or hijacking the Action Queue payment classification.
+* **Implementation Details:**
+  * In `ReceptionScreen.jsx`, the payment column enforces a canonical 6-state hierarchy: `DRAFT` -> `PREPAID` -> `OVERPAID` -> `PARTIAL DUE` -> `FULL DUE` -> `PAID`.
+  * `isOverpaid` MUST be scoped with `!isPrepaid && !isDraft` to strictly apply only to retail direct desk collections where money taken exceeds the bill.
+  * Corporate B2B Prepaid visits MUST remain rendered as `PREPAID` with the partner doctor/hospital name as subtext, never corrupted with `OVERPAID` or `Refund Due` notices.

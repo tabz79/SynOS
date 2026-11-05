@@ -325,6 +325,25 @@ export function ReceptionScreen() {
             render: (row) => <PatientCell row={row} />
         },
         {
+            // =========================================================================================
+            // 🏛️ ENTERPRISE ARCHITECTURAL CONTRACT: ACTION QUEUE PAYMENT & STATUS SEMANTICS
+            // =========================================================================================
+            // CRITICAL INVARIANT FOR ALL AI CODING AGENTS & DEVELOPERS:
+            // This column is a mission-critical front-desk operational ledger. DO NOT alter, re-order,
+            // or pollute the 6-state payment classification hierarchy below:
+            //
+            // 1. DRAFT:       Uncommitted visits with temporary tokens (D-xxx).
+            // 2. PREPAID:     Corporate B2B referral visits billed to partner accounts.
+            //                 - NEVER hijack or overwrite PREPAID with OVERPAID, REFUND DUE, or cash alerts.
+            //                 - Subtext MUST display the referring doctor/partner name (row.referrerName).
+            // 3. OVERPAID:    STRICTLY scoped to retail direct visits (!isPrepaid && !isDraft) where desk
+            //                 collections exceed billed total (totalPaid > totalBilled).
+            // 4. PARTIAL DUE: Active retail visits with partial desk payments (totalPaid > 0 && remainingDue > 0).
+            // 5. FULL DUE:    100% counter credit visits (totalPaid === 0 && remainingDue > 0).
+            // 6. PAID:        Fully settled desk collections (Cash, UPI, Card).
+            //
+            // Any proposed modification MUST comply with Section II Invariant 5 in AGENTS.md.
+            // =========================================================================================
             header: "Payment",
             accessor: "paymentDisplay",
             className: "w-40",
