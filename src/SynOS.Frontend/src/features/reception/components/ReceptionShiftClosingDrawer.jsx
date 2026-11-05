@@ -26,7 +26,12 @@ import {
     QrCode,
     RefreshCw,
     TrendingDown,
-    TrendingUp
+    TrendingUp,
+    Pencil,
+    RotateCcw,
+    Plus,
+    Minus,
+    HelpCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/context/ThemeContext';
@@ -54,6 +59,16 @@ export function ReceptionShiftClosingDrawer({
     const [shiftName, setShiftName] = useState('Day Shift');
     const [supervisorUserId, setSupervisorUserId] = useState('');
     const [handoverNotes, setHandoverNotes] = useState('');
+
+    // Soft Adjustments / Corrections State
+    // keys: 'deskCash', 'deskUpi', 'remainingDue', 'b2bRecovered', 'dailyExpenses', 'refundsCash', 'openingFloat'
+    const [adjustments, setAdjustments] = useState({});
+    const [activeCorrectionTarget, setActiveCorrectionTarget] = useState(null);
+    const [correctionModalForm, setCorrectionModalForm] = useState({
+        newVal: '',
+        reason: '',
+        presetReason: ''
+    });
 
     // Denominations State
     const [denominations, setDenominations] = useState({
@@ -138,6 +153,42 @@ export function ReceptionShiftClosingDrawer({
         }
     }, [isOpen]);
 
+    // Effective Metric Helpers (Accounting for Soft Adjustments)
+    const getEffectiveValue = (metricKey, originalValue) => {
+        if (adjustments[metricKey] !== undefined) {
+            return adjustments[metricKey].value;
+        }
+        return originalValue;
+    };
+
+    const effectiveDeskCash = useMemo(() => {
+        return getEffectiveValue('deskCash', summary?.retailActivity?.cashCollected || 0);
+    }, [adjustments, summary]);
+
+    const effectiveDeskUpi = useMemo(() => {
+        return getEffectiveValue('deskUpi', summary?.retailActivity?.upiCollected || 0);
+    }, [adjustments, summary]);
+
+    const effectiveRemainingDue = useMemo(() => {
+        return getEffectiveValue('remainingDue', summary?.retailActivity?.remainingDue || 0);
+    }, [adjustments, summary]);
+
+    const effectiveB2bRecovered = useMemo(() => {
+        return getEffectiveValue('b2bRecovered', summary?.inflows?.b2bCashRecovered || 0);
+    }, [adjustments, summary]);
+
+    const effectiveDailyExpenses = useMemo(() => {
+        return getEffectiveValue('dailyExpenses', summary?.outflows?.dailyExpensesCash || 0);
+    }, [adjustments, summary]);
+
+    const effectiveRefundsCash = useMemo(() => {
+        return getEffectiveValue('refundsCash', summary?.outflows?.refundsCash || 0);
+    }, [adjustments, summary]);
+
+    const effectiveOpeningFloat = useMemo(() => {
+        return parseFloat(openingFloat) || 0;
+    }, [openingFloat]);
+
     // Live Math: Total Physical Count from Denominations
     const physicalCounted = useMemo(() => {
         const c500 = (parseInt(denominations.notes500, 10) || 0) * 500;
@@ -150,14 +201,13 @@ export function ReceptionShiftClosingDrawer({
         return c500 + c200 + c100 + c50 + c20 + c10 + cCoins;
     }, [denominations]);
 
-    // Live Math: System Expected Cash
+    // Live Math: System Expected Cash (incorporating soft adjustments)
     const systemExpected = useMemo(() => {
-        if (!summary?.reconciliation) return 0;
-        const totalInflows = summary.reconciliation.totalInflowCash || 0;
-        const totalOutflows = summary.reconciliation.totalOutflowCash || 0;
-        const floatVal = parseFloat(openingFloat) || 0;
-        return Math.max(0, floatVal + totalInflows - totalOutflows);
-    }, [summary, openingFloat]);
+        const insuranceCash = summary?.insuranceActivity?.coPayCashCollected || 0;
+        const totalInflows = effectiveDeskCash + insuranceCash + effectiveB2bRecovered;
+        const totalOutflows = effectiveDailyExpenses + effectiveRefundsCash;
+        return Math.max(0, effectiveOpeningFloat + totalInflows - totalOutflows);
+    }, [effectiveOpeningFloat, effectiveDeskCash, effectiveB2bRecovered, effectiveDailyExpenses, effectiveRefundsCash, summary]);
 
     // Live Math: Variance
     const variance = useMemo(() => {
@@ -168,13 +218,76 @@ export function ReceptionShiftClosingDrawer({
     const isShortage = variance < -0.01;
     const isSurplus = variance > 0.01;
 
-    // Handle Denomination Change
+    // Denomination Increments / Decrements
     const handleDenomChange = (field, val) => {
-        if (submissionResult) return; // Locked once submitted
+        if (submissionResult) return;
         setDenominations(prev => ({
             ...prev,
             [field]: val
         }));
+    };
+
+    const handleDenomStep = (field, step) => {
+        if (submissionResult) return;
+        setDenominations(prev => {
+            const current = parseInt(prev[field], 10) || 0;
+            const next = Math.max(0, current + step);
+            return {
+                ...prev,
+                [field]: next === 0 ? '' : next.toString()
+            };
+        });
+    };
+
+    // Soft Adjustment Modal Handlers
+    const openCorrectionModal = (metricKey, label, originalVal) => {
+        if (submissionResult) return;
+        const existingAdj = adjustments[metricKey];
+        setActiveCorrectionTarget({
+            key: metricKey,
+            label: label,
+            originalVal: originalVal,
+            currentVal: existingAdj !== undefined ? existingAdj.value : originalVal
+        });
+        setCorrectionModalForm({
+            newVal: (existingAdj !== undefined ? existingAdj.value : originalVal).toString(),
+            reason: existingAdj?.reason || '',
+            presetReason: ''
+        });
+    };
+
+    const applyCorrection = () => {
+        if (!activeCorrectionTarget) return;
+        const parsedNew = parseFloat(correctionModalForm.newVal);
+        if (isNaN(parsedNew) || parsedNew < 0) {
+            alert("Please enter a valid non-negative amount.");
+            return;
+        }
+        if (!correctionModalForm.reason.trim()) {
+            alert("A reason is mandatory for adjusting shift records (audit compliance).");
+            return;
+        }
+
+        setAdjustments(prev => ({
+            ...prev,
+            [activeCorrectionTarget.key]: {
+                original: activeCorrectionTarget.originalVal,
+                value: parsedNew,
+                reason: correctionModalForm.reason.trim(),
+                timestamp: new Date().toLocaleTimeString()
+            }
+        }));
+
+        setActiveCorrectionTarget(null);
+    };
+
+    const resetCorrection = (metricKey) => {
+        setAdjustments(prev => {
+            const copy = { ...prev };
+            delete copy[metricKey];
+            return copy;
+        });
+        setActiveCorrectionTarget(null);
     };
 
     // Submit Shift Closing
@@ -185,8 +298,9 @@ export function ReceptionShiftClosingDrawer({
 
             const payload = {
                 shiftName: shiftName || 'Day Shift',
-                openingFloat: parseFloat(openingFloat) || 0,
+                openingFloat: effectiveOpeningFloat,
                 physicalCountedCash: physicalCounted,
+                adjustedExpectedCash: systemExpected,
                 denominations: {
                     notes500: parseInt(denominations.notes500, 10) || 0,
                     notes200: parseInt(denominations.notes200, 10) || 0,
@@ -197,7 +311,31 @@ export function ReceptionShiftClosingDrawer({
                     coins: parseFloat(denominations.coins) || 0
                 },
                 handoverNotes: handoverNotes.trim(),
-                supervisorUserId: supervisorUserId ? supervisorUserId : null
+                supervisorUserId: supervisorUserId ? supervisorUserId : null,
+                correctionsJson: Object.keys(adjustments).length > 0 ? JSON.stringify(adjustments) : null,
+                activitySummaryJson: JSON.stringify({
+                    retail: {
+                        netBilled: summary?.retailActivity?.netBilled || 0,
+                        deskCash: effectiveDeskCash,
+                        upi: effectiveDeskUpi,
+                        remainingDue: effectiveRemainingDue
+                    },
+                    b2b: {
+                        partnerBilled: summary?.b2bActivity?.partnerBilled || 0,
+                        recoveriesCash: effectiveB2bRecovered
+                    },
+                    outflows: {
+                        expenses: effectiveDailyExpenses,
+                        refunds: effectiveRefundsCash
+                    },
+                    reconciliation: {
+                        openingFloat: effectiveOpeningFloat,
+                        systemExpected: systemExpected,
+                        physicalCounted: physicalCounted,
+                        variance: variance
+                    },
+                    adjustments: adjustments
+                })
             };
 
             const result = await FinanceApi.submitShiftClosing(payload);
@@ -210,6 +348,8 @@ export function ReceptionShiftClosingDrawer({
             setSubmitting(false);
         }
     };
+
+    const adjustmentCount = Object.keys(adjustments).length;
 
     return (
         <div className={cn("flex flex-col h-full overflow-hidden w-full select-none", ui.panel)}>
@@ -231,30 +371,36 @@ export function ReceptionShiftClosingDrawer({
                     </div>
                     <div>
                         <div className="flex items-center gap-2">
-                            <h2 className="font-bold text-base text-slate-900 dark:text-white">
+                            <h2 className="font-extrabold text-lg text-slate-900 dark:text-white tracking-tight">
                                 End Shift & Handover Cash
                             </h2>
-                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/20 font-mono">
+                            <span className="px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/25 font-mono">
                                 #SHIFT-CLOSING
                             </span>
+                            {adjustmentCount > 0 && (
+                                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30 font-mono flex items-center gap-1">
+                                    <Pencil className="w-3 h-3" />
+                                    {adjustmentCount} {adjustmentCount === 1 ? 'ADJUSTMENT' : 'ADJUSTMENTS'} ACTIVE
+                                </span>
+                            )}
                             {submissionResult && (
-                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1 font-mono">
-                                    <CheckCircle2 className="w-3 h-3" />
+                                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1 font-mono">
+                                    <CheckCircle2 className="w-3.5 h-3.5" />
                                     LOCKED & HANDED OVER
                                 </span>
                             )}
                         </div>
-                        <p className="text-xs text-slate-500 dark:text-zinc-400">
-                            Cashier: <span className="font-semibold text-slate-700 dark:text-zinc-200">{summary?.userName || user?.name || user?.username}</span> • Shift Date: <span className="font-mono">{summary?.shiftDate || new Date().toISOString().split('T')[0]}</span>
+                        <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 mt-0.5">
+                            Cashier: <span className="font-bold text-slate-800 dark:text-zinc-200">{summary?.userName || user?.name || user?.username}</span> • Shift Date: <span className="font-mono font-semibold">{summary?.shiftDate || new Date().toISOString().split('T')[0]}</span>
                         </p>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5">
                     <button
                         type="button"
                         onClick={() => setIsPrintSlipOpen(true)}
-                        className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 shadow-md transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
+                        className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-slate-900 hover:bg-slate-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 shadow-md transition-all cursor-pointer flex items-center gap-2 active:scale-95"
                     >
                         <Printer className="w-4 h-4" />
                         <span>Print Handover Slip</span>
@@ -263,7 +409,7 @@ export function ReceptionShiftClosingDrawer({
                         type="button"
                         onClick={loadSummary}
                         disabled={loading}
-                        className="p-1.5 rounded-xl hover:bg-slate-200 dark:hover:bg-zinc-800 text-slate-500 dark:text-zinc-400 transition-colors cursor-pointer"
+                        className="p-2 rounded-xl hover:bg-slate-200 dark:hover:bg-zinc-800 text-slate-500 dark:text-zinc-400 transition-colors cursor-pointer"
                         title="Reload Shift Data"
                     >
                         <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
@@ -272,7 +418,7 @@ export function ReceptionShiftClosingDrawer({
                         <button
                             type="button"
                             onClick={onClose}
-                            className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                            className="p-2 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                             title="Close (Esc)"
                         >
                             <X className="w-5 h-5" />
@@ -283,7 +429,7 @@ export function ReceptionShiftClosingDrawer({
 
             {/* ERROR BANNER */}
             {errorMessage && (
-                <div className="mx-6 mt-3 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-700 dark:text-rose-400 text-xs flex items-center justify-between">
+                <div className="mx-6 mt-3 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-700 dark:text-rose-400 text-xs sm:text-sm flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <AlertTriangle className="w-4 h-4 shrink-0" />
                         <span>{errorMessage}</span>
@@ -296,40 +442,40 @@ export function ReceptionShiftClosingDrawer({
             {loading ? (
                 <div className="flex-1 flex flex-col items-center justify-center gap-3">
                     <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
-                    <p className="text-xs text-slate-500 font-medium">Reconciling today's front-desk intake & ledgers...</p>
+                    <p className="text-sm text-slate-600 dark:text-zinc-400 font-medium">Reconciling today's front-desk intake & ledgers...</p>
                 </div>
             ) : (
                 <div className="flex-1 min-h-0 overflow-y-auto p-6 space-y-6">
                     {/* TOP SUMMARY POD (SUCCESS CELEBRATION IF SUBMITTED) */}
                     {submissionResult && (
-                        <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-900 dark:text-emerald-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm">
+                        <div className="p-4 sm:p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-900 dark:text-emerald-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-sm">
                             <div className="flex items-center gap-3.5">
-                                <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-md">
-                                    <Check className="w-5 h-5 stroke-[2.5]" />
+                                <div className="w-11 h-11 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-md">
+                                    <Check className="w-6 h-6 stroke-[2.5]" />
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-sm">Shift Successfully Closed & Handed Over</h3>
-                                    <p className="text-xs text-emerald-800 dark:text-emerald-300">
-                                        Physically Counted: <span className="font-mono font-bold">₹{physicalCounted.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span> • Variance: <span className="font-mono font-bold">{isMatch ? '₹0.00 (Balanced)' : `₹${variance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}</span>
+                                    <h3 className="font-extrabold text-base">Shift Successfully Closed & Handed Over</h3>
+                                    <p className="text-xs sm:text-sm text-emerald-800 dark:text-emerald-300 mt-0.5">
+                                        Physically Counted: <span className="font-mono font-black">₹{physicalCounted.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span> • Variance: <span className="font-mono font-black">{isMatch ? '₹0.00 (Balanced)' : `₹${variance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}</span>
                                     </p>
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-2 self-end md:self-auto">
+                            <div className="flex items-center gap-2.5 self-end md:self-auto">
                                 <button
                                     type="button"
                                     onClick={() => setIsPrintSlipOpen(true)}
-                                    className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-zinc-900 border border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 shadow-xs cursor-pointer flex items-center gap-1.5"
+                                    className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-white dark:bg-zinc-900 border border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 shadow-xs cursor-pointer flex items-center gap-1.5"
                                 >
-                                    <Printer className="w-3.5 h-3.5" />
+                                    <Printer className="w-4 h-4" />
                                     <span>Print Envelope Slip</span>
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => logout()}
-                                    className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 shadow-md cursor-pointer flex items-center gap-1.5 active:scale-95"
+                                    className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-slate-900 hover:bg-slate-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 shadow-md cursor-pointer flex items-center gap-1.5 active:scale-95"
                                 >
-                                    <LogOut className="w-3.5 h-3.5" />
+                                    <LogOut className="w-4 h-4" />
                                     <span>Switch User / Log Out</span>
                                 </button>
                             </div>
@@ -343,122 +489,190 @@ export function ReceptionShiftClosingDrawer({
                         {/* ========================================================= */}
                         <div className="lg:col-span-7 space-y-6">
                             {/* CARD 1: INTAKE ACROSS 3 CANONICAL MODES */}
-                            <div className={cn("p-5 space-y-4", ui.card)}>
-                                <div className="flex items-center justify-between pb-3 border-b border-slate-200/80 dark:border-zinc-800">
-                                    <div className="flex items-center gap-2.5">
-                                        <div className="p-1.5 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                            <div className={cn("p-6 space-y-5", ui.card)}>
+                                <div className="flex items-center justify-between pb-3.5 border-b border-slate-200/80 dark:border-zinc-800">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
                                             <Building2 className="w-4 h-4" />
                                         </div>
                                         <div>
-                                            <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+                                            <h3 className="font-extrabold text-base text-slate-900 dark:text-white">
                                                 Intake & Billing Across 3 Canonical Payer Modes
                                             </h3>
-                                            <p className="text-[11px] text-slate-500 dark:text-zinc-400">
-                                                Direct Desk Retail vs Corporate B2B Partner vs Cashless Insurance
+                                            <p className="text-xs text-slate-500 dark:text-zinc-400">
+                                                Click any metric with <Pencil className="w-3 h-3 inline text-slate-400" /> to perform a soft correction with reason
                                             </p>
                                         </div>
                                     </div>
-                                    <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300">
+                                    <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 border border-slate-200 dark:border-zinc-700">
                                         {(summary?.retailActivity?.billsCount || 0) + (summary?.b2bActivity?.billsCount || 0) + (summary?.insuranceActivity?.claimsCount || 0)} Total Visits
                                     </span>
                                 </div>
 
                                 {/* 3-MODE SUMMARY TILES */}
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
                                     {/* MODE 1: DIRECT STANDARD */}
-                                    <div className={cn("p-3.5 flex flex-col justify-between", ui.pod)}>
+                                    <div className={cn("p-4 flex flex-col justify-between rounded-xl", ui.pod)}>
                                         <div>
                                             <div className="flex items-center justify-between">
-                                                <span className="text-[11px] font-bold text-slate-700 dark:text-zinc-300">Direct / Standard</span>
-                                                <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-blue-500/15 text-blue-700 dark:text-blue-300 font-mono">
+                                                <span className="text-xs font-extrabold text-slate-800 dark:text-zinc-200 uppercase tracking-wide">Direct / Standard</span>
+                                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/15 text-blue-700 dark:text-blue-300 font-mono">
                                                     Retail
                                                 </span>
                                             </div>
-                                            <div className="mt-2 text-xl font-bold font-mono text-slate-900 dark:text-white">
+                                            <div className="mt-2 text-2xl font-black font-mono text-slate-900 dark:text-white">
                                                 ₹{(summary?.retailActivity?.netBilled || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                                             </div>
-                                            <div className="text-[10px] text-slate-500 dark:text-zinc-400">
+                                            <div className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
                                                 {summary?.retailActivity?.billsCount || 0} Bills • Gross: ₹{(summary?.retailActivity?.grossTariff || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                                             </div>
                                         </div>
 
-                                        <div className="mt-3 pt-2 border-t border-slate-300/60 dark:border-zinc-700/60 text-[10.5px] space-y-1">
-                                            <div className="flex justify-between">
-                                                <span className="text-slate-500">Desk Cash:</span>
-                                                <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">₹{(summary?.retailActivity?.cashCollected || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                                        <div className="mt-4 pt-3 border-t border-slate-300/60 dark:border-zinc-700/60 text-xs sm:text-sm space-y-2">
+                                            {/* Desk Cash with soft edit */}
+                                            <div className="flex items-center justify-between group">
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className="text-slate-500 font-medium">Desk Cash:</span>
+                                                    {!submissionResult && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => openCorrectionModal('deskCash', 'Desk Cash Collected', summary?.retailActivity?.cashCollected || 0)}
+                                                            className="opacity-60 hover:opacity-100 p-0.5 rounded hover:bg-slate-200 dark:hover:bg-zinc-700 transition-opacity"
+                                                            title="Correct Desk Cash with reason"
+                                                        >
+                                                            <Pencil className="w-3 h-3 text-slate-600 dark:text-zinc-300" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center gap-1">
+                                                    <span className={cn("font-mono font-bold text-emerald-600 dark:text-emerald-400", adjustments.deskCash && "underline decoration-dotted")}>
+                                                        ₹{effectiveDeskCash.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                                                    </span>
+                                                    {adjustments.deskCash && (
+                                                        <span className="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 font-mono" title={`Reason: ${adjustments.deskCash.reason}`}>
+                                                            ADJ
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-slate-500">UPI / QR:</span>
-                                                <span className="font-mono font-bold text-blue-600 dark:text-blue-400">₹{(summary?.retailActivity?.upiCollected || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+
+                                            {/* Desk UPI with soft edit */}
+                                            <div className="flex items-center justify-between group">
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className="text-slate-500 font-medium">UPI / QR:</span>
+                                                    {!submissionResult && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => openCorrectionModal('deskUpi', 'Desk UPI/Online Collected', summary?.retailActivity?.upiCollected || 0)}
+                                                            className="opacity-60 hover:opacity-100 p-0.5 rounded hover:bg-slate-200 dark:hover:bg-zinc-700 transition-opacity"
+                                                            title="Correct UPI with reason"
+                                                        >
+                                                            <Pencil className="w-3 h-3 text-slate-600 dark:text-zinc-300" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center gap-1">
+                                                    <span className={cn("font-mono font-bold text-blue-600 dark:text-blue-400", adjustments.deskUpi && "underline decoration-dotted")}>
+                                                        ₹{effectiveDeskUpi.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                                                    </span>
+                                                    {adjustments.deskUpi && (
+                                                        <span className="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 font-mono" title={`Reason: ${adjustments.deskUpi.reason}`}>
+                                                            ADJ
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-slate-500">Remaining Due:</span>
-                                                <span className="font-mono font-bold text-amber-600 dark:text-amber-400">₹{(summary?.retailActivity?.remainingDue || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+
+                                            {/* Remaining Due */}
+                                            <div className="flex items-center justify-between group">
+                                                <div className="flex items-center gap-1.5">
+                                                    <span className="text-slate-500 font-medium">Remaining Due:</span>
+                                                    {!submissionResult && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => openCorrectionModal('remainingDue', 'Retail Remaining Due', summary?.retailActivity?.remainingDue || 0)}
+                                                            className="opacity-60 hover:opacity-100 p-0.5 rounded hover:bg-slate-200 dark:hover:bg-zinc-700 transition-opacity"
+                                                            title="Correct Remaining Due with reason"
+                                                        >
+                                                            <Pencil className="w-3 h-3 text-slate-600 dark:text-zinc-300" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center gap-1">
+                                                    <span className={cn("font-mono font-bold text-amber-600 dark:text-amber-400", adjustments.remainingDue && "underline decoration-dotted")}>
+                                                        ₹{effectiveRemainingDue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                                                    </span>
+                                                    {adjustments.remainingDue && (
+                                                        <span className="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 font-mono" title={`Reason: ${adjustments.remainingDue.reason}`}>
+                                                            ADJ
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* MODE 2: CORPORATE B2B PREPAID */}
-                                    <div className={cn("p-3.5 flex flex-col justify-between", ui.pod)}>
+                                    <div className={cn("p-4 flex flex-col justify-between rounded-xl", ui.pod)}>
                                         <div>
                                             <div className="flex items-center justify-between">
-                                                <span className="text-[11px] font-bold text-slate-700 dark:text-zinc-300">Corporate B2B</span>
-                                                <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 font-mono">
+                                                <span className="text-xs font-extrabold text-slate-800 dark:text-zinc-200 uppercase tracking-wide">Corporate B2B</span>
+                                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 text-amber-700 dark:text-amber-300 font-mono">
                                                     B2B Prepaid
                                                 </span>
                                             </div>
-                                            <div className="mt-2 text-xl font-bold font-mono text-slate-900 dark:text-white">
+                                            <div className="mt-2 text-2xl font-black font-mono text-slate-900 dark:text-white">
                                                 ₹{(summary?.b2bActivity?.partnerBilled || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                                             </div>
-                                            <div className="text-[10px] text-slate-500 dark:text-zinc-400">
+                                            <div className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
                                                 {summary?.b2bActivity?.billsCount || 0} Bills • Gross: ₹{(summary?.b2bActivity?.grossTariff || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                                             </div>
                                         </div>
 
-                                        <div className="mt-3 pt-2 border-t border-slate-300/60 dark:border-zinc-700/60 text-[10.5px] space-y-1">
+                                        <div className="mt-4 pt-3 border-t border-slate-300/60 dark:border-zinc-700/60 text-xs sm:text-sm space-y-2">
                                             <div className="flex justify-between">
-                                                <span className="text-slate-500">Desk Cash:</span>
+                                                <span className="text-slate-500 font-medium">Desk Cash:</span>
                                                 <span className="font-mono font-bold text-slate-400">₹0.00 (Partner)</span>
                                             </div>
                                             <div className="flex justify-between">
-                                                <span className="text-slate-500">B2B Billing:</span>
+                                                <span className="text-slate-500 font-medium">B2B Billing:</span>
                                                 <span className="font-mono font-bold text-amber-600 dark:text-amber-400">Monthly Ledger</span>
                                             </div>
                                             <div className="flex justify-between">
-                                                <span className="text-slate-500">Concession:</span>
+                                                <span className="text-slate-500 font-medium">Concession:</span>
                                                 <span className="font-mono font-bold text-slate-600 dark:text-zinc-300">Contract Rate</span>
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* MODE 3: INSURANCE / TPA */}
-                                    <div className={cn("p-3.5 flex flex-col justify-between", ui.pod)}>
+                                    <div className={cn("p-4 flex flex-col justify-between rounded-xl", ui.pod)}>
                                         <div>
                                             <div className="flex items-center justify-between">
-                                                <span className="text-[11px] font-bold text-slate-700 dark:text-zinc-300">Insurance / TPA</span>
-                                                <span className="px-1.5 py-0.2 rounded-full text-[9px] font-bold bg-purple-500/15 text-purple-700 dark:text-purple-300 font-mono">
+                                                <span className="text-xs font-extrabold text-slate-800 dark:text-zinc-200 uppercase tracking-wide">Insurance / TPA</span>
+                                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/15 text-purple-700 dark:text-purple-300 font-mono">
                                                     Cashless
                                                 </span>
                                             </div>
-                                            <div className="mt-2 text-xl font-bold font-mono text-slate-900 dark:text-white">
+                                            <div className="mt-2 text-2xl font-black font-mono text-slate-900 dark:text-white">
                                                 ₹{(summary?.insuranceActivity?.preAuthGross || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                                             </div>
-                                            <div className="text-[10px] text-slate-500 dark:text-zinc-400">
+                                            <div className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
                                                 {summary?.insuranceActivity?.claimsCount || 0} Claims Pre-Approved
                                             </div>
                                         </div>
 
-                                        <div className="mt-3 pt-2 border-t border-slate-300/60 dark:border-zinc-700/60 text-[10.5px] space-y-1">
+                                        <div className="mt-4 pt-3 border-t border-slate-300/60 dark:border-zinc-700/60 text-xs sm:text-sm space-y-2">
                                             <div className="flex justify-between">
-                                                <span className="text-slate-500">Co-Pay Cash:</span>
+                                                <span className="text-slate-500 font-medium">Co-Pay Cash:</span>
                                                 <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">₹{(summary?.insuranceActivity?.coPayCashCollected || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                                             </div>
                                             <div className="flex justify-between">
-                                                <span className="text-slate-500">Settlement:</span>
+                                                <span className="text-slate-500 font-medium">Settlement:</span>
                                                 <span className="font-mono font-bold text-purple-600 dark:text-purple-400">TPA Claims</span>
                                             </div>
                                             <div className="flex justify-between">
-                                                <span className="text-slate-500">Status:</span>
+                                                <span className="text-slate-500 font-medium">Status:</span>
                                                 <span className="font-mono font-bold text-slate-600 dark:text-zinc-300">Pre-Auth Cleared</span>
                                             </div>
                                         </div>
@@ -467,18 +681,18 @@ export function ReceptionShiftClosingDrawer({
                             </div>
 
                             {/* CARD 2: MID-SHIFT DRAWER INFLOWS & OUTFLOWS */}
-                            <div className={cn("p-5 space-y-4", ui.card)}>
-                                <div className="flex items-center justify-between pb-3 border-b border-slate-200/80 dark:border-zinc-800">
-                                    <div className="flex items-center gap-2.5">
-                                        <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                            <div className={cn("p-6 space-y-5", ui.card)}>
+                                <div className="flex items-center justify-between pb-3.5 border-b border-slate-200/80 dark:border-zinc-800">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                                             <Wallet className="w-4 h-4" />
                                         </div>
                                         <div>
-                                            <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+                                            <h3 className="font-extrabold text-base text-slate-900 dark:text-white">
                                                 Mid-Shift Desk Inflows & Counter Outflows
                                             </h3>
-                                            <p className="text-[11px] text-slate-500 dark:text-zinc-400">
-                                                B2B Debt settlements recovered in cash and petty disbursements
+                                            <p className="text-xs text-slate-500 dark:text-zinc-400">
+                                                B2B Debt recoveries in cash and petty disbursements (editable with audit reason)
                                             </p>
                                         </div>
                                     </div>
@@ -486,24 +700,41 @@ export function ReceptionShiftClosingDrawer({
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {/* INFLOWS: B2B CASH RECOVERIES */}
-                                    <div className={cn("p-4 space-y-3", ui.cardSecondary)}>
+                                    <div className={cn("p-4 space-y-3 rounded-xl", ui.cardSecondary)}>
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
                                                 <ArrowDownLeft className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                                                <span className="text-xs font-bold text-slate-800 dark:text-zinc-200">B2B Cash Recoveries</span>
+                                                <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-200">B2B Cash Recoveries</span>
+                                                {!submissionResult && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => openCorrectionModal('b2bRecovered', 'B2B Cash Recoveries', summary?.inflows?.b2bCashRecovered || 0)}
+                                                        className="opacity-60 hover:opacity-100 p-0.5 rounded hover:bg-slate-200 dark:hover:bg-zinc-700 transition-opacity"
+                                                        title="Correct B2B Cash Recoveries with reason"
+                                                    >
+                                                        <Pencil className="w-3 h-3 text-slate-600 dark:text-zinc-300" />
+                                                    </button>
+                                                )}
                                             </div>
-                                            <span className="font-mono font-bold text-xs text-emerald-600 dark:text-emerald-400">
-                                                +₹{(summary?.inflows?.b2bCashRecovered || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                                            </span>
+                                            <div className="flex items-center gap-1">
+                                                <span className={cn("font-mono font-bold text-sm sm:text-base text-emerald-600 dark:text-emerald-400", adjustments.b2bRecovered && "underline decoration-dotted")}>
+                                                    +₹{effectiveB2bRecovered.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                                </span>
+                                                {adjustments.b2bRecovered && (
+                                                    <span className="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 font-mono" title={`Reason: ${adjustments.b2bRecovered.reason}`}>
+                                                        ADJ
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
 
                                         {summary?.inflows?.settlements?.length > 0 ? (
-                                            <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                                            <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
                                                 {summary.inflows.settlements.map((s, idx) => (
-                                                    <div key={idx} className="flex items-center justify-between text-[11px] p-2 rounded-lg bg-white/70 dark:bg-zinc-800/60 border border-slate-200/60 dark:border-zinc-700/60">
+                                                    <div key={idx} className="flex items-center justify-between text-xs p-2.5 rounded-lg bg-white/70 dark:bg-zinc-800/60 border border-slate-200/60 dark:border-zinc-700/60">
                                                         <div>
                                                             <span className="font-bold block text-slate-800 dark:text-zinc-200">{s.partnerName}</span>
-                                                            <span className="text-[10px] text-slate-400 font-mono">{s.receiptNo} • {s.time}</span>
+                                                            <span className="text-[11px] text-slate-500 font-mono">{s.receiptNo} • {s.time}</span>
                                                         </div>
                                                         <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
                                                             ₹{s.amount.toFixed(2)}
@@ -512,31 +743,48 @@ export function ReceptionShiftClosingDrawer({
                                                 ))}
                                             </div>
                                         ) : (
-                                            <div className="p-3 text-center rounded-lg bg-slate-100/60 dark:bg-zinc-900/40 text-[11px] text-slate-400">
+                                            <div className="p-3 text-center rounded-lg bg-slate-100/60 dark:bg-zinc-900/40 text-xs text-slate-500">
                                                 No B2B partner cash settlements recorded today.
                                             </div>
                                         )}
                                     </div>
 
                                     {/* OUTFLOWS: PETTY CASH EXPENSES & REFUNDS */}
-                                    <div className={cn("p-4 space-y-3", ui.cardSecondary)}>
+                                    <div className={cn("p-4 space-y-3 rounded-xl", ui.cardSecondary)}>
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
                                                 <TrendingDown className="w-4 h-4 text-rose-600 dark:text-rose-400" />
-                                                <span className="text-xs font-bold text-slate-800 dark:text-zinc-200">Daily Expenses & Refunds</span>
+                                                <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-zinc-200">Daily Expenses & Refunds</span>
+                                                {!submissionResult && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => openCorrectionModal('dailyExpenses', 'Daily Desk Petty Expenses', summary?.outflows?.dailyExpensesCash || 0)}
+                                                        className="opacity-60 hover:opacity-100 p-0.5 rounded hover:bg-slate-200 dark:hover:bg-zinc-700 transition-opacity"
+                                                        title="Correct Daily Expenses with reason"
+                                                    >
+                                                        <Pencil className="w-3 h-3 text-slate-600 dark:text-zinc-300" />
+                                                    </button>
+                                                )}
                                             </div>
-                                            <span className="font-mono font-bold text-xs text-rose-600 dark:text-rose-400">
-                                                -₹{((summary?.outflows?.dailyExpensesCash || 0) + (summary?.outflows?.refundsCash || 0)).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                                            </span>
+                                            <div className="flex items-center gap-1">
+                                                <span className={cn("font-mono font-bold text-sm sm:text-base text-rose-600 dark:text-rose-400", adjustments.dailyExpenses && "underline decoration-dotted")}>
+                                                    -₹{(effectiveDailyExpenses + effectiveRefundsCash).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                                </span>
+                                                {adjustments.dailyExpenses && (
+                                                    <span className="px-1.5 py-0.2 rounded text-[9.5px] font-bold bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 font-mono" title={`Reason: ${adjustments.dailyExpenses.reason}`}>
+                                                        ADJ
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
 
                                         {summary?.outflows?.expenses?.length > 0 ? (
-                                            <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                                            <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
                                                 {summary.outflows.expenses.map((e, idx) => (
-                                                    <div key={idx} className="flex items-center justify-between text-[11px] p-2 rounded-lg bg-white/70 dark:bg-zinc-800/60 border border-slate-200/60 dark:border-zinc-700/60">
+                                                    <div key={idx} className="flex items-center justify-between text-xs p-2.5 rounded-lg bg-white/70 dark:bg-zinc-800/60 border border-slate-200/60 dark:border-zinc-700/60">
                                                         <div>
-                                                            <span className="font-bold block text-slate-800 dark:text-zinc-200 truncate max-w-[180px]">{e.description}</span>
-                                                            <span className="text-[10px] text-slate-400 font-mono">{e.category} • {e.time}</span>
+                                                            <span className="font-bold block text-slate-800 dark:text-zinc-200 truncate max-w-[190px]">{e.description}</span>
+                                                            <span className="text-[11px] text-slate-500 font-mono">{e.category} • {e.time}</span>
                                                         </div>
                                                         <span className="font-mono font-bold text-rose-600 dark:text-rose-400">
                                                             -₹{e.amount.toFixed(2)}
@@ -545,7 +793,7 @@ export function ReceptionShiftClosingDrawer({
                                                 ))}
                                             </div>
                                         ) : (
-                                            <div className="p-3 text-center rounded-lg bg-slate-100/60 dark:bg-zinc-900/40 text-[11px] text-slate-400">
+                                            <div className="p-3 text-center rounded-lg bg-slate-100/60 dark:bg-zinc-900/40 text-xs text-slate-500">
                                                 No cash petty expenses disbursed from desk today.
                                             </div>
                                         )}
@@ -559,30 +807,30 @@ export function ReceptionShiftClosingDrawer({
                         {/* ========================================================= */}
                         <div className="lg:col-span-5 space-y-6">
                             {/* CARD 3: CASH RECONCILIATION & DENOMINATION COUNT */}
-                            <div className={cn("p-5 space-y-5", ui.card)}>
-                                <div className="flex items-center justify-between pb-3 border-b border-slate-200/80 dark:border-zinc-800">
-                                    <div className="flex items-center gap-2">
-                                        <Banknote className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                                        <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+                            <div className={cn("p-6 space-y-5", ui.card)}>
+                                <div className="flex items-center justify-between pb-3.5 border-b border-slate-200/80 dark:border-zinc-800">
+                                    <div className="flex items-center gap-2.5">
+                                        <Banknote className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                                        <h3 className="font-extrabold text-base text-slate-900 dark:text-white">
                                             Physical Cash Drawer Settlement
                                         </h3>
                                     </div>
                                     <div className="text-right">
-                                        <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-bold">System Expected</span>
-                                        <span className="text-base font-bold font-mono text-slate-900 dark:text-white">
+                                        <span className="text-xs text-slate-500 dark:text-zinc-400 uppercase tracking-wider block font-bold">System Expected</span>
+                                        <span className="text-lg font-black font-mono text-slate-900 dark:text-white">
                                             ₹{systemExpected.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                                         </span>
                                     </div>
                                 </div>
 
                                 {/* OPENING FLOAT INPUT */}
-                                <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-zinc-900/60 border border-slate-200/80 dark:border-zinc-800">
+                                <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-900/60 border border-slate-200/80 dark:border-zinc-800">
                                     <div>
-                                        <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 block">Shift Opening Float</span>
-                                        <span className="text-[10px] text-slate-400">Initial change drawer reserve</span>
+                                        <span className="text-sm font-bold text-slate-800 dark:text-zinc-200 block">Shift Opening Float</span>
+                                        <span className="text-xs text-slate-500">Initial change drawer reserve</span>
                                     </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <span className="text-xs font-bold font-mono text-slate-500">₹</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm font-bold font-mono text-slate-500">₹</span>
                                         <input
                                             type="number"
                                             min="0"
@@ -590,89 +838,124 @@ export function ReceptionShiftClosingDrawer({
                                             value={openingFloat}
                                             disabled={!!submissionResult}
                                             onChange={(e) => setOpeningFloat(e.target.value)}
-                                            className={cn("w-28 px-2.5 py-1 text-right text-xs font-mono font-bold", ui.input)}
+                                            className={cn("w-32 px-3 py-1.5 text-right text-sm font-mono font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none", ui.input)}
                                         />
                                     </div>
                                 </div>
 
-                                {/* DENOMINATION INPUT TABLE */}
-                                <div className="space-y-2">
-                                    <div className="flex items-center justify-between px-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                                        <span>Denomination</span>
-                                        <span className="text-center pl-10">Count</span>
-                                        <span>Subtotal</span>
+                                {/* DENOMINATION INPUT TABLE (EXPANDED FONTS & CLEAN STEPPERS) */}
+                                <div className="space-y-2.5">
+                                    <div className="grid grid-cols-12 px-2 text-xs font-black text-slate-500 dark:text-zinc-400 uppercase tracking-wider">
+                                        <span className="col-span-5">Denomination</span>
+                                        <span className="col-span-4 text-center">Count</span>
+                                        <span className="col-span-3 text-right">Subtotal</span>
                                     </div>
 
                                     {[
-                                        { key: 'notes500', note: 500, label: '₹500 Note', color: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20' },
-                                        { key: 'notes200', note: 200, label: '₹200 Note', color: 'bg-orange-500/10 text-orange-700 dark:text-orange-300 border-orange-500/20' },
-                                        { key: 'notes100', note: 100, label: '₹100 Note', color: 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20' },
-                                        { key: 'notes50',  note: 50,  label: '₹50 Note',  color: 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border-cyan-500/20' },
-                                        { key: 'notes20',  note: 20,  label: '₹20 Note',  color: 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20' },
-                                        { key: 'notes10',  note: 10,  label: '₹10 Note',  color: 'bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/20' },
-                                        { key: 'coins',    note: 1,   label: 'Coins / Small', color: 'bg-zinc-500/10 text-zinc-700 dark:text-zinc-300 border-zinc-500/20' }
+                                        { key: 'notes500', note: 500, label: '₹500 Note', color: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/25' },
+                                        { key: 'notes200', note: 200, label: '₹200 Note', color: 'bg-orange-500/10 text-orange-700 dark:text-orange-300 border-orange-500/25' },
+                                        { key: 'notes100', note: 100, label: '₹100 Note', color: 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/25' },
+                                        { key: 'notes50',  note: 50,  label: '₹50 Note',  color: 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border-cyan-500/25' },
+                                        { key: 'notes20',  note: 20,  label: '₹20 Note',  color: 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/25' },
+                                        { key: 'notes10',  note: 10,  label: '₹10 Note',  color: 'bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/25' },
+                                        { key: 'coins',    note: 1,   label: 'Coins / Small', color: 'bg-zinc-500/10 text-zinc-700 dark:text-zinc-300 border-zinc-500/25' }
                                     ].map(d => {
                                         const count = d.key === 'coins' ? parseFloat(denominations[d.key]) || 0 : parseInt(denominations[d.key], 10) || 0;
                                         const subtotal = d.key === 'coins' ? count : count * d.note;
 
                                         return (
-                                            <div key={d.key} className="flex items-center justify-between gap-3 p-2 rounded-xl bg-slate-50/70 dark:bg-zinc-900/40 border border-slate-200/60 dark:border-zinc-800">
-                                                <span className={cn("px-2.5 py-1 rounded-lg text-xs font-bold font-mono border", d.color)}>
-                                                    {d.label}
-                                                </span>
+                                            <div key={d.key} className="grid grid-cols-12 items-center p-2.5 rounded-xl bg-slate-50/80 dark:bg-zinc-900/40 border border-slate-200/80 dark:border-zinc-800">
+                                                {/* Denomination badge */}
+                                                <div className="col-span-5 flex items-center">
+                                                    <span className={cn("px-3 py-1.5 rounded-xl text-xs sm:text-sm font-extrabold font-mono border", d.color)}>
+                                                        {d.label}
+                                                    </span>
+                                                </div>
 
-                                                <input
-                                                    type="number"
-                                                    min="0"
-                                                    placeholder="0"
-                                                    value={denominations[d.key]}
-                                                    disabled={!!submissionResult}
-                                                    onChange={(e) => handleDenomChange(d.key, e.target.value)}
-                                                    className={cn("w-24 px-2.5 py-1 text-center text-xs font-mono font-bold", ui.input)}
-                                                />
+                                                {/* Count Column with clean steppers (NO curving native spinners) */}
+                                                <div className="col-span-4 flex items-center justify-center gap-1">
+                                                    {!submissionResult && d.key !== 'coins' && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleDenomStep(d.key, -1)}
+                                                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-200/70 hover:bg-slate-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 transition-colors cursor-pointer active:scale-95 text-xs font-bold"
+                                                            title="Subtract 1"
+                                                        >
+                                                            <Minus className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    )}
 
-                                                <span className="w-24 text-right font-mono font-bold text-xs text-slate-800 dark:text-zinc-200">
-                                                    ₹{subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                                                </span>
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        placeholder="0"
+                                                        value={denominations[d.key]}
+                                                        disabled={!!submissionResult}
+                                                        onChange={(e) => handleDenomChange(d.key, e.target.value)}
+                                                        className={cn(
+                                                            "w-16 sm:w-20 py-1.5 text-center text-sm sm:text-base font-mono font-black text-slate-900 dark:text-white rounded-lg border",
+                                                            "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
+                                                            ui.input
+                                                        )}
+                                                    />
+
+                                                    {!submissionResult && d.key !== 'coins' && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleDenomStep(d.key, 1)}
+                                                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-200/70 hover:bg-slate-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 transition-colors cursor-pointer active:scale-95 text-xs font-bold"
+                                                            title="Add 1"
+                                                        >
+                                                            <Plus className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    )}
+                                                </div>
+
+                                                {/* Subtotal */}
+                                                <div className="col-span-3 text-right">
+                                                    <span className="font-mono font-black text-xs sm:text-sm text-slate-900 dark:text-white">
+                                                        ₹{subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                                    </span>
+                                                </div>
                                             </div>
                                         );
                                     })}
                                 </div>
 
                                 {/* LIVE TOTAL COUNTED & VARIANCE POD */}
-                                <div className={cn("p-4 space-y-2.5", ui.pod)}>
+                                <div className={cn("p-4 sm:p-5 space-y-3 rounded-xl", ui.pod)}>
                                     <div className="flex items-center justify-between">
-                                        <span className="text-xs font-bold text-slate-700 dark:text-zinc-300">Total Counted Cash:</span>
-                                        <span className="font-mono font-bold text-base text-slate-900 dark:text-white">
+                                        <span className="text-sm font-extrabold text-slate-800 dark:text-zinc-200">Total Counted Cash:</span>
+                                        <span className="font-mono font-black text-xl sm:text-2xl text-slate-900 dark:text-white">
                                             ₹{physicalCounted.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                                         </span>
                                     </div>
-                                    <div className="flex items-center justify-between text-xs">
-                                        <span className="text-slate-500">System Expected:</span>
-                                        <span className="font-mono text-slate-700 dark:text-zinc-300">
+                                    <div className="flex items-center justify-between text-xs sm:text-sm">
+                                        <span className="text-slate-500 font-medium">System Expected:</span>
+                                        <span className="font-mono font-bold text-slate-700 dark:text-zinc-300">
                                             ₹{systemExpected.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                                         </span>
                                     </div>
 
                                     {/* VARIANCE INDICATOR */}
-                                    <div className="pt-2 border-t border-slate-300/80 dark:border-zinc-700 flex items-center justify-between">
-                                        <span className="text-xs font-bold">Variance / Discrepancy:</span>
+                                    <div className="pt-2.5 border-t border-slate-300/80 dark:border-zinc-700 flex items-center justify-between">
+                                        <span className="text-xs sm:text-sm font-extrabold text-slate-800 dark:text-zinc-200">Variance / Discrepancy:</span>
                                         <div>
                                             {isMatch && (
-                                                <span className="px-2.5 py-1 rounded-lg text-xs font-bold font-mono bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
-                                                    <CheckCircle2 className="w-3.5 h-3.5" />
+                                                <span className="px-3 py-1.5 rounded-xl text-xs sm:text-sm font-black font-mono bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 shadow-xs">
+                                                    <CheckCircle2 className="w-4 h-4" />
                                                     MATCH (₹0.00)
                                                 </span>
                                             )}
                                             {isShortage && (
-                                                <span className="px-2.5 py-1 rounded-lg text-xs font-bold font-mono bg-rose-500/15 text-rose-700 dark:text-rose-400 border border-rose-500/30 flex items-center gap-1">
-                                                    <AlertTriangle className="w-3.5 h-3.5" />
+                                                <span className="px-3 py-1.5 rounded-xl text-xs sm:text-sm font-black font-mono bg-rose-500/15 text-rose-700 dark:text-rose-400 border border-rose-500/30 flex items-center gap-1.5 shadow-xs">
+                                                    <AlertTriangle className="w-4 h-4" />
                                                     SHORTAGE -₹{Math.abs(variance).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                                                 </span>
                                             )}
                                             {isSurplus && (
-                                                <span className="px-2.5 py-1 rounded-lg text-xs font-bold font-mono bg-blue-500/15 text-blue-700 dark:text-blue-400 border border-blue-500/30 flex items-center gap-1">
-                                                    <TrendingUp className="w-3.5 h-3.5" />
+                                                <span className="px-3 py-1.5 rounded-xl text-xs sm:text-sm font-black font-mono bg-blue-500/15 text-blue-700 dark:text-blue-400 border border-blue-500/30 flex items-center gap-1.5 shadow-xs">
+                                                    <TrendingUp className="w-4 h-4" />
                                                     SURPLUS +₹{variance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                                                 </span>
                                             )}
@@ -681,17 +964,17 @@ export function ReceptionShiftClosingDrawer({
                                 </div>
 
                                 {/* HANDOVER DESTINATION & NOTES */}
-                                <div className="space-y-3 pt-2">
+                                <div className="space-y-3 pt-1">
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
-                                            <label className="text-[11px] font-bold text-slate-600 dark:text-zinc-400 block mb-1">
+                                            <label className="text-xs font-bold text-slate-700 dark:text-zinc-300 block mb-1">
                                                 Shift Session
                                             </label>
                                             <select
                                                 value={shiftName}
                                                 disabled={!!submissionResult}
                                                 onChange={(e) => setShiftName(e.target.value)}
-                                                className={cn("w-full px-2.5 py-1.5 text-xs font-medium", ui.input)}
+                                                className={cn("w-full px-3 py-2 text-xs sm:text-sm font-medium", ui.input)}
                                             >
                                                 <option value="Day Shift">Day Shift</option>
                                                 <option value="Morning Shift">Morning Shift</option>
@@ -701,14 +984,14 @@ export function ReceptionShiftClosingDrawer({
                                         </div>
 
                                         <div>
-                                            <label className="text-[11px] font-bold text-slate-600 dark:text-zinc-400 block mb-1">
+                                            <label className="text-xs font-bold text-slate-700 dark:text-zinc-300 block mb-1">
                                                 Supervisor / Reliever
                                             </label>
                                             <select
                                                 value={supervisorUserId}
                                                 disabled={!!submissionResult}
                                                 onChange={(e) => setSupervisorUserId(e.target.value)}
-                                                className={cn("w-full px-2.5 py-1.5 text-xs font-medium", ui.input)}
+                                                className={cn("w-full px-3 py-2 text-xs sm:text-sm font-medium", ui.input)}
                                             >
                                                 <option value="">Select Supervisor...</option>
                                                 {summary?.supervisors?.map(s => (
@@ -721,16 +1004,16 @@ export function ReceptionShiftClosingDrawer({
                                     </div>
 
                                     <div>
-                                        <label className="text-[11px] font-bold text-slate-600 dark:text-zinc-400 block mb-1">
+                                        <label className="text-xs font-bold text-slate-700 dark:text-zinc-300 block mb-1">
                                             Handover Notes / Cash Envelope Reference
                                         </label>
                                         <textarea
                                             rows={2}
-                                            placeholder="e.g. Sealed Envelope #ENV-402, handed over to evening cashier. ₹100 shortage due to patient change pending..."
+                                            placeholder="e.g. Sealed Envelope #ENV-402, handed over to evening cashier. Any operational context..."
                                             value={handoverNotes}
                                             disabled={!!submissionResult}
                                             onChange={(e) => setHandoverNotes(e.target.value)}
-                                            className={cn("w-full px-3 py-1.5 text-xs", ui.input)}
+                                            className={cn("w-full px-3 py-2 text-xs sm:text-sm", ui.input)}
                                         />
                                     </div>
                                 </div>
@@ -741,7 +1024,7 @@ export function ReceptionShiftClosingDrawer({
                                         type="button"
                                         onClick={handleSubmitClosing}
                                         disabled={submitting}
-                                        className="w-full py-2.5 rounded-xl font-bold text-xs bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-md shadow-emerald-600/25 active:scale-[0.99] transition-all cursor-pointer flex items-center justify-center gap-2"
+                                        className="w-full py-3 rounded-xl font-bold text-sm bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-md shadow-emerald-600/25 active:scale-[0.99] transition-all cursor-pointer flex items-center justify-center gap-2"
                                     >
                                         {submitting ? (
                                             <>
@@ -756,11 +1039,135 @@ export function ReceptionShiftClosingDrawer({
                                         )}
                                     </button>
                                 ) : (
-                                    <div className="p-3 rounded-xl bg-slate-100 dark:bg-zinc-800 text-center text-xs font-bold text-slate-500 flex items-center justify-center gap-1.5">
+                                    <div className="p-3.5 rounded-xl bg-slate-100 dark:bg-zinc-800 text-center text-sm font-bold text-slate-500 flex items-center justify-center gap-2">
                                         <Lock className="w-4 h-4 text-emerald-600" />
                                         <span>Shift Handover Recorded in System Ledger</span>
                                     </div>
                                 )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* SOFT CORRECTION / NUMBER ADJUSTMENT MODAL */}
+            {activeCorrectionTarget && (
+                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+                    <div className="w-full max-w-lg bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-slate-300 dark:border-zinc-800 p-6 space-y-4">
+                        <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-zinc-800">
+                            <div className="flex items-center gap-2.5">
+                                <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                                    <Pencil className="w-4 h-4" />
+                                </div>
+                                <div>
+                                    <h3 className="font-extrabold text-base text-slate-900 dark:text-white">
+                                        Adjust Metric: {activeCorrectionTarget.label}
+                                    </h3>
+                                    <p className="text-xs text-slate-500">Soft adjustment with required audit reason</p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setActiveCorrectionTarget(null)}
+                                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-400"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            {/* Values Comparison */}
+                            <div className="grid grid-cols-2 gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-200 dark:border-zinc-700/60 text-xs sm:text-sm">
+                                <div>
+                                    <span className="text-slate-500 block text-xs">System Recorded:</span>
+                                    <span className="font-mono font-bold text-slate-700 dark:text-zinc-300 text-sm">
+                                        ₹{activeCorrectionTarget.originalVal.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                    </span>
+                                </div>
+                                <div>
+                                    <label className="text-slate-700 dark:text-zinc-300 block text-xs font-bold mb-1">
+                                        Adjusted Amount (₹):
+                                    </label>
+                                    <input
+                                        type="number"
+                                        step="1"
+                                        min="0"
+                                        value={correctionModalForm.newVal}
+                                        onChange={(e) => setCorrectionModalForm({ ...correctionModalForm, newVal: e.target.value })}
+                                        className={cn("w-full px-3 py-1.5 font-mono font-bold text-sm", ui.input)}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Preset Reason Chips */}
+                            <div className="space-y-1.5">
+                                <span className="text-xs font-bold text-slate-600 dark:text-zinc-400 block">
+                                    Quick Preset Reasons:
+                                </span>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {[
+                                        "Mismatched Payment Mode (UPI marked as Cash)",
+                                        "Offline Cash Collection",
+                                        "Counter Change Discrepancy",
+                                        "Late Partner Settle Inflow",
+                                        "Petty Voucher Typo Correction"
+                                    ].map(preset => (
+                                        <button
+                                            key={preset}
+                                            type="button"
+                                            onClick={() => setCorrectionModalForm({ ...correctionModalForm, reason: preset })}
+                                            className="px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700 transition-colors cursor-pointer"
+                                        >
+                                            {preset}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Mandatory Reason Input */}
+                            <div>
+                                <label className="text-xs font-bold text-slate-700 dark:text-zinc-300 block mb-1">
+                                    Mandatory Reason for Adjustment <span className="text-rose-500">*</span>
+                                </label>
+                                <textarea
+                                    rows={3}
+                                    placeholder="Explain why this number is being adjusted for audit logs..."
+                                    value={correctionModalForm.reason}
+                                    onChange={(e) => setCorrectionModalForm({ ...correctionModalForm, reason: e.target.value })}
+                                    className={cn("w-full px-3 py-2 text-xs sm:text-sm", ui.input)}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-3 border-t border-slate-200 dark:border-zinc-800">
+                            {adjustments[activeCorrectionTarget.key] ? (
+                                <button
+                                    type="button"
+                                    onClick={() => resetCorrection(activeCorrectionTarget.key)}
+                                    className="px-3 py-1.5 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors flex items-center gap-1 cursor-pointer"
+                                >
+                                    <RotateCcw className="w-3.5 h-3.5" />
+                                    <span>Reset to System</span>
+                                </button>
+                            ) : <div />}
+
+                            <div className="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setActiveCorrectionTarget(null)}
+                                    className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={applyCorrection}
+                                    disabled={!correctionModalForm.reason.trim()}
+                                    className="px-4 py-1.5 rounded-xl text-xs sm:text-sm font-bold bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white shadow-sm transition-all cursor-pointer flex items-center gap-1.5"
+                                >
+                                    <Check className="w-3.5 h-3.5" />
+                                    <span>Apply Adjustment</span>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -811,23 +1218,23 @@ export function ReceptionShiftClosingDrawer({
                             <div className="pt-2 border-t border-dashed border-slate-300 dark:border-zinc-700 space-y-1 text-xs">
                                 <div className="flex justify-between">
                                     <span>Opening Float:</span>
-                                    <span>₹{(parseFloat(openingFloat) || 0).toFixed(2)}</span>
+                                    <span>₹{effectiveOpeningFloat.toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between text-emerald-600">
                                     <span>(+) Patient Desk Cash:</span>
-                                    <span>₹{(summary?.retailActivity?.cashCollected || 0).toFixed(2)}</span>
+                                    <span>₹{effectiveDeskCash.toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between text-emerald-600">
                                     <span>(+) B2B Cash Recovered:</span>
-                                    <span>₹{(summary?.inflows?.b2bCashRecovered || 0).toFixed(2)}</span>
+                                    <span>₹{effectiveB2bRecovered.toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between text-rose-600">
                                     <span>(-) Desk Petty Expenses:</span>
-                                    <span>-₹{(summary?.outflows?.dailyExpensesCash || 0).toFixed(2)}</span>
+                                    <span>-₹{effectiveDailyExpenses.toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between text-amber-600">
                                     <span>(-) Patient Refunds:</span>
-                                    <span>-₹{(summary?.outflows?.refundsCash || 0).toFixed(2)}</span>
+                                    <span>-₹{effectiveRefundsCash.toFixed(2)}</span>
                                 </div>
                             </div>
 
@@ -859,6 +1266,16 @@ export function ReceptionShiftClosingDrawer({
                                 {denominations.notes10 && <div>10 x {denominations.notes10} = ₹{(parseInt(denominations.notes10, 10) * 10).toFixed(2)}</div>}
                                 {denominations.coins && <div>Coins = ₹{parseFloat(denominations.coins).toFixed(2)}</div>}
                             </div>
+
+                            {/* AUDIT ADJUSTMENTS SUMMARY IN SLIP */}
+                            {adjustmentCount > 0 && (
+                                <div className="pt-2 border-t border-dashed border-slate-300 dark:border-zinc-700 text-[10px] space-y-0.5 text-indigo-700 dark:text-indigo-400">
+                                    <div className="font-bold">Adjustments Recorded ({adjustmentCount}):</div>
+                                    {Object.entries(adjustments).map(([k, adj]) => (
+                                        <div key={k}>• {k}: was ₹{adj.original} ➔ ₹{adj.value} ({adj.reason})</div>
+                                    ))}
+                                </div>
+                            )}
 
                             {handoverNotes && (
                                 <div className="pt-2 border-t border-dashed border-slate-300 dark:border-zinc-700 text-[10px] text-slate-600 italic">

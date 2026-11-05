@@ -58,5 +58,8 @@ namespace SynOS.Models.DTOs.Finance
         public string? HandoverNotes { get; set; }
         public Guid? SupervisorUserId { get; set; }
         public string? ShiftName { get; set; } = "Day";
+        public decimal? AdjustedExpectedCash { get; set; }
+        public string? ActivitySummaryJson { get; set; }
+        public string? CorrectionsJson { get; set; }
     }
 }

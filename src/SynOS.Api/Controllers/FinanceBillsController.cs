@@ -1937,7 +1937,10 @@ namespace SynOS.Api.Controllers
             decimal refundsOutflow = Math.Abs(cashierPayments.Where(p => p.Amount < 0).Sum(p => p.Amount));
             decimal expensesOutflow = userExpenses.Sum(e => e.AmountPaid);
             decimal totalOutflow = expensesOutflow + refundsOutflow;
-            decimal systemExpected = Math.Max(0m, request.OpeningFloat + totalInflow - totalOutflow);
+            decimal baseSystemExpected = Math.Max(0m, request.OpeningFloat + totalInflow - totalOutflow);
+            decimal systemExpected = request.AdjustedExpectedCash.HasValue && request.AdjustedExpectedCash.Value >= 0 
+                ? request.AdjustedExpectedCash.Value 
+                : baseSystemExpected;
 
             decimal physicalCounted = request.Denominations != null ? request.Denominations.CalculateTotal() : request.PhysicalCountedCash;
             decimal variance = physicalCounted - systemExpected;
@@ -1954,6 +1957,7 @@ namespace SynOS.Api.Controllers
                 PhysicalCountedCash = physicalCounted,
                 Variance = variance,
                 DenominationsJson = request.Denominations != null ? JsonSerializer.Serialize(request.Denominations) : null,
+                ActivitySummaryJson = request.ActivitySummaryJson ?? (request.CorrectionsJson != null ? JsonSerializer.Serialize(new { corrections = request.CorrectionsJson, baseSystemExpected }) : null),
                 Status = Math.Abs(variance) < 0.01m ? "Submitted" : "Discrepancy",
                 HandoverNotes = request.HandoverNotes,
                 SubmittedAt = DateTimeOffset.UtcNow,
