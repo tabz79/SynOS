@@ -8,6 +8,7 @@ using SynOS.Models.Entities;
 using SynOS.Models.Entities.SpendEngine;
 using SynOS.Models.Enums;
 using SynOS.Models.Entities.Revenue;
+using SynOS.Models.Entities.Discounts;
 using SynOS.Models.DTOs.Revenue;
 using SynOS.Services.Security;
 using SynOS.Services.SpendEngine;
@@ -675,6 +676,48 @@ namespace SynOS.Services.Settlements
                             {
                                 invoice.DiscountAmount += concessionApply;
                                 invoice.Total = Math.Max(0m, invoice.GrossAmount - invoice.DiscountAmount);
+
+                                // First-Class DiscountFact Creation for B2B Waiver Traceability (Issue 24)
+                                var b2bMaster = await _context.DiscountMasters.FirstOrDefaultAsync(dm => dm.Code == "B2B_WAIVER");
+                                if (b2bMaster == null)
+                                {
+                                    b2bMaster = new DiscountMaster
+                                    {
+                                        DiscountDefinitionId = Guid.NewGuid(),
+                                        Code = "B2B_WAIVER",
+                                        Name = "B2B Referral Waiver & Concession",
+                                        Type = SynOS.Models.Enums.DiscountType.Flat,
+                                        Value = 0,
+                                        IsActive = true,
+                                        CreatedAt = DateTime.UtcNow
+                                    };
+                                    _context.DiscountMasters.Add(b2bMaster);
+                                }
+
+                                string authorizerStr = !string.IsNullOrWhiteSpace(request.ConcessionAuthorizer) 
+                                    ? request.ConcessionAuthorizer.Trim() 
+                                    : "Desk Authority";
+                                string reasonStr = !string.IsNullOrWhiteSpace(request.ConcessionReason) 
+                                    ? request.ConcessionReason.Trim() 
+                                    : "Settlement Waiver";
+                                string appliedByNote = $"{authorizerStr} - {reasonStr} (Receipt: {receiptNo})";
+
+                                var b2bDiscountFact = new DiscountFact
+                                {
+                                    DiscountFactId = Guid.NewGuid(),
+                                    InvoiceId = invoice.InvoiceId,
+                                    DiscountDefinitionId = b2bMaster.DiscountDefinitionId,
+                                    Type = SynOS.Models.Enums.DiscountType.Flat,
+                                    Value = concessionApply,
+                                    GrossAmount = invoice.GrossAmount,
+                                    DiscountAmount = concessionApply,
+                                    NetAmountAfterDiscount = invoice.Total,
+                                    AppliedBy = appliedByNote,
+                                    AppliedAt = DateTime.UtcNow,
+                                    CreatedAt = DateTime.UtcNow,
+                                    IsActive = true
+                                };
+                                _context.DiscountFacts.Add(b2bDiscountFact);
                             }
 
                             var totalPaid = (invoice.Payments?.Sum(p => p.Amount) ?? 0) + paymentApply;
@@ -723,6 +766,24 @@ namespace SynOS.Services.Settlements
                         PaymentMode = Enum.TryParse<PaymentMode>(request.PaymentMode, out var pm) ? pm : PaymentMode.Cash,
                         DeclaredByUserId = userId,
                         Notes = $"Reception Same-Day B2B Settlement. Partner: {partnerName} | Payer: {request.ReceivedFrom ?? "Representative"}{(concession > 0 ? $" | Concession: ₹{concession} ({request.ConcessionReason ?? "Waiver"})" : "")} | Notes: {request.Notes ?? "N/A"}"
+                    };
+
+                    await _revenueFactWriter.DeclareRevenueFactAsync(command);
+                }
+                else if (concession > 0)
+                {
+                    // Full 100% Waiver Audit Trace in Revenue Truth Engine (Issue 24)
+                    var command = new DeclareRevenueFactCommand
+                    {
+                        OccurredAt = DateTimeOffset.UtcNow,
+                        Amount = 0,
+                        Currency = "INR",
+                        Direction = RevenueDirection.Inflow,
+                        SourceType = RevenueSourceType.Partner,
+                        SourceReferenceId = receiptNo,
+                        PaymentMode = PaymentMode.Cash,
+                        DeclaredByUserId = userId,
+                        Notes = $"Reception Same-Day B2B 100% Full Waiver. Partner: {partnerName} | Waived Amount: ₹{concession} ({request.ConcessionReason ?? "Full Settlement Waiver"}) | Authorized: {request.ConcessionAuthorizer ?? "Admin"}"
                     };
 
                     await _revenueFactWriter.DeclareRevenueFactAsync(command);

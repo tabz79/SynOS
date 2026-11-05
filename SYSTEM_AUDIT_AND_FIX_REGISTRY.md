@@ -1024,6 +1024,165 @@ isCollapsed ? "px-4 py-2.5 gap-0 h-full" : "p-4 sm:p-5 h-28 sm:h-32 gap-0"
    * **Unconstrained Number Width:** The number has the full 118px width without sharing space with badges.
    * **Automatic Fluid Scaling:** With `truncate` and dynamic font scaling (`text-xl` for 6+ digits, `text-2xl` for 5 digits), 5-digit and 6-digit sums render crisp, legible, and completely confined within the card borders on any laptop or desktop screen.
 
+---
+
+## 23. Cash Drawer Shift Ledgers Date Filter Disconnection & Single-Day Backend Limit — [RESOLVED & VERIFIED]
+### Severity: High / Financial Audit Visibility & Historical Ledger Inaccessibility
+### Impacted Files & Endpoints
+* **Frontend Screen:** [`RevenueScreens.jsx:4550-4635`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/finance/RevenueScreens.jsx#L4550-L4635) (`CashDrawerLedgersScreen`)
+* **API Client:** [`finance.js:206-216`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/api/finance.js#L206-L216) (`getMyCashDrawerLedger`)
+* **Backend Controller:** [`FinanceBillsController.cs:1450-1490`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Controllers/FinanceBillsController.cs#L1450-L1490) (`GET /api/v1/finance/bills/cash-drawer/my-ledger`)
+* **Visual Evidence:** Screenshot [`media_1793871809415_4e5808c3.png`](file:///Users/tabrez/.gemini/antigravity/brain/13b1c467-601a-446d-9a79-6ae6a930fb8a/.user_uploaded/media_1793871809415_4e5808c3.png)
+
+### Incident Evidence (Screenshot Audit)
+* **Observed State:**
+  - Route: *Finance > Revenue > Cash Drawer Ledgers*.
+  - Global Filter: User clicked **`This Month`**.
+  - Cashier Selected: `Dr. Vasudeva Rao`.
+  - Date Indicator: Shows `11/05/2026 Today`.
+  - Inflows & Collections: `Total Cash Inflow: +₹0.00`, `Net Cash in Hand / Drawer: ₹0.00`.
+  - Only a single transaction appears: `EXP-454C457C - Petty Operational Outflow - Tea (-₹20.00)`.
+  - All historical cash transactions from earlier in November or previous shifts are completely absent.
+* **The Question:** Is the data missing because the feature was implemented today, or is the historical data back-supported in the database?
+* **Audit Finding:** The historical data **does exist in `dbo.Payments` and `dbo.OverheadPayableFacts`**. The reason it is not displayed is a double breakdown between frontend filter synchronization and backend query parameters.
+
+### Forensic Root Cause Analysis
+1. **Frontend Disregard of Global Date Context (`RevenueScreens.jsx:4550-4630`):**
+   * While `CashDrawerLedgersScreen` extracts `{ presetRange, customDates } = useGlobalFilter()`, it never binds `presetRange` ("thisMonth") to the data-fetching hook.
+   * Instead, it hardcodes an independent local state:
+     `const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);`
+   * It calls `FinanceApi.getMyCashDrawerLedger({ userId: selectedUserId, date: selectedDate })` passing only the single string `"2026-11-05"`.
+2. **Backend Hardcoded 24-Hour Window (`FinanceBillsController.cs:1475-1478`):**
+   ```csharp
+   var targetDate = date ?? _labTimeProvider.GetLabNow();
+   var startUtc = targetDate.Date.ToUniversalTime();
+   var endUtc = startUtc.AddDays(1); // ❌ HARDCODED SINGLE-DAY SPAN
+   ```
+   * The backend endpoint takes only a single `DateTime? date`. It has no parameters for `startDate`, `endDate`, `range`, or month aggregation.
+   * As a result, even if the user clicks `This Month`, `This Quarter`, or `Custom Range`, the backend executes `p.ReceivedAt >= startUtc && p.ReceivedAt < endUtc` for today only!
+
+### Enterprise-Grade Fix Specification (For Implementation Agent)
+1. **Backend Endpoint Range Support (`FinanceBillsController.cs`):**
+   * Expand `GetMyCashDrawerLedger`:
+     ```csharp
+     [HttpGet("cash-drawer/my-ledger")]
+     public async Task<IActionResult> GetMyCashDrawerLedger(
+         [FromQuery] DateTime? date = null,
+         [FromQuery] DateTime? startDate = null,
+         [FromQuery] DateTime? endDate = null,
+         [FromQuery] string? range = null,
+         [FromQuery] Guid? userId = null)
+     ```
+   * Compute `startUtc` and `endUtc` dynamically based on `startDate`/`endDate` or `range` (e.g., `thisMonth` -> start of month to end of today).
+2. **Frontend Filter Synchronization (`RevenueScreens.jsx`):**
+   * Pass `startDate`, `endDate`, and `presetRange` from `useGlobalFilter()` directly into `FinanceApi.getMyCashDrawerLedger`.
+   * When `presetRange === 'thisMonth'`, display the full monthly shift reconciliation and total accumulated cash drawer flows.
+
+---
+
+## 24. Unaccounted B2B Write-Off Waivers & Secondary Concession Ledger Disconnection — [RESOLVED & VERIFIED]
+### Severity: High / Financial Governance, Audit Gap & Bad-Debt Concealment
+### Impacted Modules & Files
+* **B2B Settlement Drawer:** [`ReceptionB2BReceivablesDrawer.jsx:96-100, 375-385`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/components/ReceptionB2BReceivablesDrawer.jsx#L96-L100) (`SECONDARY CONCESSION / WRITE-OFF WAIVER`)
+* **Settlement Service:** [`SettlementService.cs:645-685, 715-740`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/Settlements/SettlementService.cs#L645-L685) (`SettleSameDayB2BReceivablesAsync`)
+* **Partial Due Secondary Concession:** [`BillingSummary.jsx:500-535`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/components/BillingSummary.jsx#L500-L535) (`handleApplySecondaryConcession`)
+* **Visit Service:** [`VisitService.cs:700-745`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/VisitService.cs#L700-L745) (`ApplyCustomDiscountToVisitAsync`)
+* **Visual Evidence:** Screenshots [`media_1793872074417_3323fdc1.png`](file:///Users/tabrez/.gemini/antigravity/brain/13b1c467-601a-446d-9a79-6ae6a930fb8a/.user_uploaded/media_1793872074417_3323fdc1.png) and [`media_1793872684420_e3293d00.png`](file:///Users/tabrez/.gemini/antigravity/brain/13b1c467-601a-446d-9a79-6ae6a930fb8a/.user_uploaded/media_1793872684420_e3293d00.png)
+
+### Incident Evidence (End-to-End Audit)
+* **Reception UI Displays Two Write-Off / Waiver Mechanisms:**
+  1. *Accounts Receivable Terminal (Screenshot 2):* Allows front-desk staff to enter a `Secondary Concession / Write-off Waiver` with amount, reason, and authorizer when settling corporate B2B balances.
+  2. *Resume Visit Partial Due (Screenshot 4):* Allows staff to enter a `Secondary Concession / Write-Off` (e.g., `-₹175` Full Write-Off) against remaining due with an "Authorization Authority & Reason" dropdown (*"Lab Owner Discretionary Concession"*).
+* **The Question:** Are these write-offs and concessions accounted for in the system? Are they visible in `Discount Master` or `Revenue` tabs? Or are they floating disconnectedly?
+
+### Forensic Root Cause Analysis: The Audit Void
+1. **B2B Waivers Bypass All Audit & Discount Ledgers (`SettlementService.cs:670-685`):**
+   ```csharp
+   if (concessionApply > 0)
+   {
+       invoice.DiscountAmount += concessionApply;
+       invoice.Total = Math.Max(0m, invoice.GrossAmount - invoice.DiscountAmount);
+   }
+   ```
+   * When a B2B waiver is approved at the desk, the service simply adds the waiver amount into `invoice.DiscountAmount`.
+   * **Zero Discount Fact Created:** It does NOT create a `DiscountFact` or link to `DiscountMaster`.
+   * **Discarded Authorizer:** `request.ConcessionAuthorizer` is completely dropped in memory and never saved to any database column.
+   * **Omission from Revenue Truth Engine:** If a settlement is a 100% full waiver (`request.Amount == 0`), `_revenueFactWriter.DeclareRevenueFactAsync` is bypassed entirely (`if (request.Amount > 0)`).
+   * **Result:** B2B write-offs and concessions are **100% invisible** in `Discount Master` (Intelligence, History, Staff tabs) and in `Revenue` analytics.
+2. **Patient Secondary Write-Offs Conflated into Single Generic Discount Fact (`VisitService.cs:715-740`):**
+   * In `BillingSummary.jsx`, applying a secondary write-off on an active due bill calculates `totalNewDiscount = currentDiscountAmt + addedSecondary` and calls `applyDiscountToVisit`.
+   * In `VisitService.cs`, this deactivates the original `DiscountFact` and creates a single replacement fact pointing to the generic code `"CUSTOM"`.
+   * The lab owner has no way to distinguish what portion was an initial marketing/referral concession vs. what portion was a post-service bad-debt write-off.
+
+### Enterprise-Grade Architecture Solution
+1. **Dedicated "Concessions & Write-Offs" Audit Ledger in Finance Hub:**
+   * In healthcare ERPs (Cerner/Epic), patient and institutional write-offs are tracked under a dedicated **Bad-Debt & Courtesy Write-Off Ledger** within either:
+     - `Finance > Revenue > Visit Corrections & Write-Offs` (Tab 5), OR
+     - `Finance > Discount Master > Concessions & Waivers` (Tab 4).
+2. **First-Class `WriteOffFact` or `DiscountFact` Creation for B2B:**
+   * In `SettlementService.cs`, whenever `concessionApply > 0`:
+     - Create a formal `DiscountFact` (or `ReceivableWriteOffFact`) linking `InvoiceId`, `PartnerId`, `Amount`, `Authorizer`, `Reason`, and `ReceiptNo`.
+     - Feed this into `DiscountMaster`'s Concession Intelligence control deck so write-offs are visible in real-time executive reports.
+
+---
+
+## 25. Omission of Change Due Liability on Finalized Summary & Thermal Slip — [RESOLVED & VERIFIED]
+### Severity: High / Financial Transaction Integrity & Patient Receipt Discrepancy
+### Impacted Modules & Files
+* **Thermal Document Generator:** [`thermalPrinter.js:365-385`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/utils/thermalPrinter.js#L365-L385) (`generateThermalInvoiceHtml`)
+* **Thermal Payload Builder:** [`IntentPanel.jsx:860-915`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/components/IntentPanel.jsx#L860-L915) (`buildThermalPayload`)
+* **Finalization Screen Summary:** [`IntentPanel.jsx:2330-2365`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/components/IntentPanel.jsx#L2330-L2365) (`Visit Consolidation Summary` Card 3)
+* **Visual Evidence:** Screenshot [`media_1793872303955_a1c37d58.png`](file:///Users/tabrez/.gemini/antigravity/brain/13b1c467-601a-446d-9a79-6ae6a930fb8a/.user_uploaded/media_1793872303955_a1c37d58.png)
+
+### Incident Evidence (Screenshot Audit)
+* **Scenario:**
+  - Visit Token: `MAI-004` (Patient: `Test Patient2`, Test: `T3 T4 TSH`, Gross: ₹500, Discount: -₹150).
+  - Grand Total: **₹350**.
+  - Patient tendered: **₹500 Cash**.
+  - Receptionist selected: **"No cash available in drawer / hold as Change Due"**.
+  - System registered a Change Due liability of **₹150**.
+* **What Appears on the Thermal POS Receipt:**
+  ```
+  Gross Subtotal:     ₹500.00
+  Discount:           -₹150.00
+  GRAND TOTAL:        ₹350.00
+  Amount Received:    ₹500.00
+  Balance Due:        ₹0.00
+  ```
+  - **The Defect:** There is **zero line item** stating that the lab owes the patient ₹150! It appears as if the lab simply accepted ₹500 for a ₹350 bill and kept the surplus. The patient has zero printed proof to claim their ₹150 change.
+* **What Appears on the Finalization Screen (Card 3 Financials):**
+  - Shows `Desk Collection: ₹500 via Cash`, `Balance Due: ₹0 (Fully Settled)`.
+  - There is **no badge, no alert, and no liability note** indicating that ₹150 is owed to the patient as Change Due.
+
+### Forensic Root Cause Analysis
+1. **Omission in `buildThermalPayload` (`IntentPanel.jsx:860-915`):**
+   * When generating the thermal payload, `IntentPanel` evaluates `effectivePaid = 500`, but **completely omits `changeDue` and `tenderedAmount`** from the payload passed to `generateThermalInvoiceHtml`.
+2. **Missing Change Due Section in `thermalPrinter.js:370-385`:**
+   * The template renders only `Amount Received` and `Balance Due`. It has no field or conditional block for:
+     `*** CHANGE DUE TO PATIENT ***: ₹150.00 (Claimable at Counter)`.
+3. **Missing Settlement Pod Representation in `IntentPanel.jsx:2340-2365`:**
+   * In Card 3 Financials, the component checks only `actualBalanceDue > 0`. Since `actualBalanceDue` is 0, it renders `Balance Due: ₹0 (Fully Settled)`, completely ignoring `changeDue > 0` and `isChangeRetainedAsDue`.
+
+### Enterprise-Grade Fix Specification (For Implementation Agent)
+1. **Thermal Slip Enhancement (`thermalPrinter.js`):**
+   * When `payload.changeDue > 0` or `billingObj.changeDue > 0`:
+     ```html
+     <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 11.5px; border: 1px dashed #000000; padding: 2px 4px; margin-top: 3px;">
+         <span>*** CHANGE DUE (COLLECT LATER) ***:</span>
+         <span style="font-family: monospace; text-align: right;">₹${changeDueStr}</span>
+     </div>
+     <div style="font-size: 8.5px; font-weight: 700; text-align: center; margin-top: 2px;">
+         Show this slip at reception counter to claim pending change refund.
+     </div>
+     ```
+2. **Payload Wiring (`IntentPanel.jsx`):**
+   * Pass `changeDue: changeDueVal` and `tenderedAmount: Number(tenderedAmount)` into `buildThermalPayload`.
+3. **Finalization Screen Summary Indicator (`IntentPanel.jsx`):**
+   * In Card 3 Financials, when `changeDue > 0`:
+     - Render an amber liability badge:
+       `Change Due to Patient: ₹150 (Pending Counter Claim)` alongside `Desk Collection: ₹500`.
+
+
 
 
 

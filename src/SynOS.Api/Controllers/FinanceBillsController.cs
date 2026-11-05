@@ -1450,6 +1450,10 @@ namespace SynOS.Api.Controllers
         [HttpGet("cash-drawer/my-ledger")]
         public async Task<IActionResult> GetMyCashDrawerLedger(
             [FromQuery] DateTime? date = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null,
+            [FromQuery] string? preset = null,
+            [FromQuery] string? range = null,
             [FromQuery] Guid? userId = null)
         {
             // 1. Resolve user ID
@@ -1476,9 +1480,22 @@ namespace SynOS.Api.Controllers
             var userName = user != null && !string.IsNullOrEmpty(user.Name) ? user.Name : (user?.Username ?? "Desk Cashier");
 
             // 2. Resolve date range
+            DateTime startUtc;
+            DateTime endUtc;
             var targetDate = date ?? _labTimeProvider.GetLabNow();
-            var startUtc = targetDate.Date.ToUniversalTime();
-            var endUtc = startUtc.AddDays(1);
+
+            var effectivePreset = preset ?? range;
+            if (!string.IsNullOrWhiteSpace(effectivePreset) || startDate.HasValue || endDate.HasValue)
+            {
+                var (resolvedStart, resolvedEnd) = ResolvePresetDateRange(effectivePreset, startDate, endDate);
+                startUtc = resolvedStart ?? _labTimeProvider.GetLabNow().Date.ToUniversalTime();
+                endUtc = resolvedEnd ?? startUtc.AddDays(1);
+            }
+            else
+            {
+                startUtc = targetDate.Date.ToUniversalTime();
+                endUtc = startUtc.AddDays(1);
+            }
 
             // 3. Query all Cash Payments received by this user today
             var cashPayments = await _context.Payments

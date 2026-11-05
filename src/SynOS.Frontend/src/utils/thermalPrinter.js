@@ -176,6 +176,8 @@ export function generateThermalInvoiceHtml(payload = {}) {
             totalAmount,
             totalPaid,
             balanceDue: dueVal,
+            changeDue: Number(payload.changeDue || billingObj.changeDue || payload.financial?.changeDue || 0),
+            tenderedAmount: Number(payload.tenderedAmount || billingObj.tenderedAmount || payload.financial?.tenderedAmount || 0),
             discountReason
         },
         biller: {
@@ -377,6 +379,15 @@ export function generateThermalInvoiceHtml(payload = {}) {
                     <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 11px; ${normalizedData.financial.balanceDue > 0 ? 'font-size: 12px;' : ''}">
                         <span>${normalizedData.financial.balanceDue > 0 ? '*** BALANCE DUE ***:' : 'Balance Due:'}</span>
                         <span style="font-family: monospace; text-align: right;">${balanceDueStr}</span>
+                    </div>
+                ` : ''}
+                ${(normalizedData.financial.changeDue > 0) ? `
+                    <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 11.5px; border: 1px dashed #000000; padding: 2px 4px; margin-top: 3px;">
+                        <span>*** CHANGE DUE (COLLECT LATER) ***:</span>
+                        <span style="font-family: monospace; text-align: right;">₹${normalizedData.financial.changeDue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                    </div>
+                    <div style="font-size: 8.5px; font-weight: 700; text-align: center; margin-top: 2px;">
+                        Show this slip at reception counter to claim pending change refund.
                     </div>
                 ` : ''}
             </div>

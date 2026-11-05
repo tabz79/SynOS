@@ -206,6 +206,10 @@ export const FinanceApi = {
     getMyCashDrawerLedger: async (params = {}) => {
         const query = new URLSearchParams();
         if (params.date) query.append('date', params.date);
+        if (params.startDate) query.append('startDate', params.startDate);
+        if (params.endDate) query.append('endDate', params.endDate);
+        if (params.preset) query.append('preset', params.preset);
+        if (params.range) query.append('range', params.range);
         if (params.userId) query.append('userId', params.userId);
         const qs = query.toString() ? `?${query.toString()}` : '';
         const url = FinanceApi.withBranchId(`/api/v1/finance/bills/cash-drawer/my-ledger${qs}`);

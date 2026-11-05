@@ -4574,6 +4574,7 @@ export const CashDrawerLedgersScreen = () => {
     const [cashiers, setCashiers] = useState([]);
     const [selectedUserId, setSelectedUserId] = useState(null);
     const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
+    const [useCustomSingleDate, setUseCustomSingleDate] = useState(false);
     const [ledgerData, setLedgerData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('All'); // 'All' | 'Inflows' | 'Outflows' | 'Refunds'
@@ -4612,17 +4613,20 @@ export const CashDrawerLedgersScreen = () => {
         }
     };
 
-    // 2. Load Drawer Ledger for selected cashier and date
+    // 2. Load Drawer Ledger for selected cashier and date/range
     useEffect(() => {
         loadLedger();
-    }, [selectedUserId, selectedDate]);
+    }, [selectedUserId, selectedDate, useCustomSingleDate, presetRange, customDates]);
 
     const loadLedger = async () => {
         try {
             setLoading(true);
             const data = await FinanceApi.getMyCashDrawerLedger({
                 userId: selectedUserId || undefined,
-                date: selectedDate || undefined
+                date: useCustomSingleDate ? selectedDate : undefined,
+                preset: !useCustomSingleDate ? presetRange : undefined,
+                startDate: (!useCustomSingleDate && customDates?.from) ? (customDates.from instanceof Date ? customDates.from.toISOString() : customDates.from) : undefined,
+                endDate: (!useCustomSingleDate && customDates?.to) ? (customDates.to instanceof Date ? customDates.to.toISOString() : customDates.to) : undefined,
             });
             setLedgerData(data);
         } catch (err) {
@@ -4755,19 +4759,39 @@ export const CashDrawerLedgersScreen = () => {
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
-                    <label className="text-xs font-bold text-zinc-500">Date:</label>
-                    <input
-                        type="date"
-                        value={selectedDate}
-                        onChange={(e) => setSelectedDate(e.target.value)}
-                        className="px-3 py-1.5 text-xs font-bold rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-slate-900 dark:text-white outline-none focus:border-synos-primary shadow-xs"
-                    />
-                    <button
-                        onClick={() => setSelectedDate(new Date().toISOString().split('T')[0])}
-                        className="px-2.5 py-1.5 text-xs font-bold rounded-xl bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-300"
-                    >
-                        Today
-                    </button>
+                    {!useCustomSingleDate ? (
+                        <div className="flex items-center gap-1.5">
+                            <span className="text-[11px] font-bold px-2 py-1 rounded-lg bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/20 font-mono">
+                                Range: {presetRange === 'thisMonth' ? 'This Month' : presetRange === 'today' ? 'Today' : presetRange || 'Global Filter'}
+                            </span>
+                            <button
+                                type="button"
+                                onClick={() => setUseCustomSingleDate(true)}
+                                className="px-2 py-1 text-xs font-semibold rounded-lg border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 cursor-pointer"
+                                title="Select a single shift date"
+                            >
+                                Pick Date
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-2">
+                            <label className="text-xs font-bold text-zinc-500">Date:</label>
+                            <input
+                                type="date"
+                                value={selectedDate}
+                                onChange={(e) => setSelectedDate(e.target.value)}
+                                className="px-3 py-1.5 text-xs font-bold rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-slate-900 dark:text-white outline-none focus:border-synos-primary shadow-xs"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setUseCustomSingleDate(false)}
+                                className="px-2 py-1 text-xs font-bold rounded-lg bg-teal-500/15 text-teal-700 dark:text-teal-300 hover:bg-teal-500/25 cursor-pointer"
+                                title="Sync with Global Range Filter"
+                            >
+                                Use Global Range
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
 

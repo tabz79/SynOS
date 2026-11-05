@@ -879,6 +879,9 @@ export function IntentPanel({ onVisitUpdated }) {
             token: tokenToPrint,
             isPrepaid: isPrepaid || billingMode === 'PrepaidPartner',
             isInsurance: billingMode === 'Insurance',
+            changeDue: isChangeRetainedAsDue ? changeDue : (postProcessingSession?.changeDue || snapshot?.billing?.changeDue || 0),
+            tenderedAmount: Number(tenderedAmount || postProcessingSession?.tenderedAmount || 0),
+            isChangeRetainedAsDue: Boolean(isChangeRetainedAsDue || postProcessingSession?.isChangeRetainedAsDue),
             biller: {
                 billedBy: billerDisplay,
                 discountReason: effectiveDiscountReason
@@ -898,6 +901,8 @@ export function IntentPanel({ onVisitUpdated }) {
                 discountReason: effectiveDiscountReason,
                 netAmount: effectiveNet,
                 totalPaid: effectivePaid,
+                changeDue: isChangeRetainedAsDue ? changeDue : (postProcessingSession?.changeDue || snapshot?.billing?.changeDue || 0),
+                tenderedAmount: Number(tenderedAmount || postProcessingSession?.tenderedAmount || 0),
                 paymentMethod: isPrepaid ? "Corporate B2B Prepaid" : (snapshot?.billing?.paymentMethod || paymentMethod || "Cash")
             },
             orders: effectiveTests.map(t => ({
@@ -1181,6 +1186,9 @@ export function IntentPanel({ onVisitUpdated }) {
                 const currentPaid = snapshot?.billing?.totalPaid || 0;
                 await loadSnapshot();
 
+                const retainedDue = isChangeRetainedAsDue ? changeDue : 0;
+                const tenderedAmt = Number(tenderedAmount || 0);
+
                 setIsPartialPayment(false);
                 setCustomPaymentAmount('');
                 setTenderedAmount('');
@@ -1195,6 +1203,9 @@ export function IntentPanel({ onVisitUpdated }) {
                     token: res?.token || snapshot.visit.token || snapshot.visit.visitToken,
                     billingMode: 'Standard',
                     paidAmount: currentPaid + paidAmountDisplay,
+                    changeDue: retainedDue,
+                    tenderedAmount: tenderedAmt,
+                    isChangeRetainedAsDue: Boolean(retainedDue > 0),
                     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 });
                 setSelectedDocFormat('thermal');
@@ -2363,6 +2374,22 @@ export function IntentPanel({ onVisitUpdated }) {
                                                                         <span className="text-amber-600 dark:text-amber-400 font-bold">(Partial Due)</span>
                                                                     )}
                                                                 </div>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Change Due Liability Callout (Issue 25) */}
+                                                        {((isChangeRetainedAsDue && changeDue > 0) || (postProcessingSession?.isChangeRetainedAsDue && postProcessingSession?.changeDue > 0)) && (
+                                                            <div className="mt-2.5 pt-2 border-t border-amber-500/20 flex items-center justify-between text-xs">
+                                                                <div className="flex items-center gap-1.5 text-amber-800 dark:text-amber-300 font-bold">
+                                                                    <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                                                                    <span>Change Due to Patient:</span>
+                                                                    <span className="font-mono text-sm font-black text-amber-900 dark:text-amber-200">
+                                                                        ₹{(changeDue || postProcessingSession?.changeDue || 0).toLocaleString()}
+                                                                    </span>
+                                                                </div>
+                                                                <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30">
+                                                                    Pending Counter Claim
+                                                                </span>
                                                             </div>
                                                         )}
                                                     </div>
