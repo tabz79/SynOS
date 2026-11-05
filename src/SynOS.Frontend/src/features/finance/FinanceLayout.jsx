@@ -40,7 +40,9 @@ export function FinanceLayout() {
                 { name: "Pending Receivables", path: "/finance/revenue/receivables" },
                 { name: "Visit Corrections", path: "/finance/revenue/corrections" },
                 { name: "Cancellations & Refunds", path: "/finance/revenue/cancellations" },
-                { name: "Collection History", path: "/finance/revenue/history" }
+                { name: "Refund Claims Terminal", path: "/finance/revenue/refunds" },
+                { name: "Collection History", path: "/finance/revenue/history" },
+                { name: "Cash Drawer Ledgers", path: "/finance/revenue/drawers" }
             ]
         },
         {

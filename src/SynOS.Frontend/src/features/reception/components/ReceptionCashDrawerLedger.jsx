@@ -81,20 +81,20 @@ export function ReceptionCashDrawerLedger({
 
     const ui = isDark ? {
         panel: "bg-zinc-950 text-white",
-        header: "border-b border-zinc-800 bg-zinc-900/60",
-        card: "bg-zinc-900/70 border-zinc-800 hover:border-zinc-700",
-        pod: "bg-zinc-900/90 border border-zinc-800",
-        input: "bg-zinc-900 border-zinc-700 text-white placeholder-zinc-500",
+        header: "border-b border-zinc-800 bg-zinc-900/60 backdrop-blur-md",
+        card: "bg-zinc-900/70 border-zinc-800 hover:border-zinc-700 rounded-2xl shadow-xl",
+        pod: "rounded-xl border border-zinc-800 bg-zinc-950/80 shadow-[inset_0_1px_3px_rgba(0,0,0,0.4)]",
+        input: "bg-zinc-900 border-zinc-700 text-white placeholder-zinc-500 rounded-xl",
         tableHeader: "bg-zinc-900/90 text-zinc-400 border-b border-zinc-800",
         tableRow: "hover:bg-zinc-900/50 border-b border-zinc-800/60"
     } : {
-        panel: "bg-[#F8FAFC] text-slate-900",
-        header: "border-b border-slate-200 bg-white/80",
-        card: "bg-white border-slate-200 hover:border-slate-300 shadow-xs",
-        pod: "bg-white border border-slate-200 shadow-xs",
-        input: "bg-white border-slate-200 text-slate-900 placeholder-slate-400",
-        tableHeader: "bg-slate-50 text-slate-500 border-b border-slate-200",
-        tableRow: "hover:bg-slate-50 border-b border-slate-100"
+        panel: "bg-[radial-gradient(ellipse_at_top,_#EAF2F9_0%,_#DCE7F2_50%,_#CEDCE8_100%)] text-slate-900",
+        header: "border-b border-slate-200/60 bg-transparent backdrop-blur-md",
+        card: "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF] rounded-2xl",
+        pod: "rounded-xl border border-[#CCDCE8] bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] shadow-[inset_0_1px_3px_rgba(15,35,60,0.06),0_1px_0_rgba(255,255,255,0.7)]",
+        input: "bg-white/90 border border-[#D5E2EC] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04)] text-slate-900 placeholder-slate-400 rounded-xl",
+        tableHeader: "bg-white/80 text-slate-600 border-b border-slate-200/80 font-bold",
+        tableRow: "hover:bg-white/60 border-b border-slate-200/50 transition-colors"
     };
 
     return (

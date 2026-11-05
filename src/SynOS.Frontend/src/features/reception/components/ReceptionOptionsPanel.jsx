@@ -116,7 +116,8 @@ export function ReceptionOptionsPanel({
         viewWidthClasses = "w-[96vw] sm:w-[92vw] md:w-[680px] lg:w-[720px] max-w-[800px]";
     }
 
-    const deskActions = [
+    // 1. Group 1: Desk Operations & Counter Settlements
+    const operationsActions = [
         {
             id: 'b2b-receivables',
             title: 'Record B2B Receivables',
@@ -134,7 +135,11 @@ export function ReceptionOptionsPanel({
             icon: Receipt,
             iconBg: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20',
             onClick: () => setActiveView('expense')
-        },
+        }
+    ];
+
+    // 2. Group 2: Cashier POS & Settlements
+    const posActions = [
         {
             id: 'cash-drawer-ledger',
             title: 'My Cash Drawer Ledger',
@@ -150,7 +155,11 @@ export function ReceptionOptionsPanel({
             icon: RotateCcw,
             iconBg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20',
             onClick: () => setActiveView('refunds')
-        },
+        }
+    ];
+
+    // 3. Group 3: Desk Utilities & Directory
+    const utilitiesActions = [
         {
             id: 'patient-directory',
             title: 'Patient Directory',
@@ -164,7 +173,7 @@ export function ReceptionOptionsPanel({
             title: 'Request Stock & Consumables',
             desc: 'Requisition test vacutainers, reagents, sample swabs, and kits',
             icon: Package,
-            iconBg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20',
+            iconBg: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20',
             onClick: () => setActiveView('stock')
         }
     ];
@@ -339,18 +348,18 @@ export function ReceptionOptionsPanel({
                     {/* Scrollable Content */}
                     <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 space-y-5">
                         {/* Section 1: Front Desk Quick Operations */}
-                        <div className="space-y-2.5">
+                        <div className="space-y-2">
                             <div className="flex items-center justify-between px-1">
-                                <span className={cn("text-[11px] uppercase tracking-wider", ui.sectionHeader)}>
+                                <span className={cn("text-[11px] uppercase tracking-wider font-extrabold", ui.sectionHeader)}>
                                     Desk Operations
                                 </span>
-                                <span className="text-[10.5px] text-slate-400 dark:text-zinc-500 font-mono">
-                                    4 Workflows
+                                <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono font-bold">
+                                    2 Workflows
                                 </span>
                             </div>
 
                             <div className="space-y-2">
-                                {deskActions.map(action => {
+                                {operationsActions.map(action => {
                                     const IconComponent = action.icon;
                                     return (
                                         <button
@@ -389,13 +398,115 @@ export function ReceptionOptionsPanel({
                             </div>
                         </div>
 
-                        {/* Section 2: Staff & Personal Workforce Portal */}
-                        <div className="space-y-2.5">
+                        {/* Section 2: Cashier POS & Settlements */}
+                        <div className="space-y-2">
                             <div className="flex items-center justify-between px-1">
-                                <span className={cn("text-[11px] uppercase tracking-wider", ui.sectionHeader)}>
+                                <span className={cn("text-[11px] uppercase tracking-wider font-extrabold", ui.sectionHeader)}>
+                                    Cashier POS & Settlements
+                                </span>
+                                <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono font-bold">
+                                    2 Workflows
+                                </span>
+                            </div>
+
+                            <div className="space-y-2">
+                                {posActions.map(action => {
+                                    const IconComponent = action.icon;
+                                    return (
+                                        <button
+                                            key={action.id}
+                                            type="button"
+                                            onClick={action.onClick}
+                                            className={cn(
+                                                "w-full text-left p-3 sm:p-3.5 rounded-2xl border transition-all duration-200 flex items-center gap-3.5 group cursor-pointer active:scale-[0.99]",
+                                                ui.card
+                                            )}
+                                        >
+                                            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105", action.iconBg)}>
+                                                <IconComponent className="w-5 h-5" />
+                                            </div>
+
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2">
+                                                    <span className={cn("text-xs sm:text-sm font-bold truncate", ui.cardTitle)}>
+                                                        {action.title}
+                                                    </span>
+                                                    {action.badge && (
+                                                        <span className={cn("px-1.5 py-0.2 rounded-full text-[9.5px] font-bold font-mono", action.badgeClass)}>
+                                                            {action.badge}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <p className={cn("text-[11px] line-clamp-1 mt-0.5", ui.cardDesc)}>
+                                                    {action.desc}
+                                                </p>
+                                            </div>
+
+                                            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 dark:group-hover:text-white transition-colors shrink-0" />
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Section 3: Desk Utilities & Directory */}
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between px-1">
+                                <span className={cn("text-[11px] uppercase tracking-wider font-extrabold", ui.sectionHeader)}>
+                                    Desk Utilities & Directory
+                                </span>
+                                <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono font-bold">
+                                    2 Workflows
+                                </span>
+                            </div>
+
+                            <div className="space-y-2">
+                                {utilitiesActions.map(action => {
+                                    const IconComponent = action.icon;
+                                    return (
+                                        <button
+                                            key={action.id}
+                                            type="button"
+                                            onClick={action.onClick}
+                                            className={cn(
+                                                "w-full text-left p-3 sm:p-3.5 rounded-2xl border transition-all duration-200 flex items-center gap-3.5 group cursor-pointer active:scale-[0.99]",
+                                                ui.card
+                                            )}
+                                        >
+                                            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105", action.iconBg)}>
+                                                <IconComponent className="w-5 h-5" />
+                                            </div>
+
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2">
+                                                    <span className={cn("text-xs sm:text-sm font-bold truncate", ui.cardTitle)}>
+                                                        {action.title}
+                                                    </span>
+                                                    {action.badge && (
+                                                        <span className={cn("px-1.5 py-0.2 rounded-full text-[9.5px] font-bold font-mono", action.badgeClass)}>
+                                                            {action.badge}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <p className={cn("text-[11px] line-clamp-1 mt-0.5", ui.cardDesc)}>
+                                                    {action.desc}
+                                                </p>
+                                            </div>
+
+                                            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 dark:group-hover:text-white transition-colors shrink-0" />
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Section 4: Staff & Personal Workforce Portal */}
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between px-1">
+                                <span className={cn("text-[11px] uppercase tracking-wider font-extrabold", ui.sectionHeader)}>
                                     Staff & HR Portal
                                 </span>
-                                <span className="text-[10.5px] text-slate-400 dark:text-zinc-500 font-mono">
+                                <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono font-bold">
                                     Personal Desk
                                 </span>
                             </div>

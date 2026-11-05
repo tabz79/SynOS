@@ -27,7 +27,16 @@ import {
     Share2,
     Printer,
     ShieldCheck,
-    Ban
+    Ban,
+    RotateCcw,
+    RefreshCw,
+    Check,
+    Sparkles,
+    Coins,
+    Banknote,
+    QrCode,
+    CreditCard,
+    X
 } from 'lucide-react';
 import { RecordCollectionModal } from './components/RecordCollectionModal';
 import { BulkSettleModal } from './components/BulkSettleModal';
@@ -481,7 +490,9 @@ export const RevenueTerminal = () => {
     { id: 'receivables', label: 'Pending Receivables', icon: Clock },
     { id: 'corrections', label: 'Visit Corrections', icon: ShieldCheck },
     { id: 'cancellations', label: 'Cancellations & Refunds', icon: Ban },
-    { id: 'history', label: 'Collection History', icon: History }
+    { id: 'refunds', label: 'Refund Claims Terminal', icon: RotateCcw },
+    { id: 'history', label: 'Collection History', icon: History },
+    { id: 'drawers', label: 'Cash Drawer Ledgers', icon: Wallet }
   ];
 
   const tabTitles = {
@@ -509,9 +520,17 @@ export const RevenueTerminal = () => {
       title: "Cancellations & Refunds",
       subtitle: "Track voided investigations, refunded receipts, and cancelled invoices."
     },
+    refunds: {
+      title: "Refund Claims Terminal & Liabilities",
+      subtitle: "Track, disburse, and settle outstanding patient refund claims with audit slip printing."
+    },
     history: {
       title: "Collection History",
       subtitle: "Chronological ledger of counter drawer receipts and digital settlements."
+    },
+    drawers: {
+      title: "Cash Drawer Shift Ledgers",
+      subtitle: "Comprehensive shift cash reconciliation, cashier drawer journals, and handover verification."
     }
   };
 
@@ -597,7 +616,9 @@ export const RevenueTerminal = () => {
         {tab === 'receivables' && <PendingReceivablesScreen />}
         {tab === 'corrections' && <VisitCorrectionsScreen />}
         {tab === 'cancellations' && <CancellationsRefundsScreen />}
+        {tab === 'refunds' && <RefundClaimsTerminalScreen />}
         {tab === 'history' && <CollectionHistoryScreen />}
+        {tab === 'drawers' && <CashDrawerLedgersScreen />}
       </div>
     </div>
   );
@@ -3740,6 +3761,7 @@ export const CollectionHistoryScreen = () => {
 };
 
 export const CancellationsRefundsScreen = () => {
+    const navigate = useNavigate();
     const { user } = useAuth();
     const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
     const [cancellations, setCancellations] = useState([]);
@@ -3753,6 +3775,7 @@ export const CancellationsRefundsScreen = () => {
     const [selectedCancellation, setSelectedCancellation] = useState(null);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
+    const [disburseModalCancellation, setDisburseModalCancellation] = useState(null);
 
     useEffect(() => {
         loadData();
@@ -3859,6 +3882,14 @@ export const CancellationsRefundsScreen = () => {
         <div className="w-full px-8 pt-1 pb-8 space-y-4">
             {/* Actions Bar (Aligned Right) */}
             <div className="flex items-center justify-end gap-2">
+                <button
+                    onClick={() => navigate('/finance/revenue/refunds')}
+                    className="px-3 py-1.5 rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-xs font-bold text-amber-700 dark:text-amber-400 transition-all shadow-xs flex items-center gap-1.5 cursor-pointer"
+                    title="Open Refund Claims Terminal"
+                >
+                    <RotateCcw className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                    <span>Refund Claims Terminal {pendingRefundCount > 0 ? `(${pendingRefundCount} Due)` : ''}</span>
+                </button>
                 <button
                     onClick={handleDownloadSummary}
                     className="px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/80 transition-all shadow-xs flex items-center gap-2 cursor-pointer"
@@ -4028,16 +4059,28 @@ export const CancellationsRefundsScreen = () => {
                                                 )}
                                             </td>
                                             <td className="py-3.5 px-4 text-center">
-                                                <button
-                                                    onClick={() => {
-                                                        setSelectedCancellation(c);
-                                                        setIsDetailsModalOpen(true);
-                                                    }}
-                                                    className="px-2.5 py-1 rounded-lg text-xs font-bold bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 transition-all cursor-pointer flex items-center gap-1 shadow-xs mx-auto"
-                                                >
-                                                    <FileText className="w-3 h-3 text-rose-500" />
-                                                    <span>Audit Details</span>
-                                                </button>
+                                                <div className="flex items-center justify-center gap-1.5">
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedCancellation(c);
+                                                            setIsDetailsModalOpen(true);
+                                                        }}
+                                                        className="px-2.5 py-1 rounded-lg text-xs font-bold bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 transition-all cursor-pointer flex items-center gap-1 shadow-xs"
+                                                    >
+                                                        <FileText className="w-3 h-3 text-rose-500" />
+                                                        <span>Audit</span>
+                                                    </button>
+                                                    {Number(c.balancePendingRefund || 0) > 0 && (
+                                                        <button
+                                                            onClick={() => setDisburseModalCancellation(c)}
+                                                            className="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-all cursor-pointer flex items-center gap-1 shadow-xs"
+                                                            title="Disburse Remaining Refund"
+                                                        >
+                                                            <Coins className="w-3 h-3" />
+                                                            <span>Disburse</span>
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </td>
                                         </tr>
                                     );
@@ -4130,6 +4173,18 @@ export const CancellationsRefundsScreen = () => {
                 </div>
             )}
 
+            {/* DISBURSE REFUND MODAL */}
+            {disburseModalCancellation && (
+                <FinanceDisburseRefundModal
+                    cancellation={disburseModalCancellation}
+                    onClose={() => setDisburseModalCancellation(null)}
+                    onSuccess={() => {
+                        setDisburseModalCancellation(null);
+                        loadData();
+                    }}
+                />
+            )}
+
             {/* A4 PRINTABLE FINANCIAL SUMMARY MODAL */}
             <FinancePrintableSummaryModal
                 isOpen={isPrintSummaryOpen}
@@ -4165,6 +4220,1039 @@ export const CancellationsRefundsScreen = () => {
                 }}
                 onDownloadCsv={handleDownloadSummary}
             />
+        </div>
+    );
+};
+
+// =========================================================================
+// 8. REFUND CLAIMS TERMINAL & LIABILITIES SCREEN
+// =========================================================================
+export const RefundClaimsTerminalScreen = () => {
+    const { user } = useAuth();
+    const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
+    const [cancellations, setCancellations] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    // Filters
+    const [searchQuery, setSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState('Pending'); // 'Pending' | 'All' | 'Settled'
+    const [selectedClaim, setSelectedClaim] = useState(null);
+    const [disburseModalClaim, setDisburseModalClaim] = useState(null);
+    const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
+
+    useEffect(() => {
+        loadData();
+    }, [presetRange, isConsolidated, effectiveBranchId, customDates?.start, customDates?.end]);
+
+    const loadData = async () => {
+        try {
+            setLoading(true);
+            const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
+            const params = {
+                preset: presetRange,
+                branchId: bId || undefined
+            };
+            if (presetRange === 'custom' && customDates?.start && customDates?.end) {
+                params.startDate = customDates.start;
+                params.endDate = customDates.end;
+            }
+            const data = await FinanceApi.getVisitCancellations(params);
+            setCancellations(Array.isArray(data) ? data : []);
+        } catch (err) {
+            console.error("Failed to load refund claims feed:", err);
+            setCancellations([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const filteredClaims = useMemo(() => {
+        return cancellations.filter(c => {
+            const pendingDue = Number(c.balancePendingRefund || 0);
+            const isPending = pendingDue > 0 || c.refundStatus === 'Pending' || c.refundStatus === 'PartiallySettled';
+            const isSettled = !isPending && (Number(c.refundedAmount || 0) > 0 || c.refundStatus === 'Settled');
+
+            if (statusFilter === 'Pending' && !isPending) return false;
+            if (statusFilter === 'Settled' && !isSettled) return false;
+
+            if (searchQuery.trim()) {
+                const q = searchQuery.toLowerCase();
+                const matchToken = (c.visitToken || '').toLowerCase().includes(q);
+                const matchPatient = (c.patientName || '').toLowerCase().includes(q);
+                const matchStaff = (c.cancelledByName || '').toLowerCase().includes(q);
+                const matchPhone = (c.patientPhone || '').includes(q);
+                const matchReceipt = (c.settlementReceiptNo || '').toLowerCase().includes(q);
+                if (!matchToken && !matchPatient && !matchStaff && !matchPhone && !matchReceipt) return false;
+            }
+
+            return true;
+        });
+    }, [cancellations, statusFilter, searchQuery]);
+
+    // KPI Metrics
+    const totalPendingLiability = useMemo(() => {
+        return cancellations.reduce((sum, c) => sum + Number(c.balancePendingRefund || 0), 0);
+    }, [cancellations]);
+
+    const totalDisbursed = useMemo(() => {
+        return cancellations.reduce((sum, c) => sum + Number(c.refundedAmount || 0), 0);
+    }, [cancellations]);
+
+    const pendingClaimsCount = useMemo(() => {
+        return cancellations.filter(c => Number(c.balancePendingRefund || 0) > 0 || c.refundStatus === 'Pending' || c.refundStatus === 'PartiallySettled').length;
+    }, [cancellations]);
+
+    const settledClaimsCount = useMemo(() => {
+        return cancellations.filter(c => Number(c.refundedAmount || 0) > 0 && Number(c.balancePendingRefund || 0) <= 0).length;
+    }, [cancellations]);
+
+    const handleDownloadCsv = () => {
+        const headers = [
+            "Visit Token",
+            "Cancelled Date",
+            "Patient Name",
+            "MRN",
+            "Phone",
+            "Gross Billed",
+            "Amount Paid",
+            "Refunded So Far",
+            "Pending Refund Due",
+            "Refund Status",
+            "Payment Method",
+            "Settled Receipt No",
+            "Cancelled By"
+        ];
+
+        const rows = filteredClaims.map(c => [
+            `"${c.visitToken || ''}"`,
+            `"${c.cancelledAt ? new Date(c.cancelledAt).toLocaleString() : ''}"`,
+            `"${(c.patientName || '').replace(/"/g, '""')}"`,
+            `"${c.patientMrn || ''}"`,
+            `"${c.patientPhone || ''}"`,
+            c.totalBilled || 0,
+            c.totalAmountPaid || 0,
+            c.refundedAmount || 0,
+            c.balancePendingRefund || 0,
+            `"${c.refundStatus || 'Pending'}"`,
+            `"${c.refundMethod || 'Cash'}"`,
+            `"${c.settlementReceiptNo || ''}"`,
+            `"${(c.cancelledByName || '').replace(/"/g, '""')}"`
+        ]);
+
+        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `Refund_Claims_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    return (
+        <div className="w-full px-8 pt-1 pb-8 space-y-4">
+            {/* Header Actions */}
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        Refund Claims Terminal & Patient Liabilities
+                        <span className="text-xs font-mono font-bold bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full">
+                            #POS-REFUNDS
+                        </span>
+                    </h2>
+                    <p className="text-xs text-slate-500 dark:text-zinc-400">
+                        Settle pending "Refund Later" counter claims, track outbound patient cash/digital disbursements, and verify settlement slips.
+                    </p>
+                </div>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={handleDownloadCsv}
+                        className="px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/80 transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+                    >
+                        <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Export Claims</span>
+                    </button>
+                    <button
+                        onClick={loadData}
+                        disabled={loading}
+                        className="p-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-slate-600 dark:text-zinc-300 hover:bg-slate-50 cursor-pointer"
+                        title="Refresh Claims Feed"
+                    >
+                        <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
+                    </button>
+                </div>
+            </div>
+
+            {/* KPI Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="p-4 rounded-xl synos-kpi-card border border-amber-500/20 bg-amber-500/5">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">Outstanding Refund Liability</p>
+                    <p className="text-2xl font-black text-amber-700 dark:text-amber-300 mt-1">₹{totalPendingLiability.toLocaleString()}</p>
+                    <span className="text-[10px] text-amber-600/80 font-medium">{pendingClaimsCount} Patients Awaiting Settle</span>
+                </div>
+                <div className="p-4 rounded-xl synos-kpi-card">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Disbursed Outbound</p>
+                    <p className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">₹{totalDisbursed.toLocaleString()}</p>
+                    <span className="text-[10px] text-zinc-400 font-medium">{settledClaimsCount} Claims Settled</span>
+                </div>
+                <div className="p-4 rounded-xl synos-kpi-card">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Total Claims</p>
+                    <p className="text-2xl font-black text-zinc-900 dark:text-white mt-1">{cancellations.length}</p>
+                    <span className="text-[10px] text-zinc-400 font-medium">Recorded Visit Revocations</span>
+                </div>
+                <div className="p-4 rounded-xl synos-kpi-card">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Settlement Health</p>
+                    <p className="text-2xl font-black text-blue-600 dark:text-blue-400 mt-1">
+                        {cancellations.length > 0 ? `${Math.round((settledClaimsCount / cancellations.length) * 100)}%` : '100%'}
+                    </p>
+                    <span className="text-[10px] text-zinc-400 font-medium">Claims Fully Cleared</span>
+                </div>
+            </div>
+
+            {/* Filter Bar */}
+            <div className="space-y-3 p-4 rounded-2xl bg-zinc-100 dark:bg-zinc-900/50 border dark:border-zinc-800 border-zinc-200">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                    <div className="flex items-center gap-1 overflow-x-auto pb-1 lg:pb-0 no-scrollbar">
+                        {[
+                            { id: 'Pending', label: 'Pending Liabilities Due', count: pendingClaimsCount },
+                            { id: 'All', label: 'All Refund Claims', count: cancellations.length },
+                            { id: 'Settled', label: 'Fully Disbursed', count: settledClaimsCount }
+                        ].map(f => (
+                            <FilterTab 
+                                key={f.id} 
+                                label={f.label} 
+                                count={f.count} 
+                                isActive={statusFilter === f.id} 
+                                onClick={() => setStatusFilter(f.id)} 
+                            />
+                        ))}
+                    </div>
+
+                    <div className="relative flex-1 sm:w-72">
+                        <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <input
+                            type="text"
+                            placeholder="Search token, patient name, phone, MRN..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white placeholder:text-zinc-400 outline-none focus:border-synos-primary transition-all shadow-xs"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            {/* Claims Table */}
+            <div className="rounded-2xl border dark:border-zinc-800 border-zinc-200 overflow-hidden bg-white dark:bg-zinc-900/30 shadow-xs">
+                {loading ? (
+                    <div className="p-16 text-center animate-pulse text-zinc-500 font-bold uppercase tracking-widest text-xs flex flex-col items-center gap-3">
+                        <div className="w-8 h-8 border-3 border-amber-500 border-t-transparent rounded-full animate-spin" />
+                        <span>Loading refund claims journal...</span>
+                    </div>
+                ) : filteredClaims.length === 0 ? (
+                    <div className="p-16 text-center space-y-3">
+                        <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto opacity-75" />
+                        <p className="text-sm font-bold text-zinc-900 dark:text-white">Zero Outstanding Refund Claims</p>
+                        <p className="text-xs text-zinc-500 max-w-sm mx-auto">
+                            All patient refund liabilities for this period are fully disbursed and settled.
+                        </p>
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr className="border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-500 font-bold uppercase tracking-wider text-[10px]">
+                                    <th className="py-3 px-4">Claim Date</th>
+                                    <th className="py-3 px-4">Token & Patient</th>
+                                    <th className="py-3 px-4">Facility</th>
+                                    <th className="py-3 px-4 text-right">Gross Billed</th>
+                                    <th className="py-3 px-4 text-right">Disbursed</th>
+                                    <th className="py-3 px-4 text-right">Balance Due</th>
+                                    <th className="py-3 px-4 text-center">Status</th>
+                                    <th className="py-3 px-4 text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y dark:divide-zinc-800 divide-zinc-200">
+                                {filteredClaims.map((c) => {
+                                    const pendingDue = Number(c.balancePendingRefund || 0);
+                                    const isPending = pendingDue > 0 || c.refundStatus === 'Pending' || c.refundStatus === 'PartiallySettled';
+
+                                    return (
+                                        <tr key={c.cancelId} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
+                                            <td className="py-3.5 px-4 whitespace-nowrap text-zinc-500 font-mono text-[11px]">
+                                                {c.cancelledAt ? new Date(c.cancelledAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '—'}
+                                            </td>
+                                            <td className="py-3.5 px-4">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border border-black/5 dark:border-white/5">
+                                                        #{c.visitToken}
+                                                    </span>
+                                                    <div>
+                                                        <p className="font-bold text-zinc-900 dark:text-white leading-tight">{c.patientName}</p>
+                                                        <p className="text-[11px] text-zinc-400 font-medium">
+                                                            {c.patientPhone || c.patientMrn || ''}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="py-3.5 px-4 text-zinc-600 dark:text-zinc-400 font-medium">
+                                                {c.branchName || 'Main Lab'}
+                                            </td>
+                                            <td className="py-3.5 px-4 text-right whitespace-nowrap font-mono font-medium text-zinc-500 line-through">
+                                                ₹{Number(c.totalBilled || 0).toLocaleString()}
+                                            </td>
+                                            <td className="py-3.5 px-4 text-right whitespace-nowrap font-mono font-bold text-rose-600 dark:text-rose-400">
+                                                ₹{Number(c.refundedAmount || 0).toLocaleString()}
+                                            </td>
+                                            <td className="py-3.5 px-4 text-right whitespace-nowrap font-mono font-black">
+                                                {pendingDue > 0 ? (
+                                                    <span className="text-amber-600 dark:text-amber-400 text-sm">
+                                                        ₹{pendingDue.toLocaleString()}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-emerald-600 font-bold">₹0.00</span>
+                                                )}
+                                            </td>
+                                            <td className="py-3.5 px-4 text-center">
+                                                {isPending ? (
+                                                    <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full border uppercase tracking-wider bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/25">
+                                                        Refund Due
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full border uppercase tracking-wider bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20">
+                                                        Settled
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="py-3.5 px-4 text-center">
+                                                <div className="flex items-center justify-center gap-1.5">
+                                                    {isPending ? (
+                                                        <button
+                                                            onClick={() => setDisburseModalClaim(c)}
+                                                            className="px-3 py-1 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-all cursor-pointer flex items-center gap-1 shadow-sm active:scale-95"
+                                                        >
+                                                            <Coins className="w-3.5 h-3.5" />
+                                                            <span>Disburse Refund</span>
+                                                        </button>
+                                                    ) : (
+                                                        <span className="text-[11px] font-mono text-slate-400">
+                                                            {c.settlementReceiptNo || 'Cleared'}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
+
+            {/* Disburse Modal */}
+            {disburseModalClaim && (
+                <FinanceDisburseRefundModal
+                    cancellation={disburseModalClaim}
+                    onClose={() => setDisburseModalClaim(null)}
+                    onSuccess={() => {
+                        setDisburseModalClaim(null);
+                        loadData();
+                    }}
+                />
+            )}
+        </div>
+    );
+};
+
+// =========================================================================
+// 9. CASH DRAWER SHIFT LEDGERS SCREEN
+// =========================================================================
+export const CashDrawerLedgersScreen = () => {
+    const { user } = useAuth();
+    const { isDark } = useTheme();
+    const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
+
+    const [cashiers, setCashiers] = useState([]);
+    const [selectedUserId, setSelectedUserId] = useState(null);
+    const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
+    const [ledgerData, setLedgerData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [filter, setFilter] = useState('All'); // 'All' | 'Inflows' | 'Outflows' | 'Refunds'
+    const [searchQuery, setSearchQuery] = useState('');
+    const [isPrintSlipOpen, setIsPrintSlipOpen] = useState(false);
+
+    // 1. Load active cashiers/staff
+    useEffect(() => {
+        loadCashiers();
+    }, [effectiveBranchId]);
+
+    const loadCashiers = async () => {
+        try {
+            const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
+            const history = await FinanceApi.getRevenueHistory(bId, 'today').catch(() => []);
+            const map = new Map();
+            if (user?.id) {
+                map.set(user.id, { id: user.id, name: user.name || user.username || "My Drawer", role: "Current Cashier" });
+            }
+            (history || []).forEach(r => {
+                if (r.cashierId) {
+                    map.set(r.cashierId, {
+                        id: r.cashierId,
+                        name: r.cashierName || r.collectedBy || "Cashier",
+                        role: r.cashierRole || "Staff Desk"
+                    });
+                }
+            });
+            const list = Array.from(map.values());
+            setCashiers(list);
+            if (!selectedUserId && list.length > 0) {
+                setSelectedUserId(list[0].id);
+            }
+        } catch (err) {
+            console.error("Failed to load cashiers list:", err);
+        }
+    };
+
+    // 2. Load Drawer Ledger for selected cashier and date
+    useEffect(() => {
+        loadLedger();
+    }, [selectedUserId, selectedDate]);
+
+    const loadLedger = async () => {
+        try {
+            setLoading(true);
+            const data = await FinanceApi.getMyCashDrawerLedger({
+                userId: selectedUserId || undefined,
+                date: selectedDate || undefined
+            });
+            setLedgerData(data);
+        } catch (err) {
+            console.error("Failed to load shift cash ledger:", err);
+            setLedgerData(null);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const transactions = ledgerData?.transactions || [];
+
+    const filteredTransactions = useMemo(() => {
+        return transactions.filter(t => {
+            if (filter === 'Inflows' && t.category !== 'Inflow') return false;
+            if (filter === 'Outflows' && t.category !== 'Outflow') return false;
+            if (filter === 'Refunds' && t.type !== 'PATIENT_REFUND') return false;
+
+            if (searchQuery.trim()) {
+                const q = searchQuery.toLowerCase();
+                const refMatch = (t.referenceNo || '').toLowerCase().includes(q);
+                const tokenMatch = (t.token || '').toLowerCase().includes(q);
+                const partMatch = (t.particulars || '').toLowerCase().includes(q);
+                const notesMatch = (t.notes || '').toLowerCase().includes(q);
+                if (!refMatch && !tokenMatch && !partMatch && !notesMatch) return false;
+            }
+
+            return true;
+        });
+    }, [transactions, filter, searchQuery]);
+
+    const handleDownloadCsv = () => {
+        const headers = [
+            "Time",
+            "Reference / Receipt",
+            "Event Category",
+            "Event Type",
+            "Particulars",
+            "Patient Token",
+            "Amount (INR)",
+            "Cashier",
+            "Notes"
+        ];
+
+        const rows = filteredTransactions.map(t => [
+            `"${t.timestamp ? new Date(t.timestamp).toLocaleTimeString() : ''}"`,
+            `"${t.referenceNo || ''}"`,
+            `"${t.category || ''}"`,
+            `"${t.type || ''}"`,
+            `"${(t.particulars || '').replace(/"/g, '""')}"`,
+            `"${t.token || ''}"`,
+            t.amount || 0,
+            `"${(t.receivedBy || ledgerData?.userName || '').replace(/"/g, '""')}"`,
+            `"${(t.notes || '').replace(/"/g, '""')}"`
+        ]);
+
+        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `Cash_Drawer_${ledgerData?.userName || 'Shift'}_${selectedDate}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    return (
+        <div className="w-full px-8 pt-1 pb-8 space-y-4">
+            {/* Header & Controls */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        Cash Drawer Shift Ledgers & Reconciliation
+                        <span className="text-xs font-mono font-bold bg-teal-500/15 text-teal-700 dark:text-teal-400 border border-teal-500/20 px-2 py-0.5 rounded-full">
+                            #POS-DRAWER
+                        </span>
+                    </h2>
+                    <p className="text-xs text-slate-500 dark:text-zinc-400">
+                        Shift cash journal, petty-cash breakdown, outbound refunds, and official counter handover reconciliation slips.
+                    </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => setIsPrintSlipOpen(true)}
+                        className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 shadow-md transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
+                    >
+                        <Printer className="w-3.5 h-3.5" />
+                        <span>Print Handover Slip</span>
+                    </button>
+                    <button
+                        onClick={handleDownloadCsv}
+                        className="px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/80 transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+                    >
+                        <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Export CSV</span>
+                    </button>
+                    <button
+                        onClick={loadLedger}
+                        disabled={loading}
+                        className="p-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-slate-600 dark:text-zinc-300 hover:bg-slate-50 cursor-pointer"
+                        title="Refresh Shift Ledger"
+                    >
+                        <RefreshCw className={cn("w-4 h-4", loading && "animate-spin")} />
+                    </button>
+                </div>
+            </div>
+
+            {/* Cashier & Date Selection Deck */}
+            <div className="p-4 rounded-2xl bg-zinc-100 dark:bg-zinc-900/50 border dark:border-zinc-800 border-zinc-200 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0 no-scrollbar">
+                    <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider shrink-0 mr-1">
+                        Select Cashier:
+                    </span>
+                    {cashiers.map(c => (
+                        <button
+                            key={c.id}
+                            onClick={() => setSelectedUserId(c.id)}
+                            className={cn(
+                                "px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0",
+                                selectedUserId === c.id
+                                    ? "bg-slate-900 dark:bg-white text-white dark:text-zinc-900 shadow-sm"
+                                    : "bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-700"
+                            )}
+                        >
+                            <User className="w-3.5 h-3.5" />
+                            <span>{c.name}</span>
+                        </button>
+                    ))}
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                    <label className="text-xs font-bold text-zinc-500">Date:</label>
+                    <input
+                        type="date"
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                        className="px-3 py-1.5 text-xs font-bold rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-slate-900 dark:text-white outline-none focus:border-synos-primary shadow-xs"
+                    />
+                    <button
+                        onClick={() => setSelectedDate(new Date().toISOString().split('T')[0])}
+                        className="px-2.5 py-1.5 text-xs font-bold rounded-xl bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-300"
+                    >
+                        Today
+                    </button>
+                </div>
+            </div>
+
+            {/* Shift KPI Deck */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="p-4 rounded-xl synos-kpi-card">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Opening Cash Float</p>
+                    <p className="text-2xl font-black text-zinc-900 dark:text-white mt-1">
+                        ₹{(ledgerData?.openingFloat || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    </p>
+                    <span className="text-[10px] text-zinc-400 font-medium">Drawer Base Float</span>
+                </div>
+
+                <div className="p-4 rounded-xl synos-kpi-card border border-emerald-500/20 bg-emerald-500/5">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Total Cash Inflow</p>
+                    <p className="text-2xl font-black text-emerald-700 dark:text-emerald-300 mt-1">
+                        +₹{(ledgerData?.inflowBreakdown?.totalInflow || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    </p>
+                    <span className="text-[10px] text-emerald-600/80 font-medium">
+                        Patient Desk (₹{(ledgerData?.inflowBreakdown?.patientDeskCash || 0).toLocaleString()}) + B2B (₹{(ledgerData?.inflowBreakdown?.b2bPartnerCash || 0).toLocaleString()})
+                    </span>
+                </div>
+
+                <div className="p-4 rounded-xl synos-kpi-card border border-rose-500/20 bg-rose-500/5">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Total Cash Outflows</p>
+                    <p className="text-2xl font-black text-rose-700 dark:text-rose-300 mt-1">
+                        -₹{(ledgerData?.outflowBreakdown?.totalOutflow || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    </p>
+                    <span className="text-[10px] text-rose-600/80 font-medium">
+                        Expenses (₹{(ledgerData?.outflowBreakdown?.dailyExpensesCash || 0).toLocaleString()}) + Refunds (₹{(ledgerData?.outflowBreakdown?.refundsCash || 0).toLocaleString()})
+                    </span>
+                </div>
+
+                <div className="p-4 rounded-xl synos-kpi-card border-2 border-teal-500/40 bg-teal-500/10">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-teal-800 dark:text-teal-300">Net Cash In Hand / Drawer</p>
+                    <p className="text-2xl font-black text-teal-900 dark:text-teal-100 mt-1 font-mono">
+                        ₹{(ledgerData?.netCashInDrawer || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                    </p>
+                    <span className="text-[10px] text-teal-700 dark:text-teal-300 font-bold">Physical Cash Handover Target</span>
+                </div>
+            </div>
+
+            {/* Transactions Journal Filter Bar */}
+            <div className="space-y-3 p-4 rounded-2xl bg-zinc-100 dark:bg-zinc-900/50 border dark:border-zinc-800 border-zinc-200">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0 no-scrollbar">
+                        {[
+                            { id: 'All', label: 'All Transactions', count: transactions.length },
+                            { id: 'Inflows', label: 'Cash Inflow Only', count: transactions.filter(t => t.category === 'Inflow').length },
+                            { id: 'Outflows', label: 'Expenses Only', count: transactions.filter(t => t.category === 'Outflow').length },
+                            { id: 'Refunds', label: 'Refunds Only', count: transactions.filter(t => t.type === 'PATIENT_REFUND').length }
+                        ].map(f => (
+                            <FilterTab 
+                                key={f.id} 
+                                label={f.label} 
+                                count={f.count} 
+                                isActive={filter === f.id} 
+                                onClick={() => setFilter(f.id)} 
+                            />
+                        ))}
+                    </div>
+
+                    <div className="relative flex-1 sm:w-72">
+                        <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        <input
+                            type="text"
+                            placeholder="Search receipt, token, patient particulars..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white placeholder:text-zinc-400 outline-none focus:border-synos-primary transition-all shadow-xs"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            {/* Transactions Table */}
+            <div className="rounded-2xl border dark:border-zinc-800 border-zinc-200 overflow-hidden bg-white dark:bg-zinc-900/30 shadow-xs">
+                {loading ? (
+                    <div className="p-16 text-center animate-pulse text-zinc-500 font-bold uppercase tracking-widest text-xs flex flex-col items-center gap-3">
+                        <div className="w-8 h-8 border-3 border-teal-500 border-t-transparent rounded-full animate-spin" />
+                        <span>Loading drawer shift transactions...</span>
+                    </div>
+                ) : filteredTransactions.length === 0 ? (
+                    <div className="p-16 text-center space-y-3">
+                        <Wallet className="w-10 h-10 text-zinc-400 mx-auto opacity-75" />
+                        <p className="text-sm font-bold text-zinc-900 dark:text-white">No Cash Drawer Transactions Recorded</p>
+                        <p className="text-xs text-zinc-500 max-w-sm mx-auto">
+                            No physical cash collections, expenses, or patient refunds logged for this cashier and shift date.
+                        </p>
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr className="border-b dark:border-zinc-800 border-zinc-200 bg-zinc-50 dark:bg-zinc-900/50 text-zinc-500 font-bold uppercase tracking-wider text-[10px]">
+                                    <th className="py-3 px-4">Time</th>
+                                    <th className="py-3 px-4">Receipt / Ref</th>
+                                    <th className="py-3 px-4">Category</th>
+                                    <th className="py-3 px-4">Particulars & Patient Token</th>
+                                    <th className="py-3 px-4">Notes</th>
+                                    <th className="py-3 px-4 text-right">Cash Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y dark:divide-zinc-800 divide-zinc-200">
+                                {filteredTransactions.map((t, idx) => {
+                                    const isInflow = t.category === 'Inflow';
+                                    const isRefund = t.type === 'PATIENT_REFUND';
+
+                                    return (
+                                        <tr key={t.id || idx} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
+                                            <td className="py-3.5 px-4 whitespace-nowrap text-zinc-500 font-mono text-[11px]">
+                                                {t.timestamp ? new Date(t.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}
+                                            </td>
+                                            <td className="py-3.5 px-4">
+                                                <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border border-black/5 dark:border-white/5">
+                                                    {t.referenceNo || 'N/A'}
+                                                </span>
+                                            </td>
+                                            <td className="py-3.5 px-4">
+                                                <span className={cn(
+                                                    "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border",
+                                                    isInflow
+                                                        ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
+                                                        : isRefund
+                                                            ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                                                            : "bg-rose-500/10 text-rose-600 border-rose-500/20"
+                                                )}>
+                                                    {t.category}
+                                                </span>
+                                            </td>
+                                            <td className="py-3.5 px-4">
+                                                <div className="flex items-center gap-2">
+                                                    {t.token && (
+                                                        <span className="font-mono text-xs font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
+                                                            #{t.token}
+                                                        </span>
+                                                    )}
+                                                    <span className="font-medium text-slate-900 dark:text-white">
+                                                        {t.particulars}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="py-3.5 px-4 text-slate-500 dark:text-zinc-400 text-[11px] truncate max-w-[200px]">
+                                                {t.notes || '—'}
+                                            </td>
+                                            <td className="py-3.5 px-4 text-right whitespace-nowrap font-mono font-black text-sm">
+                                                <span className={isInflow ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}>
+                                                    {isInflow ? '+' : '-'}₹{Number(t.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </div>
+
+            {/* Printable Slip Modal */}
+            {isPrintSlipOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+                    <div className="w-full max-w-md rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 p-6 space-y-4 shadow-2xl">
+                        <div className="flex items-center justify-between border-b pb-3 dark:border-zinc-800 border-slate-100">
+                            <div className="flex items-center gap-2">
+                                <div className="p-2 rounded-xl bg-teal-500/10 text-teal-600">
+                                    <FileText className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h3 className="font-bold text-sm">Shift Cash Handover Slip</h3>
+                                    <p className="text-[11px] text-slate-500">Official POS Register Settlement Sheet</p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setIsPrintSlipOpen(false)}
+                                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 cursor-pointer"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        {/* Slip Paper Preview */}
+                        <div className="p-5 rounded-xl bg-slate-50 dark:bg-zinc-950 border border-dashed border-slate-300 dark:border-zinc-700 font-mono text-xs space-y-3">
+                            <div className="text-center pb-2 border-b border-dashed border-slate-300 dark:border-zinc-700">
+                                <span className="font-bold text-sm block">SYN-OS CLINICAL LABORATORY</span>
+                                <span className="text-[11px] text-slate-500 block">DESK CASH REGISTER SHIFT SETTLEMENT</span>
+                                <span className="text-[10px] text-slate-400 block mt-1">Generated: {new Date().toLocaleString()}</span>
+                            </div>
+
+                            <div className="space-y-1 text-[11px]">
+                                <div className="flex justify-between">
+                                    <span className="text-slate-500">Cashier:</span>
+                                    <span className="font-bold">{ledgerData?.userName || 'Desk Staff'}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-slate-500">Shift Date:</span>
+                                    <span className="font-bold">{selectedDate}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-slate-500">Total Transactions:</span>
+                                    <span className="font-bold">{transactions.length} events</span>
+                                </div>
+                            </div>
+
+                            <div className="pt-2 border-t border-dashed border-slate-300 dark:border-zinc-700 space-y-1.5 text-xs">
+                                <div className="flex justify-between">
+                                    <span>Opening Float:</span>
+                                    <span>₹{(ledgerData?.openingFloat || 0).toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between text-emerald-600 font-bold">
+                                    <span>(+) Patient Desk Cash:</span>
+                                    <span>₹{(ledgerData?.inflowBreakdown?.patientDeskCash || 0).toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between text-emerald-600 font-bold">
+                                    <span>(+) B2B Partner Inflow:</span>
+                                    <span>₹{(ledgerData?.inflowBreakdown?.b2bPartnerCash || 0).toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between text-rose-600 font-bold">
+                                    <span>(-) Daily Cash Expenses:</span>
+                                    <span>-₹{(ledgerData?.outflowBreakdown?.dailyExpensesCash || 0).toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between text-amber-600 font-bold">
+                                    <span>(-) Cash Refunds Disbursed:</span>
+                                    <span>-₹{(ledgerData?.outflowBreakdown?.refundsCash || 0).toFixed(2)}</span>
+                                </div>
+                            </div>
+
+                            <div className="pt-2 border-t-2 border-slate-400 dark:border-zinc-600 flex justify-between text-sm font-black">
+                                <span>NET PHYSICAL CASH:</span>
+                                <span className="text-teal-700 dark:text-teal-300 font-mono">₹{(ledgerData?.netCashInDrawer || 0).toFixed(2)}</span>
+                            </div>
+
+                            {/* Signatures */}
+                            <div className="pt-6 grid grid-cols-2 gap-4 text-center text-[10px]">
+                                <div>
+                                    <div className="border-b border-slate-300 dark:border-zinc-700 pb-6 mb-1"></div>
+                                    <span className="text-slate-500 font-semibold">Cashier Signature</span>
+                                </div>
+                                <div>
+                                    <div className="border-b border-slate-300 dark:border-zinc-700 pb-6 mb-1"></div>
+                                    <span className="text-slate-500 font-semibold">Supervisor / Receiver</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Modal Action Buttons */}
+                        <div className="flex items-center justify-end gap-2 pt-2">
+                            <button
+                                type="button"
+                                onClick={() => window.print()}
+                                className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 hover:bg-slate-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 shadow-md transition-all cursor-pointer flex items-center gap-1.5"
+                            >
+                                <Printer className="w-4 h-4" />
+                                <span>Print Slip</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setIsPrintSlipOpen(false)}
+                                className="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 cursor-pointer"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+// =========================================================================
+// 10. FINANCE DISBURSE REFUND MODAL
+// =========================================================================
+export const FinanceDisburseRefundModal = ({ cancellation, onClose, onSuccess }) => {
+    const { user } = useAuth();
+    const pendingBalance = Number(cancellation?.balancePendingRefund || 0);
+    const [amount, setAmount] = useState(pendingBalance > 0 ? pendingBalance.toString() : '');
+    const [paymentMode, setPaymentMode] = useState('Cash');
+    const [notes, setNotes] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [completedSlip, setCompletedSlip] = useState(null);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const numAmt = parseFloat(amount) || 0;
+        if (numAmt <= 0) {
+            alert("Please enter a valid refund amount.");
+            return;
+        }
+
+        try {
+            setIsSubmitting(true);
+            const res = await FinanceApi.disburseCancellationRefund(cancellation.cancelId, {
+                amount: numAmt,
+                paymentMode: paymentMode,
+                notes: notes.trim(),
+                authorizerName: user?.name || "Finance Manager"
+            });
+            setCompletedSlip(res);
+            onSuccess?.(res);
+        } catch (err) {
+            console.error("Disbursement failed:", err);
+            alert("Disbursement failed: " + err.message);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+            <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 p-6 space-y-4 shadow-2xl">
+                <div className="flex items-center justify-between border-b pb-3 dark:border-zinc-800 border-slate-100">
+                    <div className="flex items-center gap-2.5">
+                        <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600">
+                            <Coins className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-sm text-slate-900 dark:text-white">
+                                Disburse Patient Refund
+                            </h3>
+                            <p className="text-[11px] text-slate-500">
+                                Settle claim liability for token #{cancellation?.visitToken}
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="p-1 rounded-lg text-slate-400 hover:text-slate-600 cursor-pointer"
+                    >
+                        <X className="w-4 h-4" />
+                    </button>
+                </div>
+
+                {completedSlip ? (
+                    <div className="py-6 text-center space-y-4">
+                        <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-600 mx-auto flex items-center justify-center">
+                            <Check className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <h4 className="text-base font-bold text-slate-900 dark:text-white">
+                                Refund Disbursed Successfully!
+                            </h4>
+                            <p className="text-xs text-slate-500 font-mono mt-1">
+                                Receipt #{completedSlip.settlementReceiptNo} • ₹{Number(completedSlip.disbursedAmount).toLocaleString()} via {completedSlip.paymentMode}
+                            </p>
+                        </div>
+                        <div className="flex items-center justify-center gap-2 pt-2">
+                            <button
+                                type="button"
+                                onClick={() => window.print()}
+                                className="px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white flex items-center gap-1.5 cursor-pointer"
+                            >
+                                <Printer className="w-4 h-4" />
+                                <span>Print Voucher</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                className="px-4 py-2 rounded-xl text-xs font-bold bg-emerald-600 text-white cursor-pointer"
+                            >
+                                Done
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        {/* Patient & Due Details Pod */}
+                        <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-800/60 border border-slate-200 dark:border-zinc-700/60 text-xs space-y-1.5">
+                            <div className="flex justify-between">
+                                <span className="text-slate-500">Patient:</span>
+                                <span className="font-bold text-slate-900 dark:text-white">{cancellation?.patientName}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-slate-500">Original Amount Paid:</span>
+                                <span className="font-mono">₹{Number(cancellation?.totalAmountPaid || 0).toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-slate-500">Already Refunded:</span>
+                                <span className="font-mono text-rose-600">₹{Number(cancellation?.refundedAmount || 0).toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between text-sm font-bold pt-1 border-t border-slate-200 dark:border-zinc-700">
+                                <span className="text-amber-700 dark:text-amber-400">Balance Pending Due:</span>
+                                <span className="font-mono text-amber-700 dark:text-amber-400">₹{pendingBalance.toLocaleString()}</span>
+                            </div>
+                        </div>
+
+                        {/* Amount Input */}
+                        <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                                <label className="text-[10.5px] font-bold uppercase tracking-wider text-slate-500">
+                                    Disbursement Amount (₹) *
+                                </label>
+                                <button
+                                    type="button"
+                                    onClick={() => setAmount(pendingBalance.toString())}
+                                    className="text-[10px] font-bold text-emerald-600 hover:underline cursor-pointer"
+                                >
+                                    Full Settle (₹{pendingBalance.toLocaleString()})
+                                </button>
+                            </div>
+                            <div className="relative">
+                                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xl font-black text-slate-400">₹</span>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    required
+                                    max={pendingBalance > 0 ? pendingBalance : undefined}
+                                    value={amount}
+                                    onChange={(e) => setAmount(e.target.value)}
+                                    className="w-full pl-8 pr-4 py-2 text-xl font-black rounded-xl border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Payment Mode Selector */}
+                        <div className="space-y-1.5">
+                            <label className="text-[10.5px] font-bold uppercase tracking-wider text-slate-500">
+                                Payment Channel *
+                            </label>
+                            <div className="grid grid-cols-3 gap-2">
+                                {[
+                                    { id: 'Cash', label: 'Cash Drawer', icon: Wallet },
+                                    { id: 'UPI', label: 'UPI / Online', icon: QrCode },
+                                    { id: 'BankTransfer', label: 'Bank / Card', icon: CreditCard }
+                                ].map(m => {
+                                    const Icon = m.icon;
+                                    const isSel = paymentMode === m.id;
+                                    return (
+                                        <button
+                                            key={m.id}
+                                            type="button"
+                                            onClick={() => setPaymentMode(m.id)}
+                                            className={cn(
+                                                "p-2 rounded-xl border text-xs font-bold flex flex-col items-center gap-1 transition-all cursor-pointer",
+                                                isSel
+                                                    ? "bg-slate-900 dark:bg-white text-white dark:text-zinc-900 border-slate-900 dark:border-white shadow-xs"
+                                                    : "bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-700"
+                                            )}
+                                        >
+                                            <Icon className="w-4 h-4" />
+                                            <span>{m.label}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Notes */}
+                        <div className="space-y-1">
+                            <label className="text-[10.5px] font-bold uppercase tracking-wider text-slate-500">
+                                Settlement Notes / Attendant *
+                            </label>
+                            <input
+                                type="text"
+                                required
+                                placeholder="e.g. Returned ₹1000 cash to patient relative"
+                                value={notes}
+                                onChange={(e) => setNotes(e.target.value)}
+                                className="w-full px-3 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500"
+                            />
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center justify-end gap-2 pt-2 border-t dark:border-zinc-800">
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                className="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-zinc-400 hover:text-slate-900 cursor-pointer"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={isSubmitting || (parseFloat(amount) || 0) <= 0}
+                                className="px-5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+                            >
+                                {isSubmitting ? "Disbursing..." : `Confirm & Disburse ₹${amount || '0'}`}
+                            </button>
+                        </div>
+                    </form>
+                )}
+            </div>
         </div>
     );
 };

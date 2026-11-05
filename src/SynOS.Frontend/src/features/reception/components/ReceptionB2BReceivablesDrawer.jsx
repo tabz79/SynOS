@@ -60,18 +60,21 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose, embedded = fals
         panel: "bg-zinc-950 border-l border-zinc-800 shadow-2xl z-30",
         header: "bg-zinc-900/80 backdrop-blur-md border-b border-zinc-800",
         footer: "bg-zinc-900/80 backdrop-blur-md border-t border-zinc-800 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.5)]",
-        card: "bg-zinc-900/90 border border-zinc-800 shadow-xl rounded-2xl",
+        card: "rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-xl",
         recessedPod: "rounded-xl border border-zinc-800 bg-zinc-950/80 shadow-[inset_0_1px_3px_rgba(0,0,0,0.4)]",
+        input: "bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-500 focus:border-synos-primary rounded-xl",
         title: "text-white",
         subtitle: "text-zinc-400"
     } : {
         panel: cn(
-            "bg-[#F0F4F8] border-l border-slate-300 shadow-[-20px_0_60px_rgba(15,35,60,0.18)] z-30"
+            "bg-[radial-gradient(ellipse_at_top,_#EAF2F9_0%,_#DCE7F2_50%,_#CEDCE8_100%)]",
+            "border-l border-white/80 shadow-[-20px_0_60px_rgba(15,35,60,0.18)] z-30"
         ),
-        header: "bg-white border-b border-slate-200/90 shadow-2xs",
-        footer: "bg-white border-t border-slate-200/90 shadow-[0_-4px_20px_-10px_rgba(15,35,60,0.08)]",
-        card: "bg-white border border-slate-200 shadow-xs rounded-2xl",
-        recessedPod: "rounded-xl border border-slate-200 bg-[#F8FAFC] shadow-2xs",
+        header: "bg-transparent border-b border-slate-200/60 backdrop-blur-md",
+        footer: "bg-white/60 backdrop-blur-md border-t border-slate-200/60 shadow-[0_-4px_20px_-10px_rgba(15,35,60,0.05)]",
+        card: "rounded-2xl bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]",
+        recessedPod: "rounded-xl border border-[#CCDCE8] bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] shadow-[inset_0_1px_3px_rgba(15,35,60,0.06),0_1px_0_rgba(255,255,255,0.7)]",
+        input: "bg-white/90 border border-[#D5E2EC] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04)] text-slate-900 placeholder:text-slate-400 focus:border-blue-500 rounded-xl",
         title: "text-slate-900",
         subtitle: "text-slate-500"
     };
@@ -637,64 +640,64 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose, embedded = fals
                                 </div>
                             </div>
                         ) : (
-                            /* SPLIT 2-COLUMN EXTENDED WORKBENCH */
+                            /* SPLIT 2-COLUMN EXTENDED WORKBENCH (IntentPanel Native Facelift Layout) */
                             <form onSubmit={handleSettle} className="flex-1 flex flex-col min-h-0 overflow-hidden">
-                                <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
-                                    {/* ============================================================ */}
-                                    {/* LEFT COLUMN: PREPAID REFERRAL DEBTORS & PATIENT VISITS LIST  */}
-                                    {/* (Scalable for 50+ to 90+ bills with accordion & search)     */}
-                                    {/* ============================================================ */}
-                                    <div className="w-full lg:w-[54%] xl:w-[56%] flex flex-col h-full min-h-0 border-r border-slate-200/80 dark:border-zinc-800 bg-white/40 dark:bg-zinc-950/20">
-                                        {/* Left Top Search & Header */}
-                                        <div className="p-3.5 sm:p-4 border-b border-slate-200/80 dark:border-zinc-800 shrink-0 space-y-2.5 bg-white/60 dark:bg-zinc-900/40">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                                                        <Layers className="w-4 h-4" />
+                                <div className="p-3 sm:p-4 max-w-full mx-auto w-full flex-1 min-h-0 flex flex-col overflow-hidden">
+                                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5 sm:gap-4 xl:gap-5 items-stretch flex-1 min-h-0 overflow-hidden">
+                                        {/* ============================================================ */}
+                                        {/* LEFT COLUMN: PREPAID REFERRAL DEBTORS & PATIENT VISITS LIST  */}
+                                        {/* (7 Columns - IntentPanel Card Architecture)                 */}
+                                        {/* ============================================================ */}
+                                        <div className="lg:col-span-7 flex flex-col gap-3 h-full min-h-0 overflow-hidden">
+                                            <div className={cn("flex flex-col flex-1 min-h-0 overflow-hidden p-3.5 sm:p-4", ui.card)}>
+                                                {/* Left Top Header with Circular Badge 1 */}
+                                                <div className="flex items-center justify-between pb-2.5 border-b border-slate-200/80 dark:border-zinc-800 shrink-0">
+                                                    <div className="flex items-center gap-2.5">
+                                                        <div className="w-6 h-6 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-xs shadow-xs">
+                                                            1
+                                                        </div>
+                                                        <div>
+                                                            <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                                                                Prepaid Referral Debtors
+                                                            </h3>
+                                                            <p className="text-[10.5px] text-slate-500 dark:text-zinc-400">
+                                                                Select partner and bills to clear or partially settle
+                                                            </p>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                                                            Prepaid Referral Debtors
-                                                        </h3>
-                                                        <p className="text-[10.5px] text-slate-500 dark:text-zinc-400">
-                                                            Select partner and bills to clear or partially settle
-                                                        </p>
+                                                    <div className="text-right">
+                                                        <span className="text-[11px] font-mono font-bold text-slate-700 dark:text-zinc-300">
+                                                            {groups.length} Partners • {totalPendingVisits} Bills
+                                                        </span>
+                                                        <span className="block text-xs font-black text-emerald-700 dark:text-emerald-400 font-mono">
+                                                            Due: ₹{totalDueToday.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                                        </span>
                                                     </div>
                                                 </div>
-                                                <div className="text-right">
-                                                    <span className="text-[11px] font-mono font-bold text-slate-700 dark:text-zinc-300">
-                                                        {groups.length} Partners • {totalPendingVisits} Bills
-                                                    </span>
-                                                    <span className="block text-xs font-black text-emerald-700 dark:text-emerald-400 font-mono">
-                                                        Due: ₹{totalDueToday.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                                                    </span>
+
+                                                {/* Search Bar */}
+                                                <div className="relative pt-2.5 pb-2 shrink-0">
+                                                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                                                    <input
+                                                        type="text"
+                                                        value={searchQuery}
+                                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                                        placeholder="Search partner hospital, doctor, patient name, token, test..."
+                                                        className={cn("w-full pl-9 pr-8 py-2 text-xs font-medium outline-none", ui.input)}
+                                                    />
+                                                    {searchQuery && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setSearchQuery('')}
+                                                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs cursor-pointer"
+                                                        >
+                                                            ✕
+                                                        </button>
+                                                    )}
                                                 </div>
-                                            </div>
 
-                                            {/* Search Bar */}
-                                            <div className="relative">
-                                                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                                                <input
-                                                    type="text"
-                                                    value={searchQuery}
-                                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                                    placeholder="Search partner hospital, doctor, patient name, token, test..."
-                                                    className="w-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl pl-9 pr-8 py-2 text-xs font-medium outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 dark:text-white shadow-2xs"
-                                                />
-                                                {searchQuery && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setSearchQuery('')}
-                                                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs"
-                                                    >
-                                                        ✕
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {/* Scrollable Debtors Accordion List */}
-                                        <div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 space-y-3">
+                                                {/* Scrollable Debtors Accordion List */}
+                                                <div className="flex-1 min-h-0 overflow-y-auto space-y-2.5 pr-1">
                                             {groups.length === 0 ? (
                                                 <div className="py-16 text-center space-y-2">
                                                     <div className="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-600 mx-auto flex items-center justify-center">
@@ -725,10 +728,10 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose, embedded = fals
                                                         <div 
                                                             key={g.partnerId}
                                                             className={cn(
-                                                                "rounded-2xl border transition-all overflow-hidden",
+                                                                "rounded-xl border transition-all overflow-hidden",
                                                                 isSelectedPartner
-                                                                    ? "border-emerald-500 shadow-md bg-white dark:bg-zinc-900 ring-2 ring-emerald-500/10"
-                                                                    : "border-slate-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-2xs hover:border-slate-400"
+                                                                    ? "bg-white/95 dark:bg-zinc-900/95 border-emerald-500/80 shadow-[0_4px_16px_rgba(16,185,129,0.12)] ring-1 ring-emerald-500/40"
+                                                                    : "bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] dark:bg-zinc-950/80 border-[#CCDCE8] dark:border-zinc-800 shadow-[inset_0_1px_3px_rgba(15,35,60,0.06),0_1px_0_rgba(255,255,255,0.7)] hover:border-slate-400"
                                                             )}
                                                         >
                                                             {/* Partner Accordion Header */}
@@ -737,7 +740,7 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose, embedded = fals
                                                                     "p-3.5 flex items-center justify-between gap-3 cursor-pointer select-none transition-colors",
                                                                     isSelectedPartner
                                                                         ? "bg-emerald-50/50 dark:bg-emerald-950/20 border-b border-emerald-100 dark:border-emerald-900/30"
-                                                                        : "hover:bg-slate-50 dark:hover:bg-zinc-800/40"
+                                                                        : "hover:bg-white/50 dark:hover:bg-zinc-800/40"
                                                                 )}
                                                                 onClick={() => {
                                                                     if (!isSelectedPartner) {
@@ -851,8 +854,8 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose, embedded = fals
                                                                                     className={cn(
                                                                                         "p-2.5 rounded-xl border flex items-center justify-between gap-3 text-xs transition-all cursor-pointer",
                                                                                         isChecked
-                                                                                            ? "bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-500/50 shadow-xs ring-1 ring-emerald-500/20"
-                                                                                            : "bg-[#F4F7FA] dark:bg-zinc-800/60 border-slate-200 dark:border-zinc-700/60 hover:bg-white dark:hover:bg-zinc-800 text-slate-800 dark:text-zinc-200"
+                                                                                            ? "bg-white dark:bg-zinc-900 border-emerald-500/60 shadow-xs ring-1 ring-emerald-500/20"
+                                                                                            : "bg-white/70 dark:bg-zinc-900/60 border-slate-200/90 dark:border-zinc-800 hover:bg-white text-slate-800 dark:text-zinc-200"
                                                                                     )}
                                                                                 >
                                                                                     <div className="flex items-center gap-2.5 min-w-0">
@@ -918,30 +921,32 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose, embedded = fals
                                             )}
                                         </div>
                                     </div>
+                                </div>
 
-                                    {/* ============================================================ */}
-                                    {/* RIGHT COLUMN: SETTLEMENTS, PARTIAL ENGINE & FINANCIALS      */}
-                                    {/* ============================================================ */}
-                                    <div className="w-full lg:w-[46%] xl:w-[44%] flex flex-col h-full min-h-0 bg-slate-50/50 dark:bg-zinc-900/30">
-                                        {/* Right Column Header */}
-                                        <div className="p-3.5 sm:p-4 border-b border-slate-200/80 dark:border-zinc-800 shrink-0 flex items-center justify-between bg-white/60 dark:bg-zinc-900/40">
-                                            <div className="flex items-center gap-2">
-                                                <div className="w-6 h-6 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-xs shadow-xs">
-                                                    2
+                                        {/* ============================================================ */}
+                                        {/* RIGHT COLUMN: SETTLEMENTS, PARTIAL ENGINE & FINANCIALS      */}
+                                        {/* ============================================================ */}
+                                        <div className="lg:col-span-5 flex flex-col gap-3 h-full min-h-0 overflow-y-auto pr-1">
+                                            <div className={cn("flex flex-col flex-1 min-h-0 p-3.5 sm:p-4 space-y-3.5", ui.card)}>
+                                                {/* Right Column Header */}
+                                                <div className="flex items-center justify-between pb-2.5 border-b border-slate-200/80 dark:border-zinc-800 shrink-0">
+                                                    <div className="flex items-center gap-2.5">
+                                                        <div className="w-6 h-6 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-xs shadow-xs">
+                                                            2
+                                                        </div>
+                                                        <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                                                            Settlement & Financials
+                                                        </h3>
+                                                    </div>
+                                                    {selectedGroup && (
+                                                        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 truncate max-w-[200px]">
+                                                            {selectedGroup.partnerName} ({selectedFactIds.length} Bills)
+                                                        </span>
+                                                    )}
                                                 </div>
-                                                <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                                                    Settlement & Financials
-                                                </h3>
-                                            </div>
-                                            {selectedGroup && (
-                                                <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 truncate max-w-[200px]">
-                                                    {selectedGroup.partnerName} ({selectedFactIds.length} Bills)
-                                                </span>
-                                            )}
-                                        </div>
 
-                                        {/* Scrollable Right Form */}
-                                        <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 space-y-4">
+                                                {/* Scrollable Right Form */}
+                                                <div className="flex-1 min-h-0 space-y-3.5">
                                             {!selectedGroup ? (
                                                 <div className="py-20 text-center text-slate-400 space-y-2 text-xs">
                                                     <Building2 className="w-10 h-10 mx-auto opacity-30" />
@@ -1267,48 +1272,50 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose, embedded = fals
                                                     </div>
                                                 </>
                                             )}
-                                        </div>
+                                                </div>
 
-                                        {/* Sticky Footer Action Bar */}
-                                        {selectedGroup && (
-                                            <div className={cn("px-5 py-3 border-t flex items-center justify-between shrink-0", ui.footer)}>
-                                                <button
-                                                    type="button"
-                                                    onClick={onClose}
-                                                    className="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white transition-colors cursor-pointer"
-                                                >
-                                                    Cancel
-                                                </button>
+                                                {/* Sticky Footer Action Bar inside Card */}
+                                                {selectedGroup && (
+                                                    <div className={cn("pt-3 border-t flex items-center justify-between shrink-0", isDark ? "border-zinc-800" : "border-slate-200/80")}>
+                                                        <button
+                                                            type="button"
+                                                            onClick={onClose}
+                                                            className="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white transition-colors cursor-pointer"
+                                                        >
+                                                            Cancel
+                                                        </button>
 
-                                                <button
-                                                    type="submit"
-                                                    disabled={isSubmitting || selectedFactIds.length === 0 || ((parseFloat(amount) || 0) <= 0 && (!hasConcession || (parseFloat(concessionAmount) || 0) <= 0))}
-                                                    className={cn(
-                                                        "py-2.5 px-6 rounded-xl font-bold text-xs flex items-center gap-2 shadow-lg transition-all cursor-pointer active:scale-95",
-                                                        isSubmitting || selectedFactIds.length === 0 || ((parseFloat(amount) || 0) <= 0 && (!hasConcession || (parseFloat(concessionAmount) || 0) <= 0))
-                                                            ? "opacity-50 cursor-not-allowed bg-slate-300 dark:bg-zinc-800 text-slate-500"
-                                                            : "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20"
-                                                    )}
-                                                >
-                                                    {isSubmitting ? (
-                                                        <>
-                                                            <RefreshCw className="w-4 h-4 animate-spin" />
-                                                            Authorizing...
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            Authorize & Settle ₹{amount ? parseFloat(amount).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '0.00'}
-                                                            {allocationSummary.remainingDue > 0 && (
-                                                                <span className="text-[10px] opacity-80 font-normal">
-                                                                    (Due: ₹{allocationSummary.remainingDue.toLocaleString('en-IN', { minimumFractionDigits: 0 })})
-                                                                </span>
+                                                        <button
+                                                            type="submit"
+                                                            disabled={isSubmitting || selectedFactIds.length === 0 || ((parseFloat(amount) || 0) <= 0 && (!hasConcession || (parseFloat(concessionAmount) || 0) <= 0))}
+                                                            className={cn(
+                                                                "py-2.5 px-6 rounded-xl font-bold text-xs flex items-center gap-2 shadow-lg transition-all cursor-pointer active:scale-95",
+                                                                isSubmitting || selectedFactIds.length === 0 || ((parseFloat(amount) || 0) <= 0 && (!hasConcession || (parseFloat(concessionAmount) || 0) <= 0))
+                                                                    ? "opacity-50 cursor-not-allowed bg-slate-300 dark:bg-zinc-800 text-slate-500"
+                                                                    : "bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20"
                                                             )}
-                                                            <ArrowRight className="w-4 h-4" />
-                                                        </>
-                                                    )}
-                                                </button>
+                                                        >
+                                                            {isSubmitting ? (
+                                                                <>
+                                                                    <RefreshCw className="w-4 h-4 animate-spin" />
+                                                                    Authorizing...
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    Authorize & Settle ₹{amount ? parseFloat(amount).toLocaleString('en-IN', { minimumFractionDigits: 2 }) : '0.00'}
+                                                                    {allocationSummary.remainingDue > 0 && (
+                                                                        <span className="text-[10px] opacity-80 font-normal">
+                                                                            (Due: ₹{allocationSummary.remainingDue.toLocaleString('en-IN', { minimumFractionDigits: 0 })})
+                                                                        </span>
+                                                                    )}
+                                                                    <ArrowRight className="w-4 h-4" />
+                                                                </>
+                                                            )}
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
+                                        </div>
                                     </div>
                                 </div>
                             </form>
