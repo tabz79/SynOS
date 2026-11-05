@@ -67,14 +67,14 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose, embedded = fals
         subtitle: "text-zinc-400"
     } : {
         panel: cn(
-            "bg-[radial-gradient(ellipse_at_top,_#EAF2F9_0%,_#DCE7F2_50%,_#CEDCE8_100%)]",
+            "bg-[#CBD5E1] dark:bg-zinc-950",
             "border-l border-white/80 shadow-[-20px_0_60px_rgba(15,35,60,0.18)] z-30"
         ),
-        header: "bg-transparent border-b border-slate-200/60 backdrop-blur-md",
-        footer: "bg-white/60 backdrop-blur-md border-t border-slate-200/60 shadow-[0_-4px_20px_-10px_rgba(15,35,60,0.05)]",
-        card: "rounded-2xl bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]",
+        header: "bg-white/80 backdrop-blur-md border-b border-slate-300/80 shadow-xs",
+        footer: "bg-white/80 backdrop-blur-md border-t border-slate-300/80 shadow-[0_-4px_20px_-10px_rgba(15,35,60,0.05)]",
+        card: "rounded-2xl bg-white border border-[#CBD5E1] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.09),0_4px_10px_-2px_rgba(0,0,0,0.04)]",
         recessedPod: "rounded-xl border border-[#CCDCE8] bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] shadow-[inset_0_1px_3px_rgba(15,35,60,0.06),0_1px_0_rgba(255,255,255,0.7)]",
-        input: "bg-white/90 border border-[#D5E2EC] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04)] text-slate-900 placeholder:text-slate-400 focus:border-blue-500 rounded-xl",
+        input: "bg-white border border-[#CBD5E1] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04)] text-slate-900 placeholder:text-slate-400 focus:border-blue-500 rounded-xl",
         title: "text-slate-900",
         subtitle: "text-slate-500"
     };
@@ -500,13 +500,13 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose, embedded = fals
 
                     {/* Area 2: Three-Tab Navigation */}
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-200/70 dark:bg-zinc-800/80 border border-slate-300/40 dark:border-zinc-700/40">
+                        <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-200/80 dark:bg-zinc-800/80 border border-slate-300/80 dark:border-zinc-700/40">
                             <button
                                 onClick={() => setActiveTab('record')}
                                 className={cn(
                                     "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
                                     activeTab === 'record'
-                                        ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-xs font-extrabold"
+                                        ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs font-bold border border-slate-200/80"
                                         : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
                                 )}
                             >
@@ -524,7 +524,7 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose, embedded = fals
                                 className={cn(
                                     "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
                                     activeTab === 'history'
-                                        ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-xs font-extrabold"
+                                        ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs font-bold border border-slate-200/80"
                                         : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
                                 )}
                             >
@@ -542,7 +542,7 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose, embedded = fals
                                 className={cn(
                                     "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
                                     activeTab === 'summary'
-                                        ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-xs font-extrabold"
+                                        ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs font-bold border border-slate-200/80"
                                         : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
                                 )}
                             >
@@ -729,9 +729,10 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose, embedded = fals
                                                             key={g.partnerId}
                                                             className={cn(
                                                                 "rounded-xl border transition-all overflow-hidden",
+                                                                "bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] dark:bg-zinc-950/80 shadow-[inset_0_1px_3px_rgba(15,35,60,0.06),0_1px_0_rgba(255,255,255,0.7)]",
                                                                 isSelectedPartner
-                                                                    ? "bg-white/95 dark:bg-zinc-900/95 border-emerald-500/80 shadow-[0_4px_16px_rgba(16,185,129,0.12)] ring-1 ring-emerald-500/40"
-                                                                    : "bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] dark:bg-zinc-950/80 border-[#CCDCE8] dark:border-zinc-800 shadow-[inset_0_1px_3px_rgba(15,35,60,0.06),0_1px_0_rgba(255,255,255,0.7)] hover:border-slate-400"
+                                                                    ? "border-emerald-500 shadow-md ring-2 ring-emerald-500/50"
+                                                                    : "border-[#CCDCE8] dark:border-zinc-800 hover:border-slate-400"
                                                             )}
                                                         >
                                                             {/* Partner Accordion Header */}
@@ -739,8 +740,8 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose, embedded = fals
                                                                 className={cn(
                                                                     "p-3.5 flex items-center justify-between gap-3 cursor-pointer select-none transition-colors",
                                                                     isSelectedPartner
-                                                                        ? "bg-emerald-50/50 dark:bg-emerald-950/20 border-b border-emerald-100 dark:border-emerald-900/30"
-                                                                        : "hover:bg-white/50 dark:hover:bg-zinc-800/40"
+                                                                        ? "bg-emerald-500/10 dark:bg-emerald-950/20 border-b border-emerald-200/60 dark:border-emerald-900/30"
+                                                                        : "hover:bg-black/5 dark:hover:bg-white/5"
                                                                 )}
                                                                 onClick={() => {
                                                                     if (!isSelectedPartner) {
@@ -755,7 +756,7 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose, embedded = fals
                                                                         "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border",
                                                                         isSelectedPartner
                                                                             ? "bg-emerald-600 text-white border-emerald-700 shadow-sm"
-                                                                            : "bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 border-slate-200 dark:border-zinc-700"
+                                                                            : "bg-white/90 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 border-slate-300 dark:border-zinc-700"
                                                                     )}>
                                                                         <Building2 className="w-4 h-4" />
                                                                     </div>
@@ -967,18 +968,18 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose, embedded = fals
                                                         </div>
 
                                                         {/* Segmented Full vs Partial Pill */}
-                                                        <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-200/80 dark:border-zinc-700">
+                                                        <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-slate-200/70 dark:bg-zinc-800 border border-slate-300/80 dark:border-zinc-700">
                                                             <button
                                                                 type="button"
                                                                 onClick={() => handleTermsModeChange('FULL')}
                                                                 className={cn(
                                                                     "py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5",
                                                                     termsMode === 'FULL'
-                                                                        ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-xs font-extrabold"
+                                                                        ? "bg-slate-900 text-white border border-slate-900 shadow-md font-extrabold dark:bg-white dark:text-slate-900 dark:border-white"
                                                                         : "text-slate-600 dark:text-zinc-400 hover:text-slate-900"
                                                                 )}
                                                             >
-                                                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                                                                <CheckCircle2 className={cn("w-3.5 h-3.5", termsMode === 'FULL' ? "text-white dark:text-emerald-600" : "text-emerald-600")} />
                                                                 <span>Full Settle (₹{selectedVisitsTotal.toLocaleString()})</span>
                                                             </button>
 
@@ -988,11 +989,11 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose, embedded = fals
                                                                 className={cn(
                                                                     "py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5",
                                                                     termsMode === 'PARTIAL'
-                                                                        ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-xs font-extrabold"
+                                                                        ? "bg-slate-900 text-white border border-slate-900 shadow-md font-extrabold dark:bg-white dark:text-slate-900 dark:border-white"
                                                                         : "text-slate-600 dark:text-zinc-400 hover:text-slate-900"
                                                                 )}
                                                             >
-                                                                <Percent className="w-3.5 h-3.5 text-amber-600" />
+                                                                <Percent className={cn("w-3.5 h-3.5", termsMode === 'PARTIAL' ? "text-white dark:text-amber-500" : "text-amber-600")} />
                                                                 <span>Partial Settle</span>
                                                             </button>
                                                         </div>
@@ -1254,17 +1255,13 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose, embedded = fals
                                                                         className={cn(
                                                                             "p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all cursor-pointer text-center",
                                                                             isSelected
-                                                                                ? (isDark
-                                                                                    ? "bg-zinc-800 border-2 border-emerald-500 text-white shadow-md ring-1 ring-emerald-500/50"
-                                                                                    : "bg-white border-2 border-emerald-600 text-emerald-950 shadow-[0_4px_16px_rgba(16,185,129,0.15)] ring-1 ring-emerald-600/30")
-                                                                                : (isDark
-                                                                                    ? "bg-zinc-800/60 border-zinc-700/60 hover:bg-zinc-800 text-zinc-400 hover:text-white"
-                                                                                    : "bg-white/80 border border-[#D5E2EC] hover:bg-white text-slate-600 hover:text-slate-900 shadow-2xs")
+                                                                                ? "bg-slate-900 text-white border-slate-900 shadow-md ring-1 ring-slate-900 dark:bg-white dark:text-slate-900 dark:border-white"
+                                                                                : "bg-white dark:bg-zinc-800/80 border border-slate-200/90 dark:border-zinc-700 hover:bg-slate-50 text-slate-700 dark:text-zinc-300 shadow-2xs"
                                                                         )}
                                                                     >
-                                                                        <Icon className={cn("w-4 h-4", isSelected ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400")} />
+                                                                        <Icon className={cn("w-4 h-4", isSelected ? "text-white dark:text-slate-900" : "text-slate-500")} />
                                                                         <span className="text-xs font-bold leading-none">{mode.label}</span>
-                                                                        <span className="text-[9px] opacity-70 leading-none">{mode.desc}</span>
+                                                                        <span className={cn("text-[9px] leading-none", isSelected ? "text-white/80 dark:text-slate-700" : "text-slate-500")}>{mode.desc}</span>
                                                                     </button>
                                                                 );
                                                             })}

@@ -48114,11 +48114,11 @@ Details: ${o.inner}`);
       input: "bg-zinc-900 border-zinc-800 text-white placeholder:text-zinc-500 focus:border-synos-primary rounded-xl",
       title: "text-white"
     } : {
-      panel: Ce("bg-[radial-gradient(ellipse_at_top,_#EAF2F9_0%,_#DCE7F2_50%,_#CEDCE8_100%)]", "border-l border-white/80 shadow-[-20px_0_60px_rgba(15,35,60,0.18)] z-30"),
-      header: "bg-transparent border-b border-slate-200/60 backdrop-blur-md",
-      card: "rounded-2xl bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]",
+      panel: Ce("bg-[#CBD5E1] dark:bg-zinc-950", "border-l border-white/80 shadow-[-20px_0_60px_rgba(15,35,60,0.18)] z-30"),
+      header: "bg-white/80 backdrop-blur-md border-b border-slate-300/80 shadow-xs",
+      card: "rounded-2xl bg-white border border-[#CBD5E1] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.09),0_4px_10px_-2px_rgba(0,0,0,0.04)]",
       recessedPod: "rounded-xl border border-[#CCDCE8] bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] shadow-[inset_0_1px_3px_rgba(15,35,60,0.06),0_1px_0_rgba(255,255,255,0.7)]",
-      input: "bg-white/90 border border-[#D5E2EC] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04)] text-slate-900 placeholder:text-slate-400 focus:border-blue-500 rounded-xl",
+      input: "bg-white border border-[#CBD5E1] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04)] text-slate-900 placeholder:text-slate-400 focus:border-blue-500 rounded-xl",
       title: "text-slate-900"
     }, [l, c] = F.useState("record"), [g, d] = F.useState(false), [u, h] = F.useState(false), [f, p] = F.useState([]), [I, x] = F.useState([]), [C, B] = F.useState(""), [Q, D] = F.useState(null), [v, R] = F.useState(null), [M, U] = F.useState([]), [H, P] = F.useState(/* @__PURE__ */ new Set()), [G, O] = F.useState("FULL"), [_, ee] = F.useState(""), [$, ae] = F.useState(false), [te, Z] = F.useState(""), [ne, se] = F.useState("Director / Owner Direct Waiver"), [fe, Ie] = F.useState(""), [Me, we] = F.useState("Cash"), [Ee, Re] = F.useState(""), [Pe, je] = F.useState(""), [le, W] = F.useState(null), pe = async () => {
       d(true), D(null);
@@ -48386,11 +48386,11 @@ Details: ${o.inner}`);
               className: "flex items-center justify-between",
               children: [
                 n.jsxs("div", {
-                  className: "flex items-center gap-1 p-1 rounded-xl bg-slate-200/70 dark:bg-zinc-800/80 border border-slate-300/40 dark:border-zinc-700/40",
+                  className: "flex items-center gap-1 p-1 rounded-xl bg-slate-200/80 dark:bg-zinc-800/80 border border-slate-300/80 dark:border-zinc-700/40",
                   children: [
                     n.jsxs("button", {
                       onClick: () => c("record"),
-                      className: Ce("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer", l === "record" ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-xs font-extrabold" : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"),
+                      className: Ce("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer", l === "record" ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs font-bold border border-slate-200/80" : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"),
                       children: [
                         n.jsx(tm, {
                           className: "w-3.5 h-3.5 text-emerald-600"
@@ -48406,7 +48406,7 @@ Details: ${o.inner}`);
                     }),
                     n.jsxs("button", {
                       onClick: () => c("history"),
-                      className: Ce("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer", l === "history" ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-xs font-extrabold" : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"),
+                      className: Ce("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer", l === "history" ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs font-bold border border-slate-200/80" : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"),
                       children: [
                         n.jsx(Eo, {
                           className: "w-3.5 h-3.5 text-blue-600"
@@ -48422,7 +48422,7 @@ Details: ${o.inner}`);
                     }),
                     n.jsxs("button", {
                       onClick: () => c("summary"),
-                      className: Ce("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer", l === "summary" ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-xs font-extrabold" : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"),
+                      className: Ce("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer", l === "summary" ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs font-bold border border-slate-200/80" : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"),
                       children: [
                         n.jsx(i1, {
                           className: "w-3.5 h-3.5 text-purple-600"
@@ -48730,10 +48730,10 @@ Details: ${o.inner}`);
                           }) : it.map((Ze) => {
                             const st = v === Ze.partnerId, He = H.has(Ze.partnerId), ze = Ze.visits || [], At = ze.filter((Bt) => M.includes(Bt.receivableFactId));
                             return ze.length > 0 && (At.length, ze.length), n.jsxs("div", {
-                              className: Ce("rounded-xl border transition-all overflow-hidden", st ? "bg-white/95 dark:bg-zinc-900/95 border-emerald-500/80 shadow-[0_4px_16px_rgba(16,185,129,0.12)] ring-1 ring-emerald-500/40" : "bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] dark:bg-zinc-950/80 border-[#CCDCE8] dark:border-zinc-800 shadow-[inset_0_1px_3px_rgba(15,35,60,0.06),0_1px_0_rgba(255,255,255,0.7)] hover:border-slate-400"),
+                              className: Ce("rounded-xl border transition-all overflow-hidden", "bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] dark:bg-zinc-950/80 shadow-[inset_0_1px_3px_rgba(15,35,60,0.06),0_1px_0_rgba(255,255,255,0.7)]", st ? "border-emerald-500 shadow-md ring-2 ring-emerald-500/50" : "border-[#CCDCE8] dark:border-zinc-800 hover:border-slate-400"),
                               children: [
                                 n.jsxs("div", {
-                                  className: Ce("p-3.5 flex items-center justify-between gap-3 cursor-pointer select-none transition-colors", st ? "bg-emerald-50/50 dark:bg-emerald-950/20 border-b border-emerald-100 dark:border-emerald-900/30" : "hover:bg-white/50 dark:hover:bg-zinc-800/40"),
+                                  className: Ce("p-3.5 flex items-center justify-between gap-3 cursor-pointer select-none transition-colors", st ? "bg-emerald-500/10 dark:bg-emerald-950/20 border-b border-emerald-200/60 dark:border-emerald-900/30" : "hover:bg-black/5 dark:hover:bg-white/5"),
                                   onClick: () => {
                                     st ? Ne(Ze.partnerId) : xe(Ze);
                                   },
@@ -48742,7 +48742,7 @@ Details: ${o.inner}`);
                                       className: "flex items-center gap-3 min-w-0",
                                       children: [
                                         n.jsx("div", {
-                                          className: Ce("w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border", st ? "bg-emerald-600 text-white border-emerald-700 shadow-sm" : "bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 border-slate-200 dark:border-zinc-700"),
+                                          className: Ce("w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border", st ? "bg-emerald-600 text-white border-emerald-700 shadow-sm" : "bg-white/90 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 border-slate-300 dark:border-zinc-700"),
                                           children: n.jsx(_a, {
                                             className: "w-4 h-4"
                                           })
@@ -49024,15 +49024,15 @@ Details: ${o.inner}`);
                                     ]
                                   }),
                                   n.jsxs("div", {
-                                    className: "grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-200/80 dark:border-zinc-700",
+                                    className: "grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-slate-200/70 dark:bg-zinc-800 border border-slate-300/80 dark:border-zinc-700",
                                     children: [
                                       n.jsxs("button", {
                                         type: "button",
                                         onClick: () => he("FULL"),
-                                        className: Ce("py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5", G === "FULL" ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-xs font-extrabold" : "text-slate-600 dark:text-zinc-400 hover:text-slate-900"),
+                                        className: Ce("py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5", G === "FULL" ? "bg-slate-900 text-white border border-slate-900 shadow-md font-extrabold dark:bg-white dark:text-slate-900 dark:border-white" : "text-slate-600 dark:text-zinc-400 hover:text-slate-900"),
                                         children: [
                                           n.jsx(Sr, {
-                                            className: "w-3.5 h-3.5 text-emerald-600"
+                                            className: Ce("w-3.5 h-3.5", G === "FULL" ? "text-white dark:text-emerald-600" : "text-emerald-600")
                                           }),
                                           n.jsxs("span", {
                                             children: [
@@ -49046,10 +49046,10 @@ Details: ${o.inner}`);
                                       n.jsxs("button", {
                                         type: "button",
                                         onClick: () => he("PARTIAL"),
-                                        className: Ce("py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5", G === "PARTIAL" ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-xs font-extrabold" : "text-slate-600 dark:text-zinc-400 hover:text-slate-900"),
+                                        className: Ce("py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5", G === "PARTIAL" ? "bg-slate-900 text-white border border-slate-900 shadow-md font-extrabold dark:bg-white dark:text-slate-900 dark:border-white" : "text-slate-600 dark:text-zinc-400 hover:text-slate-900"),
                                         children: [
                                           n.jsx(au, {
-                                            className: "w-3.5 h-3.5 text-amber-600"
+                                            className: Ce("w-3.5 h-3.5", G === "PARTIAL" ? "text-white dark:text-amber-500" : "text-amber-600")
                                           }),
                                           n.jsx("span", {
                                             children: "Partial Settle"
@@ -49395,17 +49395,17 @@ Details: ${o.inner}`);
                                       return n.jsxs("button", {
                                         type: "button",
                                         onClick: () => we(Ze.id),
-                                        className: Ce("p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all cursor-pointer text-center", He ? o ? "bg-zinc-800 border-2 border-emerald-500 text-white shadow-md ring-1 ring-emerald-500/50" : "bg-white border-2 border-emerald-600 text-emerald-950 shadow-[0_4px_16px_rgba(16,185,129,0.15)] ring-1 ring-emerald-600/30" : o ? "bg-zinc-800/60 border-zinc-700/60 hover:bg-zinc-800 text-zinc-400 hover:text-white" : "bg-white/80 border border-[#D5E2EC] hover:bg-white text-slate-600 hover:text-slate-900 shadow-2xs"),
+                                        className: Ce("p-2.5 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all cursor-pointer text-center", He ? "bg-slate-900 text-white border-slate-900 shadow-md ring-1 ring-slate-900 dark:bg-white dark:text-slate-900 dark:border-white" : "bg-white dark:bg-zinc-800/80 border border-slate-200/90 dark:border-zinc-700 hover:bg-slate-50 text-slate-700 dark:text-zinc-300 shadow-2xs"),
                                         children: [
                                           n.jsx(st, {
-                                            className: Ce("w-4 h-4", He ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400")
+                                            className: Ce("w-4 h-4", He ? "text-white dark:text-slate-900" : "text-slate-500")
                                           }),
                                           n.jsx("span", {
                                             className: "text-xs font-bold leading-none",
                                             children: Ze.label
                                           }),
                                           n.jsx("span", {
-                                            className: "text-[9px] opacity-70 leading-none",
+                                            className: Ce("text-[9px] leading-none", He ? "text-white/80 dark:text-slate-700" : "text-slate-500"),
                                             children: Ze.desc
                                           })
                                         ]
@@ -50015,13 +50015,13 @@ Details: ${o.inner}`);
       tableHeader: "bg-zinc-900/90 text-zinc-400 border-b border-zinc-800",
       tableRow: "hover:bg-zinc-900/50 border-b border-zinc-800/60"
     } : {
-      panel: "bg-[radial-gradient(ellipse_at_top,_#EAF2F9_0%,_#DCE7F2_50%,_#CEDCE8_100%)] text-slate-900",
-      header: "border-b border-slate-200/60 bg-transparent backdrop-blur-md",
-      card: "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF] rounded-2xl",
+      panel: "bg-[#CBD5E1] dark:bg-zinc-950 text-slate-900",
+      header: "border-b border-slate-300/80 bg-white/80 backdrop-blur-md",
+      card: "bg-white border border-[#CBD5E1] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.09),0_4px_10px_-2px_rgba(0,0,0,0.04)] rounded-2xl",
       pod: "rounded-xl border border-[#CCDCE8] bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] shadow-[inset_0_1px_3px_rgba(15,35,60,0.06),0_1px_0_rgba(255,255,255,0.7)]",
-      input: "bg-white/90 border border-[#D5E2EC] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04)] text-slate-900 placeholder-slate-400 rounded-xl",
-      tableHeader: "bg-white/80 text-slate-600 border-b border-slate-200/80 font-bold",
-      tableRow: "hover:bg-white/60 border-b border-slate-200/50 transition-colors"
+      input: "bg-white border border-[#CBD5E1] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04)] text-slate-900 placeholder-slate-400 rounded-xl",
+      tableHeader: "bg-slate-100/90 text-slate-700 border-b border-slate-200 font-bold",
+      tableRow: "hover:bg-slate-50 border-b border-slate-200/70 transition-colors"
     };
     return n.jsxs("div", {
       className: Ce("flex flex-col h-full overflow-hidden w-full", ae.panel),
@@ -50859,13 +50859,13 @@ Details: ${o.inner}`);
       tableHeader: "bg-zinc-900/90 text-zinc-400 border-b border-zinc-800",
       tableRow: "hover:bg-zinc-900/50 border-b border-zinc-800/60"
     } : {
-      panel: "bg-[radial-gradient(ellipse_at_top,_#EAF2F9_0%,_#DCE7F2_50%,_#CEDCE8_100%)] text-slate-900",
-      header: "border-b border-slate-200/60 bg-transparent backdrop-blur-md",
-      card: "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF] rounded-2xl",
+      panel: "bg-[#CBD5E1] dark:bg-zinc-950 text-slate-900",
+      header: "border-b border-slate-300/80 bg-white/80 backdrop-blur-md",
+      card: "bg-white border border-[#CBD5E1] shadow-[0_10px_25px_-5px_rgba(0,0,0,0.09),0_4px_10px_-2px_rgba(0,0,0,0.04)] rounded-2xl",
       pod: "rounded-xl border border-[#CCDCE8] bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] shadow-[inset_0_1px_3px_rgba(15,35,60,0.06),0_1px_0_rgba(255,255,255,0.7)]",
-      input: "bg-white/90 border border-[#D5E2EC] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04)] text-slate-900 placeholder-slate-400 rounded-xl",
-      tableHeader: "bg-white/80 text-slate-600 border-b border-slate-200/80 font-bold",
-      tableRow: "hover:bg-white/60 border-b border-slate-200/50 transition-colors"
+      input: "bg-white border border-[#CBD5E1] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04)] text-slate-900 placeholder-slate-400 rounded-xl",
+      tableHeader: "bg-slate-100/90 text-slate-700 border-b border-slate-200 font-bold",
+      tableRow: "hover:bg-slate-50 border-b border-slate-200/70 transition-colors"
     };
     return n.jsxs("div", {
       className: Ce("flex flex-col h-full overflow-hidden w-full", Q.panel),
