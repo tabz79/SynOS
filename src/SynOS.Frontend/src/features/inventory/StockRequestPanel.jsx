@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Search, Package, AlertTriangle, Check, Loader2, ListFilter, ArrowRight, Star, ShieldAlert, Sparkles } from 'lucide-react';
+import { X, Search, Package, AlertTriangle, Check, Loader2, ListFilter, ArrowRight, ArrowLeft, Star, ShieldAlert, Sparkles } from 'lucide-react';
 import { InventoryApi } from '@/api/inventory';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
@@ -8,7 +8,7 @@ import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useTheme } from '@/context/ThemeContext';
 import { getCompatibleUnits, calculateBaseQuantity, getDefaultConsumptionUnit } from '@/utils/unitConversion';
 
-export function StockRequestPanel({ isOpen, onClose, screenName }) {
+export function StockRequestPanel({ isOpen, onClose, screenName, onBack = null }) {
     const { user } = useAuth();
     const { theme } = useTheme();
     const isDark = theme === 'dark';
@@ -154,6 +154,17 @@ export function StockRequestPanel({ isOpen, onClose, screenName }) {
             {/* Header */}
             <div className={cn("h-16 flex items-center justify-between px-6 shrink-0", ui.header)}>
                 <div className="flex items-center gap-3">
+                    {onBack && (
+                        <button
+                            type="button"
+                            onClick={onBack}
+                            className="p-1.5 rounded-xl hover:bg-slate-200/60 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-200 flex items-center gap-1.5 text-xs font-bold transition-all cursor-pointer active:scale-95 border border-slate-300/60 dark:border-zinc-700/60 bg-white/70 dark:bg-zinc-900/70 mr-1"
+                            title="Back to Options Menu"
+                        >
+                            <ArrowLeft className="w-3.5 h-3.5 text-synos-primary" />
+                            <span>Options</span>
+                        </button>
+                    )}
                     <div className="rounded-lg bg-emerald-500/10 p-2 text-emerald-500">
                         <Package className="h-5 w-5" />
                     </div>

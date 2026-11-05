@@ -16,6 +16,7 @@ import {
     Receipt, 
     BarChart3, 
     ArrowRight,
+    ArrowLeft,
     Check,
     AlertCircle,
     Info,
@@ -49,7 +50,7 @@ const CONCESSION_REASONS = [
     "Special Compassionate Allowance"
 ];
 
-export function ReceptionB2BReceivablesDrawer({ isOpen, onClose }) {
+export function ReceptionB2BReceivablesDrawer({ isOpen, onClose, embedded = false, onBack = null }) {
     const { user } = useAuth();
     const { theme } = useTheme();
     const isDark = theme === 'dark';
@@ -448,12 +449,11 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose }) {
 
     if (!isOpen) return null;
 
-    return (
-        <div className="fixed inset-0 z-50 flex justify-end p-2 sm:p-3 md:p-4 bg-black/60 backdrop-blur-xs transition-opacity duration-300 animate-in fade-in">
+    const innerContent = (
             <div 
                 className={cn(
-                    "h-full flex flex-col overflow-hidden rounded-[24px] sm:rounded-[28px] border border-white/80 dark:border-white/10 shadow-2xl transition-all duration-300 ease-in-out z-30",
-                    "w-[96vw] sm:w-[94vw] md:w-[92vw] lg:w-[88vw] xl:w-[85vw] 2xl:w-[85vw] max-w-[1780px]",
+                    "h-full flex flex-col overflow-hidden rounded-[24px] transition-all duration-300 ease-in-out z-30",
+                    embedded ? "w-full border-none shadow-none" : "w-[96vw] sm:w-[94vw] md:w-[92vw] lg:w-[88vw] xl:w-[85vw] 2xl:w-[85vw] max-w-[1780px] border border-white/80 dark:border-white/10 shadow-2xl",
                     ui.panel
                 )}
             >
@@ -461,6 +461,17 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose }) {
                 <div className={cn("px-6 sm:px-8 py-3 shrink-0 border-b flex flex-col gap-2.5", ui.header)}>
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 sm:gap-3">
+                            {onBack && (
+                                <button
+                                    type="button"
+                                    onClick={onBack}
+                                    className="p-1.5 rounded-xl hover:bg-slate-200/60 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-200 flex items-center gap-1.5 text-xs font-bold transition-all cursor-pointer active:scale-95 border border-slate-300/60 dark:border-zinc-700/60 bg-white/70 dark:bg-zinc-900/70 mr-1"
+                                    title="Back to Options Menu"
+                                >
+                                    <ArrowLeft className="w-3.5 h-3.5 text-synos-primary" />
+                                    <span>Options</span>
+                                </button>
+                            )}
                             <h2 className={cn("text-base sm:text-lg lg:text-xl font-bold tracking-normal flex items-baseline gap-2", ui.title)}>
                                 Accounts Receivable Terminal
                                 <span className="text-[11px] sm:text-xs font-mono font-bold text-slate-500 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800/80 px-2 py-0.5 rounded-full border border-slate-200/60 dark:border-zinc-700/60">
@@ -1449,6 +1460,15 @@ export function ReceptionB2BReceivablesDrawer({ isOpen, onClose }) {
                     </div>
                 )}
             </div>
+    );
+
+    if (embedded) {
+        return innerContent;
+    }
+
+    return (
+        <div className="fixed inset-0 z-50 flex justify-end p-2 sm:p-3 md:p-4 bg-black/60 backdrop-blur-xs transition-opacity duration-300 animate-in fade-in">
+            {innerContent}
         </div>
     );
 }

@@ -180,6 +180,26 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
             </div>
           </div>
         )}
+
+        {location.pathname.startsWith('/my-hr') && (
+          <div className="flex items-center gap-1.5 sm:gap-2.5">
+            <div className="h-4 w-px bg-zinc-300 dark:bg-zinc-700 hidden sm:block shrink-0" />
+            
+            <button 
+              onClick={() => navigate('/reception')}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95 group border",
+                theme === 'dark' 
+                  ? "bg-zinc-900 text-zinc-200 border-zinc-700/80 hover:bg-zinc-800 hover:text-white" 
+                  : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:text-synos-primary shadow-slate-200/50"
+              )}
+              title="Return to Reception Desk"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform shrink-0 text-synos-primary" />
+              <span>Return to Reception</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Flexible Spacer */}

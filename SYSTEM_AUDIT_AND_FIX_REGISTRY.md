@@ -477,6 +477,105 @@
    * Restored the clean clinical display:
      `₹4,500 [PREPAID]` with subtext `Dr Test Partner 3`.
 
+---
+
+## 17. Multi-Desk Draft Seepage Across Receptionists in Action Queue & Activity Stream — [AUDITED & SPECIFIED]
+### Severity: High / Desk Concurrency & Data Isolation Violation
+### Impacted Modules & Files
+* **SignalR Notification Dispatcher:** [`SignalRNotifier.cs:44-67`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Services/SignalRNotifier.cs#L44-L67)
+* **Frontend Realtime Delta Ingestion:** [`ReceptionScreen.jsx:109-140`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/ReceptionScreen.jsx#L109-L140)
+* **Action Queue Projection Query:** [`OperationsEngine.cs:170-195`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/Operations/OperationsEngine.cs#L170-L195)
+* **Operational Event Emission:** [`ReceptionFlowService.cs:218-230`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/ReceptionFlowService.cs#L218-L230) & [`OperationalEventWriter.cs:50-95`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/Operational/OperationalEventWriter.cs#L50-L95)
+
+### Incident Evidence (Multi-Workstation Test)
+* **Workstation 1 (Mac Mini):** Logged in as Admin (`Dr. Vasudeva Rao`).
+  - Opened Registration modal, initiated intake for `Test Patient7`.
+  - System created draft token `D-9B7FAE5F24` (Status: `Draft`, Amount: ₹0).
+* **Workstation 2 (Laptop):** Logged in as Receptionist (`Uzma`).
+  - Action Queue immediately displayed the unfinalized draft `D-9B7FAE5F24` with patient `Test Patient7` and badge `₹0 DRAFT | • Draft Visit`.
+  - Live Stream activity ticker on Uzma's screen broadcast:
+    `D-9B7FAE5F24 Test Patient7 just now Visit started for Test Patient7`
+    `D-7C4E8AC947 Test Patient7 just now Visit Cancelled: Patient unable to wait / Long queue. Refund: ₹0.`
+
+### Forensic Root Cause Analysis: The 4 Vectors of Seepage
+
+1. **SignalR Broadcast Scope Overreach (`SignalRNotifier.cs:64`):**
+   ```csharp
+   // Step 1 correctly targeted the private receptionist user:
+   if (delta.AssignedToUserId.HasValue && delta.AssignedToUserId.Value != Guid.Empty)
+       await _hubContext.Clients.User(delta.AssignedToUserId.Value.ToString()).SendAsync("ActionQueueDeltaReceived", delta);
+
+   // Step 2 & 4 unconditionally broadcast EVERY delta to the whole branch!
+   await _hubContext.Clients.Group($"BranchAdmins-{branchId}").SendAsync("ActionQueueDeltaReceived", delta);
+   await _hubContext.Clients.Group($"Branch-{branchId}").SendAsync("ActionQueueDeltaReceived", delta);
+   ```
+   * **Root Cause:** When `NotifyActionQueueDeltaAsync` is triggered for a draft visit (`Status == Draft`, `Token.StartsWith("D-")`), it does not check if the visit is a draft before calling `Clients.Group($"Branch-{branchId}")`. Every connected client in the branch receives the draft delta payload.
+
+2. **Frontend Delta Ingestion Blind Spot (`ReceptionScreen.jsx:109-140`):**
+   ```javascript
+   SignalRService.onActionQueueDeltaReceived((deltaRow) => {
+       if (!deltaRow) return;
+       const normalized = normalizeQueueData([deltaRow])[0];
+       setActionQueue(prev => {
+           const exists = prev.some(r => r.visitId === normalized.visitId);
+           const isActionable = !normalized.isFinalized || normalized.dateGroup === "Today";
+           if (exists) {
+               return prev.map(r => r.visitId === normalized.visitId ? normalized : r);
+           } else {
+               if (isActionable || showHistoryRef.current) {
+                   return [normalized, ...prev]; // PREPENDS TO UZMA'S QUEUE!
+               }
+               return prev;
+           }
+       });
+   });
+   ```
+   * **Root Cause:** `isActionable` evaluates `!normalized.isFinalized` as `true` for all drafts. The frontend listener contains zero validation for:
+     - Is this visit a draft? (`normalized.token?.startsWith('D-')`)
+     - If it is a draft, does `normalized.assignedToUserId` match `currentUser.id`?
+     Because of this blind spot, Uzma's browser blindly prepends Dr. Vasudeva Rao's draft into her active queue table.
+
+3. **Premature Activity Stream Event Emission (`ReceptionFlowService.cs:220`):**
+   * Emitting `BranchEventType.VISIT_STARTED` upon the creation of an ephemeral draft writes to `dbo.BranchOperationalEvents` and publishes immediately to the branch live stream.
+   * In a clinical setting, an unconfirmed draft is not an operational event. Blasting it across the live stream creates noise and confusion when drafts are cancelled, modified, or abandoned.
+
+4. **Shared Queue Query Filter Gaps (`OperationsEngine.cs:170-195`):**
+   * `GetActionQueueAsync` queries `v.Status != VisitStatus.Cancelled`, which includes `VisitStatus.Draft`.
+   * While it includes `if (_userContext.CurrentRole == "Receptionist") visitQuery = visitQuery.Where(v => v.AssignedReceptionistId == currentUserId);`, users with supervisor, cashier, admin, or non-receptionist roles see all drafts across all desks on initial fetch or refresh.
+
+### Why the Current Pattern is Fragile
+* **Violation of Workstation Isolation:** In hospital ERPs (Epic Hyperspace, Cerner Millennium), unfinalized drafts are **desk-local transactional workspaces**. They represent keystrokes in flight, not committed branch orders.
+* **Risk of Double-Billing & Concurrent Collisions:** If Receptionist B sees Receptionist A's draft in their queue and clicks it, both receptionists may attempt to allocate lab tokens, edit tests, or collect payments simultaneously, corrupting the billing state.
+
+### Enterprise-Grade Fix Specification (For Implementation Agent)
+
+1. **Backend SignalR Scope Guard (`SignalRNotifier.cs`):**
+   * If `delta.Token.StartsWith("D-")` or `!delta.IsFinalized` or `delta.OperationalStatus == "Draft"`:
+     - ONLY notify `_hubContext.Clients.User(delta.AssignedToUserId.Value.ToString())`.
+     - DO NOT broadcast to `Branch-{branchId}` or `BranchAdmins-{branchId}`.
+     - Only broadcast to `Branch-{branchId}` after `delta.IsFinalized == true` (confirmed visit with official `MAI-xxx` token).
+
+2. **Frontend Reception Desk Isolation (`ReceptionScreen.jsx`):**
+   * In `onActionQueueDeltaReceived`:
+     ```javascript
+     const isDraft = normalized.token?.startsWith('D-') || normalized.operationalStatus === 'Draft';
+     if (isDraft && normalized.assignedToUserId && currentUser?.id && normalized.assignedToUserId !== currentUser.id) {
+         // Discard foreign drafts initiated by other desks/users
+         return prev;
+     }
+     ```
+
+3. **Backend Action Queue Scope (`OperationsEngine.cs`):**
+   * In `GetActionQueueAsync`, filter out foreign drafts:
+     ```csharp
+     // Exclude drafts unless owned by the requesting user
+     visitQuery = visitQuery.Where(v => v.Status != VisitStatus.Draft || v.AssignedReceptionistId == currentUserId);
+     ```
+
+4. **Operational Event Stream Guard (`ReceptionFlowService.cs`):**
+   * Suppress public `BranchEventType.VISIT_STARTED` broadcast until the visit is finalized (`FinalizeVisit` / checkout). For draft starts, log internally or tag with `Visibility = "PrivateDesk"`.
+
+
 
 
 

@@ -550,40 +550,20 @@ export function ReceptionScreen() {
                     <IntentPanel onVisitUpdated={refreshDashboard} />
                     <ReceptionOptionsPanel
                         isOpen={isOptionsPanelOpen}
-                        onClose={() => setIsOptionsPanelOpen(false)}
-                        onOpenB2BReceivables={() => {
+                        onClose={() => {
                             setIsOptionsPanelOpen(false);
-                            setIsB2BReceivablesOpen(true);
-                        }}
-                        onOpenExpenseDrawer={() => {
-                            setIsOptionsPanelOpen(false);
-                            setIsExpenseDrawerOpen(true);
+                            refreshDashboard();
                         }}
                         onOpenPatientDirectory={() => {
                             setIsOptionsPanelOpen(false);
                             navigate('/admin/patients');
                         }}
-                        onOpenStockRequest={() => {
-                            setIsOptionsPanelOpen(false);
-                            setIsInventoryModalOpen(true);
-                        }}
                         onOpenMyHr={() => {
                             setIsOptionsPanelOpen(false);
                             navigate('/my-hr');
                         }}
-                        onOpenAttendance={() => {
-                            setIsOptionsPanelOpen(false);
-                            navigate('/my-hr/attendance');
-                        }}
-                        onOpenLeave={() => {
-                            setIsOptionsPanelOpen(false);
-                            navigate('/my-hr/leave');
-                        }}
-                        onOpenRequests={() => {
-                            setIsOptionsPanelOpen(false);
-                            navigate('/my-hr/requests');
-                        }}
                         pendingB2BCount={todayB2BPendingCount}
+                        onDataUpdated={refreshDashboard}
                     />
                     <StockRequestPanel
                         isOpen={isInventoryModalOpen}

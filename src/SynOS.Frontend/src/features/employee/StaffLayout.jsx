@@ -40,7 +40,16 @@ export function StaffLayout() {
           className="hidden md:flex w-64 flex-col border-r border-zinc-200 dark:border-zinc-800/80 bg-gradient-to-b from-white/98 to-zinc-50/95 dark:bg-zinc-950 p-4 justify-between"
         >
           <div>
-            <div className="mb-6 px-2 pb-4 border-b border-zinc-200/80 dark:border-zinc-800/60">
+            <div className="mb-4 px-1 pb-3 border-b border-zinc-200/80 dark:border-zinc-800/60">
+              <button
+                type="button"
+                onClick={() => navigate('/reception')}
+                className="mb-3 w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold bg-synos-primary/10 text-synos-primary hover:bg-synos-primary/20 transition-all border border-synos-primary/20 shadow-xs cursor-pointer active:scale-95 group"
+                title="Return to Reception Desk"
+              >
+                <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform shrink-0" />
+                <span>Return to Reception Desk</span>
+              </button>
               <h2 className="text-base font-extrabold tracking-tight text-zinc-900 dark:text-white uppercase">My HR Portal</h2>
               <p className="text-xs font-medium text-zinc-500 mt-0.5">Personal Workforce Space</p>
             </div>
@@ -84,11 +93,12 @@ export function StaffLayout() {
           {/* Mobile Back Button */}
           <div className="md:hidden mb-4">
             <button 
-              onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-zinc-500 text-xs font-bold py-2"
+              type="button"
+              onClick={() => navigate('/reception')}
+              className="flex items-center gap-2 text-synos-primary text-xs font-bold py-2 active:scale-95 transition-transform"
             >
               <ArrowLeft className="w-4 h-4" />
-              Back
+              Return to Reception
             </button>
           </div>
 
