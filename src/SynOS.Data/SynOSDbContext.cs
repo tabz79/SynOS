@@ -213,6 +213,7 @@ namespace SynOS.Data
         public DbSet<Specimen> Specimens { get; set; } = null!; // Replaces Samples
         public DbSet<Invoice> Invoices { get; set; } = null!;
         public DbSet<Payment> Payments { get; set; } = null!;
+        public DbSet<SynOS.Models.Entities.Payments.CashierShiftClosing> CashierShiftClosings { get; set; } = null!;
         public DbSet<PartialPayment> PartialPayments { get; set; } = null!;
         public DbSet<VisitCancellation> VisitCancellations { get; set; } = null!;
         public DbSet<CreditNote> CreditNotes { get; set; } = null!;

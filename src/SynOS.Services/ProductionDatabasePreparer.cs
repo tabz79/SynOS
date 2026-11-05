@@ -253,7 +253,7 @@ namespace SynOS.Services
                 name == "LeaveRequest" ||
                 name == "Patient" || name == "PatientPhoneHistory" || name == "PatientAlias" || name == "PatientReferrerLink" ||
                 name == "Appointment" || name == "VisitDayGroup" || name == "Visit" || name == "VisitCancellation" ||
-                name == "Order" || name == "Specimen" || name == "Invoice" || name == "Payment" || name == "PartialPayment" || name == "CreditNote" ||
+                name == "Order" || name == "Specimen" || name == "Invoice" || name == "Payment" || name == "PartialPayment" || name == "CreditNote" || name == "CashierShiftClosing" ||
                 name == "Result" || name == "ResultFlag" || name == "ResultLink" || name == "ResultChangeAudit" || name == "DeltaCheckEvent" || name == "AutosaveBuffer" ||
                 name.StartsWith("Radiology") || name == "PathologyReport" ||
                 name == "Report" || name == "ReportVersion" || name == "ReportSnapshot" || name == "ReportSignature" || name == "ReportAttachment" || name == "ReportInterpretation" ||

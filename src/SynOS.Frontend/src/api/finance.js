@@ -221,6 +221,38 @@ export const FinanceApi = {
     },
 
     /**
+     * Fetches current cashier shift summary (pre-filled activity across Direct, B2B, Insurance, Inflows, Outflows).
+     */
+    getMyShiftClosingSummary: async (date) => {
+        const qs = date ? `?date=${encodeURIComponent(date)}` : '';
+        const url = FinanceApi.withBranchId(`/api/v1/finance/bills/cash-drawer/my-shift-closing${qs}`);
+        const response = await fetch(url, {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load shift closing summary");
+        return response.json();
+    },
+
+    /**
+     * Submits shift closing with physical denomination breakdown and records variance.
+     */
+    submitShiftClosing: async (payload) => {
+        const response = await fetch(FinanceApi.withBranchId('/api/v1/finance/bills/cash-drawer/submit-shift-closing'), {
+            method: 'POST',
+            headers: {
+                ...FinanceApi.getHeaders(),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.message || "Failed to submit shift closing");
+        }
+        return response.json();
+    },
+
+    /**
      * Fetches detailed data for an A4 Patient Tax Invoice / Bill.
      */
     getInvoiceDocument: async (invoiceId) => {

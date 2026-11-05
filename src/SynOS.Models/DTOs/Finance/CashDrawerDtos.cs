@@ -27,4 +27,36 @@ namespace SynOS.Models.DTOs.Finance
         public string PaymentMethod { get; set; } = "Cash";
         public string? Notes { get; set; }
     }
+
+    public class ShiftDenominationsDto
+    {
+        public int Count500 { get; set; }
+        public int Count200 { get; set; }
+        public int Count100 { get; set; }
+        public int Count50 { get; set; }
+        public int Count20 { get; set; }
+        public int Count10 { get; set; }
+        public decimal Coins { get; set; }
+
+        public decimal CalculateTotal()
+        {
+            return (Count500 * 500m) +
+                   (Count200 * 200m) +
+                   (Count100 * 100m) +
+                   (Count50 * 50m) +
+                   (Count20 * 20m) +
+                   (Count10 * 10m) +
+                   Coins;
+        }
+    }
+
+    public class SubmitShiftClosingRequestDto
+    {
+        public decimal OpeningFloat { get; set; } = 0.00m;
+        public decimal PhysicalCountedCash { get; set; }
+        public ShiftDenominationsDto? Denominations { get; set; }
+        public string? HandoverNotes { get; set; }
+        public Guid? SupervisorUserId { get; set; }
+        public string? ShiftName { get; set; } = "Day";
+    }
 }

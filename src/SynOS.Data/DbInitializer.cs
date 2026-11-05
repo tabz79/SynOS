@@ -127,6 +127,29 @@ BEGIN
     ALTER TABLE [Payments] ADD [ChangeReturned] decimal(12, 2) NULL;
 END
 
+-- 4a. Add CashierShiftClosings table if not exists
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'CashierShiftClosings')
+BEGIN
+    CREATE TABLE [CashierShiftClosings] (
+        [ShiftClosingId] uniqueidentifier NOT NULL PRIMARY KEY,
+        [BranchId] uniqueidentifier NOT NULL,
+        [UserId] uniqueidentifier NOT NULL,
+        [ShiftDate] date NOT NULL,
+        [ShiftName] nvarchar(50) NOT NULL DEFAULT 'Day',
+        [OpeningFloat] decimal(12, 2) NOT NULL DEFAULT 0.00,
+        [SystemExpectedCash] decimal(12, 2) NOT NULL DEFAULT 0.00,
+        [PhysicalCountedCash] decimal(12, 2) NOT NULL DEFAULT 0.00,
+        [Variance] decimal(12, 2) NOT NULL DEFAULT 0.00,
+        [DenominationsJson] nvarchar(max) NULL,
+        [ActivitySummaryJson] nvarchar(max) NULL,
+        [Status] nvarchar(50) NOT NULL DEFAULT 'Submitted',
+        [HandoverNotes] nvarchar(max) NULL,
+        [SubmittedAt] datetimeoffset NOT NULL,
+        [VerifiedByUserId] uniqueidentifier NULL,
+        [VerifiedAt] datetimeoffset NULL
+    );
+END
+
 -- 4. Add columns to DiscountMasters if they don't exist
 IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('DiscountMasters') AND name = 'Code')
 BEGIN

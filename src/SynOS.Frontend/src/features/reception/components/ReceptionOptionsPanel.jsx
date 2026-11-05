@@ -19,7 +19,9 @@ import {
     CalendarDays,
     Loader2,
     RotateCcw,
-    Wallet
+    Wallet,
+    Sunset,
+    ArrowRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/context/ThemeContext';
@@ -33,6 +35,7 @@ import { ReceptionB2BReceivablesDrawer } from './ReceptionB2BReceivablesDrawer';
 import { StockRequestPanel } from '@/features/inventory/StockRequestPanel';
 import { ReceptionRefundTerminal } from './ReceptionRefundTerminal';
 import { ReceptionCashDrawerLedger } from './ReceptionCashDrawerLedger';
+import { ReceptionShiftClosingDrawer } from './ReceptionShiftClosingDrawer';
 
 export function ReceptionOptionsPanel({
     isOpen,
@@ -101,6 +104,8 @@ export function ReceptionOptionsPanel({
     if (activeView === 'expense') {
         viewWidthClasses = "w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[86vw] xl:w-[85vw] 2xl:w-[85vw] max-w-[1780px]";
     } else if (activeView === 'b2b') {
+        viewWidthClasses = "w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[86vw] xl:w-[85vw] 2xl:w-[85vw] max-w-[1780px]";
+    } else if (activeView === 'end-shift') {
         viewWidthClasses = "w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[86vw] xl:w-[85vw] 2xl:w-[85vw] max-w-[1780px]";
     } else if (activeView === 'ledger') {
         viewWidthClasses = "w-[96vw] sm:w-[94vw] md:w-[88vw] lg:w-[85vw] xl:w-[80vw] 2xl:w-[75vw] max-w-[1450px]";
@@ -266,6 +271,20 @@ export function ReceptionOptionsPanel({
             {/* VIEW 2C: REFUNDS & CLAIMS TERMINAL EMBEDDED */}
             {activeView === 'refunds' && (
                 <ReceptionRefundTerminal
+                    isOpen={true}
+                    embedded={true}
+                    onClose={onClose}
+                    onBack={() => {
+                        setActiveView('menu');
+                        onDataUpdated?.();
+                    }}
+                    onDataUpdated={onDataUpdated}
+                />
+            )}
+
+            {/* VIEW 2D: END SHIFT CLOSING DRAWER EMBEDDED */}
+            {activeView === 'end-shift' && (
+                <ReceptionShiftClosingDrawer
                     isOpen={true}
                     embedded={true}
                     onClose={onClose}
@@ -547,9 +566,15 @@ export function ReceptionOptionsPanel({
 
                     {/* Footer */}
                     <div className={cn("px-5 py-3 border-t flex items-center justify-between shrink-0", ui.footer)}>
-                        <span className="text-[10.5px] text-slate-500 dark:text-zinc-400 font-medium">
-                            Press <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-zinc-800 text-[10px] font-mono font-bold">Esc</kbd> to close
-                        </span>
+                        <button
+                            type="button"
+                            onClick={() => setActiveView('end-shift')}
+                            className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl font-bold text-xs bg-gradient-to-r from-amber-500/15 via-orange-500/15 to-emerald-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 hover:border-amber-500/60 shadow-xs hover:shadow-sm transition-all cursor-pointer group active:scale-95"
+                        >
+                            <Sunset className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform" />
+                            <span>End Shift & Handover Cash</span>
+                            <ArrowRight className="w-3.5 h-3.5 opacity-70 group-hover:translate-x-0.5 transition-transform" />
+                        </button>
                         <button
                             type="button"
                             onClick={onClose}

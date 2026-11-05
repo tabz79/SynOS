@@ -1667,6 +1667,319 @@ namespace SynOS.Api.Controllers
             });
         }
 
+        /// <summary>
+        /// GET /api/v1/finance/bills/cash-drawer/my-shift-closing
+        /// Returns a pre-filled, comprehensive cashier shift closing summary covering billing activity, inflows, outflows, and drawer reconciliation.
+        /// </summary>
+        [HttpGet("cash-drawer/my-shift-closing")]
+        [Authorize]
+        public async Task<IActionResult> GetMyShiftClosingSummary([FromQuery] DateOnly? date)
+        {
+            var rawUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                         ?? User.FindFirst("sub")?.Value;
+            if (string.IsNullOrEmpty(rawUserId) || !Guid.TryParse(rawUserId, out var currentUserId))
+            {
+                return Unauthorized(new { message = "User identity claim not found or invalid." });
+            }
+
+            var todayLab = _labTimeProvider.GetLabNow();
+            var targetDate = date.HasValue ? date.Value.ToDateTime(TimeOnly.MinValue) : todayLab.Date;
+            var startUtc = targetDate.Date.ToUniversalTime();
+            var endUtc = startUtc.AddDays(1);
+
+            var userRecord = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == currentUserId);
+            var userName = userRecord?.Name ?? "Reception Cashier";
+
+            Guid branchId = Guid.Empty;
+            if (Request.Headers.TryGetValue("X-Branch-Id", out var headerBranch) && Guid.TryParse(headerBranch, out var bId))
+            {
+                branchId = bId;
+            }
+            else
+            {
+                var ubr = await _context.UserBranchRoles.AsNoTracking().FirstOrDefaultAsync(ub => ub.UserId == currentUserId);
+                branchId = ubr?.BranchId ?? Guid.Empty;
+            }
+
+            // 1. Check existing submission
+            var existingSubmission = await _context.CashierShiftClosings
+                .Where(s => s.UserId == currentUserId && s.ShiftDate.Date == targetDate.Date)
+                .OrderByDescending(s => s.SubmittedAt)
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
+
+            // 2. Cashier payments today
+            var cashierPayments = await _context.Payments
+                .Include(p => p.Invoice)
+                    .ThenInclude(i => i.Visit)
+                        .ThenInclude(v => v.Patient)
+                .Include(p => p.Invoice)
+                    .ThenInclude(i => i.Visit)
+                        .ThenInclude(v => v.ReferralPartner)
+                .Where(p => p.ReceivedByUserId == currentUserId
+                         && p.ReceivedAt >= startUtc && p.ReceivedAt < endUtc)
+                .AsNoTracking()
+                .ToListAsync();
+
+            // 3. Visits handled/created by cashier today
+            var visitsToday = await _context.Visits
+                .Include(v => v.Invoices)
+                    .ThenInclude(i => i.Payments)
+                .Include(v => v.ReferralPartner)
+                .Include(v => v.Patient)
+                .Where(v => (v.CreatedByUserId == currentUserId || v.Invoices.Any(i => i.Payments.Any(p => p.ReceivedByUserId == currentUserId)))
+                         && v.Status != VisitStatus.Cancelled
+                         && v.Status != VisitStatus.Draft
+                         && (v.TokenDate.Date == targetDate.Date || (v.CreatedAt >= startUtc && v.CreatedAt < endUtc)))
+                .AsNoTracking()
+                .ToListAsync();
+
+            // Standard / Retail Walk-in Visits
+            var standardVisits = visitsToday.Where(v => v.PaymentCollectionModel != "PartnerCollects" 
+                                                     && v.BillingType != BillingType.PrepaidPartner 
+                                                     && v.BillingType != BillingType.Insurance).ToList();
+            var standardGross = standardVisits.Sum(v => v.Invoices?.FirstOrDefault()?.GrossAmount ?? 0m);
+            var standardDiscount = standardVisits.Sum(v => v.Invoices?.FirstOrDefault()?.DiscountAmount ?? 0m);
+            var standardNet = standardVisits.Sum(v => v.Invoices?.FirstOrDefault()?.Total ?? 0m);
+            var standardDue = standardVisits.Sum(v => {
+                var inv = v.Invoices?.FirstOrDefault();
+                if (inv == null) return 0m;
+                var paid = inv.Payments?.Sum(p => p.Amount) ?? 0m;
+                return Math.Max(0m, inv.Total - paid);
+            });
+
+            var standardCashPayments = cashierPayments.Where(p => p.Method.ToLower().Contains("cash") 
+                                                               && p.Amount > 0 
+                                                               && !p.ReceiptNo.StartsWith("REC-B2B")).ToList();
+            var standardCashCollected = standardCashPayments.Sum(p => p.Amount);
+
+            var standardUpiPayments = cashierPayments.Where(p => (p.Method.ToLower().Contains("upi") || p.Method.ToLower().Contains("online") || p.Method.ToLower().Contains("qr")) 
+                                                              && p.Amount > 0).ToList();
+            var standardUpiCollected = standardUpiPayments.Sum(p => p.Amount);
+
+            var standardCardPayments = cashierPayments.Where(p => (p.Method.ToLower().Contains("card") || p.Method.ToLower().Contains("bank")) 
+                                                               && p.Amount > 0).ToList();
+            var standardCardCollected = standardCardPayments.Sum(p => p.Amount);
+
+            // Corporate B2B (Prepaid Partner)
+            var b2bVisits = visitsToday.Where(v => v.PaymentCollectionModel == "PartnerCollects" || v.BillingType == BillingType.PrepaidPartner).ToList();
+            var b2bGross = b2bVisits.Sum(v => v.Invoices?.FirstOrDefault()?.GrossAmount ?? 0m);
+            var b2bPartnerBilled = b2bVisits.Sum(v => v.Invoices?.FirstOrDefault()?.Total ?? 0m);
+
+            // Insurance / TPA
+            var insuranceVisits = visitsToday.Where(v => v.BillingType == BillingType.Insurance).ToList();
+            var insuranceClaims = insuranceVisits.Count;
+            var insurancePreAuthGross = insuranceVisits.Sum(v => v.Invoices?.FirstOrDefault()?.Total ?? 0m);
+            var insuranceCoPayCash = cashierPayments.Where(p => p.Invoice != null && p.Invoice.Visit != null && p.Invoice.Visit.BillingType == BillingType.Insurance && p.Method.ToLower().Contains("cash")).Sum(p => p.Amount);
+
+            // Mid-Shift Desk Inflows: B2B Debt Recoveries at Desk
+            var b2bCashSettlements = cashierPayments.Where(p => p.Method.ToLower().Contains("cash") && p.ReceiptNo.StartsWith("REC-B2B")).ToList();
+            var b2bCashRecovered = b2bCashSettlements.Sum(p => p.Amount);
+
+            // Mid-Shift Desk Outflows: Daily Expenses & Refunds
+            var userExpenses = await _context.OverheadPayableFacts
+                .Where(p => p.CreatedBy == currentUserId
+                         && p.CreatedAt >= startUtc && p.CreatedAt < endUtc
+                         && p.Status != SynOS.Models.Enums.Payables.VendorPayableStatus.Cancelled)
+                .AsNoTracking()
+                .ToListAsync();
+            var dailyExpensesCash = userExpenses.Sum(e => e.AmountPaid);
+
+            var userRefunds = cashierPayments.Where(p => p.Amount < 0).ToList();
+            var cashRefundsDisbursed = Math.Abs(userRefunds.Where(p => p.Method.ToLower().Contains("cash")).Sum(p => p.Amount));
+
+            // Drawer Balance Calculations
+            decimal openingFloat = existingSubmission?.OpeningFloat ?? 0.00m;
+            decimal totalCashInflow = standardCashCollected + b2bCashRecovered + insuranceCoPayCash;
+            decimal totalCashOutflow = dailyExpensesCash + cashRefundsDisbursed;
+            decimal systemExpectedCash = Math.Max(0m, openingFloat + totalCashInflow - totalCashOutflow);
+
+            var supervisors = await _context.Users
+                .AsNoTracking()
+                .Where(u => u.IsActive && u.UserId != currentUserId)
+                .OrderBy(u => u.Name)
+                .Select(u => new { u.UserId, u.Name, designation = u.Designation ?? "Staff / Supervisor" })
+                .ToListAsync();
+
+            return Ok(new
+            {
+                userId = currentUserId,
+                userName = userName,
+                shiftDate = targetDate.ToString("yyyy-MM-dd"),
+                supervisors = supervisors,
+                isAlreadySubmitted = existingSubmission != null,
+                existingSubmission = existingSubmission != null ? new
+                {
+                    shiftClosingId = existingSubmission.ShiftClosingId,
+                    shiftDate = existingSubmission.ShiftDate.ToString("yyyy-MM-dd"),
+                    shiftName = existingSubmission.ShiftName,
+                    openingFloat = existingSubmission.OpeningFloat,
+                    systemExpectedCash = existingSubmission.SystemExpectedCash,
+                    physicalCountedCash = existingSubmission.PhysicalCountedCash,
+                    variance = existingSubmission.Variance,
+                    status = existingSubmission.Status,
+                    handoverNotes = existingSubmission.HandoverNotes,
+                    submittedAt = existingSubmission.SubmittedAt,
+                    denominations = !string.IsNullOrEmpty(existingSubmission.DenominationsJson) ? JsonSerializer.Deserialize<object>(existingSubmission.DenominationsJson) : null
+                } : null,
+                retailActivity = new
+                {
+                    billsCount = standardVisits.Count,
+                    grossTariff = standardGross,
+                    discountAmount = standardDiscount,
+                    netBilled = standardNet,
+                    cashCollected = standardCashCollected,
+                    upiCollected = standardUpiCollected,
+                    cardCollected = standardCardCollected,
+                    remainingDue = standardDue
+                },
+                b2bActivity = new
+                {
+                    billsCount = b2bVisits.Count,
+                    grossTariff = b2bGross,
+                    partnerBilled = b2bPartnerBilled,
+                    deskCash = 0.00m
+                },
+                insuranceActivity = new
+                {
+                    claimsCount = insuranceClaims,
+                    preAuthGross = insurancePreAuthGross,
+                    coPayCashCollected = insuranceCoPayCash
+                },
+                inflows = new
+                {
+                    b2bCashRecovered = b2bCashRecovered,
+                    b2bSettlementsCount = b2bCashSettlements.Count,
+                    settlements = b2bCashSettlements.Select(s => new
+                    {
+                        receiptNo = s.ReceiptNo,
+                        partnerName = s.Invoice?.Visit?.ReferralPartner?.Name ?? "Referral Partner",
+                        amount = s.Amount,
+                        time = s.ReceivedAt.ToString("HH:mm")
+                    }).ToList()
+                },
+                outflows = new
+                {
+                    dailyExpensesCash = dailyExpensesCash,
+                    expensesCount = userExpenses.Count,
+                    refundsCash = cashRefundsDisbursed,
+                    refundsCount = userRefunds.Count,
+                    expenses = userExpenses.Select(e => new
+                    {
+                        reference = $"EXP-{e.OverheadPayableId.ToString()[..8].ToUpper()}",
+                        description = e.Description,
+                        category = e.Category,
+                        amount = e.AmountPaid,
+                        time = e.CreatedAt.ToString("HH:mm")
+                    }).ToList()
+                },
+                reconciliation = new
+                {
+                    openingFloat = openingFloat,
+                    patientDeskCash = standardCashCollected + insuranceCoPayCash,
+                    b2bRecoveriesCash = b2bCashRecovered,
+                    totalInflowCash = totalCashInflow,
+                    expensesCash = dailyExpensesCash,
+                    refundsCash = cashRefundsDisbursed,
+                    totalOutflowCash = totalCashOutflow,
+                    systemExpectedCash = systemExpectedCash
+                }
+            });
+        }
+
+        /// <summary>
+        /// POST /api/v1/finance/bills/cash-drawer/submit-shift-closing
+        /// Commits the cashier's shift closing record with physical denomination counts and calculated variance.
+        /// </summary>
+        [HttpPost("cash-drawer/submit-shift-closing")]
+        [Authorize]
+        public async Task<IActionResult> SubmitShiftClosing([FromBody] SubmitShiftClosingRequestDto request)
+        {
+            var rawUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                         ?? User.FindFirst("sub")?.Value;
+            if (string.IsNullOrEmpty(rawUserId) || !Guid.TryParse(rawUserId, out var currentUserId))
+            {
+                return Unauthorized(new { message = "User identity claim not found or invalid." });
+            }
+
+            var targetDate = _labTimeProvider.GetLabNow().Date;
+            var startUtc = targetDate.ToUniversalTime();
+            var endUtc = startUtc.AddDays(1);
+
+            var userRecord = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == currentUserId);
+            Guid branchId = Guid.Empty;
+            if (Request.Headers.TryGetValue("X-Branch-Id", out var headerBranch) && Guid.TryParse(headerBranch, out var bId))
+            {
+                branchId = bId;
+            }
+            else
+            {
+                var ubr = await _context.UserBranchRoles.AsNoTracking().FirstOrDefaultAsync(ub => ub.UserId == currentUserId);
+                branchId = ubr?.BranchId ?? Guid.Empty;
+            }
+
+            // Calculate live system expected cash
+            var cashierPayments = await _context.Payments
+                .Where(p => p.ReceivedByUserId == currentUserId 
+                         && p.ReceivedAt >= startUtc && p.ReceivedAt < endUtc
+                         && p.Method.ToLower().Contains("cash"))
+                .AsNoTracking()
+                .ToListAsync();
+
+            var userExpenses = await _context.OverheadPayableFacts
+                .Where(p => p.CreatedBy == currentUserId
+                         && p.CreatedAt >= startUtc && p.CreatedAt < endUtc
+                         && p.Status != SynOS.Models.Enums.Payables.VendorPayableStatus.Cancelled)
+                .AsNoTracking()
+                .ToListAsync();
+
+            decimal totalInflow = cashierPayments.Where(p => p.Amount > 0).Sum(p => p.Amount);
+            decimal refundsOutflow = Math.Abs(cashierPayments.Where(p => p.Amount < 0).Sum(p => p.Amount));
+            decimal expensesOutflow = userExpenses.Sum(e => e.AmountPaid);
+            decimal totalOutflow = expensesOutflow + refundsOutflow;
+            decimal systemExpected = Math.Max(0m, request.OpeningFloat + totalInflow - totalOutflow);
+
+            decimal physicalCounted = request.Denominations != null ? request.Denominations.CalculateTotal() : request.PhysicalCountedCash;
+            decimal variance = physicalCounted - systemExpected;
+
+            var shiftClosing = new CashierShiftClosing
+            {
+                ShiftClosingId = Guid.NewGuid(),
+                BranchId = branchId,
+                UserId = currentUserId,
+                ShiftDate = targetDate,
+                ShiftName = !string.IsNullOrWhiteSpace(request.ShiftName) ? request.ShiftName : "Day",
+                OpeningFloat = request.OpeningFloat,
+                SystemExpectedCash = systemExpected,
+                PhysicalCountedCash = physicalCounted,
+                Variance = variance,
+                DenominationsJson = request.Denominations != null ? JsonSerializer.Serialize(request.Denominations) : null,
+                Status = Math.Abs(variance) < 0.01m ? "Submitted" : "Discrepancy",
+                HandoverNotes = request.HandoverNotes,
+                SubmittedAt = DateTimeOffset.UtcNow,
+                VerifiedByUserId = request.SupervisorUserId
+            };
+
+            _context.CashierShiftClosings.Add(shiftClosing);
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                success = true,
+                message = "Shift closing handover submitted successfully.",
+                shiftClosingId = shiftClosing.ShiftClosingId,
+                shiftDate = shiftClosing.ShiftDate.ToString("yyyy-MM-dd"),
+                cashierName = userRecord?.Name ?? "Reception Cashier",
+                openingFloat = shiftClosing.OpeningFloat,
+                systemExpectedCash = shiftClosing.SystemExpectedCash,
+                physicalCountedCash = shiftClosing.PhysicalCountedCash,
+                variance = shiftClosing.Variance,
+                status = shiftClosing.Status,
+                handoverNotes = shiftClosing.HandoverNotes,
+                submittedAt = shiftClosing.SubmittedAt
+            });
+        }
+
         #endregion
 
         #region Stationery & Billing Settings

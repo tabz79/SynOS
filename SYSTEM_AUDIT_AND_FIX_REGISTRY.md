@@ -1262,6 +1262,138 @@ isCollapsed ? "px-4 py-2.5 gap-0 h-full" : "p-4 sm:p-5 h-28 sm:h-32 gap-0"
    - In `FinanceBillsController.cs` (`GetMyCashDrawerLedger`), mapped `TenderedAmount` and `ChangeReturned` onto `CashDrawerLedgerItemDto` and updated `Particulars` for cash tender settlements:
      `{patientName} • {testSummary} (Tendered: ₹{p.TenderedAmount:N2}, Change: ₹{changeRet:N2})` with net settlement in `InflowAmount`.
 
+---
+
+## 27. Overpaid Bills & Refund/Change Due Omission on Thermal POS Slip and Finalization Financials (Regression Audit) — [AUDITED & SPECIFIED]
+### Severity: High / Financial Accounting Integrity, Patient Receipt Accuracy & Counter Liability Concealment
+### Impacted Files & Components
+* **Finalization Screen Summary:** [`IntentPanel.jsx:2365-2405`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/components/IntentPanel.jsx#L2365-L2405) (Card 3 Financials)
+* **Thermal Payload Builder:** [`IntentPanel.jsx:877-915`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/components/IntentPanel.jsx#L877-L915) (`buildThermalPayload`)
+* **Thermal Document Generator:** [`thermalPrinter.js:176-184, 380-394`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/utils/thermalPrinter.js#L176-L184) (`generateThermalInvoiceHtml`)
+* **Visual Evidence:** 
+  - Screenshot 1: [`media_1793881024819_e8d36229.png`](file:///Users/tabrez/.gemini/antigravity/brain/13b1c467-601a-446d-9a79-6ae6a930fb8a/.user_uploaded/media_1793881024819_e8d36229.png) (Visit Finalized & Print Dispatch for `#MAI-011`)
+  - Screenshot 2: [`media_1793881043858_f3bcee19.png`](file:///Users/tabrez/.gemini/antigravity/brain/13b1c467-601a-446d-9a79-6ae6a930fb8a/.user_uploaded/media_1793881043858_f3bcee19.png) (Action Queue displaying `MAI-011: ₹400 [OVERPAID] Refund Due: ₹100 (Paid: ₹500)`)
+
+### Incident Evidence (Forensic Reproduction)
+1. **The Scenario:**
+   - Visit: `#MAI-011` (Patient: `Test Patient3`, Test: `CBP WITH PLATELETS`, Gross: ₹400, Concession: ₹0, Net Amount: **₹400**).
+   - Cash Tendered / Paid: **₹500**.
+   - Net Counter Liability: **₹100 Overpayment / Refund Due**.
+2. **What the Action Queue Correctly Shows (Screenshot 2):**
+   - Action Queue in `ReceptionScreen.jsx:377` correctly detects `totalPaid > totalBilled` (`500 > 400`) and displays:
+     ```
+     ₹400 [OVERPAID]
+     Refund Due: ₹100 (Paid: ₹500)
+     ```
+3. **What Appears on the Thermal POS Receipt (Screenshot 1 - The Defect):**
+   ```
+   GRAND TOTAL:        ₹400
+   Amount Received:    ₹500
+   Balance Due:        ₹0
+   ```
+   - **Zero mention** that the patient is owed ₹100 change/refund!
+   - It appears as though the lab accepted ₹500 for a ₹400 bill and kept the ₹100 excess. The patient leaves with no paper proof to claim their ₹100 change at the counter.
+4. **What Appears in Card 3 Financials (Screenshot 1 - The Defect):**
+   - Displays: `[✓] Desk Collection: ₹500 via Cash`, `Balance Due: ₹0 (Fully Settled)`.
+   - The liability callout is **completely absent**. It misleadingly states `(Fully Settled)`.
+
+### Forensic Root Cause Analysis: Why the Previous Agent's Fix Failed
+
+1. **Fragile UI-Only State Dependency (`IntentPanel.jsx:2390`):**
+   * The previous agent implemented the callout with this condition:
+     ```javascript
+     {((isChangeRetainedAsDue && changeDue > 0) || (postProcessingSession?.isChangeRetainedAsDue && postProcessingSession?.changeDue > 0)) && (
+     ```
+   * **The Breakdown:**
+     - It relies strictly on `isChangeRetainedAsDue` — a temporary React checkbox state in the intake form.
+     - When a visit is resumed, reloaded, or overpaid without explicitly checking that checkbox, `isChangeRetainedAsDue` is `false` or `undefined`.
+     - In `postProcessingSession`, if the payment was made earlier or resumed from queue, `postProcessingSession?.isChangeRetainedAsDue` is `undefined`.
+     - Most critically: It **completely ignored the financial ground truth**: `postPaid > stagedNet` (or `totalPaid > netAmount`).
+     - Because `actualBalanceDue` is `0`, the screen unconditionally renders: `Balance Due: ₹0 (Fully Settled)`!
+
+2. **Blind Thermal Payload Generator (`IntentPanel.jsx:882, 904`):**
+   ```javascript
+   changeDue: isChangeRetainedAsDue ? changeDue : (postProcessingSession?.changeDue || snapshot?.billing?.changeDue || 0),
+   ```
+   * In `buildThermalPayload()`, `snapshot?.billing?.changeDue` does not exist on the API snapshot DTO.
+   * `isChangeRetainedAsDue` is false.
+   * As a result, `changeDue` is passed as `0`.
+   * In `thermalPrinter.js:384`:
+     ```javascript
+     ${(normalizedData.financial.changeDue > 0) ? ` ... ` : ''}
+     ```
+     Because `changeDue` is `0`, the dashed box `*** CHANGE DUE (COLLECT LATER) ***` is never rendered.
+   * The printer generator **never computed the mathematical excess**:
+     `effectiveRefundDue = Math.max(0, Number(payload.changeDue || 0), Number(totalPaid - totalAmount))`.
+
+### Enterprise-Grade Fix Specification (For Implementation Agent)
+
+1. **Calculate Financial Overpayment Truth (`IntentPanel.jsx`):**
+   * Define the unified counter refund/change liability across all intake, post-processing, and resume states:
+     ```javascript
+     const effectiveNet = stagedNet !== undefined ? stagedNet : (snapshot?.billing?.netAmount || 0);
+     const effectivePaid = postProcessingSession?.paidAmount !== undefined ? postProcessingSession.paidAmount : (snapshot?.billing?.totalPaid || 0);
+     const counterExcessDue = Math.max(0, effectivePaid - effectiveNet);
+     const effectiveChangeDue = Math.max(0, Number(changeDue || postProcessingSession?.changeDue || 0), counterExcessDue);
+     ```
+
+2. **Card 3 Financials Settlement Pod Update (`IntentPanel.jsx:2376-2405`):**
+   * In Card 3, update the balance due text and callout:
+     ```javascript
+     <div className="text-xs font-semibold text-slate-600 dark:text-zinc-400">
+         Balance Due:{" "}
+         {effectiveChangeDue > 0 ? (
+             <span className="font-mono text-rose-600 dark:text-rose-400 font-black">
+                 ₹0 <span className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">(Refund Due ₹{effectiveChangeDue.toLocaleString()})</span>
+             </span>
+         ) : actualBalanceDue <= 0 ? (
+             <strong className="font-mono text-slate-900 dark:text-white">₹0 <span className="text-[#245E49] dark:text-emerald-400 font-bold">(Fully Settled)</span></strong>
+         ) : isFullDueVisit ? (
+             <strong className="font-mono text-rose-600 dark:text-rose-400 text-sm font-black">₹{actualBalanceDue.toLocaleString()} <span className="text-amber-600 dark:text-amber-400 font-bold">(100% Full Due)</span></strong>
+         ) : (
+             <strong className="font-mono text-rose-600 dark:text-rose-400 text-sm font-black">₹{actualBalanceDue.toLocaleString()} <span className="text-amber-600 dark:text-amber-400 font-bold">(Partial Due)</span></strong>
+         )}
+     </div>
+     ```
+   * Replace the callout condition to trigger whenever `effectiveChangeDue > 0`:
+     ```javascript
+     {effectiveChangeDue > 0 && (
+         <div className="mt-2.5 pt-2 border-t border-rose-500/25 flex items-center justify-between text-xs bg-rose-500/10 p-2 rounded-lg">
+             <div className="flex items-center gap-1.5 text-rose-800 dark:text-rose-300 font-bold">
+                 <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                 <span>Change / Refund Due to Patient:</span>
+                 <span className="font-mono text-sm font-black text-rose-900 dark:text-rose-200">
+                     ₹{effectiveChangeDue.toLocaleString()}
+                 </span>
+             </div>
+             <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-rose-500/20 text-rose-800 dark:text-rose-300 border border-rose-500/30">
+                 Claimable at Counter
+             </span>
+         </div>
+     )}
+     ```
+
+3. **Thermal Receipt Generator Robustness (`thermalPrinter.js:176-184, 380-394`):**
+   * In `thermalPrinter.js`, calculate `changeDue` from both explicit payload and financial excess:
+     ```javascript
+     const explicitChangeDue = Number(payload.changeDue || billingObj.changeDue || payload.financial?.changeDue || 0);
+     const excessOverpaid = Math.max(0, totalPaid - totalAmount);
+     const changeDue = Math.max(explicitChangeDue, excessOverpaid);
+     ```
+   * Render the prominent dashed box on the thermal slip whenever `changeDue > 0`:
+     ```html
+     ${(normalizedData.financial.changeDue > 0) ? `
+         <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 11.5px; border: 1px dashed #000000; padding: 2px 4px; margin-top: 3px;">
+             <span>*** CHANGE / REFUND DUE ***:</span>
+             <span style="font-family: monospace; text-align: right;">₹${normalizedData.financial.changeDue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+         </div>
+         <div style="font-size: 8.5px; font-weight: 700; text-align: center; margin-top: 2px;">
+             Show this receipt at reception counter to claim pending ₹${normalizedData.financial.changeDue.toLocaleString('en-IN', { minimumFractionDigits: 2 })} change.
+         </div>
+     ` : ''}
+     ```
+
+
 
 
 
