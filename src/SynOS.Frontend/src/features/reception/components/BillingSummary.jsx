@@ -672,6 +672,7 @@ export function BillingSummary({
     const isPrepaid = isPrepaidIntent || billingMode === 'PrepaidPartner' || billing?.paymentModel === 'PartnerCollects';
     const isInsurance = billingMode === 'Insurance';
     const isCorporate = billingMode === 'Corporate';
+    const isDirectStandard = !isPrepaid && !isCorporate && !isInsurance;
 
     // Settlement Logic
     const tokenStr = snapshot?.visit?.token || snapshot?.visit?.visitToken || '';
@@ -683,6 +684,14 @@ export function BillingSummary({
 
     const totalNet = stagedNet !== undefined ? stagedNet : (billing?.netAmount || billing?.totalAmount || 0);
     const remainingDue = Math.max(0, totalNet - totalPaid);
+
+    // Secondary Concession & Owner Write-Off is strictly for Direct/Standard patient bills
+    // that were already finalized and kept under Partial Due or Full Due (remainingDue > 0).
+    // It must NEVER appear during initial registration/intake, nor on Corporate B2B (Prepaid) or Insurance.
+    const isExistingBilledDueVisit = isDirectStandard && 
+        !isDraftVisit && 
+        remainingDue > 0 && 
+        (isCorrectionIntent || billing?.paymentStatus === 'PartialPayment' || billing?.paymentStatus === 'PartialDue' || (totalPaid > 0 && remainingDue > 0) || snapshot?.billing?.isLocked);
 
     let displayAmountToCollect = remainingDue;
     let amountLabel = billing?.paymentStatus === 'Paid' ? "Total Bill Amount" : (totalPaid > 0 ? "Remaining Due to Collect" : "Amount to Collect");
@@ -874,7 +883,7 @@ export function BillingSummary({
                                                         ? "bg-[#EBF5EF] dark:bg-emerald-950/30 text-[#245E49] dark:text-emerald-300 border border-[#CCE8D8] dark:border-emerald-800 hover:bg-[#DFF0E6] cursor-pointer"
                                                         : "bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 border-[#CCDCE8] dark:border-zinc-700 hover:bg-slate-50 cursor-pointer"))
                                         )}
-                                        title={!isInitialIntake ? "Initial registration discount is locked. Use Visit Correction to amend, or use Secondary Discount below." : (hasDiscountApplied ? "Edit Discount" : "+ Discount")}
+                                        title={!isInitialIntake ? "Initial registration discount is locked." : (hasDiscountApplied ? "Edit Discount" : "+ Discount")}
                                     >
                                         <Tag className="w-3.5 h-3.5 text-slate-500 dark:text-zinc-400" />
                                         <span>{hasDiscountApplied ? "Edit Discount" : "+ Discount"}</span>
@@ -945,7 +954,7 @@ export function BillingSummary({
                                                 </button>
                                             )}
                                             {totalPaid > 0 && hasDiscountApplied && (
-                                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-500 font-semibold border border-black/5 dark:border-white/5" title="Registration concession is preserved after receipting payment. Use Secondary Concession below to apply further reductions.">
+                                                <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-500 font-semibold border border-black/5 dark:border-white/5">
                                                     Initial Concession
                                                 </span>
                                             )}
@@ -1011,7 +1020,7 @@ export function BillingSummary({
                             )}
 
                             {/* SECONDARY CONCESSION & LAB OWNER WRITE-OFF CARD */}
-                            {!isDraftVisit && remainingDue > 0 && canPerformActions && (
+                            {isExistingBilledDueVisit && canPerformActions && (
                                 <div className={cn(
                                     "p-3.5 sm:p-4 rounded-2xl border space-y-3 transition-all shadow-2xs animate-in fade-in slide-in-from-top-1 duration-200",
                                     isDark ? "bg-orange-950/20 border-orange-900/40" : "bg-[#FFF9F3] border-[#FDE3CF]"
@@ -1033,10 +1042,6 @@ export function BillingSummary({
                                             <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", isSecondaryExpanded && "rotate-180")} />
                                         </button>
                                     </div>
-
-                                    <p className="text-[11px] text-[#A3521E]/80 dark:text-orange-300/80 leading-tight">
-                                        Authorized lab owner or pathologist courtesy discount applied specifically against remaining ₹{remainingDue.toLocaleString()} due.
-                                    </p>
 
                                     {isSecondaryExpanded && (
                                         <div className="pt-2 border-t border-[#FDE3CF] dark:border-orange-900/50 space-y-3 animate-in fade-in duration-200">
