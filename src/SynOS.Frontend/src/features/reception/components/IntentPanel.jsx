@@ -874,7 +874,7 @@ export function IntentPanel({ onVisitUpdated }) {
             ? (stagedReferralPartnerId ? (referralPartners.find(p => (p.referralPartnerId || p.id) === stagedReferralPartnerId) || visitObj?.referralPartner || snapshot?.billing?.referral?.partner) : null)
             : (visitObj?.referralPartner || snapshot?.billing?.referral?.partner);
 
-        const explicitChangeDue = Number(changeDue || postProcessingSession?.changeDue || snapshot?.billing?.changeDue || 0);
+        const explicitChangeDue = Number(postProcessingSession?.changeDue || snapshot?.billing?.changeDue || 0);
         const excessOverpaid = Math.max(0, Number(effectivePaid || 0) - Number(effectiveNet || 0));
         const finalChangeDue = Math.max(explicitChangeDue, excessOverpaid);
 
@@ -1194,8 +1194,10 @@ export function IntentPanel({ onVisitUpdated }) {
                 const currentPaid = snapshot?.billing?.totalPaid || 0;
                 await loadSnapshot();
 
-                const retainedDue = isChangeRetainedAsDue ? changeDue : 0;
                 const tenderedAmt = Number(tenderedAmount || 0);
+                const retNow = Number(changeReturnedNow || 0);
+                const computedChangeDue = Math.max(0, tenderedAmt - effectiveAmount - retNow);
+                const retainedDue = isChangeRetainedAsDue ? computedChangeDue : 0;
 
                 setIsPartialPayment(false);
                 setCustomPaymentAmount('');
@@ -1423,7 +1425,7 @@ export function IntentPanel({ onVisitUpdated }) {
         : (isPrepaid ? 0 : (snapshot?.billing?.totalPaid !== undefined ? Number(snapshot.billing.totalPaid) : (isVisitFinalized ? postNet : 0)));
     const actualBalanceDue = Math.max(0, postNet - postPaid);
     const counterExcessDue = Math.max(0, postPaid - postNet);
-    const effectiveChangeDue = Math.max(0, Number(changeDue || postProcessingSession?.changeDue || 0), counterExcessDue);
+    const effectiveChangeDue = Math.max(0, Number(postProcessingSession?.changeDue || snapshot?.billing?.changeDue || 0), counterExcessDue);
     const isFullySettled = actualBalanceDue <= 0.01;
     const isFullDueVisit = postPaid === 0 && actualBalanceDue > 0;
 
