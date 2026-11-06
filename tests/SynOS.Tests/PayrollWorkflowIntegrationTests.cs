@@ -46,7 +46,7 @@ namespace SynOS.Tests
                 EmploymentType = EmploymentType.FullTime,
                 SalaryType = SalaryType.Fixed,
                 BaseSalary = 60000m,
-                JoinDate = DateTimeOffset.UtcNow.AddMonths(-3),
+                JoinDate = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
                 PFEnabled = true,
                 PFPercentage = 12.0m,
                 ESIEnabled = true,

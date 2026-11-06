@@ -152,6 +152,36 @@ namespace SynOS.Services
                 throw new InvalidOperationException($"Receiving {dto.Quantity} units would exceed the ordered quantity of {poItem.OrderedQuantity}. {poItem.ReceivedQuantity} units have already been received.");
             }
 
+            // CORR-03: Auto-net incoming stock against active AUTO-NEG- shortage lots
+            var activeNegativeLots = await _context.ImsInventoryLots
+                .Where(l => l.ItemId == inventoryItem.ItemId && l.BranchId == dto.BranchId && l.CurrentQuantity < 0 && l.IsActive)
+                .OrderBy(l => l.ReceivedAt)
+                .ToListAsync();
+
+            decimal remainingIncoming = dto.Quantity;
+            foreach (var negLot in activeNegativeLots)
+            {
+                if (remainingIncoming <= 0) break;
+
+                var shortage = Math.Abs(negLot.CurrentQuantity);
+                if (remainingIncoming >= shortage)
+                {
+                    // Fully absorbed
+                    negLot.CurrentQuantity = 0;
+                    negLot.IsActive = false; // Closed out
+                    negLot.UnitCostSnapshot = poItem.UnitPrice; // Backfill unit price
+                    remainingIncoming -= shortage;
+                }
+                else
+                {
+                    // Partially absorbed: remaining shortage must stay visible
+                    negLot.CurrentQuantity += remainingIncoming;
+                    negLot.UnitCostSnapshot = poItem.UnitPrice;
+                    remainingIncoming = 0;
+                    break;
+                }
+            }
+
             var newLot = new ImsInventoryLot
             {
                 LotId = Guid.NewGuid(),
@@ -160,10 +190,10 @@ namespace SynOS.Services
                 BatchNumber = dto.BatchNumber,
                 ExpiryDate = dto.ExpiryDate ?? DateTimeOffset.MaxValue,
                 ContainerSize = dto.Quantity,
-                CurrentQuantity = dto.Quantity,
+                CurrentQuantity = remainingIncoming, // Net remaining after absorbing prior shortages
                 UnitCostSnapshot = poItem.UnitPrice,
                 ReceivedAt = DateTimeOffset.UtcNow,
-                IsActive = true
+                IsActive = remainingIncoming > 0
             };
 
             var movement = new ImsStockMovement
@@ -188,7 +218,7 @@ namespace SynOS.Services
             // A SpendFact is only emitted when the VendorPayable is actually settled.
             var spendAmount = dto.Quantity * poItem.UnitPrice;
 
-            // CREATE VENDOR PAYABLE (Phase 2)
+            // CREATE VENDOR PAYABLE (Phase 2 - Single source of truth for PO liabilities)
             var vendorPayable = new VendorPayable
             {
                 VendorPayableId = Guid.NewGuid(),
@@ -202,19 +232,7 @@ namespace SynOS.Services
             };
             await _context.VendorPayables.AddAsync(vendorPayable);
 
-            // CREATE OVERHEAD PAYABLE FACT for Finance Expense Feed
-            var overheadPayable = new SynOS.Models.Entities.Payables.OverheadPayableFact
-            {
-                OverheadPayableId = Guid.NewGuid(),
-                Category = SynOS.Models.Enums.Payables.OverheadExpenseCategory.Logistics,
-                AmountDue = spendAmount,
-                Description = $"Stock Receipt: {inventoryItem.Name} (PO #{poItem.POId.ToString().Substring(0, 8)}) - {poItem.PurchaseOrder?.Supplier?.Name ?? "Supplier"}",
-                DueDate = DateTime.UtcNow.AddDays(30),
-                Status = VendorPayableStatus.Pending,
-                CreatedAt = DateTime.UtcNow,
-                CreatedBy = userId
-            };
-            await _context.OverheadPayableFacts.AddAsync(overheadPayable);
+            // CORR-02: Eliminated duplicate OverheadPayableFact creation here to prevent double-counting supplier debt in accrual views.
 
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();

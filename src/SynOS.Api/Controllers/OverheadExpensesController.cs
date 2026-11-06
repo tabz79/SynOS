@@ -8,6 +8,7 @@ using SynOS.Data;
 using SynOS.Models.Entities.Payables;
 using SynOS.Models.Entities.SpendEngine;
 using SynOS.Models.Enums.Payables;
+using SynOS.Models.Enums.IMS;
 using SynOS.Services.SpendEngine;
 using SynOS.Services.Security;
 using SynOS.Services.Time;
@@ -39,9 +40,19 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<OverheadPayableFact>>> GetExpenses([FromQuery] string? filter = null)
+        public async Task<ActionResult<IEnumerable<OverheadPayableFact>>> GetExpenses([FromQuery] string? filter = null, [FromQuery] Guid? branchId = null)
         {
             var query = _context.OverheadPayableFacts.AsQueryable();
+
+            if (branchId.HasValue && branchId.Value != Guid.Empty)
+            {
+                var branchUserIds = await _context.UserBranchRoles
+                    .Where(ubr => ubr.BranchId == branchId.Value)
+                    .Select(ubr => ubr.UserId)
+                    .Distinct()
+                    .ToListAsync();
+                query = query.Where(e => branchUserIds.Contains(e.CreatedBy));
+            }
 
             if (string.Equals(filter, "today", StringComparison.OrdinalIgnoreCase))
             {
@@ -398,7 +409,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpGet("reception-feed")]
-        public async Task<IActionResult> GetReceptionFeed([FromQuery] string? filter = "today", [FromQuery] Guid? userId = null)
+        public async Task<IActionResult> GetReceptionFeed([FromQuery] string? filter = "today", [FromQuery] Guid? userId = null, [FromQuery] Guid? branchId = null)
         {
             try
             {
@@ -425,12 +436,34 @@ namespace SynOS.Api.Controllers
                     query = query.Where(e => e.CreatedBy == userId.Value);
                 }
 
+                if (branchId.HasValue && branchId.Value != Guid.Empty)
+                {
+                    var branchUserIds = await _context.UserBranchRoles
+                        .Where(ubr => ubr.BranchId == branchId.Value)
+                        .Select(ubr => ubr.UserId)
+                        .Distinct()
+                        .ToListAsync();
+                    query = query.Where(e => branchUserIds.Contains(e.CreatedBy));
+                }
+
                 var payables = await query
                     .Where(e => e.CreatedAt >= startUtc && e.CreatedAt < endUtc)
                     .OrderByDescending(e => e.CreatedAt)
                     .ToListAsync();
 
-                var vendorPayables = await _context.VendorPayables
+                var vendorPayablesQuery = _context.VendorPayables.AsQueryable();
+                if (branchId.HasValue && branchId.Value != Guid.Empty)
+                {
+                    var branchPOIds = await _context.ImsStockMovements
+                        .Include(m => m.InventoryLot)
+                        .Where(m => m.InventoryLot != null && m.InventoryLot.BranchId == branchId.Value && m.MovementType == StockMovementType.Receive)
+                        .Select(m => m.ReferenceId)
+                        .Distinct()
+                        .ToListAsync();
+                    vendorPayablesQuery = vendorPayablesQuery.Where(vp => vp.ReferenceId != null && branchPOIds.Contains(vp.ReferenceId.ToString()!));
+                }
+
+                var vendorPayables = await vendorPayablesQuery
                     .Where(vp => vp.CreatedAt >= startUtc && vp.CreatedAt < endUtc)
                     .OrderByDescending(vp => vp.CreatedAt)
                     .ToListAsync();

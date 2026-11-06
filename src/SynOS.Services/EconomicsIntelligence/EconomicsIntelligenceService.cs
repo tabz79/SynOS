@@ -359,7 +359,7 @@ namespace SynOS.Services.EconomicsIntelligence
                                                              f.PaymentMode == PaymentMode.BankTransfer).Sum(f => f.Amount);
             summary.TotalRevenueCash = summary.CashCollected + summary.OnlineCollected;
 
-            // Reconcile with direct Payments table for physical drawer and digital truth (excluding B2B Partner credit/receivable adjustments)
+            // Reconcile with direct Payments table for physical drawer and digital truth (excluding synthetic B2B Partner billing records, but including real RCP-B2B settlements)
             var paymentsQuery = _context.Payments
                 .Include(p => p.Invoice)
                     .ThenInclude(i => i.Visit)
@@ -371,7 +371,9 @@ namespace SynOS.Services.EconomicsIntelligence
                             p.Method != "DoctorAccount" &&
                             p.Method != "B2B" &&
                             p.Method != "Insurance" &&
-                            (p.Invoice == null || p.Invoice.Visit == null || (p.Invoice.Visit.PaymentCollectionModel != "PartnerCollects" && p.Invoice.Visit.PaymentCollectionModel != "PrepaidPartner")));
+                            (p.Invoice == null || p.Invoice.Visit == null || 
+                             (p.Invoice.Visit.PaymentCollectionModel != "PartnerCollects" && p.Invoice.Visit.BillingType != BillingType.PrepaidPartner) ||
+                             (p.ReceiptNo != null && (p.ReceiptNo.StartsWith("RCP-B2B") || p.ReceiptNo.StartsWith("REC-B2B")))));
 
             if (branchId.HasValue)
             {
@@ -392,12 +394,9 @@ namespace SynOS.Services.EconomicsIntelligence
                     return m == "card" || m == "upi" || m == "banktransfer" || m == "1" || m == "2" || m == "3" || m == "gateway";
                 }).Sum(p => p.Amount);
 
-                if ((directCash + directOnline) > summary.TotalRevenueCash)
-                {
-                    summary.CashCollected = directCash;
-                    summary.OnlineCollected = directOnline;
-                    summary.TotalRevenueCash = directCash + directOnline;
-                }
+                summary.CashCollected = directCash;
+                summary.OnlineCollected = directOnline;
+                summary.TotalRevenueCash = directCash + directOnline;
             }
 
             var consumableFactsQuery = _context.CostAttribution_UsageFacts.AsNoTracking();
@@ -424,9 +423,31 @@ namespace SynOS.Services.EconomicsIntelligence
                 .Where(f => f.OccurredAt >= start && f.OccurredAt <= end && f.Category == "Referral")
                 .SumAsync(f => f.Amount);
 
-            summary.PayrollCashOutflow = await spendFactsQuery
-                .Where(f => f.OccurredAt >= start && f.OccurredAt <= end && f.Category == "Payroll")
-                .SumAsync(f => f.Amount);
+            // CORR-05: Accurate branch payroll attribution with historical fallback
+            if (branchId.HasValue)
+            {
+                var branchUserIds = await _context.UserBranchRoles
+                    .Where(ubr => ubr.BranchId == branchId.Value)
+                    .Select(ubr => ubr.UserId)
+                    .Distinct()
+                    .ToListAsync();
+                var branchEmployeeIds = await _context.Employees
+                    .Where(e => e.UserId != null && branchUserIds.Contains(e.UserId.Value))
+                    .Select(e => e.EmployeeId)
+                    .Distinct()
+                    .ToListAsync();
+
+                summary.PayrollCashOutflow = await _context.SpendFacts.AsNoTracking()
+                    .Where(f => f.OccurredAt >= start && f.OccurredAt <= end && f.Category == "Payroll" &&
+                                (f.BranchId == branchId.Value || (f.BranchId == null && branchEmployeeIds.Contains(f.PayeeId))))
+                    .SumAsync(f => f.Amount);
+            }
+            else
+            {
+                summary.PayrollCashOutflow = await _context.SpendFacts.AsNoTracking()
+                    .Where(f => f.OccurredAt >= start && f.OccurredAt <= end && f.Category == "Payroll")
+                    .SumAsync(f => f.Amount);
+            }
 
             summary.OverheadCashOutflow = await spendFactsQuery
                 .Where(f => f.OccurredAt >= start && f.OccurredAt <= end && f.Category == "Overhead")

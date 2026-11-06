@@ -1264,7 +1264,7 @@ isCollapsed ? "px-4 py-2.5 gap-0 h-full" : "p-4 sm:p-5 h-28 sm:h-32 gap-0"
 
 ---
 
-## 27. Overpaid Bills & Refund/Change Due Omission on Thermal POS Slip and Finalization Financials (Regression Audit) — [AUDITED & SPECIFIED]
+## 27. Overpaid Bills & Refund/Change Due Omission on Thermal POS Slip and Finalization Financials (Regression Audit) — [RESOLVED & VERIFIED]
 ### Severity: High / Financial Accounting Integrity, Patient Receipt Accuracy & Counter Liability Concealment
 ### Impacted Files & Components
 * **Finalization Screen Summary:** [`IntentPanel.jsx:2365-2405`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/components/IntentPanel.jsx#L2365-L2405) (Card 3 Financials)
@@ -1409,3 +1409,117 @@ isCollapsed ? "px-4 py-2.5 gap-0 h-full" : "p-4 sm:p-5 h-28 sm:h-32 gap-0"
 
 
 
+
+---
+
+## 28. Premature Official Daily Token Promotion on Unfinalized Draft Visits (MAI-007 / MAI-008 Token vs Draft Visit Inconsistency) — [RESOLVED & VERIFIED]
+### Severity: High / Front-Desk Operational Integrity & Token Sequence Corruption
+### Impacted Modules & Files
+* **Reception Flow Service:** [`ReceptionFlowService.cs:860-985`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/ReceptionFlowService.cs#L860-L985)
+* **Visit Service Token Promotion Engine:** [`VisitService.cs:1330-1360`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/VisitService.cs#L1330-L1360)
+* **Revenue Engine Financial Snapshot:** [`RevenueEngine.cs:100-132`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/Revenue/RevenueEngine.cs#L100-L132)
+* **Action Queue Projection Engine:** [`OperationsEngine.cs:195-210, 515-585`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/Operations/OperationsEngine.cs#L195-L210)
+* **Action Queue Table Cells:** [`ActionQueueCells.jsx:4-25, 75-95`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/components/layout/ActionQueueCells.jsx#L4-L25)
+* **Branch Activity Live Stream:** [`ActivityStream.jsx:35-50`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/components/layout/ActivityStream.jsx#L35-L50)
+
+### Incident Evidence (Live Pilot Telemetry)
+* **Facility:** Sri Divya Diagnostic Centre, Wyra Road, Khammam.
+* **Timestamp:** `2026-11-06 13:46:35` (Live Screen).
+* **Observed State in Action Queues:**
+  * `MAI-008` | Patient: `DIVYA 23y/F (HAEMOGLOBIN_HPLC)` | Payment: `₹100 DRAFT` | Status: `• Draft Visit`
+  * `MAI-007` | Patient: `RAMESH 65y/M (LIPASE, AMYLASE)` | Payment: `₹1,500 DRAFT` | Status: `• Draft Visit`
+* **Observed Events in Branch Live Stream:**
+  * `MAI-008 DIVYA`: *"Custom FLAT concession (100) applied by Moin"* (3m ago)
+  * `MAI-007 RAMESH`: *"Custom FLAT concession (1500) applied by Moin"* (4m ago)
+* **Inconsistency Identified by User:**
+  1. Why are MAI-007 and MAI-008 showing as `Draft Visit` with `DRAFT` payment badges?
+  2. How did MAI-007 and MAI-008 get assigned official daily branch tokens (`MAI-xxx`) when the visits are still in an uncommitted draft state instead of holding an ephemeral draft token (`D-xxx`)?
+
+---
+
+### Root Cause Analysis
+
+#### 1. Why are MAI-007 and MAI-008 in Draft Visit status?
+1. **Uncommitted Desk Intake:**
+   * When a receptionist (Moin) clicks "+ Registration" or starts an intake, `VisitService.CreateVisitAsync` creates a visit with `Status = VisitStatus.Draft`.
+   * Moin selected tests (`LIPASE` + `AMYLASE` for Ramesh; `HAEMOGLOBIN_HPLC` for Divya) and applied custom flat concessions (₹1,500 and ₹100 respectively).
+   * In SynOS, applying a discount creates a `DiscountFact` and calls `RevenueEngine.ApplySnapshotAsync`.
+   * In `RevenueEngine.cs` (lines 115-130), if payments have not yet been tendered (`totalPaid == 0`), the engine sets `invoice.Status = "PendingPayment"`, but **leaves `visit.Status = VisitStatus.Draft`** untouched.
+   * Because Moin never completed checkout (did not click `Accept Payment` to collect cash/UPI/credit), the visits were never transitioned to `VisitStatus.Paid`, `VisitStatus.FullPaid`, or `VisitStatus.PendingPayment`.
+2. **Action Queue Projection Rendering:**
+   * In `OperationsEngine.cs`:
+     * `DeriveOperationalStatus` checks `if (visit.Status == VisitStatus.Draft)` and returns `"Draft"`. This causes `ActionQueueCells.jsx` to render `• Draft Visit` with an amber pulsing dot.
+     * `DerivePaymentDisplay` and `DerivePaymentMethod` check `if (visit.Status == VisitStatus.Draft)` and return `"Draft"`. This causes `ReceptionScreen.jsx` to render the amber `DRAFT` badge alongside the uncollected amount (`₹1,500 DRAFT` and `₹100 DRAFT`).
+
+#### 2. How did MAI-007 and MAI-008 get assigned official daily tokens while still in draft state?
+1. **Decoupled Token Promotion vs. Visit Status Update:**
+   * In `VisitService.cs`, a visit is initialized with an ephemeral token:
+     ```csharp
+     var token = $"D-{Guid.NewGuid():N}"[..12].ToUpperInvariant();
+     ```
+   * The official token (`MAI-007`, `MAI-008`) can ONLY be generated by `AssignOfficialTokenAsync(visitId, actorUserId)`, which reads and increments `dbo.TokenCounters` for the branch and day.
+2. **Defect in `CompletePaymentAsync` (`ReceptionFlowService.cs:862-985`):**
+   * When `CompletePaymentAsync` is triggered, lines 968-980 check:
+     ```csharp
+     if (string.Equals(updatedInvoice.Status, "Paid", StringComparison.OrdinalIgnoreCase) ||
+         string.Equals(updatedInvoice.Status, "PartialPayment", StringComparison.OrdinalIgnoreCase) ||
+         string.Equals(updatedInvoice.Status, "PendingPayment", StringComparison.OrdinalIgnoreCase))
+     {
+         var dbVisitForToken = await _context.Visits.FindAsync(visit.VisitId);
+         if (dbVisitForToken != null && (dbVisitForToken.Token.StartsWith("DRAFT") || dbVisitForToken.Token.StartsWith("D-")))
+         {
+             var officialToken = await _visitService.AssignOfficialTokenAsync(dbVisitForToken.VisitId, userId);
+             visit.Token = officialToken;
+         }
+     }
+     ```
+   * **The Flaw:** In `CompletePaymentAsync`, if a visit has zero net balance (`existingInvoice.Total <= 0` from a 100% concession) or if an attempt was made to confirm the visit, `AssignOfficialTokenAsync` is executed and **commits the new token immediately to SQL Server**. However, `CompletePaymentAsync` **fails to set `dbVisit.Status = VisitStatus.Paid`** (lines 862-878 set `existingInvoice.Status = "Paid"` but never mutate `dbVisit.Status`).
+   * Similarly, if checkout encounters a client-side interruption or partial submission, `AssignOfficialTokenAsync` has already fired and burned an official token sequence (`MAI-007`), leaving the visit entity in the database with:
+     * `visit.Token = "MAI-007"` (Permanent official daily token)
+     * `visit.Status = VisitStatus.Draft` (Unfinalized draft state)
+3. **Live Stream Leakage Consequence:**
+   * In `ActivityStream.jsx` (lines 40-47), the frontend suppresses event noise for uncommitted drafts by checking:
+     ```javascript
+     if (tokenStr.toUpperCase().startsWith('DRAFT-') || titleStr.includes('draft-') || tokenStr.startsWith('D-')) { return false; }
+     ```
+   * Because `visit.Token` was prematurely mutated to `"MAI-007"` while still in draft, the Activity Stream filter no longer recognized it as an ephemeral draft. Consequently, the discount event (*"Custom FLAT concession (1500) applied by Moin"*) was published to the branch live stream as an official operational event for an unbilled patient.
+
+---
+
+### Architectural Fix Specification (To be executed by Implementation Agent)
+
+1. **Atomic Token Promotion & Status Transition Guard (`ReceptionFlowService.cs` & `VisitService.cs`):**
+   * `AssignOfficialTokenAsync` must NEVER be called in isolation from a verified, successful visit status transition.
+   * In `ReceptionFlowService.CompletePaymentAsync` (lines 862-878):
+     * Explicitly set `dbVisit.Status = VisitStatus.Paid` when zero-net / 100% concession checkout is processed:
+       ```csharp
+       if (existingInvoice != null && (string.Equals(existingInvoice.Status, "Paid", StringComparison.OrdinalIgnoreCase) || existingInvoice.Total <= 0))
+       {
+           existingInvoice.Status = "Paid";
+           var dbVisit = await _context.Visits.FindAsync(visit.VisitId);
+           if (dbVisit != null)
+           {
+               dbVisit.Status = VisitStatus.Paid;
+           }
+           ...
+       }
+       ```
+   * In `VisitService.AssignOfficialTokenAsync`:
+     * Add an explicit assertion that `AssignOfficialTokenAsync` cannot be called on a visit whose status is strictly `VisitStatus.Draft` unless the caller simultaneously transitions the status to `Paid`, `PartialPayment`, or `PendingPayment`.
+
+2. **Action Queue Projection Alignment (`OperationsEngine.cs`):**
+   * Ensure `OperationsEngine.cs` reconciles any inconsistent legacy records:
+     * If a visit has `visit.Status == VisitStatus.Draft` but possesses an official daily token (`!visit.Token.StartsWith("D-")`), log a warning.
+     * When opening such a visit in `IntentPanel.jsx`, allow the cashier to resume the draft and complete payment without generating a redundant second token.
+
+3. **Live Stream Filter Hardening (`ActivityStream.jsx`):**
+   * Update the filter in `ActivityStream.jsx` to check operational status in addition to token prefix:
+     ```javascript
+     const isDraftEvent = (e.metadataObj?.status || '').toLowerCase() === 'draft' || 
+                          (e.status || '').toLowerCase() === 'draft' || 
+                          tokenStr.startsWith('D-') || 
+                          tokenStr.startsWith('DRAFT');
+     if (!isFinalizedOrBilled && isDraftEvent) {
+         return false;
+     }
+     ```

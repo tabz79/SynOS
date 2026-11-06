@@ -1336,6 +1336,17 @@ namespace SynOS.Services
             if (!visit.Token.StartsWith("DRAFT", StringComparison.OrdinalIgnoreCase) && !visit.Token.StartsWith("D-", StringComparison.OrdinalIgnoreCase)) 
                 return visit.Token;
 
+            // 🏛️ ENTERPRISE ARCHITECTURAL INVARIANT (PERMANENT SYSTEM LAW):
+            // FOREVER RULE: Official daily tokens (e.g., MAI-001) MUST NEVER be assigned while a visit is in Draft status.
+            // Official tokens are ONLY issued when visit checkout is completed / confirmed (Paid, FullPaid, PartialPayment, PendingPayment).
+            // Ephemeral tokens (D-xxx) must be strictly retained during draft state to prevent counter burns and data leakage.
+            if (visit.Status == VisitStatus.Draft)
+            {
+                throw new InvalidOperationException(
+                    $"[ENTERPRISE ARCHITECTURAL INVARIANT VIOLATION] Cannot assign official daily token to visit {visitId} while in Draft status. " +
+                    "The visit checkout must be finalized and transitioned out of Draft before an official token can be issued.");
+            }
+
             var branchId = (visit.BranchId.HasValue && visit.BranchId.Value != Guid.Empty) 
                 ? visit.BranchId.Value 
                 : _userContext.CurrentBranchId;

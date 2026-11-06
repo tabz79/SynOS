@@ -34,18 +34,17 @@ export function ActivityStream({ serverTime }) {
                 const titleStr = (e.title || e.summaryText || e.SummaryText || '').toLowerCase();
                 const tokenStr = (e.tokenId || e.TokenId || e.token || '').trim();
 
-                // Suppress unfinalized draft tokens (DRAFT-...)
-                const isFinalizedOrBilled = typeStr === 'VISIT_FINALIZED' || 
-                                           typeStr === 'BILL_GENERATED' || 
-                                           typeStr === 'PAYMENT_RECEIVED' || 
-                                           typeStr === 'RECEIVABLE_CREATED' ||
-                                           titleStr.includes('prepaid') ||
-                                           titleStr.includes('partner collects');
+                // Suppress unfinalized draft tokens (DRAFT-..., D-..., or explicit draft status)
+                const isDraftToken = tokenStr.toUpperCase().startsWith('DRAFT-') || 
+                                     tokenStr.toUpperCase().startsWith('D-') || 
+                                     titleStr.includes('draft-') ||
+                                     titleStr.includes('draft visit');
+                const isDraftStatus = (e.metadataObj?.status || '').toLowerCase() === 'draft' || 
+                                      (e.status || '').toLowerCase() === 'draft' ||
+                                      Boolean(e.metadataObj?.isDraft);
 
-                if (!isFinalizedOrBilled) {
-                    if (tokenStr.toUpperCase().startsWith('DRAFT-') || titleStr.includes('draft-')) {
-                        return false;
-                    }
+                if (!isFinalizedOrBilled && (isDraftToken || isDraftStatus)) {
+                    return false;
                 }
 
                 // Suppress extra internal events

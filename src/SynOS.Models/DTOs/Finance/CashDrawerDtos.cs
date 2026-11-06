@@ -61,5 +61,11 @@ namespace SynOS.Models.DTOs.Finance
         public decimal? AdjustedExpectedCash { get; set; }
         public string? ActivitySummaryJson { get; set; }
         public string? CorrectionsJson { get; set; }
+        public string? OpeningFloatSource { get; set; }
+    }
+
+    public class VerifyShiftClosingRequestDto
+    {
+        public string? Notes { get; set; }
     }
 }

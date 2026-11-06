@@ -819,6 +819,39 @@ namespace SynOS.Api.Controllers
             };
             _context.Payments.Add(payment);
 
+            // CORR-07: Record formal balance due waiver if partial clearance occurred with authorized write-off
+            if (request.WaiverAmount.HasValue && request.WaiverAmount.Value > 0)
+            {
+                var remainingAfterPayment = Math.Max(0m, remainingDue - amountToRecord);
+                var waiver = Math.Min(request.WaiverAmount.Value, remainingAfterPayment);
+                if (waiver > 0)
+                {
+                    invoice.DiscountAmount += waiver;
+                    invoice.Total = Math.Max(0m, invoice.GrossAmount - invoice.DiscountAmount);
+
+                    var waiverReason = !string.IsNullOrWhiteSpace(request.WaiverReason)
+                        ? request.WaiverReason.Trim()
+                        : "Balance Due Waiver";
+
+                    var waiverFact = new SynOS.Models.Entities.Revenue.DiscountFact
+                    {
+                        DiscountFactId = Guid.NewGuid(),
+                        InvoiceId = invoice.InvoiceId,
+                        DiscountDefinitionId = Guid.Empty,
+                        Type = SynOS.Models.Enums.DiscountType.Flat,
+                        Value = waiver,
+                        GrossAmount = invoice.GrossAmount,
+                        DiscountAmount = invoice.DiscountAmount,
+                        NetAmountAfterDiscount = invoice.Total,
+                        AppliedBy = $"{waiverReason} [Due Clearance Waiver: -₹{waiver}]",
+                        AppliedAt = DateTime.UtcNow,
+                        CreatedAt = DateTime.UtcNow,
+                        IsActive = true
+                    };
+                    _context.DiscountFacts.Add(waiverFact);
+                }
+            }
+
             var newTotalPaid = currentPaid + amountToRecord;
             if (newTotalPaid >= invoice.Total)
             {
@@ -1543,7 +1576,7 @@ namespace SynOS.Api.Controllers
                 var visit = p.Invoice?.Visit;
                 var patientName = visit?.Patient != null ? $"{visit.Patient.FirstName} {visit.Patient.LastName}".Trim() : "Direct Patient";
                 var isRefund = p.Amount < 0;
-                var isB2B = visit != null && (visit.PaymentCollectionModel == "PartnerCollects" || (visit.ReferralPartnerId != null && p.ReceiptNo.StartsWith("REC-B2B")));
+                var isB2B = visit != null && (visit.PaymentCollectionModel == "PartnerCollects" || (visit.ReferralPartnerId != null && (p.ReceiptNo.StartsWith("RCP-B2B") || p.ReceiptNo.StartsWith("REC-B2B"))));
                 var testNames = visit?.Orders?.Select(o => o.Test?.TestName).Where(n => !string.IsNullOrEmpty(n)).Take(2).ToList() ?? new List<string?>();
                 var testSummary = testNames.Any() ? string.Join(", ", testNames) : "Clinical Investigation";
 
@@ -1750,6 +1783,7 @@ namespace SynOS.Api.Controllers
 
             var standardCashPayments = cashierPayments.Where(p => p.Method.ToLower().Contains("cash") 
                                                                && p.Amount > 0 
+                                                               && !p.ReceiptNo.StartsWith("RCP-B2B")
                                                                && !p.ReceiptNo.StartsWith("REC-B2B")).ToList();
             var standardCashCollected = standardCashPayments.Sum(p => p.Amount);
 
@@ -1773,7 +1807,7 @@ namespace SynOS.Api.Controllers
             var insuranceCoPayCash = cashierPayments.Where(p => p.Invoice != null && p.Invoice.Visit != null && p.Invoice.Visit.BillingType == BillingType.Insurance && p.Method.ToLower().Contains("cash")).Sum(p => p.Amount);
 
             // Mid-Shift Desk Inflows: B2B Debt Recoveries at Desk
-            var b2bCashSettlements = cashierPayments.Where(p => p.Method.ToLower().Contains("cash") && p.ReceiptNo.StartsWith("REC-B2B")).ToList();
+            var b2bCashSettlements = cashierPayments.Where(p => p.Method.ToLower().Contains("cash") && (p.ReceiptNo.StartsWith("RCP-B2B") || p.ReceiptNo.StartsWith("REC-B2B"))).ToList();
             var b2bCashRecovered = b2bCashSettlements.Sum(p => p.Amount);
 
             // Mid-Shift Desk Outflows: Daily Expenses & Refunds
@@ -1959,7 +1993,9 @@ namespace SynOS.Api.Controllers
                 DenominationsJson = request.Denominations != null ? JsonSerializer.Serialize(request.Denominations) : null,
                 ActivitySummaryJson = request.ActivitySummaryJson ?? (request.CorrectionsJson != null ? JsonSerializer.Serialize(new { corrections = request.CorrectionsJson, baseSystemExpected }) : null),
                 Status = Math.Abs(variance) < 0.01m ? "Submitted" : "Discrepancy",
-                HandoverNotes = request.HandoverNotes,
+                HandoverNotes = !string.IsNullOrWhiteSpace(request.OpeningFloatSource)
+                    ? $"[Opening Float from: {request.OpeningFloatSource.Trim()}] {request.HandoverNotes}".Trim()
+                    : request.HandoverNotes,
                 SubmittedAt = DateTimeOffset.UtcNow,
                 VerifiedByUserId = request.SupervisorUserId
             };
@@ -1981,6 +2017,55 @@ namespace SynOS.Api.Controllers
                 status = shiftClosing.Status,
                 handoverNotes = shiftClosing.HandoverNotes,
                 submittedAt = shiftClosing.SubmittedAt
+            });
+        }
+
+        /// <summary>
+        /// POST /api/v1/finance/bills/cash-drawer/verify-shift-closing/{id}
+        /// Supervisor/Owner acknowledgment of physical cash envelope handover.
+        /// Stamped with verified timestamp, supervisor ID, and status 'Verified'.
+        /// </summary>
+        [HttpPost("cash-drawer/verify-shift-closing/{id}")]
+        [Authorize]
+        public async Task<IActionResult> VerifyShiftClosing(Guid id, [FromBody] VerifyShiftClosingRequestDto? request)
+        {
+            var closing = await _context.CashierShiftClosings.FindAsync(id);
+            if (closing == null)
+            {
+                return NotFound(new { message = "Shift closing handover record not found." });
+            }
+
+            var rawUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                         ?? User.FindFirst("sub")?.Value;
+            Guid supervisorId = Guid.Empty;
+            if (!string.IsNullOrEmpty(rawUserId) && Guid.TryParse(rawUserId, out var parsedId))
+            {
+                supervisorId = parsedId;
+            }
+
+            closing.VerifiedByUserId = supervisorId;
+            closing.VerifiedAt = DateTimeOffset.UtcNow;
+            closing.Status = "Verified";
+
+            if (!string.IsNullOrWhiteSpace(request?.Notes))
+            {
+                closing.HandoverNotes = string.IsNullOrWhiteSpace(closing.HandoverNotes)
+                    ? $"[Verified: {request.Notes}]"
+                    : $"{closing.HandoverNotes} | [Verified: {request.Notes}]";
+            }
+
+            await _context.SaveChangesAsync();
+
+            var supervisor = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == supervisorId);
+
+            return Ok(new
+            {
+                success = true,
+                message = "Shift cash handover acknowledged and verified successfully.",
+                shiftClosingId = closing.ShiftClosingId,
+                status = closing.Status,
+                verifiedBy = supervisor?.Name ?? "Supervisor",
+                verifiedAt = closing.VerifiedAt
             });
         }
 
@@ -3383,5 +3468,7 @@ namespace SynOS.Api.Controllers
         public string Method { get; set; } = "Cash";
         public string? ReceiptNo { get; set; }
         public string? Notes { get; set; }
+        public decimal? WaiverAmount { get; set; }
+        public string? WaiverReason { get; set; }
     }
 }

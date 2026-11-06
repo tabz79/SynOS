@@ -874,14 +874,18 @@ export function IntentPanel({ onVisitUpdated }) {
             ? (stagedReferralPartnerId ? (referralPartners.find(p => (p.referralPartnerId || p.id) === stagedReferralPartnerId) || visitObj?.referralPartner || snapshot?.billing?.referral?.partner) : null)
             : (visitObj?.referralPartner || snapshot?.billing?.referral?.partner);
 
+        const explicitChangeDue = Number(changeDue || postProcessingSession?.changeDue || snapshot?.billing?.changeDue || 0);
+        const excessOverpaid = Math.max(0, Number(effectivePaid || 0) - Number(effectiveNet || 0));
+        const finalChangeDue = Math.max(explicitChangeDue, excessOverpaid);
+
         return {
             visitId: visitObj?.visitId || currentVisitId,
             token: tokenToPrint,
             isPrepaid: isPrepaid || billingMode === 'PrepaidPartner',
             isInsurance: billingMode === 'Insurance',
-            changeDue: isChangeRetainedAsDue ? changeDue : (postProcessingSession?.changeDue || snapshot?.billing?.changeDue || 0),
+            changeDue: finalChangeDue,
             tenderedAmount: Number(tenderedAmount || postProcessingSession?.tenderedAmount || 0),
-            isChangeRetainedAsDue: Boolean(isChangeRetainedAsDue || postProcessingSession?.isChangeRetainedAsDue),
+            isChangeRetainedAsDue: Boolean(isChangeRetainedAsDue || postProcessingSession?.isChangeRetainedAsDue || finalChangeDue > 0),
             biller: {
                 billedBy: billerDisplay,
                 discountReason: effectiveDiscountReason
@@ -901,7 +905,7 @@ export function IntentPanel({ onVisitUpdated }) {
                 discountReason: effectiveDiscountReason,
                 netAmount: effectiveNet,
                 totalPaid: effectivePaid,
-                changeDue: isChangeRetainedAsDue ? changeDue : (postProcessingSession?.changeDue || snapshot?.billing?.changeDue || 0),
+                changeDue: finalChangeDue,
                 tenderedAmount: Number(tenderedAmount || postProcessingSession?.tenderedAmount || 0),
                 paymentMethod: isPrepaid ? "Corporate B2B Prepaid" : (snapshot?.billing?.paymentMethod || paymentMethod || "Cash")
             },
@@ -1418,6 +1422,8 @@ export function IntentPanel({ onVisitUpdated }) {
         ? postProcessingSession.paidAmount 
         : (isPrepaid ? 0 : (snapshot?.billing?.totalPaid !== undefined ? Number(snapshot.billing.totalPaid) : (isVisitFinalized ? postNet : 0)));
     const actualBalanceDue = Math.max(0, postNet - postPaid);
+    const counterExcessDue = Math.max(0, postPaid - postNet);
+    const effectiveChangeDue = Math.max(0, Number(changeDue || postProcessingSession?.changeDue || 0), counterExcessDue);
     const isFullySettled = actualBalanceDue <= 0.01;
     const isFullDueVisit = postPaid === 0 && actualBalanceDue > 0;
 
@@ -2374,30 +2380,34 @@ export function IntentPanel({ onVisitUpdated }) {
                                                                     </span>
                                                                 </div>
                                                                 <div className="text-xs font-semibold text-slate-600 dark:text-zinc-400">
-                                                                    Balance Due: <strong className={cn("font-mono", actualBalanceDue > 0 ? "text-rose-600 dark:text-rose-400 text-sm font-black" : "text-slate-900 dark:text-white")}>₹{actualBalanceDue.toLocaleString()}</strong>{" "}
-                                                                    {actualBalanceDue <= 0 ? (
-                                                                        <span className="text-[#245E49] dark:text-emerald-400 font-bold">(Fully Settled)</span>
+                                                                    Balance Due:{" "}
+                                                                    {effectiveChangeDue > 0 ? (
+                                                                        <span className="font-mono text-rose-600 dark:text-rose-400 font-black">
+                                                                            ₹0 <span className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">(Refund Due ₹{effectiveChangeDue.toLocaleString()})</span>
+                                                                        </span>
+                                                                    ) : actualBalanceDue <= 0 ? (
+                                                                        <strong className="font-mono text-slate-900 dark:text-white">₹0 <span className="text-[#245E49] dark:text-emerald-400 font-bold">(Fully Settled)</span></strong>
                                                                     ) : isFullDueVisit ? (
-                                                                        <span className="text-amber-600 dark:text-amber-400 font-bold">(100% Full Due)</span>
+                                                                        <strong className="font-mono text-rose-600 dark:text-rose-400 text-sm font-black">₹{actualBalanceDue.toLocaleString()} <span className="text-amber-600 dark:text-amber-400 font-bold">(100% Full Due)</span></strong>
                                                                     ) : (
-                                                                        <span className="text-amber-600 dark:text-amber-400 font-bold">(Partial Due)</span>
+                                                                        <strong className="font-mono text-rose-600 dark:text-rose-400 text-sm font-black">₹{actualBalanceDue.toLocaleString()} <span className="text-amber-600 dark:text-amber-400 font-bold">(Partial Due)</span></strong>
                                                                     )}
                                                                 </div>
                                                             </div>
                                                         )}
 
-                                                        {/* Change Due Liability Callout (Issue 25) */}
-                                                        {((isChangeRetainedAsDue && changeDue > 0) || (postProcessingSession?.isChangeRetainedAsDue && postProcessingSession?.changeDue > 0)) && (
-                                                            <div className="mt-2.5 pt-2 border-t border-amber-500/20 flex items-center justify-between text-xs">
-                                                                <div className="flex items-center gap-1.5 text-amber-800 dark:text-amber-300 font-bold">
-                                                                    <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-                                                                    <span>Change Due to Patient:</span>
-                                                                    <span className="font-mono text-sm font-black text-amber-900 dark:text-amber-200">
-                                                                        ₹{(changeDue || postProcessingSession?.changeDue || 0).toLocaleString()}
+                                                        {/* Change Due / Refund Liability Callout (Issue 25 & 27) */}
+                                                        {effectiveChangeDue > 0 && (
+                                                            <div className="mt-2.5 pt-2 border-t border-rose-500/25 flex items-center justify-between text-xs bg-rose-500/10 p-2 rounded-lg">
+                                                                <div className="flex items-center gap-1.5 text-rose-800 dark:text-rose-300 font-bold">
+                                                                    <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                                                                    <span>Change / Refund Due to Patient:</span>
+                                                                    <span className="font-mono text-sm font-black text-rose-900 dark:text-rose-200">
+                                                                        ₹{effectiveChangeDue.toLocaleString()}
                                                                     </span>
                                                                 </div>
-                                                                <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30">
-                                                                    Pending Counter Claim
+                                                                <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-rose-500/20 text-rose-800 dark:text-rose-300 border border-rose-500/30">
+                                                                    Claimable at Counter
                                                                 </span>
                                                             </div>
                                                         )}

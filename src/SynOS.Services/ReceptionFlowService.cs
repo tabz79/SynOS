@@ -863,6 +863,13 @@ namespace SynOS.Services
             {
                 // Idempotent retry or zero net bill (e.g. 100% concession / complimentary service)
                 existingInvoice.Status = "Paid";
+                var dbVisit = await _context.Visits.FindAsync(visit.VisitId);
+                if (dbVisit != null)
+                {
+                    dbVisit.Status = VisitStatus.Paid;
+                }
+                visit.Status = VisitStatus.Paid;
+
                 payment = existingInvoice.Payments.OrderByDescending(p => p.ReceivedAt).FirstOrDefault()
                     ?? new Payment
                     {
@@ -971,12 +978,35 @@ namespace SynOS.Services
                 string.Equals(updatedInvoice.Status, "PartialPayment", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(updatedInvoice.Status, "PendingPayment", StringComparison.OrdinalIgnoreCase))
             {
-                // Assign official daily token (e.g. MAI-001) from branch counter
+                // Assign official daily token (e.g. MAI-001) from branch counter ONLY for completed visit
                 var dbVisitForToken = await _context.Visits.FindAsync(visit.VisitId);
-                if (dbVisitForToken != null && (dbVisitForToken.Token.StartsWith("DRAFT", StringComparison.OrdinalIgnoreCase) || dbVisitForToken.Token.StartsWith("D-", StringComparison.OrdinalIgnoreCase)))
+                if (dbVisitForToken != null)
                 {
-                    var officialToken = await _visitService.AssignOfficialTokenAsync(dbVisitForToken.VisitId, userId);
-                    visit.Token = officialToken;
+                    if (dbVisitForToken.Status == VisitStatus.Draft)
+                    {
+                        if (string.Equals(updatedInvoice.Status, "Paid", StringComparison.OrdinalIgnoreCase))
+                        {
+                            dbVisitForToken.Status = VisitStatus.Paid;
+                            visit.Status = VisitStatus.Paid;
+                        }
+                        else if (string.Equals(updatedInvoice.Status, "PartialPayment", StringComparison.OrdinalIgnoreCase))
+                        {
+                            dbVisitForToken.Status = VisitStatus.PartialPayment;
+                            visit.Status = VisitStatus.PartialPayment;
+                        }
+                        else
+                        {
+                            dbVisitForToken.Status = VisitStatus.PendingPayment;
+                            visit.Status = VisitStatus.PendingPayment;
+                        }
+                        await _context.SaveChangesAsync();
+                    }
+
+                    if (dbVisitForToken.Token.StartsWith("DRAFT", StringComparison.OrdinalIgnoreCase) || dbVisitForToken.Token.StartsWith("D-", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var officialToken = await _visitService.AssignOfficialTokenAsync(dbVisitForToken.VisitId, userId);
+                        visit.Token = officialToken;
+                    }
                 }
 
                 var orders = await _context.Orders

@@ -33,6 +33,14 @@ namespace SynOS.Services.Payroll.Settlement
                 var employee = await _context.Employees.FindAsync(payable.EmployeeId);
                 var empName = employee != null ? $"{employee.FirstName} {employee.LastName}" : "Unknown Employee";
 
+                // Resolve Employee's Home Branch ID (CORR-05)
+                Guid? homeBranchId = null;
+                if (employee != null && employee.UserId.HasValue)
+                {
+                    var ubr = await _context.UserBranchRoles.FirstOrDefaultAsync(u => u.UserId == employee.UserId.Value);
+                    homeBranchId = ubr?.BranchId;
+                }
+
                 // 1. Update Liability
                 payable.AmountPaid += amount;
                 if (payable.AmountPaid >= payable.NetPayable)
@@ -55,7 +63,7 @@ namespace SynOS.Services.Payroll.Settlement
                     "Payroll",
                     empName,
                     $"Salary Settlement - Run {payable.PayrollRunId}",
-                    null,
+                    homeBranchId, // CORR-05: Stamping Employee's Home Branch ID
                     method,
                     reference ?? $"SAL-SETTLE-{payable.EmployeePayableId}",
                     DateTime.UtcNow,
