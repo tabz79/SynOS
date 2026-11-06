@@ -34,6 +34,13 @@ export function ActivityStream({ serverTime }) {
                 const titleStr = (e.title || e.summaryText || e.SummaryText || '').toLowerCase();
                 const tokenStr = (e.tokenId || e.TokenId || e.token || '').trim();
 
+                const isFinalizedOrBilled = typeStr === 'VISIT_FINALIZED' || 
+                                           typeStr === 'BILL_GENERATED' || 
+                                           typeStr === 'PAYMENT_RECEIVED' || 
+                                           typeStr === 'RECEIVABLE_CREATED' ||
+                                           titleStr.includes('prepaid') ||
+                                           titleStr.includes('partner collects');
+
                 // Suppress unfinalized draft tokens (DRAFT-..., D-..., or explicit draft status)
                 const isDraftToken = tokenStr.toUpperCase().startsWith('DRAFT-') || 
                                      tokenStr.toUpperCase().startsWith('D-') || 
