@@ -874,10 +874,10 @@ export function BillingSummary({
                                                         ? "bg-[#EBF5EF] dark:bg-emerald-950/30 text-[#245E49] dark:text-emerald-300 border border-[#CCE8D8] dark:border-emerald-800 hover:bg-[#DFF0E6] cursor-pointer"
                                                         : "bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 border-[#CCDCE8] dark:border-zinc-700 hover:bg-slate-50 cursor-pointer"))
                                         )}
-                                        title={!isInitialIntake ? "Initial registration concession is locked. Use Visit Correction to amend, or use Secondary Concession below." : (hasDiscountApplied ? "Edit Concession" : "+ Concession")}
+                                        title={!isInitialIntake ? "Initial registration discount is locked. Use Visit Correction to amend, or use Secondary Discount below." : (hasDiscountApplied ? "Edit Discount" : "+ Discount")}
                                     >
                                         <Tag className="w-3.5 h-3.5 text-slate-500 dark:text-zinc-400" />
-                                        <span>{hasDiscountApplied ? "Edit Concession" : "+ Concession"}</span>
+                                        <span>{hasDiscountApplied ? "Edit Discount" : "+ Discount"}</span>
                                         {isInitialIntake && (
                                             <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", isDiscountExpanded && "rotate-180")} />
                                         )}
@@ -1213,9 +1213,9 @@ export function BillingSummary({
                                     {/* Discount Mode Toggle */}
                                     <div className="flex items-center justify-between">
                                         <span className="text-base font-bold text-slate-800 dark:text-zinc-200 tracking-normal">
-                                            Concession / Discount
+                                            Discount
                                         </span>
-                                        <div className="flex items-center gap-2 text-sm">
+                                        <div className="flex items-center gap-2.5 text-sm">
                                             <button
                                                 type="button"
                                                 id="btn-minimize-concession"
@@ -1231,21 +1231,42 @@ export function BillingSummary({
                                                         }
                                                     }
                                                 }}
-                                                className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-all cursor-pointer active:scale-95 synos-focus-btn"
-                                                title="Minimize Concession"
+                                                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-all cursor-pointer active:scale-95 synos-focus-btn border border-slate-200/80 dark:border-zinc-700"
+                                                title="Minimize Discount"
                                             >
                                                 <span>Minimize</span>
                                                 <ChevronDown className="w-3.5 h-3.5 rotate-180 transition-transform duration-200" />
                                             </button>
-                                            <span className="text-slate-500 dark:text-zinc-400 font-medium">Preset Code</span>
-                                            <button
-                                                type="button"
-                                                onClick={() => setDiscountInputMode(prev => prev === 'custom' ? 'catalog' : 'custom')}
-                                                className="px-3 py-1 rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 font-semibold text-sm shadow-2xs hover:bg-slate-50 flex items-center gap-1.5 cursor-pointer"
-                                            >
-                                                <span>{discountInputMode === 'custom' ? 'Custom % / Flat' : 'Master Preset'}</span>
-                                                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-                                            </button>
+                                            
+                                            {/* Segmented Toggle Switch: Preset Code vs Custom % / Flat */}
+                                            <div className="inline-flex p-1 rounded-xl bg-slate-200/90 dark:bg-zinc-800 border border-slate-300/80 dark:border-zinc-700 shadow-2xs">
+                                                <button
+                                                    type="button"
+                                                    id="btn-discount-mode-preset"
+                                                    onClick={() => setDiscountInputMode('catalog')}
+                                                    className={cn(
+                                                        "px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-extrabold transition-all cursor-pointer synos-focus-btn active:scale-95",
+                                                        discountInputMode === 'catalog'
+                                                            ? "bg-slate-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-xs"
+                                                            : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
+                                                    )}
+                                                >
+                                                    Preset Code
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    id="btn-discount-mode-custom"
+                                                    onClick={() => setDiscountInputMode('custom')}
+                                                    className={cn(
+                                                        "px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-extrabold transition-all cursor-pointer synos-focus-btn active:scale-95",
+                                                        discountInputMode === 'custom'
+                                                            ? "bg-slate-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-xs"
+                                                            : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
+                                                    )}
+                                                >
+                                                    Custom % / Flat
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -1270,14 +1291,14 @@ export function BillingSummary({
                                     ) : (
                                         <div className="space-y-3.5 pt-1">
                                             <div className="flex items-center gap-3">
-                                                <div className="inline-flex p-1 rounded-xl bg-[#DFEAF3] dark:bg-zinc-800 border border-slate-200/60">
+                                                <div className="inline-flex p-1 rounded-xl bg-slate-200/90 dark:bg-zinc-800 border border-slate-300/80 dark:border-zinc-700 shadow-2xs">
                                                     <button
                                                         type="button"
                                                         onClick={() => setCustomDiscountType('PERCENTAGE')}
                                                         className={cn(
-                                                            "px-3.5 py-1.5 rounded-lg text-sm font-bold transition-all cursor-pointer",
+                                                            "px-4 py-2 rounded-lg text-xs sm:text-sm font-extrabold transition-all cursor-pointer synos-focus-btn active:scale-95",
                                                             customDiscountType === 'PERCENTAGE'
-                                                                ? "bg-[#506A85] text-white shadow-xs"
+                                                                ? "bg-slate-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-xs"
                                                                 : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
                                                         )}
                                                     >
@@ -1287,9 +1308,9 @@ export function BillingSummary({
                                                         type="button"
                                                         onClick={() => setCustomDiscountType('FLAT')}
                                                         className={cn(
-                                                            "px-3.5 py-1.5 rounded-lg text-sm font-bold transition-all cursor-pointer",
+                                                            "px-4 py-2 rounded-lg text-xs sm:text-sm font-extrabold transition-all cursor-pointer synos-focus-btn active:scale-95",
                                                             customDiscountType === 'FLAT'
-                                                                ? "bg-[#506A85] text-white shadow-xs"
+                                                                ? "bg-slate-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-xs"
                                                                 : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
                                                         )}
                                                     >

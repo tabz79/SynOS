@@ -950,7 +950,7 @@ export function VisitDetails({
                                 )}
                             </div>
 
-                            {/* Doctor 2: Second Referral Doctor / RMP (Only rendered if secondary partner exists) */}
+                            {/* Doctor 2: RMP Doctor / Referrer (Only rendered if secondary partner exists) */}
                             {effectiveSecondaryPartner && (
                                 <div 
                                     onClick={() => setUserDoctorExpandedState(true)}
@@ -962,7 +962,7 @@ export function VisitDetails({
                                     <div className="w-2.5 h-2.5 rounded-full shrink-0 bg-[#3D9970] shadow-[0_0_6px_rgba(61,153,112,0.35)]"></div>
                                     <div className="flex-1 min-w-0">
                                         <span className="text-[11px] font-bold uppercase tracking-wider block leading-tight text-[#2D6A4F] dark:text-emerald-300">
-                                            Second Referral Doctor / RMP
+                                            RMP Doctor / Referrer
                                         </span>
                                         <div className="flex items-center gap-2 mt-0.5">
                                             <span className="truncate tracking-normal text-sm sm:text-base font-bold text-slate-900 dark:text-white">
@@ -997,7 +997,7 @@ export function VisitDetails({
                             <div className="space-y-2">
                                 <div className="flex justify-between items-center">
                                     <span className="flex items-center gap-2.5 text-base font-semibold text-slate-800 dark:text-zinc-200 tracking-normal">
-                                        <span>Prescribing Doctor / Consultant</span>
+                                        <span>Prescribing Doctor / Referrer</span>
                                         <span className="text-xs px-2.5 py-1 rounded-md bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 font-semibold border border-blue-200/60 dark:border-blue-900/60 tracking-normal">
                                             Primary (On Reports & Bills)
                                         </span>
@@ -1174,7 +1174,7 @@ export function VisitDetails({
                             <div className="pt-3 border-t border-slate-200/60 dark:border-zinc-800/60 space-y-2">
                                 <div className="flex justify-between items-center">
                                     <span className="flex items-center gap-2.5 text-base font-semibold text-slate-800 dark:text-zinc-200 tracking-normal">
-                                        <span>Second Referral Doctor / RMP</span>
+                                        <span>RMP Doctor / Referrer</span>
                                         <span className="text-xs px-2.5 py-1 rounded-md bg-[#EBF5EF] text-[#245E49] dark:bg-emerald-950/30 dark:text-emerald-300 font-bold border border-[#CCE8D8] dark:border-emerald-900/40 tracking-normal">
                                             RMP (Commissions Route Here)
                                         </span>

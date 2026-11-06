@@ -2214,7 +2214,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                                     <div className="w-2.5 h-2.5 rounded-full shrink-0 bg-[#3D9970] shadow-[0_0_6px_rgba(61,153,112,0.35)]"></div>
                                                                     <div className="flex-1 min-w-0">
                                                                         <span className="text-[11px] font-bold uppercase tracking-wider block leading-tight text-[#2D6A4F] dark:text-emerald-300">
-                                                                            Second Referral Doctor / RMP
+                                                                            RMP Doctor / Referrer
                                                                         </span>
                                                                         <div className="flex items-center gap-2 mt-0.5">
                                                                             <span className="truncate tracking-normal text-sm sm:text-base font-bold text-slate-800 dark:text-zinc-200">

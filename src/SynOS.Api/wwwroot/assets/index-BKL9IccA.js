@@ -2190,7 +2190,7 @@ Error generating stack: ` + K.message + `
     }), Ti = Fn(ts), Vs = d({}, gr, {
       newState: 0,
       oldState: 0
-    }), Ns = Fn(Vs), RA = [
+    }), vs = Fn(Vs), RA = [
       9,
       13,
       27,
@@ -7059,7 +7059,7 @@ Error generating stack: ` + K.message + `
                 break;
               case "toggle":
               case "beforetoggle":
-                xn = Ns;
+                xn = vs;
             }
             var ba = (N & 4) !== 0, Bs = !ba && (b === "scroll" || b === "scrollend"), en = ba ? gn !== null ? gn + "Capture" : null : gn;
             ba = [];
@@ -24380,7 +24380,7 @@ Minimum version required to store current data is: ` + P + `.
         key: "qrunsl"
       }
     ]
-  ], Qs = $t("chevron-down", Jpe);
+  ], Ds = $t("chevron-down", Jpe);
   const Kpe = [
     [
       "path",
@@ -28386,7 +28386,7 @@ Minimum version required to store current data is: ` + P + `.
         key: "nufk8"
       }
     ]
-  ], ws = $t("users", gxe);
+  ], Qs = $t("users", gxe);
   const uxe = [
     [
       "path",
@@ -30158,7 +30158,7 @@ Details: ${A.inner}`);
                       className: "max-w-[100px] sm:max-w-[150px] truncate",
                       children: j
                     }),
-                    C && n.jsx(Qs, {
+                    C && n.jsx(Ds, {
                       className: "w-3 h-3 opacity-50 shrink-0"
                     })
                   ]
@@ -30227,7 +30227,7 @@ Details: ${A.inner}`);
                       className: "max-w-[90px] sm:max-w-[140px] truncate",
                       children: (r == null ? void 0 : r.name) || "User"
                     }),
-                    n.jsx(Qs, {
+                    n.jsx(Ds, {
                       className: "w-3 h-3 opacity-50 shrink-0"
                     })
                   ]
@@ -30450,7 +30450,7 @@ Details: ${A.inner}`);
                   title: "Branch Pool: Consolidated across all reception desks",
                   className: "inline-flex items-center gap-1 text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 shrink-0 truncate",
                   children: [
-                    n.jsx(ws, {
+                    n.jsx(Qs, {
                       className: "w-2.5 h-2.5"
                     }),
                     "Pool"
@@ -32776,7 +32776,7 @@ Details: ${A.inner}`);
                     o && A && n.jsx("div", {
                       className: "w-6 h-6 rounded-full flex items-center justify-center bg-blue-500/10 dark:bg-blue-400/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 transition-colors",
                       title: "Click to reveal other payer modes",
-                      children: n.jsx(Qs, {
+                      children: n.jsx(Ds, {
                         className: "w-3.5 h-3.5"
                       })
                     }),
@@ -33192,7 +33192,7 @@ Details: ${A.inner}`);
                 onClick: () => x((Re) => !Re),
                 className: "inline-flex items-center gap-1.5 text-[11px] font-medium text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors cursor-pointer py-0.5 select-none",
                 children: [
-                  I ? n.jsx(Qs, {
+                  I ? n.jsx(Ds, {
                     size: 13,
                     className: "text-zinc-400"
                   }) : n.jsx(Ro, {
@@ -34736,7 +34736,7 @@ Details: ${A.inner}`);
                         n.jsx("span", {
                           children: "Change"
                         }),
-                        n.jsx(Qs, {
+                        n.jsx(Ds, {
                           className: "w-3.5 h-3.5"
                         })
                       ]
@@ -34749,7 +34749,7 @@ Details: ${A.inner}`);
                         n.jsx("span", {
                           children: "Minimize"
                         }),
-                        n.jsx(Qs, {
+                        n.jsx(Ds, {
                           className: "w-3.5 h-3.5 rotate-180 transition-transform duration-200"
                         })
                       ]
@@ -34816,7 +34816,7 @@ Details: ${A.inner}`);
                       children: [
                         n.jsx("span", {
                           className: "text-[11px] font-bold uppercase tracking-wider block leading-tight text-[#2D6A4F] dark:text-emerald-300",
-                          children: "Second Referral Doctor / RMP"
+                          children: "RMP Doctor / Referrer"
                         }),
                         n.jsxs("div", {
                           className: "flex items-center gap-2 mt-0.5",
@@ -34861,7 +34861,7 @@ Details: ${A.inner}`);
                           className: "flex items-center gap-2.5 text-base font-semibold text-slate-800 dark:text-zinc-200 tracking-normal",
                           children: [
                             n.jsx("span", {
-                              children: "Prescribing Doctor / Consultant"
+                              children: "Prescribing Doctor / Referrer"
                             }),
                             n.jsx("span", {
                               className: "text-xs px-2.5 py-1 rounded-md bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 font-semibold border border-blue-200/60 dark:border-blue-900/60 tracking-normal",
@@ -35037,7 +35037,7 @@ Details: ${A.inner}`);
                           className: "flex items-center gap-2.5 text-base font-semibold text-slate-800 dark:text-zinc-200 tracking-normal",
                           children: [
                             n.jsx("span", {
-                              children: "Second Referral Doctor / RMP"
+                              children: "RMP Doctor / Referrer"
                             }),
                             n.jsx("span", {
                               className: "text-xs px-2.5 py-1 rounded-md bg-[#EBF5EF] text-[#245E49] dark:bg-emerald-950/30 dark:text-emerald-300 font-bold border border-[#CCE8D8] dark:border-emerald-900/40 tracking-normal",
@@ -37261,15 +37261,15 @@ Details: ${A.inner}`);
                           }
                         },
                         className: me("px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all border shadow-2xs shrink-0 synos-focus-btn", Ir ? Oi ? "bg-slate-900 text-white border-slate-900 dark:bg-zinc-700 dark:border-zinc-600 shadow-xs cursor-pointer" : ct ? "bg-[#EBF5EF] dark:bg-emerald-950/30 text-[#245E49] dark:text-emerald-300 border border-[#CCE8D8] dark:border-emerald-800 hover:bg-[#DFF0E6] cursor-pointer" : "bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 border-[#CCDCE8] dark:border-zinc-700 hover:bg-slate-50 cursor-pointer" : "opacity-45 cursor-not-allowed bg-slate-100 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500 border-slate-200 dark:border-zinc-700 select-none"),
-                        title: Ir ? ct ? "Edit Concession" : "+ Concession" : "Initial registration concession is locked. Use Visit Correction to amend, or use Secondary Concession below.",
+                        title: Ir ? ct ? "Edit Discount" : "+ Discount" : "Initial registration discount is locked. Use Visit Correction to amend, or use Secondary Discount below.",
                         children: [
                           n.jsx(d0, {
                             className: "w-3.5 h-3.5 text-slate-500 dark:text-zinc-400"
                           }),
                           n.jsx("span", {
-                            children: ct ? "Edit Concession" : "+ Concession"
+                            children: ct ? "Edit Discount" : "+ Discount"
                           }),
-                          Ir && n.jsx(Qs, {
+                          Ir && n.jsx(Ds, {
                             className: me("w-3.5 h-3.5 transition-transform duration-200", Oi && "rotate-180")
                           })
                         ]
@@ -37473,7 +37473,7 @@ Details: ${A.inner}`);
                               n.jsx("span", {
                                 children: ve ? "Minimize" : "+ Concession / Write-Off"
                               }),
-                              n.jsx(Qs, {
+                              n.jsx(Ds, {
                                 className: me("w-3.5 h-3.5 transition-transform duration-200", ve && "rotate-180")
                               })
                             ]
@@ -37707,10 +37707,10 @@ Details: ${A.inner}`);
                         children: [
                           n.jsx("span", {
                             className: "text-base font-bold text-slate-800 dark:text-zinc-200 tracking-normal",
-                            children: "Concession / Discount"
+                            children: "Discount"
                           }),
                           n.jsxs("div", {
-                            className: "flex items-center gap-2 text-sm",
+                            className: "flex items-center gap-2.5 text-sm",
                             children: [
                               n.jsxs("button", {
                                 type: "button",
@@ -37720,31 +37720,33 @@ Details: ${A.inner}`);
                                   var _a4, _b3;
                                   nn.key === "Tab" && nn.shiftKey && (nn.preventDefault(), nn.stopPropagation(), ct ? (_a4 = document.getElementById("btn-remove-discount")) == null ? void 0 : _a4.focus() : (_b3 = document.querySelector('[data-concession-trigger="true"]')) == null ? void 0 : _b3.focus());
                                 },
-                                className: "flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-all cursor-pointer active:scale-95 synos-focus-btn",
-                                title: "Minimize Concession",
+                                className: "flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-all cursor-pointer active:scale-95 synos-focus-btn border border-slate-200/80 dark:border-zinc-700",
+                                title: "Minimize Discount",
                                 children: [
                                   n.jsx("span", {
                                     children: "Minimize"
                                   }),
-                                  n.jsx(Qs, {
+                                  n.jsx(Ds, {
                                     className: "w-3.5 h-3.5 rotate-180 transition-transform duration-200"
                                   })
                                 ]
                               }),
-                              n.jsx("span", {
-                                className: "text-slate-500 dark:text-zinc-400 font-medium",
-                                children: "Preset Code"
-                              }),
-                              n.jsxs("button", {
-                                type: "button",
-                                onClick: () => he((nn) => nn === "custom" ? "catalog" : "custom"),
-                                className: "px-3 py-1 rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 font-semibold text-sm shadow-2xs hover:bg-slate-50 flex items-center gap-1.5 cursor-pointer",
+                              n.jsxs("div", {
+                                className: "inline-flex p-1 rounded-xl bg-slate-200/90 dark:bg-zinc-800 border border-slate-300/80 dark:border-zinc-700 shadow-2xs",
                                 children: [
-                                  n.jsx("span", {
-                                    children: se === "custom" ? "Custom % / Flat" : "Master Preset"
+                                  n.jsx("button", {
+                                    type: "button",
+                                    id: "btn-discount-mode-preset",
+                                    onClick: () => he("catalog"),
+                                    className: me("px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-extrabold transition-all cursor-pointer synos-focus-btn active:scale-95", se === "catalog" ? "bg-slate-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-xs" : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"),
+                                    children: "Preset Code"
                                   }),
-                                  n.jsx(Qs, {
-                                    className: "w-3.5 h-3.5 text-slate-400"
+                                  n.jsx("button", {
+                                    type: "button",
+                                    id: "btn-discount-mode-custom",
+                                    onClick: () => he("custom"),
+                                    className: me("px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-extrabold transition-all cursor-pointer synos-focus-btn active:scale-95", se === "custom" ? "bg-slate-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-xs" : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"),
+                                    children: "Custom % / Flat"
                                   })
                                 ]
                               })
@@ -37785,18 +37787,18 @@ Details: ${A.inner}`);
                             className: "flex items-center gap-3",
                             children: [
                               n.jsxs("div", {
-                                className: "inline-flex p-1 rounded-xl bg-[#DFEAF3] dark:bg-zinc-800 border border-slate-200/60",
+                                className: "inline-flex p-1 rounded-xl bg-slate-200/90 dark:bg-zinc-800 border border-slate-300/80 dark:border-zinc-700 shadow-2xs",
                                 children: [
                                   n.jsx("button", {
                                     type: "button",
                                     onClick: () => Me("PERCENTAGE"),
-                                    className: me("px-3.5 py-1.5 rounded-lg text-sm font-bold transition-all cursor-pointer", Ce === "PERCENTAGE" ? "bg-[#506A85] text-white shadow-xs" : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"),
+                                    className: me("px-4 py-2 rounded-lg text-xs sm:text-sm font-extrabold transition-all cursor-pointer synos-focus-btn active:scale-95", Ce === "PERCENTAGE" ? "bg-slate-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-xs" : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"),
                                     children: "% Off"
                                   }),
                                   n.jsx("button", {
                                     type: "button",
                                     onClick: () => Me("FLAT"),
-                                    className: me("px-3.5 py-1.5 rounded-lg text-sm font-bold transition-all cursor-pointer", Ce === "FLAT" ? "bg-[#506A85] text-white shadow-xs" : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"),
+                                    className: me("px-4 py-2 rounded-lg text-xs sm:text-sm font-extrabold transition-all cursor-pointer synos-focus-btn active:scale-95", Ce === "FLAT" ? "bg-slate-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-xs" : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"),
                                     children: "\u20B9 Flat"
                                   })
                                 ]
@@ -37950,7 +37952,7 @@ Details: ${A.inner}`);
                                           nn.preventDefault(), ue((Nn) => !Nn);
                                         },
                                         className: "absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 cursor-pointer",
-                                        children: n.jsx(Qs, {
+                                        children: n.jsx(Ds, {
                                           className: "w-4 h-4"
                                         })
                                       }),
@@ -38601,7 +38603,7 @@ Details: ${A.inner}`);
                                     or.preventDefault(), Le((oa) => !oa);
                                   },
                                   className: "absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer",
-                                  children: n.jsx(Qs, {
+                                  children: n.jsx(Ds, {
                                     className: "w-3.5 h-3.5"
                                   })
                                 }),
@@ -43158,7 +43160,7 @@ Details: ${A.inner}`);
         }, Ja = [
           ...cn,
           Sa
-        ], Ai = Ja.reduce((Vs, Ns) => Vs + (Number(Ns.price || Ns.basePrice) || 0), 0), ts = ((_a3 = Gt.billing) == null ? void 0 : _a3.discountAmount) || 0, Ti = Math.max(0, Ai - ts);
+        ], Ai = Ja.reduce((Vs, vs) => Vs + (Number(vs.price || vs.basePrice) || 0), 0), ts = ((_a3 = Gt.billing) == null ? void 0 : _a3.discountAmount) || 0, Ti = Math.max(0, Ai - ts);
         return {
           ...Gt,
           visit: {
@@ -43260,7 +43262,7 @@ Details: ${A.inner}`);
     } else oa = ((_g2 = J == null ? void 0 : J.billing) == null ? void 0 : _g2.appliedDiscount) && Number((_h2 = J == null ? void 0 : J.billing) == null ? void 0 : _h2.discountAmount) || 0;
     const ca = Math.max(0, Dr - oa), si = or ? 0 : Number(((_i2 = J == null ? void 0 : J.billing) == null ? void 0 : _i2.totalPaid) ?? ((_j2 = J == null ? void 0 : J.billing) == null ? void 0 : _j2.netAmount) ?? 0), yi = or ? 0 : ca - si, _r = Re.length + q.length + (oe ? 1 : 0) + (Ee ? 1 : 0) + (Oe !== void 0 ? 1 : 0) + ($e !== void 0 ? 1 : 0), Pr = () => {
       var _a3, _b2, _c3, _d3, _e3, _f2, _g3, _h3, _i3;
-      const dt = J == null ? void 0 : J.visit, Gt = bt || (J == null ? void 0 : J.patient), cn = J == null ? void 0 : J.billing, Rn = Dr !== void 0 ? Dr : (cn == null ? void 0 : cn.grossAmount) || (cn == null ? void 0 : cn.netAmount) || 0, Qa = oa !== void 0 ? oa : (cn == null ? void 0 : cn.discountAmount) || 0, Sa = ca !== void 0 ? ca : (cn == null ? void 0 : cn.netAmount) || 0, Ja = or ? 0 : (cn == null ? void 0 : cn.totalPaid) !== void 0 ? Number(cn.totalPaid) : 0, Ai = or ? 0 : Math.max(0, Sa - Ja), ts = f === "Corporate" || (dt == null ? void 0 : dt.billingType) === "Corporate" || !!(dt == null ? void 0 : dt.corporateAccountId), Ti = f === "Insurance" || (dt == null ? void 0 : dt.billingType) === "Insurance" || !!(dt == null ? void 0 : dt.insuranceCompanyId), Vs = or || !!(dt == null ? void 0 : dt.referralPartnerId) || Oe !== void 0, Ns = ((_a3 = dt == null ? void 0 : dt.corporateAccount) == null ? void 0 : _a3.companyName) || ((_b2 = dt == null ? void 0 : dt.corporateAccount) == null ? void 0 : _b2.name) || (ts ? "Corporate Client" : ""), RA = ((_c3 = dt == null ? void 0 : dt.corporateAccount) == null ? void 0 : _c3.corporateCode) || "", aA = (dt == null ? void 0 : dt.employeeId) || "", Ms = ((_d3 = dt == null ? void 0 : dt.insuranceCompany) == null ? void 0 : _d3.name) || (Ti ? "Insurance Provider" : ""), iA = ((_e3 = dt == null ? void 0 : dt.insuranceCompany) == null ? void 0 : _e3.tpaName) || "", Wl = (dt == null ? void 0 : dt.policyNumber) || "", Eo = (dt == null ? void 0 : dt.preAuthApprovalNumber) || "", ns = (dt == null ? void 0 : dt.insuranceCoPayAmount) || 0, tl = Oe !== void 0 ? Oe ? fe.find((Ua) => (Ua.referralPartnerId || Ua.id) === Oe) || (dt == null ? void 0 : dt.referralPartner) || ((_f2 = cn == null ? void 0 : cn.referral) == null ? void 0 : _f2.partner) : null : (dt == null ? void 0 : dt.referralPartner) || ((_g3 = cn == null ? void 0 : cn.referral) == null ? void 0 : _g3.partner), Fe = (tl == null ? void 0 : tl.name) || (tl == null ? void 0 : tl.displayName) || (Vs ? "Referral Partner" : "Self / Direct"), wn = (tl == null ? void 0 : tl.clinicName) || "", qa = (tl == null ? void 0 : tl.code) || "", ti = [
+      const dt = J == null ? void 0 : J.visit, Gt = bt || (J == null ? void 0 : J.patient), cn = J == null ? void 0 : J.billing, Rn = Dr !== void 0 ? Dr : (cn == null ? void 0 : cn.grossAmount) || (cn == null ? void 0 : cn.netAmount) || 0, Qa = oa !== void 0 ? oa : (cn == null ? void 0 : cn.discountAmount) || 0, Sa = ca !== void 0 ? ca : (cn == null ? void 0 : cn.netAmount) || 0, Ja = or ? 0 : (cn == null ? void 0 : cn.totalPaid) !== void 0 ? Number(cn.totalPaid) : 0, Ai = or ? 0 : Math.max(0, Sa - Ja), ts = f === "Corporate" || (dt == null ? void 0 : dt.billingType) === "Corporate" || !!(dt == null ? void 0 : dt.corporateAccountId), Ti = f === "Insurance" || (dt == null ? void 0 : dt.billingType) === "Insurance" || !!(dt == null ? void 0 : dt.insuranceCompanyId), Vs = or || !!(dt == null ? void 0 : dt.referralPartnerId) || Oe !== void 0, vs = ((_a3 = dt == null ? void 0 : dt.corporateAccount) == null ? void 0 : _a3.companyName) || ((_b2 = dt == null ? void 0 : dt.corporateAccount) == null ? void 0 : _b2.name) || (ts ? "Corporate Client" : ""), RA = ((_c3 = dt == null ? void 0 : dt.corporateAccount) == null ? void 0 : _c3.corporateCode) || "", aA = (dt == null ? void 0 : dt.employeeId) || "", Ms = ((_d3 = dt == null ? void 0 : dt.insuranceCompany) == null ? void 0 : _d3.name) || (Ti ? "Insurance Provider" : ""), iA = ((_e3 = dt == null ? void 0 : dt.insuranceCompany) == null ? void 0 : _e3.tpaName) || "", Wl = (dt == null ? void 0 : dt.policyNumber) || "", Eo = (dt == null ? void 0 : dt.preAuthApprovalNumber) || "", ns = (dt == null ? void 0 : dt.insuranceCoPayAmount) || 0, tl = Oe !== void 0 ? Oe ? fe.find((Ua) => (Ua.referralPartnerId || Ua.id) === Oe) || (dt == null ? void 0 : dt.referralPartner) || ((_f2 = cn == null ? void 0 : cn.referral) == null ? void 0 : _f2.partner) : null : (dt == null ? void 0 : dt.referralPartner) || ((_g3 = cn == null ? void 0 : cn.referral) == null ? void 0 : _g3.partner), Fe = (tl == null ? void 0 : tl.name) || (tl == null ? void 0 : tl.displayName) || (Vs ? "Referral Partner" : "Self / Direct"), wn = (tl == null ? void 0 : tl.clinicName) || "", qa = (tl == null ? void 0 : tl.code) || "", ti = [
         ...nn,
         ...Re.map((Ua) => ({
           ...Ua,
@@ -43282,7 +43284,7 @@ Details: ${A.inner}`);
         billingContext: {
           billingType: f || (dt == null ? void 0 : dt.billingType) || "Standard",
           isCorporate: ts,
-          corporateName: Ns,
+          corporateName: vs,
           corporateCode: RA,
           employeeId: aA,
           isInsurance: Ti,
@@ -43305,7 +43307,7 @@ Details: ${A.inner}`);
           ageGender: (Gt == null ? void 0 : Gt.age) ? `${Gt.age} ${(Gt == null ? void 0 : Gt.ageUnit) || "Yrs"} / ${(Gt == null ? void 0 : Gt.gender) || "M"}` : "Adult",
           phone: (Gt == null ? void 0 : Gt.phone) || (Gt == null ? void 0 : Gt.mobile) || (Gt == null ? void 0 : Gt.currentPhoneNumber) || "N/A",
           referringDoctor: Fe,
-          corporateName: Ns,
+          corporateName: vs,
           corporateCode: RA,
           employeeId: aA,
           insuranceCompanyName: Ms,
@@ -43336,7 +43338,7 @@ Details: ${A.inner}`);
       };
     }, va = (dt, Gt) => {
       var _a3, _b2, _c3, _d3, _e3, _f2, _g3, _h3, _i3, _j3, _k3, _l3, _m2, _n2, _o3;
-      const cn = J == null ? void 0 : J.visit, Rn = bt || (J == null ? void 0 : J.patient), Qa = (ce == null ? void 0 : ce.token) || (cn == null ? void 0 : cn.visitToken) || (cn == null ? void 0 : cn.token), Ja = !Qa || Qa.startsWith("DRAFT") || Qa.startsWith("D-") ? (cn == null ? void 0 : cn.visitToken) || "REC-2026" : Qa, Ai = Dr !== void 0 ? Dr : ((_a3 = J == null ? void 0 : J.billing) == null ? void 0 : _a3.grossAmount) || 0, ts = oa !== void 0 ? oa : ((_b2 = J == null ? void 0 : J.billing) == null ? void 0 : _b2.discountAmount) || 0, Ti = ca !== void 0 ? ca : ((_c3 = J == null ? void 0 : J.billing) == null ? void 0 : _c3.netAmount) || 0, Vs = (ce == null ? void 0 : ce.paidAmount) !== void 0 ? ce.paidAmount : or ? 0 : ((_d3 = J == null ? void 0 : J.billing) == null ? void 0 : _d3.totalPaid) !== void 0 ? Number(J.billing.totalPaid) : Ti, Ns = (oe == null ? void 0 : oe.remove) ? "" : (oe == null ? void 0 : oe.reason) || (oe == null ? void 0 : oe.name) || ((_f2 = (_e3 = J == null ? void 0 : J.billing) == null ? void 0 : _e3.appliedDiscount) == null ? void 0 : _f2.reason) || ((_h3 = (_g3 = J == null ? void 0 : J.billing) == null ? void 0 : _g3.appliedDiscount) == null ? void 0 : _h3.name) || "", RA = (cn == null ? void 0 : cn.billedBy) || ((_i3 = J == null ? void 0 : J.billing) == null ? void 0 : _i3.billedBy) || ((e == null ? void 0 : e.name) ? `${e.name}` : "Staff Desk"), aA = [
+      const cn = J == null ? void 0 : J.visit, Rn = bt || (J == null ? void 0 : J.patient), Qa = (ce == null ? void 0 : ce.token) || (cn == null ? void 0 : cn.visitToken) || (cn == null ? void 0 : cn.token), Ja = !Qa || Qa.startsWith("DRAFT") || Qa.startsWith("D-") ? (cn == null ? void 0 : cn.visitToken) || "REC-2026" : Qa, Ai = Dr !== void 0 ? Dr : ((_a3 = J == null ? void 0 : J.billing) == null ? void 0 : _a3.grossAmount) || 0, ts = oa !== void 0 ? oa : ((_b2 = J == null ? void 0 : J.billing) == null ? void 0 : _b2.discountAmount) || 0, Ti = ca !== void 0 ? ca : ((_c3 = J == null ? void 0 : J.billing) == null ? void 0 : _c3.netAmount) || 0, Vs = (ce == null ? void 0 : ce.paidAmount) !== void 0 ? ce.paidAmount : or ? 0 : ((_d3 = J == null ? void 0 : J.billing) == null ? void 0 : _d3.totalPaid) !== void 0 ? Number(J.billing.totalPaid) : Ti, vs = (oe == null ? void 0 : oe.remove) ? "" : (oe == null ? void 0 : oe.reason) || (oe == null ? void 0 : oe.name) || ((_f2 = (_e3 = J == null ? void 0 : J.billing) == null ? void 0 : _e3.appliedDiscount) == null ? void 0 : _f2.reason) || ((_h3 = (_g3 = J == null ? void 0 : J.billing) == null ? void 0 : _g3.appliedDiscount) == null ? void 0 : _h3.name) || "", RA = (cn == null ? void 0 : cn.billedBy) || ((_i3 = J == null ? void 0 : J.billing) == null ? void 0 : _i3.billedBy) || ((e == null ? void 0 : e.name) ? `${e.name}` : "Staff Desk"), aA = [
         ...nn,
         ...Re.map((ns) => ({
           ...ns,
@@ -43355,10 +43357,10 @@ Details: ${A.inner}`);
         isChangeRetainedAsDue: !!(M || (ce == null ? void 0 : ce.isChangeRetainedAsDue) || Eo > 0),
         biller: {
           billedBy: RA,
-          discountReason: Ns
+          discountReason: vs
         },
         billerName: RA,
-        discountReason: Ns,
+        discountReason: vs,
         patient: {
           name: (Rn == null ? void 0 : Rn.fullName) || (Rn == null ? void 0 : Rn.name) || "Patient",
           sex: (Rn == null ? void 0 : Rn.gender) || "M",
@@ -43369,7 +43371,7 @@ Details: ${A.inner}`);
           ...J == null ? void 0 : J.billing,
           grossAmount: Ai,
           discountAmount: ts,
-          discountReason: Ns,
+          discountReason: vs,
           netAmount: Ti,
           totalPaid: Vs,
           changeDue: Eo,
@@ -43621,7 +43623,7 @@ Details: ${A.inner}`);
             t && t();
             const ts = ((_e3 = J == null ? void 0 : J.billing) == null ? void 0 : _e3.totalPaid) || 0;
             await Ur();
-            const Ti = Number(B || 0), Vs = Number(D || 0), Ns = Math.max(0, Ti - Rn - Vs), RA = M ? Ns : 0;
+            const Ti = Number(B || 0), Vs = Number(D || 0), vs = Math.max(0, Ti - Rn - Vs), RA = M ? vs : 0;
             Bt(false), Vt(""), Q(""), v(""), j(false), H(false), U(""), _(""), tt({
               visitId: J.visit.visitId,
               token: (Ai == null ? void 0 : Ai.token) || J.visit.token || J.visit.visitToken,
@@ -44553,7 +44555,7 @@ Details: ${A.inner}`);
                                                   children: [
                                                     n.jsx("span", {
                                                       className: "text-[11px] font-bold uppercase tracking-wider block leading-tight text-[#2D6A4F] dark:text-emerald-300",
-                                                      children: "Second Referral Doctor / RMP"
+                                                      children: "RMP Doctor / Referrer"
                                                     }),
                                                     n.jsx("div", {
                                                       className: "flex items-center gap-2 mt-0.5",
@@ -45034,7 +45036,7 @@ Details: ${A.inner}`);
                                         n.jsx("span", {
                                           children: "Expand"
                                         }),
-                                        n.jsx(Qs, {
+                                        n.jsx(Ds, {
                                           className: "w-3.5 h-3.5"
                                         })
                                       ]
@@ -45121,7 +45123,7 @@ Details: ${A.inner}`);
                                         n.jsx("span", {
                                           children: "Change"
                                         }),
-                                        n.jsx(Qs, {
+                                        n.jsx(Ds, {
                                           className: "w-3.5 h-3.5"
                                         })
                                       ]
@@ -45134,7 +45136,7 @@ Details: ${A.inner}`);
                                         n.jsx("span", {
                                           children: "Minimize"
                                         }),
-                                        n.jsx(Qs, {
+                                        n.jsx(Ds, {
                                           className: "w-3.5 h-3.5 rotate-180 transition-transform duration-200"
                                         })
                                       ]
@@ -45230,7 +45232,7 @@ Details: ${A.inner}`);
                             className: "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300",
                             children: Le ? n.jsx(GE, {
                               className: "w-4 h-4"
-                            }) : n.jsx(Qs, {
+                            }) : n.jsx(Ds, {
                               className: "w-4 h-4"
                             })
                           })
@@ -47529,7 +47531,7 @@ Details: ${A.inner}`);
                                               type: "button",
                                               onClick: () => je((Ue) => !Ue),
                                               className: "absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 transition-colors cursor-pointer",
-                                              children: n.jsx(Qs, {
+                                              children: n.jsx(Ds, {
                                                 className: me("w-4 h-4 transition-transform", Me && "rotate-180")
                                               })
                                             })
@@ -49521,7 +49523,7 @@ Details: ${A.inner}`);
                                           className: "p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-400 transition-colors cursor-pointer",
                                           children: it ? n.jsx(GE, {
                                             className: "w-4 h-4"
-                                          }) : n.jsx(Qs, {
+                                          }) : n.jsx(Ds, {
                                             className: "w-4 h-4"
                                           })
                                         })
@@ -54398,7 +54400,7 @@ Details: ${A.inner}`);
         id: "patient-directory",
         title: "Patient Directory",
         desc: "Search master records, lookup MRNs, and view past clinical history",
-        icon: ws,
+        icon: Qs,
         iconBg: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20",
         onClick: r
       },
@@ -55593,7 +55595,7 @@ Details: ${A.inner}`);
         value: Me.toString(),
         label: "Walk-Ins",
         qualifier: "Paid/Credit",
-        icon: ws,
+        icon: Qs,
         color: "zinc",
         isPool: a ? true : void 0
       },
@@ -55658,7 +55660,7 @@ Details: ${A.inner}`);
         value: "\u2014",
         label: "Walk-Ins",
         qualifier: "(Paid/Credit)",
-        icon: ws,
+        icon: Qs,
         color: "default",
         isPool: a ? true : void 0
       },
@@ -55871,7 +55873,7 @@ Details: ${A.inner}`);
                               onClick: () => $(!J),
                               className: "text-zinc-500 hover:text-zinc-300 transition-colors p-1 rounded-md hover:bg-white/5",
                               title: J ? "Expand View" : "Collapse View",
-                              children: n.jsx(Qs, {
+                              children: n.jsx(Ds, {
                                 className: me("w-4 h-4 transition-transform duration-300", J && "-rotate-90")
                               })
                             })
@@ -61252,7 +61254,7 @@ Details: ${A.inner}`);
             }),
             n.jsx("div", {
               className: "shrink-0 text-zinc-400",
-              children: n.jsx(Qs, {
+              children: n.jsx(Ds, {
                 className: me("w-4 h-4 transition-transform duration-200", i && "rotate-180")
               })
             })
@@ -61916,7 +61918,7 @@ Details: ${A.inner}`);
                             onClick: () => i(!a),
                             className: "text-zinc-500 hover:text-zinc-300 transition-colors p-1 rounded-md hover:bg-white/5",
                             title: a ? "Expand View" : "Collapse View",
-                            children: n.jsx(Qs, {
+                            children: n.jsx(Ds, {
                               className: me("w-4 h-4 transition-transform duration-300", a && "-rotate-90")
                             })
                           })
@@ -62993,7 +62995,7 @@ Details: ${A.inner}`);
                           n.jsx("button", {
                             onClick: () => d(!g),
                             className: "text-zinc-500 hover:text-zinc-300 p-1 rounded-md",
-                            children: n.jsx(Qs, {
+                            children: n.jsx(Ds, {
                               className: me("w-4 h-4 transition-transform", g && "-rotate-90")
                             })
                           })
@@ -86685,7 +86687,7 @@ ${r}
                     n.jsxs("span", {
                       className: "text-[10px] font-black uppercase text-zinc-550 dark:text-zinc-400 tracking-wider flex items-center gap-1.5",
                       children: [
-                        n.jsx(ws, {
+                        n.jsx(Qs, {
                           className: "w-3.5 h-3.5"
                         }),
                         "Operator Calling"
@@ -88745,7 +88747,7 @@ ${r}
                               n.jsxs("div", {
                                 className: "flex items-center gap-2",
                                 children: [
-                                  n.jsx(ws, {
+                                  n.jsx(Qs, {
                                     className: "h-4 w-4 text-emerald-400 animate-pulse"
                                   }),
                                   n.jsx("h3", {
@@ -88945,7 +88947,7 @@ ${r}
               }) : n.jsxs("div", {
                 className: "h-full flex flex-col items-center justify-center p-8 text-center dark:text-zinc-550 text-zinc-400",
                 children: [
-                  n.jsx(ws, {
+                  n.jsx(Qs, {
                     className: "h-10 w-10 mb-2 dark:text-zinc-750 text-zinc-300"
                   }),
                   n.jsx("h3", {
@@ -91118,7 +91120,7 @@ ${r}
     ], s = [
       {
         name: "Patient Directory",
-        icon: ws,
+        icon: Qs,
         path: "/admin/patients"
       },
       {
@@ -91148,7 +91150,7 @@ ${r}
       },
       {
         name: "Staff Master (Identity)",
-        icon: ws,
+        icon: Qs,
         path: "/admin/staff"
       },
       {
@@ -91242,7 +91244,7 @@ ${r}
                               className: "text-xs sm:text-sm font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 group-hover:text-synos-primary transition-colors",
                               children: o.title
                             }),
-                            n.jsx(Qs, {
+                            n.jsx(Ds, {
                               className: "w-3.5 h-3.5 text-zinc-400 dark:text-zinc-600"
                             })
                           ]
@@ -91564,7 +91566,7 @@ ${r}
                       p
                     ]
                   }),
-                  n.jsx(Qs, {
+                  n.jsx(Ds, {
                     className: me("w-3.5 h-3.5 transition-transform duration-200", B && "rotate-180")
                   })
                 ]
@@ -96578,7 +96580,7 @@ ${r}
         });
       };
       document.addEventListener("pointermove", lr), document.addEventListener("pointerup", Da);
-    }, [Cr, Ur] = F.useState((a == null ? void 0 : a.name) || ""), [Fi, ka] = F.useState((a == null ? void 0 : a.code) || ""), [zn, er] = F.useState((a == null ? void 0 : a.department) || ""), [Sr, Yr] = F.useState((a == null ? void 0 : a.isProfile) || false), [Lr, zr] = F.useState((a == null ? void 0 : a.specimenTypeCode) || "SERUM"), [wt, Pt] = F.useState((a == null ? void 0 : a.category) || "General"), [Zt, Cn] = F.useState((a == null ? void 0 : a.modalityId) || ""), [Mn, fr] = F.useState(false), [ia, Ea] = F.useState("formula"), [vn, cr] = F.useState(""), [ya, na] = F.useState(""), [bi, Ir] = F.useState(false), [Oi, qi] = F.useState(""), [ct, On] = F.useState(false), [bt, ln] = F.useState(""), [Qn, nn] = F.useState(""), [Nn, tr] = F.useState(false), [Dr, or] = F.useState(""), [oa, ca] = F.useState(""), [si, yi] = F.useState(false), [_r, Pr] = F.useState(""), [va, za] = F.useState(""), [Zi, _e] = F.useState(false), [Ze, st] = F.useState(""), [ot, Et] = F.useState(""), [xt, Xt] = F.useState(false), [Rt, Kt] = F.useState(""), [Ut, Gn] = F.useState(""), [Xn, Tn] = F.useState(""), [Yn, At] = F.useState(""), [vt, rn] = F.useState(""), [Fn, gr] = F.useState(false), [Qr, ei] = F.useState(""), [Ya, Zr] = F.useState(""), [Ga, ra] = F.useState(""), [da, Ci] = F.useState(false), [aa, _i] = F.useState(""), [Tr, ur] = F.useState(""), [Ui, Is] = F.useState(""), [hi, Bo] = F.useState(false), [el, SA] = F.useState(""), [rA, Jc] = F.useState(""), [js, Xo] = F.useState(""), [Fo, dt] = F.useState(false), [Gt, cn] = F.useState(""), [Rn, Qa] = F.useState(""), [Sa, Ja] = F.useState(""), [Ai, ts] = F.useState(false), [Ti, Vs] = F.useState(""), [Ns, RA] = F.useState(""), [aA, Ms] = F.useState(""), [iA, Wl] = F.useState(false), [Eo, ns] = F.useState(""), [tl, Fe] = F.useState(""), [wn, qa] = F.useState(""), [ti, ro] = F.useState(false), [Hr, Cs] = F.useState(""), [jA, nl] = F.useState(""), [tf, dg] = F.useState(""), [Ua, Ed] = F.useState(false), [Kc, B0] = F.useState(""), [MA, nf] = F.useState(""), [E0, rf] = F.useState(""), af = (Xe) => {
+    }, [Cr, Ur] = F.useState((a == null ? void 0 : a.name) || ""), [Fi, ka] = F.useState((a == null ? void 0 : a.code) || ""), [zn, er] = F.useState((a == null ? void 0 : a.department) || ""), [Sr, Yr] = F.useState((a == null ? void 0 : a.isProfile) || false), [Lr, zr] = F.useState((a == null ? void 0 : a.specimenTypeCode) || "SERUM"), [wt, Pt] = F.useState((a == null ? void 0 : a.category) || "General"), [Zt, Cn] = F.useState((a == null ? void 0 : a.modalityId) || ""), [Mn, fr] = F.useState(false), [ia, Ea] = F.useState("formula"), [vn, cr] = F.useState(""), [ya, na] = F.useState(""), [bi, Ir] = F.useState(false), [Oi, qi] = F.useState(""), [ct, On] = F.useState(false), [bt, ln] = F.useState(""), [Qn, nn] = F.useState(""), [Nn, tr] = F.useState(false), [Dr, or] = F.useState(""), [oa, ca] = F.useState(""), [si, yi] = F.useState(false), [_r, Pr] = F.useState(""), [va, za] = F.useState(""), [Zi, _e] = F.useState(false), [Ze, st] = F.useState(""), [ot, Et] = F.useState(""), [xt, Xt] = F.useState(false), [Rt, Kt] = F.useState(""), [Ut, Gn] = F.useState(""), [Xn, Tn] = F.useState(""), [Yn, At] = F.useState(""), [vt, rn] = F.useState(""), [Fn, gr] = F.useState(false), [Qr, ei] = F.useState(""), [Ya, Zr] = F.useState(""), [Ga, ra] = F.useState(""), [da, Ci] = F.useState(false), [aa, _i] = F.useState(""), [Tr, ur] = F.useState(""), [Ui, Is] = F.useState(""), [hi, Bo] = F.useState(false), [el, SA] = F.useState(""), [rA, Jc] = F.useState(""), [js, Xo] = F.useState(""), [Fo, dt] = F.useState(false), [Gt, cn] = F.useState(""), [Rn, Qa] = F.useState(""), [Sa, Ja] = F.useState(""), [Ai, ts] = F.useState(false), [Ti, Vs] = F.useState(""), [vs, RA] = F.useState(""), [aA, Ms] = F.useState(""), [iA, Wl] = F.useState(false), [Eo, ns] = F.useState(""), [tl, Fe] = F.useState(""), [wn, qa] = F.useState(""), [ti, ro] = F.useState(false), [Hr, Cs] = F.useState(""), [jA, nl] = F.useState(""), [tf, dg] = F.useState(""), [Ua, Ed] = F.useState(false), [Kc, B0] = F.useState(""), [MA, nf] = F.useState(""), [E0, rf] = F.useState(""), af = (Xe) => {
       i(Xe), localStorage.setItem("synos_selected_test_id", Xe.id), Ur(Xe.name), ka(Xe.code), er(Xe.department), Yr(Xe.isProfile), zr(Xe.specimenTypeCode || "SERUM"), Pt(Xe.category || "General"), Cn(Xe.modalityId || ""), hn(false), fr(false), !Xe.isProfile && Qt === "profile-builder" && dn("parameters");
     }, ax = () => {
       const Xe = ee.find((bn) => bn.name === zn), Ft = Xe ? Xe.macroDepartment === "Radiology" : zn === "Radiology" || zn === "RAD";
@@ -96830,7 +96832,7 @@ IMPRESSION:`,
         infantMax: hi ? rA !== "" ? Number(rA) : null : Fo && Rn !== "" ? Number(Rn) : null,
         useChild: Ai || iA,
         childMin: Ai ? Ti !== "" ? Number(Ti) : null : iA && Eo !== "" ? Number(Eo) : null,
-        childMax: Ai ? Ns !== "" ? Number(Ns) : null : iA && tl !== "" ? Number(tl) : null,
+        childMax: Ai ? vs !== "" ? Number(vs) : null : iA && tl !== "" ? Number(tl) : null,
         useAdult: ti || Ua,
         adultMin: ti ? Hr !== "" ? Number(Hr) : null : Ua && Kc !== "" ? Number(Kc) : null,
         adultMax: ti ? jA !== "" ? Number(jA) : null : Ua && MA !== "" ? Number(MA) : null,
@@ -96852,7 +96854,7 @@ IMPRESSION:`,
         infantFemaleText: Fo ? Sa : null,
         useChildMale: Ai,
         childMaleMin: Ai && Ti !== "" ? Number(Ti) : null,
-        childMaleMax: Ai && Ns !== "" ? Number(Ns) : null,
+        childMaleMax: Ai && vs !== "" ? Number(vs) : null,
         childMaleText: Ai ? aA : null,
         useChildFemale: iA,
         childFemaleMin: iA && Eo !== "" ? Number(Eo) : null,
@@ -99925,7 +99927,7 @@ Would you like to switch to "${yn.childTestName}" now?`) && af(Ca) : alert(`Chil
                         setUseMale: ts,
                         maleMin: Ti,
                         setMaleMin: Vs,
-                        maleMax: Ns,
+                        maleMax: vs,
                         setMaleMax: RA,
                         maleText: aA,
                         setMaleText: Ms,
@@ -104628,7 +104630,7 @@ Would you like to switch to "${yn.childTestName}" now?`) && af(Ca) : alert(`Chil
                           title: a ? "Collapse Guide" : "Expand Guide",
                           children: a ? n.jsx(GE, {
                             className: "w-4 h-4"
-                          }) : n.jsx(Qs, {
+                          }) : n.jsx(Ds, {
                             className: "w-4 h-4"
                           })
                         })
@@ -107234,7 +107236,7 @@ Would you like to switch to "${yn.childTestName}" now?`) && af(Ca) : alert(`Chil
                                               ")"
                                             ]
                                           }),
-                                          ze ? n.jsx(Qs, {
+                                          ze ? n.jsx(Ds, {
                                             size: 12
                                           }) : n.jsx(Ro, {
                                             size: 12
@@ -108716,7 +108718,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
           Ne(false);
         }
       }
-    }, Ns = async (Fe) => {
+    }, vs = async (Fe) => {
       let wn = "";
       if (Fe === "jwt" ? wn = "Regenerating the JWT secret logs out all users. Are you sure you want to proceed?" : Fe === "backup" ? wn = "Rotating the backup key affects future backups. Are you sure you want to proceed?" : Fe === "diagnostics" ? wn = "Rotating the diagnostics key affects future diagnostic bundles. Are you sure you want to proceed?" : Fe === "middleware" && (wn = "Generating a new Middleware API Key will invalidate the current key immediately, disconnecting the Middleware until the new key is updated in its configuration. Are you sure you want to proceed?"), !!window.confirm(wn)) {
         x(null), p(null);
@@ -113453,7 +113455,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                         }),
                                         n.jsx("button", {
                                           type: "button",
-                                          onClick: () => Ns("jwt"),
+                                          onClick: () => vs("jwt"),
                                           className: "h-10 px-4 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-850 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold text-xs rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-750 transition-all whitespace-nowrap active:scale-98 flex items-center justify-center",
                                           children: "Regenerate"
                                         })
@@ -113510,7 +113512,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                         }),
                                         n.jsx("button", {
                                           type: "button",
-                                          onClick: () => Ns("backup"),
+                                          onClick: () => vs("backup"),
                                           className: "h-10 px-4 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-850 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold text-xs rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-750 transition-all whitespace-nowrap active:scale-98 flex items-center justify-center",
                                           children: "Rotate"
                                         })
@@ -113533,7 +113535,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                         }),
                                         n.jsx("button", {
                                           type: "button",
-                                          onClick: () => Ns("diagnostics"),
+                                          onClick: () => vs("diagnostics"),
                                           className: "h-10 px-4 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-850 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold text-xs rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-750 transition-all whitespace-nowrap active:scale-98 flex items-center justify-center",
                                           children: "Rotate"
                                         })
@@ -118700,7 +118702,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
       {
         name: "Referral Partners",
         path: "/finance/referrals",
-        icon: ws,
+        icon: Qs,
         subItems: [
           {
             name: "Overview",
@@ -119649,7 +119651,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
               children: [
                 n.jsx("div", {
                   className: "w-6 h-6 sm:w-7 sm:h-7 rounded-[7px] bg-[#FAF5FF] text-[#A855F7] dark:bg-purple-950/40 dark:text-purple-400 border border-purple-100/90 dark:border-purple-800/40 flex items-center justify-center shrink-0 shadow-2xs",
-                  children: n.jsx(ws, {
+                  children: n.jsx(Qs, {
                     size: 14,
                     strokeWidth: 2.3
                   })
@@ -135482,7 +135484,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                           className: "type-label",
                           children: "Total Registered Doctors"
                         }),
-                        n.jsx(ws, {
+                        n.jsx(Qs, {
                           className: "w-4 h-4 text-zinc-500"
                         })
                       ]
@@ -136723,7 +136725,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                         className: "text-[10px] font-extrabold uppercase tracking-wider",
                         children: "Patients"
                       }),
-                      n.jsx(ws, {
+                      n.jsx(Qs, {
                         size: 14,
                         className: "text-blue-500"
                       })
@@ -140363,7 +140365,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
       {
         label: "Today New Referrals",
         value: t.newReferralsToday,
-        icon: ws,
+        icon: Qs,
         color: "text-blue-500",
         bg: "bg-blue-500/10",
         description: "Patients referred since morning"
@@ -140637,7 +140639,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                     j.stopPropagation(), r();
                   },
                   className: "p-1.5 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors shrink-0 mt-0.5 sm:mt-0",
-                  children: e ? n.jsx(Qs, {
+                  children: e ? n.jsx(Ds, {
                     size: 18
                   }) : n.jsx(GE, {
                     size: 18
@@ -141128,7 +141130,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                     v.stopPropagation(), r();
                   },
                   className: "p-1.5 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors shrink-0 mt-0.5 sm:mt-0",
-                  children: e ? n.jsx(Qs, {
+                  children: e ? n.jsx(Ds, {
                     size: 18
                   }) : n.jsx(GE, {
                     size: 18
@@ -142118,12 +142120,12 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
       {
         id: "registry",
         label: "Doctor Registry",
-        icon: ws
+        icon: Qs
       },
       {
         id: "rmp",
         label: "RMP Partners",
-        icon: ws
+        icon: Qs
       },
       {
         id: "payouts",
@@ -148406,7 +148408,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
       children: [
         n.jsx("div", {
           className: "w-10 h-10 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-400 flex items-center justify-center mb-2",
-          children: n.jsx(ws, {
+          children: n.jsx(Qs, {
             size: 20
           })
         }),
@@ -148654,7 +148656,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
       {
         id: "staff",
         label: "Staff Summary",
-        icon: ws
+        icon: Qs
       },
       {
         id: "codes",
@@ -149759,7 +149761,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                       children: [
                         n.jsx("div", {
                           className: "w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/80 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs",
-                          children: n.jsx(ws, {
+                          children: n.jsx(Qs, {
                             size: 16,
                             strokeWidth: 2.4
                           })
@@ -150922,7 +150924,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                         }),
                         n.jsx("div", {
                           className: "w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0",
-                          children: n.jsx(ws, {
+                          children: n.jsx(Qs, {
                             size: 17
                           })
                         })
@@ -151182,7 +151184,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                         }),
                         n.jsx("div", {
                           className: "w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0",
-                          children: n.jsx(ws, {
+                          children: n.jsx(Qs, {
                             size: 17
                           })
                         })
@@ -151325,7 +151327,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                 }) : ut.length === 0 ? n.jsxs("div", {
                   className: "flex flex-col items-center justify-center p-16 gap-2 text-zinc-400",
                   children: [
-                    n.jsx(ws, {
+                    n.jsx(Qs, {
                       className: "w-8 h-8 opacity-40 mb-1"
                     }),
                     n.jsx("p", {
@@ -154020,7 +154022,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
             n.jsx(tD, {
               label: "Total Headcount",
               value: i.headcount,
-              icon: ws,
+              icon: Qs,
               trend: "+2 this month",
               color: "primary"
             }),
@@ -156698,7 +156700,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
               children: [
                 n.jsx("div", {
                   className: "p-3 rounded-xl bg-synos-primary/10 text-synos-primary",
-                  children: n.jsx(ws, {
+                  children: n.jsx(Qs, {
                     className: "w-5 h-5"
                   })
                 }),
@@ -158529,7 +158531,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
       {
         title: "Active Employees",
         value: t.staffCount.toString(),
-        icon: ws,
+        icon: Qs,
         color: "text-blue-500",
         bg: "bg-blue-500/10",
         description: "Registered operational members"
@@ -158737,7 +158739,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
       {
         id: "staff",
         label: "Staff Registry",
-        icon: ws
+        icon: Qs
       },
       {
         id: "identity",
@@ -159316,7 +159318,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
               children: [
                 n.jsx("div", {
                   className: "p-2.5 bg-synos-primary/10 text-synos-primary rounded-xl",
-                  children: n.jsx(ws, {
+                  children: n.jsx(Qs, {
                     size: 24
                   })
                 }),
@@ -161142,7 +161144,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
               n.jsxs("h1", {
                 className: "text-xl font-medium tracking-tight text-zinc-800 dark:text-white flex items-center gap-2.5",
                 children: [
-                  n.jsx(ws, {
+                  n.jsx(Qs, {
                     className: "w-5 h-5 text-synos-primary"
                   }),
                   " Patient Master Directory"
@@ -161183,7 +161185,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
             n.jsxs("div", {
               className: "px-6 py-4 border-b dark:border-zinc-800 border-slate-300 bg-slate-50/80 dark:bg-zinc-900/50 flex items-center gap-2",
               children: [
-                n.jsx(ws, {
+                n.jsx(Qs, {
                   className: "w-4 h-4 text-synos-primary"
                 }),
                 n.jsx("h3", {
@@ -179294,7 +179296,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     var a = new $A(3);
     return a[0] = t, a[1] = e, a[2] = r, a;
   }
-  function Ds(t, e, r, a) {
+  function Ns(t, e, r, a) {
     return t[0] = e, t[1] = r, t[2] = a, t;
   }
   function xw(t, e, r) {
@@ -180790,7 +180792,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     ]), hUe(t, e);
   }
   const pUe = We.newInstance(Jae, "vtkViewNode");
-  var vs = {
+  var ws = {
     newInstance: pUe,
     extend: Jae,
     PASS_TYPES: uUe
@@ -181276,7 +181278,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
   };
   function qae(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, wUe, r), vs.extend(t, e, r), e.sendParametersTime = {}, Gs(e.sendParametersTime, {
+    Object.assign(e, wUe, r), ws.extend(t, e, r), e.sendParametersTime = {}, Gs(e.sendParametersTime, {
       mtime: 0
     }), e.textureBuildTime = {}, Gs(e.textureBuildTime, {
       mtime: 0
@@ -183285,7 +183287,7 @@ void main()
       "size"
     ], 2), We.get(t, e, [
       "selector"
-    ]), vs.extend(t, e, r), W6e(t, e);
+    ]), ws.extend(t, e, r), W6e(t, e);
   }
   const Z6e = We.newInstance(bie, "vtkRenderWindowViewNode");
   var X6e = {
@@ -184138,7 +184140,7 @@ void main()
   };
   function gPe(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, dPe, r), vs.extend(t, e, r), e.keyMatrixTime = {}, Gs(e.keyMatrixTime, {
+    Object.assign(e, dPe, r), ws.extend(t, e, r), e.keyMatrixTime = {}, Gs(e.keyMatrixTime, {
       mtime: 0
     }), e.keyMatrices = {
       normalMatrix: ig(new Float64Array(9)),
@@ -184200,7 +184202,7 @@ void main()
   };
   function pPe(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, fPe, r), vs.extend(t, e, r), Zo(t, e, [
+    Object.assign(e, fPe, r), ws.extend(t, e, r), Zo(t, e, [
       "context"
     ]), Ec(t, e, [
       "activeTextures"
@@ -184236,7 +184238,7 @@ void main()
   };
   function xPe(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, CPe, r), vs.extend(t, e, r), e.keyMatrixTime = {}, Gs(e.keyMatrixTime), e.keyMatrices = {
+    Object.assign(e, CPe, r), ws.extend(t, e, r), e.keyMatrixTime = {}, Gs(e.keyMatrixTime), e.keyMatrices = {
       normalMatrix: new Float64Array(9),
       vcpc: new Float64Array(16),
       wcvc: new Float64Array(16),
@@ -185846,7 +185848,7 @@ void main()
   };
   function Fie(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, iOe, r), vs.extend(t, e, r), Bu.implementReplaceShaderCoincidentOffset(t, e, r), Bu.implementBuildShadersWithReplacements(t, e, r), e.primitives = [], e.primTypes = QA, e.tmpMat3 = ig(new Float64Array(9)), e.tmpMat4 = $r(new Float64Array(16));
+    Object.assign(e, iOe, r), ws.extend(t, e, r), Bu.implementReplaceShaderCoincidentOffset(t, e, r), Bu.implementBuildShadersWithReplacements(t, e, r), e.primitives = [], e.primTypes = QA, e.tmpMat3 = ig(new Float64Array(9)), e.tmpMat4 = $r(new Float64Array(16));
     for (let a = QA.Start; a < QA.End; a++) e.primitives[a] = vu.newInstance(), e.primitives[a].setPrimitiveType(a), e.primitives[a].set({
       lastLightComplexity: 0,
       lastLightCount: 0,
@@ -186636,7 +186638,7 @@ void main()
   };
   function COe(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, IOe, r), vs.extend(t, e, r), Bu.implementReplaceShaderCoincidentOffset(t, e, r), Bu.implementBuildShadersWithReplacements(t, e, r), e.tris = vu.newInstance(), e.imagemat = $r(new Float64Array(16)), e.imagematinv = $r(new Float64Array(16)), e.projectionToWorld = $r(new Float64Array(16)), e.idxToView = $r(new Float64Array(16)), e.idxNormalMatrix = ig(new Float64Array(9)), e.modelToView = $r(new Float64Array(16)), e.projectionToView = $r(new Float64Array(16)), Zo(t, e, []), e.VBOBuildTime = {}, Gs(e.VBOBuildTime), mOe(t, e);
+    Object.assign(e, IOe, r), ws.extend(t, e, r), Bu.implementReplaceShaderCoincidentOffset(t, e, r), Bu.implementBuildShadersWithReplacements(t, e, r), e.tris = vu.newInstance(), e.imagemat = $r(new Float64Array(16)), e.imagematinv = $r(new Float64Array(16)), e.projectionToWorld = $r(new Float64Array(16)), e.idxToView = $r(new Float64Array(16)), e.idxNormalMatrix = ig(new Float64Array(9)), e.modelToView = $r(new Float64Array(16)), e.projectionToView = $r(new Float64Array(16)), Zo(t, e, []), e.VBOBuildTime = {}, Gs(e.VBOBuildTime), mOe(t, e);
   }
   const zie = Wi(COe, "vtkOpenGLImageMapper");
   var xOe = {
@@ -186679,7 +186681,7 @@ void main()
   };
   function bOe(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, EOe, r), vs.extend(t, e, r), e.keyMatrixTime = {}, Gs(e.keyMatrixTime, {
+    Object.assign(e, EOe, r), ws.extend(t, e, r), e.keyMatrixTime = {}, Gs(e.keyMatrixTime, {
       mtime: 0
     }), e.keyMatrices = {
       mcwc: $r(new Float64Array(16))
@@ -186714,7 +186716,7 @@ void main()
   const vOe = {};
   function NOe(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, vOe, r), vs.extend(t, e, r), wOe(t, e);
+    Object.assign(e, vOe, r), ws.extend(t, e, r), wOe(t, e);
   }
   const Uie = Wi(NOe, "vtkOpenGLPixelSpaceCallbackMapper");
   var DOe = {
@@ -186785,7 +186787,7 @@ void main()
   };
   function jOe(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, ROe, r), vs.extend(t, e, r), Ec(t, e, [
+    Object.assign(e, ROe, r), ws.extend(t, e, r), Ec(t, e, [
       "shaderCache"
     ]), Zo(t, e, [
       "selector"
@@ -186895,7 +186897,7 @@ void main()
   };
   function LOe(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, TOe, r), vs.extend(t, e, r), e.openGLTexture = Io.newInstance(), e.tris = vu.newInstance(), e.keyMatrixTime = {}, Gs(e.keyMatrixTime, {
+    Object.assign(e, TOe, r), ws.extend(t, e, r), e.openGLTexture = Io.newInstance(), e.tris = vu.newInstance(), e.keyMatrixTime = {}, Gs(e.keyMatrixTime, {
       mtime: 0
     }), e.keyMatrices = {
       normalMatrix: ig(new Float64Array(9)),
@@ -187467,7 +187469,7 @@ void main()
   const ZOe = {};
   function XOe(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, ZOe, r), vs.extend(t, e, r), e.keyMatrixTime = {}, Gs(e.keyMatrixTime, {
+    Object.assign(e, ZOe, r), ws.extend(t, e, r), e.keyMatrixTime = {}, Gs(e.keyMatrixTime, {
       mtime: 0
     }), e.normalMatrix = new Float64Array(9), e.MCWCMatrix = new Float64Array(16), Zo(t, e, [
       "context"
@@ -189349,7 +189351,7 @@ void main()
       const f = o.getColorMixPreset(), p = r_e(f);
       p && (A = Ot.substitute(A, "//VTK::CustomComponentsColorMixOn", "#define vtkCustomComponentsColorMix").result, A = Ot.substitute(A, "//VTK::CustomComponentsColorMix::Impl", p).result);
       const I = e.currentInput.getSpatialExtent(), x = e.currentInput.getSpacing(), C = new Float64Array(3);
-      Ds(C, (I[1] - I[0]) * x[0], (I[3] - I[2]) * x[1], (I[5] - I[4]) * x[2]);
+      Ns(C, (I[1] - I[0]) * x[0], (I[3] - I[2]) * x[1], (I[5] - I[4]) * x[2]);
       const B = RE(C) / t.getCurrentSampleDistance(i);
       A = Ot.substitute(A, "//VTK::MaximumSamplesValue", `${Math.ceil(B)}`).result, A = Ot.substitute(A, "//VTK::LightComplexity", `#define vtkLightComplexity ${e.lightComplexity}`).result, e.lightComplexity > 0 && (e.renderable.getVolumetricScatteringBlending() > 0 && (A = Ot.substitute(A, "//VTK::VolumeShadowOn", "#define VolumeShadowOn").result), e.renderable.getVolumetricScatteringBlending() < 1 && (A = Ot.substitute(A, "//VTK::SurfaceShadowOn", "#define SurfaceShadowOn").result), e.renderable.getLocalAmbientOcclusion() && o.getAmbient() > 0 && (A = Ot.substitute(A, "//VTK::localAmbientOcclusionOn", "#define localAmbientOcclusionOn").result));
       const Q = d ? g : 1;
@@ -189442,7 +189444,7 @@ void main()
       const A = e.scalarTexture.getComponents(), l = [], c = [];
       for (let I = 0; I < A; I++) l.push(o.getOpacityMode(I)), c.push(o.getForceNearestInterpolation(I));
       const g = e.currentInput.getSpatialExtent(), d = e.currentInput.getSpacing(), u = new Float64Array(3);
-      Ds(u, (g[1] - g[0]) * d[0], (g[3] - g[2]) * d[1], (g[5] - g[4]) * d[2]);
+      Ns(u, (g[1] - g[0]) * d[0], (g[3] - g[2]) * d[1], (g[5] - g[4]) * d[2]);
       const h = RE(u) / t.getCurrentSampleDistance(i), f = !!e.zBufferTexture, p = {
         iComps: o.getIndependentComponents(),
         colorMixPreset: o.getColorMixPreset(),
@@ -189490,7 +189492,7 @@ void main()
       const d = e.currentInput.getBounds(), u = e.currentInput.getDimensions(), h = new Float64Array(3), f = new Float64Array(3);
       let p = 1, I = -1, x = 1, C = -1;
       for (let te = 0; te < 8; ++te) {
-        if (Ds(h, d[te % 2], d[2 + Math.floor(te / 2) % 2], d[4 + Math.floor(te / 4)]), ki(h, h, e.modelToView), !c.getParallelProjection()) {
+        if (Ns(h, d[te % 2], d[2 + Math.floor(te / 2) % 2], d[4 + Math.floor(te / 4)]), ki(h, h, e.modelToView), !c.getParallelProjection()) {
           h0(f, h);
           const ee = -g[0] / h[2];
           Nh(h, f, ee);
@@ -189499,7 +189501,7 @@ void main()
       }
       l.setUniformf("dcxmin", p), l.setUniformf("dcxmax", I), l.setUniformf("dcymin", x), l.setUniformf("dcymax", C), l.isUniformUsed("cameraParallel") && l.setUniformi("cameraParallel", c.getParallelProjection());
       const B = e.currentInput.getSpatialExtent(), Q = e.currentInput.getSpacing(), D = new Float64Array(3);
-      Ds(D, (B[1] - B[0]) * Q[0], (B[3] - B[2]) * Q[1], (B[5] - B[4]) * Q[2]), l.setUniform3f("vSpacing", Q[0], Q[1], Q[2]), Ds(h, B[0], B[2], B[4]), e.currentInput.indexToWorldVec3(h, h), ki(h, h, e.modelToView), l.setUniform3f("vOriginVC", h[0], h[1], h[2]);
+      Ns(D, (B[1] - B[0]) * Q[0], (B[3] - B[2]) * Q[1], (B[5] - B[4]) * Q[2]), l.setUniform3f("vSpacing", Q[0], Q[1], Q[2]), Ns(h, B[0], B[2], B[4]), e.currentInput.indexToWorldVec3(h, h), ki(h, h, e.modelToView), l.setUniform3f("vOriginVC", h[0], h[1], h[2]);
       const v = e.currentInput.getIndexToWorld();
       Ri(e.idxToView, e.modelToView, v), eb(e.idxNormalMatrix, o.normalMatrix, A.normalMatrix), eb(e.idxNormalMatrix, e.idxNormalMatrix, e.currentInput.getDirectionByReference());
       const M = RE(D) / t.getCurrentSampleDistance(i);
@@ -189508,7 +189510,7 @@ void main()
         Please either change the
         volumeMapper sampleDistance or its maximum number of samples.`);
       const j = new Float64Array(3);
-      if (Ds(j, 1, 1, 1), gGe(j, j, D), l.setUniform3f("vVCToIJK", j[0], j[1], j[2]), l.setUniform3i("volumeDimensions", u[0], u[1], u[2]), !e._openGLRenderWindow.getWebgl2()) {
+      if (Ns(j, 1, 1, 1), gGe(j, j, D), l.setUniform3f("vVCToIJK", j[0], j[1], j[2]), l.setUniform3i("volumeDimensions", u[0], u[1], u[2]), !e._openGLRenderWindow.getWebgl2()) {
         const te = e.scalarTexture.getVolumeInfo();
         l.setUniformf("texWidth", e.scalarTexture.getWidth()), l.setUniformf("texHeight", e.scalarTexture.getHeight()), l.setUniformi("xreps", te.xreps), l.setUniformi("xstride", te.xstride), l.setUniformi("ystride", te.ystride);
       }
@@ -189516,22 +189518,22 @@ void main()
       for (let te = 0; te < 6; ++te) {
         switch (te) {
           case 1:
-            Ds(G, -1, 0, 0), Ds(H, B[0], B[2], B[4]);
+            Ns(G, -1, 0, 0), Ns(H, B[0], B[2], B[4]);
             break;
           case 2:
-            Ds(G, 0, 1, 0), Ds(H, B[1], B[3], B[5]);
+            Ns(G, 0, 1, 0), Ns(H, B[1], B[3], B[5]);
             break;
           case 3:
-            Ds(G, 0, -1, 0), Ds(H, B[0], B[2], B[4]);
+            Ns(G, 0, -1, 0), Ns(H, B[0], B[2], B[4]);
             break;
           case 4:
-            Ds(G, 0, 0, 1), Ds(H, B[1], B[3], B[5]);
+            Ns(G, 0, 0, 1), Ns(H, B[1], B[3], B[5]);
             break;
           case 5:
-            Ds(G, 0, 0, -1), Ds(H, B[0], B[2], B[4]);
+            Ns(G, 0, 0, -1), Ns(H, B[0], B[2], B[4]);
             break;
           default:
-            Ds(G, 1, 0, 0), Ds(H, B[1], B[3], B[5]);
+            Ns(G, 1, 0, 0), Ns(H, B[1], B[3], B[5]);
             break;
         }
         vk(G, G, e.idxNormalMatrix), ki(H, H, e.idxToView);
@@ -189558,7 +189560,7 @@ void main()
           const ae = te.getColor(), ne = te.getIntensity();
           U[0 + P * 3] = ae[0] * ne, U[1 + P * 3] = ae[1] * ne, U[2 + P * 3] = ae[2] * ne;
           const J = te.getDirection();
-          Ds(G, J[0], J[1], J[2]), vk(G, G, o.normalMatrix), h0(G, G), O[0 + P * 3] = G[0], O[1 + P * 3] = G[1], O[2 + P * 3] = G[2], _[0 + P * 3] = -0.5 * G[0], _[1 + P * 3] = -0.5 * G[1], _[2 + P * 3] = -0.5 * (G[2] - 1), P++;
+          Ns(G, J[0], J[1], J[2]), vk(G, G, o.normalMatrix), h0(G, G), O[0 + P * 3] = G[0], O[1 + P * 3] = G[1], O[2 + P * 3] = G[2], _[0 + P * 3] = -0.5 * G[0], _[1 + P * 3] = -0.5 * G[1], _[2 + P * 3] = -0.5 * (G[2] - 1), P++;
         }
       }), l.setUniformi("twoSidedLighting", i.getTwoSidedLighting()), l.setUniformi("lightNum", P), l.setUniform3fv("lightColor", U), l.setUniform3fv("lightDirectionVC", O), l.setUniform3fv("lightHalfAngleVC", _), e.lightComplexity === 3) {
         P = 0;
@@ -189835,7 +189837,7 @@ void main()
   };
   function Vie(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, i_e, r), vs.extend(t, e, r), Bu.implementBuildShadersWithReplacements(t, e, r), e.VBOBuildTime = {}, Gs(e.VBOBuildTime, {
+    Object.assign(e, i_e, r), ws.extend(t, e, r), Bu.implementBuildShadersWithReplacements(t, e, r), e.VBOBuildTime = {}, Gs(e.VBOBuildTime, {
       mtime: 0
     }), e.tris = vu.newInstance(), e.scalarTexture = Io.newInstance(), e.opacityTexture = Io.newInstance(), e.colorTexture = Io.newInstance(), e.jitterTexture = Io.newInstance(), e.jitterTexture.setWrapS(H1.REPEAT), e.jitterTexture.setWrapT(H1.REPEAT), e.labelOutlineThicknessTexture = Io.newInstance(), e.framebuffer = T3.newInstance(), e.idxToView = $r(new Float64Array(16)), e.idxNormalMatrix = ig(new Float64Array(9)), e.modelToView = $r(new Float64Array(16)), e.projectionToView = $r(new Float64Array(16)), e.projectionToWorld = $r(new Float64Array(16)), Zo(t, e, [
       "context"
@@ -190124,7 +190126,7 @@ void main()
       const I = [
         3
       ];
-      ag(e.physicalViewNorth, e.physicalViewUp, I), p[0] = I[0], p[1] = I[1], p[2] = I[2], p[4] = e.physicalViewUp[0], p[5] = e.physicalViewUp[1], p[6] = e.physicalViewUp[2], p[8] = -e.physicalViewNorth[0], p[9] = -e.physicalViewNorth[1], p[10] = -e.physicalViewNorth[2], Si(p, p), Ds(A, 1 / e.physicalScale, 1 / e.physicalScale, 1 / e.physicalScale), nm(p, p, A), fo(p, p, e.physicalTranslation);
+      ag(e.physicalViewNorth, e.physicalViewUp, I), p[0] = I[0], p[1] = I[1], p[2] = I[2], p[4] = e.physicalViewUp[0], p[5] = e.physicalViewUp[1], p[6] = e.physicalViewUp[2], p[8] = -e.physicalViewNorth[0], p[9] = -e.physicalViewNorth[1], p[10] = -e.physicalViewNorth[2], Si(p, p), Ns(A, 1 / e.physicalScale, 1 / e.physicalScale, 1 / e.physicalScale), nm(p, p, A), fo(p, p, e.physicalTranslation);
     }, t.computeViewParametersFromViewMatrix = (p) => {
       pA(s, p), ki(A, r, s), t.computeDistance();
       const I = e.distance;
@@ -190144,7 +190146,7 @@ void main()
       const C = new Float64Array(16);
       if ($r(C), e.projectionMatrix) {
         const D = 1 / e.physicalScale;
-        return Ds(A, D, D, D), ko(C, e.projectionMatrix), nm(C, C, A), Si(C, C), C;
+        return Ns(A, D, D, D), ko(C, e.projectionMatrix), nm(C, C, A), Si(C, C), C;
       }
       $r(s);
       const B = e.clippingRange[1] - e.clippingRange[0], Q = [
@@ -190335,7 +190337,7 @@ void main()
   function x_e(t, e) {
     e.classHierarchy.push("vtkLight");
     const r = new Float64Array(3);
-    t.getTransformedPosition = () => (e.transformMatrix ? ki(r, e.position, e.transformMatrix) : Ds(r, e.position[0], e.position[1], e.position[2]), r), t.getTransformedFocalPoint = () => (e.transformMatrix ? ki(r, e.focalPoint, e.transformMatrix) : Ds(r, e.focalPoint[0], e.focalPoint[1], e.focalPoint[2]), r), t.getDirection = () => (e.directionMTime < e.mtime && (Q8(e.direction, e.focalPoint, e.position), em(e.direction), e.directionMTime = e.mtime), e.direction), t.setDirection = (a) => {
+    t.getTransformedPosition = () => (e.transformMatrix ? ki(r, e.position, e.transformMatrix) : Ns(r, e.position[0], e.position[1], e.position[2]), r), t.getTransformedFocalPoint = () => (e.transformMatrix ? ki(r, e.focalPoint, e.transformMatrix) : Ns(r, e.focalPoint[0], e.focalPoint[1], e.focalPoint[2]), r), t.getDirection = () => (e.directionMTime < e.mtime && (Q8(e.direction, e.focalPoint, e.position), em(e.direction), e.directionMTime = e.mtime), e.direction), t.setDirection = (a) => {
       const i = new Float64Array(3);
       Q8(i, e.position, a), e.focalPoint = i;
     }, t.setDirectionAngle = (a, i) => {
@@ -195470,7 +195472,7 @@ void main()
     }
     rotateFromDirections(e, r) {
       const a = new Float64Array(3), i = new Float64Array(3), s = new Float64Array(16);
-      Ds(a, e[0], e[1], e[2]), Ds(i, r[0], r[1], r[2]), h0(a, a), h0(i, i);
+      Ns(a, e[0], e[1], e[2]), Ns(i, r[0], r[1], r[2]), h0(a, a), h0(i, i);
       const o = _1(a, i);
       return o >= 1 ? this : (jE(this.tmp, a, i), RE(this.tmp) < yK && (jE(this.tmp, [
         1,
@@ -195483,7 +195485,7 @@ void main()
       ], e)), Wre(s, Math.acos(o), this.tmp), Ri(this.matrix, this.matrix, s), this);
     }
     rotate(e, r) {
-      return Ds(this.tmp, ...r), h0(this.tmp, this.tmp), Kg(this.matrix, this.matrix, this.angleConv(e), this.tmp), this;
+      return Ns(this.tmp, ...r), h0(this.tmp, this.tmp), Kg(this.matrix, this.matrix, this.angleConv(e), this.tmp), this;
     }
     rotateX(e) {
       return tG(this.matrix, this.matrix, this.angleConv(e)), this;
@@ -195495,10 +195497,10 @@ void main()
       return rG(this.matrix, this.matrix, this.angleConv(e)), this;
     }
     translate(e, r, a) {
-      return Ds(this.tmp, e, r, a), fo(this.matrix, this.matrix, this.tmp), this;
+      return Ns(this.tmp, e, r, a), fo(this.matrix, this.matrix, this.tmp), this;
     }
     scale(e, r, a) {
-      return Ds(this.tmp, e, r, a), nm(this.matrix, this.matrix, this.tmp), this;
+      return Ns(this.tmp, e, r, a), nm(this.matrix, this.matrix, this.tmp), this;
     }
     multiply(e) {
       return Ri(this.matrix, this.matrix, e), this;
@@ -195533,7 +195535,7 @@ void main()
       let r = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : 0, a = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : -1;
       if (Db(Cz, this.matrix)) return this;
       const i = a === -1 ? e.length : r + a * 3;
-      for (let s = r; s < i; s += 3) Ds(this.tmp, e[s], e[s + 1], e[s + 2]), ki(this.tmp, this.tmp, this.matrix), e[s] = this.tmp[0], e[s + 1] = this.tmp[1], e[s + 2] = this.tmp[2];
+      for (let s = r; s < i; s += 3) Ns(this.tmp, e[s], e[s + 1], e[s + 2]), ki(this.tmp, this.tmp, this.matrix), e[s] = this.tmp[0], e[s + 1] = this.tmp[1], e[s + 2] = this.tmp[2];
       return this;
     }
     getMatrix() {
@@ -196537,7 +196539,7 @@ void main()
   };
   function PWe(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, UWe, r), vs.extend(t, e, r), Bu.implementReplaceShaderCoincidentOffset(t, e, r), Bu.implementBuildShadersWithReplacements(t, e, r), e.tris = vu.newInstance(), e.openGLTexture = null, e.colorTexture = null, e.pwfTexture = null, e.VBOBuildTime = {}, Gs(e.VBOBuildTime), e.tmpMat4 = $r(new Float64Array(16)), e.outlineFilter = jWe.newInstance(), e.outlineFilter.setGenerateFaces(true), e.outlineFilter.setGenerateLines(false), e.cubePolyData = XA.newInstance(), e.cutter = xWe.newInstance(), e.lineToSurfaceFilter = fWe.newInstance(), e.transform = TWe.newInstance(), Ec(t, e, [
+    Object.assign(e, UWe, r), ws.extend(t, e, r), Bu.implementReplaceShaderCoincidentOffset(t, e, r), Bu.implementBuildShadersWithReplacements(t, e, r), e.tris = vu.newInstance(), e.openGLTexture = null, e.colorTexture = null, e.pwfTexture = null, e.VBOBuildTime = {}, Gs(e.VBOBuildTime), e.tmpMat4 = $r(new Float64Array(16)), e.outlineFilter = jWe.newInstance(), e.outlineFilter.setGenerateFaces(true), e.outlineFilter.setGenerateLines(false), e.cubePolyData = XA.newInstance(), e.cutter = xWe.newInstance(), e.lineToSurfaceFilter = fWe.newInstance(), e.transform = TWe.newInstance(), Ec(t, e, [
       "openGLTexture"
     ]), GWe(t, e);
   }
@@ -197072,7 +197074,7 @@ void main()
   };
   function YWe(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, HWe, r), vs.extend(t, e, r), Bu.implementReplaceShaderCoincidentOffset(t, e, r), We.algo(t, e, 2, 0), e.tris = vu.newInstance(), e.volumeTexture = Io.newInstance(), e.colorTexture = Io.newInstance(), e.pwfTexture = Io.newInstance(), e.imagemat = $r(new Float64Array(16)), e.imagematinv = $r(new Float64Array(16)), e.VBOBuildTime = {}, We.obj(e.VBOBuildTime, {
+    Object.assign(e, HWe, r), ws.extend(t, e, r), Bu.implementReplaceShaderCoincidentOffset(t, e, r), We.algo(t, e, 2, 0), e.tris = vu.newInstance(), e.volumeTexture = Io.newInstance(), e.colorTexture = Io.newInstance(), e.pwfTexture = Io.newInstance(), e.imagemat = $r(new Float64Array(16)), e.imagematinv = $r(new Float64Array(16)), e.VBOBuildTime = {}, We.obj(e.VBOBuildTime, {
       mtime: 0
     }), _We(t, e);
   }
@@ -197127,7 +197129,7 @@ void main()
   };
   function XWe(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, ZWe, r), vs.extend(t, e, r), e.keyMatrixTime = {}, We.obj(e.keyMatrixTime), e.keyMatrices = {
+    Object.assign(e, ZWe, r), ws.extend(t, e, r), e.keyMatrixTime = {}, We.obj(e.keyMatrixTime), e.keyMatrices = {
       normalMatrix: new Float64Array(16),
       vcpc: new Float64Array(16),
       pcsc: new Float64Array(16),
@@ -198012,7 +198014,7 @@ fn main(
   };
   function tAe(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, jqe, r), vs.extend(t, e, r), e.textureViews = [], e.vertexInput = Dqe.newInstance(), e.bindGroup = Woe.newInstance({
+    Object.assign(e, jqe, r), ws.extend(t, e, r), e.textureViews = [], e.vertexInput = Dqe.newInstance(), e.bindGroup = Woe.newInstance({
       label: "mapperBG"
     }), e.additionalBindables = [], e.fragmentShaderTemplate = e.fragmentShaderTemplate || Sqe, e.vertexShaderTemplate = e.vertexShaderTemplate || kqe, e.shaderReplacements = /* @__PURE__ */ new Map(), We.get(t, e, [
       "pipeline",
@@ -199037,7 +199039,7 @@ fn main(
   };
   function xZe(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, CZe, r), vs.extend(t, e, r), e.UBO = FE.newInstance({
+    Object.assign(e, CZe, r), ws.extend(t, e, r), e.UBO = FE.newInstance({
       label: "rendererUBO"
     }), e.UBO.addEntry("WCVCMatrix", "mat4x4<f32>"), e.UBO.addEntry("SCPCMatrix", "mat4x4<f32>"), e.UBO.addEntry("PCSCMatrix", "mat4x4<f32>"), e.UBO.addEntry("SCVCMatrix", "mat4x4<f32>"), e.UBO.addEntry("VCPCMatrix", "mat4x4<f32>"), e.UBO.addEntry("WCVCNormals", "mat4x4<f32>"), e.UBO.addEntry("viewportSize", "vec2<f32>"), e.UBO.addEntry("LightCount", "i32"), e.UBO.addEntry("MaxEnvironmentMipLevel", "f32"), e.UBO.addEntry("BackgroundDiffuseStrength", "f32"), e.UBO.addEntry("BackgroundSpecularStrength", "f32"), e.UBO.addEntry("cameraParallel", "u32"), e.SSBO = cZe.newInstance({
       label: "rendererLightSSBO"
@@ -199344,7 +199346,7 @@ fn main(
   };
   function jZe(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, RZe, r), vs.extend(t, e, r), e.keyMatricesTime = {}, Gs(e.keyMatricesTime, {
+    Object.assign(e, RZe, r), ws.extend(t, e, r), e.keyMatricesTime = {}, Gs(e.keyMatricesTime, {
       mtime: 0
     }), e.keyMatrices = {
       normalMatrix: new Float64Array(16),
@@ -199413,7 +199415,7 @@ fn main(
   };
   function LZe(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, TZe, r), vs.extend(t, e, r), e.keyMatricesTime = {}, We.obj(e.keyMatricesTime, {
+    Object.assign(e, TZe, r), ws.extend(t, e, r), e.keyMatricesTime = {}, We.obj(e.keyMatricesTime, {
       mtime: 0
     }), e.keyMatrices = {
       bcwc: new Float64Array(16),
@@ -199435,7 +199437,7 @@ fn main(
   const UZe = {};
   function PZe(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, UZe, r), vs.extend(t, e, r), GZe(t, e);
+    Object.assign(e, UZe, r), ws.extend(t, e, r), GZe(t, e);
   }
   const OZe = We.newInstance(PZe, "vtkWebGPUPixelSpaceCallbackMapper");
   cg("vtkPixelSpaceCallbackMapper", OZe);
@@ -224096,7 +224098,7 @@ fn main(
   const hnt = {};
   function fnt(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, hnt, r), vs.extend(t, e, r), e.CubeAxesActorHelper = Ele.newCubeAxesActorHelper(), unt(t, e);
+    Object.assign(e, hnt, r), ws.extend(t, e, r), e.CubeAxesActorHelper = Ele.newCubeAxesActorHelper(), unt(t, e);
   }
   const pnt = Wi(fnt, "vtkOpenGLCubeAxesActor");
   nA("vtkCubeAxesActor", pnt);
@@ -224544,7 +224546,7 @@ void main()
   };
   function Nnt(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, vnt, r), vs.extend(t, e, r), Bu.implementReplaceShaderCoincidentOffset(t, e, r), Bu.implementBuildShadersWithReplacements(t, e, r), e.primitives = [], e.primTypes = qg, e.tmpMat4 = $r(new Float64Array(16));
+    Object.assign(e, vnt, r), ws.extend(t, e, r), Bu.implementReplaceShaderCoincidentOffset(t, e, r), Bu.implementBuildShadersWithReplacements(t, e, r), e.primitives = [], e.primTypes = qg, e.tmpMat4 = $r(new Float64Array(16));
     for (let a = qg.Start; a < qg.End; a++) e.primitives[a] = vu.newInstance(), e.primitives[a].setPrimitiveType(a), e.primitives[a].set({
       lastLightComplexity: 0,
       lastLightCount: 0,
@@ -225014,7 +225016,7 @@ void main()
   const Lnt = {};
   function znt(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, Lnt, r), vs.extend(t, e, r), e.scalarBarActorHelper = Nle.newScalarBarActorHelper(), Tnt(t, e);
+    Object.assign(e, Lnt, r), ws.extend(t, e, r), e.scalarBarActorHelper = Nle.newScalarBarActorHelper(), Tnt(t, e);
   }
   const Gnt = Wi(znt, "vtkOpenGLScalarBarActor");
   nA("vtkScalarBarActor", Gnt);
@@ -225058,7 +225060,7 @@ void main()
   };
   function Ont(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, Pnt, r), vs.extend(t, e, r), e.keyMatricesTime = {}, We.obj(e.keyMatricesTime, {
+    Object.assign(e, Pnt, r), ws.extend(t, e, r), e.keyMatricesTime = {}, We.obj(e.keyMatricesTime, {
       mtime: 0
     }), e.keyMatrices = {
       normalMatrix: new Float64Array(16),
@@ -225114,7 +225116,7 @@ void main()
   };
   function Jnt(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, Ynt, r), vs.extend(t, e, r), e.keyMatricesTime = {}, We.obj(e.keyMatricesTime, {
+    Object.assign(e, Ynt, r), ws.extend(t, e, r), e.keyMatricesTime = {}, We.obj(e.keyMatricesTime, {
       mtime: 0
     }), e.keyMatrices = {
       normalMatrix: new Float64Array(16),
@@ -225148,7 +225150,7 @@ void main()
   const Wnt = {};
   function qnt(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, Wnt, r), vs.extend(t, e, r), e.CubeAxesActorHelper = Ele.newCubeAxesActorHelper(), Vnt(t, e);
+    Object.assign(e, Wnt, r), ws.extend(t, e, r), e.CubeAxesActorHelper = Ele.newCubeAxesActorHelper(), Vnt(t, e);
   }
   const Znt = Wi(qnt, "vtkWebGPUCubeAxesActor");
   cg("vtkCubeAxesActor", Znt);
@@ -226027,7 +226029,7 @@ fn main(
   };
   function drt(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, crt, r), vs.extend(t, e, r), e.primitives = [], lrt(t, e);
+    Object.assign(e, crt, r), ws.extend(t, e, r), e.primitives = [], lrt(t, e);
   }
   const grt = Wi(drt, "vtkWebGPUPolyDataMapper");
   cg("vtkMapper", grt);
@@ -226063,7 +226065,7 @@ fn main(
   }
   function frt(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, hrt(r)), vs.extend(t, e, r), e.primitives = [], urt(t, e);
+    Object.assign(e, hrt(r)), ws.extend(t, e, r), e.primitives = [], urt(t, e);
   }
   const prt = Wi(frt, "vtkWebGPUPolyDataMapper2D");
   cg("vtkMapper2D", prt);
@@ -226083,7 +226085,7 @@ fn main(
   const Irt = {};
   function Crt(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, Irt, r), vs.extend(t, e, r), e.scalarBarActorHelper = Nle.newScalarBarActorHelper(), mrt(t, e);
+    Object.assign(e, Irt, r), ws.extend(t, e, r), e.scalarBarActorHelper = Nle.newScalarBarActorHelper(), mrt(t, e);
   }
   const xrt = Wi(Crt, "vtkWebGPUScalarBarActor");
   cg("vtkScalarBarActor", xrt);
@@ -249443,7 +249445,7 @@ Input: ` + this.err.str);
             addSegmentationRepresentation: () => Rn,
             findSegmentationRepresentationByUID: () => SA,
             getAllSegmentationRepresentations: () => Bo,
-            getColorLUT: () => Ns,
+            getColorLUT: () => vs,
             getDefaultSegmentationStateManager: () => Tr,
             getGlobalConfig: () => Qa,
             getNextColorLUTIndex: () => RA,
@@ -250775,7 +250777,7 @@ Input: ` + this.err.str);
           function Vs(S) {
             Tr().removeColorLUT(S);
           }
-          function Ns(S) {
+          function vs(S) {
             return Tr().getColorLUT(S);
           }
           function RA() {
@@ -252023,13 +252025,13 @@ Input: ` + this.err.str);
           function _v(S, m, E) {
             const y = Ja(S, m);
             if (!y) throw new Error("setColorLUT: could not find segmentation representation with UID ".concat(m));
-            if (!Ns(E)) throw new Error("setColorLUT: could not find colorLUT with index ".concat(E));
+            if (!vs(E)) throw new Error("setColorLUT: could not find colorLUT with index ".concat(E));
             y.colorLUTIndex = E, da(S, m);
           }
           function sl(S, m, E) {
             const y = Ja(S, m);
             if (!y) throw new Error("segmentation representation with UID ".concat(m, " does not exist for tool group ").concat(S));
-            const { colorLUTIndex: w } = y, k = Ns(w);
+            const { colorLUTIndex: w } = y, k = vs(w);
             let R = k[E];
             if (!R) {
               if (typeof E != "number") throw new Error("Can't create colour for LUT index ".concat(E));
@@ -252492,7 +252494,7 @@ Input: ` + this.err.str);
               if (!W) return;
               const { cfun: re, ofun: Ae } = z, ge = E.renderInactiveSegmentations;
               (function(Be, be, ke, Te, He, Ke, et, rt, ft, It) {
-                const { segmentSpecificConfig: Nt, segmentationRepresentationSpecificConfig: yt } = et, Lt = yt[Ut.Labelmap], Ct = Ns(He), St = Math.min(256, Ct.length), { uid: Yt } = be, { outlineWidth: Bn, renderOutline: fn, outlineOpacity: Wn } = Kb(Ke, Lt, rt);
+                const { segmentSpecificConfig: Nt, segmentationRepresentationSpecificConfig: yt } = et, Lt = yt[Ut.Labelmap], Ct = vs(He), St = Math.min(256, Ct.length), { uid: Yt } = be, { outlineWidth: Bn, renderOutline: fn, outlineOpacity: Wn } = Kb(Ke, Lt, rt);
                 for (let Nr = 0; Nr < St; Nr++) {
                   var qn;
                   const pr = Nr, Mr = Ct[pr], Ma = (qn = Nt[pr]) === null || qn === void 0 ? void 0 : qn[Ut.Labelmap], { fillAlpha: pa, outlineWidth: mi, renderFill: Bi, renderOutline: No } = Kb(Ke, Lt, rt, Ma), { forceOpacityUpdate: YA, forceColorUpdate: oc } = Bf(Be, Yt, pr, {
@@ -254429,7 +254431,7 @@ Input: ` + this.err.str);
               }), !R)) throw new Error("No Surface data found for segmentationId ".concat(y, "."));
               const { geometryIds: T } = R;
               T != null && T.size || console.warn("No Surfaces found for segmentationId ".concat(y, ". Skipping render."));
-              const z = Ns(E);
+              const z = vs(E);
               T.forEach(((Y, V) => {
                 const W = ce.cache.getGeometry(Y);
                 if (W == null || !W.data) return void console.warn("No Surfaces found for geometryId ".concat(Y, ". Skipping render."));
@@ -280364,7 +280366,7 @@ Input: ` + this.err.str);
                               children: [
                                 $e,
                                 " ",
-                                n.jsx(Qs, {
+                                n.jsx(Ds, {
                                   className: "w-3 h-3 ml-0.5"
                                 })
                               ]
@@ -280580,7 +280582,7 @@ Input: ` + this.err.str);
                           className: "flex items-center",
                           children: [
                             "More ",
-                            n.jsx(Qs, {
+                            n.jsx(Ds, {
                               className: "w-3 h-3 ml-0.5"
                             })
                           ]
@@ -283334,7 +283336,7 @@ Input: ` + this.err.str);
                   s.studyStatus === "AwaitingSignature" && n.jsxs("div", {
                     className: "bg-emerald-500/10 border-b border-emerald-500/20 px-4 py-2 text-[11px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-300 shrink-0",
                     children: [
-                      n.jsx(ws, {
+                      n.jsx(Qs, {
                         className: "h-3.5 w-3.5 animate-pulse text-emerald-500"
                       }),
                       "Typist has requested digital signature review"
