@@ -1314,17 +1314,17 @@ Error generating stack: ` + K.message + `
         ae.p = L;
       }
     }
-    var In = Math.random().toString(36).slice(2), On = "__reactFiber$" + In, rr = "__reactProps$" + In, hn = "__reactContainer$" + In, an = "__reactEvents$" + In, Cr = "__reactListeners$" + In, Ur = "__reactHandles$" + In, Fi = "__reactResources$" + In, ka = "__reactMarker$" + In;
+    var In = Math.random().toString(36).slice(2), Pn = "__reactFiber$" + In, rr = "__reactProps$" + In, hn = "__reactContainer$" + In, an = "__reactEvents$" + In, Cr = "__reactListeners$" + In, Ur = "__reactHandles$" + In, Fi = "__reactResources$" + In, ka = "__reactMarker$" + In;
     function zn(b) {
-      delete b[On], delete b[rr], delete b[an], delete b[Cr], delete b[Ur];
+      delete b[Pn], delete b[rr], delete b[an], delete b[Cr], delete b[Ur];
     }
     function er(b) {
-      var N = b[On];
+      var N = b[Pn];
       if (N) return N;
       for (var L = b.parentNode; L; ) {
-        if (N = L[hn] || L[On]) {
+        if (N = L[hn] || L[Pn]) {
           if (L = N.alternate, N.child !== null || L !== null && L.child !== null) for (b = gB(b); b !== null; ) {
-            if (L = b[On]) return L;
+            if (L = b[Pn]) return L;
             b = gB(b);
           }
           return N;
@@ -1334,7 +1334,7 @@ Error generating stack: ` + K.message + `
       return null;
     }
     function Sr(b) {
-      if (b = b[On] || b[hn]) {
+      if (b = b[Pn] || b[hn]) {
         var N = b.tag;
         if (N === 5 || N === 6 || N === 13 || N === 31 || N === 26 || N === 27 || N === 3) return b;
       }
@@ -1479,9 +1479,9 @@ Error generating stack: ` + K.message + `
         return b.body;
       }
     }
-    var Gn = /[\n"\\]/g;
+    var On = /[\n"\\]/g;
     function bt(b) {
-      return b.replace(Gn, function(N) {
+      return b.replace(On, function(N) {
         return "\\" + N.charCodeAt(0).toString(16) + " ";
       });
     }
@@ -1976,10 +1976,10 @@ Error generating stack: ` + K.message + `
     } catch {
       Kt = false;
     }
-    var Un = null, Xn = null, Tn = null;
+    var Gn = null, Xn = null, Tn = null;
     function Yn() {
       if (Tn) return Tn;
-      var b, N = Xn, L = N.length, K, de = "value" in Un ? Un.value : Un.textContent, Ie = de.length;
+      var b, N = Xn, L = N.length, K, de = "value" in Gn ? Gn.value : Gn.textContent, Ie = de.length;
       for (b = 0; b < L && N[b] === de[b]; b++) ;
       var Je = L - b;
       for (K = 1; K <= Je && N[L - K] === de[Ie - K]; K++) ;
@@ -2229,7 +2229,7 @@ Error generating stack: ` + K.message + `
       }
     }
     function ti(b, N) {
-      if (wn) return b === "compositionend" || !aA && tl(b, N) ? (b = Yn(), Tn = Xn = Un = null, wn = false, b) : null;
+      if (wn) return b === "compositionend" || !aA && tl(b, N) ? (b = Yn(), Tn = Xn = Gn = null, wn = false, b) : null;
       switch (b) {
         case "paste":
           return null;
@@ -2612,7 +2612,7 @@ Error generating stack: ` + K.message + `
     }
     function zv(b) {
       var N = b.stateNode, L = b.type, K = b.memoizedProps;
-      switch (N[On] = b, N[rr] = K, L) {
+      switch (N[Pn] = b, N[rr] = K, L) {
         case "dialog":
           vi("cancel", N), vi("close", N);
           break;
@@ -4865,7 +4865,7 @@ Error generating stack: ` + K.message + `
           }
           return N;
         case 26:
-          return Gm(b, N), b === null ? (L = z2(N.type, null, N.pendingProps, null)) ? N.memoizedState = L : Qi || (L = N.type, b = N.pendingProps, K = sh(Qe.current).createElement(L), K[On] = N, K[rr] = b, BA(K, L, b), zr(K), N.stateNode = K) : N.memoizedState = z2(N.type, b.memoizedProps, N.pendingProps, b.memoizedState), null;
+          return Gm(b, N), b === null ? (L = z2(N.type, null, N.pendingProps, null)) ? N.memoizedState = L : Qi || (L = N.type, b = N.pendingProps, K = sh(Qe.current).createElement(L), K[Pn] = N, K[rr] = b, BA(K, L, b), zr(K), N.stateNode = K) : N.memoizedState = z2(N.type, b.memoizedProps, N.pendingProps, b.memoizedState), null;
         case 27:
           return le(N), b === null && Qi && (K = N.stateNode = uB(N.type, N.pendingProps, Qe.current), As = N, il = true, de = li, rd(N.type) ? (dB = de, li = jl(K.firstChild)) : li = de), CA(b, N, N.pendingProps.children, L), Gm(b, N), b === null && (N.flags |= 4194304), N.child;
         case 5:
@@ -5019,7 +5019,7 @@ Error generating stack: ` + K.message + `
                       }) : Je.createElement(de);
                   }
               }
-              Ie[On] = N, Ie[rr] = K;
+              Ie[Pn] = N, Ie[rr] = K;
               e: for (Je = N.child; Je !== null; ) {
                 if (Je.tag === 5 || Je.tag === 6) Ie.appendChild(Je.stateNode);
                 else if (Je.tag !== 4 && Je.tag !== 27 && Je.child !== null) {
@@ -5061,8 +5061,8 @@ Error generating stack: ` + K.message + `
                 case 5:
                   K = de.memoizedProps;
               }
-              b[On] = N, b = !!(b.nodeValue === L || K !== null && K.suppressHydrationWarning === true || Q2(b.nodeValue, L)), b || pg(N, true);
-            } else b = sh(b).createTextNode(K), b[On] = N, N.stateNode = b;
+              b[Pn] = N, b = !!(b.nodeValue === L || K !== null && K.suppressHydrationWarning === true || Q2(b.nodeValue, L)), b || pg(N, true);
+            } else b = sh(b).createTextNode(K), b[Pn] = N, N.stateNode = b;
           }
           return ks(N), null;
         case 31:
@@ -5071,7 +5071,7 @@ Error generating stack: ` + K.message + `
               if (b === null) {
                 if (!K) throw Error(a(318));
                 if (b = N.memoizedState, b = b !== null ? b.dehydrated : null, !b) throw Error(a(557));
-                b[On] = N;
+                b[Pn] = N;
               } else mg(), (N.flags & 128) === 0 && (N.memoizedState = null), N.flags |= 4;
               ks(N), b = false;
             } else L = ox(), b !== null && b.memoizedState !== null && (b.memoizedState.hydrationErrors = L), b = true;
@@ -5085,7 +5085,7 @@ Error generating stack: ` + K.message + `
               if (b === null) {
                 if (!de) throw Error(a(318));
                 if (de = N.memoizedState, de = de !== null ? de.dehydrated : null, !de) throw Error(a(317));
-                de[On] = N;
+                de[Pn] = N;
               } else mg(), (N.flags & 128) === 0 && (N.memoizedState = null), N.flags |= 4;
               ks(N), de = false;
             } else de = ox(), b !== null && b.memoizedState !== null && (b.memoizedState.hydrationErrors = de), de = true;
@@ -5357,7 +5357,7 @@ Error generating stack: ` + K.message + `
       var N = b.stateNode, L = b.memoizedProps;
       try {
         for (var K = b.type, de = N.attributes; de.length; ) N.removeAttributeNode(de[0]);
-        BA(N, K, L), N[On] = b, N[rr] = L;
+        BA(N, K, L), N[Pn] = b, N[rr] = L;
       } catch (Ie) {
         as(b, b.return, Ie);
       }
@@ -5677,7 +5677,7 @@ Error generating stack: ` + K.message + `
                 K = b.type, L = b.memoizedProps, de = de.ownerDocument || de;
                 t: switch (K) {
                   case "title":
-                    Ie = de.getElementsByTagName("title")[0], (!Ie || Ie[ka] || Ie[On] || Ie.namespaceURI === "http://www.w3.org/2000/svg" || Ie.hasAttribute("itemprop")) && (Ie = de.createElement(K), de.head.insertBefore(Ie, de.querySelector("head > title"))), BA(Ie, K, L), Ie[On] = b, zr(Ie), K = Ie;
+                    Ie = de.getElementsByTagName("title")[0], (!Ie || Ie[ka] || Ie[Pn] || Ie.namespaceURI === "http://www.w3.org/2000/svg" || Ie.hasAttribute("itemprop")) && (Ie = de.createElement(K), de.head.insertBefore(Ie, de.querySelector("head > title"))), BA(Ie, K, L), Ie[Pn] = b, zr(Ie), K = Ie;
                     break e;
                   case "link":
                     var Je = pB("link", "href", de).get(K + (L.href || ""));
@@ -5701,7 +5701,7 @@ Error generating stack: ` + K.message + `
                   default:
                     throw Error(a(468, K));
                 }
-                Ie[On] = b, zr(Ie), K = Ie;
+                Ie[Pn] = b, zr(Ie), K = Ie;
               }
               b.stateNode = K;
             } else mB(de, b.type, b.stateNode);
@@ -7148,7 +7148,7 @@ Error generating stack: ` + K.message + `
             Pi = void 0;
           }
           else wn ? tl(b, L) && (Pi = "onCompositionEnd") : b === "keydown" && L.keyCode === 229 && (Pi = "onCompositionStart");
-          Pi && (Wl && L.locale !== "ko" && (wn || Pi !== "onCompositionStart" ? Pi === "onCompositionEnd" && wn && (di = Yn()) : (Un = Dn, Xn = "value" in Un ? Un.value : Un.textContent, wn = true)), Wr = oB(sn, Pi), 0 < Wr.length && (Pi = new SA(Pi, b, null, L, Dn), _n.push({
+          Pi && (Wl && L.locale !== "ko" && (wn || Pi !== "onCompositionStart" ? Pi === "onCompositionEnd" && wn && (di = Yn()) : (Gn = Dn, Xn = "value" in Gn ? Gn.value : Gn.textContent, wn = true)), Wr = oB(sn, Pi), 0 < Wr.length && (Pi = new SA(Pi, b, null, L, Dn), _n.push({
             event: Pi,
             listeners: Wr
           }), di ? Pi.data = di : (di = Fe(L), di !== null && (Pi.data = di)))), (di = iA ? qa(b, L) : ti(b, L)) && (Pi = oB(sn, "onBeforeInput"), 0 < Pi.length && (Wr = new SA("onBeforeInput", "beforeinput", null, L, Dn), _n.push({
@@ -8273,7 +8273,7 @@ Error generating stack: ` + K.message + `
       if (K.has(b)) return K;
       for (K.set(b, null), L = L.getElementsByTagName(b), de = 0; de < L.length; de++) {
         var Ie = L[de];
-        if (!(Ie[ka] || Ie[On] || b === "link" && Ie.getAttribute("rel") === "stylesheet") && Ie.namespaceURI !== "http://www.w3.org/2000/svg") {
+        if (!(Ie[ka] || Ie[Pn] || b === "link" && Ie.getAttribute("rel") === "stylesheet") && Ie.namespaceURI !== "http://www.w3.org/2000/svg") {
           var Je = Ie.getAttribute(N) || "";
           Je = b + Je;
           var gt = K.get(Je);
@@ -10545,10 +10545,10 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
       return "";
     }
   }
-  var Pn;
+  var Un;
   (function(t) {
     t[t.Trace = 0] = "Trace", t[t.Debug = 1] = "Debug", t[t.Information = 2] = "Information", t[t.Warning = 3] = "Warning", t[t.Error = 4] = "Error", t[t.Critical = 5] = "Critical", t[t.None = 6] = "None";
-  })(Pn || (Pn = {}));
+  })(Un || (Un = {}));
   class o1 {
     constructor() {
     }
@@ -10599,7 +10599,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
   }
   async function rW(t, e, r, a, i, s) {
     const o = {}, [A, l] = zE();
-    o[A] = l, t.log(Pn.Trace, `(${e} transport) sending data. ${A1(i, s.logMessageContent)}.`);
+    o[A] = l, t.log(Un.Trace, `(${e} transport) sending data. ${A1(i, s.logMessageContent)}.`);
     const c = wC(i) ? "arraybuffer" : "text", g = await r.post(a, {
       content: i,
       headers: {
@@ -10610,10 +10610,10 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
       timeout: s.timeout,
       withCredentials: s.withCredentials
     });
-    t.log(Pn.Trace, `(${e} transport) request complete. Response status: ${g.statusCode}.`);
+    t.log(Un.Trace, `(${e} transport) request complete. Response status: ${g.statusCode}.`);
   }
   function fhe(t) {
-    return t === void 0 ? new Yk(Pn.Information) : t === null ? o1.instance : t.log !== void 0 ? t : new Yk(t);
+    return t === void 0 ? new Yk(Un.Information) : t === null ? o1.instance : t.log !== void 0 ? t : new Yk(t);
   }
   class phe {
     constructor(e, r) {
@@ -10631,16 +10631,16 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
     }
     log(e, r) {
       if (e >= this._minLevel) {
-        const a = `[${(/* @__PURE__ */ new Date()).toISOString()}] ${Pn[e]}: ${r}`;
+        const a = `[${(/* @__PURE__ */ new Date()).toISOString()}] ${Un[e]}: ${r}`;
         switch (e) {
-          case Pn.Critical:
-          case Pn.Error:
+          case Un.Critical:
+          case Un.Error:
             this.out.error(a);
             break;
-          case Pn.Warning:
+          case Un.Warning:
             this.out.warn(a);
             break;
-          case Pn.Information:
+          case Un.Information:
             this.out.info(a);
             break;
           default:
@@ -10715,7 +10715,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
       if (e.timeout) {
         const l = e.timeout;
         i = setTimeout(() => {
-          r.abort(), this._logger.log(Pn.Warning, "Timeout from HTTP request."), a = new AL();
+          r.abort(), this._logger.log(Un.Warning, "Timeout from HTTP request."), a = new AL();
         }, l);
       }
       e.content === "" && (e.content = void 0), e.content && (e.headers = e.headers || {}, wC(e.content) ? e.headers["Content-Type"] = "application/octet-stream" : e.headers["Content-Type"] = "text/plain;charset=UTF-8");
@@ -10735,7 +10735,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
           signal: r.signal
         });
       } catch (l) {
-        throw a || (this._logger.log(Pn.Warning, `Error from HTTP request. ${l}.`), l);
+        throw a || (this._logger.log(Un.Warning, `Error from HTTP request. ${l}.`), l);
       } finally {
         i && clearTimeout(i), e.abortSignal && (e.abortSignal.onabort = null);
       }
@@ -10786,9 +10786,9 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
         }), e.timeout && (i.timeout = e.timeout), i.onload = () => {
           e.abortSignal && (e.abortSignal.onabort = null), i.status >= 200 && i.status < 300 ? r(new nW(i.status, i.statusText, i.response || i.responseText)) : a(new cC(i.response || i.responseText || i.statusText, i.status));
         }, i.onerror = () => {
-          this._logger.log(Pn.Warning, `Error from HTTP request. ${i.status}: ${i.statusText}.`), a(new cC(i.statusText, i.status));
+          this._logger.log(Un.Warning, `Error from HTTP request. ${i.status}: ${i.statusText}.`), a(new cC(i.statusText, i.status));
         }, i.ontimeout = () => {
-          this._logger.log(Pn.Warning, "Timeout from HTTP request."), a(new AL());
+          this._logger.log(Un.Warning, "Timeout from HTTP request."), a(new AL());
         }, i.send(e.content);
       }) : Promise.reject(new Error("No url defined.")) : Promise.reject(new Error("No method defined."));
     }
@@ -10971,7 +10971,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
     }
     constructor(e, r, a, i, s, o, A) {
       this._nextKeepAlive = 0, this._freezeEventListener = () => {
-        this._logger.log(Pn.Warning, "The page is being frozen, this will likely lead to the connection being closed and messages being lost. For more information see the docs at https://learn.microsoft.com/aspnet/core/signalr/javascript-client#bsleep");
+        this._logger.log(Un.Warning, "The page is being frozen, this will likely lead to the connection being closed and messages being lost. For more information see the docs at https://learn.microsoft.com/aspnet/core/signalr/javascript-client#bsleep");
       }, uA.isRequired(e, "connection"), uA.isRequired(r, "logger"), uA.isRequired(a, "protocol"), this.serverTimeoutInMilliseconds = s ?? Dhe, this.keepAliveIntervalInMilliseconds = o ?? khe, this._statefulReconnectBufferSize = A ?? She, this._logger = r, this._protocol = a, this.connection = e, this._reconnectPolicy = i, this._handshakeProtocol = new Qhe(), this.connection.onreceive = (l) => this._processIncomingData(l), this.connection.onclose = (l) => this._connectionClosed(l), this._callbacks = {}, this._methods = {}, this._closedCallbacks = [], this._reconnectingCallbacks = [], this._reconnectedCallbacks = [], this._invocationId = 0, this._receivedHandshakeResponse = false, this._connectionState = Ni.Disconnected, this._connectionStarted = false, this._cachedPingMessage = this._protocol.writeMessage({
         type: gi.Ping
       });
@@ -10995,11 +10995,11 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
     }
     async _startWithStateTransitions() {
       if (this._connectionState !== Ni.Disconnected) return Promise.reject(new Error("Cannot start a HubConnection that is not in the 'Disconnected' state."));
-      this._connectionState = Ni.Connecting, this._logger.log(Pn.Debug, "Starting HubConnection.");
+      this._connectionState = Ni.Connecting, this._logger.log(Un.Debug, "Starting HubConnection.");
       try {
-        await this._startInternal(), Do.isBrowser && window.document.addEventListener("freeze", this._freezeEventListener), this._connectionState = Ni.Connected, this._connectionStarted = true, this._logger.log(Pn.Debug, "HubConnection connected successfully.");
+        await this._startInternal(), Do.isBrowser && window.document.addEventListener("freeze", this._freezeEventListener), this._connectionState = Ni.Connected, this._connectionStarted = true, this._logger.log(Un.Debug, "HubConnection connected successfully.");
       } catch (e) {
-        return this._connectionState = Ni.Disconnected, this._logger.log(Pn.Debug, `HubConnection failed to start successfully because of error '${e}'.`), Promise.reject(e);
+        return this._connectionState = Ni.Disconnected, this._logger.log(Un.Debug, `HubConnection failed to start successfully because of error '${e}'.`), Promise.reject(e);
       }
     }
     async _startInternal() {
@@ -11015,12 +11015,12 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
           protocol: this._protocol.name,
           version: r
         };
-        if (this._logger.log(Pn.Debug, "Sending handshake request."), await this._sendMessage(this._handshakeProtocol.writeHandshakeRequest(a)), this._logger.log(Pn.Information, `Using HubProtocol '${this._protocol.name}'.`), this._cleanupTimeout(), this._resetTimeoutPeriod(), this._resetKeepAliveInterval(), await e, this._stopDuringStartError) throw this._stopDuringStartError;
+        if (this._logger.log(Un.Debug, "Sending handshake request."), await this._sendMessage(this._handshakeProtocol.writeHandshakeRequest(a)), this._logger.log(Un.Information, `Using HubProtocol '${this._protocol.name}'.`), this._cleanupTimeout(), this._resetTimeoutPeriod(), this._resetKeepAliveInterval(), await e, this._stopDuringStartError) throw this._stopDuringStartError;
         this.connection.features.reconnect && (this._messageBuffer = new vhe(this._protocol, this.connection, this._statefulReconnectBufferSize), this.connection.features.disconnected = this._messageBuffer._disconnected.bind(this._messageBuffer), this.connection.features.resend = () => {
           if (this._messageBuffer) return this._messageBuffer._resend();
         }), this.connection.features.inherentKeepAlive || await this._sendMessage(this._cachedPingMessage);
       } catch (r) {
-        throw this._logger.log(Pn.Debug, `Hub handshake failed with error '${r}' during start(). Stopping HubConnection.`), this._cleanupTimeout(), this._cleanupPingTimer(), await this.connection.stop(r), r;
+        throw this._logger.log(Un.Debug, `Hub handshake failed with error '${r}' during start(). Stopping HubConnection.`), this._cleanupTimeout(), this._cleanupPingTimer(), await this.connection.stop(r), r;
       }
     }
     async stop() {
@@ -11032,10 +11032,10 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
       }
     }
     _stopInternal(e) {
-      if (this._connectionState === Ni.Disconnected) return this._logger.log(Pn.Debug, `Call to HubConnection.stop(${e}) ignored because it is already in the disconnected state.`), Promise.resolve();
-      if (this._connectionState === Ni.Disconnecting) return this._logger.log(Pn.Debug, `Call to HttpConnection.stop(${e}) ignored because the connection is already in the disconnecting state.`), this._stopPromise;
+      if (this._connectionState === Ni.Disconnected) return this._logger.log(Un.Debug, `Call to HubConnection.stop(${e}) ignored because it is already in the disconnected state.`), Promise.resolve();
+      if (this._connectionState === Ni.Disconnecting) return this._logger.log(Un.Debug, `Call to HttpConnection.stop(${e}) ignored because the connection is already in the disconnecting state.`), this._stopPromise;
       const r = this._connectionState;
-      return this._connectionState = Ni.Disconnecting, this._logger.log(Pn.Debug, "Stopping HubConnection."), this._reconnectDelayHandle ? (this._logger.log(Pn.Debug, "Connection stopped during reconnect delay. Done reconnecting."), clearTimeout(this._reconnectDelayHandle), this._reconnectDelayHandle = void 0, this._completeClose(), Promise.resolve()) : (r === Ni.Connected && this._sendCloseMessage(), this._cleanupTimeout(), this._cleanupPingTimer(), this._stopDuringStartError = e || new i0("The connection was stopped before the hub handshake could complete."), this.connection.stop(e));
+      return this._connectionState = Ni.Disconnecting, this._logger.log(Un.Debug, "Stopping HubConnection."), this._reconnectDelayHandle ? (this._logger.log(Un.Debug, "Connection stopped during reconnect delay. Done reconnecting."), clearTimeout(this._reconnectDelayHandle), this._reconnectDelayHandle = void 0, this._completeClose(), Promise.resolve()) : (r === Ni.Connected && this._sendCloseMessage(), this._cleanupTimeout(), this._cleanupPingTimer(), this._stopDuringStartError = e || new i0("The connection was stopped before the hub handshake could complete."), this.connection.stop(e));
     }
     async _sendCloseMessage() {
       try {
@@ -11111,7 +11111,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
         for (const a of r) if (!(this._messageBuffer && !this._messageBuffer._shouldProcessMessage(a))) switch (a.type) {
           case gi.Invocation:
             this._invokeClientMethod(a).catch((i) => {
-              this._logger.log(Pn.Error, `Invoke client method threw error: ${M4(i)}`);
+              this._logger.log(Un.Error, `Invoke client method threw error: ${M4(i)}`);
             });
             break;
           case gi.StreamItem:
@@ -11122,7 +11122,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
               try {
                 i(a);
               } catch (s) {
-                this._logger.log(Pn.Error, `Stream callback threw error: ${M4(s)}`);
+                this._logger.log(Un.Error, `Stream callback threw error: ${M4(s)}`);
               }
             }
             break;
@@ -11130,7 +11130,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
           case gi.Ping:
             break;
           case gi.Close: {
-            this._logger.log(Pn.Information, "Close message received from server.");
+            this._logger.log(Un.Information, "Close message received from server.");
             const i = a.error ? new Error("Server returned an error on close: " + a.error) : void 0;
             a.allowReconnect === true ? this.connection.stop(i) : this._stopPromise = this._stopInternal(i);
             break;
@@ -11142,7 +11142,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
             this._messageBuffer && this._messageBuffer._resetSequence(a);
             break;
           default:
-            this._logger.log(Pn.Warning, `Invalid message type: ${a.type}.`);
+            this._logger.log(Un.Warning, `Invalid message type: ${a.type}.`);
             break;
         }
       }
@@ -11154,16 +11154,16 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
         [a, r] = this._handshakeProtocol.parseHandshakeResponse(e);
       } catch (i) {
         const s = "Error parsing handshake response: " + i;
-        this._logger.log(Pn.Error, s);
+        this._logger.log(Un.Error, s);
         const o = new Error(s);
         throw this._handshakeRejecter(o), o;
       }
       if (r.error) {
         const i = "Server returned handshake error: " + r.error;
-        this._logger.log(Pn.Error, i);
+        this._logger.log(Un.Error, i);
         const s = new Error(i);
         throw this._handshakeRejecter(s), s;
-      } else this._logger.log(Pn.Debug, "Server handshake complete.");
+      } else this._logger.log(Un.Debug, "Server handshake complete.");
       return this._handshakeResolver(), a;
     }
     _resetKeepAliveInterval() {
@@ -11188,21 +11188,21 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
     async _invokeClientMethod(e) {
       const r = e.target.toLowerCase(), a = this._methods[r];
       if (!a) {
-        this._logger.log(Pn.Warning, `No client method with the name '${r}' found.`), e.invocationId && (this._logger.log(Pn.Warning, `No result given for '${r}' method and invocation ID '${e.invocationId}'.`), await this._sendWithProtocol(this._createCompletionMessage(e.invocationId, "Client didn't provide a result.", null)));
+        this._logger.log(Un.Warning, `No client method with the name '${r}' found.`), e.invocationId && (this._logger.log(Un.Warning, `No result given for '${r}' method and invocation ID '${e.invocationId}'.`), await this._sendWithProtocol(this._createCompletionMessage(e.invocationId, "Client didn't provide a result.", null)));
         return;
       }
       const i = a.slice(), s = !!e.invocationId;
       let o, A, l;
       for (const c of i) try {
         const g = o;
-        o = await c.apply(this, e.arguments), s && o && g && (this._logger.log(Pn.Error, `Multiple results provided for '${r}'. Sending error to server.`), l = this._createCompletionMessage(e.invocationId, "Client provided multiple results.", null)), A = void 0;
+        o = await c.apply(this, e.arguments), s && o && g && (this._logger.log(Un.Error, `Multiple results provided for '${r}'. Sending error to server.`), l = this._createCompletionMessage(e.invocationId, "Client provided multiple results.", null)), A = void 0;
       } catch (g) {
-        A = g, this._logger.log(Pn.Error, `A callback for the method '${r}' threw error '${g}'.`);
+        A = g, this._logger.log(Un.Error, `A callback for the method '${r}' threw error '${g}'.`);
       }
-      l ? await this._sendWithProtocol(l) : s ? (A ? l = this._createCompletionMessage(e.invocationId, `${A}`, null) : o !== void 0 ? l = this._createCompletionMessage(e.invocationId, null, o) : (this._logger.log(Pn.Warning, `No result given for '${r}' method and invocation ID '${e.invocationId}'.`), l = this._createCompletionMessage(e.invocationId, "Client didn't provide a result.", null)), await this._sendWithProtocol(l)) : o && this._logger.log(Pn.Error, `Result given for '${r}' method but server is not expecting a result.`);
+      l ? await this._sendWithProtocol(l) : s ? (A ? l = this._createCompletionMessage(e.invocationId, `${A}`, null) : o !== void 0 ? l = this._createCompletionMessage(e.invocationId, null, o) : (this._logger.log(Un.Warning, `No result given for '${r}' method and invocation ID '${e.invocationId}'.`), l = this._createCompletionMessage(e.invocationId, "Client didn't provide a result.", null)), await this._sendWithProtocol(l)) : o && this._logger.log(Un.Error, `Result given for '${r}' method but server is not expecting a result.`);
     }
     _connectionClosed(e) {
-      this._logger.log(Pn.Debug, `HubConnection.connectionClosed(${e}) called while in state ${this._connectionState}.`), this._stopDuringStartError = this._stopDuringStartError || e || new i0("The underlying connection was closed before the hub handshake could complete."), this._handshakeResolver && this._handshakeResolver(), this._cancelCallbacksWithError(e || new Error("Invocation canceled due to the underlying connection being closed.")), this._cleanupTimeout(), this._cleanupPingTimer(), this._connectionState === Ni.Disconnecting ? this._completeClose(e) : this._connectionState === Ni.Connected && this._reconnectPolicy ? this._reconnect(e) : this._connectionState === Ni.Connected && this._completeClose(e);
+      this._logger.log(Un.Debug, `HubConnection.connectionClosed(${e}) called while in state ${this._connectionState}.`), this._stopDuringStartError = this._stopDuringStartError || e || new i0("The underlying connection was closed before the hub handshake could complete."), this._handshakeResolver && this._handshakeResolver(), this._cancelCallbacksWithError(e || new Error("Invocation canceled due to the underlying connection being closed.")), this._cleanupTimeout(), this._cleanupPingTimer(), this._connectionState === Ni.Disconnecting ? this._completeClose(e) : this._connectionState === Ni.Connected && this._reconnectPolicy ? this._reconnect(e) : this._connectionState === Ni.Connected && this._completeClose(e);
     }
     _completeClose(e) {
       if (this._connectionStarted) {
@@ -11212,7 +11212,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
             e
           ]));
         } catch (r) {
-          this._logger.log(Pn.Error, `An onclose callback called with error '${e}' threw error '${r}'.`);
+          this._logger.log(Un.Error, `An onclose callback called with error '${e}' threw error '${r}'.`);
         }
       }
     }
@@ -11220,47 +11220,47 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
       const r = Date.now();
       let a = 0, i = e !== void 0 ? e : new Error("Attempting to reconnect due to a unknown error."), s = this._getNextRetryDelay(a, 0, i);
       if (s === null) {
-        this._logger.log(Pn.Debug, "Connection not reconnecting because the IRetryPolicy returned null on the first reconnect attempt."), this._completeClose(e);
+        this._logger.log(Un.Debug, "Connection not reconnecting because the IRetryPolicy returned null on the first reconnect attempt."), this._completeClose(e);
         return;
       }
-      if (this._connectionState = Ni.Reconnecting, e ? this._logger.log(Pn.Information, `Connection reconnecting because of error '${e}'.`) : this._logger.log(Pn.Information, "Connection reconnecting."), this._reconnectingCallbacks.length !== 0) {
+      if (this._connectionState = Ni.Reconnecting, e ? this._logger.log(Un.Information, `Connection reconnecting because of error '${e}'.`) : this._logger.log(Un.Information, "Connection reconnecting."), this._reconnectingCallbacks.length !== 0) {
         try {
           this._reconnectingCallbacks.forEach((o) => o.apply(this, [
             e
           ]));
         } catch (o) {
-          this._logger.log(Pn.Error, `An onreconnecting callback called with error '${e}' threw error '${o}'.`);
+          this._logger.log(Un.Error, `An onreconnecting callback called with error '${e}' threw error '${o}'.`);
         }
         if (this._connectionState !== Ni.Reconnecting) {
-          this._logger.log(Pn.Debug, "Connection left the reconnecting state in onreconnecting callback. Done reconnecting.");
+          this._logger.log(Un.Debug, "Connection left the reconnecting state in onreconnecting callback. Done reconnecting.");
           return;
         }
       }
       for (; s !== null; ) {
-        if (this._logger.log(Pn.Information, `Reconnect attempt number ${a + 1} will start in ${s} ms.`), await new Promise((o) => {
+        if (this._logger.log(Un.Information, `Reconnect attempt number ${a + 1} will start in ${s} ms.`), await new Promise((o) => {
           this._reconnectDelayHandle = setTimeout(o, s);
         }), this._reconnectDelayHandle = void 0, this._connectionState !== Ni.Reconnecting) {
-          this._logger.log(Pn.Debug, "Connection left the reconnecting state during reconnect delay. Done reconnecting.");
+          this._logger.log(Un.Debug, "Connection left the reconnecting state during reconnect delay. Done reconnecting.");
           return;
         }
         try {
-          if (await this._startInternal(), this._connectionState = Ni.Connected, this._logger.log(Pn.Information, "HubConnection reconnected successfully."), this._reconnectedCallbacks.length !== 0) try {
+          if (await this._startInternal(), this._connectionState = Ni.Connected, this._logger.log(Un.Information, "HubConnection reconnected successfully."), this._reconnectedCallbacks.length !== 0) try {
             this._reconnectedCallbacks.forEach((o) => o.apply(this, [
               this.connection.connectionId
             ]));
           } catch (o) {
-            this._logger.log(Pn.Error, `An onreconnected callback called with connectionId '${this.connection.connectionId}; threw error '${o}'.`);
+            this._logger.log(Un.Error, `An onreconnected callback called with connectionId '${this.connection.connectionId}; threw error '${o}'.`);
           }
           return;
         } catch (o) {
-          if (this._logger.log(Pn.Information, `Reconnect attempt failed because of error '${o}'.`), this._connectionState !== Ni.Reconnecting) {
-            this._logger.log(Pn.Debug, `Connection moved to the '${this._connectionState}' from the reconnecting state during reconnect attempt. Done reconnecting.`), this._connectionState === Ni.Disconnecting && this._completeClose();
+          if (this._logger.log(Un.Information, `Reconnect attempt failed because of error '${o}'.`), this._connectionState !== Ni.Reconnecting) {
+            this._logger.log(Un.Debug, `Connection moved to the '${this._connectionState}' from the reconnecting state during reconnect attempt. Done reconnecting.`), this._connectionState === Ni.Disconnecting && this._completeClose();
             return;
           }
           a++, i = o instanceof Error ? o : new Error(o.toString()), s = this._getNextRetryDelay(a, Date.now() - r, i);
         }
       }
-      this._logger.log(Pn.Information, `Reconnect retries have been exhausted after ${Date.now() - r} ms and ${a} failed attempts. Connection disconnecting.`), this._completeClose();
+      this._logger.log(Un.Information, `Reconnect retries have been exhausted after ${Date.now() - r} ms and ${a} failed attempts. Connection disconnecting.`), this._completeClose();
     }
     _getNextRetryDelay(e, r, a) {
       try {
@@ -11270,7 +11270,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
           retryReason: a
         });
       } catch (i) {
-        return this._logger.log(Pn.Error, `IRetryPolicy.nextRetryDelayInMilliseconds(${e}, ${r}) threw error '${i}'.`), null;
+        return this._logger.log(Un.Error, `IRetryPolicy.nextRetryDelayInMilliseconds(${e}, ${r}) threw error '${i}'.`), null;
       }
     }
     _cancelCallbacksWithError(e) {
@@ -11280,7 +11280,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
         try {
           i(null, e);
         } catch (s) {
-          this._logger.log(Pn.Error, `Stream 'error' callback called with '${e}' threw error: ${M4(s)}`);
+          this._logger.log(Un.Error, `Stream 'error' callback called with '${e}' threw error: ${M4(s)}`);
         }
       });
     }
@@ -11472,7 +11472,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
       this._httpClient = e, this._logger = r, this._pollAbort = new Mhe(), this._options = a, this._running = false, this.onreceive = null, this.onclose = null;
     }
     async connect(e, r) {
-      if (uA.isRequired(e, "url"), uA.isRequired(r, "transferFormat"), uA.isIn(r, Gl, "transferFormat"), this._url = e, this._logger.log(Pn.Trace, "(LongPolling transport) Connecting."), r === Gl.Binary && typeof XMLHttpRequest < "u" && typeof new XMLHttpRequest().responseType != "string") throw new Error("Binary protocols over XmlHttpRequest not implementing advanced features are not supported.");
+      if (uA.isRequired(e, "url"), uA.isRequired(r, "transferFormat"), uA.isIn(r, Gl, "transferFormat"), this._url = e, this._logger.log(Un.Trace, "(LongPolling transport) Connecting."), r === Gl.Binary && typeof XMLHttpRequest < "u" && typeof new XMLHttpRequest().responseType != "string") throw new Error("Binary protocols over XmlHttpRequest not implementing advanced features are not supported.");
       const [a, i] = zE(), s = {
         [a]: i,
         ...this._options.headers
@@ -11484,31 +11484,31 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
       };
       r === Gl.Binary && (o.responseType = "arraybuffer");
       const A = `${e}&_=${Date.now()}`;
-      this._logger.log(Pn.Trace, `(LongPolling transport) polling: ${A}.`);
+      this._logger.log(Un.Trace, `(LongPolling transport) polling: ${A}.`);
       const l = await this._httpClient.get(A, o);
-      l.statusCode !== 200 ? (this._logger.log(Pn.Error, `(LongPolling transport) Unexpected response code: ${l.statusCode}.`), this._closeError = new cC(l.statusText || "", l.statusCode), this._running = false) : this._running = true, this._receiving = this._poll(this._url, o);
+      l.statusCode !== 200 ? (this._logger.log(Un.Error, `(LongPolling transport) Unexpected response code: ${l.statusCode}.`), this._closeError = new cC(l.statusText || "", l.statusCode), this._running = false) : this._running = true, this._receiving = this._poll(this._url, o);
     }
     async _poll(e, r) {
       try {
         for (; this._running; ) try {
           const a = `${e}&_=${Date.now()}`;
-          this._logger.log(Pn.Trace, `(LongPolling transport) polling: ${a}.`);
+          this._logger.log(Un.Trace, `(LongPolling transport) polling: ${a}.`);
           const i = await this._httpClient.get(a, r);
-          i.statusCode === 204 ? (this._logger.log(Pn.Information, "(LongPolling transport) Poll terminated by server."), this._running = false) : i.statusCode !== 200 ? (this._logger.log(Pn.Error, `(LongPolling transport) Unexpected response code: ${i.statusCode}.`), this._closeError = new cC(i.statusText || "", i.statusCode), this._running = false) : i.content ? (this._logger.log(Pn.Trace, `(LongPolling transport) data received. ${A1(i.content, this._options.logMessageContent)}.`), this.onreceive && this.onreceive(i.content)) : this._logger.log(Pn.Trace, "(LongPolling transport) Poll timed out, reissuing.");
+          i.statusCode === 204 ? (this._logger.log(Un.Information, "(LongPolling transport) Poll terminated by server."), this._running = false) : i.statusCode !== 200 ? (this._logger.log(Un.Error, `(LongPolling transport) Unexpected response code: ${i.statusCode}.`), this._closeError = new cC(i.statusText || "", i.statusCode), this._running = false) : i.content ? (this._logger.log(Un.Trace, `(LongPolling transport) data received. ${A1(i.content, this._options.logMessageContent)}.`), this.onreceive && this.onreceive(i.content)) : this._logger.log(Un.Trace, "(LongPolling transport) Poll timed out, reissuing.");
         } catch (a) {
-          this._running ? a instanceof AL ? this._logger.log(Pn.Trace, "(LongPolling transport) Poll timed out, reissuing.") : (this._closeError = a, this._running = false) : this._logger.log(Pn.Trace, `(LongPolling transport) Poll errored after shutdown: ${a.message}`);
+          this._running ? a instanceof AL ? this._logger.log(Un.Trace, "(LongPolling transport) Poll timed out, reissuing.") : (this._closeError = a, this._running = false) : this._logger.log(Un.Trace, `(LongPolling transport) Poll errored after shutdown: ${a.message}`);
         }
       } finally {
-        this._logger.log(Pn.Trace, "(LongPolling transport) Polling complete."), this.pollAborted || this._raiseOnClose();
+        this._logger.log(Un.Trace, "(LongPolling transport) Polling complete."), this.pollAborted || this._raiseOnClose();
       }
     }
     async send(e) {
       return this._running ? rW(this._logger, "LongPolling", this._httpClient, this._url, e, this._options) : Promise.reject(new Error("Cannot send until the transport is connected"));
     }
     async stop() {
-      this._logger.log(Pn.Trace, "(LongPolling transport) Stopping polling."), this._running = false, this._pollAbort.abort();
+      this._logger.log(Un.Trace, "(LongPolling transport) Stopping polling."), this._running = false, this._pollAbort.abort();
       try {
-        await this._receiving, this._logger.log(Pn.Trace, `(LongPolling transport) sending DELETE request to ${this._url}.`);
+        await this._receiving, this._logger.log(Un.Trace, `(LongPolling transport) sending DELETE request to ${this._url}.`);
         const e = {}, [r, a] = zE();
         e[r] = a;
         const i = {
@@ -11525,15 +11525,15 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
         } catch (o) {
           s = o;
         }
-        s ? s instanceof cC && (s.statusCode === 404 ? this._logger.log(Pn.Trace, "(LongPolling transport) A 404 response was returned from sending a DELETE request.") : this._logger.log(Pn.Trace, `(LongPolling transport) Error sending a DELETE request: ${s}`)) : this._logger.log(Pn.Trace, "(LongPolling transport) DELETE request accepted.");
+        s ? s instanceof cC && (s.statusCode === 404 ? this._logger.log(Un.Trace, "(LongPolling transport) A 404 response was returned from sending a DELETE request.") : this._logger.log(Un.Trace, `(LongPolling transport) Error sending a DELETE request: ${s}`)) : this._logger.log(Un.Trace, "(LongPolling transport) DELETE request accepted.");
       } finally {
-        this._logger.log(Pn.Trace, "(LongPolling transport) Stop finished."), this._raiseOnClose();
+        this._logger.log(Un.Trace, "(LongPolling transport) Stop finished."), this._raiseOnClose();
       }
     }
     _raiseOnClose() {
       if (this.onclose) {
         let e = "(LongPolling transport) Firing onclose event.";
-        this._closeError && (e += " Error: " + this._closeError), this._logger.log(Pn.Trace, e), this.onclose(this._closeError);
+        this._closeError && (e += " Error: " + this._closeError), this._logger.log(Un.Trace, e), this.onclose(this._closeError);
       }
     }
   }
@@ -11542,7 +11542,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
       this._httpClient = e, this._accessToken = r, this._logger = a, this._options = i, this.onreceive = null, this.onclose = null;
     }
     async connect(e, r) {
-      return uA.isRequired(e, "url"), uA.isRequired(r, "transferFormat"), uA.isIn(r, Gl, "transferFormat"), this._logger.log(Pn.Trace, "(SSE transport) Connecting."), this._url = e, this._accessToken && (e += (e.indexOf("?") < 0 ? "?" : "&") + `access_token=${encodeURIComponent(this._accessToken)}`), new Promise((a, i) => {
+      return uA.isRequired(e, "url"), uA.isRequired(r, "transferFormat"), uA.isIn(r, Gl, "transferFormat"), this._logger.log(Un.Trace, "(SSE transport) Connecting."), this._url = e, this._accessToken && (e += (e.indexOf("?") < 0 ? "?" : "&") + `access_token=${encodeURIComponent(this._accessToken)}`), new Promise((a, i) => {
         let s = false;
         if (r !== Gl.Text) {
           i(new Error("The Server-Sent Events transport only supports the 'Text' transfer format"));
@@ -11567,7 +11567,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
         try {
           o.onmessage = (A) => {
             if (this.onreceive) try {
-              this._logger.log(Pn.Trace, `(SSE transport) data received. ${A1(A.data, this._options.logMessageContent)}.`), this.onreceive(A.data);
+              this._logger.log(Un.Trace, `(SSE transport) data received. ${A1(A.data, this._options.logMessageContent)}.`), this.onreceive(A.data);
             } catch (l) {
               this._close(l);
               return;
@@ -11575,7 +11575,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
           }, o.onerror = (A) => {
             s ? this._close() : i(new Error("EventSource failed to connect. The connection could not be found on the server, either the connection ID is not present on the server, or a proxy is refusing/buffering the connection. If you have multiple servers check that sticky sessions are enabled."));
           }, o.onopen = () => {
-            this._logger.log(Pn.Information, `SSE connected to ${this._url}`), this._eventSource = o, s = true, a();
+            this._logger.log(Un.Information, `SSE connected to ${this._url}`), this._eventSource = o, s = true, a();
           };
         } catch (A) {
           i(A);
@@ -11598,7 +11598,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
       this._logger = a, this._accessTokenFactory = r, this._logMessageContent = i, this._webSocketConstructor = s, this._httpClient = e, this.onreceive = null, this.onclose = null, this._headers = o;
     }
     async connect(e, r) {
-      uA.isRequired(e, "url"), uA.isRequired(r, "transferFormat"), uA.isIn(r, Gl, "transferFormat"), this._logger.log(Pn.Trace, "(WebSockets transport) Connecting.");
+      uA.isRequired(e, "url"), uA.isRequired(r, "transferFormat"), uA.isIn(r, Gl, "transferFormat"), this._logger.log(Un.Trace, "(WebSockets transport) Connecting.");
       let a;
       return this._accessTokenFactory && (a = await this._accessTokenFactory()), new Promise((i, s) => {
         e = e.replace(/^http/, "ws");
@@ -11615,12 +11615,12 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
           });
         } else a && (e += (e.indexOf("?") < 0 ? "?" : "&") + `access_token=${encodeURIComponent(a)}`);
         o || (o = new this._webSocketConstructor(e)), r === Gl.Binary && (o.binaryType = "arraybuffer"), o.onopen = (c) => {
-          this._logger.log(Pn.Information, `WebSocket connected to ${e}.`), this._webSocket = o, l = true, i();
+          this._logger.log(Un.Information, `WebSocket connected to ${e}.`), this._webSocket = o, l = true, i();
         }, o.onerror = (c) => {
           let g = null;
-          typeof ErrorEvent < "u" && c instanceof ErrorEvent ? g = c.error : g = "There was an error with the transport", this._logger.log(Pn.Information, `(WebSockets transport) ${g}.`);
+          typeof ErrorEvent < "u" && c instanceof ErrorEvent ? g = c.error : g = "There was an error with the transport", this._logger.log(Un.Information, `(WebSockets transport) ${g}.`);
         }, o.onmessage = (c) => {
-          if (this._logger.log(Pn.Trace, `(WebSockets transport) data received. ${A1(c.data, this._logMessageContent)}.`), this.onreceive) try {
+          if (this._logger.log(Un.Trace, `(WebSockets transport) data received. ${A1(c.data, this._logMessageContent)}.`), this.onreceive) try {
             this.onreceive(c.data);
           } catch (g) {
             this._close(g);
@@ -11636,7 +11636,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
       });
     }
     send(e) {
-      return this._webSocket && this._webSocket.readyState === this._webSocketConstructor.OPEN ? (this._logger.log(Pn.Trace, `(WebSockets transport) sending data. ${A1(e, this._logMessageContent)}.`), this._webSocket.send(e), Promise.resolve()) : Promise.reject("WebSocket is not in the OPEN state");
+      return this._webSocket && this._webSocket.readyState === this._webSocketConstructor.OPEN ? (this._logger.log(Un.Trace, `(WebSockets transport) sending data. ${A1(e, this._logMessageContent)}.`), this._webSocket.send(e), Promise.resolve()) : Promise.reject("WebSocket is not in the OPEN state");
     }
     stop() {
       return this._webSocket && this._close(void 0), Promise.resolve();
@@ -11645,7 +11645,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
       this._webSocket && (this._webSocket.onclose = () => {
       }, this._webSocket.onmessage = () => {
       }, this._webSocket.onerror = () => {
-      }, this._webSocket.close(), this._webSocket = void 0), this._logger.log(Pn.Trace, "(WebSockets transport) socket closed."), this.onclose && (this._isCloseEvent(e) && (e.wasClean === false || e.code !== 1e3) ? this.onclose(new Error(`WebSocket closed with status code: ${e.code} (${e.reason || "no reason given"}).`)) : e instanceof Error ? this.onclose(e) : this.onclose());
+      }, this._webSocket.close(), this._webSocket = void 0), this._logger.log(Un.Trace, "(WebSockets transport) socket closed."), this.onclose && (this._isCloseEvent(e) && (e.wasClean === false || e.code !== 1e3) ? this.onclose(new Error(`WebSocket closed with status code: ${e.code} (${e.reason || "no reason given"}).`)) : e instanceof Error ? this.onclose(e) : this.onclose());
     }
     _isCloseEvent(e) {
       return e && typeof e.wasClean == "boolean" && typeof e.code == "number";
@@ -11666,13 +11666,13 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
       !Do.isNode && typeof WebSocket < "u" && !r.WebSocket ? r.WebSocket = WebSocket : Do.isNode && !r.WebSocket && a && (r.WebSocket = a), !Do.isNode && typeof EventSource < "u" && !r.EventSource ? r.EventSource = EventSource : Do.isNode && !r.EventSource && typeof i < "u" && (r.EventSource = i), this._httpClient = new jhe(r.httpClient || new yhe(this._logger), r.accessTokenFactory), this._connectionState = "Disconnected", this._connectionStarted = false, this._options = r, this.onreceive = null, this.onclose = null;
     }
     async start(e) {
-      if (e = e || Gl.Binary, uA.isIn(e, Gl, "transferFormat"), this._logger.log(Pn.Debug, `Starting connection with transfer format '${Gl[e]}'.`), this._connectionState !== "Disconnected") return Promise.reject(new Error("Cannot start an HttpConnection that is not in the 'Disconnected' state."));
+      if (e = e || Gl.Binary, uA.isIn(e, Gl, "transferFormat"), this._logger.log(Un.Debug, `Starting connection with transfer format '${Gl[e]}'.`), this._connectionState !== "Disconnected") return Promise.reject(new Error("Cannot start an HttpConnection that is not in the 'Disconnected' state."));
       if (this._connectionState = "Connecting", this._startInternalPromise = this._startInternal(e), await this._startInternalPromise, this._connectionState === "Disconnecting") {
         const r = "Failed to start the HttpConnection before stop() was called.";
-        return this._logger.log(Pn.Error, r), await this._stopPromise, Promise.reject(new i0(r));
+        return this._logger.log(Un.Error, r), await this._stopPromise, Promise.reject(new i0(r));
       } else if (this._connectionState !== "Connected") {
         const r = "HttpConnection.startInternal completed gracefully but didn't enter the connection into the connected state!";
-        return this._logger.log(Pn.Error, r), Promise.reject(new i0(r));
+        return this._logger.log(Un.Error, r), Promise.reject(new i0(r));
       }
       this._connectionStarted = true;
     }
@@ -11680,8 +11680,8 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
       return this._connectionState !== "Connected" ? Promise.reject(new Error("Cannot send data if the connection is not in the 'Connected' State.")) : (this._sendQueue || (this._sendQueue = new cL(this.transport)), this._sendQueue.send(e));
     }
     async stop(e) {
-      if (this._connectionState === "Disconnected") return this._logger.log(Pn.Debug, `Call to HttpConnection.stop(${e}) ignored because the connection is already in the disconnected state.`), Promise.resolve();
-      if (this._connectionState === "Disconnecting") return this._logger.log(Pn.Debug, `Call to HttpConnection.stop(${e}) ignored because the connection is already in the disconnecting state.`), this._stopPromise;
+      if (this._connectionState === "Disconnected") return this._logger.log(Un.Debug, `Call to HttpConnection.stop(${e}) ignored because the connection is already in the disconnected state.`), Promise.resolve();
+      if (this._connectionState === "Disconnecting") return this._logger.log(Un.Debug, `Call to HttpConnection.stop(${e}) ignored because the connection is already in the disconnecting state.`), this._stopPromise;
       this._connectionState = "Disconnecting", this._stopPromise = new Promise((r) => {
         this._stopPromiseResolver = r;
       }), await this._stopInternal(e), await this._stopPromise;
@@ -11696,10 +11696,10 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
         try {
           await this.transport.stop();
         } catch (r) {
-          this._logger.log(Pn.Error, `HttpConnection.transport.stop() threw error '${r}'.`), this._stopConnection();
+          this._logger.log(Un.Error, `HttpConnection.transport.stop() threw error '${r}'.`), this._stopConnection();
         }
         this.transport = void 0;
-      } else this._logger.log(Pn.Debug, "HttpConnection.transport is undefined in HttpConnection.stop() because start() failed.");
+      } else this._logger.log(Un.Debug, "HttpConnection.transport is undefined in HttpConnection.stop() because start() failed.");
     }
     async _startInternal(e) {
       let r = this.baseUrl;
@@ -11722,16 +11722,16 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
           if (i === LP && a.url) throw new Error("Negotiate redirection limit exceeded.");
           await this._createTransport(r, this._options.transport, a, e);
         }
-        this.transport instanceof TP && (this.features.inherentKeepAlive = true), this._connectionState === "Connecting" && (this._logger.log(Pn.Debug, "The HttpConnection connected successfully."), this._connectionState = "Connected");
+        this.transport instanceof TP && (this.features.inherentKeepAlive = true), this._connectionState === "Connecting" && (this._logger.log(Un.Debug, "The HttpConnection connected successfully."), this._connectionState = "Connected");
       } catch (a) {
-        return this._logger.log(Pn.Error, "Failed to start the connection: " + a), this._connectionState = "Disconnected", this.transport = void 0, this._stopPromiseResolver(), Promise.reject(a);
+        return this._logger.log(Un.Error, "Failed to start the connection: " + a), this._connectionState = "Disconnected", this.transport = void 0, this._stopPromiseResolver(), Promise.reject(a);
       }
     }
     async _getNegotiationResponse(e) {
       const r = {}, [a, i] = zE();
       r[a] = i;
       const s = this._resolveNegotiateUrl(e);
-      this._logger.log(Pn.Debug, `Sending negotiation request: ${s}.`);
+      this._logger.log(Un.Debug, `Sending negotiation request: ${s}.`);
       try {
         const o = await this._httpClient.post(s, {
           content: "",
@@ -11747,7 +11747,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
         return (!A.negotiateVersion || A.negotiateVersion < 1) && (A.connectionToken = A.connectionId), A.useStatefulReconnect && this._options._useStatefulReconnect !== true ? Promise.reject(new jP("Client didn't negotiate Stateful Reconnect but the server did.")) : A;
       } catch (o) {
         let A = "Failed to complete negotiation with the server: " + o;
-        return o instanceof cC && o.statusCode === 404 && (A = A + " Either this is not a SignalR endpoint or there is a proxy blocking the connection."), this._logger.log(Pn.Error, A), Promise.reject(new jP(A));
+        return o instanceof cC && o.statusCode === 404 && (A = A + " Either this is not a SignalR endpoint or there is a proxy blocking the connection."), this._logger.log(Un.Error, A), Promise.reject(new jP(A));
       }
     }
     _createConnectUrl(e, r) {
@@ -11756,7 +11756,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
     async _createTransport(e, r, a, i) {
       let s = this._createConnectUrl(e, a.connectionToken);
       if (this._isITransport(r)) {
-        this._logger.log(Pn.Debug, "Connection was provided an instance of ITransport, using that directly."), this.transport = r, await this._startTransport(s, i), this.connectionId = a.connectionId;
+        this._logger.log(Un.Debug, "Connection was provided an instance of ITransport, using that directly."), this.transport = r, await this._startTransport(s, i), this.connectionId = a.connectionId;
         return;
       }
       const o = [], A = a.availableTransports || [];
@@ -11777,9 +11777,9 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
             await this._startTransport(s, i), this.connectionId = l.connectionId;
             return;
           } catch (d) {
-            if (this._logger.log(Pn.Error, `Failed to start the transport '${c.transport}': ${d}`), l = void 0, o.push(new dhe(`${c.transport} failed: ${d}`, Po[c.transport])), this._connectionState !== "Connecting") {
+            if (this._logger.log(Un.Error, `Failed to start the transport '${c.transport}': ${d}`), l = void 0, o.push(new dhe(`${c.transport} failed: ${d}`, Po[c.transport])), this._connectionState !== "Connecting") {
               const u = "Failed to select transport before stop() was called.";
-              return this._logger.log(Pn.Debug, u), Promise.reject(new i0(u));
+              return this._logger.log(Un.Debug, u), Promise.reject(new i0(u));
             }
           }
         }
@@ -11817,35 +11817,35 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
     }
     _resolveTransportOrError(e, r, a, i) {
       const s = Po[e.transport];
-      if (s == null) return this._logger.log(Pn.Debug, `Skipping transport '${e.transport}' because it is not supported by this client.`), new Error(`Skipping transport '${e.transport}' because it is not supported by this client.`);
+      if (s == null) return this._logger.log(Un.Debug, `Skipping transport '${e.transport}' because it is not supported by this client.`), new Error(`Skipping transport '${e.transport}' because it is not supported by this client.`);
       if (zhe(r, s)) if (e.transferFormats.map((A) => Gl[A]).indexOf(a) >= 0) {
-        if (s === Po.WebSockets && !this._options.WebSocket || s === Po.ServerSentEvents && !this._options.EventSource) return this._logger.log(Pn.Debug, `Skipping transport '${Po[s]}' because it is not supported in your environment.'`), new lhe(`'${Po[s]}' is not supported in your environment.`, s);
-        this._logger.log(Pn.Debug, `Selecting transport '${Po[s]}'.`);
+        if (s === Po.WebSockets && !this._options.WebSocket || s === Po.ServerSentEvents && !this._options.EventSource) return this._logger.log(Un.Debug, `Skipping transport '${Po[s]}' because it is not supported in your environment.'`), new lhe(`'${Po[s]}' is not supported in your environment.`, s);
+        this._logger.log(Un.Debug, `Selecting transport '${Po[s]}'.`);
         try {
           return this.features.reconnect = s === Po.WebSockets ? i : void 0, this._constructTransport(s);
         } catch (A) {
           return A;
         }
-      } else return this._logger.log(Pn.Debug, `Skipping transport '${Po[s]}' because it does not support the requested transfer format '${Gl[a]}'.`), new Error(`'${Po[s]}' does not support ${Gl[a]}.`);
-      else return this._logger.log(Pn.Debug, `Skipping transport '${Po[s]}' because it was disabled by the client.`), new che(`'${Po[s]}' is disabled by the client.`, s);
+      } else return this._logger.log(Un.Debug, `Skipping transport '${Po[s]}' because it does not support the requested transfer format '${Gl[a]}'.`), new Error(`'${Po[s]}' does not support ${Gl[a]}.`);
+      else return this._logger.log(Un.Debug, `Skipping transport '${Po[s]}' because it was disabled by the client.`), new che(`'${Po[s]}' is disabled by the client.`, s);
     }
     _isITransport(e) {
       return e && typeof e == "object" && "connect" in e;
     }
     _stopConnection(e) {
-      if (this._logger.log(Pn.Debug, `HttpConnection.stopConnection(${e}) called while in state ${this._connectionState}.`), this.transport = void 0, e = this._stopError || e, this._stopError = void 0, this._connectionState === "Disconnected") {
-        this._logger.log(Pn.Debug, `Call to HttpConnection.stopConnection(${e}) was ignored because the connection is already in the disconnected state.`);
+      if (this._logger.log(Un.Debug, `HttpConnection.stopConnection(${e}) called while in state ${this._connectionState}.`), this.transport = void 0, e = this._stopError || e, this._stopError = void 0, this._connectionState === "Disconnected") {
+        this._logger.log(Un.Debug, `Call to HttpConnection.stopConnection(${e}) was ignored because the connection is already in the disconnected state.`);
         return;
       }
-      if (this._connectionState === "Connecting") throw this._logger.log(Pn.Warning, `Call to HttpConnection.stopConnection(${e}) was ignored because the connection is still in the connecting state.`), new Error(`HttpConnection.stopConnection(${e}) was called while the connection is still in the connecting state.`);
-      if (this._connectionState === "Disconnecting" && this._stopPromiseResolver(), e ? this._logger.log(Pn.Error, `Connection disconnected with error '${e}'.`) : this._logger.log(Pn.Information, "Connection disconnected."), this._sendQueue && (this._sendQueue.stop().catch((r) => {
-        this._logger.log(Pn.Error, `TransportSendQueue.stop() threw error '${r}'.`);
+      if (this._connectionState === "Connecting") throw this._logger.log(Un.Warning, `Call to HttpConnection.stopConnection(${e}) was ignored because the connection is still in the connecting state.`), new Error(`HttpConnection.stopConnection(${e}) was called while the connection is still in the connecting state.`);
+      if (this._connectionState === "Disconnecting" && this._stopPromiseResolver(), e ? this._logger.log(Un.Error, `Connection disconnected with error '${e}'.`) : this._logger.log(Un.Information, "Connection disconnected."), this._sendQueue && (this._sendQueue.stop().catch((r) => {
+        this._logger.log(Un.Error, `TransportSendQueue.stop() threw error '${r}'.`);
       }), this._sendQueue = void 0), this.connectionId = void 0, this._connectionState = "Disconnected", this._connectionStarted) {
         this._connectionStarted = false;
         try {
           this.onclose && this.onclose(e);
         } catch (r) {
-          this._logger.log(Pn.Error, `HttpConnection.onclose(${e}) threw error '${r}'.`);
+          this._logger.log(Un.Error, `HttpConnection.onclose(${e}) threw error '${r}'.`);
         }
       }
     }
@@ -11853,7 +11853,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
       if (e.lastIndexOf("https://", 0) === 0 || e.lastIndexOf("http://", 0) === 0) return e;
       if (!Do.isBrowser) throw new Error(`Cannot resolve '${e}'.`);
       const r = window.document.createElement("a");
-      return r.href = e, this._logger.log(Pn.Information, `Normalizing '${e}' to '${r.href}'.`), r.href;
+      return r.href = e, this._logger.log(Un.Information, `Normalizing '${e}' to '${r.href}'.`), r.href;
     }
     _resolveNegotiateUrl(e) {
       const r = new URL(e);
@@ -11952,7 +11952,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
             this._isSequenceMessage(o);
             break;
           default:
-            r.log(Pn.Information, "Unknown message type '" + o.type + "' ignored.");
+            r.log(Un.Information, "Unknown message type '" + o.type + "' ignored.");
             continue;
         }
         i.push(o);
@@ -11983,15 +11983,15 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
     }
   }
   const Phe = {
-    trace: Pn.Trace,
-    debug: Pn.Debug,
-    info: Pn.Information,
-    information: Pn.Information,
-    warn: Pn.Warning,
-    warning: Pn.Warning,
-    error: Pn.Error,
-    critical: Pn.Critical,
-    none: Pn.None
+    trace: Un.Trace,
+    debug: Un.Debug,
+    info: Un.Information,
+    information: Un.Information,
+    warn: Un.Warning,
+    warning: Un.Warning,
+    error: Un.Error,
+    critical: Un.Critical,
+    none: Un.None
   };
   function Ohe(t) {
     const e = Phe[t.toLowerCase()];
@@ -12052,7 +12052,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
       5e3,
       1e4,
       3e4
-    ]).configureLogging(Pn.Warning).build()), EI),
+    ]).configureLogging(Un.Warning).build()), EI),
     startConnection: async () => {
       if (bI++, console.log(`SignalR: Subscriber added (Total: ${bI})`), yI && (clearTimeout(yI), yI = null, console.log("SignalR: Aborted scheduled disconnect")), !localStorage.getItem("synos_jwt")) return;
       const e = Ei._getConnection();
@@ -12141,7 +12141,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
       5e3,
       1e4,
       3e4
-    ]).configureLogging(Pn.Warning).build(), hh.on("CapabilityRegistered", (t, e) => {
+    ]).configureLogging(Un.Warning).build(), hh.on("CapabilityRegistered", (t, e) => {
       console.log(`SignalR(Branch): Capability '${t}' registration result: ${e ? "AUTHORIZED" : "DENIED"}`), window._onCapabilityRegisteredHandler && window._onCapabilityRegisteredHandler(t, e);
     }), hh.on("capabilityregistered", (t, e) => {
       window._onCapabilityRegisteredHandler && window._onCapabilityRegisteredHandler(t, e);
@@ -34270,7 +34270,7 @@ Details: ${A.inner}`);
     F.useEffect(() => {
       let Ve = true;
       return (async () => {
-        const [jt, An, In, On, rr, hn] = await Promise.allSettled([
+        const [jt, An, In, Pn, rr, hn] = await Promise.allSettled([
           xL(),
           Dw(),
           HW(),
@@ -34283,10 +34283,10 @@ Details: ${A.inner}`);
             const an = In.value;
             J((an == null ? void 0 : an.data) || an || []);
           } else console.warn("Failed to load reference labs", In.reason);
-          if (On.status === "fulfilled") {
-            const an = On.value;
+          if (Pn.status === "fulfilled") {
+            const an = Pn.value;
             se((an == null ? void 0 : an.data) || an || []);
-          } else console.warn("Failed to load outsourced catalog", On.reason);
+          } else console.warn("Failed to load outsourced catalog", Pn.reason);
           rr.status === "fulfilled" ? Ce(rr.value || []) : console.warn("Failed to load insurance companies", rr.reason), hn.status === "fulfilled" ? je(hn.value || []) : console.warn("Failed to load corporate accounts", hn.reason);
         }
       })(), () => {
@@ -34316,20 +34316,20 @@ Details: ${A.inner}`);
       if ((t == null ? void 0 : t.visit) && (Ve.employeeId !== void 0 && (t.visit.employeeId = Ve.employeeId), Ve.policyNumber !== void 0 && (t.visit.policyNumber = Ve.policyNumber), Ve.preAuthApprovalNumber !== void 0 && (t.visit.preAuthApprovalNumber = Ve.preAuthApprovalNumber), Ve.insuranceCoPayAmount !== void 0 && (t.visit.insuranceCoPayAmount = Ve.insuranceCoPayAmount), Ve.corporateAccountId !== void 0 && (t.visit.corporateAccountId = Ve.corporateAccountId), Ve.corporatePackageId !== void 0 && (t.visit.corporatePackageId = Ve.corporatePackageId), Ve.insuranceCompanyId !== void 0 && (t.visit.insuranceCompanyId = Ve.insuranceCompanyId), Ve.billingType !== void 0 && (t.visit.billingType = Ve.billingType)), !!An) {
         jt || Re(true);
         try {
-          const On = t == null ? void 0 : t.visit, rr = {
+          const Pn = t == null ? void 0 : t.visit, rr = {
             visitId: e,
             billingType: Ve.billingType !== void 0 ? Ve.billingType : A,
-            insuranceCompanyId: Ve.insuranceCompanyId !== void 0 ? Ve.insuranceCompanyId : (On == null ? void 0 : On.insuranceCompanyId) || null,
-            policyNumber: Ve.policyNumber !== void 0 ? Ve.policyNumber : (On == null ? void 0 : On.policyNumber) || null,
-            preAuthApprovalNumber: Ve.preAuthApprovalNumber !== void 0 ? Ve.preAuthApprovalNumber : (On == null ? void 0 : On.preAuthApprovalNumber) || null,
-            insuranceCoPayAmount: Ve.insuranceCoPayAmount !== void 0 ? Ve.insuranceCoPayAmount : (On == null ? void 0 : On.insuranceCoPayAmount) || 0,
-            corporateAccountId: Ve.corporateAccountId !== void 0 ? Ve.corporateAccountId : (On == null ? void 0 : On.corporateAccountId) || null,
-            employeeId: Ve.employeeId !== void 0 ? Ve.employeeId : (On == null ? void 0 : On.employeeId) || null,
-            corporatePackageId: Ve.corporatePackageId !== void 0 ? Ve.corporatePackageId : (On == null ? void 0 : On.corporatePackageId) || null
+            insuranceCompanyId: Ve.insuranceCompanyId !== void 0 ? Ve.insuranceCompanyId : (Pn == null ? void 0 : Pn.insuranceCompanyId) || null,
+            policyNumber: Ve.policyNumber !== void 0 ? Ve.policyNumber : (Pn == null ? void 0 : Pn.policyNumber) || null,
+            preAuthApprovalNumber: Ve.preAuthApprovalNumber !== void 0 ? Ve.preAuthApprovalNumber : (Pn == null ? void 0 : Pn.preAuthApprovalNumber) || null,
+            insuranceCoPayAmount: Ve.insuranceCoPayAmount !== void 0 ? Ve.insuranceCoPayAmount : (Pn == null ? void 0 : Pn.insuranceCoPayAmount) || 0,
+            corporateAccountId: Ve.corporateAccountId !== void 0 ? Ve.corporateAccountId : (Pn == null ? void 0 : Pn.corporateAccountId) || null,
+            employeeId: Ve.employeeId !== void 0 ? Ve.employeeId : (Pn == null ? void 0 : Pn.employeeId) || null,
+            corporatePackageId: Ve.corporatePackageId !== void 0 ? Ve.corporatePackageId : (Pn == null ? void 0 : Pn.corporatePackageId) || null
           };
           await qt.updateBillingContext(rr), In && r && r();
-        } catch (On) {
-          console.error("Failed to update billing context:", On), jt || alert("Failed to update billing details: " + On.message);
+        } catch (Pn) {
+          console.error("Failed to update billing context:", Pn), jt || alert("Failed to update billing details: " + Pn.message);
         } finally {
           jt || Re(false);
         }
@@ -34337,7 +34337,7 @@ Details: ${A.inner}`);
     }, Sn = (Ve) => {
       const Mt = (Ve.testCode || Ve.code || "").toLowerCase(), jt = Ve.id || Ve.testId;
       if ((A === "Corporate" || A === "Insurance") && Qe.length > 0) {
-        const An = Qe.find((On) => On.testCode && On.testCode.toLowerCase() === Mt || On.packageCode && On.packageCode.toLowerCase() === Mt || On.testId && jt && On.testId === jt), In = An ? An.contractedPrice ?? An.corporatePrice : null;
+        const An = Qe.find((Pn) => Pn.testCode && Pn.testCode.toLowerCase() === Mt || Pn.packageCode && Pn.packageCode.toLowerCase() === Mt || Pn.testId && jt && Pn.testId === jt), In = An ? An.contractedPrice ?? An.corporatePrice : null;
         if (In != null) return {
           price: In,
           isCorporateRate: true,
@@ -34506,8 +34506,8 @@ Details: ${A.inner}`);
         const an = (hn.testCode || hn.code || "").toLowerCase();
         an && !An.has(an) && (An.add(an), In.push(hn));
       }
-      const On = In.filter((hn) => !Ee.some((an) => (an.code || "").toLowerCase() === (hn.testCode || hn.code || "").toLowerCase())), rr = B.replace(/^[\/\\#\s]+/, "").trim().toLowerCase();
-      rr.length > 0 ? ie = On.filter((hn) => (hn.testName || hn.name || "").toLowerCase().includes(rr) || (hn.testCode || hn.code || "").toLowerCase().includes(rr)) : ie = [];
+      const Pn = In.filter((hn) => !Ee.some((an) => (an.code || "").toLowerCase() === (hn.testCode || hn.code || "").toLowerCase())), rr = B.replace(/^[\/\\#\s]+/, "").trim().toLowerCase();
+      rr.length > 0 ? ie = Pn.filter((hn) => (hn.testName || hn.name || "").toLowerCase().includes(rr) || (hn.testCode || hn.code || "").toLowerCase().includes(rr)) : ie = [];
     } else ie = [];
     else {
       const Ve = (hn) => {
@@ -34516,9 +34516,9 @@ Details: ${A.inner}`);
       }, Mt = Ee.filter((hn) => !(o && d.includes(hn.orderId || hn.OrderId || hn.TestId || hn.testId))).map((hn) => (hn.testCode || hn.code || "").toLowerCase()), jt = c.map((hn) => (hn.testCode || hn.code || "").toLowerCase()), An = (hn) => {
         const an = (hn.testCode || hn.code || "").toLowerCase();
         return Mt.includes(an) || jt.includes(an);
-      }, In = B.replace(/^[\/\\#\s]+/, "").trim().toLowerCase(), On = In.length < 1 ? [] : _.filter((hn) => !Ve(hn) && ((hn.testName || hn.name || "").toLowerCase().includes(In) || (hn.testCode || hn.code || "").toLowerCase().includes(In)) && !An(hn)), rr = In.length < 1 ? [] : $.filter((hn) => !Ve(hn) && ((hn.testName || hn.name || "").toLowerCase().includes(In) || (hn.testCode || hn.code || "").toLowerCase().includes(In)) && !An(hn));
+      }, In = B.replace(/^[\/\\#\s]+/, "").trim().toLowerCase(), Pn = In.length < 1 ? [] : _.filter((hn) => !Ve(hn) && ((hn.testName || hn.name || "").toLowerCase().includes(In) || (hn.testCode || hn.code || "").toLowerCase().includes(In)) && !An(hn)), rr = In.length < 1 ? [] : $.filter((hn) => !Ve(hn) && ((hn.testName || hn.name || "").toLowerCase().includes(In) || (hn.testCode || hn.code || "").toLowerCase().includes(In)) && !An(hn));
       ie = [
-        ...On,
+        ...Pn,
         ...rr
       ];
     }
@@ -34584,7 +34584,7 @@ Details: ${A.inner}`);
       if (fe) return;
       const jt = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]')), An = document.getElementById(`btn-remove-test-${Ve}`) || document.getElementById(`btn-undo-test-${Ve}`), In = An ? jt.indexOf(An) : -1;
       i && i(Ve, Mt);
-      const On = () => {
+      const Pn = () => {
         requestAnimationFrame(() => {
           setTimeout(() => {
             var _a3, _b2;
@@ -34597,7 +34597,7 @@ Details: ${A.inner}`);
         });
       };
       try {
-        await qt.removeTestFromVisit(e, Ve), r && await r(), On();
+        await qt.removeTestFromVisit(e, Ve), r && await r(), Pn();
       } catch (rr) {
         console.error("Failed to remove test", rr), alert("Failed to remove test: " + rr.message), r && await r();
       }
@@ -34612,8 +34612,8 @@ Details: ${A.inner}`);
       if (An && An.offsetParent !== null) return An;
       const In = document.getElementById("input-b2b-doctor-search");
       if (In && In.offsetParent !== null) return In;
-      const On = document.querySelector('[data-payment-method="true"]');
-      if (On && On.offsetParent !== null) return On;
+      const Pn = document.querySelector('[data-payment-method="true"]');
+      if (Pn && Pn.offsetParent !== null) return Pn;
       const rr = document.getElementById("synos-financials-container");
       if (rr) {
         const an = rr.querySelector('input:not([disabled]):not([type="hidden"]), button:not([disabled]), [tabindex="0"]');
@@ -34894,7 +34894,7 @@ Details: ${A.inner}`);
                               }
                             }
                           },
-                          className: "bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-200/60 dark:bg-sky-950/40 dark:text-sky-400 dark:border-sky-800 rounded-lg px-3 py-1.5 text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer tracking-normal shadow-2xs synos-focus-btn",
+                          className: "bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-3 py-1.5 text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95 synos-focus-btn",
                           children: [
                             n.jsx(Ta, {
                               className: "w-4 h-4"
@@ -35065,7 +35065,7 @@ Details: ${A.inner}`);
                               }
                             }
                           },
-                          className: "bg-[#EBF5EF] hover:bg-[#DFF0E6] text-[#245E49] border border-[#CCE8D8] dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800 rounded-lg px-3 py-1.5 text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer tracking-normal shadow-2xs synos-focus-btn",
+                          className: "bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-3 py-1.5 text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95 synos-focus-btn",
                           children: [
                             n.jsx(Ta, {
                               className: "w-4 h-4"
@@ -35213,7 +35213,7 @@ Details: ${A.inner}`);
                               }
                             }
                           },
-                          className: "bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-200/60 dark:bg-sky-950/40 dark:text-sky-400 dark:border-sky-800 rounded-lg px-2.5 py-1 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer synos-focus-btn",
+                          className: "bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-3 py-1.5 text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95 synos-focus-btn",
                           children: [
                             n.jsx(Ta, {
                               className: "w-3.5 h-3.5"
@@ -35567,9 +35567,9 @@ Details: ${A.inner}`);
                 className: me(Mt ? "grid grid-cols-1 sm:grid-cols-2 gap-2.5" : "space-y-2.5", jt && "max-h-[260px] overflow-y-auto pr-1.5 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-zinc-700"),
                 children: [
                   ue.map((An) => {
-                    const In = An.orderId || An.OrderId || An.TestId || An.testId, On = o && d.includes(In);
+                    const In = An.orderId || An.OrderId || An.TestId || An.testId, Pn = o && d.includes(In);
                     return n.jsxs("div", {
-                      className: me("rounded-xl p-3 flex items-center justify-between group animate-in zoom-in-95 duration-200 border transition-all min-w-0", On ? "opacity-50 bg-red-950/20 border-red-500/30 line-through" : Pe.testCard),
+                      className: me("rounded-xl p-3 flex items-center justify-between group animate-in zoom-in-95 duration-200 border transition-all min-w-0", Pn ? "opacity-50 bg-red-950/20 border-red-500/30 line-through" : Pe.testCard),
                       children: [
                         n.jsxs("div", {
                           className: "flex items-center gap-2.5 min-w-0",
@@ -35588,7 +35588,7 @@ Details: ${A.inner}`);
                                       className: "text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate",
                                       children: An.testName || An.name
                                     }),
-                                    On && n.jsx("span", {
+                                    Pn && n.jsx("span", {
                                       className: "text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-red-500/20 text-red-400 border border-red-500/30 no-underline not-italic shrink-0",
                                       children: "Cancelled"
                                     })
@@ -35612,7 +35612,7 @@ Details: ${A.inner}`);
                                 An.basePrice || An.price || An.Price
                               ]
                             }),
-                            (!fe || o) && (On ? n.jsx("button", {
+                            (!fe || o) && (Pn ? n.jsx("button", {
                               type: "button",
                               id: `btn-undo-test-${An.testCode || An.code}`,
                               "data-test-remove-btn": "true",
@@ -35745,17 +35745,17 @@ Details: ${A.inner}`);
               className: "grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-0.5",
               children: Vt.map((Ve) => {
                 var _a3;
-                const Mt = Ve.testCode || Ve.packageCode || Ve.code, jt = Ve.packageName || Ve.testName || Ve.name, An = Ve.contractedPrice ?? Ve.corporatePrice ?? Ve.price ?? 0, In = Ee.find((rr) => (rr.code || "").toLowerCase() === (Mt || "").toLowerCase()), On = !!In;
+                const Mt = Ve.testCode || Ve.packageCode || Ve.code, jt = Ve.packageName || Ve.testName || Ve.name, An = Ve.contractedPrice ?? Ve.corporatePrice ?? Ve.price ?? 0, In = Ee.find((rr) => (rr.code || "").toLowerCase() === (Mt || "").toLowerCase()), Pn = !!In;
                 return n.jsxs("div", {
                   onClick: () => {
-                    ze || fe && !o || (On && In ? at(In.code || Mt, In.orderId || In.OrderId || In.TestId || In.testId) : Ne({
+                    ze || fe && !o || (Pn && In ? at(In.code || Mt, In.orderId || In.OrderId || In.TestId || In.testId) : Ne({
                       testCode: Mt,
                       name: jt,
                       price: An,
                       isPackage: true
                     }));
                   },
-                  className: me("group relative p-3 rounded-lg border transition-all duration-150 flex flex-col justify-between space-y-2.5 cursor-pointer select-none", On ? Le ? "bg-emerald-950/25 border-emerald-500/50 ring-1 ring-emerald-500/40 shadow-xs" : "bg-emerald-50/70 border-emerald-400 ring-1 ring-emerald-400/80 shadow-xs" : Le ? "bg-zinc-900/60 border-synos-border hover:border-zinc-600 hover:bg-zinc-800/60 hover:shadow-xs active:scale-[0.99]" : "bg-white/80 border-black/5 shadow-xs hover:bg-white hover:border-black/15 hover:shadow-sm active:scale-[0.99]"),
+                  className: me("group relative p-3 rounded-lg border transition-all duration-150 flex flex-col justify-between space-y-2.5 cursor-pointer select-none", Pn ? Le ? "bg-emerald-950/25 border-emerald-500/50 ring-1 ring-emerald-500/40 shadow-xs" : "bg-emerald-50/70 border-emerald-400 ring-1 ring-emerald-400/80 shadow-xs" : Le ? "bg-zinc-900/60 border-synos-border hover:border-zinc-600 hover:bg-zinc-800/60 hover:shadow-xs active:scale-[0.99]" : "bg-white/80 border-black/5 shadow-xs hover:bg-white hover:border-black/15 hover:shadow-sm active:scale-[0.99]"),
                   children: [
                     n.jsxs("div", {
                       className: "space-y-1.5",
@@ -35770,7 +35770,7 @@ Details: ${A.inner}`);
                                   className: me("px-2 py-0.5 rounded flex items-center justify-center type-code border shrink-0 font-mono text-xs font-bold truncate", Pe.testCode),
                                   children: Mt
                                 }),
-                                On && n.jsxs("span", {
+                                Pn && n.jsxs("span", {
                                   className: "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 shrink-0",
                                   children: [
                                     n.jsx(ai, {
@@ -35831,7 +35831,7 @@ Details: ${A.inner}`);
                     }),
                     n.jsx("div", {
                       className: "pt-2 border-t border-black/5 dark:border-white/5 flex items-center justify-between",
-                      children: On ? n.jsxs("div", {
+                      children: Pn ? n.jsxs("div", {
                         className: "flex items-center justify-between w-full",
                         children: [
                           n.jsxs("span", {
@@ -36313,19 +36313,19 @@ Details: ${A.inner}`);
       chipInactive: "bg-white/90 text-slate-700 border-slate-200/90 hover:bg-slate-100 shadow-2xs"
     };
     return p <= 0 ? null : n.jsxs("div", {
-      className: me("p-3.5 rounded-2xl border space-y-3 transition-all animate-in fade-in duration-200", G.pod),
+      className: me("p-4 sm:p-5 rounded-2xl border space-y-4 transition-all animate-in fade-in duration-200 shadow-sm", G.pod),
       children: [
         n.jsxs("div", {
           className: "flex items-center justify-between",
           children: [
             n.jsxs("div", {
-              className: "flex items-center gap-1.5",
+              className: "flex items-center gap-2",
               children: [
                 n.jsx(Ib, {
                   className: "w-4 h-4 text-emerald-600 dark:text-emerald-400"
                 }),
                 n.jsx("span", {
-                  className: "text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-300",
+                  className: "text-xs sm:text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-zinc-200",
                   children: A ? "Split / Multi-Channel Payment" : "Counter Cash Tender Calculator"
                 })
               ]
@@ -36334,10 +36334,10 @@ Details: ${A.inner}`);
               type: "button",
               onClick: l,
               disabled: h,
-              className: me("px-2.5 py-1 rounded-lg text-[10.5px] font-bold border transition-all cursor-pointer flex items-center gap-1.5 synos-focus-btn", A ? "bg-purple-600 text-white border-purple-600 shadow-xs" : "bg-white/80 dark:bg-zinc-800 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 hover:bg-purple-50"),
+              className: "px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center gap-1.5 synos-focus-btn active:scale-95 bg-purple-600 hover:bg-purple-700 text-white border-purple-600 shadow-sm",
               children: [
                 n.jsx(SCe, {
-                  className: "w-3 h-3"
+                  className: "w-3.5 h-3.5"
                 }),
                 n.jsx("span", {
                   children: A ? "Switch to Pure Cash" : "Split Cash + Online"
@@ -36350,25 +36350,25 @@ Details: ${A.inner}`);
           className: "space-y-3",
           children: [
             n.jsxs("div", {
-              className: "grid grid-cols-2 gap-2.5",
+              className: "grid grid-cols-2 gap-3",
               children: [
                 n.jsxs("div", {
-                  className: me("p-2.5 rounded-xl border space-y-1.5", G.recessed),
+                  className: me("p-3 rounded-xl border space-y-2", G.recessed),
                   children: [
                     n.jsxs("div", {
-                      className: "flex items-center justify-between text-[11px] font-bold text-slate-700 dark:text-zinc-300",
+                      className: "flex items-center justify-between text-xs font-bold text-slate-700 dark:text-zinc-300",
                       children: [
                         n.jsxs("span", {
-                          className: "flex items-center gap-1",
+                          className: "flex items-center gap-1.5",
                           children: [
                             n.jsx($s, {
-                              className: "w-3.5 h-3.5 text-emerald-600"
+                              className: "w-4 h-4 text-emerald-600"
                             }),
                             "Cash from Patient"
                           ]
                         }),
                         n.jsxs("span", {
-                          className: "font-mono text-emerald-700 dark:text-emerald-400 font-extrabold",
+                          className: "font-mono text-emerald-700 dark:text-emerald-400 font-extrabold text-sm",
                           children: [
                             "\u20B9",
                             D
@@ -36380,7 +36380,7 @@ Details: ${A.inner}`);
                       className: "relative",
                       children: [
                         n.jsx("span", {
-                          className: "absolute left-2.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400",
+                          className: "absolute left-3 top-1/2 -translate-y-1/2 text-base font-bold text-slate-400",
                           children: "\u20B9"
                         }),
                         n.jsx("input", {
@@ -36397,29 +36397,29 @@ Details: ${A.inner}`);
                             U <= p && u(String(p - U));
                           },
                           placeholder: "0",
-                          className: me("w-full h-8 pl-6 pr-2 rounded-lg text-xs font-mono font-bold outline-none", G.input)
+                          className: me("w-full h-10 pl-7 pr-3 rounded-xl text-sm font-mono font-bold outline-none", G.input)
                         })
                       ]
                     })
                   ]
                 }),
                 n.jsxs("div", {
-                  className: me("p-2.5 rounded-xl border space-y-1.5", G.recessed),
+                  className: me("p-3 rounded-xl border space-y-2", G.recessed),
                   children: [
                     n.jsxs("div", {
-                      className: "flex items-center justify-between text-[11px] font-bold text-slate-700 dark:text-zinc-300",
+                      className: "flex items-center justify-between text-xs font-bold text-slate-700 dark:text-zinc-300",
                       children: [
                         n.jsxs("span", {
-                          className: "flex items-center gap-1",
+                          className: "flex items-center gap-1.5",
                           children: [
                             n.jsx(yE, {
-                              className: "w-3.5 h-3.5 text-blue-600"
+                              className: "w-4 h-4 text-blue-600"
                             }),
                             "UPI / QR Scan"
                           ]
                         }),
                         n.jsxs("span", {
-                          className: "font-mono text-blue-700 dark:text-blue-400 font-extrabold",
+                          className: "font-mono text-blue-700 dark:text-blue-400 font-extrabold text-sm",
                           children: [
                             "\u20B9",
                             v
@@ -36431,7 +36431,7 @@ Details: ${A.inner}`);
                       className: "relative",
                       children: [
                         n.jsx("span", {
-                          className: "absolute left-2.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400",
+                          className: "absolute left-3 top-1/2 -translate-y-1/2 text-base font-bold text-slate-400",
                           children: "\u20B9"
                         }),
                         n.jsx("input", {
@@ -36448,7 +36448,7 @@ Details: ${A.inner}`);
                             U <= p && g(String(p - U));
                           },
                           placeholder: "0",
-                          className: me("w-full h-8 pl-6 pr-2 rounded-lg text-xs font-mono font-bold outline-none", G.input)
+                          className: me("w-full h-10 pl-7 pr-3 rounded-xl text-sm font-mono font-bold outline-none", G.input)
                         })
                       ]
                     })
@@ -36457,7 +36457,7 @@ Details: ${A.inner}`);
               ]
             }),
             n.jsxs("div", {
-              className: me("p-2 rounded-xl border flex items-center justify-between text-xs font-bold", j === 0 ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-800 dark:text-emerald-300" : "bg-amber-500/10 border-amber-500/30 text-amber-800 dark:text-amber-300"),
+              className: me("p-2.5 rounded-xl border flex items-center justify-between text-xs font-bold", j === 0 ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-800 dark:text-emerald-300" : "bg-amber-500/10 border-amber-500/30 text-amber-800 dark:text-amber-300"),
               children: [
                 n.jsxs("span", {
                   className: "flex items-center gap-1.5",
@@ -36483,40 +36483,35 @@ Details: ${A.inner}`);
             })
           ]
         }) : n.jsxs("div", {
-          className: "space-y-3",
+          className: "space-y-3.5",
           children: [
             n.jsxs("div", {
-              className: "space-y-1.5",
+              className: "space-y-2",
               children: [
-                n.jsxs("div", {
-                  className: "flex items-center justify-between text-[10.5px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wide",
-                  children: [
-                    n.jsx("span", {
-                      children: "Quick Currency Notes"
-                    }),
-                    n.jsxs("span", {
-                      className: "font-mono",
-                      children: [
-                        "Bill Target: \u20B9",
-                        p.toLocaleString()
-                      ]
-                    })
-                  ]
+                n.jsx("div", {
+                  className: "flex items-center justify-end text-xs font-bold text-slate-500 dark:text-zinc-400",
+                  children: n.jsxs("span", {
+                    className: "font-mono text-xs sm:text-sm font-semibold",
+                    children: [
+                      "Bill Target: \u20B9",
+                      p.toLocaleString()
+                    ]
+                  })
                 }),
                 n.jsx("div", {
-                  className: "flex flex-wrap items-center gap-1.5",
+                  className: "flex flex-wrap items-center gap-2",
                   children: x.map((H) => {
                     const P = I === H;
                     return n.jsxs("button", {
                       type: "button",
                       disabled: h,
                       onClick: () => r(String(H)),
-                      className: me("px-2.5 py-1 rounded-lg text-xs font-bold border transition-all cursor-pointer synos-focus-btn active:scale-95", P ? G.chipActive : G.chipInactive),
+                      className: me("px-4 py-2 rounded-xl text-sm font-extrabold border transition-all cursor-pointer synos-focus-btn active:scale-95 shadow-2xs", P ? G.chipActive : G.chipInactive),
                       children: [
                         "\u20B9",
                         H.toLocaleString(),
                         H === p && n.jsx("span", {
-                          className: "ml-1 text-[9px] opacity-75 font-normal",
+                          className: "ml-1.5 text-[10px] uppercase font-bold opacity-80",
                           children: "Exact"
                         })
                       ]
@@ -36526,23 +36521,23 @@ Details: ${A.inner}`);
               ]
             }),
             n.jsxs("div", {
-              className: me("p-3 rounded-xl border space-y-2.5", G.recessed),
+              className: me("p-3.5 sm:p-4 rounded-2xl border space-y-3", G.recessed),
               children: [
                 n.jsxs("div", {
-                  className: "grid grid-cols-1 sm:grid-cols-2 gap-3 items-center",
+                  className: "grid grid-cols-1 sm:grid-cols-2 gap-3.5 items-center",
                   children: [
                     n.jsxs("div", {
-                      className: "space-y-1",
+                      className: "space-y-1.5",
                       children: [
                         n.jsx("label", {
-                          className: "text-[10.5px] font-bold uppercase tracking-wider text-slate-600 dark:text-zinc-400 block",
+                          className: "text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-zinc-400 block",
                           children: "Cash Tendered / Received (\u20B9) *"
                         }),
                         n.jsxs("div", {
                           className: "relative",
                           children: [
                             n.jsx("span", {
-                              className: "absolute left-3 top-1/2 -translate-y-1/2 text-lg font-black text-slate-400",
+                              className: "absolute left-3.5 top-1/2 -translate-y-1/2 text-xl font-black text-slate-400",
                               children: "\u20B9"
                             }),
                             n.jsx("input", {
@@ -36554,28 +36549,28 @@ Details: ${A.inner}`);
                               value: e,
                               onChange: (H) => r(H.target.value),
                               placeholder: String(p),
-                              className: me("w-full h-10 pl-7 pr-3 rounded-xl text-base font-black font-mono outline-none", G.input)
+                              className: me("w-full h-12 pl-9 pr-3 rounded-xl text-lg sm:text-xl font-black font-mono outline-none", G.input)
                             })
                           ]
                         })
                       ]
                     }),
                     n.jsxs("div", {
-                      className: "space-y-1",
+                      className: "space-y-1.5",
                       children: [
                         n.jsx("span", {
-                          className: "text-[10.5px] font-bold uppercase tracking-wider text-slate-600 dark:text-zinc-400 block",
+                          className: "text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-zinc-400 block",
                           children: "Change to Return (\u20B9)"
                         }),
                         n.jsxs("div", {
-                          className: me("h-10 px-3.5 rounded-xl border flex items-center justify-between font-mono font-black", C > 0 ? "bg-emerald-600 text-white border-emerald-600 shadow-sm" : "bg-white/80 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500"),
+                          className: me("h-12 px-4 rounded-xl border flex items-center justify-between font-mono font-black", C > 0 ? "bg-emerald-600 text-white border-emerald-600 shadow-sm" : "bg-white/80 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500"),
                           children: [
                             n.jsx("span", {
-                              className: "text-xs font-bold tracking-tight",
+                              className: "text-xs sm:text-sm font-bold tracking-tight",
                               children: C > 0 ? "Return to Patient:" : "Exact Match:"
                             }),
                             n.jsxs("span", {
-                              className: "text-base sm:text-lg",
+                              className: "text-lg sm:text-xl",
                               children: [
                                 "\u20B9",
                                 C.toLocaleString("en-IN", {
@@ -36590,13 +36585,13 @@ Details: ${A.inner}`);
                   ]
                 }),
                 I > 0 && I < p && n.jsxs("div", {
-                  className: "p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs font-bold flex items-center justify-between",
+                  className: "p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs sm:text-sm font-bold flex items-center justify-between",
                   children: [
                     n.jsxs("span", {
                       className: "flex items-center gap-1.5",
                       children: [
                         n.jsx(uC, {
-                          className: "w-3.5 h-3.5 text-amber-600"
+                          className: "w-4 h-4 text-amber-600"
                         }),
                         "\u20B9",
                         (p - I).toLocaleString(),
@@ -36604,7 +36599,7 @@ Details: ${A.inner}`);
                       ]
                     }),
                     n.jsx("span", {
-                      className: "text-[10.5px] opacity-80",
+                      className: "text-xs opacity-80",
                       children: 'Use "Partial Due" tab if booking on credit'
                     })
                   ]
@@ -36712,8 +36707,8 @@ Details: ${A.inner}`);
   function Xxe({ snapshot: t, onVisitUpdated: e, isCorrectionIntent: r, isPrepaidIntent: a, billingMode: i = "Standard", paymentMethod: s, setPaymentMethod: o, onOpenModal: A, createdDiscountReason: l, stagedDiscount: c, onStageDiscount: g, stagedGross: d, stagedDiscountAmt: u, stagedNet: h, settlementDiff: f = 0, originalPaid: p = 0, isPartialPayment: I = false, setIsPartialPayment: x, customPaymentAmount: C = "", setCustomPaymentAmount: B, referralPartners: Q = [], tenderedAmount: D = "", setTenderedAmount: v, changeReturnedNow: M = "", setChangeReturnedNow: j, isChangeRetainedAsDue: G = false, setIsChangeRetainedAsDue: H, isSplitPayment: P = false, setIsSplitPayment: U, splitCashAmount: O = "", setSplitCashAmount: _, splitUpiAmount: te = "", setSplitUpiAmount: ee }) {
     var _a2, _b, _c2, _d2, _e, _f, _g2, _h2, _i, _j2, _k2, _l2, _m, _n, _o2, _p2;
     const [ae, ne] = F.useState(false), [J, $] = F.useState([]), [se, he] = F.useState("custom"), [Ce, Me] = F.useState("FLAT"), [je, Qe] = F.useState(""), [Se, ze] = F.useState(""), [Re, le] = F.useState(null), q = F.useRef(null), pe = F.useRef(null), [oe, xe] = F.useState([]), [Ee, ue] = F.useState(false), [Oe, ye] = F.useState(-1), $e = F.useRef(null), [ve, fe] = F.useState(true), [De, Ue] = F.useState("FLAT"), [we, qe] = F.useState(""), [nt, Ge] = F.useState("Lab Owner Discretionary Concession"), [Dt, zt] = F.useState(false), [kt, mt] = F.useState(""), [pt, Le] = F.useState(false), [Pe, it] = F.useState(0), Bt = F.useRef(null), Ht = F.useMemo(() => {
-      const ct = (kt || "").trim().toLowerCase(), Gn = Array.isArray(Q) ? Q : [];
-      return ct ? Gn.filter((bt) => (bt.name || bt.displayName || "").toLowerCase().includes(ct) || (bt.code || "").toLowerCase().includes(ct) || (bt.partnerType || "").toLowerCase().includes(ct)).slice(0, 30) : Gn.slice(0, 30);
+      const ct = (kt || "").trim().toLowerCase(), On = Array.isArray(Q) ? Q : [];
+      return ct ? On.filter((bt) => (bt.name || bt.displayName || "").toLowerCase().includes(ct) || (bt.code || "").toLowerCase().includes(ct) || (bt.partnerType || "").toLowerCase().includes(ct)).slice(0, 30) : On.slice(0, 30);
     }, [
       Q,
       kt
@@ -36738,11 +36733,11 @@ Details: ${A.inner}`);
     const Vt = (ct) => {
       if (ct.key === "Tab") {
         if (Le(false), ct.shiftKey) {
-          const Gn = document.getElementById("input-b2b-discount");
-          Gn && (ct.preventDefault(), ct.stopPropagation(), Gn.focus());
+          const On = document.getElementById("input-b2b-discount");
+          On && (ct.preventDefault(), ct.stopPropagation(), On.focus());
         } else {
-          const Gn = document.getElementById("btn-unified-action") || document.getElementById("btn-confirm-visit");
-          Gn && (ct.preventDefault(), ct.stopPropagation(), Gn.focus());
+          const On = document.getElementById("btn-unified-action") || document.getElementById("btn-confirm-visit");
+          On && (ct.preventDefault(), ct.stopPropagation(), On.focus());
         }
         return;
       }
@@ -36750,22 +36745,22 @@ Details: ${A.inner}`);
         (ct.key === "ArrowDown" || ct.key === "Enter") && Le(true);
         return;
       }
-      if (ct.key === "ArrowDown") ct.preventDefault(), it((Gn) => Gn < Ht.length - 1 ? Gn + 1 : 0);
-      else if (ct.key === "ArrowUp") ct.preventDefault(), it((Gn) => Gn > 0 ? Gn - 1 : Ht.length - 1);
+      if (ct.key === "ArrowDown") ct.preventDefault(), it((On) => On < Ht.length - 1 ? On + 1 : 0);
+      else if (ct.key === "ArrowUp") ct.preventDefault(), it((On) => On > 0 ? On - 1 : Ht.length - 1);
       else if (ct.key === "Enter") {
         if (Pe >= 0 && Pe < Ht.length) {
           ct.preventDefault();
-          const Gn = Ht[Pe];
-          En(Gn.referralPartnerId || Gn.id);
+          const On = Ht[Pe];
+          En(On.referralPartnerId || On.id);
         }
       } else ct.key === "Escape" && Le(false);
     }, En = async (ct) => {
       var _a3, _b2;
-      const Gn = ((_a3 = t == null ? void 0 : t.visit) == null ? void 0 : _a3.visitId) || ((_b2 = t == null ? void 0 : t.visit) == null ? void 0 : _b2.id);
-      if (Le(false), mt(""), !(!Gn || !ct)) {
+      const On = ((_a3 = t == null ? void 0 : t.visit) == null ? void 0 : _a3.visitId) || ((_b2 = t == null ? void 0 : t.visit) == null ? void 0 : _b2.id);
+      if (Le(false), mt(""), !(!On || !ct)) {
         ne(true);
         try {
-          await qt.updateSecondaryReferral(Gn, ct), e && e();
+          await qt.updateSecondaryReferral(On, ct), e && e();
         } catch (bt) {
           console.error("Failed to set B2B billing override doctor:", bt), alert(bt.message || "Failed to set B2B billing doctor");
         } finally {
@@ -36779,8 +36774,8 @@ Details: ${A.inner}`);
         ne(true);
         try {
           await qt.updateSecondaryReferral(ct, null), e && e();
-        } catch (Gn) {
-          console.error("Failed to clear B2B billing override doctor:", Gn), alert(Gn.message || "Failed to clear B2B billing doctor");
+        } catch (On) {
+          console.error("Failed to clear B2B billing override doctor:", On), alert(On.message || "Failed to clear B2B billing doctor");
         } finally {
           ne(false);
         }
@@ -36815,7 +36810,7 @@ Details: ${A.inner}`);
       reason: ""
     }), at = t == null ? void 0 : t.billing, un = t == null ? void 0 : t.uiHints, Jt = ((_i = t == null ? void 0 : t.visit) == null ? void 0 : _i.visitId) || ((_j2 = t == null ? void 0 : t.visit) == null ? void 0 : _j2.id), mn = F.useRef(Jt), Ve = F.useRef(at == null ? void 0 : at.appliedDiscount);
     F.useEffect(() => {
-      const ct = mn.current !== Jt, Gn = Ve.current !== (at == null ? void 0 : at.appliedDiscount);
+      const ct = mn.current !== Jt, On = Ve.current !== (at == null ? void 0 : at.appliedDiscount);
       if (mn.current = Jt, Ve.current = at == null ? void 0 : at.appliedDiscount, (at == null ? void 0 : at.appliedDiscount) && (at == null ? void 0 : at.discountAmount) > 0) {
         const bt = at.appliedDiscount, ln = (bt.type || bt.Type || "").toUpperCase() === "PERCENTAGE" ? "PERCENTAGE" : "FLAT";
         Me(ln);
@@ -36823,7 +36818,7 @@ Details: ${A.inner}`);
         Qe(nn);
         const Nn = bt.reason || bt.Reason || bt.name || bt.Name || "";
         ze(Nn);
-      } else (ct || Gn && !(at == null ? void 0 : at.appliedDiscount)) && (Qe(""), ze(""));
+      } else (ct || On && !(at == null ? void 0 : at.appliedDiscount)) && (Qe(""), ze(""));
     }, [
       Jt,
       at == null ? void 0 : at.appliedDiscount,
@@ -36853,20 +36848,20 @@ Details: ${A.inner}`);
       }
     };
     if (!at) return null;
-    const In = at.isLocked || false, On = (un == null ? void 0 : un.isReadOnly) || false, hn = !((In || On) && !r);
+    const In = at.isLocked || false, Pn = (un == null ? void 0 : un.isReadOnly) || false, hn = !((In || Pn) && !r);
     F.useEffect(() => {
       (async () => {
         try {
-          const Gn = await qt.getDiscountMaster();
-          $(Gn || []);
-        } catch (Gn) {
-          console.warn("Failed to load discount catalog (likely permission)", Gn), $([]);
+          const On = await qt.getDiscountMaster();
+          $(On || []);
+        } catch (On) {
+          console.warn("Failed to load discount catalog (likely permission)", On), $([]);
         }
         try {
-          const Gn = await qt.getDiscountReasons();
-          xe(Gn || []);
-        } catch (Gn) {
-          console.warn("Failed to load discount reasons", Gn), xe([]);
+          const On = await qt.getDiscountReasons();
+          xe(On || []);
+        } catch (On) {
+          console.warn("Failed to load discount reasons", On), xe([]);
         }
       })();
     }, []), F.useEffect(() => {
@@ -36882,7 +36877,7 @@ Details: ${A.inner}`);
     ]);
     const an = F.useMemo(() => {
       const ct = (Se || "").trim().toLowerCase();
-      return ct ? oe.filter((Gn) => Gn.reasonText && Gn.reasonText.toLowerCase().includes(ct) || Gn.category && Gn.category.toLowerCase().includes(ct)) : oe;
+      return ct ? oe.filter((On) => On.reasonText && On.reasonText.toLowerCase().includes(ct) || On.category && On.category.toLowerCase().includes(ct)) : oe;
     }, [
       oe,
       Se
@@ -36913,27 +36908,27 @@ Details: ${A.inner}`);
         (ct.key === "ArrowDown" || ct.key === "Enter") && ue(true);
         return;
       }
-      ct.key === "ArrowDown" ? (ct.preventDefault(), ye((Gn) => Gn < an.length - 1 ? Gn + 1 : 0)) : ct.key === "ArrowUp" ? (ct.preventDefault(), ye((Gn) => Gn > 0 ? Gn - 1 : an.length - 1)) : ct.key === "Enter" ? Oe >= 0 && Oe < an.length && (ct.preventDefault(), ze(an[Oe].reasonText), ue(false), setTimeout(() => {
+      ct.key === "ArrowDown" ? (ct.preventDefault(), ye((On) => On < an.length - 1 ? On + 1 : 0)) : ct.key === "ArrowUp" ? (ct.preventDefault(), ye((On) => On > 0 ? On - 1 : an.length - 1)) : ct.key === "Enter" ? Oe >= 0 && Oe < an.length && (ct.preventDefault(), ze(an[Oe].reasonText), ue(false), setTimeout(() => {
         var _a3;
         (_a3 = document.getElementById("btn-apply-custom-discount")) == null ? void 0 : _a3.focus();
       }, 40)) : ct.key === "Escape" && ue(false);
     }, Fi = async (ct) => {
       if (!ct || !hn || !Jt) return;
-      const Gn = J.find((ln) => ln.code === ct), bt = (Gn == null ? void 0 : Gn.discountDefinitionId) || (Gn == null ? void 0 : Gn.id);
+      const On = J.find((ln) => ln.code === ct), bt = (On == null ? void 0 : On.discountDefinitionId) || (On == null ? void 0 : On.id);
       if (r) {
-        if (g && Gn) {
+        if (g && On) {
           g({
             mode: "catalog",
-            code: Gn.code,
+            code: On.code,
             discountMasterId: bt,
-            type: Gn.type === 0 || Gn.type === "Percentage" ? "Percentage" : "Flat",
-            value: Gn.value,
-            reason: Gn.name
+            type: On.type === 0 || On.type === "Percentage" ? "Percentage" : "Flat",
+            value: On.value,
+            reason: On.name
           }), qi(false), Cr();
           return;
         }
         if (!bt) {
-          console.error("Critical: Discount ID not found on object", Gn), alert("System Error: Cannot identify selected discount. Please report this to IT.");
+          console.error("Critical: Discount ID not found on object", On), alert("System Error: Cannot identify selected discount. Please report this to IT.");
           return;
         }
         Ne({
@@ -36986,8 +36981,8 @@ Details: ${A.inner}`);
             customValue: ct,
             reason: Se.trim()
           }), qi(false), e && e(), Cr();
-        } catch (Gn) {
-          console.error("Failed to apply custom discount", Gn), alert("Failed to apply custom discount: " + Gn.message);
+        } catch (On) {
+          console.error("Failed to apply custom discount", On), alert("Failed to apply custom discount: " + On.message);
         } finally {
           ne(false);
         }
@@ -36998,12 +36993,12 @@ Details: ${A.inner}`);
         alert("A valid authorization reason is mandatory for secondary concession or write-off.");
         return;
       }
-      const ct = Number(we), Gn = De === "PERCENTAGE" ? Math.round(vn * (Math.min(100, ct) / 100)) : Math.min(vn, ct);
-      if (Gn <= 0) return;
-      const ln = ((at == null ? void 0 : at.discountAmount) || 0) + Gn;
+      const ct = Number(we), On = De === "PERCENTAGE" ? Math.round(vn * (Math.min(100, ct) / 100)) : Math.min(vn, ct);
+      if (On <= 0) return;
+      const ln = ((at == null ? void 0 : at.discountAmount) || 0) + On;
       zt(true), ne(true);
       try {
-        const Qn = `${nt.trim()} [Authorized Secondary Concession: -\u20B9${Gn}]`;
+        const Qn = `${nt.trim()} [Authorized Secondary Concession: -\u20B9${On}]`;
         await qt.applyDiscountToVisit(Jt, {
           mode: "Flat",
           customValue: ln,
@@ -37014,8 +37009,8 @@ Details: ${A.inner}`);
       } finally {
         zt(false), ne(false);
       }
-    }, er = async (ct, Gn) => {
-      const bt = Gn || $n, ln = ct !== void 0 ? Number(ct) : Number(tt) || 0;
+    }, er = async (ct, On) => {
+      const bt = On || $n, ln = ct !== void 0 ? Number(ct) : Number(tt) || 0;
       if (r && g) {
         ie(String(ln)), g({
           type: bt === "PERCENTAGE" ? "Percentage" : "Flat",
@@ -37051,8 +37046,8 @@ Details: ${A.inner}`);
       if (!hn || !Jt) return;
       const ct = () => {
         setTimeout(() => {
-          const Gn = document.querySelector('[data-concession-trigger="true"]');
-          Gn && Gn.focus();
+          const On = document.querySelector('[data-concession-trigger="true"]');
+          On && On.focus();
         }, 60);
       };
       if (r) {
@@ -37077,8 +37072,8 @@ Details: ${A.inner}`);
       ne(true);
       try {
         await qt.removeDiscountFromVisit(Jt), ze(""), Qe(""), e && e(), ct();
-      } catch (Gn) {
-        console.error("Failed to remove discount", Gn);
+      } catch (On) {
+        console.error("Failed to remove discount", On);
       } finally {
         ne(false);
       }
@@ -37168,7 +37163,7 @@ Details: ${A.inner}`);
           children: [
             (() => {
               var _a3, _b2, _c3, _d3, _e2, _f2, _g3, _h3, _i2, _j3, _k3;
-              const ct = r ? !!c && !c.remove : !!at.appliedDiscount && at.discountAmount > 0, Gn = r && c ? u || 0 : at.discountAmount || 0, bt = r && d !== void 0 ? d : at.grossAmount || 0, ln = at.taxAmount || 0, Qn = r && c ? c.reason || c.name || (c.type === "Percentage" ? `${c.value}%` : `\u20B9${c.value}`) : ((_a3 = at.appliedDiscount) == null ? void 0 : _a3.reason) || ((_b2 = at.appliedDiscount) == null ? void 0 : _b2.name) || "";
+              const ct = r ? !!c && !c.remove : !!at.appliedDiscount && at.discountAmount > 0, On = r && c ? u || 0 : at.discountAmount || 0, bt = r && d !== void 0 ? d : at.grossAmount || 0, ln = at.taxAmount || 0, Qn = r && c ? c.reason || c.name || (c.type === "Percentage" ? `${c.value}%` : `\u20B9${c.value}`) : ((_a3 = at.appliedDiscount) == null ? void 0 : _a3.reason) || ((_b2 = at.appliedDiscount) == null ? void 0 : _b2.name) || "";
               return n.jsxs(n.Fragment, {
                 children: [
                   n.jsxs("div", {
@@ -37314,7 +37309,7 @@ Details: ${A.inner}`);
                                 className: me("font-mono font-bold flex items-center gap-1.5", jt ? "text-emerald-400" : "text-[#1F6E54]"),
                                 children: [
                                   "- \u20B9",
-                                  Gn.toLocaleString(),
+                                  On.toLocaleString(),
                                   Qn && n.jsxs("span", {
                                     className: "text-sm opacity-80 font-semibold",
                                     children: [
@@ -38029,11 +38024,11 @@ Details: ${A.inner}`);
             })(),
             r && (() => {
               if (Lr) {
-                const ct = (at == null ? void 0 : at.grossAmount) || 0, Gn = iE(t), bt = Gn.rawAmount || 0, ln = Math.max(0, ct - bt), Qn = d !== void 0 ? d : ct;
+                const ct = (at == null ? void 0 : at.grossAmount) || 0, On = iE(t), bt = On.rawAmount || 0, ln = Math.max(0, ct - bt), Qn = d !== void 0 ? d : ct;
                 let nn = 0;
                 if (u !== void 0) nn = u;
                 else {
-                  const Dr = Number(tt) || Gn.rawVal || 0;
+                  const Dr = Number(tt) || On.rawVal || 0;
                   $n === "PERCENTAGE" ? nn = Math.round(Qn * (Dr / 100) * 100) / 100 : nn = Math.min(Qn, Dr);
                 }
                 const Nn = Math.max(0, Qn - nn), tr = Nn - ln;
@@ -38282,7 +38277,7 @@ Details: ${A.inner}`);
               });
             })(),
             Lr && (() => {
-              const ct = d !== void 0 ? d : (at == null ? void 0 : at.grossAmount) || 0, Gn = iE(t), ln = ut ? Number(tt) || 0 : (c == null ? void 0 : c.value) !== void 0 ? Number(c.value) : Number(tt) || Gn.rawVal || 0;
+              const ct = d !== void 0 ? d : (at == null ? void 0 : at.grossAmount) || 0, On = iE(t), ln = ut ? Number(tt) || 0 : (c == null ? void 0 : c.value) !== void 0 ? Number(c.value) : Number(tt) || On.rawVal || 0;
               let Qn = 0;
               if ($n === "PERCENTAGE") {
                 const Nn = Math.min(100, Math.max(0, ln));
@@ -38293,32 +38288,26 @@ Details: ${A.inner}`);
                 className: "space-y-3",
                 children: [
                   n.jsxs("div", {
-                    className: me("p-3.5 rounded-2xl border space-y-3", jt ? "bg-zinc-900/60 border-zinc-800 text-zinc-200 shadow-xs" : "bg-black/[0.04] border-black/5 text-zinc-900 shadow-xs"),
+                    className: me("p-4 sm:p-5 rounded-2xl border space-y-4 shadow-sm", jt ? "bg-zinc-900/80 border-zinc-800 text-zinc-200" : "bg-black/[0.04] border-black/5 text-zinc-900"),
                     children: [
-                      n.jsxs("div", {
+                      n.jsx("div", {
                         className: "flex items-center justify-between",
-                        children: [
-                          n.jsx("span", {
-                            className: "text-[11px] font-bold uppercase tracking-wider text-zinc-800 dark:text-zinc-200",
-                            children: "Doctor Discount & Rate"
-                          }),
-                          n.jsx("span", {
-                            className: "text-[10px] px-2 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-semibold border border-slate-200 dark:border-zinc-700",
-                            children: "Doctor Tariff"
-                          })
-                        ]
+                        children: n.jsx("span", {
+                          className: "text-xs sm:text-sm font-extrabold uppercase tracking-wider text-zinc-900 dark:text-zinc-100",
+                          children: "B2B Discount"
+                        })
                       }),
                       n.jsxs("div", {
-                        className: "text-xs space-y-2.5",
+                        className: "space-y-3.5",
                         children: [
                           n.jsxs("div", {
-                            className: "flex justify-between items-center text-zinc-600 dark:text-zinc-400",
+                            className: "flex justify-between items-center text-sm font-semibold text-zinc-600 dark:text-zinc-400",
                             children: [
                               n.jsx("span", {
                                 children: "Standard Lab Tariff:"
                               }),
                               n.jsxs("span", {
-                                className: "font-mono font-bold text-zinc-900 dark:text-zinc-100",
+                                className: "font-mono font-black text-base sm:text-lg text-zinc-900 dark:text-zinc-100",
                                 children: [
                                   "\u20B9",
                                   ct.toLocaleString()
@@ -38327,17 +38316,17 @@ Details: ${A.inner}`);
                             ]
                           }),
                           n.jsxs("div", {
-                            className: "space-y-1.5 pt-1.5 border-t border-slate-200 dark:border-zinc-800",
+                            className: "space-y-3 pt-3 border-t border-slate-200 dark:border-zinc-800",
                             children: [
                               n.jsxs("div", {
-                                className: "flex items-center justify-between",
+                                className: "flex items-center justify-between gap-3",
                                 children: [
                                   n.jsx("span", {
-                                    className: "text-[11px] font-semibold text-zinc-700 dark:text-zinc-300",
+                                    className: "text-xs sm:text-sm font-bold text-zinc-700 dark:text-zinc-300",
                                     children: "Discount Type:"
                                   }),
                                   n.jsxs("div", {
-                                    className: "flex items-center rounded-lg p-1 bg-slate-200 dark:bg-zinc-700/80 border border-slate-300 dark:border-zinc-600 text-[10px] font-bold shadow-2xs",
+                                    className: "flex items-center rounded-xl p-1.5 bg-slate-200/90 dark:bg-zinc-800 border border-slate-300/80 dark:border-zinc-700 shadow-xs",
                                     children: [
                                       n.jsx("button", {
                                         type: "button",
@@ -38350,7 +38339,7 @@ Details: ${A.inner}`);
                                             isB2B: true
                                           });
                                         },
-                                        className: me("px-2.5 py-0.5 rounded transition-all cursor-pointer font-bold", $n === "FLAT" ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-xs" : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"),
+                                        className: me("px-4 py-2 rounded-lg text-xs sm:text-sm font-extrabold transition-all cursor-pointer shadow-xs", $n === "FLAT" ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"),
                                         children: "Flat (\u20B9)"
                                       }),
                                       n.jsx("button", {
@@ -38364,7 +38353,7 @@ Details: ${A.inner}`);
                                             isB2B: true
                                           });
                                         },
-                                        className: me("px-2.5 py-0.5 rounded transition-all cursor-pointer font-bold", $n === "PERCENTAGE" ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-xs" : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"),
+                                        className: me("px-4 py-2 rounded-lg text-xs sm:text-sm font-extrabold transition-all cursor-pointer shadow-xs", $n === "PERCENTAGE" ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10" : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"),
                                         children: "% Off"
                                       })
                                     ]
@@ -38372,18 +38361,18 @@ Details: ${A.inner}`);
                                 ]
                               }),
                               n.jsxs("div", {
-                                className: "flex items-center justify-between gap-2",
+                                className: "flex items-center justify-between gap-3",
                                 children: [
                                   n.jsx("label", {
                                     htmlFor: "input-b2b-discount",
-                                    className: "text-[11px] font-semibold text-zinc-600 dark:text-zinc-400",
+                                    className: "text-xs sm:text-sm font-bold text-zinc-700 dark:text-zinc-300",
                                     children: $n === "PERCENTAGE" ? "Discount Percentage:" : "Flat Concession:"
                                   }),
                                   n.jsxs("div", {
-                                    className: "flex items-center gap-1.5",
+                                    className: "flex items-center gap-2",
                                     children: [
                                       n.jsx("span", {
-                                        className: "text-xs font-bold text-zinc-400",
+                                        className: "text-base sm:text-lg font-black text-zinc-500 dark:text-zinc-400",
                                         children: $n === "FLAT" ? "\u20B9" : "%"
                                       }),
                                       n.jsx("input", {
@@ -38412,14 +38401,14 @@ Details: ${A.inner}`);
                                         onKeyDown: (Nn) => {
                                           Nn.key === "Enter" && (Nn.preventDefault(), er(Nn.target.value, $n));
                                         },
-                                        className: me("w-20 h-7 px-2 text-right text-xs font-mono font-bold rounded border outline-none synos-focus-input", jt ? "bg-zinc-900 border-zinc-700 text-zinc-100 focus:border-synos-primary" : "bg-white border-zinc-300 text-zinc-900 focus:border-synos-primary shadow-xs"),
+                                        className: me("w-28 sm:w-32 h-11 px-3 text-right text-base sm:text-lg font-mono font-black rounded-xl border outline-none synos-focus-input", jt ? "bg-zinc-900 border-zinc-700 text-zinc-100 focus:border-synos-primary" : "bg-white border-zinc-300 text-zinc-900 focus:border-synos-primary shadow-xs"),
                                         placeholder: "0"
                                       }),
                                       ut && n.jsx("button", {
                                         type: "button",
                                         tabIndex: 0,
                                         onClick: () => er(tt, $n),
-                                        className: "px-2.5 py-1 bg-synos-primary text-white rounded text-[10px] font-bold hover:bg-synos-primary/90 cursor-pointer shadow-xs active:scale-95 synos-focus-btn",
+                                        className: "px-3.5 py-2 bg-synos-primary text-white rounded-xl text-xs font-bold hover:bg-synos-primary/90 cursor-pointer shadow-xs active:scale-95 synos-focus-btn",
                                         children: "Save"
                                       })
                                     ]
@@ -38427,7 +38416,7 @@ Details: ${A.inner}`);
                                 ]
                               }),
                               $n === "PERCENTAGE" && ln > 0 && n.jsxs("div", {
-                                className: "flex justify-between items-center text-[11px] text-zinc-500 dark:text-zinc-400 italic",
+                                className: "flex justify-between items-center text-xs font-semibold text-zinc-500 dark:text-zinc-400",
                                 children: [
                                   n.jsxs("span", {
                                     children: [
@@ -38437,7 +38426,7 @@ Details: ${A.inner}`);
                                     ]
                                   }),
                                   n.jsxs("span", {
-                                    className: "font-mono font-medium",
+                                    className: "font-mono font-bold text-zinc-700 dark:text-zinc-300",
                                     children: [
                                       "\u20B9",
                                       Qn.toLocaleString()
@@ -38448,14 +38437,14 @@ Details: ${A.inner}`);
                             ]
                           }),
                           n.jsxs("div", {
-                            className: "flex justify-between items-center pt-2 border-t border-slate-200 dark:border-zinc-800 font-bold",
+                            className: "flex justify-between items-center pt-3 border-t border-slate-200 dark:border-zinc-800",
                             children: [
                               n.jsx("span", {
-                                className: "text-zinc-800 dark:text-zinc-200",
+                                className: "text-sm sm:text-base font-bold text-zinc-800 dark:text-zinc-200",
                                 children: "Final Doctor Bill:"
                               }),
                               n.jsxs("span", {
-                                className: "font-mono text-emerald-600 dark:text-emerald-400 text-sm font-extrabold",
+                                className: "font-mono text-emerald-600 dark:text-emerald-400 text-xl sm:text-2xl font-black",
                                 children: [
                                   "\u20B9",
                                   nn.toLocaleString()
@@ -38464,17 +38453,6 @@ Details: ${A.inner}`);
                             ]
                           })
                         ]
-                      }),
-                      Gn.enteredBy && n.jsxs("div", {
-                        className: "text-[10px] text-zinc-500 dark:text-zinc-400 border-t border-black/5 dark:border-white/5 pt-1",
-                        children: [
-                          "Recorded by: ",
-                          n.jsx("span", {
-                            className: "font-semibold text-zinc-700 dark:text-zinc-300",
-                            children: Gn.enteredBy
-                          }),
-                          Gn.enteredAt && ` on ${new Date(Gn.enteredAt).toLocaleDateString()}`
-                        ]
                       })
                     ]
                   }),
@@ -38482,7 +38460,7 @@ Details: ${A.inner}`);
                     var _a3, _b2, _c3, _d3, _e2, _f2;
                     const Nn = ((_b2 = (_a3 = t == null ? void 0 : t.billing) == null ? void 0 : _a3.referral) == null ? void 0 : _b2.partner) || ((_c3 = t == null ? void 0 : t.visit) == null ? void 0 : _c3.referralPartner), tr = ((_e2 = (_d3 = t == null ? void 0 : t.billing) == null ? void 0 : _d3.referral) == null ? void 0 : _e2.secondaryPartner) || ((_f2 = t == null ? void 0 : t.visit) == null ? void 0 : _f2.secondaryReferralPartner), Dr = !!tr;
                     return n.jsxs("div", {
-                      className: me("p-3.5 rounded-2xl border space-y-2.5 transition-all shadow-xs", Dr ? jt ? "bg-amber-950/20 border-amber-500/40" : "bg-amber-50/70 border-amber-200" : jt ? "bg-zinc-900/60 border-zinc-800 text-zinc-200" : "bg-black/[0.04] border-black/5 text-zinc-900"),
+                      className: me("p-4 sm:p-5 rounded-2xl border space-y-3.5 transition-all shadow-sm", Dr ? jt ? "bg-amber-950/20 border-amber-500/40" : "bg-amber-50/70 border-amber-200" : jt ? "bg-zinc-900/80 border-zinc-800 text-zinc-200" : "bg-black/[0.04] border-black/5 text-zinc-900"),
                       children: [
                         n.jsxs("div", {
                           className: "flex items-center justify-between",
@@ -38491,14 +38469,14 @@ Details: ${A.inner}`);
                               className: "flex items-center gap-2",
                               children: [
                                 n.jsx("span", {
-                                  className: "text-[11px] font-bold uppercase tracking-wider text-zinc-800 dark:text-zinc-200",
+                                  className: "text-xs sm:text-sm font-extrabold uppercase tracking-wider text-zinc-900 dark:text-zinc-100",
                                   children: "Billed to Doctor Account"
                                 }),
                                 Dr ? n.jsx("span", {
-                                  className: "text-[9px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold border border-amber-500/30",
+                                  className: "text-[10px] px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-700 dark:text-amber-300 font-extrabold border border-amber-500/30",
                                   children: "Overruled"
                                 }) : n.jsx("span", {
-                                  className: "text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-bold border border-emerald-500/20",
+                                  className: "text-[10px] px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-extrabold border border-emerald-500/20",
                                   children: "Default: Prescribing Doctor"
                                 })
                               ]
@@ -38509,20 +38487,16 @@ Details: ${A.inner}`);
                                 Le(false), A && A("b2bBillingDoctor");
                               },
                               disabled: !hn || ae,
-                              className: "text-[10px] font-bold text-synos-primary hover:text-synos-primary/80 flex items-center gap-1 cursor-pointer transition-colors",
+                              className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95",
                               title: "Register & bill a new doctor profile",
                               children: [
                                 n.jsx(Ta, {
-                                  className: "w-3 h-3"
+                                  className: "w-3.5 h-3.5"
                                 }),
                                 " Add Doctor"
                               ]
                             })
                           ]
-                        }),
-                        n.jsx("p", {
-                          className: "text-[10px] text-zinc-500 dark:text-zinc-400 leading-tight",
-                          children: "Default: Receivables ledger is billed to the prescribing doctor. Select below only to overrule and route to another clinic or hospital account."
                         }),
                         Dr ? n.jsxs("div", {
                           className: me("flex items-center justify-between gap-2 p-2.5 rounded-xl border text-xs font-semibold animate-in fade-in duration-200", jt ? "bg-zinc-900 border-amber-500/30 text-zinc-100" : "bg-white border-amber-300 text-zinc-900 shadow-xs"),
@@ -38709,8 +38683,8 @@ Details: ${A.inner}`);
                               return;
                             }
                           }
-                          const Gn = document.querySelector('[data-concession-trigger="true"]');
-                          Gn && Gn.focus();
+                          const On = document.querySelector('[data-concession-trigger="true"]');
+                          On && On.focus();
                         }
                       },
                       className: me("flex-1 py-2 px-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 synos-focus-btn", I ? "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white" : "bg-[#506A85] text-white shadow-xs"),
@@ -38794,8 +38768,8 @@ Details: ${A.inner}`);
                           max: cr,
                           value: C || "",
                           onChange: (ct) => {
-                            const Gn = Math.min(cr, Math.max(0, Number(ct.target.value)));
-                            B == null ? void 0 : B(ct.target.value === "" ? "" : String(Gn));
+                            const On = Math.min(cr, Math.max(0, Number(ct.target.value)));
+                            B == null ? void 0 : B(ct.target.value === "" ? "" : String(On));
                           },
                           onFocus: (ct) => ct.target.select(),
                           placeholder: `1 - ${cr}`,
@@ -38818,14 +38792,14 @@ Details: ${A.inner}`);
                           label: "50%",
                           val: Math.round(cr * 0.5)
                         }
-                      ].filter((ct) => ct.val > 0 && ct.val < cr).map((ct, Gn) => {
+                      ].filter((ct) => ct.val > 0 && ct.val < cr).map((ct, On) => {
                         const bt = Number(C) === ct.val;
                         return n.jsx("button", {
                           type: "button",
                           onClick: () => B == null ? void 0 : B(String(ct.val)),
                           className: me("px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer border shadow-2xs", bt ? "bg-[#506A85] text-white border-[#506A85] shadow-xs" : "bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 border-[#CCDCE8] dark:border-zinc-700 hover:bg-slate-50"),
                           children: ct.label
-                        }, Gn);
+                        }, On);
                       })
                     }),
                     n.jsxs("div", {
@@ -38981,8 +38955,8 @@ Details: ${A.inner}`);
                   }),
                   n.jsx("textarea", {
                     value: dn.reason,
-                    onChange: (ct) => Ne((Gn) => ({
-                      ...Gn,
+                    onChange: (ct) => Ne((On) => ({
+                      ...On,
                       reason: ct.target.value
                     })),
                     placeholder: "Reason for this change (Required)...",
@@ -42914,7 +42888,7 @@ Details: ${A.inner}`);
       }
       dt();
     }, []);
-    const On = F.useMemo(() => {
+    const Pn = F.useMemo(() => {
       const dt = [
         {
           id: "default",
@@ -43199,7 +43173,7 @@ Details: ${A.inner}`);
           }
         };
       });
-    }, Gn = (dt, Gt) => {
+    }, On = (dt, Gt) => {
       $((cn) => {
         var _a3;
         if (!cn || !cn.visit) return cn;
@@ -43741,7 +43715,7 @@ Details: ${A.inner}`);
       else ue({
         ...qe
       }), we(false);
-    }, Un = async () => {
+    }, Gn = async () => {
       var _a3, _b2, _c3, _d3, _e3, _f2, _g3, _h3;
       if (!zt || !zt.trim()) {
         alert("A reason is mandatory for auditing visit modifications.");
@@ -44157,7 +44131,7 @@ Details: ${A.inner}`);
                                         } else (_b2 = document.getElementById("btn-execute-print")) == null ? void 0 : _b2.focus();
                                       },
                                       className: "text-xs font-bold bg-white dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 rounded-xl px-2.5 py-1.5 text-slate-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-synos-primary shadow-2xs cursor-pointer synos-focus-input",
-                                      children: On.map((dt) => n.jsx("option", {
+                                      children: Pn.map((dt) => n.jsx("option", {
                                         value: dt.id,
                                         children: dt.name
                                       }, dt.id))
@@ -45101,7 +45075,7 @@ Details: ${A.inner}`);
                               visitId: Se || ((_pa = J == null ? void 0 : J.visit) == null ? void 0 : _pa.visitId) || ((_qa = J == null ? void 0 : J.visit) == null ? void 0 : _qa.id) || ((_ra = J == null ? void 0 : J.visit) == null ? void 0 : _ra.VisitId),
                               onVisitUpdated: ln,
                               onOptimisticAddTest: ct,
-                              onOptimisticRemoveTest: Gn,
+                              onOptimisticRemoveTest: On,
                               setIsPrepaidIntent: h,
                               isCorrectionIntent: g,
                               billingMode: f,
@@ -46513,7 +46487,7 @@ Details: ${A.inner}`);
                   n.jsxs("button", {
                     type: "button",
                     disabled: mt || !zt.trim(),
-                    onClick: Un,
+                    onClick: Gn,
                     className: "px-5 py-2.5 rounded-xl text-xs font-bold bg-synos-primary text-white hover:bg-synos-primary/90 disabled:opacity-50 transition-all shadow-md active:scale-95 flex items-center gap-1.5 cursor-pointer",
                     children: [
                       mt ? n.jsx(Kn, {
@@ -87174,7 +87148,7 @@ ${r}
         await Aw.updateProfile({
           name: Ce.name,
           designation: Ce.designation
-        }), await Ht(), On && ee(false);
+        }), await Ht(), Pn && ee(false);
       } catch (wt) {
         Vt(wt, "Failed to update profile");
       } finally {
@@ -87191,7 +87165,7 @@ ${r}
       x
     ]), jt = (wt) => wt && wt.trim().length > 0, An = [];
     Ve && Mt || (jt(O == null ? void 0 : O.name) || An.push("Full Name"), jt(O == null ? void 0 : O.designation) || An.push("Professional Designation"), (O == null ? void 0 : O.signatureImageUrl) || An.push("Digital Signature Image"));
-    const On = An.length === 0, [rr, hn] = F.useState("available"), an = a.filter((wt) => !wt.verifiedByUserId).length, Cr = a.filter((wt) => wt.patientName.toLowerCase().includes(G.toLowerCase()) || wt.testName.toLowerCase().includes(G.toLowerCase()) ? s ? rr === "available" ? wt.verifiedByUserId !== (t == null ? void 0 : t.id) : wt.verifiedByUserId === (t == null ? void 0 : t.id) : rr === "available" ? !wt.verifiedByUserId : Ve ? !!wt.verifiedByUserId : wt.verifiedByUserId === (t == null ? void 0 : t.id) : false), Ur = async (wt) => {
+    const Pn = An.length === 0, [rr, hn] = F.useState("available"), an = a.filter((wt) => !wt.verifiedByUserId).length, Cr = a.filter((wt) => wt.patientName.toLowerCase().includes(G.toLowerCase()) || wt.testName.toLowerCase().includes(G.toLowerCase()) ? s ? rr === "available" ? wt.verifiedByUserId !== (t == null ? void 0 : t.id) : wt.verifiedByUserId === (t == null ? void 0 : t.id) : rr === "available" ? !wt.verifiedByUserId : Ve ? !!wt.verifiedByUserId : wt.verifiedByUserId === (t == null ? void 0 : t.id) : false), Ur = async (wt) => {
       try {
         await wa.claimReport(wt), await ce(), hn("assigned"), l(wt);
       } catch (Pt) {
@@ -87447,7 +87421,7 @@ ${r}
                   }) : n.jsxs("div", {
                     className: "flex flex-col h-full min-h-0",
                     children: [
-                      !On && n.jsxs("div", {
+                      !Pn && n.jsxs("div", {
                         className: "mb-6 bg-red-500/10 border border-red-500/20 rounded-2xl p-4 flex items-center justify-between animate-in slide-in-from-top-2 duration-300",
                         children: [
                           n.jsxs("div", {
@@ -87844,7 +87818,7 @@ ${r}
                                           }),
                                           n.jsxs("button", {
                                             onClick: Qt,
-                                            disabled: M || !A || !On,
+                                            disabled: M || !A || !Pn,
                                             className: "flex-1 px-6 py-2 rounded-xl text-xs font-black bg-synos-primary text-white hover:bg-synos-primary/95 shadow-md shadow-synos-primary/20 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:bg-zinc-300 dark:disabled:bg-zinc-800 disabled:shadow-none uppercase tracking-wider shrink-0",
                                             children: [
                                               M ? n.jsx(Kn, {
@@ -89135,7 +89109,7 @@ ${r}
       }, In = () => {
         const an = Ue.current;
         an && it(an);
-      }, On = () => {
+      }, Pn = () => {
         const an = Ue.current;
         an && it(an);
       }, hn = (async () => {
@@ -89154,7 +89128,7 @@ ${r}
           Jt || ($e("Connected"), console.info("SignalR reconnected.", an), mn.invoke("RegisterPresence", "Typist").catch((Cr) => console.error(Cr)));
         }), mn.onclose((an) => {
           Jt || ($e("Disconnected"), console.error("SignalR connection closed.", an));
-        }), mn.on("ReceiveReportDraftUpdate", Ve), mn.on("UserJoined", Mt), mn.on("UserLeft", jt), mn.on("ReceiveReportDraftSaved", An), mn.on("ReceiveReportDraftResumed", In), mn.on("ReceiveReportSignRequest", On);
+        }), mn.on("ReceiveReportDraftUpdate", Ve), mn.on("UserJoined", Mt), mn.on("UserLeft", jt), mn.on("ReceiveReportDraftSaved", An), mn.on("ReceiveReportDraftResumed", In), mn.on("ReceiveReportSignRequest", Pn);
         try {
           if (await mn.start(), Jt) {
             mn.stop().catch(() => {
@@ -89168,7 +89142,7 @@ ${r}
         }
       })();
       return () => {
-        Jt = true, mn && (mn.off("ReceiveReportDraftUpdate", Ve), mn.off("UserJoined", Mt), mn.off("UserLeft", jt), mn.off("ReceiveReportDraftSaved", An), mn.off("ReceiveReportDraftResumed", In), mn.off("ReceiveReportSignRequest", On)), hn.finally(() => {
+        Jt = true, mn && (mn.off("ReceiveReportDraftUpdate", Ve), mn.off("UserJoined", Mt), mn.off("UserLeft", jt), mn.off("ReceiveReportDraftSaved", An), mn.off("ReceiveReportDraftResumed", In), mn.off("ReceiveReportSignRequest", Pn)), hn.finally(() => {
           mn && mn.state === Ni.Connected && mn.stop().catch(() => {
           });
         });
@@ -89803,7 +89777,7 @@ ${r}
                                               children: (g == null ? void 0 : g.canEditValues) && !Sn ? n.jsx("input", {
                                                 type: "text",
                                                 value: jt,
-                                                onChange: (On) => zt(Ve.parameterCode, On.target.value),
+                                                onChange: (Pn) => zt(Ve.parameterCode, Pn.target.value),
                                                 className: me("w-24 text-right bg-indigo-50/50 border-b border-indigo-200 focus:outline-none focus:border-indigo-500 px-1 font-mono font-semibold", In && "font-black text-red-600 border-red-300 focus:border-red-550")
                                               }) : n.jsx("span", {
                                                 className: me(In && "font-black text-red-600 underline decoration-red-200 underline-offset-4"),
@@ -96493,7 +96467,7 @@ ${r}
     }, [
       t
     ]);
-    const On = async () => {
+    const Pn = async () => {
       try {
         const Ft = (await wa.getTemplates()).map((ht) => {
           let Hn = ht.templateDsl;
@@ -96510,9 +96484,9 @@ ${r}
       }
     };
     F.useEffect(() => {
-      On();
+      Pn();
     }, []), F.useEffect(() => {
-      Qt === "report-setup" && On();
+      Qt === "report-setup" && Pn();
     }, [
       Qt
     ]);
@@ -96572,7 +96546,7 @@ ${r}
         } finally {
           f(false);
         }
-      })(), On();
+      })(), Pn();
     }, []);
     const an = (Xe, Ft, ht, Hn, bn, yn, ar = false) => {
       Xe.preventDefault(), Xe.stopPropagation();
@@ -96604,7 +96578,7 @@ ${r}
         });
       };
       document.addEventListener("pointermove", lr), document.addEventListener("pointerup", Da);
-    }, [Cr, Ur] = F.useState((a == null ? void 0 : a.name) || ""), [Fi, ka] = F.useState((a == null ? void 0 : a.code) || ""), [zn, er] = F.useState((a == null ? void 0 : a.department) || ""), [Sr, Yr] = F.useState((a == null ? void 0 : a.isProfile) || false), [Lr, zr] = F.useState((a == null ? void 0 : a.specimenTypeCode) || "SERUM"), [wt, Pt] = F.useState((a == null ? void 0 : a.category) || "General"), [Zt, Cn] = F.useState((a == null ? void 0 : a.modalityId) || ""), [Mn, fr] = F.useState(false), [ia, Ea] = F.useState("formula"), [vn, cr] = F.useState(""), [ya, na] = F.useState(""), [bi, Ir] = F.useState(false), [Oi, qi] = F.useState(""), [ct, Gn] = F.useState(false), [bt, ln] = F.useState(""), [Qn, nn] = F.useState(""), [Nn, tr] = F.useState(false), [Dr, or] = F.useState(""), [oa, ca] = F.useState(""), [si, yi] = F.useState(false), [_r, Pr] = F.useState(""), [va, za] = F.useState(""), [Zi, _e] = F.useState(false), [Ze, st] = F.useState(""), [ot, Et] = F.useState(""), [xt, Xt] = F.useState(false), [Rt, Kt] = F.useState(""), [Ut, Un] = F.useState(""), [Xn, Tn] = F.useState(""), [Yn, At] = F.useState(""), [vt, rn] = F.useState(""), [Fn, gr] = F.useState(false), [Qr, ei] = F.useState(""), [Ya, Zr] = F.useState(""), [Ga, ra] = F.useState(""), [da, Ci] = F.useState(false), [aa, _i] = F.useState(""), [Tr, ur] = F.useState(""), [Ui, Is] = F.useState(""), [hi, Bo] = F.useState(false), [el, SA] = F.useState(""), [rA, Jc] = F.useState(""), [js, Xo] = F.useState(""), [Fo, dt] = F.useState(false), [Gt, cn] = F.useState(""), [Rn, Qa] = F.useState(""), [Sa, Ja] = F.useState(""), [Ai, ts] = F.useState(false), [Ti, Vs] = F.useState(""), [Ns, RA] = F.useState(""), [aA, Ms] = F.useState(""), [iA, Wl] = F.useState(false), [Eo, ns] = F.useState(""), [tl, Fe] = F.useState(""), [wn, qa] = F.useState(""), [ti, ro] = F.useState(false), [Hr, Cs] = F.useState(""), [jA, nl] = F.useState(""), [tf, dg] = F.useState(""), [Ua, Ed] = F.useState(false), [Kc, B0] = F.useState(""), [MA, nf] = F.useState(""), [E0, rf] = F.useState(""), af = (Xe) => {
+    }, [Cr, Ur] = F.useState((a == null ? void 0 : a.name) || ""), [Fi, ka] = F.useState((a == null ? void 0 : a.code) || ""), [zn, er] = F.useState((a == null ? void 0 : a.department) || ""), [Sr, Yr] = F.useState((a == null ? void 0 : a.isProfile) || false), [Lr, zr] = F.useState((a == null ? void 0 : a.specimenTypeCode) || "SERUM"), [wt, Pt] = F.useState((a == null ? void 0 : a.category) || "General"), [Zt, Cn] = F.useState((a == null ? void 0 : a.modalityId) || ""), [Mn, fr] = F.useState(false), [ia, Ea] = F.useState("formula"), [vn, cr] = F.useState(""), [ya, na] = F.useState(""), [bi, Ir] = F.useState(false), [Oi, qi] = F.useState(""), [ct, On] = F.useState(false), [bt, ln] = F.useState(""), [Qn, nn] = F.useState(""), [Nn, tr] = F.useState(false), [Dr, or] = F.useState(""), [oa, ca] = F.useState(""), [si, yi] = F.useState(false), [_r, Pr] = F.useState(""), [va, za] = F.useState(""), [Zi, _e] = F.useState(false), [Ze, st] = F.useState(""), [ot, Et] = F.useState(""), [xt, Xt] = F.useState(false), [Rt, Kt] = F.useState(""), [Ut, Gn] = F.useState(""), [Xn, Tn] = F.useState(""), [Yn, At] = F.useState(""), [vt, rn] = F.useState(""), [Fn, gr] = F.useState(false), [Qr, ei] = F.useState(""), [Ya, Zr] = F.useState(""), [Ga, ra] = F.useState(""), [da, Ci] = F.useState(false), [aa, _i] = F.useState(""), [Tr, ur] = F.useState(""), [Ui, Is] = F.useState(""), [hi, Bo] = F.useState(false), [el, SA] = F.useState(""), [rA, Jc] = F.useState(""), [js, Xo] = F.useState(""), [Fo, dt] = F.useState(false), [Gt, cn] = F.useState(""), [Rn, Qa] = F.useState(""), [Sa, Ja] = F.useState(""), [Ai, ts] = F.useState(false), [Ti, Vs] = F.useState(""), [Ns, RA] = F.useState(""), [aA, Ms] = F.useState(""), [iA, Wl] = F.useState(false), [Eo, ns] = F.useState(""), [tl, Fe] = F.useState(""), [wn, qa] = F.useState(""), [ti, ro] = F.useState(false), [Hr, Cs] = F.useState(""), [jA, nl] = F.useState(""), [tf, dg] = F.useState(""), [Ua, Ed] = F.useState(false), [Kc, B0] = F.useState(""), [MA, nf] = F.useState(""), [E0, rf] = F.useState(""), af = (Xe) => {
       i(Xe), localStorage.setItem("synos_selected_test_id", Xe.id), Ur(Xe.name), ka(Xe.code), er(Xe.department), Yr(Xe.isProfile), zr(Xe.specimenTypeCode || "SERUM"), Pt(Xe.category || "General"), Cn(Xe.modalityId || ""), hn(false), fr(false), !Xe.isProfile && Qt === "profile-builder" && dn("parameters");
     }, ax = () => {
       const Xe = ee.find((bn) => bn.name === zn), Ft = Xe ? Xe.macroDepartment === "Radiology" : zn === "Radiology" || zn === "RAD";
@@ -96826,7 +96800,7 @@ IMPRESSION:`,
       var _a3, _b2, _c3, _d3, _e2, _f, _g2, _h2;
       const ht = a.parameters.find((fi) => fi.code === Xe);
       if (console.log("OPEN_DRAWER_PARAM", ht), !ht) return;
-      cr(Xe), Ea(Ft), na(ht.formula || ""), Ir(ht.hasFormula || false), qi(ht.narrativeTemplate || ""), Gn(ht.showNarrative || false), ln(ht.analyzerModel || ""), nn(ht.analyzerChannel || ""), or(ht.maleMin !== void 0 && ht.maleMin !== null && ht.maleMin !== "" ? ht.maleMin : ((_a3 = ht.genderRanges) == null ? void 0 : _a3.maleMin) ?? ""), ca(ht.maleMax !== void 0 && ht.maleMax !== null && ht.maleMax !== "" ? ht.maleMax : ((_b2 = ht.genderRanges) == null ? void 0 : _b2.maleMax) ?? ""), Pr(ht.femaleMin !== void 0 && ht.femaleMin !== null && ht.femaleMin !== "" ? ht.femaleMin : ((_c3 = ht.genderRanges) == null ? void 0 : _c3.femaleMin) ?? ""), za(ht.femaleMax !== void 0 && ht.femaleMax !== null && ht.femaleMax !== "" ? ht.femaleMax : ((_d3 = ht.genderRanges) == null ? void 0 : _d3.femaleMax) ?? ""), tr(ht.useMale ?? (ht.maleMin !== void 0 && ht.maleMin !== "" && ht.maleMin !== null) ?? (((_e2 = ht.genderRanges) == null ? void 0 : _e2.maleMin) !== void 0 && ((_f = ht.genderRanges) == null ? void 0 : _f.maleMin) !== 0)), yi(ht.useFemale ?? (ht.femaleMin !== void 0 && ht.femaleMin !== "" && ht.femaleMin !== null) ?? (((_g2 = ht.genderRanges) == null ? void 0 : _g2.femaleMin) !== void 0 && ((_h2 = ht.genderRanges) == null ? void 0 : _h2.femaleMin) !== 0)), _e(!!ht.useInfant), st(ht.infantMin !== void 0 && ht.infantMin !== null ? ht.infantMin : ""), Et(ht.infantMax !== void 0 && ht.infantMax !== null ? ht.infantMax : ""), Xt(!!ht.useChild), Kt(ht.childMin !== void 0 && ht.childMin !== null ? ht.childMin : ""), Un(ht.childMax !== void 0 && ht.childMax !== null ? ht.childMax : ""), Tn(ht.adultMin !== void 0 && ht.adultMin !== null ? ht.adultMin : ""), At(ht.adultMax !== void 0 && ht.adultMax !== null ? ht.adultMax : ""), rn(ht.referenceRange || "");
+      cr(Xe), Ea(Ft), na(ht.formula || ""), Ir(ht.hasFormula || false), qi(ht.narrativeTemplate || ""), On(ht.showNarrative || false), ln(ht.analyzerModel || ""), nn(ht.analyzerChannel || ""), or(ht.maleMin !== void 0 && ht.maleMin !== null && ht.maleMin !== "" ? ht.maleMin : ((_a3 = ht.genderRanges) == null ? void 0 : _a3.maleMin) ?? ""), ca(ht.maleMax !== void 0 && ht.maleMax !== null && ht.maleMax !== "" ? ht.maleMax : ((_b2 = ht.genderRanges) == null ? void 0 : _b2.maleMax) ?? ""), Pr(ht.femaleMin !== void 0 && ht.femaleMin !== null && ht.femaleMin !== "" ? ht.femaleMin : ((_c3 = ht.genderRanges) == null ? void 0 : _c3.femaleMin) ?? ""), za(ht.femaleMax !== void 0 && ht.femaleMax !== null && ht.femaleMax !== "" ? ht.femaleMax : ((_d3 = ht.genderRanges) == null ? void 0 : _d3.femaleMax) ?? ""), tr(ht.useMale ?? (ht.maleMin !== void 0 && ht.maleMin !== "" && ht.maleMin !== null) ?? (((_e2 = ht.genderRanges) == null ? void 0 : _e2.maleMin) !== void 0 && ((_f = ht.genderRanges) == null ? void 0 : _f.maleMin) !== 0)), yi(ht.useFemale ?? (ht.femaleMin !== void 0 && ht.femaleMin !== "" && ht.femaleMin !== null) ?? (((_g2 = ht.genderRanges) == null ? void 0 : _g2.femaleMin) !== void 0 && ((_h2 = ht.genderRanges) == null ? void 0 : _h2.femaleMin) !== 0)), _e(!!ht.useInfant), st(ht.infantMin !== void 0 && ht.infantMin !== null ? ht.infantMin : ""), Et(ht.infantMax !== void 0 && ht.infantMax !== null ? ht.infantMax : ""), Xt(!!ht.useChild), Kt(ht.childMin !== void 0 && ht.childMin !== null ? ht.childMin : ""), Gn(ht.childMax !== void 0 && ht.childMax !== null ? ht.childMax : ""), Tn(ht.adultMin !== void 0 && ht.adultMin !== null ? ht.adultMin : ""), At(ht.adultMax !== void 0 && ht.adultMax !== null ? ht.adultMax : ""), rn(ht.referenceRange || "");
       const Hn = ht.useMale ?? (ht.maleMin !== void 0 && ht.maleMin !== "" && ht.maleMin !== null), bn = ht.maleMin !== void 0 && ht.maleMin !== null ? ht.maleMin : "", yn = ht.maleMax !== void 0 && ht.maleMax !== null ? ht.maleMax : "", ar = ht.useFemale ?? (ht.femaleMin !== void 0 && ht.femaleMin !== "" && ht.femaleMin !== null), jn = ht.femaleMin !== void 0 && ht.femaleMin !== null ? ht.femaleMin : "", fa = ht.femaleMax !== void 0 && ht.femaleMax !== null ? ht.femaleMax : "";
       ht.useInfant;
       const Ca = ht.infantMin !== void 0 && ht.infantMin !== null ? ht.infantMin : "", Na = ht.infantMax !== void 0 && ht.infantMax !== null ? ht.infantMax : "";
@@ -100074,7 +100048,7 @@ Would you like to switch to "${yn.childTestName}" now?`) && af(Ca) : alert(`Chil
                             type: "checkbox",
                             id: "show-narrative-checkbox",
                             checked: ct,
-                            onChange: (Xe) => Gn(Xe.target.checked),
+                            onChange: (Xe) => On(Xe.target.checked),
                             className: "rounded border-zinc-300 text-synos-primary focus:ring-synos-primary h-4 w-4"
                           }),
                           n.jsx("label", {
@@ -108270,7 +108244,7 @@ Would you like to switch to "${yn.childTestName}" now?`) && af(Ca) : alert(`Chil
       TargetArchitecture: "x64",
       RequiredDiskSpaceGB: 10,
       DatabaseVersion: "LocalDB v15.0"
-    }, null, 2)), [pt, Le] = F.useState([]), [Pe, it] = F.useState(null), [Bt, Ht] = F.useState(false), [Vt, En] = F.useState([]), [Sn, nr] = F.useState(null), [$n, ce] = F.useState(false), [tt, ie] = F.useState(null), [ut, Qt] = F.useState(null), [dn, Ne] = F.useState(false), [at, un] = F.useState(null), [Jt, mn] = F.useState(false), [Ve, Mt] = F.useState(""), [jt, An] = F.useState(false), [In, On] = F.useState(null), [rr, hn] = F.useState([]), [an, Cr] = F.useState([]), [Ur, Fi] = F.useState([]), ka = F.useRef(null), zn = F.useRef(null), er = F.useRef(null), [Sr, Yr] = F.useState(0);
+    }, null, 2)), [pt, Le] = F.useState([]), [Pe, it] = F.useState(null), [Bt, Ht] = F.useState(false), [Vt, En] = F.useState([]), [Sn, nr] = F.useState(null), [$n, ce] = F.useState(false), [tt, ie] = F.useState(null), [ut, Qt] = F.useState(null), [dn, Ne] = F.useState(false), [at, un] = F.useState(null), [Jt, mn] = F.useState(false), [Ve, Mt] = F.useState(""), [jt, An] = F.useState(false), [In, Pn] = F.useState(null), [rr, hn] = F.useState([]), [an, Cr] = F.useState([]), [Ur, Fi] = F.useState([]), ka = F.useRef(null), zn = F.useRef(null), er = F.useRef(null), [Sr, Yr] = F.useState(0);
     F.useEffect(() => {
       if (o === "permissions" && er.current) {
         const Fe = () => {
@@ -108288,7 +108262,7 @@ Would you like to switch to "${yn.childTestName}" now?`) && af(Ca) : alert(`Chil
       zn.current && ka.current && (zn.current.scrollLeft = ka.current.scrollLeft);
     }, zr = () => {
       zn.current && ka.current && (ka.current.scrollLeft = zn.current.scrollLeft);
-    }, [wt, Pt] = F.useState([]), [Zt, Cn] = F.useState([]), [Mn, fr] = F.useState(null), [ia, Ea] = F.useState(false), [vn, cr] = F.useState(null), [ya, na] = F.useState(false), [bi, Ir] = F.useState([]), [Oi, qi] = F.useState([]), [ct, Gn] = F.useState(null), [bt, ln] = F.useState(false), [Qn, nn] = F.useState(null), [Nn, tr] = F.useState(false), [Dr, or] = F.useState([]), [oa, ca] = F.useState(0), [si] = F.useState(15), [yi, _r] = F.useState(0), [Pr, va] = F.useState([]), [za, Zi] = F.useState(""), [_e, Ze] = F.useState(""), [st, ot] = F.useState(""), [Et, xt] = F.useState(""), [Xt, Rt] = F.useState(""), [Kt, Ut] = F.useState(null), [Un, Xn] = F.useState([]), [Tn, Yn] = F.useState([]), [At, vt] = F.useState(null), [rn, Fn] = F.useState(false), [gr, Qr] = F.useState(null), [ei, Ya] = F.useState(false), Zr = async () => {
+    }, [wt, Pt] = F.useState([]), [Zt, Cn] = F.useState([]), [Mn, fr] = F.useState(null), [ia, Ea] = F.useState(false), [vn, cr] = F.useState(null), [ya, na] = F.useState(false), [bi, Ir] = F.useState([]), [Oi, qi] = F.useState([]), [ct, On] = F.useState(null), [bt, ln] = F.useState(false), [Qn, nn] = F.useState(null), [Nn, tr] = F.useState(false), [Dr, or] = F.useState([]), [oa, ca] = F.useState(0), [si] = F.useState(15), [yi, _r] = F.useState(0), [Pr, va] = F.useState([]), [za, Zi] = F.useState(""), [_e, Ze] = F.useState(""), [st, ot] = F.useState(""), [Et, xt] = F.useState(""), [Xt, Rt] = F.useState(""), [Kt, Ut] = F.useState(null), [Gn, Xn] = F.useState([]), [Tn, Yn] = F.useState([]), [At, vt] = F.useState(null), [rn, Fn] = F.useState(false), [gr, Qr] = F.useState(null), [ei, Ya] = F.useState(false), Zr = async () => {
       h(true);
       try {
         const [Fe, wn, qa] = await Promise.all([
@@ -108680,24 +108654,24 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
     }, ts = async () => {
       var _a3, _b;
       if (!Ve.trim()) {
-        On({
+        Pn({
           type: "error",
           text: "Please enter a valid License Key."
         });
         return;
       }
-      An(true), On(null);
+      An(true), Pn(null);
       try {
         const Fe = await dr.updateLicenseKey(Ve.trim());
-        Fe.success ? (On({
+        Fe.success ? (Pn({
           type: "success",
           text: Fe.message || "License key applied successfully."
-        }), Mt(""), aa()) : On({
+        }), Mt(""), aa()) : Pn({
           type: "error",
           text: Fe.message || "Failed to update license key."
         });
       } catch (Fe) {
-        On({
+        Pn({
           type: "error",
           text: ((_b = (_a3 = Fe.response) == null ? void 0 : _a3.data) == null ? void 0 : _b.message) || Fe.message || "Failed to connect to backend server."
         });
@@ -108830,7 +108804,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
       if (Fe.preventDefault(), !!ct) {
         h(true);
         try {
-          ct.discountDefinitionId ? await dr.updateDiscount(ct.discountDefinitionId, ct) : await dr.createDiscount(ct), ln(false), Gn(null), p("Discount record saved."), Ui();
+          ct.discountDefinitionId ? await dr.updateDiscount(ct.discountDefinitionId, ct) : await dr.createDiscount(ct), ln(false), On(null), p("Discount record saved."), Ui();
         } catch (wn) {
           x(wn.message || "Error occurred saving discount rules.");
         } finally {
@@ -110732,7 +110706,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                             }),
                             n.jsx("button", {
                               onClick: () => {
-                                Gn({
+                                On({
                                   code: "",
                                   name: "",
                                   type: 0,
@@ -110809,7 +110783,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                               }),
                               n.jsx("button", {
                                 onClick: () => {
-                                  Gn(Fe), ln(true);
+                                  On(Fe), ln(true);
                                 },
                                 className: "w-full text-center py-2.5 border border-zinc-200 dark:border-zinc-700/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xxs font-extrabold uppercase tracking-wider text-synos-primary rounded-xl transition-all shadow-xs",
                                 children: "Edit discount"
@@ -110965,7 +110939,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                     type: "text",
                                     required: true,
                                     value: ct.code,
-                                    onChange: (Fe) => Gn({
+                                    onChange: (Fe) => On({
                                       ...ct,
                                       code: Fe.target.value.toUpperCase()
                                     }),
@@ -110983,7 +110957,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                     type: "text",
                                     required: true,
                                     value: ct.name,
-                                    onChange: (Fe) => Gn({
+                                    onChange: (Fe) => On({
                                       ...ct,
                                       name: Fe.target.value
                                     }),
@@ -111002,7 +110976,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                       }),
                                       n.jsxs("select", {
                                         value: ct.type,
-                                        onChange: (Fe) => Gn({
+                                        onChange: (Fe) => On({
                                           ...ct,
                                           type: Number(Fe.target.value)
                                         }),
@@ -111031,7 +111005,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                         step: "0.01",
                                         required: true,
                                         value: ct.value,
-                                        onChange: (Fe) => Gn({
+                                        onChange: (Fe) => On({
                                           ...ct,
                                           value: Number(Fe.target.value)
                                         }),
@@ -111050,7 +111024,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                   n.jsx("input", {
                                     type: "number",
                                     value: ct.maxLimit || "",
-                                    onChange: (Fe) => Gn({
+                                    onChange: (Fe) => On({
                                       ...ct,
                                       maxLimit: Fe.target.value ? Number(Fe.target.value) : void 0
                                     }),
@@ -111070,7 +111044,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                       n.jsx("input", {
                                         type: "date",
                                         value: ct.effectiveFrom ? mM(ct.effectiveFrom) : "",
-                                        onChange: (Fe) => Gn({
+                                        onChange: (Fe) => On({
                                           ...ct,
                                           effectiveFrom: Fe.target.value ? ZN(Fe.target.value) : void 0
                                         }),
@@ -111091,7 +111065,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                       n.jsx("input", {
                                         type: "date",
                                         value: ct.effectiveTo ? mM(ct.effectiveTo) : "",
-                                        onChange: (Fe) => Gn({
+                                        onChange: (Fe) => On({
                                           ...ct,
                                           effectiveTo: Fe.target.value ? ZN(Fe.target.value) : void 0
                                         }),
@@ -111112,7 +111086,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                     n.jsx("input", {
                                       type: "checkbox",
                                       checked: ct.isActive,
-                                      onChange: (Fe) => Gn({
+                                      onChange: (Fe) => On({
                                         ...ct,
                                         isActive: Fe.target.checked
                                       }),
@@ -111131,7 +111105,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                   n.jsx("button", {
                                     type: "button",
                                     onClick: () => {
-                                      ln(false), Gn(null);
+                                      ln(false), On(null);
                                     },
                                     className: "px-4 py-2 border border-zinc-800 hover:bg-zinc-800 text-zinc-450 rounded-xl",
                                     children: "Cancel"
@@ -112320,7 +112294,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                               n.jsxs("tbody", {
                                 className: "divide-y dark:divide-zinc-800 divide-zinc-200",
                                 children: [
-                                  Un.map((Fe) => {
+                                  Gn.map((Fe) => {
                                     var _a3;
                                     return n.jsxs("tr", {
                                       className: "hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors",
@@ -112373,7 +112347,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                       ]
                                     }, Fe.printerId);
                                   }),
-                                  Un.length === 0 && n.jsx("tr", {
+                                  Gn.length === 0 && n.jsx("tr", {
                                     children: n.jsx("td", {
                                       colSpan: 5,
                                       className: "p-8 text-center text-zinc-500 font-semibold uppercase tracking-wider",
@@ -112779,7 +112753,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                         value: "",
                                         children: "None (Use Operating System Default)"
                                       }),
-                                      Un.filter((Fe) => Fe.branchId === gr.branchId && Fe.isActive).map((Fe) => n.jsxs("option", {
+                                      Gn.filter((Fe) => Fe.branchId === gr.branchId && Fe.isActive).map((Fe) => n.jsxs("option", {
                                         value: Fe.printerId,
                                         children: [
                                           Fe.printerName,
@@ -120498,7 +120472,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
         "mri"
       ].includes((zn.departmentName || "").toLowerCase()) ? "Radiology" : "Pathology"), Sr = zn.modality || zn.departmentName;
       t(`/finance/revenue/bills?department=${encodeURIComponent(er)}&modality=${encodeURIComponent(Sr)}`);
-    }, un = O.filter((zn) => zn.isActive !== false), Jt = un.length || O.length || 22, mn = te.find((zn) => zn.status === "Draft" || zn.status === "Calculated"), Ve = un.reduce((zn, er) => zn + (Number(er.baseSalary) || 0), 0), Mt = Number(mn == null ? void 0 : mn.totalGrossSalary) || 0, jt = Mt > 0 ? Mt : Ve > 0 ? Ve : Jt * 31e3, An = Math.round(jt / 30), In = r === "today" ? An : jt, On = B.reduce((zn, er) => zn + (Number(er.amount) || Number(er.amountDue) || 0), 0), rr = x.reduce((zn, er) => zn + (Number(er.amount) || 0), 0), hn = Number(h == null ? void 0 : h.operatingExpenses) || Number(h == null ? void 0 : h.consumableCashOutflow) || 0, an = r === "today" ? hn : On + rr + hn, Cr = fe > 0 ? Math.min(100, Math.round(an / fe * 1e3) / 10) : 0, Ur = Math.max(fe, 2e6), Fi = r === "today" ? fe > 0 ? Math.min(100, Math.round(An / fe * 1e3) / 10) : 34.1 : Math.min(100, Math.max(5, Math.round(jt / Ur * 1e3) / 10)), ka = (Se == null ? void 0 : Se.Daily) || [];
+    }, un = O.filter((zn) => zn.isActive !== false), Jt = un.length || O.length || 22, mn = te.find((zn) => zn.status === "Draft" || zn.status === "Calculated"), Ve = un.reduce((zn, er) => zn + (Number(er.baseSalary) || 0), 0), Mt = Number(mn == null ? void 0 : mn.totalGrossSalary) || 0, jt = Mt > 0 ? Mt : Ve > 0 ? Ve : Jt * 31e3, An = Math.round(jt / 30), In = r === "today" ? An : jt, Pn = B.reduce((zn, er) => zn + (Number(er.amount) || Number(er.amountDue) || 0), 0), rr = x.reduce((zn, er) => zn + (Number(er.amount) || 0), 0), hn = Number(h == null ? void 0 : h.operatingExpenses) || Number(h == null ? void 0 : h.consumableCashOutflow) || 0, an = r === "today" ? hn : Pn + rr + hn, Cr = fe > 0 ? Math.min(100, Math.round(an / fe * 1e3) / 10) : 0, Ur = Math.max(fe, 2e6), Fi = r === "today" ? fe > 0 ? Math.min(100, Math.round(An / fe * 1e3) / 10) : 34.1 : Math.min(100, Math.max(5, Math.round(jt / Ur * 1e3) / 10)), ka = (Se == null ? void 0 : Se.Daily) || [];
     return n.jsxs("div", {
       className: "px-5 sm:px-6 py-3.5 sm:py-4 w-full flex-1 flex flex-col justify-start gap-3 sm:gap-3.5 animate-in fade-in duration-500 relative bg-[#CBD5E1] dark:bg-zinc-950",
       children: [
@@ -149363,7 +149337,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                         } : un.find((zn) => {
                           var _a4;
                           return (_a4 = zn.mechanism) == null ? void 0 : _a4.includes("Percentage");
-                        }) || un[1], Ve = (Number(Jt.totalAmount) || 0) + (Number(mn.totalAmount) || 0), Mt = Ve > 0 ? Number(Jt.percentage) || Math.round(Jt.totalAmount / Ve * 1e3) / 10 : 0, jt = Ve > 0 ? Math.round((100 - Mt) * 10) / 10 : 0, An = 74, In = 22, On = 2 * Math.PI * An, hn = 2 * (In / 2) + 6, an = On - 2 * hn, Cr = Math.max(an * Mt / 100, 2), Ur = Math.max(an * jt / 100, 2), Fi = -14, ka = -(hn / 2 + Cr + hn);
+                        }) || un[1], Ve = (Number(Jt.totalAmount) || 0) + (Number(mn.totalAmount) || 0), Mt = Ve > 0 ? Number(Jt.percentage) || Math.round(Jt.totalAmount / Ve * 1e3) / 10 : 0, jt = Ve > 0 ? Math.round((100 - Mt) * 10) / 10 : 0, An = 74, In = 22, Pn = 2 * Math.PI * An, hn = 2 * (In / 2) + 6, an = Pn - 2 * hn, Cr = Math.max(an * Mt / 100, 2), Ur = Math.max(an * jt / 100, 2), Fi = -14, ka = -(hn / 2 + Cr + hn);
                         return n.jsxs("div", {
                           className: "space-y-2 my-auto",
                           children: [
@@ -149433,7 +149407,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                           r: An,
                                           stroke: "url(#mechanismBlue)",
                                           strokeWidth: In,
-                                          strokeDasharray: `${Cr} ${On}`,
+                                          strokeDasharray: `${Cr} ${Pn}`,
                                           strokeDashoffset: Fi,
                                           strokeLinecap: "round",
                                           fill: "none",
@@ -149445,7 +149419,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                           r: An,
                                           stroke: "url(#mechanismPurple)",
                                           strokeWidth: In,
-                                          strokeDasharray: `${Ur} ${On}`,
+                                          strokeDasharray: `${Ur} ${Pn}`,
                                           strokeDashoffset: ka,
                                           strokeLinecap: "round",
                                           fill: "none",
@@ -149861,13 +149835,13 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                         ...In,
                         totalAmount: 0,
                         billsCount: 0
-                      })) : un.map((In, On) => {
+                      })) : un.map((In, Pn) => {
                         let rr = Number(In.totalAmount) || 0;
-                        return On === 6 || In.isToday ? (rr = Number(f.totalDiscountAmount) > 0 ? Number(f.totalDiscountAmount) : rr > 0 ? rr : 1540, {
+                        return Pn === 6 || In.isToday ? (rr = Number(f.totalDiscountAmount) > 0 ? Number(f.totalDiscountAmount) : rr > 0 ? rr : 1540, {
                           ...In,
                           totalAmount: rr,
                           isToday: true
-                        }) : (Jt && rr === 0 && On < mn.length && (rr = mn[On]), {
+                        }) : (Jt && rr === 0 && Pn < mn.length && (rr = mn[Pn]), {
                           ...In,
                           totalAmount: rr
                         });
@@ -149888,8 +149862,8 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                           label: "\u20B90",
                           value: 0
                         }
-                      ], An = Ve.map((In, On) => ({
-                        x: 50 + On * 100,
+                      ], An = Ve.map((In, Pn) => ({
+                        x: 50 + Pn * 100,
                         ...In
                       }));
                       return n.jsx("div", {
@@ -149899,10 +149873,10 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                           children: [
                             n.jsx("div", {
                               className: "flex flex-col justify-between items-end text-xs font-semibold text-slate-500 dark:text-zinc-400 tabular-nums w-10 shrink-0 pb-12 select-none",
-                              children: jt.map((In, On) => n.jsx("span", {
+                              children: jt.map((In, Pn) => n.jsx("span", {
                                 className: "leading-none",
                                 children: In.label
-                              }, On))
+                              }, Pn))
                             }),
                             n.jsxs("div", {
                               className: "flex-1 min-w-0 flex flex-col",
@@ -149929,7 +149903,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                     }),
                                     n.jsx("div", {
                                       className: "relative z-0 grid grid-cols-7 w-full h-full items-end pb-[10px]",
-                                      children: An.map((In, On) => {
+                                      children: An.map((In, Pn) => {
                                         const rr = Math.min(100, Math.max(12, In.totalAmount / Mt * 100));
                                         return n.jsxs("div", {
                                           className: "relative flex flex-col items-center justify-end h-full",
@@ -149965,7 +149939,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                               }
                                             })
                                           ]
-                                        }, On);
+                                        }, Pn);
                                       })
                                     }),
                                     n.jsxs("svg", {
@@ -149980,11 +149954,11 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                           strokeLinecap: "round",
                                           strokeLinejoin: "round",
                                           points: An.map((In) => {
-                                            const On = 145 - Math.min(Mt, In.totalAmount) / Mt * 115;
-                                            return `${In.x},${On.toFixed(1)}`;
+                                            const Pn = 145 - Math.min(Mt, In.totalAmount) / Mt * 115;
+                                            return `${In.x},${Pn.toFixed(1)}`;
                                           }).join(" ")
                                         }),
-                                        An.map((In, On) => {
+                                        An.map((In, Pn) => {
                                           const rr = 145 - Math.min(Mt, In.totalAmount) / Mt * 115;
                                           return n.jsx("circle", {
                                             cx: In.x,
@@ -149994,7 +149968,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                             stroke: "#FFFFFF",
                                             strokeWidth: 2.5,
                                             className: "drop-shadow-xs"
-                                          }, On);
+                                          }, Pn);
                                         })
                                       ]
                                     })
@@ -150002,7 +149976,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                 }),
                                 n.jsx("div", {
                                   className: "grid grid-cols-7 w-full pt-2.5",
-                                  children: Ve.map((In, On) => n.jsxs("div", {
+                                  children: Ve.map((In, Pn) => n.jsxs("div", {
                                     className: "text-center space-y-0.5",
                                     children: [
                                       n.jsx("div", {
@@ -150014,7 +149988,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                         children: In.formattedDate
                                       })
                                     ]
-                                  }, On))
+                                  }, Pn))
                                 })
                               ]
                             })
@@ -199578,7 +199552,7 @@ fn main(
         var Fn = vt.length - 1;
         return rn == Fn ? vt.pop() : Le.call(vt, rn, 1), true;
       }
-      function On(At) {
+      function Pn(At) {
         var vt = this.__data__, rn = Cn(vt, At);
         return rn < 0 ? void 0 : vt[rn][1];
       }
@@ -199592,7 +199566,7 @@ fn main(
           vt
         ]) : rn[Fn][1] = vt, this;
       }
-      jt.prototype.clear = An, jt.prototype.delete = In, jt.prototype.get = On, jt.prototype.has = rr, jt.prototype.set = hn;
+      jt.prototype.clear = An, jt.prototype.delete = In, jt.prototype.get = Pn, jt.prototype.has = rr, jt.prototype.set = hn;
       function an(At) {
         var vt = -1, rn = At ? At.length : 0;
         for (this.clear(); ++vt < rn; ) {
@@ -199736,7 +199710,7 @@ fn main(
         var Fn = vt ? rn(Oe(At), true) : Oe(At);
         return q(Fn, ze, new At.constructor());
       }
-      function Gn(At) {
+      function On(At) {
         return Ne ? Object(Ne.call(At)) : {};
       }
       function bt(At, vt) {
@@ -199824,7 +199798,7 @@ fn main(
           case x:
             return ct(At, Fn, rn);
           case B:
-            return Gn(At);
+            return On(At);
         }
       }
       function _r(At, vt) {
@@ -199868,7 +199842,7 @@ fn main(
         return At != null && Kt(At.length) && !Rt(At);
       }
       function xt(At) {
-        return Un(At) && Et(At);
+        return Gn(At) && Et(At);
       }
       var Xt = it || Yn;
       function Rt(At) {
@@ -199882,7 +199856,7 @@ fn main(
         var vt = typeof At;
         return !!At && (vt == "object" || vt == "function");
       }
-      function Un(At) {
+      function Gn(At) {
         return !!At && typeof At == "object";
       }
       function Xn(At) {
@@ -248760,7 +248734,7 @@ Input: ` + this.err.str);
                 Qn[++ln] = nn;
               })), Qn;
             }
-            var it, Bt = Array.prototype, Ht = Function.prototype, Vt = Object.prototype, En = we["__core-js_shared__"], Sn = (it = /[^.]+$/.exec(En && En.keys && En.keys.IE_PROTO || "")) ? "Symbol(src)_1." + it : "", nr = Ht.toString, $n = Vt.hasOwnProperty, ce = Vt.toString, tt = RegExp("^" + nr.call($n).replace(/[\\^$.*+?()[\]{}|]/g, "\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$"), ie = Ge ? we.Buffer : void 0, ut = we.Symbol, Qt = we.Uint8Array, dn = Le(Object.getPrototypeOf, Object), Ne = Object.create, at = Vt.propertyIsEnumerable, un = Bt.splice, Jt = Object.getOwnPropertySymbols, mn = ie ? ie.isBuffer : void 0, Ve = Le(Object.keys, Object), Mt = fr(we, "DataView"), jt = fr(we, "Map"), An = fr(we, "Promise"), In = fr(we, "Set"), On = fr(we, "WeakMap"), rr = fr(Object, "create"), hn = ya(Mt), an = ya(jt), Cr = ya(An), Ur = ya(In), Fi = ya(On), ka = ut ? ut.prototype : void 0, zn = ka ? ka.valueOf : void 0;
+            var it, Bt = Array.prototype, Ht = Function.prototype, Vt = Object.prototype, En = we["__core-js_shared__"], Sn = (it = /[^.]+$/.exec(En && En.keys && En.keys.IE_PROTO || "")) ? "Symbol(src)_1." + it : "", nr = Ht.toString, $n = Vt.hasOwnProperty, ce = Vt.toString, tt = RegExp("^" + nr.call($n).replace(/[\\^$.*+?()[\]{}|]/g, "\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$"), ie = Ge ? we.Buffer : void 0, ut = we.Symbol, Qt = we.Uint8Array, dn = Le(Object.getPrototypeOf, Object), Ne = Object.create, at = Vt.propertyIsEnumerable, un = Bt.splice, Jt = Object.getOwnPropertySymbols, mn = ie ? ie.isBuffer : void 0, Ve = Le(Object.keys, Object), Mt = fr(we, "DataView"), jt = fr(we, "Map"), An = fr(we, "Promise"), In = fr(we, "Set"), Pn = fr(we, "WeakMap"), rr = fr(Object, "create"), hn = ya(Mt), an = ya(jt), Cr = ya(An), Ur = ya(In), Fi = ya(Pn), ka = ut ? ut.prototype : void 0, zn = ka ? ka.valueOf : void 0;
             function er(bt) {
               var ln = -1, Qn = bt ? bt.length : 0;
               for (this.clear(); ++ln < Qn; ) {
@@ -248822,7 +248796,7 @@ Input: ` + this.err.str);
                   })(si ? {} : bt), !ln) return (function(Pr, va) {
                     return Cn(Pr, ia(Pr), va);
                   })(bt, (function(Pr, va) {
-                    return Pr && Cn(va, Gn(va), Pr);
+                    return Pr && Cn(va, On(va), Pr);
                   })(or, bt));
                 } else {
                   if (!fe[ca]) return tr ? bt : {};
@@ -248884,8 +248858,8 @@ Input: ` + this.err.str);
                     for (var ot = -1, Et = st.length, xt = Ze.length; ++ot < Et; ) Ze[xt + ot] = st[ot];
                     return Ze;
                   })(_e, Zi(va));
-                })(Pr, Gn, ia);
-              })(bt) : Gn(bt);
+                })(Pr, On, ia);
+              })(bt) : On(bt);
               return (function(Pr, va) {
                 for (var za = -1, Zi = Pr ? Pr.length : 0; ++za < Zi && va(Pr[za], za) !== false; ) ;
               })(_r || bt, (function(Pr, va) {
@@ -249011,7 +248985,7 @@ Input: ` + this.err.str);
             function na(bt, ln) {
               return bt === ln || bt != bt && ln != ln;
             }
-            (Mt && Ea(new Mt(new ArrayBuffer(1))) != ze || jt && Ea(new jt()) != ne || An && Ea(An.resolve()) != se || In && Ea(new In()) != Ce || On && Ea(new On()) != Qe) && (Ea = function(bt) {
+            (Mt && Ea(new Mt(new ArrayBuffer(1))) != ze || jt && Ea(new jt()) != ne || An && Ea(An.resolve()) != se || In && Ea(new In()) != Ce || Pn && Ea(new Pn()) != Qe) && (Ea = function(bt) {
               var ln = ce.call(bt), Qn = ln == $ ? bt.constructor : void 0, nn = Qn ? ya(Qn) : void 0;
               if (nn) switch (nn) {
                 case hn:
@@ -249044,7 +249018,7 @@ Input: ` + this.err.str);
               var ln = typeof bt;
               return !!bt && (ln == "object" || ln == "function");
             }
-            function Gn(bt) {
+            function On(bt) {
               return Ir(bt) ? (function(ln, Qn) {
                 var nn = bi(ln) || (function(or) {
                   return (function(oa) {
@@ -249979,7 +249953,7 @@ Input: ` + this.err.str);
             const E = An();
             S && (m ? (function(y, w, k) {
               w.has(y) || (w.add(y), k.added.push(y));
-            })(S, at, E) : In(S, at, E)), On(E, at);
+            })(S, at, E) : In(S, at, E)), Pn(E, at);
           }
           function Jt() {
             const S = An();
@@ -249987,7 +249961,7 @@ Input: ` + this.err.str);
               m.forEach(((y) => {
                 In(y, m, E);
               }));
-            })(at, S), On(S, at);
+            })(at, S), Pn(S, at);
           }
           function mn() {
             return Array.from(at);
@@ -250022,7 +249996,7 @@ Input: ` + this.err.str);
           function In(S, m, E) {
             m.delete(S) && E.removed.push(S);
           }
-          function On(S, m) {
+          function Pn(S, m) {
             (S.added.length > 0 || S.removed.length > 0) && (m.forEach(((E) => {
               S.locked.push(E);
             })), (0, ce.triggerEvent)(ce.eventTarget, Ne.ANNOTATION_LOCK_CHANGE, S));
@@ -250257,10 +250231,10 @@ Input: ` + this.err.str);
             enabledElements: [],
             handleRadius: 6
           };
-          var Gn = (function(S) {
+          var On = (function(S) {
             return S.Active = "Active", S.Passive = "Passive", S.Enabled = "Enabled", S.Disabled = "Disabled", S;
-          })(Gn || {});
-          const bt = Gn, ln = [
+          })(On || {});
+          const bt = On, ln = [
             bt.Active,
             bt.Passive,
             bt.Enabled
@@ -250405,7 +250379,7 @@ Input: ` + this.err.str);
           var Kt = (function(S) {
             return S.Labelmap = "LABELMAP", S.Contour = "CONTOUR", S.Surface = "SURFACE", S;
           })(Kt || {});
-          const Ut = Kt, Un = {
+          const Ut = Kt, Gn = {
             renderOutline: true,
             outlineWidthAutoGenerated: 3,
             outlineWidthActive: 1,
@@ -250436,7 +250410,7 @@ Input: ` + this.err.str);
           }, Yn = {
             renderFill: true,
             fillAlpha: 1
-          }, At = Tn(), vt = Un, rn = Yn, Fn = {
+          }, At = Tn(), vt = Gn, rn = Yn, Fn = {
             colorLUT: [],
             segmentations: [],
             globalConfig: {
@@ -277235,12 +277209,12 @@ Input: ` + this.err.str);
             const ot = _e.length / 3;
             let Et = 0, xt = 0, Xt = ot, Rt = 2 * ot;
             if (st) for (let Kt = 0; Kt < ot; Kt++) {
-              const Ut = _e[xt++], Un = _e[Xt++], Xn = _e[Rt++];
-              Ze[Et++] = Ut + 1.402 * (Xn - 128), Ze[Et++] = Ut - 0.34414 * (Un - 128) - 0.71414 * (Xn - 128), Ze[Et++] = Ut + 1.772 * (Un - 128), Ze[Et++] = 255;
+              const Ut = _e[xt++], Gn = _e[Xt++], Xn = _e[Rt++];
+              Ze[Et++] = Ut + 1.402 * (Xn - 128), Ze[Et++] = Ut - 0.34414 * (Gn - 128) - 0.71414 * (Xn - 128), Ze[Et++] = Ut + 1.772 * (Gn - 128), Ze[Et++] = 255;
             }
             else for (let Kt = 0; Kt < ot; Kt++) {
-              const Ut = _e[xt++], Un = _e[Xt++], Xn = _e[Rt++];
-              Ze[Et++] = Ut + 1.402 * (Xn - 128), Ze[Et++] = Ut - 0.34414 * (Un - 128) - 0.71414 * (Xn - 128), Ze[Et++] = Ut + 1.772 * (Un - 128);
+              const Ut = _e[xt++], Gn = _e[Xt++], Xn = _e[Rt++];
+              Ze[Et++] = Ut + 1.402 * (Xn - 128), Ze[Et++] = Ut - 0.34414 * (Gn - 128) - 0.71414 * (Xn - 128), Ze[Et++] = Ut + 1.772 * (Gn - 128);
             }
           }
           s.r(l), s.d(l, {
@@ -277318,9 +277292,9 @@ Input: ` + this.err.str);
               const { metadata: xt, frame: Xt } = Et;
               if (xt) {
                 const Rt = (function(Kt, Ut) {
-                  const { PerFrameFunctionalGroupsSequence: Un, SharedFunctionalGroupsSequence: Xn, NumberOfFrames: Tn, rest: Yn } = Q(Ut);
-                  if (Un || Tn > 1) {
-                    const { shared: At, perFrame: vt } = B(Un, Xn, Kt), rn = Object.assign(Ut, {
+                  const { PerFrameFunctionalGroupsSequence: Gn, SharedFunctionalGroupsSequence: Xn, NumberOfFrames: Tn, rest: Yn } = Q(Ut);
+                  if (Gn || Tn > 1) {
+                    const { shared: At, perFrame: vt } = B(Gn, Xn, Kt), rn = Object.assign(Ut, {
                       frameNumber: Kt
                     });
                     return [
@@ -277455,17 +277429,17 @@ Input: ` + this.err.str);
             if (Ze === ot.MULTIFRAME) {
               const { metadata: Xt, frame: Rt } = v.retrieveMultiframeMetadata(st);
               if (!Xt) return;
-              const { PerFrameFunctionalGroupsSequence: Kt, SharedFunctionalGroupsSequence: Ut, NumberOfFrames: Un } = Q(Xt);
-              if (Kt || Un > 1) {
+              const { PerFrameFunctionalGroupsSequence: Kt, SharedFunctionalGroupsSequence: Ut, NumberOfFrames: Gn } = Q(Xt);
+              if (Kt || Gn > 1) {
                 const { shared: Xn, perFrame: Tn } = B(Kt, Ut, Rt);
                 return {
-                  NumberOfFrames: Un,
+                  NumberOfFrames: Gn,
                   PerFrameFunctionalInformation: Tn,
                   SharedFunctionalInformation: Xn
                 };
               }
               return {
-                NumberOfFrames: Un
+                NumberOfFrames: Gn
               };
             }
             const xt = G.get(st);
@@ -277520,8 +277494,8 @@ Input: ` + this.err.str);
               }
               if (Ze === ot.IMAGE_PLANE) {
                 const Xt = O(xt), Rt = _(xt), Kt = I(xt["00280030"], 2);
-                let Ut = null, Un = null;
-                Kt && (Un = Kt[0], Ut = Kt[1]);
+                let Ut = null, Gn = null;
+                Kt && (Gn = Kt[0], Ut = Kt[1]);
                 let Xn = null, Tn = null;
                 return Xt && (Xn = [
                   parseFloat(Xt[0]),
@@ -277542,7 +277516,7 @@ Input: ` + this.err.str);
                   sliceThickness: p(xt["00180050"]),
                   sliceLocation: p(xt["00201041"]),
                   pixelSpacing: Kt,
-                  rowPixelSpacing: Un,
+                  rowPixelSpacing: Gn,
                   columnPixelSpacing: Ut
                 };
               }
@@ -277551,8 +277525,8 @@ Input: ` + this.err.str);
                 sequenceOfUltrasoundRegions: $(xt)
               };
               if (Ze === ot.IMAGE_URL) return (function(Xt, Rt) {
-                const { transferSyntaxUID: Kt } = se(Xt, Rt), Ut = si.cornerstone.utilities.isVideoTransferSyntax(Kt), Un = Xt.substring(7), Xn = Un.replace("/frames/", "/thumbnail/");
-                let Tn = Un.replace("/frames/", "/rendered/");
+                const { transferSyntaxUID: Kt } = se(Xt, Rt), Ut = si.cornerstone.utilities.isVideoTransferSyntax(Kt), Gn = Xt.substring(7), Xn = Gn.replace("/frames/", "/thumbnail/");
+                let Tn = Gn.replace("/frames/", "/rendered/");
                 return Ut && (Tn = Tn.replace("/rendered/1", "/rendered")), {
                   isVideo: Ut,
                   rendered: Tn,
@@ -277614,11 +277588,11 @@ Input: ` + this.err.str);
                 for (let Kt = 0; Kt <= 30; Kt += 2) {
                   let Ut = `x60${Kt.toString(16)}`;
                   Ut.length === 4 && (Ut = `x600${Kt.toString(16)}`);
-                  const Un = h(Xt[`${Ut}3000`]);
-                  if (!Un) continue;
+                  const Gn = h(Xt[`${Ut}3000`]);
+                  if (!Gn) continue;
                   const Xn = [];
-                  for (let Tn = 0; Tn < Un.length; Tn++) for (let Yn = 0; Yn < 8; Yn++) {
-                    const At = Xt.Value[Un.dataOffset + Tn];
+                  for (let Tn = 0; Tn < Gn.length; Tn++) for (let Yn = 0; Yn < 8; Yn++) {
+                    const At = Xt.Value[Gn.dataOffset + Tn];
                     Xn[8 * Tn + Yn] = At >> Yn & 1;
                   }
                   Rt.push({
@@ -277688,10 +277662,10 @@ Input: ` + this.err.str);
           const ze = function(_e, Ze, st = {}, ot = {}) {
             const { cornerstone: Et } = si, xt = Se(), Xt = (Ut) => {
               if (typeof xt.errorInterceptor == "function") {
-                const Un = new Error("request failed");
-                Un.request = Ut, Un.response = Ut.response, Un.status = Ut.status, xt.errorInterceptor(Un);
+                const Gn = new Error("request failed");
+                Gn.request = Ut, Gn.response = Ut.response, Gn.status = Ut.status, xt.errorInterceptor(Gn);
               }
-            }, Rt = new XMLHttpRequest(), Kt = new Promise(((Ut, Un) => {
+            }, Rt = new XMLHttpRequest(), Kt = new Promise(((Ut, Gn) => {
               xt.open(Rt, _e, st, ot);
               const Xn = xt.beforeSend(Rt, Ze, st, ot);
               Rt.responseType = "arraybuffer";
@@ -277700,7 +277674,7 @@ Input: ` + this.err.str);
                 Tn[Yn] !== null && (Yn === "Accept" && _e.indexOf("accept=") !== -1 || Rt.setRequestHeader(Yn, Tn[Yn]));
               })), ot.deferred = {
                 resolve: Ut,
-                reject: Un
+                reject: Gn
               }, ot.url = _e, ot.imageId = Ze, Rt.onloadstart = function(Yn) {
                 xt.onloadstart && xt.onloadstart(Yn, ot);
                 const At = {
@@ -277717,16 +277691,16 @@ Input: ` + this.err.str);
                 Et.triggerEvent(Et.events, "cornerstoneimageloadend", At);
               }, Rt.onreadystatechange = function(Yn) {
                 xt.onreadystatechange ? xt.onreadystatechange(Yn, ot) : Rt.readyState === 4 && (Rt.status === 200 || Rt.status === 206 ? xt.beforeProcessing(Rt).then(Ut).catch((() => {
-                  Xt(Rt), Un(Rt);
-                })) : (Xt(Rt), Un(Rt)));
+                  Xt(Rt), Gn(Rt);
+                })) : (Xt(Rt), Gn(Rt)));
               }, Rt.onprogress = function(Yn) {
                 const At = Yn.loaded;
                 let vt;
                 Yn.lengthComputable && (vt = Yn.total, Math.round(At / vt * 100)), xt.onprogress && xt.onprogress(Yn, ot);
               }, Rt.onerror = function() {
-                Xt(Rt), Un(Rt);
+                Xt(Rt), Gn(Rt);
               }, Rt.onabort = function() {
-                Xt(Rt), Un(Rt);
+                Xt(Rt), Gn(Rt);
               }, Rt.send();
             }));
             return Kt.xhr = Rt, Kt;
@@ -277845,18 +277819,18 @@ Input: ` + this.err.str);
 `), Rt = (function(Tn) {
               for (let Yn = 0; Yn < Tn.length; Yn++) if (Tn[Yn].substr(0, 2) === "--") return Tn[Yn];
             })(Xt), !Rt)) throw new Error("invalid response - no boundary marker");
-            const Ut = xt + 4, Un = Me(ot, Rt, Ut);
-            if (Un === -1 && !Et) throw new Error("invalid response - terminating boundary not found");
+            const Ut = xt + 4, Gn = Me(ot, Rt, Ut);
+            if (Gn === -1 && !Et) throw new Error("invalid response - terminating boundary not found");
             return Kt || (Kt = (function(Xn) {
               for (let Tn = 0; Tn < Xn.length; Tn++) if (Xn[Tn].substr(0, 13) === "Content-Type:") return Xn[Tn].substr(13).trim();
-            })(Xt)), st.tokenIndex = xt, st.boundary = Rt, st.responseHeaders = Xt, st.multipartContentType = Kt, st.isPartial = Un === -1, {
+            })(Xt)), st.tokenIndex = xt, st.boundary = Rt, st.responseHeaders = Xt, st.multipartContentType = Kt, st.isPartial = Gn === -1, {
               contentType: Kt,
-              extractDone: !Et || Un !== -1,
+              extractDone: !Et || Gn !== -1,
               tokenIndex: xt,
               responseHeaders: Xt,
               boundary: Rt,
               multipartContentType: Kt,
-              pixelData: Ze.slice(Ut, Un - 2)
+              pixelData: Ze.slice(Ut, Gn - 2)
             };
           }
           const { ImageQualityStatus: Ee } = l;
@@ -277866,7 +277840,7 @@ Input: ` + this.err.str);
           const { ProgressiveIterator: Oe } = A;
           function ye(_e, Ze, st = {}, ot = {}) {
             const Et = Se(), { retrieveOptions: xt = {}, streamingData: Xt = {} } = ot, Rt = xt.minChunkSize || 131072, Kt = new Oe("streamRequest");
-            return Kt.generate((async (Ut, Un) => {
+            return Kt.generate((async (Ut, Gn) => {
               var _a2, _b;
               const Xn = (_a2 = Et.beforeSend) == null ? void 0 : _a2.call(Et, null, _e, st, {}), Tn = Object.assign({}, st, Xn);
               Object.keys(Tn).forEach((function(Yn) {
@@ -277904,7 +277878,7 @@ Input: ` + this.err.str);
                     const vt = new Error("request failed");
                     Et.errorInterceptor(vt);
                   }
-                })(), console.error(Yn), Un(Yn);
+                })(), console.error(Yn), Gn(Yn);
               }
             })), Kt.getNextPromise();
           }
@@ -277915,13 +277889,13 @@ Input: ` + this.err.str);
             return st.set(_e, 0), st.set(Ze, _e.length), st;
           }
           function ve(_e, Ze, st = {}, ot = {}) {
-            const Et = Se(), { retrieveOptions: xt = {}, streamingData: Xt } = ot, Rt = Xt.chunkSize || (function(Ut, Un, Xn) {
-              const Tn = Un[Xn];
+            const Et = Se(), { retrieveOptions: xt = {}, streamingData: Xt } = ot, Rt = Xt.chunkSize || (function(Ut, Gn, Xn) {
+              const Tn = Gn[Xn];
               if (typeof Tn != "function") return Tn;
               const Yn = G.get(Ut);
               return Tn(Yn, Ut);
             })(Ze, xt, "chunkSize") || 65536;
-            return new Promise((async (Ut, Un) => {
+            return new Promise((async (Ut, Gn) => {
               const Xn = Object.assign({}, st);
               Object.keys(Xn).forEach((function(Tn) {
                 Xn[Tn] !== null && Xn[Tn] !== void 0 || delete Xn[Tn];
@@ -277968,7 +277942,7 @@ Input: ` + this.err.str);
                     const At = new Error("request failed");
                     Et.errorInterceptor(At);
                   } else console.warn("rangeRequest:Caught", Yn);
-                })(Tn), console.error(Tn), Un(Tn);
+                })(Tn), console.error(Tn), Gn(Tn);
               }
             }));
           }
@@ -277982,8 +277956,8 @@ Input: ` + this.err.str);
             }), xt.rangeIndex !== void 0) return ve(Rt, Ze, Xt, ot);
             if (xt.streaming) return ye(Rt, Ze, Xt, ot);
             const Kt = ze(Rt, Ze, Xt), { xhr: Ut } = Kt;
-            return Kt.then((function(Un) {
-              const Xn = xe(Ut.getResponseHeader("Content-Type") || "application/octet-stream", new Uint8Array(Un));
+            return Kt.then((function(Gn) {
+              const Xn = xe(Ut.getResponseHeader("Content-Type") || "application/octet-stream", new Uint8Array(Gn));
               return Xn.imageQualityStatus = ue(xt, true), Xn;
             }));
           }, De = function(_e) {
@@ -278009,12 +277983,12 @@ Input: ` + this.err.str);
               const Xt = ot.length / 2;
               let Rt = 0, Kt = 0;
               if (xt) for (let Ut = 0; Ut < Xt; Ut += 2) {
-                const Un = ot[Rt++], Xn = ot[Rt++], Tn = ot[Rt++], Yn = ot[Rt++];
-                Et[Kt++] = Un + 1.402 * (Yn - 128), Et[Kt++] = Un - 0.34414 * (Tn - 128) - 0.71414 * (Yn - 128), Et[Kt++] = Un + 1.772 * (Tn - 128), Et[Kt++] = 255, Et[Kt++] = Xn + 1.402 * (Yn - 128), Et[Kt++] = Xn - 0.34414 * (Tn - 128) - 0.71414 * (Yn - 128), Et[Kt++] = Xn + 1.772 * (Tn - 128), Et[Kt++] = 255;
+                const Gn = ot[Rt++], Xn = ot[Rt++], Tn = ot[Rt++], Yn = ot[Rt++];
+                Et[Kt++] = Gn + 1.402 * (Yn - 128), Et[Kt++] = Gn - 0.34414 * (Tn - 128) - 0.71414 * (Yn - 128), Et[Kt++] = Gn + 1.772 * (Tn - 128), Et[Kt++] = 255, Et[Kt++] = Xn + 1.402 * (Yn - 128), Et[Kt++] = Xn - 0.34414 * (Tn - 128) - 0.71414 * (Yn - 128), Et[Kt++] = Xn + 1.772 * (Tn - 128), Et[Kt++] = 255;
               }
               else for (let Ut = 0; Ut < Xt; Ut += 2) {
-                const Un = ot[Rt++], Xn = ot[Rt++], Tn = ot[Rt++], Yn = ot[Rt++];
-                Et[Kt++] = Un + 1.402 * (Yn - 128), Et[Kt++] = Un - 0.34414 * (Tn - 128) - 0.71414 * (Yn - 128), Et[Kt++] = Un + 1.772 * (Tn - 128), Et[Kt++] = Xn + 1.402 * (Yn - 128), Et[Kt++] = Xn - 0.34414 * (Tn - 128) - 0.71414 * (Yn - 128), Et[Kt++] = Xn + 1.772 * (Tn - 128);
+                const Gn = ot[Rt++], Xn = ot[Rt++], Tn = ot[Rt++], Yn = ot[Rt++];
+                Et[Kt++] = Gn + 1.402 * (Yn - 128), Et[Kt++] = Gn - 0.34414 * (Tn - 128) - 0.71414 * (Yn - 128), Et[Kt++] = Gn + 1.772 * (Tn - 128), Et[Kt++] = Xn + 1.402 * (Yn - 128), Et[Kt++] = Xn - 0.34414 * (Tn - 128) - 0.71414 * (Yn - 128), Et[Kt++] = Xn + 1.772 * (Tn - 128);
               }
             })(_e.pixelData, Ze, st);
             else {
@@ -278049,8 +278023,8 @@ Input: ` + this.err.str);
                   st.height = Kt.height, st.width = Kt.width, _e.rows = Kt.height, _e.columns = Kt.width;
                   const Ut = st.getContext("2d");
                   Ut.drawImage(this, 0, 0);
-                  const Un = Ut.getImageData(0, 0, Kt.width, Kt.height), Xn = (/* @__PURE__ */ new Date()).getTime();
-                  _e.pixelData = new Uint8Array(Un.data.buffer), _e.imageData = Un, _e.decodeTimeInMS = Xn - ot;
+                  const Gn = Ut.getImageData(0, 0, Kt.width, Kt.height), Xn = (/* @__PURE__ */ new Date()).getTime();
+                  _e.pixelData = new Uint8Array(Gn.data.buffer), _e.imageData = Gn, _e.decodeTimeInMS = Xn - ot;
                   const Tn = De(_e.pixelData);
                   _e.smallestPixelValue = Tn.min, _e.largestPixelValue = Tn.max, _e.pixelDataLength = _e.pixelData.length, xt(_e);
                 }, Kt.onerror = function(Ut) {
@@ -278306,9 +278280,9 @@ Input: ` + this.err.str);
             Ut.use16BitDataType = !!(ot && ((_b = ot.targetBuffer) == null ? void 0 : _b.type) === "Uint16Array" || ((_c2 = ot.targetBuffer) == null ? void 0 : _c2.type) === "Int16Array") || ot.useNativeDataType || Ut.use16BitDataType, Object.keys(Kt).forEach(((Yn) => {
               (typeof Kt[Yn] == "function" || Kt[Yn] instanceof Promise) && delete Kt[Yn];
             }));
-            const Un = tt(Kt, st, Ze, Rt, ot, Ut), { use16BitDataType: Xn } = Ut, Tn = ut(Kt.photometricInterpretation);
+            const Gn = tt(Kt, st, Ze, Rt, ot, Ut), { use16BitDataType: Xn } = Ut, Tn = ut(Kt.photometricInterpretation);
             return new Promise(((Yn, At) => {
-              Un.then((function(vt) {
+              Gn.then((function(vt) {
                 if (ot.skipCreateImage) return Yn(vt);
                 let rn = false;
                 if (ot.targetBuffer && ot.targetBuffer.type && !Tn) {
@@ -278432,10 +278406,10 @@ Input: ` + this.err.str);
             const st = si.cornerstone.imageRetrievalPoolManager, ot = (/* @__PURE__ */ new Date()).getTime(), Et = new at("decompress"), xt = Ze.requestType || "interaction", Xt = Ze.additionalDetails || {
               imageId: _e
             }, Rt = Ze.priority === void 0 ? 5 : Ze.priority, Kt = Ze.addToBeginning || false, Ut = _e.substring(7);
-            return st.addRequest((async function(Un, Xn, Tn) {
+            return st.addRequest((async function(Gn, Xn, Tn) {
               Et.generate((async (Yn) => {
                 var _a2;
-                const At = at.as(fe(Un, Xn, Tn, Ze));
+                const At = at.as(fe(Gn, Xn, Tn, Ze));
                 let vt = 10;
                 for await (const rn of At) {
                   const { pixelData: Fn, imageQualityStatus: gr = un.FULL_RESOLUTION, percentComplete: Qr, done: ei = true, extractDone: Ya = true } = rn, Zr = mn(rn.contentType);
@@ -278484,7 +278458,7 @@ Input: ` + this.err.str);
             for (let xt = 0; xt < st[0]; xt++) st[2] === 16 ? ot[xt] = _e.uint16(Ze, xt) : ot[xt] = _e.byteArray[xt + Et.dataOffset];
             return ot;
           }
-          const On = function(_e) {
+          const Pn = function(_e) {
             const Ze = {
               samplesPerPixel: _e.uint16("x00280002"),
               photometricInterpretation: _e.string("x00280004"),
@@ -278587,8 +278561,8 @@ Input: ` + this.err.str);
                 imageId: xt,
                 fetchedLength: _e.length,
                 lengthToFetch: Xt - _e.length
-              }, Rt), { fetchedLength: Ut, lengthToFetch: Un } = Kt, { arrayBuffer: Xn } = await Ze(Et, xt, {
-                byteRange: `${Ut}-${Ut + Un}`
+              }, Rt), { fetchedLength: Ut, lengthToFetch: Gn } = Kt, { arrayBuffer: Xn } = await Ze(Et, xt, {
+                byteRange: `${Ut}-${Ut + Gn}`
               }), Tn = new Uint8Array(Xn), Yn = new Uint8Array(ot.byteArray.length + Tn.length);
               return Yn.set(ot.byteArray), Yn.set(Tn, ot.byteArray.length), ka(Yn, Ze, st);
             }, ot;
@@ -278664,21 +278638,21 @@ Input: ` + this.err.str);
               if (Pt[_e]) return Pt[_e].cacheCount++, Pt[_e];
               const xt = Ze(_e, st), Xt = new Promise(((Rt, Kt) => {
                 xt.then((async function(Ut) {
-                  const Un = {
+                  const Gn = {
                     isPartialContent: false,
                     fileTotalLength: null
                   };
                   if (!(Ut instanceof ArrayBuffer)) {
                     if (!Ut.arrayBuffer) return Kt(new Error("If not returning ArrayBuffer, must return object with `arrayBuffer` parameter"));
-                    Un.isPartialContent = Ut.flags.isPartialContent, Un.fileTotalLength = Ut.flags.fileTotalLength, Ut = Ut.arrayBuffer;
+                    Gn.isPartialContent = Ut.flags.isPartialContent, Gn.fileTotalLength = Ut.flags.fileTotalLength, Ut = Ut.arrayBuffer;
                   }
                   const Xn = new Uint8Array(Ut);
                   let Tn;
                   try {
-                    Tn = Un.isPartialContent ? await ka(Xn, Ze, {
+                    Tn = Gn.isPartialContent ? await ka(Xn, Ze, {
                       uri: _e,
                       imageId: st,
-                      fileTotalLength: Un.fileTotalLength
+                      fileTotalLength: Gn.fileTotalLength
                     }) : Et.parseDicom(Xn);
                   } catch (Yn) {
                     return Kt(Yn);
@@ -278719,10 +278693,10 @@ Input: ` + this.err.str);
                   if (!xt) return;
                   const { NumberOfFrames: Xt, PerFrameFunctionalGroupsSequence: Rt, SharedFunctionalGroupsSequence: Kt, otherElements: Ut } = er(xt);
                   if (Rt || Xt > 1) {
-                    const { shared: Un, perFrame: Xn } = zn(Rt, Kt, Et), Tn = {
+                    const { shared: Gn, perFrame: Xn } = zn(Rt, Kt, Et), Tn = {
                       elements: {
                         ...Ut,
-                        ...Un,
+                        ...Gn,
                         ...Xn
                       }
                     }, Yn = Object.create(xt);
@@ -278811,9 +278785,9 @@ Input: ` + this.err.str);
             const xt = Ur(st);
             if (Ze === ot.MULTIFRAME) {
               const Kt = Lr.retrieveMultiframeDataset(xt.url);
-              return Kt.dataSet ? (function(Un, Xn) {
-                if (!Un) return;
-                const { NumberOfFrames: Tn, PerFrameFunctionalGroupsSequence: Yn, SharedFunctionalGroupsSequence: At } = er(Un);
+              return Kt.dataSet ? (function(Gn, Xn) {
+                if (!Gn) return;
+                const { NumberOfFrames: Tn, PerFrameFunctionalGroupsSequence: Yn, SharedFunctionalGroupsSequence: At } = er(Gn);
                 if (Yn || Tn > 1) {
                   const { shared: vt, perFrame: rn } = zn(Yn, At, Xn);
                   return {
@@ -278879,9 +278853,9 @@ Input: ` + this.err.str);
                 };
               }
               if (Ze === ot.IMAGE_PLANE) {
-                const Kt = fr(Rt), Ut = ia(Rt), Un = Ea(Rt), Xn = vn(Rt);
+                const Kt = fr(Rt), Ut = ia(Rt), Gn = Ea(Rt), Xn = vn(Rt);
                 let Tn = null, Yn = null;
-                Un && (Yn = Un[0], Tn = Un[1]);
+                Gn && (Yn = Gn[0], Tn = Gn[1]);
                 let At = null, vt = null;
                 return Kt && (At = [
                   parseFloat(Kt[0]),
@@ -278901,7 +278875,7 @@ Input: ` + this.err.str);
                   imagePositionPatient: Ut,
                   sliceThickness: Xn,
                   sliceLocation: Rt.floatString("x00201041"),
-                  pixelSpacing: Un,
+                  pixelSpacing: Gn,
                   rowPixelSpacing: Yn,
                   columnPixelSpacing: Tn
                 };
@@ -278909,7 +278883,7 @@ Input: ` + this.err.str);
               if (Ze === ot.CINE) return {
                 frameTime: Rt.floatString("x00181063")
               };
-              if (Ze === ot.IMAGE_PIXEL) return On(Rt);
+              if (Ze === ot.IMAGE_PIXEL) return Pn(Rt);
               if (Ze === ot.VOI_LUT) {
                 const Kt = an(Rt);
                 return {
@@ -278942,9 +278916,9 @@ Input: ` + this.err.str);
               }
               if (Ze === ot.OVERLAY_PLANE) return (function(Kt) {
                 const Ut = [];
-                for (let Un = 0; Un <= 30; Un += 2) {
-                  let Xn = `x60${Un.toString(16)}`;
-                  Xn.length === 4 && (Xn = `x600${Un.toString(16)}`);
+                for (let Gn = 0; Gn <= 30; Gn += 2) {
+                  let Xn = `x60${Gn.toString(16)}`;
+                  Xn.length === 4 && (Xn = `x600${Gn.toString(16)}`);
                   const Tn = Kt.elements[`${Xn}3000`];
                   if (!Tn) continue;
                   const Yn = [];
@@ -279035,7 +279009,7 @@ Input: ` + this.err.str);
               ot[Et] = qi(xt, Xt) ? 1 : 0;
             }
             return ot;
-          }, Gn = function(_e, Ze) {
+          }, On = function(_e, Ze) {
             const st = _e.elements.x7fe00010 || _e.elements.x7fe00008, ot = _e.uint16("x00280100"), Et = _e.uint16("x00280010"), xt = _e.uint16("x00280011");
             let Xt = _e.uint16("x00280002");
             _e.string("x00280004") === "YBR_FULL_422" && (Xt = 2, console.warn(`Using SamplesPerPixel of 2 for YBR_FULL_422 photometric interpretation.
@@ -279070,7 +279044,7 @@ Input: ` + this.err.str);
             }));
           }, ln = function(_e, Ze = 0) {
             const st = _e.elements.x7fe00010 || _e.elements.x7fe00008;
-            return st ? st.encapsulatedPixelData ? Oi(_e, Ze) : Gn(_e, Ze) : null;
+            return st ? st.encapsulatedPixelData ? Oi(_e, Ze) : On(_e, Ze) : null;
           };
           function Qn(_e, Ze, st = 0, ot, Et, xt) {
             const Xt = (/* @__PURE__ */ new Date()).getTime(), Rt = {
@@ -279078,26 +279052,26 @@ Input: ` + this.err.str);
               promise: void 0
             };
             return Rt.promise = new Promise(((Kt, Ut) => {
-              _e.then(((Un) => {
-                const Xn = ln(Un, st), Tn = Un.string("x00020010"), Yn = (/* @__PURE__ */ new Date()).getTime(), At = Ne(Ze, Xn, Tn, Et);
+              _e.then(((Gn) => {
+                const Xn = ln(Gn, st), Tn = Gn.string("x00020010"), Yn = (/* @__PURE__ */ new Date()).getTime(), At = Ne(Ze, Xn, Tn, Et);
                 (function(vt, rn) {
                   vt.decache = function() {
                     const Fn = Ur(rn);
                     Cn.unload(Fn.url);
                   };
                 })(Rt, Ze), At.then(((vt) => {
-                  vt.data = Un, vt.sharedCacheKey = ot;
+                  vt.data = Gn, vt.sharedCacheKey = ot;
                   const rn = (/* @__PURE__ */ new Date()).getTime();
                   vt.loadTimeInMS = Yn - Xt, vt.totalTimeInMS = rn - Xt, xt !== void 0 && xt.imageDoneCallback !== void 0 && xt.imageDoneCallback(vt), Kt(vt);
                 }), (function(vt) {
                   Ut({
                     error: vt,
-                    dataSet: Un
+                    dataSet: Gn
                   });
                 }));
-              }), (function(Un) {
+              }), (function(Gn) {
                 Ut({
-                  error: Un
+                  error: Gn
                 });
               }));
             })), Rt;
@@ -279112,7 +279086,7 @@ Input: ` + this.err.str);
             return Cn.isLoaded(st.url) ? (function(Et, xt, Xt = 0, Rt, Kt) {
               const Ut = (/* @__PURE__ */ new Date()).getTime();
               return {
-                promise: new Promise(((Un, Xn) => {
+                promise: new Promise(((Gn, Xn) => {
                   const Tn = (/* @__PURE__ */ new Date()).getTime();
                   let Yn;
                   try {
@@ -279127,7 +279101,7 @@ Input: ` + this.err.str);
                   Yn.then(((At) => {
                     At.data = Et, At.sharedCacheKey = Rt;
                     const vt = (/* @__PURE__ */ new Date()).getTime();
-                    At.loadTimeInMS = Tn - Ut, At.totalTimeInMS = vt - Ut, Un(At);
+                    At.loadTimeInMS = Tn - Ut, At.totalTimeInMS = vt - Ut, Gn(At);
                   }), Xn);
                 })),
                 cancelFn: void 0
@@ -279136,7 +279110,7 @@ Input: ` + this.err.str);
           }
           const tr = {
             metaData: {
-              getImagePixelModule: On,
+              getImagePixelModule: Pn,
               getLUTs: hn,
               getModalityLUTOutputPixelRepresentation: an,
               getNumberValues: Cr,
@@ -279145,7 +279119,7 @@ Input: ` + this.err.str);
             dataSetCacheManager: Cn,
             fileManager: bi,
             getEncapsulatedImageFrame: Oi,
-            getUncompressedImageFrame: Gn,
+            getUncompressedImageFrame: On,
             loadFileRequest: bt,
             loadImageFromPromise: Qn,
             getLoaderForScheme: nn,
@@ -279201,15 +279175,15 @@ Input: ` + this.err.str);
             ]).then((([xt, Xt, Rt]) => {
               if (!xt || !Xt || !Rt) throw new Error("The image does not have a complete color palette. R, G, and B palette data are required.");
               const Kt = xt.length;
-              let Ut = 0, Un = 0;
+              let Ut = 0, Gn = 0;
               const Xn = _e.redPaletteColorLookupTableDescriptor[1], Tn = _e.redPaletteColorLookupTableDescriptor[2] === 8 ? 0 : 8, Yn = yi(xt, Tn), At = yi(Xt, Tn), vt = yi(Rt, Tn);
               if (st) for (let rn = 0; rn < ot; ++rn) {
                 let Fn = Et[Ut++];
-                Fn < Xn ? Fn = 0 : Fn > Xn + Kt - 1 ? Fn = Kt - 1 : Fn -= Xn, Ze[Un++] = Yn[Fn], Ze[Un++] = At[Fn], Ze[Un++] = vt[Fn], Ze[Un++] = 255;
+                Fn < Xn ? Fn = 0 : Fn > Xn + Kt - 1 ? Fn = Kt - 1 : Fn -= Xn, Ze[Gn++] = Yn[Fn], Ze[Gn++] = At[Fn], Ze[Gn++] = vt[Fn], Ze[Gn++] = 255;
               }
               else for (let rn = 0; rn < ot; ++rn) {
                 let Fn = Et[Ut++];
-                Fn < Xn ? Fn = 0 : Fn > Xn + Kt - 1 ? Fn = Kt - 1 : Fn -= Xn, Ze[Un++] = Yn[Fn], Ze[Un++] = At[Fn], Ze[Un++] = vt[Fn];
+                Fn < Xn ? Fn = 0 : Fn > Xn + Kt - 1 ? Fn = Kt - 1 : Fn -= Xn, Ze[Gn++] = Yn[Fn], Ze[Gn++] = At[Fn], Ze[Gn++] = vt[Fn];
               }
             }));
           }
@@ -283021,8 +282995,8 @@ Input: ` + this.err.str);
       } finally {
         g(false);
       }
-    }, [In, On] = F.useState(null), rr = (wt) => {
-      On(wt), setTimeout(() => On(null), 4e3);
+    }, [In, Pn] = F.useState(null), rr = (wt) => {
+      Pn(wt), setTimeout(() => Pn(null), 4e3);
     }, hn = ((s == null ? void 0 : s.studyStatus) || (s == null ? void 0 : s.status) || "").toLowerCase(), an = !!(s && (hn === "signed" || hn === "finalized" || hn === "manualverified")), Cr = !!(s && (an || s.claimedByUserId && (t == null ? void 0 : t.id) && s.claimedByUserId.toLowerCase() === t.id.toLowerCase() || s.claimedByUserId && (t == null ? void 0 : t.resourceId) && s.claimedByUserId.toLowerCase() === t.resourceId.toLowerCase() || s.claimedByUserName && (t == null ? void 0 : t.name) && s.claimedByUserName.toLowerCase() === t.name.toLowerCase())), Ur = s && !an && s.claimedByUserId && !Cr, Fi = s && s.claimedAt && /* @__PURE__ */ new Date() - new Date(s.claimedAt) > 1800 * 1e3, ka = s && s.lastActivityAt && /* @__PURE__ */ new Date() - new Date(s.lastActivityAt) > 300 * 1e3, zn = ((_a2 = t == null ? void 0 : t.role) == null ? void 0 : _a2.toLowerCase()) === "admin" || ((_b = t == null ? void 0 : t.role) == null ? void 0 : _b.toLowerCase()) === "systemadmin", er = Fi || ka || zn, Sr = s ? {
       patientName: s.patientName || ((_c2 = s.patient) == null ? void 0 : _c2.name) || "",
       age: s.patientAge || s.age || ((_d2 = s.patient) == null ? void 0 : _d2.age) || "",

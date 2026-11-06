@@ -94,12 +94,12 @@ export function PosCashTenderModule({
     if (netBill <= 0) return null;
 
     return (
-        <div className={cn("p-3.5 rounded-2xl border space-y-3 transition-all animate-in fade-in duration-200", ui.pod)}>
+        <div className={cn("p-4 sm:p-5 rounded-2xl border space-y-4 transition-all animate-in fade-in duration-200 shadow-sm", ui.pod)}>
             {/* Header: Mode Switcher (Cash Tender vs Split Payment) */}
             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                     <Coins className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-300">
+                    <span className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-zinc-200">
                         {isSplitPayment ? "Split / Multi-Channel Payment" : "Counter Cash Tender Calculator"}
                     </span>
                 </div>
@@ -108,14 +108,9 @@ export function PosCashTenderModule({
                     type="button"
                     onClick={onToggleSplitPayment}
                     disabled={disabled}
-                    className={cn(
-                        "px-2.5 py-1 rounded-lg text-[10.5px] font-bold border transition-all cursor-pointer flex items-center gap-1.5 synos-focus-btn",
-                        isSplitPayment
-                            ? "bg-purple-600 text-white border-purple-600 shadow-xs"
-                            : "bg-white/80 dark:bg-zinc-800 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 hover:bg-purple-50"
-                    )}
+                    className="px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center gap-1.5 synos-focus-btn active:scale-95 bg-purple-600 hover:bg-purple-700 text-white border-purple-600 shadow-sm"
                 >
-                    <Split className="w-3 h-3" />
+                    <Split className="w-3.5 h-3.5" />
                     <span>{isSplitPayment ? "Switch to Pure Cash" : "Split Cash + Online"}</span>
                 </button>
             </div>
@@ -123,18 +118,18 @@ export function PosCashTenderModule({
             {/* A. SPLIT PAYMENT MODE */}
             {isSplitPayment ? (
                 <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-2.5">
+                    <div className="grid grid-cols-2 gap-3">
                         {/* Cash Leg */}
-                        <div className={cn("p-2.5 rounded-xl border space-y-1.5", ui.recessed)}>
-                            <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 dark:text-zinc-300">
-                                <span className="flex items-center gap-1">
-                                    <Wallet className="w-3.5 h-3.5 text-emerald-600" />
+                        <div className={cn("p-3 rounded-xl border space-y-2", ui.recessed)}>
+                            <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-zinc-300">
+                                <span className="flex items-center gap-1.5">
+                                    <Wallet className="w-4 h-4 text-emerald-600" />
                                     Cash from Patient
                                 </span>
-                                <span className="font-mono text-emerald-700 dark:text-emerald-400 font-extrabold">₹{splitCash}</span>
+                                <span className="font-mono text-emerald-700 dark:text-emerald-400 font-extrabold text-sm">₹{splitCash}</span>
                             </div>
                             <div className="relative">
-                                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">₹</span>
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base font-bold text-slate-400">₹</span>
                                 <input
                                     type="number"
                                     min="0"
@@ -152,22 +147,22 @@ export function PosCashTenderModule({
                                         }
                                     }}
                                     placeholder="0"
-                                    className={cn("w-full h-8 pl-6 pr-2 rounded-lg text-xs font-mono font-bold outline-none", ui.input)}
+                                    className={cn("w-full h-10 pl-7 pr-3 rounded-xl text-sm font-mono font-bold outline-none", ui.input)}
                                 />
                             </div>
                         </div>
 
                         {/* UPI Leg */}
-                        <div className={cn("p-2.5 rounded-xl border space-y-1.5", ui.recessed)}>
-                            <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 dark:text-zinc-300">
-                                <span className="flex items-center gap-1">
-                                    <Smartphone className="w-3.5 h-3.5 text-blue-600" />
+                        <div className={cn("p-3 rounded-xl border space-y-2", ui.recessed)}>
+                            <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-zinc-300">
+                                <span className="flex items-center gap-1.5">
+                                    <Smartphone className="w-4 h-4 text-blue-600" />
                                     UPI / QR Scan
                                 </span>
-                                <span className="font-mono text-blue-700 dark:text-blue-400 font-extrabold">₹{splitUpi}</span>
+                                <span className="font-mono text-blue-700 dark:text-blue-400 font-extrabold text-sm">₹{splitUpi}</span>
                             </div>
                             <div className="relative">
-                                <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">₹</span>
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base font-bold text-slate-400">₹</span>
                                 <input
                                     type="number"
                                     min="0"
@@ -184,7 +179,7 @@ export function PosCashTenderModule({
                                         }
                                     }}
                                     placeholder="0"
-                                    className={cn("w-full h-8 pl-6 pr-2 rounded-lg text-xs font-mono font-bold outline-none", ui.input)}
+                                    className={cn("w-full h-10 pl-7 pr-3 rounded-xl text-sm font-mono font-bold outline-none", ui.input)}
                                 />
                             </div>
                         </div>
@@ -192,7 +187,7 @@ export function PosCashTenderModule({
 
                     {/* Split Balance Verification */}
                     <div className={cn(
-                        "p-2 rounded-xl border flex items-center justify-between text-xs font-bold",
+                        "p-2.5 rounded-xl border flex items-center justify-between text-xs font-bold",
                         splitDiff === 0 
                             ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-800 dark:text-emerald-300"
                             : "bg-amber-500/10 border-amber-500/30 text-amber-800 dark:text-amber-300"
@@ -208,15 +203,14 @@ export function PosCashTenderModule({
                 </div>
             ) : (
                 /* B. PURE CASH TENDER CALCULATOR */
-                <div className="space-y-3">
+                <div className="space-y-3.5">
                     {/* Quick Tender Currency Chips */}
-                    <div className="space-y-1.5">
-                        <div className="flex items-center justify-between text-[10.5px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wide">
-                            <span>Quick Currency Notes</span>
-                            <span className="font-mono">Bill Target: ₹{netBill.toLocaleString()}</span>
+                    <div className="space-y-2">
+                        <div className="flex items-center justify-end text-xs font-bold text-slate-500 dark:text-zinc-400">
+                            <span className="font-mono text-xs sm:text-sm font-semibold">Bill Target: ₹{netBill.toLocaleString()}</span>
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-1.5">
+                        <div className="flex flex-wrap items-center gap-2">
                             {suggestedDenominations.map(amount => {
                                 const isSelected = tendered === amount;
                                 return (
@@ -226,13 +220,13 @@ export function PosCashTenderModule({
                                         disabled={disabled}
                                         onClick={() => onTenderChange(String(amount))}
                                         className={cn(
-                                            "px-2.5 py-1 rounded-lg text-xs font-bold border transition-all cursor-pointer synos-focus-btn active:scale-95",
+                                            "px-4 py-2 rounded-xl text-sm font-extrabold border transition-all cursor-pointer synos-focus-btn active:scale-95 shadow-2xs",
                                             isSelected ? ui.chipActive : ui.chipInactive
                                         )}
                                     >
                                         ₹{amount.toLocaleString()}
                                         {amount === netBill && (
-                                            <span className="ml-1 text-[9px] opacity-75 font-normal">Exact</span>
+                                            <span className="ml-1.5 text-[10px] uppercase font-bold opacity-80">Exact</span>
                                         )}
                                     </button>
                                 );
@@ -241,15 +235,15 @@ export function PosCashTenderModule({
                     </div>
 
                     {/* Tendered Input & Change Output */}
-                    <div className={cn("p-3 rounded-xl border space-y-2.5", ui.recessed)}>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+                    <div className={cn("p-3.5 sm:p-4 rounded-2xl border space-y-3", ui.recessed)}>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 items-center">
                             {/* Tendered Input */}
-                            <div className="space-y-1">
-                                <label className="text-[10.5px] font-bold uppercase tracking-wider text-slate-600 dark:text-zinc-400 block">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-zinc-400 block">
                                     Cash Tendered / Received (₹) *
                                 </label>
                                 <div className="relative">
-                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-black text-slate-400">₹</span>
+                                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xl font-black text-slate-400">₹</span>
                                     <input
                                         type="number"
                                         min="0"
@@ -259,26 +253,26 @@ export function PosCashTenderModule({
                                         value={tenderedAmount}
                                         onChange={(e) => onTenderChange(e.target.value)}
                                         placeholder={String(netBill)}
-                                        className={cn("w-full h-10 pl-7 pr-3 rounded-xl text-base font-black font-mono outline-none", ui.input)}
+                                        className={cn("w-full h-12 pl-9 pr-3 rounded-xl text-lg sm:text-xl font-black font-mono outline-none", ui.input)}
                                     />
                                 </div>
                             </div>
 
                             {/* Live Change Calculation Card */}
-                            <div className="space-y-1">
-                                <span className="text-[10.5px] font-bold uppercase tracking-wider text-slate-600 dark:text-zinc-400 block">
+                            <div className="space-y-1.5">
+                                <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-zinc-400 block">
                                     Change to Return (₹)
                                 </span>
                                 <div className={cn(
-                                    "h-10 px-3.5 rounded-xl border flex items-center justify-between font-mono font-black",
+                                    "h-12 px-4 rounded-xl border flex items-center justify-between font-mono font-black",
                                     nominalChange > 0 
                                         ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
                                         : "bg-white/80 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500"
                                 )}>
-                                    <span className="text-xs font-bold tracking-tight">
+                                    <span className="text-xs sm:text-sm font-bold tracking-tight">
                                         {nominalChange > 0 ? "Return to Patient:" : "Exact Match:"}
                                     </span>
-                                    <span className="text-base sm:text-lg">
+                                    <span className="text-lg sm:text-xl">
                                         ₹{nominalChange.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                                     </span>
                                 </div>
@@ -287,12 +281,12 @@ export function PosCashTenderModule({
 
                         {/* Shortage Warning if Tendered is less than Bill */}
                         {tendered > 0 && tendered < netBill && (
-                            <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs font-bold flex items-center justify-between">
+                            <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs sm:text-sm font-bold flex items-center justify-between">
                                 <span className="flex items-center gap-1.5">
-                                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+                                    <AlertTriangle className="w-4 h-4 text-amber-600" />
                                     ₹{(netBill - tendered).toLocaleString()} Short of Total Bill
                                 </span>
-                                <span className="text-[10.5px] opacity-80">Use "Partial Due" tab if booking on credit</span>
+                                <span className="text-xs opacity-80">Use "Partial Due" tab if booking on credit</span>
                             </div>
                         )}
 

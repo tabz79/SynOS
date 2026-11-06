@@ -1037,7 +1037,7 @@ export function VisitDetails({
                                                 }
                                             }
                                         }}
-                                        className="bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-200/60 dark:bg-sky-950/40 dark:text-sky-400 dark:border-sky-800 rounded-lg px-3 py-1.5 text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer tracking-normal shadow-2xs synos-focus-btn"
+                                        className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-3 py-1.5 text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95 synos-focus-btn"
                                     >
                                         <Plus className="w-4 h-4" /> Add Doctor
                                     </button>
@@ -1207,7 +1207,7 @@ export function VisitDetails({
                                                 }
                                             }
                                         }}
-                                        className="bg-[#EBF5EF] hover:bg-[#DFF0E6] text-[#245E49] border border-[#CCE8D8] dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800 rounded-lg px-3 py-1.5 text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer tracking-normal shadow-2xs synos-focus-btn"
+                                        className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-3 py-1.5 text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95 synos-focus-btn"
                                     >
                                         <Plus className="w-4 h-4" /> Add RMP
                                     </button>
@@ -1350,7 +1350,7 @@ export function VisitDetails({
                                             }
                                         }
                                     }}
-                                    className="bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-200/60 dark:bg-sky-950/40 dark:text-sky-400 dark:border-sky-800 rounded-lg px-2.5 py-1 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer synos-focus-btn"
+                                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-3 py-1.5 text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95 synos-focus-btn"
                                 >
                                     <Plus className="w-3.5 h-3.5" /> Add Doctor
                                 </button>
