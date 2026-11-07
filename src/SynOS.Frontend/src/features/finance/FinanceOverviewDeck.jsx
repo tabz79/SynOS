@@ -710,8 +710,12 @@ export const FinanceOverviewDeck = ({
             <div className="min-h-[95px] p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] grid grid-cols-1 lg:grid-cols-12 gap-3.5 lg:gap-4 items-center">
                 
                 {/* Section 1 (4 Cols): Total Amount Billed Hero Metric */}
-                <div className="lg:col-span-4 flex items-center gap-3 min-w-0 pr-0 lg:pr-2">
-                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-b from-[#EBF5FF] to-[#D6EBFE] border border-white/90 dark:border-white/10 shadow-[0_4px_12px_rgba(37,99,235,0.12)] flex items-center justify-center text-[#1C6CF2] dark:text-sky-400 shrink-0">
+                <div 
+                    onClick={() => navigate('/finance/revenue/bills')}
+                    className="lg:col-span-4 flex items-center gap-3 min-w-0 pr-0 lg:pr-2 cursor-pointer p-1.5 -m-1.5 rounded-xl hover:bg-white/70 dark:hover:bg-zinc-800/70 transition-all group"
+                    title="Click to view all processed bills and transactions"
+                >
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-b from-[#EBF5FF] to-[#D6EBFE] border border-white/90 dark:border-white/10 shadow-[0_4px_12px_rgba(37,99,235,0.12)] flex items-center justify-center text-[#1C6CF2] dark:text-sky-400 shrink-0 group-hover:scale-105 transition-transform">
                         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                             <rect x="2" y="4" width="20" height="16" rx="3" />
                             <line x1="2" y1="10" x2="22" y2="10" />
@@ -722,7 +726,7 @@ export const FinanceOverviewDeck = ({
 
                     <div className="space-y-0.5 min-w-0 flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal">
+                            <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal group-hover:text-synos-primary transition-colors">
                                 Total Amount Billed
                             </h3>
                             <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]/70 dark:bg-emerald-950/50 dark:text-emerald-400 shadow-2xs">
@@ -775,13 +779,17 @@ export const FinanceOverviewDeck = ({
                     {/* Two Channel Stat Pods Below */}
                     <div className="flex items-center justify-between pt-0.5">
                         {/* Left Stat Pod: Doctor Payouts */}
-                        <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-[8px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                        <div 
+                            onClick={() => navigate('/finance/referrals/payouts')}
+                            className="flex items-center gap-2 cursor-pointer p-1.5 -m-1.5 rounded-xl hover:bg-white/70 dark:hover:bg-zinc-800/70 transition-all group"
+                            title="Click to view Doctor Payouts & Commission ledger"
+                        >
+                            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-[8px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
                                 <Stethoscope size={14} strokeWidth={2.3} />
                             </div>
                             <div>
                                 <div className="flex items-baseline gap-1.5">
-                                    <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none">
+                                    <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none group-hover:text-synos-primary transition-colors">
                                         ₹{formatInr(doctorPayoutsVal)}
                                     </span>
                                     <span className="text-[10px] font-bold text-[#1C6CF2] dark:text-sky-400 bg-[#EBF5FF] dark:bg-sky-950/60 px-1 py-0.2 rounded-md border border-sky-100 dark:border-sky-800/40 tabular-nums">
@@ -795,13 +803,17 @@ export const FinanceOverviewDeck = ({
                         </div>
 
                         {/* Right Stat Pod: Receivables & Dues */}
-                        <div className="flex items-center gap-2 text-right">
+                        <div 
+                            onClick={() => navigate('/finance/referrals/receivables')}
+                            className="flex items-center gap-2 text-right cursor-pointer p-1.5 -m-1.5 rounded-xl hover:bg-white/70 dark:hover:bg-zinc-800/70 transition-all group"
+                            title="Click to view Partner & Corporate Receivables list"
+                        >
                             <div>
                                 <div className="flex items-baseline gap-1.5 justify-end">
                                     <span className="text-[10px] font-bold text-[#E11D48] dark:text-rose-400 bg-[#FFF1F2] dark:bg-rose-950/60 px-1 py-0.2 rounded-md border border-rose-100 dark:border-rose-800/40 tabular-nums">
                                         {totalSplitSum > 0 ? duesShare : 0}%
                                     </span>
-                                    <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none">
+                                    <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
                                         ₹{formatInr(totalReceivablesAndDues)}
                                     </span>
                                 </div>
@@ -809,7 +821,7 @@ export const FinanceOverviewDeck = ({
                                     Due Receivables
                                 </span>
                             </div>
-                            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-[8px] bg-[#FFF1F2] text-[#FB7185] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-[8px] bg-[#FFF1F2] text-[#FB7185] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
                                 <Building2 size={14} strokeWidth={2.3} />
                             </div>
                         </div>
@@ -824,7 +836,7 @@ export const FinanceOverviewDeck = ({
                         cashCollected={cashCollected}
                         onlineCollected={onlineCollected}
                         totalCollected={totalCollected}
-                        onNavigate={() => navigate('/finance/revenue/overview')}
+                        onNavigate={() => navigate('/finance/revenue/drawers')}
                     />
                 </div>
                 <div className="lg:col-span-4 h-full">
@@ -833,7 +845,7 @@ export const FinanceOverviewDeck = ({
                         concessionsRate={concessionsRate}
                         pathologyDiscount={pathologyDiscount}
                         radiologyDiscount={radiologyDiscount}
-                        onNavigate={() => navigate('/finance/discounts')}
+                        onNavigate={() => navigate('/finance/discounts/intelligence')}
                     />
                 </div>
             </div>
@@ -889,7 +901,7 @@ export const FinanceOverviewDeck = ({
                         isToday={presetRange === 'today'}
                         rate={payrollRate}
                         employeeCount={employeeCount}
-                        onNavigate={() => navigate('/finance/payroll')}
+                        onNavigate={() => navigate('/finance/workforce')}
                     />
                 </div>
 
@@ -898,7 +910,7 @@ export const FinanceOverviewDeck = ({
                     <CollectionTrendCard 
                         dailyTrends={dailyTrends}
                         todayCash={totalCollected}
-                        onNavigate={() => navigate('/finance/revenue/overview')}
+                        onNavigate={() => navigate('/finance/revenue/bills')}
                     />
                 </div>
             </div>

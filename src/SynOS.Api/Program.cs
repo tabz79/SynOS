@@ -796,6 +796,10 @@ app.UseStaticFiles(new StaticFileOptions
 var fileStorageBasePath = app.Configuration["FileStorage:BasePath"];
 if (!string.IsNullOrEmpty(fileStorageBasePath))
 {
+    if (!Path.IsPathRooted(fileStorageBasePath))
+    {
+        fileStorageBasePath = Path.Combine(Path.GetTempPath(), "SynOS_Files");
+    }
     if (!Directory.Exists(fileStorageBasePath))
     {
         Directory.CreateDirectory(fileStorageBasePath);

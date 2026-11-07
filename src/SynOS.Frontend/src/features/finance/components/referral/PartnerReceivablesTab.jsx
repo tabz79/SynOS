@@ -400,6 +400,16 @@ export const PartnerReceivablesTab = () => {
                                                         <span>B2B Invoice</span>
                                                     </button>
                                                 )}
+                                                {partner.totalOutstanding > 0 && (
+                                                    <button
+                                                        onClick={() => setSelectedPartner(partner)}
+                                                        title="Record payment voucher & settle outstanding partner receivables"
+                                                        className="px-3 py-2 rounded-xl border border-emerald-500/40 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-wider hover:bg-emerald-100 dark:hover:bg-emerald-900/60 active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                                                    >
+                                                        <ArrowDownLeft size={12} />
+                                                        <span>Settle Dues</span>
+                                                    </button>
+                                                )}
                                                 <button 
                                                     onClick={() => setExpandedPartnerId(expandedPartnerId === partner.partnerId ? null : partner.partnerId)}
                                                     className={`px-3.5 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 cursor-pointer ${

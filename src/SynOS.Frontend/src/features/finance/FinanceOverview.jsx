@@ -29,6 +29,12 @@ import { useGlobalFilter } from '@/context/GlobalFilterContext';
 import { StandardFilterBar } from '@/components/layout/StandardFilterBar';
 import { cn } from '@/lib/utils';
 import { FinanceOverviewDeck, ConsolidatedDeskCashCard } from './FinanceOverviewDeck';
+import { FinanceActionCenterSection } from './components/controltower/FinanceActionCenterSection';
+import { WorkforceOverviewSection } from './components/controltower/WorkforceOverviewSection';
+import { ClinicalOperationsSection } from './components/controltower/ClinicalOperationsSection';
+import { CashCustodySection } from './components/controltower/CashCustodySection';
+import { InventoryEquipmentSection } from './components/controltower/InventoryEquipmentSection';
+import { BusinessActivitySection } from './components/controltower/BusinessActivitySection';
 
 export const FinanceOverview = () => {
     const navigate = useNavigate();
@@ -560,6 +566,49 @@ export const FinanceOverview = () => {
                 dailyTrends={dailyTrends}
                 onDeptClick={handleDeptClick}
                 presetRange={presetRange}
+                navigate={navigate}
+            />
+
+            {/* 02. EXECUTIVE FINANCE ACTION CENTER */}
+            <FinanceActionCenterSection 
+                receivables={receivables}
+                concessionData={concessionData}
+                payables={payables}
+                referrals={referrals}
+                todayActionQueue={todayActionQueue}
+                navigate={navigate}
+            />
+
+            {/* 03. WORKFORCE OVERVIEW */}
+            <WorkforceOverviewSection 
+                staff={staff}
+                payrollRuns={payrollRuns}
+                employeeCount={employeeCount}
+                navigate={navigate}
+            />
+
+            {/* 04. CLINICAL OPERATIONS OVERVIEW */}
+            <ClinicalOperationsSection 
+                receptionSummary={receptionSummary}
+                todayActionQueue={todayActionQueue}
+                profitability={profitability}
+                navigate={navigate}
+            />
+
+            {/* 05. CASH & CUSTODY OVERVIEW */}
+            <CashCustodySection 
+                cashCollected={cashCollected}
+                receptionSummary={receptionSummary}
+                navigate={navigate}
+            />
+
+            {/* 06. INVENTORY & EQUIPMENT HEALTH */}
+            <InventoryEquipmentSection 
+                navigate={navigate}
+            />
+
+            {/* 07. BUSINESS ACTIVITY & NOTIFICATIONS */}
+            <BusinessActivitySection 
                 navigate={navigate}
             />
         </div>

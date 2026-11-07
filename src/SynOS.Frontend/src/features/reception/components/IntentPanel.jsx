@@ -94,7 +94,7 @@ export function IntentPanel({ onVisitUpdated }) {
     const [isPartialPayment, setIsPartialPayment] = useState(false);
     const [customPaymentAmount, setCustomPaymentAmount] = useState('');
     const [userPayerExpandedState, setUserPayerExpandedState] = useState(true);
-    const [isPatientCardCollapsed, setIsPatientCardCollapsed] = useState(() => Boolean(drawerState?.intent === 'resume' || drawerState?.intent === 'correction'));
+    const [isPatientCardCollapsed, setIsPatientCardCollapsed] = useState(false);
 
     // In-Panel Post-Processing & Print Dispatch State (Split Screen Mode)
     const [postProcessingSession, setPostProcessingSession] = useState(null);
@@ -217,6 +217,7 @@ export function IntentPanel({ onVisitUpdated }) {
             setIsBatchEditConfirmModalOpen(false);
             setBatchEditReason('');
             setUserPayerExpandedState(true);
+            setIsPatientCardCollapsed(false);
             return;
         }
 
@@ -226,7 +227,6 @@ export function IntentPanel({ onVisitUpdated }) {
         if ((isResumeIntent || isCorrectionIntent) && drawerState.visitId) {
             // RESUME/CORRECT: Preset Visit ID, No Patient Selection needed yet (internal)
             setCurrentVisitId(drawerState.visitId);
-            setIsPatientCardCollapsed(true);
             // Patient ID will be derived from snapshot
         }
     }, [isOpen, intent, drawerState?.visitId]);

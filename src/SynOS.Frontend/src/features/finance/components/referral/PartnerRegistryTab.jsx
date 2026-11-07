@@ -26,6 +26,7 @@ import {
     Loader2, 
     ArrowRight, 
     Activity,
+    Percent,
     LayoutGrid,
     List,
     ArrowUpDown,
@@ -1087,16 +1088,16 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned, onDoctorDeleted
                     </div>
                 </div>
 
-                {/* COMMERCIAL SUMMARY METRIC PODS */}
+                {/* COMMERCIAL SUMMARY METRIC PODS: 5-POD HARMONY (PATIENTS, REVENUE, CONCESSIONS, COMMISSIONS, PAYOUTS) */}
                 {profileData && (
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 px-6 py-3.5 bg-slate-50/90 dark:bg-zinc-900/50 border-b border-slate-200/80 dark:border-zinc-800 shrink-0">
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 px-6 py-3.5 bg-slate-50/90 dark:bg-zinc-900/50 border-b border-slate-200/80 dark:border-zinc-800 shrink-0">
                         {/* Pod 1: Patients */}
                         <div className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-xs">
                             <div className="flex items-center justify-between text-zinc-400 mb-1">
                                 <span className="text-[10px] font-extrabold uppercase tracking-wider">Patients</span>
                                 <Users size={14} className="text-blue-500" />
                             </div>
-                            <span className="text-lg sm:text-xl font-extrabold text-zinc-900 dark:text-white tabular-nums block">
+                            <span className="text-base sm:text-lg font-extrabold text-zinc-900 dark:text-white tabular-nums block">
                                 {doc.totalPatientsReferred || 0}
                             </span>
                             <span className="text-[10px] text-zinc-400 font-medium">Referred intake</span>
@@ -1108,31 +1109,43 @@ const DoctorProfileDrawer = ({ doctorId, onClose, onRateLearned, onDoctorDeleted
                                 <span className="text-[10px] font-extrabold uppercase tracking-wider">Revenue</span>
                                 <IndianRupee size={14} className="text-indigo-500" />
                             </div>
-                            <span className="text-lg sm:text-xl font-extrabold text-zinc-900 dark:text-white tabular-nums block">
+                            <span className="text-base sm:text-lg font-extrabold text-zinc-900 dark:text-white tabular-nums block">
                                 ₹{Number(doc.totalRevenueGenerated || 0).toLocaleString('en-IN')}
                             </span>
                             <span className="text-[10px] text-zinc-400 font-medium">Billed tariff</span>
                         </div>
 
-                        {/* Pod 3: Earned Commission */}
+                        {/* Pod 3: Discounts / Concessions Given */}
+                        <div className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-xs">
+                            <div className="flex items-center justify-between text-zinc-400 mb-1">
+                                <span className="text-[10px] font-extrabold uppercase tracking-wider text-rose-500">Discounts</span>
+                                <Percent size={14} className="text-rose-500" />
+                            </div>
+                            <span className="text-base sm:text-lg font-extrabold text-rose-600 dark:text-rose-400 tabular-nums block">
+                                ₹{Number(doc.totalDiscountsGiven || 0).toLocaleString('en-IN')}
+                            </span>
+                            <span className="text-[10px] text-zinc-400 font-medium">Concessions granted</span>
+                        </div>
+
+                        {/* Pod 4: Earned Commission */}
                         <div className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-xs">
                             <div className="flex items-center justify-between text-zinc-400 mb-1">
                                 <span className="text-[10px] font-extrabold uppercase tracking-wider">Earned</span>
                                 <Award size={14} className="text-emerald-500" />
                             </div>
-                            <span className="text-lg sm:text-xl font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums block">
+                            <span className="text-base sm:text-lg font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums block">
                                 ₹{Number(doc.totalCommissionEarned || 0).toLocaleString('en-IN')}
                             </span>
                             <span className="text-[10px] text-zinc-400 font-medium">Total accrued</span>
                         </div>
 
-                        {/* Pod 4: Due Payout */}
+                        {/* Pod 5: Due Payout */}
                         <div className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 shadow-xs">
                             <div className="flex items-center justify-between text-zinc-400 mb-1">
                                 <span className="text-[10px] font-extrabold uppercase tracking-wider">Due Payout</span>
                                 <CreditCard size={14} className="text-amber-500" />
                             </div>
-                            <span className="text-lg sm:text-xl font-extrabold text-amber-600 dark:text-amber-400 tabular-nums block">
+                            <span className="text-base sm:text-lg font-extrabold text-amber-600 dark:text-amber-400 tabular-nums block">
                                 ₹{Number(doc.pendingPayoutDue || 0).toLocaleString('en-IN')}
                             </span>
                             <span className="text-[10px] text-zinc-400 font-medium">Payable balance</span>

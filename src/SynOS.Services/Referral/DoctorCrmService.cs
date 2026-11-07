@@ -271,6 +271,9 @@ namespace SynOS.Services.Referral
             var thisMonthVisits = await visitsQuery.CountAsync(v => v.CreatedAt >= startOfMonth);
             var lastReferredAt = await visitsQuery.MaxAsync(v => (DateTimeOffset?)v.CreatedAt);
             var totalRevenue = await visitsQuery.SelectMany(v => v.Orders).SumAsync(o => (decimal?)(o.Price - o.Discount)) ?? 0m;
+            var totalOrderDiscounts = await visitsQuery.SelectMany(v => v.Orders).SumAsync(o => (decimal?)o.Discount) ?? 0m;
+            var totalB2BDiscounts = await visitsQuery.SumAsync(v => (decimal?)(v.B2BDiscountAmount ?? 0m)) ?? 0m;
+            var totalDiscounts = Math.Max(totalOrderDiscounts, totalB2BDiscounts);
             var totalTests = await visitsQuery.SelectMany(v => v.Orders).CountAsync();
 
             var payables = await _context.ReferralPayableFacts
@@ -425,6 +428,7 @@ namespace SynOS.Services.Referral
                 ThisMonthPatientsReferred = thisMonthVisits,
                 TotalTestsPrescribed = totalTests,
                 TotalRevenueGenerated = totalRevenue,
+                TotalDiscountsGiven = totalDiscounts,
                 TotalCommissionEarned = totalEarned,
                 TotalCommissionPaid = totalPaid,
                 PendingPayoutDue = Math.Max(0m, totalEarned - totalPaid),

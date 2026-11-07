@@ -39,6 +39,7 @@ namespace SynOS.Models.DTOs.Admin.Referral
         public int ThisMonthPatientsReferred { get; set; }
         public int TotalTestsPrescribed { get; set; }
         public decimal TotalRevenueGenerated { get; set; }
+        public decimal TotalDiscountsGiven { get; set; }
         public decimal TotalCommissionEarned { get; set; }
         public decimal TotalCommissionPaid { get; set; }
         public decimal PendingPayoutDue { get; set; }

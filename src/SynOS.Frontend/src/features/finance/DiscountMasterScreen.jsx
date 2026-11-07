@@ -202,7 +202,8 @@ function AdaptiveBreakdownCard({
     items = [],
     type = 'patient',
     icons = PRESET_ICONS,
-    barGradient
+    barGradient,
+    onDrilldown
 }) {
     const itemCount = items.length;
 
@@ -248,14 +249,18 @@ function AdaptiveBreakdownCard({
                 const bills = item.usageCount || item.billsCount || totalBills;
 
                 return (
-                    <div className="flex-1 flex flex-col justify-center space-y-1.5 py-1">
+                    <div 
+                        onClick={() => onDrilldown && onDrilldown(name)}
+                        className="flex-1 flex flex-col justify-center space-y-1.5 py-1 cursor-pointer hover:bg-slate-200/40 dark:hover:bg-zinc-800/40 p-2 -m-2 rounded-xl transition-all group"
+                        title={`Filter discount history by "${name}"`}
+                    >
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2 min-w-0">
-                                <div className={cn("w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center shrink-0 shadow-2xs", iconObj.bg)}>
+                                <div className={cn("w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform", iconObj.bg)}>
                                     {iconObj.icon}
                                 </div>
                                 <div className="min-w-0">
-                                    <h5 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate" title={name}>
+                                    <h5 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-synos-primary transition-colors" title={name}>
                                         {name}
                                     </h5>
                                     <span className="text-[10px] sm:text-[11px] font-medium text-slate-500 dark:text-zinc-400">
@@ -301,14 +306,19 @@ function AdaptiveBreakdownCard({
                         const isLead = idx === 0;
 
                         return (
-                            <div key={idx} className="py-1.5 sm:py-2 first:pt-0 last:pb-0 flex flex-col justify-between space-y-1">
+                            <div 
+                                key={idx} 
+                                onClick={() => onDrilldown && onDrilldown(name)}
+                                className="py-1.5 sm:py-2 first:pt-0 last:pb-0 flex flex-col justify-between space-y-1 cursor-pointer hover:bg-slate-200/40 dark:hover:bg-zinc-800/40 px-2 -mx-2 rounded-xl transition-all group"
+                                title={`Filter discount history by "${name}"`}
+                            >
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2 min-w-0">
-                                        <div className={cn("w-6 h-6 sm:w-7 sm:h-7 rounded-[7px] flex items-center justify-center shrink-0 shadow-2xs", iconObj.bg)}>
+                                        <div className={cn("w-6 h-6 sm:w-7 sm:h-7 rounded-[7px] flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform", iconObj.bg)}>
                                             {iconObj.icon}
                                         </div>
                                         <div className="min-w-0">
-                                            <h5 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate" title={name}>
+                                            <h5 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate group-hover:text-synos-primary transition-colors" title={name}>
                                                 {name}
                                             </h5>
                                             <span className="text-[10px] font-medium text-slate-500 dark:text-zinc-400">
@@ -360,13 +370,18 @@ function AdaptiveBreakdownCard({
                                 const pct = Number(r.percentageOfPatientDiscounts || r.percentageOfPartnerDiscounts) || 20;
                                 const iconObj = icons[i % icons.length];
                                 return (
-                                    <tr key={i} className="h-[34px] sm:h-[38px] hover:bg-slate-200/40 dark:hover:bg-zinc-800/40 transition-colors border-b border-slate-200/60 dark:border-zinc-800/60 last:border-b-0">
+                                    <tr 
+                                        key={i} 
+                                        onClick={() => onDrilldown && onDrilldown(name)}
+                                        className="h-[34px] sm:h-[38px] hover:bg-slate-200/50 dark:hover:bg-zinc-800/50 transition-colors border-b border-slate-200/60 dark:border-zinc-800/60 last:border-b-0 cursor-pointer group"
+                                        title={`Filter discount history by "${name}"`}
+                                    >
                                         <td className="py-1 pl-0.5 w-[34%]">
                                             <div className="flex items-center gap-2 min-w-0">
-                                                <div className={cn("w-7 h-7 sm:w-8 sm:h-8 rounded-[9px] flex items-center justify-center shrink-0 shadow-2xs", iconObj.bg)}>
+                                                <div className={cn("w-7 h-7 sm:w-8 sm:h-8 rounded-[9px] flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform", iconObj.bg)}>
                                                     {iconObj.icon}
                                                 </div>
-                                                <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate pr-1" title={name}>
+                                                <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate pr-1 group-hover:text-synos-primary transition-colors" title={name}>
                                                     {name}
                                                 </span>
                                             </div>
@@ -668,6 +683,12 @@ export function DiscountMasterScreen() {
     const [historySource, setHistorySource] = useState('All'); // 'All' (Default) | 'Patient' | 'Partner'
     const [historySearch, setHistorySearch] = useState('');
     const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+
+    const handleReasonDrilldown = (reasonOrPartner) => {
+        if (!reasonOrPartner) return;
+        setHistorySearch(reasonOrPartner);
+        navigate('/finance/discounts/history');
+    };
 
     // Sub-navigation tabs
     const tabs = [
@@ -1186,6 +1207,7 @@ export function DiscountMasterScreen() {
                                             type="patient"
                                             icons={PRESET_ICONS}
                                             barGradient="bg-gradient-to-r from-[#60A5FA] via-[#7BB3F0] to-[#93C5FD] shadow-[0_2px_8px_rgba(59,130,246,0.35)]"
+                                            onDrilldown={handleReasonDrilldown}
                                         />
                                     </div>
 
@@ -1201,6 +1223,7 @@ export function DiscountMasterScreen() {
                                             type="partner"
                                             icons={PARTNER_ICONS}
                                             barGradient="bg-gradient-to-r from-[#FCA5A5] via-[#FDA4AF] to-[#FECDD3] shadow-[0_2px_8px_rgba(251,113,133,0.35)]"
+                                            onDrilldown={handleReasonDrilldown}
                                         />
                                     </div>
 
@@ -2131,9 +2154,14 @@ export function DiscountMasterScreen() {
                                                     </td>
                                                     <td className="py-3.5 px-4 text-center">
                                                         {(r.usageCount || 0) > 0 ? (
-                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleReasonDrilldown(r.reasonText)}
+                                                                title={`View ${r.usageCount} discount records for "${r.reasonText}"`}
+                                                                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 hover:bg-blue-500/25 active:scale-95 transition-all cursor-pointer shadow-2xs"
+                                                            >
                                                                 {r.usageCount} {r.usageCount === 1 ? 'bill' : 'bills'}
-                                                            </span>
+                                                            </button>
                                                         ) : (
                                                             <span className="text-zinc-400 text-xs font-medium">0</span>
                                                         )}
