@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { cn } from "@/lib/utils"
 import { useFlipGroup } from "@/hooks/useSynOSMotion"
-import { Plus, Users, ClipboardList, Bed, Clock, Loader2, ChevronDown, Package, Receipt, Wallet, TrendingDown, ArrowDownLeft, SlidersHorizontal } from 'lucide-react'
+import { Plus, Users, ClipboardList, Bed, Clock, Loader2, ChevronDown, Package, Receipt, Wallet, TrendingDown, ArrowDownLeft, SlidersHorizontal, RefreshCw } from 'lucide-react'
 import { StockRequestPanel } from '../inventory/StockRequestPanel'
 import { SystemBar } from '@/components/layout/SystemBar'
 import { RealitySummary } from '@/components/layout/RealitySummary'
@@ -26,17 +26,40 @@ export function ReceptionScreen() {
     const { user } = useAuth();
     const isReceptionist = user?.role === 'Receptionist';
     const [activeQueue, setActiveQueue] = useState("pending");
-    const [summary, setSummary] = useState(null);
+    
+    // Persistent Summary & Queue State (Prevents disappearing numbers during 2-5 min server updates)
+    const [summary, setSummary] = useState(() => {
+        try {
+            const cached = localStorage.getItem('synos_cached_reality_summary');
+            return cached ? JSON.parse(cached) : null;
+        } catch (_) {
+            return null;
+        }
+    });
     // Unified Drawer State + Helpers
     const { isOpen: isIntentPanelOpen, openCreateIntent, openResumeIntent, openCorrectionIntent } = useReceptionDrawer();
 
-    const [actionQueue, setActionQueue] = useState([]); // Real Data
-    const [isLoadingQueue, setIsLoadingQueue] = useState(true);
+    const [actionQueue, setActionQueue] = useState(() => {
+        try {
+            const cached = localStorage.getItem('synos_cached_action_queue');
+            return cached ? JSON.parse(cached) : [];
+        } catch (_) {
+            return [];
+        }
+    }); // Real Data
+    const [isLoadingQueue, setIsLoadingQueue] = useState(() => {
+        try {
+            return !localStorage.getItem('synos_cached_action_queue');
+        } catch (_) {
+            return true;
+        }
+    });
     const [isInventoryModalOpen, setIsInventoryModalOpen] = useState(false);
     const [isExpenseDrawerOpen, setIsExpenseDrawerOpen] = useState(false);
     const [isB2BReceivablesOpen, setIsB2BReceivablesOpen] = useState(false);
     const [isOptionsPanelOpen, setIsOptionsPanelOpen] = useState(false);
     const [todayB2BPendingCount, setTodayB2BPendingCount] = useState(0);
+    const [isServerUpdating, setIsServerUpdating] = useState(false);
 
     // History State (Phase 5)
     // We use a Ref for SignalR callback access, and State for Render.
@@ -65,15 +88,30 @@ export function ReceptionScreen() {
                 ReceptionApi.getActionQueue(showHistoryRef.current),
                 FinanceApi.getTodayB2BReceivables().catch(() => [])
             ]);
-            if (summaryData) setSummary(summaryData);
+            if (summaryData) {
+                setSummary(summaryData);
+                try {
+                    localStorage.setItem('synos_cached_reality_summary', JSON.stringify(summaryData));
+                } catch (_) {}
+            }
             if (Array.isArray(queueData)) {
-                setActionQueue(normalizeQueueData(queueData));
+                const norm = normalizeQueueData(queueData);
+                setActionQueue(norm);
+                try {
+                    if (norm.length > 0) {
+                        localStorage.setItem('synos_cached_action_queue', JSON.stringify(norm));
+                    }
+                } catch (_) {}
             }
             if (Array.isArray(b2bGroups)) {
                 setTodayB2BPendingCount(b2bGroups.length);
             }
+            setIsServerUpdating(false);
+            setConnectionStatus("Synced");
         } catch (e) {
-            console.error("Failed to refresh dashboard data", e);
+            console.warn("Failed to refresh dashboard data (Server may be updating):", e);
+            setIsServerUpdating(true);
+            setConnectionStatus("Updating");
         } finally {
             setIsLoadingQueue(false);
         }
@@ -102,7 +140,12 @@ export function ReceptionScreen() {
             // 3. Subscribe BEFORE connecting (to catch initial push)
             SignalRService.onReceptionSummaryUpdated((payload) => {
                 console.log("ReceptionScreen: Received Reality Summary Update", payload);
-                setSummary(payload);
+                if (payload) {
+                    setSummary(payload);
+                    try {
+                        localStorage.setItem('synos_cached_reality_summary', JSON.stringify(payload));
+                    } catch (_) {}
+                }
             });
 
             // TARGETED DELTA PAYLOAD (Eliminates Thundering Herd)
@@ -173,9 +216,18 @@ export function ReceptionScreen() {
                 // setConnectionStatus("Synced"); -> Handled by Status Listener now
             });
 
-            // Status Listener (Handles Disconnects/Reconnects)
+            // Status Listener (Handles Disconnects/Reconnects & Server Updates)
             SignalRService.onConnectionStatusChanged((status) => {
-                setConnectionStatus(status);
+                if (status === "Reconnecting") {
+                    setIsServerUpdating(true);
+                    setConnectionStatus("Updating");
+                } else if (status === "Synced") {
+                    setIsServerUpdating(false);
+                    setConnectionStatus("Synced");
+                    refreshDashboard();
+                } else {
+                    setConnectionStatus(status);
+                }
             });
 
             try {
@@ -207,6 +259,32 @@ export function ReceptionScreen() {
             clearInterval(interval);
         };
     }, []);
+
+    // Active Health Poller when Server is updating / restarting (probes /health every 3s)
+    useEffect(() => {
+        if (!isServerUpdating) return;
+
+        let isCancelled = false;
+        const probeInterval = setInterval(async () => {
+            try {
+                const res = await fetch('/health', { method: 'GET', cache: 'no-store' });
+                if (res.ok && !isCancelled) {
+                    console.log("Server came back online from update!");
+                    setIsServerUpdating(false);
+                    setConnectionStatus("Synced");
+                    refreshDashboard();
+                    SignalRService.startConnection();
+                }
+            } catch (_) {
+                // Server still installing/updating, wait for next tick
+            }
+        }, 3000);
+
+        return () => {
+            isCancelled = true;
+            clearInterval(probeInterval);
+        };
+    }, [isServerUpdating]);
 
     // STAGE 7: FLIP ANIMATION STATE
     const [isSummaryCollapsed, setIsSummaryCollapsed] = useState(() => window.innerHeight < 700);
@@ -468,7 +546,14 @@ export function ReceptionScreen() {
                                 className="mb-2.5 shrink-0"
                             >
                                 <div className="flex items-center justify-between mb-1.5 px-2 sticky top-0 dark:bg-synos-background bg-transparent z-10 py-0.5">
-                                    <h2 className="text-lg font-bold dark:text-zinc-200 text-zinc-800">Reality Summary</h2>
+                                    <div className="flex items-center gap-2.5">
+                                        <h2 className="text-lg font-bold dark:text-zinc-200 text-zinc-800">Reality Summary</h2>
+                                        {isServerUpdating && (
+                                            <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 text-xs font-bold animate-pulse flex items-center gap-1.5">
+                                                <RefreshCw className="w-3 h-3 animate-spin text-amber-500" /> Server is updating, hang on...
+                                            </span>
+                                        )}
+                                    </div>
                                     <button
                                         onClick={() => setIsSummaryCollapsed(!isSummaryCollapsed)}
                                         className="text-zinc-500 hover:text-zinc-300 transition-colors p-1 rounded-md hover:bg-white/5"
@@ -477,7 +562,25 @@ export function ReceptionScreen() {
                                         <ChevronDown className={cn("w-4 h-4 transition-transform duration-300", isSummaryCollapsed && "-rotate-90")} />
                                     </button>
                                 </div>
-                                <RealitySummary tiles={realityTiles} isCollapsed={isSummaryCollapsed} />
+                                {isServerUpdating && realityTiles && (
+                                    <div className="mb-2 px-3.5 py-2 rounded-xl bg-amber-500/10 dark:bg-amber-950/40 border border-amber-500/30 text-amber-800 dark:text-amber-200 flex items-center justify-between shadow-xs animate-in fade-in duration-200">
+                                        <div className="flex items-center gap-2.5 min-w-0">
+                                            <div className="w-5 h-5 rounded-md bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                                                <RefreshCw className="w-3 h-3 animate-spin" />
+                                            </div>
+                                            <div className="truncate">
+                                                <span className="font-bold text-xs sm:text-sm">Server is updating, hang on...</span>
+                                                <span className="text-[11px] opacity-80 ml-2 hidden md:inline">
+                                                    Applying updates • Your clinical data & tokens are safe • Resuming automatically
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 shrink-0">
+                                            Auto-resuming
+                                        </span>
+                                    </div>
+                                )}
+                                <RealitySummary tiles={realityTiles} isCollapsed={isSummaryCollapsed} isServerUpdating={isServerUpdating} />
                             </div>
 
                             <div
@@ -546,6 +649,12 @@ export function ReceptionScreen() {
                                             <Loader2 className="w-6 h-6 animate-spin dark:text-zinc-600 text-zinc-400" />
                                             <span className="text-xs dark:text-zinc-600 text-zinc-400">Loading live operational stream...</span>
                                         </div>
+                                    </div>
+                                ) : isServerUpdating && (!actionQueue || actionQueue.length === 0) ? (
+                                    <div className="flex-1 flex flex-col items-center justify-center border border-dashed border-amber-500/30 dark:border-amber-500/20 rounded-xl p-8 bg-amber-500/5">
+                                        <RefreshCw className="w-6 h-6 animate-spin text-amber-500 mb-2" />
+                                        <span className="text-sm font-bold text-amber-800 dark:text-amber-300">Server is updating, hang on...</span>
+                                        <span className="text-xs text-amber-600 dark:text-amber-400 mt-1">Reconnecting to live queue stream automatically...</span>
                                     </div>
                                 ) : (
                                     <ActionQueue columns={queueColumns} data={actionQueue} />

@@ -1,5 +1,15 @@
 import { HubConnectionBuilder, LogLevel, HttpTransportType, HubConnectionState } from '@microsoft/signalr';
 
+// Indefinite Reconnect Policy for Server Updates (Ensures WebSocket never gives up during 2-5 min installer updates)
+const synosReconnectPolicy = {
+    nextRetryDelayInMilliseconds: (retryContext) => {
+        if (retryContext.previousRetryCount === 0) return 0;
+        if (retryContext.previousRetryCount === 1) return 2000;
+        if (retryContext.previousRetryCount === 2) return 3000;
+        return 4000; // Continues trying every 4 seconds indefinitely
+    }
+};
+
 let connection = null;
 let connectionPromise = null;
 let subscriberCount = 0;
@@ -12,7 +22,7 @@ export const SignalRService = {
                 .withUrl("/dashboardHub", {
                     accessTokenFactory: () => localStorage.getItem('synos_jwt')
                 })
-                .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
+                .withAutomaticReconnect(synosReconnectPolicy)
                 .configureLogging(LogLevel.Warning)
                 .build();
         }
@@ -207,7 +217,7 @@ export const BranchOperationsSignalRService = {
                 .withUrl("/branchOperationsHub", {
                     accessTokenFactory: () => localStorage.getItem('synos_jwt')
                 })
-                .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
+                .withAutomaticReconnect(synosReconnectPolicy)
                 .configureLogging(LogLevel.Warning)
                 .build();
 

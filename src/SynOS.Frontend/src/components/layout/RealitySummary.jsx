@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef } from 'react';
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/context/ThemeContext";
-import { Users, User } from 'lucide-react';
+import { Users, User, RefreshCw } from 'lucide-react';
 
 export function RealityTile({ 
     value, 
@@ -191,10 +191,29 @@ export function RealityTile({
     );
 }
 
-export function RealitySummary({ tiles = [], isCollapsed }) {
+export function RealitySummary({ tiles = [], isCollapsed, isServerUpdating = false }) {
     const containerRef = useRef(null);
     const tileRefs = useRef(new Map());
     const prevRects = useRef(new Map());
+
+    // Fallback when tiles are empty during server update / maintenance
+    if ((!tiles || tiles.length === 0) && isServerUpdating) {
+        return (
+            <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 dark:bg-amber-950/30 backdrop-blur-md p-6 sm:p-8 flex flex-col items-center justify-center text-center gap-2.5 animate-in fade-in duration-300">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shadow-inner">
+                    <RefreshCw className="w-6 h-6 animate-spin" />
+                </div>
+                <div>
+                    <h3 className="text-base sm:text-lg font-bold text-amber-950 dark:text-amber-100">
+                        Server is updating, hang on...
+                    </h3>
+                    <p className="text-xs sm:text-sm text-amber-700 dark:text-amber-300 mt-1 max-w-md">
+                        SynOS is applying an update. This usually takes 2 to 4 minutes. Your clinical records and tokens are completely safe. Live figures will reappear automatically once the update completes.
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
     // FLIP ENGINE: OS-Grade Morphing (260ms)
     useLayoutEffect(() => {

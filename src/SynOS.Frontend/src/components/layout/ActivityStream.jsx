@@ -8,8 +8,21 @@ import { useAuth } from '../../context/AuthContext'
 import { useTheme } from '../../context/ThemeContext' // Context for theme detection
 
 export function ActivityStream({ serverTime }) {
-    const [events, setEvents] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [events, setEvents] = useState(() => {
+        try {
+            const cached = localStorage.getItem('synos_cached_activity_events');
+            return cached ? JSON.parse(cached) : [];
+        } catch (_) {
+            return [];
+        }
+    });
+    const [loading, setLoading] = useState(() => {
+        try {
+            return !localStorage.getItem('synos_cached_activity_events');
+        } catch (_) {
+            return true;
+        }
+    });
     const { user } = useAuth();
     // THEME DETECTION (Matches ActionQueue)
     const { theme } = useTheme();
@@ -83,10 +96,15 @@ export function ActivityStream({ serverTime }) {
             });
 
             setEvents(sorted);
+            try {
+                if (sorted.length > 0) {
+                    localStorage.setItem('synos_cached_activity_events', JSON.stringify(sorted.slice(0, 50)));
+                }
+            } catch (_) {}
             setLoading(false);
         } catch (err) {
-            console.error("Activity Stream Poll Failed:", err);
-            if (events.length === 0) setLoading(false);
+            console.warn("Activity Stream Poll Failed (Server may be updating):", err);
+            setLoading(false);
         }
     };
 

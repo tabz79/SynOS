@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ChevronDown, Globe, Shield, Wifi, WifiOff, Clock, Moon, Sun, Monitor, Activity, User, ArrowLeft, PanelLeft, PanelLeftOpen, PanelLeftClose } from 'lucide-react';
+import { ChevronDown, Globe, Shield, Wifi, WifiOff, Clock, Moon, Sun, Monitor, Activity, User, ArrowLeft, PanelLeft, PanelLeftOpen, PanelLeftClose, RefreshCw } from 'lucide-react';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/context/ThemeContext';
@@ -377,6 +377,10 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
           {isConnected ? (
             <span className="flex items-center gap-1 text-emerald-500 text-[10px] font-bold whitespace-nowrap">
               <Wifi className="w-3.5 h-3.5 shrink-0" /> LIVE
+            </span>
+          ) : syncStatus === "Updating" || syncStatus === "Reconnecting" ? (
+            <span className="flex items-center gap-1.5 text-amber-500 text-[10px] font-bold whitespace-nowrap animate-pulse" title="Server is updating, hang on...">
+              <RefreshCw className="w-3.5 h-3.5 animate-spin shrink-0" /> UPDATING
             </span>
           ) : (
             <span className="flex items-center gap-1 text-red-500 text-[10px] font-bold whitespace-nowrap">
