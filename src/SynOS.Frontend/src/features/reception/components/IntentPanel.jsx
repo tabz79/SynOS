@@ -47,6 +47,7 @@ export function IntentPanel({ onVisitUpdated }) {
     const [isPrepaidIntent, setIsPrepaidIntent] = useState(false);
     // Lifted State for Multi-Payer Billing Mode: 'Standard' | 'PrepaidPartner' | 'Insurance' | 'Corporate'
     const [billingMode, setBillingMode] = useState('Standard');
+    const isPrepaid = billingMode === 'PrepaidPartner' || isPrepaidIntent;
     const modeSwitchVersionRef = useRef(0);
     // STAGE 2: Payment Method State (Lifted for Footer Access)
     const [paymentMethod, setPaymentMethod] = useState('Cash');
@@ -721,8 +722,6 @@ export function IntentPanel({ onVisitUpdated }) {
     const baseGross = activeRemainingTests.reduce((sum, t) => sum + (Number(t.basePrice || t.price || t.Price) || 0), 0);
     const addedGross = stagedAddedTests.reduce((sum, t) => sum + (Number(t.basePrice || t.price || t.Price) || 0), 0);
     const stagedGross = baseGross + addedGross;
-
-    const isPrepaid = billingMode === 'PrepaidPartner' || isPrepaidIntent;
 
     let stagedDiscountAmt = 0;
     if (stagedDiscount?.remove) {
@@ -1691,17 +1690,11 @@ export function IntentPanel({ onVisitUpdated }) {
                                 </span>
                             </div>
                             <div className="space-y-2">
-                                {snapshot.correctionHistory.map((h, idx) => {
-                                    let parsedPayload = null;
-                                    try {
-                                        if (h.payloadJson) parsedPayload = JSON.parse(h.payloadJson);
-                                    } catch (_) {}
-
-                                    return (
-                                        <div 
-                                            key={h.correctionId || idx}
-                                            className="rounded-2xl p-2.5 bg-white/75 dark:bg-zinc-900/75 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-[0_4px_16px_rgba(15,35,60,0.06)] space-y-1 transition-all hover:bg-white/90 dark:hover:bg-zinc-900/90"
-                                        >
+                                {snapshot.correctionHistory.map((h, idx) => (
+                                    <div 
+                                        key={h.correctionId || idx}
+                                        className="rounded-2xl p-2.5 bg-white/75 dark:bg-zinc-900/75 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-[0_4px_16px_rgba(15,35,60,0.06)] space-y-1 transition-all hover:bg-white/90 dark:hover:bg-zinc-900/90"
+                                    >
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-1.5 min-w-0">
                                                     <div className="w-4 h-4 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-[9px] shrink-0">
@@ -1724,8 +1717,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                 </p>
                                             )}
                                         </div>
-                                    );
-                                })}
+                                ))}
                             </div>
                         </div>
                     )}

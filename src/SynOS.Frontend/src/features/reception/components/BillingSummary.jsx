@@ -166,6 +166,7 @@ export function BillingSummary({
         if (!visitId || !doctorId) return;
 
         // Check duplicate with primary doctor
+        const primaryDoctor = snapshot?.billing?.referral?.partner || snapshot?.visit?.referralPartner;
         const primaryId = primaryDoctor?.referralPartnerId || primaryDoctor?.id || snapshot?.visit?.referralPartnerId;
         const selectedDoc = (referralPartners || []).find(p => (p.referralPartnerId || p.id) === doctorId);
         const isSame = (primaryId && String(primaryId).toLowerCase() === String(doctorId).toLowerCase()) ||
@@ -718,6 +719,10 @@ export function BillingSummary({
         !isDraftVisit && 
         remainingDue > 0 && 
         (isCorrectionIntent || billing?.paymentStatus === 'PartialPayment' || billing?.paymentStatus === 'PartialDue' || (totalPaid > 0 && remainingDue > 0) || snapshot?.billing?.isLocked);
+
+    const hasDiscountApplied = isCorrectionIntent 
+        ? (stagedDiscountAmt > 0 || (snapshot?.billing?.discountAmount > 0 && !stagedDiscount?.remove))
+        : (billing?.discountAmount > 0 || stagedDiscountAmt > 0);
 
     let displayAmountToCollect = remainingDue;
     let amountLabel = billing?.paymentStatus === 'Paid' ? "Total Bill Amount" : (totalPaid > 0 ? "Remaining Due to Collect" : "Amount to Collect");
