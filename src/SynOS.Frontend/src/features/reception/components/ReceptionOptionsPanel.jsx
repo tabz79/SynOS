@@ -93,8 +93,6 @@ export function ReceptionOptionsPanel({
     usePanelEntry(panelRef, isOpen);
     useFocusTrap(panelRef, isOpen, onClose);
 
-    if (!isOpen) return null;
-
     // Atmospheric palette matching IntentPanel facelift design
     const ui = isDark ? {
         panel: "bg-zinc-950 border border-zinc-800 shadow-2xl z-30",
@@ -327,6 +325,8 @@ export function ReceptionOptionsPanel({
             }))
             .filter(section => section.items.length > 0);
     }, [searchQuery, pendingB2BCount]);
+
+    if (!isOpen) return null;
 
     return (
         <div

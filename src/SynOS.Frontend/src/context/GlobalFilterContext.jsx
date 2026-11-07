@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
-import { AdminApi } from '@/api/admin';
+import { ReceptionApi } from '@/api/reception';
 import { useAuth } from '@/context/AuthContext';
 
 const GlobalFilterContext = createContext(null);
@@ -54,7 +54,7 @@ export const GlobalFilterProvider = ({ children }) => {
         const fetchBranches = async () => {
             setIsLoadingBranches(true);
             try {
-                const data = await AdminApi.getBranches();
+                const data = await ReceptionApi.getBranches();
                 if (isMounted && Array.isArray(data) && data.length > 0) {
                     setBranches(data);
                     // If no branch active, set to first branch
