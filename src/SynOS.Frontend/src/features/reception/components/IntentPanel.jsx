@@ -95,6 +95,13 @@ export function IntentPanel({ onVisitUpdated }) {
     const [customPaymentAmount, setCustomPaymentAmount] = useState('');
     const [userPayerExpandedState, setUserPayerExpandedState] = useState(true);
     const [isPatientCardCollapsed, setIsPatientCardCollapsed] = useState(false);
+    const [isPayerScrolledOut, setIsPayerScrolledOut] = useState(false);
+    const rightColRef = useRef(null);
+
+    const handleScrollToPayerMode = () => {
+        rightColRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+        setUserPayerExpandedState(true);
+    };
 
     // In-Panel Post-Processing & Print Dispatch State (Split Screen Mode)
     const [postProcessingSession, setPostProcessingSession] = useState(null);
@@ -2592,8 +2599,16 @@ export function IntentPanel({ onVisitUpdated }) {
                                         </div>
                                     </div>
 
-                                    {/* RIGHT COLUMN: 5 Cols (Split-scroll: independent smooth scroll for Billing & Financials) */}
-                                    <div className="lg:col-span-5 flex flex-col gap-3 h-full min-h-0 overflow-y-auto pr-1">
+                                    {/* RIGHT COLUMN: 5 Cols (Unified smooth scroll for Billing & Financials) */}
+                                    <div 
+                                        id="reception-right-column"
+                                        ref={rightColRef}
+                                        onScroll={(e) => {
+                                            const scrollTop = e.currentTarget.scrollTop;
+                                            setIsPayerScrolledOut(scrollTop > 20);
+                                        }}
+                                        className="lg:col-span-5 flex flex-col gap-3 h-full min-h-0 overflow-y-auto pr-1 scroll-smooth"
+                                    >
                                         {/* Billing & Payer Mode */}
                                         <div 
                                             ref={payerModeContainerRef}
@@ -2651,14 +2666,16 @@ export function IntentPanel({ onVisitUpdated }) {
                                             />
                                         </div>
 
-                                        {/* Step 3: Financials (BillingSummary with internal scroll) */}
-                                        <div className="flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-700">
+                                        {/* Step 3: Financials (BillingSummary) */}
+                                        <div className="flex flex-col animate-in fade-in duration-700">
                                             <BillingSummary
                                                 snapshot={snapshot}
                                                 onVisitUpdated={loadSnapshot}
                                                 isCorrectionIntent={isCorrectionIntent}
                                                 isPrepaidIntent={isPrepaidIntent}
                                                 billingMode={billingMode}
+                                                isPayerScrolledOut={isPayerScrolledOut}
+                                                onScrollToPayerMode={handleScrollToPayerMode}
                                                 paymentMethod={paymentMethod}
                                                 setPaymentMethod={setPaymentMethod}
                                                 onOpenModal={setActiveModal}

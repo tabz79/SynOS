@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
-import { Tag, X, Loader2, IndianRupee, Lock, AlertCircle, Smartphone, CreditCard, Plus, ShieldCheck, Search, ChevronDown, CheckCircle2, Clock, ShieldAlert } from 'lucide-react'
+import { Tag, X, Loader2, IndianRupee, Lock, AlertCircle, Smartphone, CreditCard, Plus, ShieldCheck, Search, ChevronDown, CheckCircle2, Clock, ShieldAlert, Building2 } from 'lucide-react'
 import { ReceptionApi } from '@/api/reception'
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/context/ThemeContext'
@@ -23,7 +23,9 @@ export function BillingSummary({
     onVisitUpdated, 
     isCorrectionIntent, 
     isPrepaidIntent, 
-    billingMode = 'Standard', 
+    billingMode = 'Standard',
+    isPayerScrolledOut = false,
+    onScrollToPayerMode, 
     paymentMethod, 
     setPaymentMethod, 
     onOpenModal, 
@@ -721,16 +723,59 @@ export function BillingSummary({
     };
 
     return (
-        <div id="synos-financials-container" data-section="financials" className="flex-1 min-h-0 flex flex-col overflow-hidden space-y-3 h-full">
-            {/* Header */}
-            <div className="flex items-center justify-between shrink-0">
-                <div className="flex items-center gap-2.5">
-                    <div className={cn("w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-xs", ui.indicator)}>
+        <div id="synos-financials-container" data-section="financials" className="flex flex-col space-y-2">
+            {/* Header (Sticky at top when user scrolls down right column) */}
+            <div className={cn(
+                "sticky top-0 z-20 flex items-center justify-between py-1.5 transition-all duration-300",
+                isPayerScrolledOut 
+                    ? "bg-[#F5F8FA]/95 dark:bg-zinc-900/95 backdrop-blur-md pb-2 pt-1.5 border-b border-slate-200/80 dark:border-zinc-800/80 -mx-1 px-1 rounded-t-xl" 
+                    : "bg-transparent"
+            )}>
+                <div className="flex items-center gap-2.5 min-w-0">
+                    <div className={cn("w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-xs shrink-0", ui.indicator)}>
                         3
                     </div>
-                    <h3 className={ui.headerText}>Financials</h3>
-                    {isProcessing && <Loader2 className="w-4 h-4 animate-spin text-synos-primary" />}
+                    <h3 className={cn(ui.headerText, "shrink-0")}>Financials</h3>
+                    {isProcessing && <Loader2 className="w-4 h-4 animate-spin text-synos-primary shrink-0" />}
+
+                    {/* Animated Collapsing Payer Mode Badge (Box 2 in screenshot) */}
+                    <div className={cn(
+                        "transition-all duration-300 ease-out flex items-center min-w-0",
+                        isPayerScrolledOut 
+                            ? "opacity-100 scale-100 translate-x-0 ml-1.5 max-w-[280px]" 
+                            : "opacity-0 scale-90 -translate-x-3 pointer-events-none max-w-0 overflow-hidden ml-0"
+                    )}>
+                        <button
+                            type="button"
+                            onClick={onScrollToPayerMode}
+                            className={cn(
+                                "group px-2.5 py-1 rounded-full text-xs font-bold border transition-all duration-200 flex items-center gap-1.5 shadow-2xs active:scale-95 cursor-pointer shrink-0",
+                                isPrepaid
+                                    ? "bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/70 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800"
+                                    : isInsurance
+                                        ? "bg-purple-50 hover:bg-purple-100 text-purple-700 dark:bg-purple-950/60 dark:hover:bg-purple-900/70 dark:text-purple-300 border-purple-200 dark:border-purple-800"
+                                        : "bg-blue-50 hover:bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:hover:bg-blue-900/70 dark:text-blue-300 border-blue-200 dark:border-blue-800"
+                            )}
+                            title="Click to view or change Payer Mode"
+                        >
+                            {isPrepaid ? (
+                                <Building2 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                            ) : isInsurance ? (
+                                <ShieldCheck className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
+                            ) : (
+                                <IndianRupee className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+                            )}
+                            <span className="truncate max-w-[130px] sm:max-w-[170px]">
+                                {isPrepaid ? 'Corporate B2B (Prepaid)' : isInsurance ? 'Insurance / TPA' : 'Direct / Standard'}
+                            </span>
+                            <span className="text-[10px] font-semibold opacity-60 group-hover:opacity-100 transition-opacity">
+                                Change
+                            </span>
+                            <ChevronDown className="w-3 h-3 opacity-60 group-hover:opacity-100 transition-transform group-hover:translate-y-0.5" />
+                        </button>
+                    </div>
                 </div>
+
                 {billing.paymentStatus && (
                     <div className={cn(
                         "px-3 py-1 rounded-full text-xs sm:text-sm font-bold border tracking-normal shrink-0",
@@ -767,7 +812,7 @@ export function BillingSummary({
                 </div>
             )}
 
-            <div className={cn("relative flex-1 min-h-0 overflow-y-auto pr-1.5 sm:pr-2", ui.container)}>
+            <div className={cn("relative space-y-3", ui.container)}>
 
                 {/* 1. TOP REFERRAL & CONCESSION ACTION BAR */}
                 {(() => {
