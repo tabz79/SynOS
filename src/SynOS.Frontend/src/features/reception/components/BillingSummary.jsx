@@ -164,6 +164,30 @@ export function BillingSummary({
         setShowB2BDoctorDropdown(false);
         setB2BDoctorSearch('');
         if (!visitId || !doctorId) return;
+
+        // Check duplicate with primary doctor
+        const primaryId = primaryDoctor?.referralPartnerId || primaryDoctor?.id || snapshot?.visit?.referralPartnerId;
+        const selectedDoc = (referralPartners || []).find(p => (p.referralPartnerId || p.id) === doctorId);
+        const isSame = (primaryId && String(primaryId).toLowerCase() === String(doctorId).toLowerCase()) ||
+                       (primaryDoctor && selectedDoc && (primaryDoctor.displayName || primaryDoctor.name || '').trim().toLowerCase() === (selectedDoc.displayName || selectedDoc.name || '').trim().toLowerCase());
+
+        if (isSame) {
+            if (snapshot?.billing?.referral?.secondaryPartner || snapshot?.visit?.secondaryReferralPartner) {
+                try {
+                    await ReceptionApi.updateSecondaryReferral(visitId, null);
+                    if (onVisitUpdated) onVisitUpdated();
+                } catch (_) {}
+            }
+            window.dispatchEvent(new CustomEvent('synos:notification-hint', {
+                detail: {
+                    id: 'dup-b2b-doc',
+                    title: 'Doctor Selection Hint',
+                    message: 'Same doctor already selected above. In B2B bills, primary doctor gets billed automatically — no need to select again here.'
+                }
+            }));
+            return;
+        }
+
         setIsProcessing(true);
         try {
             await ReceptionApi.updateSecondaryReferral(visitId, doctorId);
@@ -1582,7 +1606,7 @@ export function BillingSummary({
                     );
                 })()}
 
-                {/* LIVE RECONCILER CARD (Correction / Edit Mode Only) */}
+                {/* LIVE RECONCILER CARD (Correction / Edit Mode Only - Only if diff exists) */}
                 {isCorrectionIntent && (() => {
                     if (isPrepaid) {
                         const originalGross = billing?.grossAmount || 0;
@@ -1605,50 +1629,14 @@ export function BillingSummary({
                         const currentB2BClaim = Math.max(0, currentGross - currentB2BAmt);
                         const b2bClaimDiff = currentB2BClaim - originalB2BClaim;
 
+                        if (b2bClaimDiff === 0) return null;
+
                         return (
-                            <div className={cn(
-                                "p-3.5 rounded-xl border space-y-2.5 transition-all shadow-xs animate-in fade-in duration-200",
-                                isDark ? "bg-zinc-900/60 border-zinc-800 text-zinc-200" : "bg-black/[0.04] border-black/5 text-zinc-900"
-                            )}>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 text-indigo-600 dark:text-indigo-400">
-                                        <span className="w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
-                                        Doctor / Partner Bill
-                                    </span>
-                                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20">
-                                        Billed to Doctor
-                                    </span>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-2 text-xs pt-1.5 border-t border-black/5 dark:border-white/5">
-                                    <div>
-                                        <span className="opacity-70 text-[11px] block">Previous Doctor Bill:</span>
-                                        <span className="font-mono font-bold text-sm">₹{originalB2BClaim.toLocaleString()}</span>
-                                    </div>
-                                    <div>
-                                        <span className="opacity-70 text-[11px] block">New Doctor Bill:</span>
-                                        <span className="font-mono font-bold text-sm text-indigo-600 dark:text-indigo-400">₹{currentB2BClaim.toLocaleString()}</span>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center justify-between pt-1.5 border-t border-black/5 dark:border-white/5 font-bold text-xs">
-                                    <span>Difference to Doctor:</span>
-                                    <span className={cn("font-mono text-base font-extrabold", b2bClaimDiff > 0 ? "text-indigo-600 dark:text-indigo-400" : b2bClaimDiff < 0 ? "text-emerald-600 dark:text-emerald-400" : "")}>
-                                        {b2bClaimDiff > 0 ? `+₹${b2bClaimDiff.toLocaleString()}` : b2bClaimDiff < 0 ? `-₹${Math.abs(b2bClaimDiff).toLocaleString()}` : "₹0 (No Change)"}
-                                    </span>
-                                </div>
-                                <div className="text-[10px] text-zinc-500 dark:text-zinc-400 italic">
-                                    {b2bClaimDiff > 0 
-                                        ? `* Doctor bill increases by ₹${b2bClaimDiff.toLocaleString()} (New: ₹${currentB2BClaim.toLocaleString()} vs Old: ₹${originalB2BClaim.toLocaleString()}). Lab will bill this to doctor.`
-                                        : b2bClaimDiff < 0 
-                                            ? `* Doctor bill decreases by ₹${Math.abs(b2bClaimDiff).toLocaleString()} (Credited to doctor's monthly account).`
-                                            : `* Doctor bill unchanged at ₹${currentB2BClaim.toLocaleString()}.`}
-                                </div>
-
-                                <div className="text-[11px] p-2 rounded-lg bg-black/[0.03] dark:bg-zinc-800/40 border border-black/5 dark:border-zinc-700/50 flex items-center justify-between">
-                                    <span className="text-zinc-600 dark:text-zinc-400">Collect from Patient:</span>
-                                    <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100">₹0 (Billed directly to doctor)</span>
-                                </div>
+                            <div className="p-2.5 rounded-xl border bg-indigo-50/70 dark:bg-indigo-950/40 border-indigo-200 dark:border-indigo-800/60 text-xs flex items-center justify-between shadow-2xs animate-in fade-in">
+                                <span className="font-bold text-indigo-900 dark:text-indigo-200">Doctor Bill Revision:</span>
+                                <span className="font-mono font-bold text-indigo-700 dark:text-indigo-300">
+                                    {b2bClaimDiff > 0 ? `+₹${b2bClaimDiff.toLocaleString()}` : `-₹${Math.abs(b2bClaimDiff).toLocaleString()}`}
+                                </span>
                             </div>
                         );
                     }
@@ -1933,7 +1921,12 @@ export function BillingSummary({
                             {(() => {
                                 const primaryDoctor = snapshot?.billing?.referral?.partner || snapshot?.visit?.referralPartner;
                                 const overriddenDoctor = snapshot?.billing?.referral?.secondaryPartner || snapshot?.visit?.secondaryReferralPartner;
-                                const isOverridden = Boolean(overriddenDoctor);
+                                const isSameAsPrimary = Boolean(overriddenDoctor && primaryDoctor && (
+                                    (overriddenDoctor.referralPartnerId && (overriddenDoctor.referralPartnerId === primaryDoctor.referralPartnerId || overriddenDoctor.referralPartnerId === primaryDoctor.id)) ||
+                                    (overriddenDoctor.id && (overriddenDoctor.id === primaryDoctor.id || overriddenDoctor.id === primaryDoctor.referralPartnerId)) ||
+                                    ((overriddenDoctor.displayName || overriddenDoctor.name) && (overriddenDoctor.displayName || overriddenDoctor.name).trim().toLowerCase() === (primaryDoctor.displayName || primaryDoctor.name).trim().toLowerCase())
+                                ));
+                                const isOverridden = Boolean(overriddenDoctor) && !isSameAsPrimary;
 
                                 return (
                                     <div className={cn(

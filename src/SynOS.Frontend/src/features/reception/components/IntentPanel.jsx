@@ -97,6 +97,46 @@ export function IntentPanel({ onVisitUpdated }) {
     const [isPatientCardCollapsed, setIsPatientCardCollapsed] = useState(false);
     const [isPayerScrolledOut, setIsPayerScrolledOut] = useState(false);
     const rightColRef = useRef(null);
+    const [activeHints, setActiveHints] = useState([]);
+
+    // iOS Floating Notification Center Listener
+    useEffect(() => {
+        const handleHint = (e) => {
+            const { id, title, message } = e.detail || {};
+            if (!message) return;
+            setActiveHints(prev => {
+                const filtered = prev.filter(h => h.id !== id);
+                return [{ id: id || String(Date.now()), title: title || 'SynOS Hint', message, timestamp: new Date() }, ...filtered].slice(0, 5);
+            });
+        };
+        window.addEventListener('synos:notification-hint', handleHint);
+        return () => window.removeEventListener('synos:notification-hint', handleHint);
+    }, []);
+
+    // Check on snapshot load if duplicate doctor is already present
+    useEffect(() => {
+        if (!snapshot) return;
+        const primDoc = snapshot?.billing?.referral?.partner || snapshot?.visit?.referralPartner;
+        const secDoc = snapshot?.billing?.referral?.secondaryPartner || snapshot?.visit?.secondaryReferralPartner;
+        if (primDoc && secDoc) {
+            const primId = primDoc.referralPartnerId || primDoc.id;
+            const secId = secDoc.referralPartnerId || secDoc.id;
+            const primName = (primDoc.displayName || primDoc.name || '').trim().toLowerCase();
+            const secName = (secDoc.displayName || secDoc.name || '').trim().toLowerCase();
+            if ((primId && secId && String(primId).toLowerCase() === String(secId).toLowerCase()) || (primName && secName && primName === secName)) {
+                const isB2B = isPrepaid || billingMode === 'PrepaidPartner';
+                window.dispatchEvent(new CustomEvent('synos:notification-hint', {
+                    detail: {
+                        id: isB2B ? 'dup-b2b-doc' : 'dup-rmp-doc',
+                        title: isB2B ? 'Doctor Selection Hint' : 'Referral Doctor Hint',
+                        message: isB2B
+                            ? 'Same doctor already selected above. In B2B bills, primary doctor gets billed automatically — no need to select again here.'
+                            : 'Same doctor already added as primary. RMP is only needed if a second doctor or clinic is involved.'
+                    }
+                }));
+            }
+        }
+    }, [snapshot, isPrepaid, billingMode]);
 
     const handleScrollToPayerMode = () => {
         rightColRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1604,6 +1644,94 @@ export function IntentPanel({ onVisitUpdated }) {
     if (isPostProcessingView) { panelTitle = "Visit Finalized & Print Dispatch"; }
 
     return (
+        <>
+            {/* iOS Floating Notification & Audit Rail (Left 15% Viewport) */}
+            {(hasPatient || isCorrectionIntent) && (
+                <div className="fixed left-3 top-3 bottom-3 w-[calc(15vw-24px)] min-w-[190px] max-w-[270px] hidden xl:flex flex-col gap-2.5 z-40 pointer-events-none select-none overflow-y-auto no-scrollbar">
+                    {/* Active Hints (Floating iOS style) */}
+                    {activeHints.map(hint => (
+                        <div 
+                            key={hint.id}
+                            className="pointer-events-auto rounded-2xl p-3 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-[0_8px_24px_rgba(15,35,60,0.12)] space-y-1.5 animate-in fade-in slide-in-from-left-4 duration-300 relative group"
+                        >
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                    <div className="w-5 h-5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs shrink-0">
+                                        💡
+                                    </div>
+                                    <span className="text-[11px] font-bold text-slate-800 dark:text-zinc-200 truncate">
+                                        {hint.title}
+                                    </span>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setActiveHints(prev => prev.filter(h => h.id !== hint.id))}
+                                    className="text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 p-0.5 rounded cursor-pointer transition-colors shrink-0"
+                                    title="Dismiss"
+                                >
+                                    <X className="w-3.5 h-3.5" />
+                                </button>
+                            </div>
+                            <p className="text-xs text-slate-600 dark:text-zinc-300 leading-snug">
+                                {hint.message}
+                            </p>
+                            <div className="text-[9px] font-mono text-slate-400 dark:text-zinc-500 text-right">
+                                just now
+                            </div>
+                        </div>
+                    ))}
+
+                    {/* Audit History Stack */}
+                    {snapshot?.correctionHistory && snapshot.correctionHistory.length > 0 && (
+                        <div className="space-y-2 pointer-events-auto mt-1">
+                            <div className="flex items-center justify-between px-1.5 py-0.5 text-[11px] font-bold text-slate-500 dark:text-zinc-400">
+                                <span className="flex items-center gap-1.5">
+                                    <History className="w-3.5 h-3.5 text-synos-primary" />
+                                    Audit History ({snapshot.correctionHistory.length})
+                                </span>
+                            </div>
+                            <div className="space-y-2">
+                                {snapshot.correctionHistory.map((h, idx) => {
+                                    let parsedPayload = null;
+                                    try {
+                                        if (h.payloadJson) parsedPayload = JSON.parse(h.payloadJson);
+                                    } catch (_) {}
+
+                                    return (
+                                        <div 
+                                            key={h.correctionId || idx}
+                                            className="rounded-2xl p-2.5 bg-white/75 dark:bg-zinc-900/75 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-[0_4px_16px_rgba(15,35,60,0.06)] space-y-1 transition-all hover:bg-white/90 dark:hover:bg-zinc-900/90"
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-1.5 min-w-0">
+                                                    <div className="w-4 h-4 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-[9px] shrink-0">
+                                                        ✓
+                                                    </div>
+                                                    <span className="text-[11px] font-bold text-slate-900 dark:text-white truncate">
+                                                        {h.createdByName || "Staff Desk"}
+                                                    </span>
+                                                </div>
+                                                <span className="text-[9px] font-mono text-slate-400 dark:text-zinc-500 shrink-0">
+                                                    {new Date(h.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                                                </span>
+                                            </div>
+                                            <div className="text-[11px] font-semibold text-slate-800 dark:text-zinc-200 leading-snug">
+                                                {h.actionType ? String(h.actionType).replace(/([A-Z])/g, ' ').trim() : "Visit Amended"}
+                                            </div>
+                                            {h.reason && (
+                                                <p className="text-[10px] text-slate-500 dark:text-zinc-400 italic line-clamp-2">
+                                                    "{h.reason}"
+                                                </p>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+
         <div 
             ref={panelRef} 
             className={cn(
@@ -2709,100 +2837,6 @@ export function IntentPanel({ onVisitUpdated }) {
                                     </div>
                                 </div>
 
-                                {/* Audit & Amendment History (Forensic Visibility) */}
-                                {snapshot?.correctionHistory && snapshot.correctionHistory.length > 0 && (
-                                    <div className={cn(
-                                        "p-4 rounded-lg border space-y-3 transition-all",
-                                        isDark ? "bg-zinc-900/60 border-zinc-800 text-zinc-200" : "bg-black/[0.04] border-black/5 text-zinc-900 shadow-inner"
-                                    )}>
-                                        <div 
-                                            onClick={() => setIsHistoryOpen(!isHistoryOpen)}
-                                            className="flex items-center justify-between cursor-pointer select-none"
-                                        >
-                                            <div className="flex items-center gap-2">
-                                                <History className="w-4 h-4 text-synos-primary" />
-                                                <span className="type-section-header font-bold text-xs">
-                                                    Amendment & Audit History
-                                                </span>
-                                                <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-synos-primary/10 text-synos-primary border border-synos-primary/20">
-                                                    {snapshot.correctionHistory.length} {snapshot.correctionHistory.length === 1 ? 'Record' : 'Records'}
-                                                </span>
-                                            </div>
-                                            <button type="button" className="text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300">
-                                                {isHistoryOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                                            </button>
-                                        </div>
-
-                                        {isHistoryOpen && (
-                                            <div className="space-y-2.5 pt-2 border-t border-black/5 dark:border-white/5 animate-in fade-in duration-200">
-                                                {snapshot.correctionHistory.map((h, idx) => {
-                                                    let parsedPayload = null;
-                                                    try {
-                                                        if (h.payloadJson) parsedPayload = JSON.parse(h.payloadJson);
-                                                    } catch (_) {}
-
-                                                    const amountDiff = h.newAmount - h.previousAmount;
-
-                                                    return (
-                                                        <div 
-                                                            key={h.correctionId || idx}
-                                                            className={cn(
-                                                                "p-3 rounded-lg border text-xs space-y-1.5 transition-all",
-                                                                isDark ? "bg-zinc-950/40 border-zinc-800" : "bg-white/80 border-black/5 shadow-2xs"
-                                                            )}
-                                                        >
-                                                            <div className="flex items-center justify-between">
-                                                                <div className="flex items-center gap-1.5 font-bold">
-                                                                    <span className="text-zinc-900 dark:text-zinc-100">{h.createdByName || "Staff Desk"}</span>
-                                                                    <span className="text-zinc-400 font-normal">•</span>
-                                                                    <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400 font-normal">
-                                                                        {new Date(h.createdAt).toLocaleString('en-IN', {
-                                                                            day: '2-digit', month: 'short', year: 'numeric',
-                                                                            hour: '2-digit', minute: '2-digit', hour12: true
-                                                                        })}
-                                                                    </span>
-                                                                </div>
-                                                                <div className="font-mono text-xs font-bold">
-                                                                    <span>₹{h.previousAmount?.toLocaleString()} → ₹{h.newAmount?.toLocaleString()}</span>
-                                                                    {amountDiff !== 0 && (
-                                                                        <span className={cn("ml-1.5", amountDiff > 0 ? "text-indigo-600 dark:text-indigo-400" : "text-emerald-600 dark:text-emerald-400")}>
-                                                                            ({amountDiff > 0 ? `+₹${amountDiff.toLocaleString()}` : `-₹${Math.abs(amountDiff).toLocaleString()}`})
-                                                                        </span>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-
-                                                            <div className="text-xs text-zinc-700 dark:text-zinc-300">
-                                                                <span className="font-semibold text-zinc-500 dark:text-zinc-400 mr-1">Reason:</span>
-                                                                <span>{h.reason || "Visit amended via Reception"}</span>
-                                                            </div>
-
-                                                            {parsedPayload && (
-                                                                <div className="flex flex-wrap gap-1.5 pt-1 text-xs">
-                                                                    {parsedPayload.addTestCodes?.length > 0 && (
-                                                                        <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 font-medium">
-                                                                            +Added: {parsedPayload.addTestCodes.join(", ")}
-                                                                        </span>
-                                                                    )}
-                                                                    {parsedPayload.removeOrderIds?.length > 0 && (
-                                                                        <span className="px-1.5 py-0.5 rounded bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20 font-medium">
-                                                                            -Removed {parsedPayload.removeOrderIds.length} {parsedPayload.removeOrderIds.length === 1 ? 'test' : 'tests'}
-                                                                        </span>
-                                                                    )}
-                                                                    {parsedPayload.settlementAction && parsedPayload.settlementAction !== 'None' && (
-                                                                        <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 font-medium">
-                                                                            Settlement: {parsedPayload.settlementAction === 'RefundIssued' ? 'Refund Cash Disbursed' : 'Additional Payment Collected'}
-                                                                        </span>
-                                                                    )}
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
                             </div>
                         )}
                     </>
@@ -3853,5 +3887,6 @@ export function IntentPanel({ onVisitUpdated }) {
                 </div>
             )}
         </div >
+        </>
     )
 }

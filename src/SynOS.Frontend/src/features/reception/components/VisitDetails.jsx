@@ -108,9 +108,17 @@ export function VisitDetails({
               }
             : snapshot?.billing?.referral?.partner);
 
-    const effectiveSecondaryPartner = isCorrectionIntent && stagedSecondaryPartnerId !== undefined
+    const rawSecondaryPartner = isCorrectionIntent && stagedSecondaryPartnerId !== undefined
         ? (stagedSecondaryPartnerId ? (referralPartners.find(p => (p.referralPartnerId || p.id) === stagedSecondaryPartnerId) || snapshot?.billing?.referral?.secondaryPartner) : null)
         : snapshot?.billing?.referral?.secondaryPartner;
+
+    const isSecondarySameAsPrimary = Boolean(rawSecondaryPartner && effectivePartner && (
+        (rawSecondaryPartner.referralPartnerId && (rawSecondaryPartner.referralPartnerId === effectivePartner.referralPartnerId || rawSecondaryPartner.referralPartnerId === effectivePartner.id)) ||
+        (rawSecondaryPartner.id && (rawSecondaryPartner.id === effectivePartner.id || rawSecondaryPartner.id === effectivePartner.referralPartnerId)) ||
+        ((rawSecondaryPartner.displayName || rawSecondaryPartner.name) && (rawSecondaryPartner.displayName || rawSecondaryPartner.name).trim().toLowerCase() === (effectivePartner.displayName || effectivePartner.name).trim().toLowerCase())
+    ));
+
+    const effectiveSecondaryPartner = isSecondarySameAsPrimary ? null : rawSecondaryPartner;
 
     const hasReferralPartner = !!effectivePartner;
     const referralDraft = snapshot?.billing?.referral?.draft;
@@ -439,6 +447,32 @@ export function VisitDetails({
     // COMMAND: Apply Secondary Referral Doctor (RMP)
     const handleApplySecondaryReferral = async (secondaryPartnerId) => {
         if (!visitId) return;
+
+        // Check duplicate with primary doctor
+        const primaryId = effectivePartner?.referralPartnerId || effectivePartner?.id || snapshot?.visit?.referralPartnerId;
+        const selectedPartner = (referralPartners || []).find(p => (p.referralPartnerId || p.id) === secondaryPartnerId);
+        const isSame = (primaryId && secondaryPartnerId && String(primaryId).toLowerCase() === String(secondaryPartnerId).toLowerCase()) ||
+                       (effectivePartner && selectedPartner && (effectivePartner.displayName || effectivePartner.name || '').trim().toLowerCase() === (selectedPartner.displayName || selectedPartner.name || '').trim().toLowerCase());
+
+        if (isSame) {
+            if (isCorrectionIntent && onStageSecondaryReferral) {
+                onStageSecondaryReferral(null);
+            } else {
+                try {
+                    await ReceptionApi.updateSecondaryReferral(visitId, null);
+                    if (onVisitUpdated) onVisitUpdated();
+                } catch (_) {}
+            }
+            window.dispatchEvent(new CustomEvent('synos:notification-hint', {
+                detail: {
+                    id: 'dup-rmp-doc',
+                    title: 'Referral Doctor Hint',
+                    message: 'Same doctor already added as primary. RMP is only needed if a second doctor or clinic is involved.'
+                }
+            }));
+            return;
+        }
+
         if (isCorrectionIntent && onStageSecondaryReferral) {
             onStageSecondaryReferral(secondaryPartnerId);
             return;
@@ -1212,7 +1246,7 @@ export function VisitDetails({
                                         <Plus className="w-4 h-4" /> Add RMP
                                     </button>
                                 </div>
-                                {snapshot?.billing?.referral?.secondaryPartner ? (
+                                {effectiveSecondaryPartner ? (
                                     <div 
                                         id="card-secondary-doctor"
                                         tabIndex={0}
@@ -1241,14 +1275,14 @@ export function VisitDetails({
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2">
                                                 <span className="truncate tracking-normal text-base font-bold text-slate-900 dark:text-white">
-                                                    {snapshot.billing.referral.secondaryPartner.displayName}
+                                                    {effectiveSecondaryPartner.displayName || effectiveSecondaryPartner.name}
                                                 </span>
                                                 <span className="text-xs px-2.5 py-0.5 rounded-md bg-[#E1F1E8] text-[#245E49] dark:bg-emerald-950/40 dark:text-emerald-300 font-bold border border-[#BCE2CD] dark:border-emerald-800 uppercase">
-                                                    {snapshot.billing.referral.secondaryPartner.partnerType || 'RMP'}
+                                                    {effectiveSecondaryPartner.partnerType || 'RMP'}
                                                 </span>
                                             </div>
                                             <div className="text-sm text-[#3D705C] dark:text-emerald-400/90 font-medium mt-0.5">
-                                                Commission Cut: {snapshot.billing.referral.secondaryPartner.commissionCutPercentage || 0}% • All referral logic & payouts route exclusively to this doctor
+                                                Commission Cut: {effectiveSecondaryPartner.commissionCutPercentage || 0}% • All referral logic & payouts route exclusively to this doctor
                                             </div>
                                         </div>
                                         {canEditReferral && (
