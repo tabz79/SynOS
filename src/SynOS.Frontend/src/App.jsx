@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
+import { SystemBar } from '@/components/layout/SystemBar'
 import { AuthProvider, useAuth } from '@/context/AuthContext'
 import { PrintOrchestratorProvider } from '@/context/PrintOrchestratorContext'
 import { GlobalFilterProvider } from '@/context/GlobalFilterContext'
