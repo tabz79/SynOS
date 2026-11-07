@@ -1475,6 +1475,17 @@ export function IntentPanel({ onVisitUpdated }) {
     const isFullySettled = actualBalanceDue <= 0.01;
     const isFullDueVisit = postPaid === 0 && actualBalanceDue > 0;
 
+    const isDraftVisit = intent === 'create' || 
+                         (!snapshot?.billing?.isLocked && !isVisitFinalized && 
+                          (snapshot?.visit?.operationalStatus === 'Draft' || snapshot?.visit?.status === 'Draft' || String(snapshot?.visit?.token || snapshot?.visit?.visitToken || '').toUpperCase().startsWith('D-')));
+
+    const canShowVisitCorrection = Boolean(
+        snapshot?.visit?.visitId && 
+        !isCorrectionIntent && 
+        !isDraftVisit && 
+        (isVisitFinalized || snapshot?.billing?.isLocked || snapshot?.visit?.isFinalized)
+    );
+
     // Auto-focus Thermal (80mm) format switcher when entering Visit Summary view
     useEffect(() => {
         if (!isOpen || !isPostProcessingView) return;
@@ -1646,35 +1657,35 @@ export function IntentPanel({ onVisitUpdated }) {
         <>
             {/* iOS Floating Notification & Audit Rail (Left 15% Viewport) */}
             {(hasPatient || isCorrectionIntent) && (
-                <div className="fixed left-3 top-3 bottom-3 w-[calc(15vw-24px)] min-w-[190px] max-w-[270px] hidden xl:flex flex-col gap-2.5 z-40 pointer-events-none select-none overflow-y-auto no-scrollbar">
+                <div className="fixed left-3.5 right-[85.5vw] top-[64px] bottom-4 hidden xl:flex flex-col gap-3 z-40 pointer-events-none select-none overflow-y-auto no-scrollbar">
                     {/* Active Hints (Floating iOS style) */}
                     {activeHints.map(hint => (
                         <div 
                             key={hint.id}
-                            className="pointer-events-auto rounded-2xl p-3 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-[0_8px_24px_rgba(15,35,60,0.12)] space-y-1.5 animate-in fade-in slide-in-from-left-4 duration-300 relative group"
+                            className="pointer-events-auto rounded-2xl p-4 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/80 dark:border-white/10 shadow-[0_12px_32px_rgba(15,35,60,0.16)] space-y-2 animate-in fade-in slide-in-from-left-4 duration-300 relative group"
                         >
                             <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-1.5 min-w-0">
-                                    <div className="w-5 h-5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs shrink-0">
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <div className="w-6 h-6 rounded-lg bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs shrink-0">
                                         💡
                                     </div>
-                                    <span className="text-[11px] font-bold text-slate-800 dark:text-zinc-200 truncate">
+                                    <span className="text-sm font-bold text-slate-900 dark:text-zinc-100 truncate">
                                         {hint.title}
                                     </span>
                                 </div>
                                 <button
                                     type="button"
                                     onClick={() => setActiveHints(prev => prev.filter(h => h.id !== hint.id))}
-                                    className="text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 p-0.5 rounded cursor-pointer transition-colors shrink-0"
+                                    className="text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer transition-colors shrink-0"
                                     title="Dismiss"
                                 >
-                                    <X className="w-3.5 h-3.5" />
+                                    <X className="w-4 h-4" />
                                 </button>
                             </div>
-                            <p className="text-xs text-slate-600 dark:text-zinc-300 leading-snug">
+                            <p className="text-xs sm:text-[13px] font-medium text-slate-700 dark:text-zinc-200 leading-relaxed">
                                 {hint.message}
                             </p>
-                            <div className="text-[9px] font-mono text-slate-400 dark:text-zinc-500 text-right">
+                            <div className="text-[10px] font-mono text-slate-400 dark:text-zinc-400 text-right">
                                 just now
                             </div>
                         </div>
@@ -1683,9 +1694,9 @@ export function IntentPanel({ onVisitUpdated }) {
                     {/* Audit History Stack */}
                     {snapshot?.correctionHistory && snapshot.correctionHistory.length > 0 && (
                         <div className="space-y-2 pointer-events-auto mt-1">
-                            <div className="flex items-center justify-between px-1.5 py-0.5 text-[11px] font-bold text-slate-500 dark:text-zinc-400">
+                            <div className="flex items-center justify-between px-1.5 py-0.5 text-xs font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wider">
                                 <span className="flex items-center gap-1.5">
-                                    <History className="w-3.5 h-3.5 text-synos-primary" />
+                                    <History className="w-4 h-4 text-synos-primary" />
                                     Audit History ({snapshot.correctionHistory.length})
                                 </span>
                             </div>
@@ -1693,30 +1704,30 @@ export function IntentPanel({ onVisitUpdated }) {
                                 {snapshot.correctionHistory.map((h, idx) => (
                                     <div 
                                         key={h.correctionId || idx}
-                                        className="rounded-2xl p-2.5 bg-white/75 dark:bg-zinc-900/75 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-[0_4px_16px_rgba(15,35,60,0.06)] space-y-1 transition-all hover:bg-white/90 dark:hover:bg-zinc-900/90"
+                                        className="rounded-2xl p-3 bg-white/85 dark:bg-zinc-900/85 backdrop-blur-xl border border-white/70 dark:border-white/10 shadow-[0_6px_20px_rgba(15,35,60,0.08)] space-y-1.5 transition-all hover:bg-white/95 dark:hover:bg-zinc-900/95"
                                     >
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-1.5 min-w-0">
-                                                    <div className="w-4 h-4 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-[9px] shrink-0">
-                                                        ✓
-                                                    </div>
-                                                    <span className="text-[11px] font-bold text-slate-900 dark:text-white truncate">
-                                                        {h.createdByName || "Staff Desk"}
-                                                    </span>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-1.5 min-w-0">
+                                                <div className="w-4 h-4 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-[9px] shrink-0">
+                                                    ✓
                                                 </div>
-                                                <span className="text-[9px] font-mono text-slate-400 dark:text-zinc-500 shrink-0">
-                                                    {new Date(h.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                                                <span className="text-xs sm:text-[13px] font-bold text-slate-900 dark:text-white truncate">
+                                                    {h.createdByName || "Staff Desk"}
                                                 </span>
                                             </div>
-                                            <div className="text-[11px] font-semibold text-slate-800 dark:text-zinc-200 leading-snug">
-                                                {h.actionType ? String(h.actionType).replace(/([A-Z])/g, ' ').trim() : "Visit Amended"}
-                                            </div>
-                                            {h.reason && (
-                                                <p className="text-[10px] text-slate-500 dark:text-zinc-400 italic line-clamp-2">
-                                                    "{h.reason}"
-                                                </p>
-                                            )}
+                                            <span className="text-[10px] font-mono text-slate-400 dark:text-zinc-500 shrink-0">
+                                                {new Date(h.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                                            </span>
                                         </div>
+                                        <div className="text-xs font-semibold text-slate-800 dark:text-zinc-200 leading-snug">
+                                            {h.actionType ? String(h.actionType).replace(/([A-Z])/g, ' ').trim() : "Visit Amended"}
+                                        </div>
+                                        {h.reason && (
+                                            <p className="text-[11px] text-slate-500 dark:text-zinc-400 italic line-clamp-2">
+                                                "{h.reason}"
+                                            </p>
+                                        )}
+                                    </div>
                                 ))}
                             </div>
                         </div>
@@ -1760,7 +1771,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                 </span>
                             )}
                         </h2>
-                        {snapshot?.visit?.visitId && !isCorrectionIntent && !isPostProcessingView && (
+                        {canShowVisitCorrection && !isPostProcessingView && (
                             <button
                                 type="button"
                                 id="btn-header-visit-correction"
@@ -2853,19 +2864,21 @@ export function IntentPanel({ onVisitUpdated }) {
                                     </span>
                                 )}
                             </h2>
-                            {snapshot?.visit?.visitId && !isCorrectionIntent && (
-                                <button
-                                    type="button"
-                                    id="btn-footer-visit-correction"
-                                    onClick={() => openCorrectionIntent(snapshot.visit.visitId)}
-                                    className="px-2.5 py-1 rounded-lg text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/50 border border-blue-200 dark:border-blue-800 flex items-center gap-1 transition-all active:scale-95 cursor-pointer shadow-2xs"
-                                    title="Open Visit Correction to amend tests, tariffs, or discounts with audit trail"
-                                >
-                                    <Edit3 className="w-3.5 h-3.5" />
-                                    <span>Visit Correction</span>
-                                </button>
+                            {canShowVisitCorrection && (
+                                <>
+                                    <button
+                                        type="button"
+                                        id="btn-footer-visit-correction"
+                                        onClick={() => openCorrectionIntent(snapshot.visit.visitId)}
+                                        className="px-2.5 py-1 rounded-lg text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/50 border border-blue-200 dark:border-blue-800 flex items-center gap-1 transition-all active:scale-95 cursor-pointer shadow-2xs"
+                                        title="Open Visit Correction to amend tests, tariffs, or discounts with audit trail"
+                                    >
+                                        <Edit3 className="w-3.5 h-3.5" />
+                                        <span>Visit Correction</span>
+                                    </button>
+                                    <div className="h-5 w-px bg-slate-300 dark:bg-zinc-700 mx-1 hidden sm:block" />
+                                </>
                             )}
-                            <div className="h-5 w-px bg-slate-300 dark:bg-zinc-700 mx-1 hidden sm:block" />
                         </div>
                     )}
 
