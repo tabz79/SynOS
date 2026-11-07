@@ -34,11 +34,23 @@ import { DynamicDocumentRenderer } from './components/documents/DynamicDocumentR
 import { CorporateTerminal } from './CorporateTerminal';
 import { useGlobalFilter } from '@/context/GlobalFilterContext';
 import { StandardFilterBar } from '@/components/layout/StandardFilterBar';
+import { useAuth } from '@/context/AuthContext';
 
 export function InsuranceTerminal({ forcedTab }) {
     const { tab: paramTab = 'overview' } = useParams();
     const tab = forcedTab || paramTab;
     const navigate = useNavigate();
+    const { user } = useAuth();
+    const isReceptionView = user?.role === 'Receptionist' || 
+                            (typeof window !== 'undefined' && window.location.search.includes('source=reception')) || 
+                            (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('synos_finance_source') === 'reception');
+
+    useEffect(() => {
+        if (isReceptionView && tab === 'overview') {
+            navigate('/finance/insurance/empanelment', { replace: true });
+        }
+    }, [isReceptionView, tab]);
+
     const { theme } = useTheme();
     const isDark = theme === 'dark';
     const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
@@ -55,7 +67,7 @@ export function InsuranceTerminal({ forcedTab }) {
     const [editingCompany, setEditingCompany] = useState(null);
     const [isSettlementModalOpen, setIsSettlementModalOpen] = useState(false);
 
-    const tabs = [
+    const rawTabs = [
         { id: 'overview', label: 'Overview', icon: LayoutDashboard },
         { id: 'empanelment', label: 'Insurance Companies', icon: Building2 },
         { id: 'packages', label: 'Packages & Pricing', icon: Package },
@@ -63,6 +75,8 @@ export function InsuranceTerminal({ forcedTab }) {
         { id: 'receivables', label: 'Pending Dues', icon: ArrowDownLeft },
         { id: 'settlements', label: 'Settlements', icon: History }
     ];
+
+    const tabs = isReceptionView ? rawTabs.filter(t => t.id !== 'overview') : rawTabs;
 
     const loadData = async () => {
         if (companies.length > 0 || claims.length > 0) {

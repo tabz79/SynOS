@@ -430,6 +430,49 @@ namespace SynOS.Services
             return tokenHandler.WriteToken(token);
         }
 
+        public async Task<IEnumerable<BranchSummaryDto>> GetBranchesForUserAsync(Guid userId)
+        {
+            var user = await _context.Users
+                .Include(u => u.UserRoles)
+                .ThenInclude(ur => ur.Role)
+                .FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (user == null) return Enumerable.Empty<BranchSummaryDto>();
+
+            var isAdmin = user.UserRoles.Any(ur => 
+                ur.Role.Name.Equals("Administrator", StringComparison.OrdinalIgnoreCase) || 
+                ur.Role.Name.Equals("Admin", StringComparison.OrdinalIgnoreCase) ||
+                ur.Role.Name.Equals("SystemAdmin", StringComparison.OrdinalIgnoreCase));
+
+            if (isAdmin)
+            {
+                return await _context.Branches
+                    .Where(b => b.IsActive)
+                    .OrderBy(b => b.Name)
+                    .Select(b => new BranchSummaryDto { BranchId = b.BranchId, Name = b.Name })
+                    .ToListAsync();
+            }
+
+            var assigned = await _context.UserBranchRoles
+                .Include(ubr => ubr.Branch)
+                .Where(ubr => ubr.UserId == userId && ubr.Branch.IsActive)
+                .OrderBy(ubr => ubr.Branch.Name)
+                .Select(ubr => new BranchSummaryDto { BranchId = ubr.Branch.BranchId, Name = ubr.Branch.Name })
+                .Distinct()
+                .ToListAsync();
+
+            if (assigned.Count == 0 && user.DefaultBranchId.HasValue && user.DefaultBranchId.Value != Guid.Empty)
+            {
+                var defaultBranch = await _context.Branches
+                    .Where(b => b.BranchId == user.DefaultBranchId.Value && b.IsActive)
+                    .Select(b => new BranchSummaryDto { BranchId = b.BranchId, Name = b.Name })
+                    .ToListAsync();
+                return defaultBranch;
+            }
+
+            return assigned;
+        }
+
         private RefreshToken GenerateRefreshToken(string? ipAddress)
         {
             using (var randomNumberGenerator = RandomNumberGenerator.Create())

@@ -435,6 +435,17 @@ export const RevenueOverviewTab = ({ stats, onRefresh, presetRange, setPresetRan
 export const RevenueTerminal = () => {
   const { tab = 'overview' } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isReceptionView = user?.role === 'Receptionist' || 
+                          (typeof window !== 'undefined' && window.location.search.includes('source=reception')) || 
+                          (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('synos_finance_source') === 'reception');
+
+  useEffect(() => {
+    if (isReceptionView && tab === 'overview') {
+      navigate('/finance/revenue/bills', { replace: true });
+    }
+  }, [isReceptionView, tab]);
+
   const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
   const [stats, setStats] = useState(null);
   const [isInitialLoading, setIsInitialLoading] = useState(true);
@@ -483,7 +494,7 @@ export const RevenueTerminal = () => {
     }
   }, [tab]);
 
-  const tabs = [
+  const rawTabs = [
     { id: 'overview', label: 'Overview', icon: LayoutDashboard },
     { id: 'bills', label: 'Bills & Collections', icon: IndianRupee },
     { id: 'dues', label: 'Due Bills', icon: AlertCircle },
@@ -494,6 +505,8 @@ export const RevenueTerminal = () => {
     { id: 'history', label: 'Collection History', icon: History },
     { id: 'drawers', label: 'Cash Drawer Ledgers', icon: Wallet }
   ];
+
+  const tabs = isReceptionView ? rawTabs.filter(t => t.id !== 'overview') : rawTabs;
 
   const tabTitles = {
     overview: {

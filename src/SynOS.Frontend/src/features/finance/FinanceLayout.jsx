@@ -22,6 +22,16 @@ export function FinanceLayout() {
     const { user } = useAuth();
     const location = useLocation();
 
+    const isReceptionView = user?.role === 'Receptionist' || 
+                            location.search.includes('source=reception') || 
+                            sessionStorage.getItem('synos_finance_source') === 'reception';
+
+    React.useEffect(() => {
+        if (location.search.includes('source=reception')) {
+            sessionStorage.setItem('synos_finance_source', 'reception');
+        }
+    }, [location.search]);
+
     const departments = [
         {
             name: "Overview",
@@ -159,39 +169,41 @@ export function FinanceLayout() {
             <SystemBar syncStatus="Synced" />
 
             <div className="flex flex-1 min-h-0 overflow-hidden relative z-10">
-                {/* Sidebar - Frosted Light Mode Model */}
-                <aside 
-                    style={{
-                        backgroundImage: `url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAt66YlAAAAB3RSTlMAo7S066u0v76zAAABJklEQVQ4jXWSwW7DIAyGvRNoV9HeIdp7B2nvHaK9d7D27lX836VpY6t0p8oHicDHP4Z99qGf96HvX+h7NfSmX8U8z9M0z6+P/m8X6fB6L78XpX4X5X4O6fc8l7e8n+T9KO87ed+m77pP33Wfvuu6T991nb7rum/ed5+87z55333yvvvkfffJ++6T990n77pP33Wfvus6fdd13rrvu67rvXXfd13ne+u+77rO99Z933Wdt67rtnXdt67rtnWdt67rtjW999Y9ve9997mPu8997uPus9fZZ6+zz15nn73OPnudvU9f0+v0Nb1OX9Pr9DW9Tm9O9vTmaE5vjua09f7o/db7rff7f9H3v6XvP9TzL/X+U8+/1fMv9fw7fQ==")`,
-                        backgroundBlendMode: 'overlay',
-                        backgroundRepeat: 'repeat'
-                    }}
-                    className="w-72 border-r dark:border-zinc-900 border-zinc-200 dark:bg-zinc-950 bg-gradient-to-b from-white/98 to-zinc-50/95 flex flex-col relative"
-                >
-                    {/* Interior Highlighting (Edge Refraction) */}
-                    <div className="absolute inset-0 border-r border-white/40 pointer-events-none" />
+                {/* Sidebar - Frosted Light Mode Model (Hidden in Reception View for full-width workspace) */}
+                {!isReceptionView && (
+                    <aside 
+                        style={{
+                            backgroundImage: `url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAt66YlAAAAB3RSTlMAo7S066u0v76zAAABJklEQVQ4jXWSwW7DIAyGvRNoV9HeIdp7B2nvHaK9d7D27lX836VpY6t0p8oHicDHP4Z99qGf96HvX+h7NfSmX8U8z9M0z6+P/m8X6fB6L78XpX4X5X4O6fc8l7e8n+T9KO87ed+m77pP33Wfvuu6T991nb7rum/ed5+87z55333yvvvkfffJ++6T990n77pP33Wfvus6fdd13rrvu67rvXXfd13ne+u+77rO99Z933Wdt67rtnXdt67rtnWdt67rtjW999Y9ve9997mPu8997uPus9fZZ6+zz15nn73OPnudvU9f0+v0Nb1OX9Pr9DW9Tm9O9vTmaE5vjua09f7o/db7rff7f9H3v6XvP9TzL/X+U8+/1fMv9fw7fQ==")`,
+                            backgroundBlendMode: 'overlay',
+                            backgroundRepeat: 'repeat'
+                        }}
+                        className="w-72 border-r dark:border-zinc-900 border-zinc-200 dark:bg-zinc-950 bg-gradient-to-b from-white/98 to-zinc-50/95 flex flex-col relative shrink-0"
+                    >
+                        {/* Interior Highlighting (Edge Refraction) */}
+                        <div className="absolute inset-0 border-r border-white/40 pointer-events-none" />
 
-                    <div className="flex-1 overflow-y-auto p-4 pt-6 space-y-1 relative z-10">
-                        <div className="px-3 pb-4">
-                            <h2 className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-600">Finance Operations</h2>
+                        <div className="flex-1 overflow-y-auto p-4 pt-6 space-y-1 relative z-10">
+                            <div className="px-3 pb-4">
+                                <h2 className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 dark:text-zinc-600">Finance Operations</h2>
+                            </div>
+                            {departments.map((dept) => (
+                                <DepartmentItem key={dept.name} dept={dept} currentPath={location.pathname} />
+                            ))}
                         </div>
-                        {departments.map((dept) => (
-                            <DepartmentItem key={dept.name} dept={dept} currentPath={location.pathname} />
-                        ))}
-                    </div>
 
-                    <div className="p-4 border-t dark:border-zinc-900 border-zinc-200">
-                        <div className="flex items-center gap-3 p-3 rounded-xl dark:bg-zinc-900/50 bg-white border dark:border-zinc-800 border-zinc-200 shadow-sm">
-                            <div className="w-8 h-8 rounded-full dark:bg-zinc-800 bg-zinc-200 flex items-center justify-center text-[10px] font-bold text-zinc-500 uppercase">
-                                {user?.name?.substring(0, 2) || "FC"}
-                            </div>
-                            <div className="overflow-hidden">
-                                <p className="text-xs font-semibold truncate leading-tight dark:text-zinc-200">{user?.name || "Finance Controller"}</p>
-                                <p className="text-[10px] text-zinc-500 uppercase tracking-tighter">Finance Hub</p>
+                        <div className="p-4 border-t dark:border-zinc-900 border-zinc-200">
+                            <div className="flex items-center gap-3 p-3 rounded-xl dark:bg-zinc-900/50 bg-white border dark:border-zinc-800 border-zinc-200 shadow-sm">
+                                <div className="w-8 h-8 rounded-full dark:bg-zinc-800 bg-zinc-200 flex items-center justify-center text-[10px] font-bold text-zinc-500 uppercase">
+                                    {user?.name?.substring(0, 2) || "FC"}
+                                </div>
+                                <div className="overflow-hidden">
+                                    <p className="text-xs font-semibold truncate leading-tight dark:text-zinc-200">{user?.name || "Finance Controller"}</p>
+                                    <p className="text-[10px] text-zinc-500 uppercase tracking-tighter">Finance Hub</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </aside>
+                    </aside>
+                )}
 
                 <main className="flex-1 min-h-0 overflow-y-auto bg-[#CBD5E1] dark:bg-zinc-950 flex flex-col">
                     <Outlet />

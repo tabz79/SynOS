@@ -21,7 +21,13 @@ import {
     RotateCcw,
     Wallet,
     Sunset,
-    ArrowRight
+    ArrowRight,
+    TrendingUp,
+    TrendingDown,
+    Beaker,
+    ShieldCheck,
+    ExternalLink,
+    ChevronDown
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/context/ThemeContext';
@@ -99,8 +105,11 @@ export function ReceptionOptionsPanel({
         primaryBtn: "bg-synos-primary text-white hover:brightness-105 shadow-md shadow-synos-primary/25 active:scale-[0.99] transition-all"
     };
 
+    const [expandedFinanceDept, setExpandedFinanceDept] = useState(null);
+
     // Smooth width morphing based on active view on the SAME sliding surface
-    let viewWidthClasses = "w-[96vw] sm:w-[92vw] md:w-[440px] lg:w-[460px] xl:w-[480px] max-w-[520px]";
+    // Matches Intent Panel in Patient Search mode
+    let viewWidthClasses = "w-[96vw] sm:w-[92vw] md:w-[75vw] lg:w-[50vw] xl:w-[44vw] 2xl:w-[40vw] min-w-[580px] max-w-[880px]";
     if (activeView === 'expense') {
         viewWidthClasses = "w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[86vw] xl:w-[85vw] 2xl:w-[85vw] max-w-[1780px]";
     } else if (activeView === 'b2b') {
@@ -120,6 +129,86 @@ export function ReceptionOptionsPanel({
     } else if (activeView === 'requests') {
         viewWidthClasses = "w-[96vw] sm:w-[92vw] md:w-[680px] lg:w-[720px] max-w-[800px]";
     }
+
+    // 5 Operational Finance Departments (No Overview, No Discount Master, No Workforce, No Economics)
+    const financeDepartments = [
+        {
+            id: 'revenue',
+            name: "Revenue",
+            path: "/finance/revenue/bills?source=reception",
+            icon: TrendingUp,
+            iconBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20',
+            subItems: [
+                { name: "Bills & Collections", path: "/finance/revenue/bills?source=reception" },
+                { name: "Due Bills", path: "/finance/revenue/dues?source=reception" },
+                { name: "Pending Receivables", path: "/finance/revenue/receivables?source=reception" },
+                { name: "Visit Corrections", path: "/finance/revenue/corrections?source=reception" },
+                { name: "Cancellations & Refunds", path: "/finance/revenue/cancellations?source=reception" },
+                { name: "Change Due & Patient Refunds", path: "/finance/revenue/refunds?source=reception" },
+                { name: "Collection History", path: "/finance/revenue/history?source=reception" },
+                { name: "Cash Drawer Ledgers", path: "/finance/revenue/drawers?source=reception" }
+            ]
+        },
+        {
+            id: 'expenses',
+            name: "Expenses",
+            path: "/finance/expenses/feed?source=reception",
+            icon: TrendingDown,
+            iconBg: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20',
+            subItems: [
+                { name: "Expense Feed", path: "/finance/expenses/feed?source=reception" },
+                { name: "Vendor Payables", path: "/finance/expenses/payables?source=reception" },
+                { name: "Vendor Master", path: "/finance/expenses/vendors?source=reception" },
+                { name: "Daily Expenses", path: "/finance/expenses/daily?source=reception" },
+                { name: "Monthly Overheads", path: "/finance/expenses/overheads?source=reception" },
+                { name: "Corrected Expenses", path: "/finance/expenses/corrections?source=reception" },
+                { name: "Deleted Expenses", path: "/finance/expenses/deletions?source=reception" }
+            ]
+        },
+        {
+            id: 'referrals',
+            name: "Referral Partners",
+            path: "/finance/referrals/rate-queue?source=reception",
+            icon: Users,
+            iconBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20',
+            subItems: [
+                { name: "Referral Commissions", path: "/finance/referrals/rate-queue?source=reception" },
+                { name: "Doctor Registry", path: "/finance/referrals/registry?source=reception" },
+                { name: "RMP Partners", path: "/finance/referrals/rmp?source=reception" },
+                { name: "Pending Payouts", path: "/finance/referrals/payouts?source=reception" },
+                { name: "Partner Receivables", path: "/finance/referrals/receivables?source=reception" },
+                { name: "Settlement History", path: "/finance/referrals/history?source=reception" },
+                { name: "Commission Rules", path: "/finance/referrals/rules?source=reception" }
+            ]
+        },
+        {
+            id: 'outsourced',
+            name: "Outsourced Tests",
+            path: "/finance/outsourcing/active?source=reception",
+            icon: Beaker,
+            iconBg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20',
+            subItems: [
+                { name: "Active Outsourced", path: "/finance/outsourcing/active?source=reception" },
+                { name: "Pending Pricing", path: "/finance/outsourcing/pricing?source=reception" },
+                { name: "Reference Labs", path: "/finance/outsourcing/labs?source=reception" },
+                { name: "Settlement History", path: "/finance/outsourcing/history?source=reception" }
+            ]
+        },
+        {
+            id: 'insurance',
+            name: "Insurance",
+            path: "/finance/insurance/empanelment?source=reception",
+            icon: ShieldCheck,
+            iconBg: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20',
+            subItems: [
+                { name: "Insurance Companies", path: "/finance/insurance/empanelment?source=reception" },
+                { name: "Packages & Pricing", path: "/finance/insurance/packages?source=reception" },
+                { name: "Claims", path: "/finance/insurance/claims?source=reception" },
+                { name: "Pending Dues", path: "/finance/insurance/receivables?source=reception" },
+                { name: "Settlements", path: "/finance/insurance/settlements?source=reception" }
+            ]
+        }
+    ];
 
     // 1. Group 1: Desk Operations & Counter Settlements
     const operationsActions = [
@@ -386,28 +475,23 @@ export function ReceptionOptionsPanel({
                                             type="button"
                                             onClick={action.onClick}
                                             className={cn(
-                                                "w-full text-left p-3 sm:p-3.5 rounded-2xl border transition-all duration-200 flex items-center gap-3.5 group cursor-pointer active:scale-[0.99]",
+                                                "w-full text-left px-3.5 py-2.5 rounded-2xl border transition-all duration-200 flex items-center gap-3.5 group cursor-pointer active:scale-[0.99]",
                                                 ui.card
                                             )}
                                         >
-                                            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105", action.iconBg)}>
-                                                <IconComponent className="w-5 h-5" />
+                                            <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105", action.iconBg)}>
+                                                <IconComponent className="w-4 h-4" />
                                             </div>
 
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2">
-                                                    <span className={cn("text-xs sm:text-sm font-bold truncate", ui.cardTitle)}>
-                                                        {action.title}
+                                            <div className="flex-1 min-w-0 flex items-center gap-2">
+                                                <span className={cn("text-xs sm:text-sm font-bold truncate", ui.cardTitle)}>
+                                                    {action.title}
+                                                </span>
+                                                {action.badge && (
+                                                    <span className={cn("px-1.5 py-0.5 rounded-full text-[9.5px] font-bold font-mono", action.badgeClass)}>
+                                                        {action.badge}
                                                     </span>
-                                                    {action.badge && (
-                                                        <span className={cn("px-1.5 py-0.2 rounded-full text-[9.5px] font-bold font-mono", action.badgeClass)}>
-                                                            {action.badge}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <p className={cn("text-[11px] line-clamp-1 mt-0.5", ui.cardDesc)}>
-                                                    {action.desc}
-                                                </p>
+                                                )}
                                             </div>
 
                                             <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 dark:group-hover:text-white transition-colors shrink-0" />
@@ -437,32 +521,104 @@ export function ReceptionOptionsPanel({
                                             type="button"
                                             onClick={action.onClick}
                                             className={cn(
-                                                "w-full text-left p-3 sm:p-3.5 rounded-2xl border transition-all duration-200 flex items-center gap-3.5 group cursor-pointer active:scale-[0.99]",
+                                                "w-full text-left px-3.5 py-2.5 rounded-2xl border transition-all duration-200 flex items-center gap-3.5 group cursor-pointer active:scale-[0.99]",
                                                 ui.card
                                             )}
                                         >
-                                            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105", action.iconBg)}>
-                                                <IconComponent className="w-5 h-5" />
+                                            <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105", action.iconBg)}>
+                                                <IconComponent className="w-4 h-4" />
                                             </div>
 
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2">
-                                                    <span className={cn("text-xs sm:text-sm font-bold truncate", ui.cardTitle)}>
-                                                        {action.title}
+                                            <div className="flex-1 min-w-0 flex items-center gap-2">
+                                                <span className={cn("text-xs sm:text-sm font-bold truncate", ui.cardTitle)}>
+                                                    {action.title}
+                                                </span>
+                                                {action.badge && (
+                                                    <span className={cn("px-1.5 py-0.5 rounded-full text-[9.5px] font-bold font-mono", action.badgeClass)}>
+                                                        {action.badge}
                                                     </span>
-                                                    {action.badge && (
-                                                        <span className={cn("px-1.5 py-0.2 rounded-full text-[9.5px] font-bold font-mono", action.badgeClass)}>
-                                                            {action.badge}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <p className={cn("text-[11px] line-clamp-1 mt-0.5", ui.cardDesc)}>
-                                                    {action.desc}
-                                                </p>
+                                                )}
                                             </div>
 
                                             <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 dark:group-hover:text-white transition-colors shrink-0" />
                                         </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Section: Operational Finance & Accounts */}
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between px-1">
+                                <span className={cn("text-[11px] uppercase tracking-wider font-extrabold", ui.sectionHeader)}>
+                                    Finance Operations
+                                </span>
+                                <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono font-bold">
+                                    5 Departments
+                                </span>
+                            </div>
+
+                            <div className="space-y-2">
+                                {financeDepartments.map(dept => {
+                                    const IconComponent = dept.icon;
+                                    const isExpanded = expandedFinanceDept === dept.id;
+                                    return (
+                                        <div 
+                                            key={dept.id}
+                                            className={cn(
+                                                "rounded-2xl border transition-all duration-200 overflow-hidden",
+                                                ui.card
+                                            )}
+                                        >
+                                            <div className="flex items-center justify-between px-3.5 py-2.5 group">
+                                                <a
+                                                    href={dept.path}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="flex items-center gap-3.5 flex-1 min-w-0"
+                                                    title={`Open ${dept.name} in new window`}
+                                                >
+                                                    <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105", dept.iconBg)}>
+                                                        <IconComponent className="w-4 h-4" />
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={cn("text-xs sm:text-sm font-bold truncate group-hover:text-synos-primary transition-colors", ui.cardTitle)}>
+                                                            {dept.name}
+                                                        </span>
+                                                        <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-synos-primary opacity-60 group-hover:opacity-100 transition-all shrink-0" />
+                                                    </div>
+                                                </a>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setExpandedFinanceDept(isExpanded ? null : dept.id);
+                                                    }}
+                                                    className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0 cursor-pointer"
+                                                    title={isExpanded ? `Collapse ${dept.name} tabs` : `Expand ${dept.name} tabs`}
+                                                >
+                                                    <ChevronDown className={cn("w-4 h-4 transition-transform duration-200", isExpanded ? "rotate-180" : "")} />
+                                                </button>
+                                            </div>
+
+                                            {isExpanded && (
+                                                <div className="border-t border-slate-100 dark:border-zinc-800/80 bg-slate-50/60 dark:bg-zinc-950/40 p-2 sm:p-2.5 grid grid-cols-1 sm:grid-cols-2 gap-1.5 animate-in fade-in-50 duration-150">
+                                                    {dept.subItems.map((sub) => (
+                                                        <a
+                                                            key={sub.name}
+                                                            href={sub.path}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-zinc-300 hover:text-synos-primary dark:hover:text-white hover:bg-white dark:hover:bg-zinc-800/90 border border-transparent hover:border-slate-200 dark:hover:border-zinc-700/80 shadow-2xs transition-all group/item"
+                                                        >
+                                                            <span className="truncate">{sub.name}</span>
+                                                            <ExternalLink className="w-3 h-3 text-slate-300 dark:text-zinc-500 group-hover/item:text-synos-primary shrink-0 opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                                                        </a>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
                                     );
                                 })}
                             </div>
@@ -488,28 +644,23 @@ export function ReceptionOptionsPanel({
                                             type="button"
                                             onClick={action.onClick}
                                             className={cn(
-                                                "w-full text-left p-3 sm:p-3.5 rounded-2xl border transition-all duration-200 flex items-center gap-3.5 group cursor-pointer active:scale-[0.99]",
+                                                "w-full text-left px-3.5 py-2.5 rounded-2xl border transition-all duration-200 flex items-center gap-3.5 group cursor-pointer active:scale-[0.99]",
                                                 ui.card
                                             )}
                                         >
-                                            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105", action.iconBg)}>
-                                                <IconComponent className="w-5 h-5" />
+                                            <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105", action.iconBg)}>
+                                                <IconComponent className="w-4 h-4" />
                                             </div>
 
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2">
-                                                    <span className={cn("text-xs sm:text-sm font-bold truncate", ui.cardTitle)}>
-                                                        {action.title}
+                                            <div className="flex-1 min-w-0 flex items-center gap-2">
+                                                <span className={cn("text-xs sm:text-sm font-bold truncate", ui.cardTitle)}>
+                                                    {action.title}
+                                                </span>
+                                                {action.badge && (
+                                                    <span className={cn("px-1.5 py-0.5 rounded-full text-[9.5px] font-bold font-mono", action.badgeClass)}>
+                                                        {action.badge}
                                                     </span>
-                                                    {action.badge && (
-                                                        <span className={cn("px-1.5 py-0.2 rounded-full text-[9.5px] font-bold font-mono", action.badgeClass)}>
-                                                            {action.badge}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <p className={cn("text-[11px] line-clamp-1 mt-0.5", ui.cardDesc)}>
-                                                    {action.desc}
-                                                </p>
+                                                )}
                                             </div>
 
                                             <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 dark:group-hover:text-white transition-colors shrink-0" />
@@ -539,21 +690,23 @@ export function ReceptionOptionsPanel({
                                             type="button"
                                             onClick={action.onClick}
                                             className={cn(
-                                                "w-full text-left p-3 sm:p-3.5 rounded-2xl border transition-all duration-200 flex items-center gap-3.5 group cursor-pointer active:scale-[0.99]",
+                                                "w-full text-left px-3.5 py-2.5 rounded-2xl border transition-all duration-200 flex items-center gap-3.5 group cursor-pointer active:scale-[0.99]",
                                                 ui.card
                                             )}
                                         >
-                                            <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105", action.iconBg)}>
-                                                <IconComponent className="w-5 h-5" />
+                                            <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105", action.iconBg)}>
+                                                <IconComponent className="w-4 h-4" />
                                             </div>
 
-                                            <div className="flex-1 min-w-0">
-                                                <span className={cn("text-xs sm:text-sm font-bold truncate block", ui.cardTitle)}>
+                                            <div className="flex-1 min-w-0 flex items-center gap-2">
+                                                <span className={cn("text-xs sm:text-sm font-bold truncate", ui.cardTitle)}>
                                                     {action.title}
                                                 </span>
-                                                <p className={cn("text-[11px] line-clamp-1 mt-0.5", ui.cardDesc)}>
-                                                    {action.desc}
-                                                </p>
+                                                {action.badge && (
+                                                    <span className={cn("px-1.5 py-0.5 rounded-full text-[9.5px] font-bold font-mono", action.badgeClass)}>
+                                                        {action.badge}
+                                                    </span>
+                                                )}
                                             </div>
 
                                             <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 dark:group-hover:text-white transition-colors shrink-0" />

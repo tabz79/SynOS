@@ -1,25 +1,18 @@
 import { jwtDecode } from 'jwt-decode';
 
 export const ReceptionApi = {
-    // Helper to append branchId for oversight mode
+    // Helper to append branchId for active branch context
     withBranchId: (url) => {
         const token = localStorage.getItem('synos_jwt');
         if (!token) return url;
         try {
-            const decoded = jwtDecode(token);
-            const role = decoded.role || decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
-            const isAdmin = role === 'Admin' || role === 'SystemAdmin' || 
-                           (Array.isArray(role) && (role.includes('Admin') || role.includes('SystemAdmin')));
-
-            if (isAdmin) {
-                const branchId = localStorage.getItem('synos_oversight_branch_id');
-                if (branchId && branchId !== 'undefined' && branchId !== 'null') {
-                    // Prevent duplication: Check if branchId or BranchId is already in the URL
-                    if (url.toLowerCase().includes('branchid=')) return url;
-                    
-                    const separator = url.includes('?') ? '&' : '?';
-                    return `${url}${separator}branchId=${branchId}`;
-                }
+            const branchId = localStorage.getItem('synos_oversight_branch_id');
+            if (branchId && branchId !== 'undefined' && branchId !== 'null') {
+                // Prevent duplication: Check if branchId or BranchId is already in the URL
+                if (url.toLowerCase().includes('branchid=')) return url;
+                
+                const separator = url.includes('?') ? '&' : '?';
+                return `${url}${separator}branchId=${branchId}`;
             }
         } catch (e) {
             // Silently fail and return original URL
@@ -942,15 +935,38 @@ export const ReceptionApi = {
     },
 
     /**
-     * Fetches all available branches.
+     * Fetches all available branches for the current user.
      * @returns {Promise<Array>}
      */
     getBranches: async () => {
+        try {
+            const res = await fetch('/api/v1/auth/my-branches', {
+                headers: ReceptionApi.getHeaders()
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (Array.isArray(data) && data.length > 0) {
+                    return data.map(b => ({
+                        ...b,
+                        id: b.branchId || b.id,
+                        branchId: b.branchId || b.id
+                    }));
+                }
+            }
+        } catch (e) {
+            // fallback to admin endpoint
+        }
+
         const response = await fetch('/api/v1/admin/users/branches', {
             headers: ReceptionApi.getHeaders()
         });
         if (!response.ok) throw new Error("Failed to load branches");
-        return response.json();
+        const list = await response.json();
+        return list.map(b => ({
+            ...b,
+            id: b.branchId || b.id,
+            branchId: b.branchId || b.id
+        }));
     },
 
     /**

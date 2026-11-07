@@ -125,6 +125,20 @@ namespace SynOS.Api.Controllers
             }
         }
 
+        [HttpGet("my-branches")]
+        [Authorize]
+        public async Task<IActionResult> GetMyBranches()
+        {
+            var userId = _userContext.CurrentUserId;
+            if (userId == Guid.Empty)
+            {
+                return Unauthorized(new { code = "INVALID_CONTEXT", message = "Missing user identity claim." });
+            }
+
+            var branches = await _authService.GetBranchesForUserAsync(userId);
+            return Ok(branches);
+        }
+
         // DEV-ONLY helper to generate bcrypt hashes for seeding users
         #if DEBUG
         [HttpGet("dev-hash")]

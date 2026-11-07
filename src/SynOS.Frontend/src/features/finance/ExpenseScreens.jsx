@@ -44,6 +44,7 @@ import { VendorMasterScreen } from './VendorMasterScreen';
 import { OverheadExpensesScreen } from './OverheadScreens';
 import { useGlobalFilter } from '@/context/GlobalFilterContext';
 import { StandardFilterBar } from '@/components/layout/StandardFilterBar';
+import { useAuth } from '@/context/AuthContext';
 
 // --- SHARED COMPONENTS (Finance Screens Pattern) ---
 
@@ -2430,6 +2431,17 @@ export const DeletedExpensesScreen = () => {
 export const ExpenseTerminal = () => {
     const { tab = 'overview' } = useParams();
     const navigate = useNavigate();
+    const { user } = useAuth();
+    const isReceptionView = user?.role === 'Receptionist' || 
+                            (typeof window !== 'undefined' && window.location.search.includes('source=reception')) || 
+                            (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('synos_finance_source') === 'reception');
+
+    useEffect(() => {
+        if (isReceptionView && tab === 'overview') {
+            navigate('/finance/expenses/feed', { replace: true });
+        }
+    }, [isReceptionView, tab]);
+
     const tabsRef = React.useRef(null);
     const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
     const [isUpdating, setIsUpdating] = useState(false);
@@ -2440,7 +2452,7 @@ export const ExpenseTerminal = () => {
         return () => clearTimeout(timer);
     }, [presetRange, customDates?.start, customDates?.end, isConsolidated, effectiveBranchId]);
 
-    const tabs = [
+    const rawTabs = [
         { id: 'overview', label: 'Overview', icon: Settings },
         { id: 'feed', label: 'Expense Feed', icon: History },
         { id: 'payables', label: 'Vendor Payables', icon: IndianRupee },
@@ -2450,6 +2462,8 @@ export const ExpenseTerminal = () => {
         { id: 'corrections', label: 'Corrected Expenses', icon: ShieldCheck },
         { id: 'deletions', label: 'Deleted Expenses', icon: AlertCircle }
     ];
+
+    const tabs = isReceptionView ? rawTabs.filter(t => t.id !== 'overview') : rawTabs;
 
     useEffect(() => {
         if (tabsRef.current) {
@@ -2622,6 +2636,17 @@ export const OutsourcingOverviewTab = () => {
 export const OutsourcingTerminal = () => {
     const { tab = 'overview' } = useParams();
     const navigate = useNavigate();
+    const { user } = useAuth();
+    const isReceptionView = user?.role === 'Receptionist' || 
+                            (typeof window !== 'undefined' && window.location.search.includes('source=reception')) || 
+                            (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('synos_finance_source') === 'reception');
+
+    useEffect(() => {
+        if (isReceptionView && tab === 'overview') {
+            navigate('/finance/outsourcing/active', { replace: true });
+        }
+    }, [isReceptionView, tab]);
+
     const tabsRef = React.useRef(null);
     const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
     const [isUpdating, setIsUpdating] = useState(false);
@@ -2630,13 +2655,15 @@ export const OutsourcingTerminal = () => {
     const [labsData, setLabsData] = useState([]);
     const [loadingData, setLoadingData] = useState(false);
 
-    const tabs = [
+    const rawTabs = [
         { id: 'overview', label: 'Overview', icon: Settings },
         { id: 'active', label: 'Active Outsourced', icon: Beaker },
         { id: 'pricing', label: 'Pending Pricing', icon: AlertCircle },
         { id: 'labs', label: 'Reference Labs', icon: Building2 },
         { id: 'history', label: 'Settlement History', icon: History }
     ];
+
+    const tabs = isReceptionView ? rawTabs.filter(t => t.id !== 'overview') : rawTabs;
 
     useEffect(() => {
         if (tabsRef.current) {

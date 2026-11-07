@@ -60,27 +60,29 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
     return () => clearInterval(t);
   }, []);
 
-  // Fetch branches for management view (Admins only)
+  // Fetch branches for any user (Admins or users with multi-branch access)
   useEffect(() => {
-    if (isAdmin) {
-      ReceptionApi.getBranches().then(branches => {
+    ReceptionApi.getBranches().then(branches => {
+      if (Array.isArray(branches)) {
         setAvailableBranches(branches);
         // Auto-select first branch if none active and we're an admin
-        if (!activeOversightBranchId && branches.length > 0) {
+        if (!activeOversightBranchId && branches.length > 0 && isAdmin) {
           setOversightBranch(branches[0].id || branches[0].branchId);
         }
-      }).catch(err => console.error("Failed to fetch branches:", err));
-    }
-  }, [user?.role]);
+      }
+    }).catch(err => console.error("Failed to fetch branches:", err));
+  }, [user?.role, user?.id]);
+
+  const canSwitchBranches = isAdmin || availableBranches.length > 1;
 
   const handleLogout = () => {
     logout();
     window.location.href = '/login';
   };
 
-  const currentBranchName = isAdmin
+  const currentBranchName = activeOversightBranchId
     ? (availableBranches.find(b => (b.id || b.branchId) === activeOversightBranchId)?.name || user?.branchName || "Select Branch...")
-    : (user?.branchName || "Unknown Branch");
+    : (user?.branchName || availableBranches[0]?.name || "Select Branch...");
 
   const timeDisplay = currentTime.toLocaleTimeString('en-US', {
     hour12: false,
@@ -181,12 +183,16 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
           </div>
         )}
 
-        {location.pathname.startsWith('/my-hr') && (
+        {/* Return to Reception for My-HR or Reception-launched Finance pages */}
+        {(location.pathname.startsWith('/my-hr') || (location.pathname.startsWith('/finance') && (user?.role === 'Receptionist' || location.search.includes('source=reception') || sessionStorage.getItem('synos_finance_source') === 'reception'))) && (
           <div className="flex items-center gap-1.5 sm:gap-2.5">
             <div className="h-4 w-px bg-zinc-300 dark:bg-zinc-700 hidden sm:block shrink-0" />
             
             <button 
-              onClick={() => navigate('/reception')}
+              onClick={() => {
+                sessionStorage.removeItem('synos_finance_source');
+                navigate('/reception');
+              }}
               className={cn(
                 "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95 group border",
                 theme === 'dark' 
@@ -196,7 +202,7 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
               title="Return to Reception Desk"
             >
               <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform shrink-0 text-synos-primary" />
-              <span>Return to Reception</span>
+              <span>Exit to Reception</span>
             </button>
           </div>
         )}
@@ -208,27 +214,28 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
       {/* RIGHT — Controls */}
       <div className="flex items-center gap-2 sm:gap-2.5 xl:gap-3 shrink-0">
 
-        {/* Branch (Fake Frost Pill) */}
+        {/* Branch (Multi-Branch Switcher for Admin & Multi-Branch Staff) */}
         <div className="relative">
           <button
             onClick={() => {
-              if (isAdmin) {
+              if (canSwitchBranches) {
                 setActiveDropdown(activeDropdown === 'facility' ? null : 'facility');
               }
             }}
             className={cn(
               "flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-medium transition-all",
               ui.pill,
-              !isAdmin && "cursor-default hover:bg-zinc-900"
+              !canSwitchBranches && "cursor-default hover:bg-zinc-900",
+              canSwitchBranches && "cursor-pointer hover:border-indigo-500/40"
             )}
-            title={currentBranchName}
+            title={canSwitchBranches ? `Switch Branch (Active: ${currentBranchName})` : currentBranchName}
           >
-            <Globe className="w-3.5 h-3.5 opacity-70 shrink-0" />
-            <span className="max-w-[100px] sm:max-w-[150px] truncate">{currentBranchName}</span>
-            {isAdmin && <ChevronDown className="w-3 h-3 opacity-50 shrink-0" />}
+            <Globe className="w-3.5 h-3.5 opacity-70 shrink-0 text-indigo-500" />
+            <span className="max-w-[100px] sm:max-w-[150px] truncate font-semibold">{currentBranchName}</span>
+            {canSwitchBranches && <ChevronDown className="w-3 h-3 opacity-60 shrink-0" />}
           </button>
 
-          {activeDropdown === 'facility' && isAdmin && (
+          {activeDropdown === 'facility' && canSwitchBranches && (
             <div
               ref={facilityRef}
               className="absolute right-0 mt-2 w-64 z-50 synos-elevated-card rounded-2xl p-2 shadow-2xl border border-slate-300 dark:border-white/12 animate-in fade-in-50 zoom-in-95 duration-150"
@@ -237,18 +244,19 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
                 Active Branch Facility
               </div>
               {availableBranches.map(b => {
-                const isSelected = (b.id || b.branchId) === activeOversightBranchId;
+                const bId = b.id || b.branchId;
+                const isSelected = bId === activeOversightBranchId || (!activeOversightBranchId && b.name === currentBranchName);
                 return (
                   <button
-                    key={b.id || b.branchId}
+                    key={bId}
                     className={cn(
-                      "w-full px-3.5 py-2 text-left text-xs rounded-xl font-bold transition-all mb-0.5",
+                      "w-full px-3.5 py-2 text-left text-xs rounded-xl font-bold transition-all mb-0.5 cursor-pointer",
                       isSelected
                         ? "bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold shadow-xs"
                         : "text-zinc-800 dark:text-zinc-200 hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400"
                     )}
                     onClick={() => {
-                      setOversightBranch(b.id || b.branchId);
+                      setOversightBranch(bId);
                       setActiveDropdown(null);
                       window.location.reload(); // Reload to refresh all data with new branch context
                     }}

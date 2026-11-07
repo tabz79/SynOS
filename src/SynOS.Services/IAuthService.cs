@@ -12,5 +12,6 @@ namespace SynOS.Services
         Task<LoginResponse> Authenticate(LoginRequest request, string? ipAddress);
         Task<LoginResponse> RefreshToken(string token, string? ipAddress);
         Task<bool> Logout(string token, string? ipAddress);
+        Task<System.Collections.Generic.IEnumerable<BranchSummaryDto>> GetBranchesForUserAsync(System.Guid userId);
     }
 }

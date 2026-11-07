@@ -28,6 +28,7 @@ import { ReferralRateQueueTab } from './components/referral/ReferralRateQueueTab
 import { Printer, Download, Loader2 } from 'lucide-react';
 import { useGlobalFilter } from '@/context/GlobalFilterContext';
 import { StandardFilterBar } from '@/components/layout/StandardFilterBar';
+import { useAuth } from '@/context/AuthContext';
 
 /**
  * Referral Terminal
@@ -36,6 +37,17 @@ import { StandardFilterBar } from '@/components/layout/StandardFilterBar';
 export const ReferralTerminal = () => {
     const { tab = 'overview' } = useParams();
     const navigate = useNavigate();
+    const { user } = useAuth();
+    const isReceptionView = user?.role === 'Receptionist' || 
+                            (typeof window !== 'undefined' && window.location.search.includes('source=reception')) || 
+                            (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('synos_finance_source') === 'reception');
+
+    useEffect(() => {
+        if (isReceptionView && tab === 'overview') {
+            navigate('/finance/referrals/rate-queue', { replace: true });
+        }
+    }, [isReceptionView, tab]);
+
     const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
     const [summary, setSummary] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -61,7 +73,7 @@ export const ReferralTerminal = () => {
         }, 0);
     }, [tabData.receivables]);
 
-    const tabs = [
+    const rawTabs = [
         { id: 'overview', label: 'Overview', icon: LayoutDashboard },
         { id: 'rate-queue', label: 'Referral Commissions', icon: Zap, badge: unmappedQueueCount },
         { id: 'registry', label: 'Doctor Registry', icon: Users },
@@ -71,6 +83,8 @@ export const ReferralTerminal = () => {
         { id: 'history', label: 'Settlement History', icon: History },
         { id: 'rules', label: 'Commission Rules', icon: Settings },
     ];
+
+    const tabs = isReceptionView ? rawTabs.filter(t => t.id !== 'overview') : rawTabs;
 
     const loadSummary = async () => {
         const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
