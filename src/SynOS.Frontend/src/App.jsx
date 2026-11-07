@@ -242,13 +242,13 @@ function App() {
               } />
             </Route>
 
-            <Route element={<ProtectedRoute allowedRoles={['Finance', 'Admin']} />}>
+            {/* Operational Finance (Accessible to Receptionist, Finance, and Admin) */}
+            <Route element={<ProtectedRoute allowedRoles={['Finance', 'Admin', 'Receptionist']} />}>
               <Route element={
                 <AdminProtectedWrapper roleName="Finance Hub">
                   <FinanceLayout />
                 </AdminProtectedWrapper>
               }>
-                <Route path="/finance" element={<FinanceOverview />} />
                 {/* Revenue Department */}
                 <Route path="/finance/revenue" element={<RevenueTerminal />} />
                 <Route path="/finance/revenue/:tab" element={<RevenueTerminal />} />
@@ -274,18 +274,38 @@ function App() {
                 {/* Legacy Institutional Alias */}
                 <Route path="/finance/institutional" element={<InsuranceTerminal />} />
                 <Route path="/finance/institutional/:tab" element={<InsuranceTerminal />} />
+              </Route>
+            </Route>
 
-                {/* Discount Master */}
+            {/* Strategic Finance & Control (Finance and Admin only - Strictly blocks Receptionist) */}
+            <Route element={<ProtectedRoute allowedRoles={['Finance', 'Admin']} />}>
+              <Route element={
+                <AdminProtectedWrapper roleName="Finance Hub">
+                  <FinanceLayout />
+                </AdminProtectedWrapper>
+              }>
+                <Route path="/finance" element={<FinanceOverview />} />
                 <Route path="/finance/discounts" element={<DiscountMasterScreen />} />
                 <Route path="/finance/discounts/:tab" element={<DiscountMasterScreen />} />
-
-                {/* Workforce & Payroll Department */}
                 <Route path="/finance/workforce" element={<WorkforceTerminal />} />
                 <Route path="/finance/workforce/:tab" element={<WorkforceTerminal />} />
-
-                {/* Intelligence Department */}
                 <Route path="/finance/intelligence" element={<IntelligenceDashboard />} />
                 <Route path="/finance/economics" element={<IntelligenceDashboard />} />
+              </Route>
+            </Route>
+
+            {/* Patient Directory (Accessible by Receptionist, Finance, and Admin) */}
+            <Route element={<ProtectedRoute allowedRoles={['Receptionist', 'Admin', 'Finance']} />}>
+              <Route element={
+                <div className="h-screen w-screen bg-[#F8FAFC] dark:bg-zinc-950 flex flex-col overflow-hidden font-sans relative">
+                  <SystemBar syncStatus="Synced" />
+                  <div className="flex-1 min-h-0 overflow-y-auto">
+                    <Outlet />
+                  </div>
+                </div>
+              }>
+                <Route path="/patients" element={<PatientSearchScreen />} />
+                <Route path="/patients/:id" element={<PatientDetailScreen />} />
               </Route>
             </Route>
 

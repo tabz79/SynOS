@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { 
     X, 
     SlidersHorizontal, 
@@ -27,7 +27,13 @@ import {
     Beaker,
     ShieldCheck,
     ExternalLink,
-    ChevronDown
+    ChevronDown,
+    Search,
+    Zap,
+    Layers,
+    Briefcase,
+    UserCheck,
+    FileText
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/context/ThemeContext';
@@ -59,12 +65,27 @@ export function ReceptionOptionsPanel({
     // 'menu' | 'expense' | 'b2b' | 'stock' | 'leave' | 'attendance' | 'requests'
     const [activeView, setActiveView] = useState('menu');
     const [expandedFinanceDept, setExpandedFinanceDept] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const searchInputRef = useRef(null);
 
-    // Reset view when panel is closed
+    // Keyboard shortcut for Cmd+K / Ctrl+K search
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                searchInputRef.current?.focus();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
+    // Reset view and search when panel is closed
     useEffect(() => {
         if (!isOpen) {
             setActiveView('menu');
             setExpandedFinanceDept(null);
+            setSearchQuery('');
         }
     }, [isOpen]);
 
@@ -108,8 +129,8 @@ export function ReceptionOptionsPanel({
     };
 
     // Smooth width morphing based on active view on the SAME sliding surface
-    // Matches Intent Panel in Patient Search mode
-    let viewWidthClasses = "w-[96vw] sm:w-[92vw] md:w-[75vw] lg:w-[50vw] xl:w-[44vw] 2xl:w-[40vw] min-w-[580px] max-w-[880px]";
+    // Matches the balanced 2-column layout in ChatGPT mockup (Image 3)
+    let viewWidthClasses = "w-[96vw] sm:w-[92vw] md:w-[620px] lg:w-[660px] xl:w-[700px] max-w-[740px]";
     if (activeView === 'expense') {
         viewWidthClasses = "w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[86vw] xl:w-[85vw] 2xl:w-[85vw] max-w-[1780px]";
     } else if (activeView === 'b2b') {
@@ -130,104 +151,22 @@ export function ReceptionOptionsPanel({
         viewWidthClasses = "w-[96vw] sm:w-[92vw] md:w-[680px] lg:w-[720px] max-w-[800px]";
     }
 
-    // 5 Operational Finance Departments (No Overview, No Discount Master, No Workforce, No Economics)
-    const financeDepartments = [
-        {
-            id: 'revenue',
-            name: "Revenue",
-            path: "/finance/revenue/bills?source=reception",
-            icon: TrendingUp,
-            iconBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20',
-            subItems: [
-                { name: "Bills & Collections", path: "/finance/revenue/bills?source=reception" },
-                { name: "Due Bills", path: "/finance/revenue/dues?source=reception" },
-                { name: "Pending Receivables", path: "/finance/revenue/receivables?source=reception" },
-                { name: "Visit Corrections", path: "/finance/revenue/corrections?source=reception" },
-                { name: "Cancellations & Refunds", path: "/finance/revenue/cancellations?source=reception" },
-                { name: "Change Due & Patient Refunds", path: "/finance/revenue/refunds?source=reception" },
-                { name: "Collection History", path: "/finance/revenue/history?source=reception" },
-                { name: "Cash Drawer Ledgers", path: "/finance/revenue/drawers?source=reception" }
-            ]
-        },
-        {
-            id: 'expenses',
-            name: "Expenses",
-            path: "/finance/expenses/feed?source=reception",
-            icon: TrendingDown,
-            iconBg: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20',
-            subItems: [
-                { name: "Expense Feed", path: "/finance/expenses/feed?source=reception" },
-                { name: "Vendor Payables", path: "/finance/expenses/payables?source=reception" },
-                { name: "Vendor Master", path: "/finance/expenses/vendors?source=reception" },
-                { name: "Daily Expenses", path: "/finance/expenses/daily?source=reception" },
-                { name: "Monthly Overheads", path: "/finance/expenses/overheads?source=reception" },
-                { name: "Corrected Expenses", path: "/finance/expenses/corrections?source=reception" },
-                { name: "Deleted Expenses", path: "/finance/expenses/deletions?source=reception" }
-            ]
-        },
-        {
-            id: 'referrals',
-            name: "Referral Partners",
-            path: "/finance/referrals/rate-queue?source=reception",
-            icon: Users,
-            iconBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20',
-            subItems: [
-                { name: "Referral Commissions", path: "/finance/referrals/rate-queue?source=reception" },
-                { name: "Doctor Registry", path: "/finance/referrals/registry?source=reception" },
-                { name: "RMP Partners", path: "/finance/referrals/rmp?source=reception" },
-                { name: "Pending Payouts", path: "/finance/referrals/payouts?source=reception" },
-                { name: "Partner Receivables", path: "/finance/referrals/receivables?source=reception" },
-                { name: "Settlement History", path: "/finance/referrals/history?source=reception" },
-                { name: "Commission Rules", path: "/finance/referrals/rules?source=reception" }
-            ]
-        },
-        {
-            id: 'outsourced',
-            name: "Outsourced Tests",
-            path: "/finance/outsourcing/active?source=reception",
-            icon: Beaker,
-            iconBg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20',
-            subItems: [
-                { name: "Active Outsourced", path: "/finance/outsourcing/active?source=reception" },
-                { name: "Pending Pricing", path: "/finance/outsourcing/pricing?source=reception" },
-                { name: "Reference Labs", path: "/finance/outsourcing/labs?source=reception" },
-                { name: "Settlement History", path: "/finance/outsourcing/history?source=reception" }
-            ]
-        },
-        {
-            id: 'insurance',
-            name: "Insurance",
-            path: "/finance/insurance/empanelment?source=reception",
-            icon: ShieldCheck,
-            iconBg: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20',
-            subItems: [
-                { name: "Insurance Companies", path: "/finance/insurance/empanelment?source=reception" },
-                { name: "Packages & Pricing", path: "/finance/insurance/packages?source=reception" },
-                { name: "Claims", path: "/finance/insurance/claims?source=reception" },
-                { name: "Pending Dues", path: "/finance/insurance/receivables?source=reception" },
-                { name: "Settlements", path: "/finance/insurance/settlements?source=reception" }
-            ]
-        }
-    ];
-
     // 1. Group 1: Desk Operations & Counter Settlements
     const operationsActions = [
         {
             id: 'b2b-receivables',
             title: 'Record B2B Receivables',
-            desc: 'Settle and record same-day corporate & referral partner inflow',
-            icon: ArrowDownLeft,
-            iconBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20',
+            icon: FileText,
+            iconBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
             badge: pendingB2BCount > 0 ? `${pendingB2BCount} Pending` : null,
-            badgeClass: 'bg-emerald-600 text-white',
+            badgeClass: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300/60 dark:border-emerald-700/60',
             onClick: () => setActiveView('b2b')
         },
         {
             id: 'record-expense',
             title: 'Record Daily Expense',
-            desc: 'Log counter cash disbursements and branch petty-cash outflows',
             icon: Receipt,
-            iconBg: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20',
+            iconBg: 'bg-rose-500/10 text-rose-600 dark:text-rose-400',
             onClick: () => setActiveView('expense')
         }
     ];
@@ -237,75 +176,157 @@ export function ReceptionOptionsPanel({
         {
             id: 'cash-drawer-ledger',
             title: 'My Cash Drawer Ledger',
-            desc: 'Shift cash journal, petty-cash breakdown & handover slip',
             icon: Wallet,
-            iconBg: 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20',
+            iconBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
             onClick: () => setActiveView('ledger')
         },
         {
             id: 'refunds-terminal',
             title: 'Change Due & Patient Refunds',
-            desc: 'Settle drawer change due, counter cash balances & patient refund claims',
             icon: RotateCcw,
-            iconBg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20',
+            iconBg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
             onClick: () => setActiveView('refunds')
         }
     ];
 
-    // 3. Group 3: Desk Utilities & Directory
+    // 3. Group 3: Finance Operations (5 Departments)
+    const financeActions = [
+        {
+            id: 'revenue',
+            title: "Revenue",
+            path: "/finance/revenue/bills?source=reception",
+            icon: TrendingUp,
+            iconBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+        },
+        {
+            id: 'expenses',
+            title: "Expenses",
+            path: "/finance/expenses/feed?source=reception",
+            icon: TrendingDown,
+            iconBg: 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
+        },
+        {
+            id: 'referrals',
+            title: "Referral Partners",
+            path: "/finance/referrals/rate-queue?source=reception",
+            icon: Users,
+            iconBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+        },
+        {
+            id: 'outsourced',
+            title: "Outsourced Tests",
+            path: "/finance/outsourcing/active?source=reception",
+            icon: Beaker,
+            iconBg: 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+        },
+        {
+            id: 'insurance',
+            title: "Insurance",
+            path: "/finance/insurance/empanelment?source=reception",
+            icon: ShieldCheck,
+            iconBg: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400'
+        }
+    ];
+
+    // 4. Group 4: Desk Utilities & Directory
     const utilitiesActions = [
         {
             id: 'patient-directory',
             title: 'Patient Directory',
-            desc: 'Search master records, lookup MRNs, and view past clinical history',
             icon: Users,
-            iconBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20',
+            iconBg: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
             onClick: onOpenPatientDirectory
         },
         {
             id: 'stock-request',
             title: 'Request Stock & Consumables',
-            desc: 'Requisition test vacutainers, reagents, sample swabs, and kits',
             icon: Package,
-            iconBg: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20',
+            iconBg: 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
             onClick: () => setActiveView('stock')
         }
     ];
 
+    // 5. Group 5: Staff & HR Portal
     const workforceActions = [
         {
             id: 'my-hr',
             title: 'My HR Dashboard',
-            desc: 'View personal staff file, department profile, and role authorizations',
             icon: Shield,
-            iconBg: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20',
+            iconBg: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400',
             onClick: onOpenMyHr
         },
         {
             id: 'my-attendance',
             title: 'My Attendance',
-            desc: 'Review biometric shift check-ins, monthly punches, and duty logs',
             icon: Clock,
-            iconBg: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20',
+            iconBg: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400',
             onClick: () => setActiveView('attendance')
         },
         {
             id: 'apply-leave',
             title: 'Apply Leave',
-            desc: 'Submit casual, sick, or planned vacation leave requests',
             icon: CalendarCheck,
-            iconBg: 'bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20',
+            iconBg: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
             onClick: () => setActiveView('leave')
         },
         {
             id: 'my-requests',
             title: 'My HR Requests',
-            desc: 'Track status of loan advances, certificate requests, and tickets',
             icon: Inbox,
-            iconBg: 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20',
+            iconBg: 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
             onClick: () => setActiveView('requests')
         }
     ];
+
+    const sections = [
+        {
+            id: 'desk-ops',
+            title: 'Desk Operations',
+            icon: Zap,
+            iconColor: 'text-blue-500 dark:text-blue-400',
+            items: operationsActions
+        },
+        {
+            id: 'pos',
+            title: 'Cashier POS & Settlements',
+            icon: Wallet,
+            iconColor: 'text-teal-500 dark:text-teal-400',
+            items: posActions
+        },
+        {
+            id: 'finance',
+            title: 'Finance Operations',
+            icon: TrendingUp,
+            iconColor: 'text-blue-500 dark:text-blue-400',
+            isFinance: true,
+            items: financeActions
+        },
+        {
+            id: 'utilities',
+            title: 'Desk Utilities & Directory',
+            icon: Layers,
+            iconColor: 'text-indigo-500 dark:text-indigo-400',
+            items: utilitiesActions
+        },
+        {
+            id: 'hr',
+            title: 'Staff & HR Portal',
+            icon: Briefcase,
+            iconColor: 'text-blue-500 dark:text-blue-400',
+            items: workforceActions
+        }
+    ];
+
+    const filteredSections = useMemo(() => {
+        if (!searchQuery.trim()) return sections;
+        const q = searchQuery.toLowerCase().trim();
+        return sections
+            .map(section => ({
+                ...section,
+                items: section.items.filter(item => item.title.toLowerCase().includes(q))
+            }))
+            .filter(section => section.items.length > 0);
+    }, [searchQuery, pendingB2BCount]);
 
     return (
         <div
@@ -424,29 +445,24 @@ export function ReceptionOptionsPanel({
                 />
             )}
 
-            {/* VIEW 0: MAIN OPTIONS MENU */}
+            {/* VIEW 0: MAIN OPTIONS MENU (ChatGPT Redesign Mockup) */}
             {activeView === 'menu' && (
                 <>
                     {/* Header */}
-                    <div className={cn("h-13 sm:h-14 flex items-center justify-between px-5 sm:px-6 shrink-0 border-b", ui.header)}>
-                        <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 rounded-xl bg-synos-primary/10 text-synos-primary flex items-center justify-center border border-synos-primary/20 shrink-0">
+                    <div className={cn("h-14 sm:h-16 flex items-center justify-between px-5 sm:px-6 shrink-0 border-b", ui.header)}>
+                        <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-500/20 shadow-2xs">
                                 <SlidersHorizontal className="w-4 h-4" />
                             </div>
-                            <div>
-                                <h2 className={cn("text-sm sm:text-base font-bold tracking-normal flex items-center gap-2", ui.title)}>
-                                    Desk Options & Actions
-                                    <span className="text-[10px] font-mono font-bold text-slate-500 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800/80 px-2 py-0.5 rounded-full border border-slate-200/60 dark:border-zinc-700/60">
-                                        #OPTIONS
-                                    </span>
-                                </h2>
-                            </div>
+                            <h2 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tracking-tight">
+                                Desk Options & Actions
+                            </h2>
                         </div>
 
                         <button
                             type="button"
                             onClick={onClose}
-                            className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+                            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                             title="Close Options (Esc)"
                         >
                             <X className="w-5 h-5" />
@@ -454,287 +470,142 @@ export function ReceptionOptionsPanel({
                     </div>
 
                     {/* Scrollable Content */}
-                    <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 space-y-5">
-                        {/* Section 1: Front Desk Quick Operations */}
-                        <div className="space-y-2">
-                            <div className="flex items-center justify-between px-1">
-                                <span className={cn("text-[11px] uppercase tracking-wider font-extrabold", ui.sectionHeader)}>
-                                    Desk Operations
-                                </span>
-                                <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono font-bold">
-                                    2 Workflows
-                                </span>
-                            </div>
-
-                            <div className="space-y-2">
-                                {operationsActions.map(action => {
-                                    const IconComponent = action.icon;
-                                    return (
-                                        <button
-                                            key={action.id}
-                                            type="button"
-                                            onClick={action.onClick}
-                                            className={cn(
-                                                "w-full text-left px-3.5 py-2.5 rounded-2xl border transition-all duration-200 flex items-center gap-3.5 group cursor-pointer active:scale-[0.99]",
-                                                ui.card
-                                            )}
-                                        >
-                                            <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105", action.iconBg)}>
-                                                <IconComponent className="w-4 h-4" />
-                                            </div>
-
-                                            <div className="flex-1 min-w-0 flex items-center gap-2">
-                                                <span className={cn("text-xs sm:text-sm font-bold truncate", ui.cardTitle)}>
-                                                    {action.title}
-                                                </span>
-                                                {action.badge && (
-                                                    <span className={cn("px-1.5 py-0.5 rounded-full text-[9.5px] font-bold font-mono", action.badgeClass)}>
-                                                        {action.badge}
-                                                    </span>
-                                                )}
-                                            </div>
-
-                                            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 dark:group-hover:text-white transition-colors shrink-0" />
-                                        </button>
-                                    );
-                                })}
+                    <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-5 space-y-4">
+                        {/* Quick Search Bar */}
+                        <div className="relative">
+                            <Search className="w-4 h-4 text-slate-400 dark:text-zinc-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                            <input
+                                ref={searchInputRef}
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search options, workflows or tools..."
+                                className="w-full pl-9 pr-12 py-2.5 text-xs rounded-2xl border border-slate-200/90 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:outline-hidden focus:ring-2 focus:ring-synos-primary/20 shadow-2xs transition-all"
+                            />
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                                {searchQuery && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setSearchQuery('')}
+                                        className="p-0.5 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 mr-1 cursor-pointer"
+                                    >
+                                        <X className="w-3.5 h-3.5" />
+                                    </button>
+                                )}
+                                <kbd className="text-[10px] font-mono font-bold text-slate-400 dark:text-zinc-500 bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 px-1.5 py-0.5 rounded-md">
+                                    ⌘ K
+                                </kbd>
                             </div>
                         </div>
 
-                        {/* Section 2: Cashier POS & Settlements */}
-                        <div className="space-y-2">
-                            <div className="flex items-center justify-between px-1">
-                                <span className={cn("text-[11px] uppercase tracking-wider font-extrabold", ui.sectionHeader)}>
-                                    Cashier POS & Settlements
-                                </span>
-                                <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono font-bold">
-                                    2 Workflows
-                                </span>
+                        {/* Filtered Sections */}
+                        {filteredSections.length === 0 ? (
+                            <div className="py-12 text-center text-slate-400 dark:text-zinc-500">
+                                <Search className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                                <p className="text-xs font-semibold">No options found matching "{searchQuery}"</p>
+                                <button
+                                    type="button"
+                                    onClick={() => setSearchQuery('')}
+                                    className="mt-2 text-xs text-synos-primary hover:underline font-bold cursor-pointer"
+                                >
+                                    Clear search
+                                </button>
                             </div>
-
-                            <div className="space-y-2">
-                                {posActions.map(action => {
-                                    const IconComponent = action.icon;
-                                    return (
-                                        <button
-                                            key={action.id}
-                                            type="button"
-                                            onClick={action.onClick}
-                                            className={cn(
-                                                "w-full text-left px-3.5 py-2.5 rounded-2xl border transition-all duration-200 flex items-center gap-3.5 group cursor-pointer active:scale-[0.99]",
-                                                ui.card
-                                            )}
-                                        >
-                                            <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105", action.iconBg)}>
-                                                <IconComponent className="w-4 h-4" />
-                                            </div>
-
-                                            <div className="flex-1 min-w-0 flex items-center gap-2">
-                                                <span className={cn("text-xs sm:text-sm font-bold truncate", ui.cardTitle)}>
-                                                    {action.title}
+                        ) : (
+                            filteredSections.map(section => {
+                                const SectionIcon = section.icon;
+                                return (
+                                    <div key={section.id} className="space-y-2">
+                                        {/* Section Header */}
+                                        <div className="flex items-center justify-between px-1">
+                                            <div className="flex items-center gap-2">
+                                                <SectionIcon className={cn("w-4 h-4", section.iconColor)} />
+                                                <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-zinc-100 tracking-tight">
+                                                    {section.title}
                                                 </span>
-                                                {action.badge && (
-                                                    <span className={cn("px-1.5 py-0.5 rounded-full text-[9.5px] font-bold font-mono", action.badgeClass)}>
-                                                        {action.badge}
-                                                    </span>
-                                                )}
                                             </div>
+                                            <span className="text-[10.5px] font-semibold text-slate-500 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800/80 px-2.5 py-0.5 rounded-full border border-slate-200/60 dark:border-zinc-700/60">
+                                                {section.items.length} {section.items.length === 1 ? 'Action' : 'Actions'}
+                                            </span>
+                                        </div>
 
-                                            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 dark:group-hover:text-white transition-colors shrink-0" />
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        {/* Section: Operational Finance & Accounts */}
-                        <div className="space-y-2">
-                            <div className="flex items-center justify-between px-1">
-                                <span className={cn("text-[11px] uppercase tracking-wider font-extrabold", ui.sectionHeader)}>
-                                    Finance Operations
-                                </span>
-                                <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono font-bold">
-                                    5 Departments
-                                </span>
-                            </div>
-
-                            <div className="space-y-2">
-                                {financeDepartments.map(dept => {
-                                    const IconComponent = dept.icon;
-                                    const isExpanded = expandedFinanceDept === dept.id;
-                                    return (
-                                        <div 
-                                            key={dept.id}
-                                            className={cn(
-                                                "rounded-2xl border transition-all duration-200 overflow-hidden",
-                                                ui.card
-                                            )}
-                                        >
-                                            <div className="flex items-center justify-between px-3.5 py-2.5 group">
-                                                <a
-                                                    href={dept.path}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="flex items-center gap-3.5 flex-1 min-w-0"
-                                                    title={`Open ${dept.name} in new window`}
-                                                >
-                                                    <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105", dept.iconBg)}>
-                                                        <IconComponent className="w-4 h-4" />
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <span className={cn("text-xs sm:text-sm font-bold truncate group-hover:text-synos-primary transition-colors", ui.cardTitle)}>
-                                                            {dept.name}
-                                                        </span>
-                                                        <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-synos-primary opacity-60 group-hover:opacity-100 transition-all shrink-0" />
-                                                    </div>
-                                                </a>
-
-                                                <button
-                                                    type="button"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setExpandedFinanceDept(isExpanded ? null : dept.id);
-                                                    }}
-                                                    className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0 cursor-pointer"
-                                                    title={isExpanded ? `Collapse ${dept.name} tabs` : `Expand ${dept.name} tabs`}
-                                                >
-                                                    <ChevronDown className={cn("w-4 h-4 transition-transform duration-200", isExpanded ? "rotate-180" : "")} />
-                                                </button>
-                                            </div>
-
-                                            {isExpanded && (
-                                                <div className="border-t border-slate-100 dark:border-zinc-800/80 bg-slate-50/60 dark:bg-zinc-950/40 p-2 sm:p-2.5 grid grid-cols-1 sm:grid-cols-2 gap-1.5 animate-in fade-in-50 duration-150">
-                                                    {dept.subItems.map((sub) => (
+                                        {/* 2-Column Grid */}
+                                        <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
+                                            {section.items.map(item => {
+                                                const IconComponent = item.icon;
+                                                if (section.isFinance) {
+                                                    return (
                                                         <a
-                                                            key={sub.name}
-                                                            href={sub.path}
+                                                            key={item.id}
+                                                            href={item.path}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-zinc-300 hover:text-synos-primary dark:hover:text-white hover:bg-white dark:hover:bg-zinc-800/90 border border-transparent hover:border-slate-200 dark:hover:border-zinc-700/80 shadow-2xs transition-all group/item"
+                                                            className="text-left p-2.5 sm:p-3 rounded-2xl border border-slate-200/80 dark:border-zinc-800/80 bg-white/90 dark:bg-zinc-900/80 hover:bg-white dark:hover:bg-zinc-800/90 shadow-2xs hover:shadow-xs hover:border-slate-300 dark:hover:border-zinc-700 transition-all flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]"
+                                                            title={`Open ${item.title} in new window`}
                                                         >
-                                                            <span className="truncate">{sub.name}</span>
-                                                            <ExternalLink className="w-3 h-3 text-slate-300 dark:text-zinc-500 group-hover/item:text-synos-primary shrink-0 opacity-0 group-hover/item:opacity-100 transition-opacity" />
+                                                            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                                                <div className={cn("w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105", item.iconBg)}>
+                                                                    <IconComponent className="w-4 h-4" />
+                                                                </div>
+                                                                <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 truncate group-hover:text-synos-primary transition-colors">
+                                                                    {item.title}
+                                                                </span>
+                                                            </div>
+                                                            <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-700 dark:group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" />
                                                         </a>
-                                                    ))}
-                                                </div>
-                                            )}
+                                                    );
+                                                }
+
+                                                return (
+                                                    <button
+                                                        key={item.id}
+                                                        type="button"
+                                                        onClick={item.onClick}
+                                                        className="text-left p-2.5 sm:p-3 rounded-2xl border border-slate-200/80 dark:border-zinc-800/80 bg-white/90 dark:bg-zinc-900/80 hover:bg-white dark:hover:bg-zinc-800/90 shadow-2xs hover:shadow-xs hover:border-slate-300 dark:hover:border-zinc-700 transition-all flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]"
+                                                    >
+                                                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                                            <div className={cn("w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105", item.iconBg)}>
+                                                                <IconComponent className="w-4 h-4" />
+                                                            </div>
+                                                            <div className="min-w-0 flex-1">
+                                                                <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 truncate block group-hover:text-synos-primary transition-colors">
+                                                                    {item.title}
+                                                                </span>
+                                                                {item.badge && (
+                                                                    <span className={cn("mt-0.5 inline-block px-1.5 py-0.2 rounded-full text-[9px] font-bold font-mono tracking-tight", item.badgeClass)}>
+                                                                        {item.badge}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                        <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-700 dark:group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" />
+                                                    </button>
+                                                );
+                                            })}
                                         </div>
-                                    );
-                                })}
-                            </div>
+                                    </div>
+                                );
+                            })
+                        )}
+
+                        {/* End Shift & Handover Cash Card (Mockup Style) */}
+                        <div className="pt-2">
+                            <button
+                                type="button"
+                                onClick={() => setActiveView('end-shift')}
+                                className="w-full p-3.5 rounded-2xl bg-amber-500/10 hover:bg-amber-500/15 border border-amber-400/50 dark:border-amber-500/40 text-amber-950 dark:text-amber-100 transition-all flex items-center justify-between group cursor-pointer active:scale-[0.99] shadow-xs"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0 transition-transform group-hover:scale-105">
+                                        <UserCheck className="w-4 h-4" />
+                                    </div>
+                                    <span className="text-xs sm:text-sm font-bold tracking-tight text-amber-950 dark:text-amber-100">
+                                        End Shift & Handover Cash
+                                    </span>
+                                </div>
+                                <ChevronRight className="w-4 h-4 text-amber-700 dark:text-amber-300 group-hover:translate-x-0.5 transition-transform shrink-0" />
+                            </button>
                         </div>
-
-                        {/* Section 3: Desk Utilities & Directory */}
-                        <div className="space-y-2">
-                            <div className="flex items-center justify-between px-1">
-                                <span className={cn("text-[11px] uppercase tracking-wider font-extrabold", ui.sectionHeader)}>
-                                    Desk Utilities & Directory
-                                </span>
-                                <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono font-bold">
-                                    2 Workflows
-                                </span>
-                            </div>
-
-                            <div className="space-y-2">
-                                {utilitiesActions.map(action => {
-                                    const IconComponent = action.icon;
-                                    return (
-                                        <button
-                                            key={action.id}
-                                            type="button"
-                                            onClick={action.onClick}
-                                            className={cn(
-                                                "w-full text-left px-3.5 py-2.5 rounded-2xl border transition-all duration-200 flex items-center gap-3.5 group cursor-pointer active:scale-[0.99]",
-                                                ui.card
-                                            )}
-                                        >
-                                            <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105", action.iconBg)}>
-                                                <IconComponent className="w-4 h-4" />
-                                            </div>
-
-                                            <div className="flex-1 min-w-0 flex items-center gap-2">
-                                                <span className={cn("text-xs sm:text-sm font-bold truncate", ui.cardTitle)}>
-                                                    {action.title}
-                                                </span>
-                                                {action.badge && (
-                                                    <span className={cn("px-1.5 py-0.5 rounded-full text-[9.5px] font-bold font-mono", action.badgeClass)}>
-                                                        {action.badge}
-                                                    </span>
-                                                )}
-                                            </div>
-
-                                            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 dark:group-hover:text-white transition-colors shrink-0" />
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        {/* Section 4: Staff & Personal Workforce Portal */}
-                        <div className="space-y-2">
-                            <div className="flex items-center justify-between px-1">
-                                <span className={cn("text-[11px] uppercase tracking-wider font-extrabold", ui.sectionHeader)}>
-                                    Staff & HR Portal
-                                </span>
-                                <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono font-bold">
-                                    Personal Desk
-                                </span>
-                            </div>
-
-                            <div className="space-y-2">
-                                {workforceActions.map(action => {
-                                    const IconComponent = action.icon;
-                                    return (
-                                        <button
-                                            key={action.id}
-                                            type="button"
-                                            onClick={action.onClick}
-                                            className={cn(
-                                                "w-full text-left px-3.5 py-2.5 rounded-2xl border transition-all duration-200 flex items-center gap-3.5 group cursor-pointer active:scale-[0.99]",
-                                                ui.card
-                                            )}
-                                        >
-                                            <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105", action.iconBg)}>
-                                                <IconComponent className="w-4 h-4" />
-                                            </div>
-
-                                            <div className="flex-1 min-w-0 flex items-center gap-2">
-                                                <span className={cn("text-xs sm:text-sm font-bold truncate", ui.cardTitle)}>
-                                                    {action.title}
-                                                </span>
-                                                {action.badge && (
-                                                    <span className={cn("px-1.5 py-0.5 rounded-full text-[9.5px] font-bold font-mono", action.badgeClass)}>
-                                                        {action.badge}
-                                                    </span>
-                                                )}
-                                            </div>
-
-                                            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 dark:group-hover:text-white transition-colors shrink-0" />
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Footer */}
-                    <div className={cn("px-5 py-3 border-t flex items-center justify-between shrink-0", ui.footer)}>
-                        <button
-                            type="button"
-                            onClick={() => setActiveView('end-shift')}
-                            className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl font-bold text-xs bg-gradient-to-r from-amber-500/15 via-orange-500/15 to-emerald-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300 hover:border-amber-500/60 shadow-xs hover:shadow-sm transition-all cursor-pointer group active:scale-95"
-                        >
-                            <Sunset className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform" />
-                            <span>End Shift & Handover Cash</span>
-                            <ArrowRight className="w-3.5 h-3.5 opacity-70 group-hover:translate-x-0.5 transition-transform" />
-                        </button>
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="px-4 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white transition-colors cursor-pointer"
-                        >
-                            Dismiss
-                        </button>
                     </div>
                 </>
             )}

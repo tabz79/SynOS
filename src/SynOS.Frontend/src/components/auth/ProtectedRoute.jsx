@@ -43,7 +43,19 @@ export function ProtectedRoute({ allowedRoles = [] }) {
         // Global/HR routes accessible to all authenticated users
         const isGlobalRoute = cleanPath === "/my-hr" || cleanPath.startsWith("/my-hr/");
 
-        if (!isGlobalRoute && !hasWorkspaceAccess) {
+        // Operational finance and patient directory routes accessible to receptionists
+        const isReceptionRole = user?.role === 'Receptionist' || (Array.isArray(user?.role) && user.role.includes('Receptionist'));
+        const isReceptionOperationalRoute = isReceptionRole && (
+            cleanPath.startsWith('/finance/revenue') || 
+            cleanPath.startsWith('/finance/expenses') || 
+            cleanPath.startsWith('/finance/referrals') || 
+            cleanPath.startsWith('/finance/outsourcing') || 
+            cleanPath.startsWith('/finance/insurance') ||
+            cleanPath.startsWith('/finance/corporate') ||
+            cleanPath.startsWith('/patients')
+        );
+
+        if (!isGlobalRoute && !isReceptionOperationalRoute && !hasWorkspaceAccess) {
             return (
                 <div className="h-screen w-screen bg-synos-background flex items-center justify-center text-white">
                     <div className="text-center">

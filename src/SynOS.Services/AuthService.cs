@@ -461,13 +461,17 @@ namespace SynOS.Services
                 .Distinct()
                 .ToListAsync();
 
-            if (assigned.Count == 0 && user.DefaultBranchId.HasValue && user.DefaultBranchId.Value != Guid.Empty)
+            if (user.DefaultBranchId.HasValue && user.DefaultBranchId.Value != Guid.Empty)
             {
                 var defaultBranch = await _context.Branches
                     .Where(b => b.BranchId == user.DefaultBranchId.Value && b.IsActive)
                     .Select(b => new BranchSummaryDto { BranchId = b.BranchId, Name = b.Name })
-                    .ToListAsync();
-                return defaultBranch;
+                    .FirstOrDefaultAsync();
+
+                if (defaultBranch != null && !assigned.Any(b => b.BranchId == defaultBranch.BranchId))
+                {
+                    assigned.Insert(0, defaultBranch);
+                }
             }
 
             return assigned;

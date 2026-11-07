@@ -183,8 +183,8 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
           </div>
         )}
 
-        {/* Return to Reception for My-HR or Reception-launched Finance pages */}
-        {(location.pathname.startsWith('/my-hr') || (location.pathname.startsWith('/finance') && (user?.role === 'Receptionist' || location.search.includes('source=reception') || sessionStorage.getItem('synos_finance_source') === 'reception'))) && (
+        {/* Return to Reception for My-HR, Patient Directory, or Reception-launched Finance pages */}
+        {(location.pathname.startsWith('/my-hr') || location.pathname.startsWith('/patients') || (location.pathname.startsWith('/finance') && (user?.role === 'Receptionist' || location.search.includes('source=reception') || sessionStorage.getItem('synos_finance_source') === 'reception'))) && (
           <div className="flex items-center gap-1.5 sm:gap-2.5">
             <div className="h-4 w-px bg-zinc-300 dark:bg-zinc-700 hidden sm:block shrink-0" />
             

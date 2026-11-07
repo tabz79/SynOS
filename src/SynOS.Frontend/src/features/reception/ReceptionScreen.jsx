@@ -681,7 +681,7 @@ export function ReceptionScreen() {
                         }}
                         onOpenPatientDirectory={() => {
                             setIsOptionsPanelOpen(false);
-                            navigate('/admin/patients');
+                            navigate('/patients?source=reception');
                         }}
                         onOpenMyHr={() => {
                             setIsOptionsPanelOpen(false);
