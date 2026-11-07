@@ -58,11 +58,13 @@ export function ReceptionOptionsPanel({
     // Active View inside the single sliding panel canvas:
     // 'menu' | 'expense' | 'b2b' | 'stock' | 'leave' | 'attendance' | 'requests'
     const [activeView, setActiveView] = useState('menu');
+    const [expandedFinanceDept, setExpandedFinanceDept] = useState(null);
 
     // Reset view when panel is closed
     useEffect(() => {
         if (!isOpen) {
             setActiveView('menu');
+            setExpandedFinanceDept(null);
         }
     }, [isOpen]);
 
@@ -104,8 +106,6 @@ export function ReceptionOptionsPanel({
         input: "bg-white border-[#D5E2EC] text-slate-900 placeholder:text-slate-400 focus:border-synos-primary focus:ring-2 focus:ring-synos-primary/10",
         primaryBtn: "bg-synos-primary text-white hover:brightness-105 shadow-md shadow-synos-primary/25 active:scale-[0.99] transition-all"
     };
-
-    const [expandedFinanceDept, setExpandedFinanceDept] = useState(null);
 
     // Smooth width morphing based on active view on the SAME sliding surface
     // Matches Intent Panel in Patient Search mode

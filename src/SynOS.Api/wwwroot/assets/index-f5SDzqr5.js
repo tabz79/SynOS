@@ -54637,13 +54637,13 @@ Details: ${A.inner}`);
     });
   }
   function cBe({ isOpen: t, onClose: e, onOpenPatientDirectory: r, onOpenMyHr: a, pendingB2BCount: i = 0, onDataUpdated: s = null }) {
-    const { isDark: o } = Ki(), { user: A } = ia(), l = F.useRef(null), [c, g] = F.useState("menu");
+    const { isDark: o } = Ki(), { user: A } = ia(), l = F.useRef(null), [c, g] = F.useState("menu"), [d, u] = F.useState(null);
     if (F.useEffect(() => {
-      t || g("menu");
+      t || (g("menu"), u(null));
     }, [
       t
     ]), p9(l, t), A1(l, t, e), !t) return null;
-    const d = o ? {
+    const h = o ? {
       panel: "bg-zinc-950 border border-zinc-800 shadow-2xl z-30",
       header: "bg-zinc-900/80 backdrop-blur-md border-b border-zinc-800",
       footer: "bg-zinc-900/80 backdrop-blur-md border-t border-zinc-800 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.5)]",
@@ -54669,7 +54669,7 @@ Details: ${A.inner}`);
       recessedPod: "rounded-xl border border-[#DCE7F2] bg-[#F2F7FA] shadow-[inset_0_1px_3px_rgba(15,35,60,0.06)]",
       input: "bg-white border-[#D5E2EC] text-slate-900 placeholder:text-slate-400 focus:border-synos-primary focus:ring-2 focus:ring-synos-primary/10",
       primaryBtn: "bg-synos-primary text-white hover:brightness-105 shadow-md shadow-synos-primary/25 active:scale-[0.99] transition-all"
-    }, [u, h] = F.useState(null);
+    };
     let f = "w-[96vw] sm:w-[92vw] md:w-[75vw] lg:w-[50vw] xl:w-[44vw] 2xl:w-[40vw] min-w-[580px] max-w-[880px]";
     c === "expense" || c === "b2b" || c === "end-shift" ? f = "w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[86vw] xl:w-[85vw] 2xl:w-[85vw] max-w-[1780px]" : c === "ledger" || c === "refunds" ? f = "w-[96vw] sm:w-[94vw] md:w-[88vw] lg:w-[85vw] xl:w-[80vw] 2xl:w-[75vw] max-w-[1450px]" : c === "stock" ? f = "w-[96vw] sm:w-[92vw] md:w-[460px] lg:w-[500px] max-w-[540px]" : c === "leave" ? f = "w-[96vw] sm:w-[92vw] md:w-[540px] lg:w-[580px] max-w-[640px]" : c === "attendance" ? f = "w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[85vw] max-w-[1400px]" : c === "requests" && (f = "w-[96vw] sm:w-[92vw] md:w-[680px] lg:w-[720px] max-w-[800px]");
     const p = [
@@ -54931,7 +54931,7 @@ Details: ${A.inner}`);
     ];
     return n.jsxs("div", {
       ref: l,
-      className: Ie("absolute right-0 top-0 bottom-0 flex flex-col h-full overflow-hidden rounded-[24px]", "transition-[width,transform,opacity] duration-300 ease-out shadow-2xl", f, d.panel),
+      className: Ie("absolute right-0 top-0 bottom-0 flex flex-col h-full overflow-hidden rounded-[24px]", "transition-[width,transform,opacity] duration-300 ease-out shadow-2xl", f, h.panel),
       children: [
         c === "expense" && n.jsx(XW, {
           isOpen: true,
@@ -54983,18 +54983,18 @@ Details: ${A.inner}`);
           screenName: "Reception Desk"
         }),
         c === "leave" && n.jsx(dBe, {
-          ui: d,
+          ui: h,
           onBack: () => g("menu"),
           onClose: e,
           onViewRequests: () => g("requests")
         }),
         c === "attendance" && n.jsx(gBe, {
-          ui: d,
+          ui: h,
           onBack: () => g("menu"),
           onClose: e
         }),
         c === "requests" && n.jsx(uBe, {
-          ui: d,
+          ui: h,
           onBack: () => g("menu"),
           onClose: e,
           onApplyNew: () => g("leave")
@@ -55002,7 +55002,7 @@ Details: ${A.inner}`);
         c === "menu" && n.jsxs(n.Fragment, {
           children: [
             n.jsxs("div", {
-              className: Ie("h-13 sm:h-14 flex items-center justify-between px-5 sm:px-6 shrink-0 border-b", d.header),
+              className: Ie("h-13 sm:h-14 flex items-center justify-between px-5 sm:px-6 shrink-0 border-b", h.header),
               children: [
                 n.jsxs("div", {
                   className: "flex items-center gap-2.5",
@@ -55015,7 +55015,7 @@ Details: ${A.inner}`);
                     }),
                     n.jsx("div", {
                       children: n.jsxs("h2", {
-                        className: Ie("text-sm sm:text-base font-bold tracking-normal flex items-center gap-2", d.title),
+                        className: Ie("text-sm sm:text-base font-bold tracking-normal flex items-center gap-2", h.title),
                         children: [
                           "Desk Options & Actions",
                           n.jsx("span", {
@@ -55048,7 +55048,7 @@ Details: ${A.inner}`);
                       className: "flex items-center justify-between px-1",
                       children: [
                         n.jsx("span", {
-                          className: Ie("text-[11px] uppercase tracking-wider font-extrabold", d.sectionHeader),
+                          className: Ie("text-[11px] uppercase tracking-wider font-extrabold", h.sectionHeader),
                           children: "Desk Operations"
                         }),
                         n.jsx("span", {
@@ -55064,7 +55064,7 @@ Details: ${A.inner}`);
                         return n.jsxs("button", {
                           type: "button",
                           onClick: Q.onClick,
-                          className: Ie("w-full text-left px-3.5 py-2.5 rounded-2xl border transition-all duration-200 flex items-center gap-3.5 group cursor-pointer active:scale-[0.99]", d.card),
+                          className: Ie("w-full text-left px-3.5 py-2.5 rounded-2xl border transition-all duration-200 flex items-center gap-3.5 group cursor-pointer active:scale-[0.99]", h.card),
                           children: [
                             n.jsx("div", {
                               className: Ie("w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105", Q.iconBg),
@@ -55076,7 +55076,7 @@ Details: ${A.inner}`);
                               className: "flex-1 min-w-0 flex items-center gap-2",
                               children: [
                                 n.jsx("span", {
-                                  className: Ie("text-xs sm:text-sm font-bold truncate", d.cardTitle),
+                                  className: Ie("text-xs sm:text-sm font-bold truncate", h.cardTitle),
                                   children: Q.title
                                 }),
                                 Q.badge && n.jsx("span", {
@@ -55101,7 +55101,7 @@ Details: ${A.inner}`);
                       className: "flex items-center justify-between px-1",
                       children: [
                         n.jsx("span", {
-                          className: Ie("text-[11px] uppercase tracking-wider font-extrabold", d.sectionHeader),
+                          className: Ie("text-[11px] uppercase tracking-wider font-extrabold", h.sectionHeader),
                           children: "Cashier POS & Settlements"
                         }),
                         n.jsx("span", {
@@ -55117,7 +55117,7 @@ Details: ${A.inner}`);
                         return n.jsxs("button", {
                           type: "button",
                           onClick: Q.onClick,
-                          className: Ie("w-full text-left px-3.5 py-2.5 rounded-2xl border transition-all duration-200 flex items-center gap-3.5 group cursor-pointer active:scale-[0.99]", d.card),
+                          className: Ie("w-full text-left px-3.5 py-2.5 rounded-2xl border transition-all duration-200 flex items-center gap-3.5 group cursor-pointer active:scale-[0.99]", h.card),
                           children: [
                             n.jsx("div", {
                               className: Ie("w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105", Q.iconBg),
@@ -55129,7 +55129,7 @@ Details: ${A.inner}`);
                               className: "flex-1 min-w-0 flex items-center gap-2",
                               children: [
                                 n.jsx("span", {
-                                  className: Ie("text-xs sm:text-sm font-bold truncate", d.cardTitle),
+                                  className: Ie("text-xs sm:text-sm font-bold truncate", h.cardTitle),
                                   children: Q.title
                                 }),
                                 Q.badge && n.jsx("span", {
@@ -55154,7 +55154,7 @@ Details: ${A.inner}`);
                       className: "flex items-center justify-between px-1",
                       children: [
                         n.jsx("span", {
-                          className: Ie("text-[11px] uppercase tracking-wider font-extrabold", d.sectionHeader),
+                          className: Ie("text-[11px] uppercase tracking-wider font-extrabold", h.sectionHeader),
                           children: "Finance Operations"
                         }),
                         n.jsx("span", {
@@ -55166,9 +55166,9 @@ Details: ${A.inner}`);
                     n.jsx("div", {
                       className: "space-y-2",
                       children: p.map((Q) => {
-                        const N = Q.icon, v = u === Q.id;
+                        const N = Q.icon, v = d === Q.id;
                         return n.jsxs("div", {
-                          className: Ie("rounded-2xl border transition-all duration-200 overflow-hidden", d.card),
+                          className: Ie("rounded-2xl border transition-all duration-200 overflow-hidden", h.card),
                           children: [
                             n.jsxs("div", {
                               className: "flex items-center justify-between px-3.5 py-2.5 group",
@@ -55190,7 +55190,7 @@ Details: ${A.inner}`);
                                       className: "flex items-center gap-2",
                                       children: [
                                         n.jsx("span", {
-                                          className: Ie("text-xs sm:text-sm font-bold truncate group-hover:text-synos-primary transition-colors", d.cardTitle),
+                                          className: Ie("text-xs sm:text-sm font-bold truncate group-hover:text-synos-primary transition-colors", h.cardTitle),
                                           children: Q.name
                                         }),
                                         n.jsx(LF, {
@@ -55203,7 +55203,7 @@ Details: ${A.inner}`);
                                 n.jsx("button", {
                                   type: "button",
                                   onClick: (M) => {
-                                    M.stopPropagation(), h(v ? null : Q.id);
+                                    M.stopPropagation(), u(v ? null : Q.id);
                                   },
                                   className: "p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors shrink-0 cursor-pointer",
                                   title: v ? `Collapse ${Q.name} tabs` : `Expand ${Q.name} tabs`,
@@ -55244,7 +55244,7 @@ Details: ${A.inner}`);
                       className: "flex items-center justify-between px-1",
                       children: [
                         n.jsx("span", {
-                          className: Ie("text-[11px] uppercase tracking-wider font-extrabold", d.sectionHeader),
+                          className: Ie("text-[11px] uppercase tracking-wider font-extrabold", h.sectionHeader),
                           children: "Desk Utilities & Directory"
                         }),
                         n.jsx("span", {
@@ -55260,7 +55260,7 @@ Details: ${A.inner}`);
                         return n.jsxs("button", {
                           type: "button",
                           onClick: Q.onClick,
-                          className: Ie("w-full text-left px-3.5 py-2.5 rounded-2xl border transition-all duration-200 flex items-center gap-3.5 group cursor-pointer active:scale-[0.99]", d.card),
+                          className: Ie("w-full text-left px-3.5 py-2.5 rounded-2xl border transition-all duration-200 flex items-center gap-3.5 group cursor-pointer active:scale-[0.99]", h.card),
                           children: [
                             n.jsx("div", {
                               className: Ie("w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105", Q.iconBg),
@@ -55272,7 +55272,7 @@ Details: ${A.inner}`);
                               className: "flex-1 min-w-0 flex items-center gap-2",
                               children: [
                                 n.jsx("span", {
-                                  className: Ie("text-xs sm:text-sm font-bold truncate", d.cardTitle),
+                                  className: Ie("text-xs sm:text-sm font-bold truncate", h.cardTitle),
                                   children: Q.title
                                 }),
                                 Q.badge && n.jsx("span", {
@@ -55297,7 +55297,7 @@ Details: ${A.inner}`);
                       className: "flex items-center justify-between px-1",
                       children: [
                         n.jsx("span", {
-                          className: Ie("text-[11px] uppercase tracking-wider font-extrabold", d.sectionHeader),
+                          className: Ie("text-[11px] uppercase tracking-wider font-extrabold", h.sectionHeader),
                           children: "Staff & HR Portal"
                         }),
                         n.jsx("span", {
@@ -55313,7 +55313,7 @@ Details: ${A.inner}`);
                         return n.jsxs("button", {
                           type: "button",
                           onClick: Q.onClick,
-                          className: Ie("w-full text-left px-3.5 py-2.5 rounded-2xl border transition-all duration-200 flex items-center gap-3.5 group cursor-pointer active:scale-[0.99]", d.card),
+                          className: Ie("w-full text-left px-3.5 py-2.5 rounded-2xl border transition-all duration-200 flex items-center gap-3.5 group cursor-pointer active:scale-[0.99]", h.card),
                           children: [
                             n.jsx("div", {
                               className: Ie("w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105", Q.iconBg),
@@ -55325,7 +55325,7 @@ Details: ${A.inner}`);
                               className: "flex-1 min-w-0 flex items-center gap-2",
                               children: [
                                 n.jsx("span", {
-                                  className: Ie("text-xs sm:text-sm font-bold truncate", d.cardTitle),
+                                  className: Ie("text-xs sm:text-sm font-bold truncate", h.cardTitle),
                                   children: Q.title
                                 }),
                                 Q.badge && n.jsx("span", {
@@ -55346,7 +55346,7 @@ Details: ${A.inner}`);
               ]
             }),
             n.jsxs("div", {
-              className: Ie("px-5 py-3 border-t flex items-center justify-between shrink-0", d.footer),
+              className: Ie("px-5 py-3 border-t flex items-center justify-between shrink-0", h.footer),
               children: [
                 n.jsxs("button", {
                   type: "button",
