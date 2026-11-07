@@ -100,6 +100,11 @@ export function IntentPanel({ onVisitUpdated }) {
     const rightColRef = useRef(null);
     const [activeHints, setActiveHints] = useState([]);
 
+    // Clear contextual hints when switching patient / visit or closing panel
+    useEffect(() => {
+        setActiveHints([]);
+    }, [currentVisitId, currentPatientId, drawerState?.visitId, isOpen]);
+
     // iOS Floating Notification Center Listener
     useEffect(() => {
         const handleHint = (e) => {
@@ -1662,30 +1667,30 @@ export function IntentPanel({ onVisitUpdated }) {
                     {activeHints.map(hint => (
                         <div 
                             key={hint.id}
-                            className="pointer-events-auto rounded-2xl p-4 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl border border-white/80 dark:border-white/10 shadow-[0_12px_32px_rgba(15,35,60,0.16)] space-y-2 animate-in fade-in slide-in-from-left-4 duration-300 relative group"
+                            className="pointer-events-auto rounded-2xl p-4 bg-slate-200/95 dark:bg-zinc-800/95 backdrop-blur-xl border border-slate-300 dark:border-zinc-700 shadow-[0_14px_36px_rgba(15,35,60,0.20)] space-y-2.5 animate-in fade-in slide-in-from-left-4 duration-300 relative group"
                         >
                             <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2 min-w-0">
-                                    <div className="w-6 h-6 rounded-lg bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs shrink-0">
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                    <div className="w-7 h-7 rounded-lg bg-blue-600/15 text-blue-700 dark:text-blue-300 flex items-center justify-center font-bold text-sm shrink-0">
                                         💡
                                     </div>
-                                    <span className="text-sm font-bold text-slate-900 dark:text-zinc-100 truncate">
+                                    <span className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">
                                         {hint.title}
                                     </span>
                                 </div>
                                 <button
                                     type="button"
                                     onClick={() => setActiveHints(prev => prev.filter(h => h.id !== hint.id))}
-                                    className="text-slate-400 hover:text-slate-700 dark:hover:text-zinc-200 p-1 rounded-md hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer transition-colors shrink-0"
+                                    className="text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white p-1 rounded-lg hover:bg-slate-300/60 dark:hover:bg-zinc-700 cursor-pointer transition-colors shrink-0"
                                     title="Dismiss"
                                 >
                                     <X className="w-4 h-4" />
                                 </button>
                             </div>
-                            <p className="text-xs sm:text-[13px] font-medium text-slate-700 dark:text-zinc-200 leading-relaxed">
+                            <p className="text-xs sm:text-[14px] font-semibold text-slate-800 dark:text-zinc-100 leading-snug">
                                 {hint.message}
                             </p>
-                            <div className="text-[10px] font-mono text-slate-400 dark:text-zinc-400 text-right">
+                            <div className="text-[11px] font-mono text-slate-500 dark:text-zinc-400 text-right">
                                 just now
                             </div>
                         </div>
@@ -1704,7 +1709,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                 {snapshot.correctionHistory.map((h, idx) => (
                                     <div 
                                         key={h.correctionId || idx}
-                                        className="rounded-2xl p-3 bg-white/85 dark:bg-zinc-900/85 backdrop-blur-xl border border-white/70 dark:border-white/10 shadow-[0_6px_20px_rgba(15,35,60,0.08)] space-y-1.5 transition-all hover:bg-white/95 dark:hover:bg-zinc-900/95"
+                                        className="rounded-2xl p-3 bg-slate-200/90 dark:bg-zinc-800/90 backdrop-blur-xl border border-slate-300/80 dark:border-zinc-700 shadow-[0_8px_24px_rgba(15,35,60,0.12)] space-y-1.5 transition-all hover:bg-slate-200 dark:hover:bg-zinc-800"
                                     >
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-1.5 min-w-0">
@@ -2631,10 +2636,10 @@ export function IntentPanel({ onVisitUpdated }) {
                                 className="p-3.5 sm:p-5 max-w-full mx-auto w-full flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-300"
                                 style={viewportScale < 1 ? { zoom: viewportScale } : undefined}
                             >
-                                {/* 2-COLUMN UNIFIED WORKFLOW (Left 7 cols: Patient Identification -> Visit Details | Right 5 cols: Billing & Payer Mode -> Financials) */}
-                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 xl:gap-6 items-stretch flex-1 min-h-0 overflow-hidden">
-                                    {/* LEFT COLUMN: 7 Cols */}
-                                    <div className="lg:col-span-7 flex flex-col gap-3 h-full min-h-0 overflow-y-auto pr-1">
+                                {/* 2-COLUMN UNIFIED WORKFLOW (Left 53% : Right 47%) */}
+                                <div className="grid grid-cols-1 lg:grid-cols-[53fr_47fr] gap-4 sm:gap-5 xl:gap-6 items-stretch flex-1 min-h-0 overflow-hidden">
+                                    {/* LEFT COLUMN: 53% */}
+                                    <div className="flex flex-col gap-3 h-full min-h-0 overflow-y-auto pr-1">
                                         {/* Step 1: Patient Identification (Compressed height, tightly hugs content, collapsible) */}
                                         <div className={cn(
                                             "rounded-2xl border transition-all shrink-0",
@@ -2730,7 +2735,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                         </div>
                                     </div>
 
-                                    {/* RIGHT COLUMN: 5 Cols (Unified smooth scroll for Billing & Financials) */}
+                                    {/* RIGHT COLUMN: 47% (Unified smooth scroll for Billing & Financials) */}
                                     <div 
                                         id="reception-right-column"
                                         ref={rightColRef}
@@ -2738,7 +2743,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                             const scrollTop = e.currentTarget.scrollTop;
                                             setIsPayerScrolledOut(scrollTop > 20);
                                         }}
-                                        className="lg:col-span-5 flex flex-col gap-3 h-full min-h-0 overflow-y-auto pr-1 scroll-smooth"
+                                        className="flex flex-col gap-3 h-full min-h-0 overflow-y-auto pr-1 scroll-smooth"
                                     >
                                         {/* Billing & Payer Mode */}
                                         <div 

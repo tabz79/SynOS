@@ -75,12 +75,15 @@ export function BillingSummary({
     const [reasonSelectedIndex, setReasonSelectedIndex] = useState(-1);
     const reasonListRef = useRef(null);
 
-    // Secondary Concession & Owner Write-Off State (For Active Due Bills)
+    // Secondary Discount & Owner Write-Off State (For Active Due Bills)
     const [isSecondaryExpanded, setIsSecondaryExpanded] = useState(true);
     const [secondaryDiscountType, setSecondaryDiscountType] = useState('FLAT'); // FLAT by default per invariant Rule 2
     const [secondaryDiscountValue, setSecondaryDiscountValue] = useState('');
     const [secondaryReason, setSecondaryReason] = useState('Lab Owner Discretionary Concession');
     const [isApplyingSecondary, setIsApplyingSecondary] = useState(false);
+    const [showSecondaryReasonDropdown, setShowSecondaryReasonDropdown] = useState(false);
+    const [secondaryReasonSelectedIndex, setSecondaryReasonSelectedIndex] = useState(-1);
+    const secondaryReasonListRef = useRef(null);
 
     // Corporate B2B Billing Doctor Override State
     const [b2bDoctorSearch, setB2BDoctorSearch] = useState('');
@@ -433,6 +436,77 @@ export function BillingSummary({
             }
         } else if (e.key === 'Escape') {
             setShowReasonDropdown(false);
+        }
+    };
+
+    // Derived filtered suggestions for Secondary Discount / Write-Off Reason Autocomplete
+    const standardSecondaryReasons = useMemo(() => [
+        { reasonText: 'Lab Owner Discretionary Concession', category: 'Management' },
+        { reasonText: 'Chief Pathologist Courtesy Concession', category: 'Clinical' },
+        { reasonText: 'Indigent Patient Full Write-off', category: 'Charity' },
+        { reasonText: 'VIP / Personal Relative Courtesy', category: 'Management' },
+        { reasonText: 'Director Approved Concession', category: 'Executive' },
+        { reasonText: 'Management Waiver / Write-off', category: 'Management' }
+    ], []);
+
+    const filteredSecondaryReasonSuggestions = useMemo(() => {
+        const query = (secondaryReason || '').trim().toLowerCase();
+        const combined = [...standardSecondaryReasons, ...(discountReasons || [])];
+        const unique = [];
+        const seen = new Set();
+        for (const item of combined) {
+            const key = (item.reasonText || '').toLowerCase();
+            if (key && !seen.has(key)) {
+                seen.add(key);
+                unique.push(item);
+            }
+        }
+        if (!query) return unique;
+        return unique.filter(r => 
+            (r.reasonText && r.reasonText.toLowerCase().includes(query)) ||
+            (r.category && r.category.toLowerCase().includes(query))
+        );
+    }, [standardSecondaryReasons, discountReasons, secondaryReason]);
+
+    useEffect(() => {
+        if (showSecondaryReasonDropdown && filteredSecondaryReasonSuggestions.length > 0) {
+            setSecondaryReasonSelectedIndex(0);
+        } else {
+            setSecondaryReasonSelectedIndex(-1);
+        }
+    }, [secondaryReason, showSecondaryReasonDropdown, filteredSecondaryReasonSuggestions.length]);
+
+    useEffect(() => {
+        if (showSecondaryReasonDropdown && secondaryReasonSelectedIndex >= 0 && secondaryReasonListRef.current) {
+            const selectedElem = secondaryReasonListRef.current.children[secondaryReasonSelectedIndex];
+            if (selectedElem) selectedElem.scrollIntoView({ block: 'nearest' });
+        }
+    }, [secondaryReasonSelectedIndex, showSecondaryReasonDropdown]);
+
+    const handleSecondaryReasonKeyDown = (e) => {
+        if (!showSecondaryReasonDropdown) {
+            if (e.key === 'ArrowDown' || e.key === 'Enter') {
+                setShowSecondaryReasonDropdown(true);
+            }
+            return;
+        }
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setSecondaryReasonSelectedIndex(prev => (prev < filteredSecondaryReasonSuggestions.length - 1 ? prev + 1 : 0));
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setSecondaryReasonSelectedIndex(prev => (prev > 0 ? prev - 1 : filteredSecondaryReasonSuggestions.length - 1));
+        } else if (e.key === 'Enter') {
+            if (secondaryReasonSelectedIndex >= 0 && secondaryReasonSelectedIndex < filteredSecondaryReasonSuggestions.length) {
+                e.preventDefault();
+                setSecondaryReason(filteredSecondaryReasonSuggestions[secondaryReasonSelectedIndex].reasonText);
+                setShowSecondaryReasonDropdown(false);
+                setTimeout(() => {
+                    document.getElementById('btn-apply-secondary-discount')?.focus();
+                }, 40);
+            }
+        } else if (e.key === 'Escape') {
+            setShowSecondaryReasonDropdown(false);
         }
     };
 
@@ -1082,197 +1156,242 @@ export function BillingSummary({
                                 </div>
                             )}
 
-                            {/* SECONDARY CONCESSION & LAB OWNER WRITE-OFF CARD */}
+                            {/* SECONDARY DISCOUNT & OWNER WRITE-OFF CARD */}
                             {isExistingBilledDueVisit && canPerformActions && (
-                                <div className={cn(
-                                    "p-3.5 sm:p-4 rounded-2xl border space-y-3 transition-all shadow-2xs animate-in fade-in slide-in-from-top-1 duration-200",
-                                    isDark ? "bg-orange-950/20 border-orange-900/40" : "bg-[#FFF9F3] border-[#FDE3CF]"
-                                )}>
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            <ShieldAlert className="w-4 h-4 text-[#C2611D] dark:text-orange-400 shrink-0" />
-                                            <span className="text-xs sm:text-sm font-bold text-[#8C3C0B] dark:text-orange-200">
-                                                Secondary Concession / Write-Off
-                                            </span>
-                                        </div>
+                                !isSecondaryExpanded ? (
+                                    <div className={cn(
+                                        "p-3.5 sm:p-4 rounded-2xl border flex items-center justify-between transition-all shadow-[0_2px_8px_rgba(232,122,56,0.04)] animate-in fade-in slide-in-from-top-1 duration-200",
+                                        isDark ? "bg-amber-950/20 border-amber-800/40" : "bg-amber-50/70 border-amber-200/90"
+                                    )}>
+                                        <span className="text-sm font-bold text-amber-950 dark:text-amber-100">
+                                            Secondary Discount / Write Off
+                                        </span>
                                         <button
                                             type="button"
                                             id="btn-toggle-secondary-concession"
-                                            onClick={() => setIsSecondaryExpanded(prev => !prev)}
-                                            className="px-2.5 py-1 rounded-lg text-xs font-bold text-[#8C3C0B] dark:text-orange-200 bg-[#FCE5D3] hover:bg-[#F9DAC2] dark:bg-orange-900/40 dark:hover:bg-orange-900/60 border border-[#F5C7A5] dark:border-orange-800/60 cursor-pointer transition-all active:scale-95 flex items-center gap-1 shadow-2xs"
+                                            onClick={() => setIsSecondaryExpanded(true)}
+                                            className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold text-amber-900 dark:text-amber-200 bg-amber-100/90 hover:bg-amber-200/80 dark:bg-amber-900/40 dark:hover:bg-amber-900/60 border border-amber-300/80 dark:border-amber-800 transition-all cursor-pointer active:scale-95 shadow-2xs"
                                         >
-                                            <span>{isSecondaryExpanded ? "Minimize" : "+ Concession / Write-Off"}</span>
-                                            <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", isSecondaryExpanded && "rotate-180")} />
+                                            <span>+ Secondary Discount / Write Off</span>
+                                            <ChevronDown className="w-3.5 h-3.5" />
                                         </button>
                                     </div>
+                                ) : (
+                                    <div className={cn(
+                                        "p-4 sm:p-5 rounded-2xl border space-y-4 transition-all shadow-[0_2px_8px_rgba(232,122,56,0.05)] animate-in fade-in slide-in-from-top-2 duration-200",
+                                        isDark ? "bg-amber-950/20 border-amber-800/40" : "bg-amber-50/70 border-amber-200/90"
+                                    )}>
+                                        {/* Header Row: Title & Minimize Button */}
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-base font-bold text-slate-800 dark:text-zinc-200 tracking-normal">
+                                                Secondary Discount / Write Off
+                                            </span>
+                                            <button
+                                                type="button"
+                                                id="btn-minimize-secondary-discount"
+                                                onClick={() => setIsSecondaryExpanded(false)}
+                                                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-all cursor-pointer active:scale-95 synos-focus-btn border border-slate-200/80 dark:border-zinc-700"
+                                                title="Minimize Secondary Discount"
+                                            >
+                                                <span>Minimize</span>
+                                                <ChevronDown className="w-3.5 h-3.5 rotate-180 transition-transform duration-200" />
+                                            </button>
+                                        </div>
 
-                                    {isSecondaryExpanded && (
-                                        <div className="pt-2 border-t border-[#FDE3CF] dark:border-orange-900/50 space-y-3 animate-in fade-in duration-200">
-                                            {/* Discount Type Toggle */}
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-xs font-semibold text-[#8C3C0B] dark:text-orange-200">
-                                                    Adjustment Type:
-                                                </span>
-                                                <div className="flex items-center rounded-lg p-0.5 bg-[#FCE7D6] dark:bg-orange-950/60 border border-[#F5CBAA] dark:border-orange-900/60 text-[10px] font-bold shadow-2xs">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setSecondaryDiscountType('FLAT')}
-                                                        className={cn(
-                                                            "px-2.5 py-0.5 rounded-md transition-all cursor-pointer font-bold",
-                                                            secondaryDiscountType === 'FLAT'
-                                                                ? "bg-white dark:bg-zinc-800 text-[#8C3C0B] dark:text-orange-200 shadow-2xs"
-                                                                : "text-[#A3521E] dark:text-orange-400 hover:text-[#8C3C0B]"
-                                                        )}
-                                                    >
-                                                        Flat (₹)
-                                                    </button>
+                                        {/* Amount Input Row with % Off / ₹ Flat Toggle (Mirrors Primary Discount Card Exactly) */}
+                                        <div className="space-y-3.5 pt-1">
+                                            <div className="flex items-center gap-3">
+                                                <div className="inline-flex p-1 rounded-xl bg-slate-200/90 dark:bg-zinc-800 border border-slate-300/80 dark:border-zinc-700 shadow-2xs">
                                                     <button
                                                         type="button"
                                                         onClick={() => setSecondaryDiscountType('PERCENTAGE')}
                                                         className={cn(
-                                                            "px-2.5 py-0.5 rounded-md transition-all cursor-pointer font-bold",
+                                                            "px-4 py-2 rounded-lg text-xs sm:text-sm font-extrabold transition-all cursor-pointer synos-focus-btn active:scale-95",
                                                             secondaryDiscountType === 'PERCENTAGE'
-                                                                ? "bg-white dark:bg-zinc-800 text-[#8C3C0B] dark:text-orange-200 shadow-2xs"
-                                                                : "text-[#A3521E] dark:text-orange-400 hover:text-[#8C3C0B]"
+                                                                ? "bg-slate-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-xs"
+                                                                : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
                                                         )}
                                                     >
-                                                        % of Due
+                                                        % Off
                                                     </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setSecondaryDiscountType('FLAT')}
+                                                        className={cn(
+                                                            "px-4 py-2 rounded-lg text-xs sm:text-sm font-extrabold transition-all cursor-pointer synos-focus-btn active:scale-95",
+                                                            secondaryDiscountType === 'FLAT'
+                                                                ? "bg-slate-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-xs"
+                                                                : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
+                                                        )}
+                                                    >
+                                                        ₹ Flat
+                                                    </button>
+                                                </div>
+
+                                                <div className="relative flex-1">
+                                                    <input
+                                                        id="input-secondary-discount-val"
+                                                        type="number"
+                                                        min="0"
+                                                        max={secondaryDiscountType === 'PERCENTAGE' ? 100 : remainingDue}
+                                                        step={secondaryDiscountType === 'PERCENTAGE' ? '1' : '10'}
+                                                        placeholder={secondaryDiscountType === 'PERCENTAGE' ? 'Write-off % (e.g. 50)' : `Write-off ₹ (max ${remainingDue})`}
+                                                        value={secondaryDiscountValue}
+                                                        onFocus={(e) => e.target.select()}
+                                                        onChange={(e) => {
+                                                            const raw = e.target.value;
+                                                            const clean = raw.startsWith('0') && raw.length > 1 && !raw.startsWith('0.') ? raw.replace(/^0+/, '') : raw;
+                                                            setSecondaryDiscountValue(clean);
+                                                        }}
+                                                        className={cn("w-full h-12 px-4 rounded-xl text-base font-mono font-bold outline-none border synos-focus-input", ui.input)}
+                                                    />
                                                 </div>
                                             </div>
 
-                                            {/* Quick Action Chips */}
-                                            <div className="flex items-center gap-1.5 flex-wrap">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setSecondaryDiscountType('FLAT');
-                                                        setSecondaryDiscountValue(String(remainingDue));
-                                                        setSecondaryReason('Lab Owner Discretionary Write-off');
-                                                    }}
-                                                    className="px-3 py-1 rounded-lg text-xs font-bold bg-[#FDE4D0] hover:bg-[#FCD8BE] text-[#8C3C0B] dark:bg-orange-900/50 dark:hover:bg-orange-900/70 dark:text-orange-200 border border-[#F8BE95] dark:border-orange-700/60 cursor-pointer transition-all active:scale-95 shadow-2xs flex items-center gap-1"
-                                                >
-                                                    <span>Full Write-Off (₹{remainingDue.toLocaleString()})</span>
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setSecondaryDiscountType('FLAT');
-                                                        setSecondaryDiscountValue(String(Math.round(remainingDue * 0.5)));
-                                                    }}
-                                                    className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white/90 dark:bg-zinc-800 text-[#8C3C0B] dark:text-orange-300 border border-[#FDE3CF] dark:border-orange-900/50 hover:bg-[#FFF3E8] cursor-pointer transition-all active:scale-95 shadow-2xs"
-                                                >
-                                                    50% (₹{Math.round(remainingDue * 0.5).toLocaleString()})
-                                                </button>
-                                                {remainingDue >= 100 && (
+                                            {/* Live Preview Banner */}
+                                            {secondaryDiscountValue && Number(secondaryDiscountValue) > 0 && (() => {
+                                                const secVal = Number(secondaryDiscountValue) || 0;
+                                                const deduction = secondaryDiscountType === 'PERCENTAGE'
+                                                    ? Math.round(remainingDue * (Math.min(100, secVal) / 100))
+                                                    : Math.min(remainingDue, secVal);
+                                                const calculatedNetDue = Math.max(0, remainingDue - deduction);
+                                                return (
+                                                    <div className="flex items-center justify-between text-sm px-4 py-2.5 rounded-xl bg-amber-100/70 dark:bg-amber-950/40 border border-amber-300/70 dark:border-amber-900/50 text-amber-950 dark:text-amber-200 font-medium animate-in fade-in">
+                                                        <span>
+                                                            {secondaryDiscountType === 'PERCENTAGE' ? `${secVal}% off due ₹${remainingDue.toLocaleString()}` : `₹${secVal.toLocaleString()} Flat off due ₹${remainingDue.toLocaleString()}`}
+                                                            {' → '}<strong>-₹{deduction.toLocaleString()}</strong>
+                                                        </span>
+                                                        <span>
+                                                            Revised Due: <strong className="font-bold text-emerald-700 dark:text-emerald-400 text-base">₹{calculatedNetDue.toLocaleString()}</strong> {calculatedNetDue === 0 && "(Fully Settled)"}
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })()}
+
+                                            {/* Reason Selection Row + Apply Button (Exact Mirror of Primary Discount) */}
+                                            <div className="space-y-2 pt-1">
+                                                <div className="flex items-center justify-between">
+                                                    <label className="text-base font-bold text-slate-800 dark:text-zinc-200 tracking-normal">
+                                                        Discount Reason / Authority
+                                                    </label>
                                                     <button
                                                         type="button"
                                                         onClick={() => {
-                                                            setSecondaryDiscountType('FLAT');
-                                                            setSecondaryDiscountValue('100');
+                                                            setShowSecondaryReasonDropdown(false);
+                                                            if (onOpenModal) onOpenModal('discountReason');
                                                         }}
-                                                        className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white/90 dark:bg-zinc-800 text-[#8C3C0B] dark:text-orange-300 border border-[#FDE3CF] dark:border-orange-900/50 hover:bg-[#FFF3E8] cursor-pointer transition-all active:scale-95 shadow-2xs"
+                                                        className="text-sm font-bold text-sky-600 hover:text-sky-700 flex items-center gap-1 cursor-pointer transition-colors"
+                                                        title="Add new standard preset reason"
                                                     >
-                                                        ₹100 Off
+                                                        <Plus className="w-4 h-4" /> Add Reason
                                                     </button>
-                                                )}
-                                            </div>
-
-                                            {/* Input & Reason */}
-                                            <div className="space-y-2">
-                                                <div className="relative">
-                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-[#C2611D] dark:text-orange-400">
-                                                        {secondaryDiscountType === 'FLAT' ? '₹' : '%'}
-                                                    </span>
-                                                    <input
-                                                        type="number"
-                                                        min="1"
-                                                        max={secondaryDiscountType === 'FLAT' ? remainingDue : 100}
-                                                        placeholder={secondaryDiscountType === 'FLAT' ? `Enter concession ₹ (max ${remainingDue})` : 'Enter concession % (1 - 100)'}
-                                                        value={secondaryDiscountValue}
-                                                        onChange={(e) => {
-                                                            const raw = e.target.value;
-                                                            setSecondaryDiscountValue(raw);
-                                                        }}
-                                                        className={cn(
-                                                            "w-full h-10 pl-8 pr-4 rounded-xl text-sm font-mono font-bold outline-none border transition-all bg-white dark:bg-zinc-800 border-[#FDE3CF] dark:border-orange-900/50 focus:border-[#E8864A] focus:ring-2 focus:ring-[#E8864A]/20 text-slate-900 dark:text-white",
-                                                            ui.input
-                                                        )}
-                                                    />
                                                 </div>
 
-                                                {/* Reason Selection */}
-                                                <div className="space-y-1">
-                                                    <label className="text-[11px] font-bold text-[#8C3C0B] dark:text-orange-200 block">
-                                                        Authorization Authority & Reason *
-                                                    </label>
-                                                    <select
-                                                        value={secondaryReason}
-                                                        onChange={(e) => setSecondaryReason(e.target.value)}
-                                                        className={cn(
-                                                            "w-full h-9 rounded-xl px-3 outline-none text-xs font-medium cursor-pointer border bg-white dark:bg-zinc-800 border-[#FDE3CF] dark:border-orange-900/50 text-slate-800 dark:text-zinc-200 focus:border-[#E8864A]",
-                                                            ui.input
+                                                {/* Native Searchable Dropdown Combobox */}
+                                                <div className="flex items-center gap-2.5">
+                                                    <div className="relative flex-1">
+                                                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Search or Select Reason (e.g. Lab Owner Discretionary Concession)..."
+                                                            value={secondaryReason}
+                                                            onFocus={() => setShowSecondaryReasonDropdown(true)}
+                                                            onChange={(e) => {
+                                                                setSecondaryReason(e.target.value);
+                                                                setShowSecondaryReasonDropdown(true);
+                                                            }}
+                                                            onKeyDown={handleSecondaryReasonKeyDown}
+                                                            onBlur={() => {
+                                                                setTimeout(() => {
+                                                                    setShowSecondaryReasonDropdown(false);
+                                                                }, 200);
+                                                            }}
+                                                            style={{ paddingLeft: '2.75rem', paddingRight: '2.25rem' }}
+                                                            className={cn(ui.input, "w-full h-12 rounded-xl text-base font-medium outline-none border transition-all")}
+                                                        />
+                                                        {secondaryReason ? (
+                                                            <button
+                                                                type="button"
+                                                                onMouseDown={(e) => {
+                                                                    e.preventDefault();
+                                                                    setSecondaryReason('');
+                                                                    setShowSecondaryReasonDropdown(true);
+                                                                }}
+                                                                className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 cursor-pointer"
+                                                                title="Clear reason"
+                                                            >
+                                                                <X className="w-4 h-4" />
+                                                            </button>
+                                                        ) : (
+                                                            <button
+                                                                type="button"
+                                                                onMouseDown={(e) => {
+                                                                    e.preventDefault();
+                                                                    setShowSecondaryReasonDropdown(prev => !prev);
+                                                                }}
+                                                                className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 cursor-pointer"
+                                                            >
+                                                                <ChevronDown className="w-4 h-4" />
+                                                            </button>
                                                         )}
+
+                                                        {/* Suggestions Floating Overlay */}
+                                                        {showSecondaryReasonDropdown && (
+                                                            <div
+                                                                ref={secondaryReasonListRef}
+                                                                className={cn(
+                                                                    "absolute top-full left-0 right-0 mt-1.5 rounded-xl p-1 shadow-xl z-50 border overflow-y-auto space-y-1 backdrop-blur-md max-h-52",
+                                                                    isDark ? "bg-zinc-900/95 border-zinc-700/60 shadow-black/50 text-zinc-200" : "bg-white/95 border-slate-200/90 shadow-slate-900/10 text-slate-900"
+                                                                )}
+                                                            >
+                                                                {filteredSecondaryReasonSuggestions.map((r, idx) => {
+                                                                    const isSelected = idx === secondaryReasonSelectedIndex;
+                                                                    return (
+                                                                        <button
+                                                                            key={r.reasonText + idx}
+                                                                            type="button"
+                                                                            onMouseDown={(e) => {
+                                                                                e.preventDefault();
+                                                                                setSecondaryReason(r.reasonText);
+                                                                                setShowSecondaryReasonDropdown(false);
+                                                                            }}
+                                                                            className={cn(
+                                                                                "w-full text-left px-3 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-between cursor-pointer",
+                                                                                isSelected
+                                                                                    ? (isDark ? "bg-zinc-800 text-white font-bold" : "bg-amber-100 text-amber-950 font-bold")
+                                                                                    : (isDark ? "hover:bg-zinc-800/70" : "hover:bg-amber-50")
+                                                                            )}
+                                                                        >
+                                                                            <span className="truncate text-xs font-semibold">{r.reasonText}</span>
+                                                                            {r.category && (
+                                                                                <span className={cn(
+                                                                                    "text-[9px] font-bold px-1.5 py-0.5 rounded border leading-none shrink-0 ml-2",
+                                                                                    isDark ? "bg-zinc-800 border-zinc-700 text-zinc-400" : "bg-slate-100 border-slate-200 text-slate-500"
+                                                                                )}>
+                                                                                    {r.category}
+                                                                                </span>
+                                                                            )}
+                                                                        </button>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    <button
+                                                        type="button"
+                                                        id="btn-apply-secondary-discount"
+                                                        disabled={!secondaryDiscountValue || Number(secondaryDiscountValue) <= 0 || !secondaryReason?.trim() || isApplyingSecondary || isProcessing}
+                                                        onClick={handleApplySecondaryConcession}
+                                                        className="h-12 px-5 rounded-xl bg-[#E87A38] hover:bg-[#D96B29] text-white text-sm font-bold disabled:opacity-50 transition-all shrink-0 cursor-pointer shadow-xs active:scale-95 flex items-center gap-1.5 synos-focus-btn"
                                                     >
-                                                        <option value="Lab Owner Discretionary Concession">Lab Owner Discretionary Concession</option>
-                                                        <option value="Chief Pathologist Courtesy Concession">Chief Pathologist Courtesy Concession</option>
-                                                        <option value="Indigent Patient Full Write-off">Indigent Patient Full Write-off</option>
-                                                        <option value="VIP / Personal Relative Courtesy">VIP / Personal Relative Courtesy</option>
-                                                        <option value="Director Approved Concession">Director Approved Concession</option>
-                                                        <option value="Management Waiver / Write-off">Management Waiver / Write-off</option>
-                                                    </select>
+                                                        {isApplyingSecondary ? <Loader2 className="w-4 h-4 animate-spin" /> : "Apply"}
+                                                    </button>
                                                 </div>
-
-                                                {/* Live Preview & Apply Button */}
-                                                {secondaryDiscountValue && Number(secondaryDiscountValue) > 0 && (() => {
-                                                    const secVal = Number(secondaryDiscountValue);
-                                                    const deduction = secondaryDiscountType === 'PERCENTAGE'
-                                                        ? Math.round(remainingDue * (Math.min(100, secVal) / 100))
-                                                        : Math.min(remainingDue, secVal);
-                                                    const newDue = Math.max(0, remainingDue - deduction);
-
-                                                    return (
-                                                        <div className="p-3 rounded-xl bg-white dark:bg-zinc-800/90 border border-[#FDE3CF] dark:border-orange-900/50 space-y-1.5 text-xs shadow-2xs animate-in fade-in">
-                                                            <div className="flex justify-between items-center text-slate-600 dark:text-zinc-400">
-                                                                <span>Current Due:</span>
-                                                                <span className="font-mono font-bold">₹{remainingDue.toLocaleString()}</span>
-                                                            </div>
-                                                            <div className="flex justify-between items-center text-[#C2611D] dark:text-orange-400 font-bold">
-                                                                <span>Secondary Concession:</span>
-                                                                <span className="font-mono font-bold">-₹{deduction.toLocaleString()}</span>
-                                                            </div>
-                                                            <div className="flex justify-between items-center pt-1 border-t border-[#FDE3CF]/70 dark:border-zinc-700 font-bold text-slate-900 dark:text-white">
-                                                                <span>Revised Remaining Due:</span>
-                                                                <span className="font-mono text-emerald-700 dark:text-emerald-400 text-sm">
-                                                                    ₹{newDue.toLocaleString()} {newDue === 0 && "(Fully Settled)"}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })()}
-
-                                                <button
-                                                    type="button"
-                                                    id="btn-apply-secondary-concession"
-                                                    disabled={!secondaryDiscountValue || Number(secondaryDiscountValue) <= 0 || isApplyingSecondary || isProcessing}
-                                                    onClick={handleApplySecondaryConcession}
-                                                    className="w-full py-2.5 px-4 rounded-xl bg-[#E87A38] hover:bg-[#D96B29] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-95 shadow-xs border border-[#D96B29] disabled:opacity-40 disabled:cursor-not-allowed"
-                                                >
-                                                    {isApplyingSecondary ? (
-                                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                                    ) : (
-                                                        <CheckCircle2 className="w-4 h-4" />
-                                                    )}
-                                                    <span>
-                                                        {Number(secondaryDiscountValue) >= remainingDue
-                                                            ? `Authorize Full Write-Off (₹${remainingDue.toLocaleString()})`
-                                                            : `Apply Secondary Concession (-₹${Number(secondaryDiscountValue || 0).toLocaleString()})`}
-                                                    </span>
-                                                </button>
                                             </div>
                                         </div>
-                                    )}
-                                </div>
+                                    </div>
+                                )
                             )}
 
                             {/* 4. EXPANDABLE CONCESSION EDITOR (Smoothly unfolds directly in native styling) */}
