@@ -1302,11 +1302,11 @@ Error generating stack: ` + K.message + `
     function Ft(b) {
       return b &= -b, 2 < b ? 8 < b ? (b & 134217727) !== 0 ? 32 : 268435456 : 8 : 2;
     }
-    function Ot() {
+    function Pt() {
       var b = ae.p;
       return b !== 0 ? b : (b = window.event, b === void 0 ? 32 : Pa(b.type));
     }
-    function Pt(b, N) {
+    function Ht(b, N) {
       var L = ae.p;
       try {
         return ae.p = b, N();
@@ -1355,16 +1355,16 @@ Error generating stack: ` + K.message + `
     function Gr(b) {
       b[Da] = true;
     }
-    var Qt = /* @__PURE__ */ new Set(), _t = {};
+    var Qt = /* @__PURE__ */ new Set(), Ot = {};
     function en(b, N) {
       Bn(b, N), Bn(b + "Capture", N);
     }
     function Bn(b, N) {
-      for (_t[b] = N, b = 0; b < N.length; b++) Qt.add(N[b]);
+      for (Ot[b] = N, b = 0; b < N.length; b++) Qt.add(N[b]);
     }
-    var wn = RegExp("^[:A-Z_a-z\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u02FF\\u0370-\\u037D\\u037F-\\u1FFF\\u200C-\\u200D\\u2070-\\u218F\\u2C00-\\u2FEF\\u3001-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFFD][:A-Z_a-z\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u02FF\\u0370-\\u037D\\u037F-\\u1FFF\\u200C-\\u200D\\u2070-\\u218F\\u2C00-\\u2FEF\\u3001-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFFD\\-.0-9\\u00B7\\u0300-\\u036F\\u203F-\\u2040]*$"), fr = {}, sa = {};
+    var vn = RegExp("^[:A-Z_a-z\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u02FF\\u0370-\\u037D\\u037F-\\u1FFF\\u200C-\\u200D\\u2070-\\u218F\\u2C00-\\u2FEF\\u3001-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFFD][:A-Z_a-z\\u00C0-\\u00D6\\u00D8-\\u00F6\\u00F8-\\u02FF\\u0370-\\u037D\\u037F-\\u1FFF\\u200C-\\u200D\\u2070-\\u218F\\u2C00-\\u2FEF\\u3001-\\uD7FF\\uF900-\\uFDCF\\uFDF0-\\uFFFD\\-.0-9\\u00B7\\u0300-\\u036F\\u203F-\\u2040]*$"), fr = {}, sa = {};
     function ya(b) {
-      return Xe.call(sa, b) ? true : Xe.call(fr, b) ? false : wn.test(b) ? sa[b] = true : (fr[b] = true, false);
+      return Xe.call(sa, b) ? true : Xe.call(fr, b) ? false : vn.test(b) ? sa[b] = true : (fr[b] = true, false);
     }
     function Jn(b, N, L) {
       if (ya(N)) if (L === null) b.removeAttribute(N);
@@ -1501,7 +1501,7 @@ Error generating stack: ` + K.message + `
     function _n(b, N, L) {
       N === "number" && Kt(b.ownerDocument) === b || b.defaultValue === "" + L || (b.defaultValue = "" + L);
     }
-    function sr(b, N, L, K) {
+    function ar(b, N, L, K) {
       if (b = b.options, N) {
         N = {};
         for (var de = 0; de < L.length; de++) N["$" + L[de]] = true;
@@ -1923,7 +1923,7 @@ Error generating stack: ` + K.message + `
             In(b, L.value, L.defaultValue);
             break e;
           case "select":
-            N = L.value, N != null && sr(b, !!L.multiple, N, false);
+            N = L.value, N != null && ar(b, !!L.multiple, N, false);
         }
       }
     }
@@ -1976,10 +1976,10 @@ Error generating stack: ` + K.message + `
     } catch {
       Wt = false;
     }
-    var Tn = null, $n = null, Mn = null;
-    function Hn() {
+    var Tn = null, Wn = null, Mn = null;
+    function Yn() {
       if (Mn) return Mn;
-      var b, N = $n, L = N.length, K, de = "value" in Tn ? Tn.value : Tn.textContent, Ie = de.length;
+      var b, N = Wn, L = N.length, K, de = "value" in Tn ? Tn.value : Tn.textContent, Ie = de.length;
       for (b = 0; b < L && N[b] === de[b]; b++) ;
       var Je = L - b;
       for (K = 1; K <= Je && N[L - K] === de[Ie - K]; K++) ;
@@ -2028,7 +2028,7 @@ Error generating stack: ` + K.message + `
     }, Qr = jn(gr), ti = d({}, gr, {
       view: 0,
       detail: 0
-    }), Ya = jn(ti), $r, Ga, aa, da = d({}, ti, {
+    }), Ya = jn(ti), Zr, Ga, aa, da = d({}, ti, {
       screenX: 0,
       screenY: 0,
       clientX: 0,
@@ -2039,14 +2039,14 @@ Error generating stack: ` + K.message + `
       shiftKey: 0,
       altKey: 0,
       metaKey: 0,
-      getModifierState: To,
+      getModifierState: bo,
       button: 0,
       buttons: 0,
       relatedTarget: function(b) {
         return b.relatedTarget === void 0 ? b.fromElement === b.srcElement ? b.toElement : b.fromElement : b.relatedTarget;
       },
       movementX: function(b) {
-        return "movementX" in b ? b.movementX : (b !== aa && (aa && b.type === "mousemove" ? ($r = b.screenX - aa.screenX, Ga = b.screenY - aa.screenY) : Ga = $r = 0, aa = b), $r);
+        return "movementX" in b ? b.movementX : (b !== aa && (aa && b.type === "mousemove" ? (Zr = b.screenX - aa.screenX, Ga = b.screenY - aa.screenY) : Ga = Zr = 0, aa = b), Zr);
       },
       movementY: function(b) {
         return "movementY" in b ? b.movementY : Ga;
@@ -2125,7 +2125,7 @@ Error generating stack: ` + K.message + `
       var N = this.nativeEvent;
       return N.getModifierState ? N.getModifierState(b) : (b = Ms[b]) ? !!N[b] : false;
     }
-    function To() {
+    function bo() {
       return eA;
     }
     var ct = d({}, ti, {
@@ -2144,7 +2144,7 @@ Error generating stack: ` + K.message + `
       metaKey: 0,
       repeat: 0,
       locale: 0,
-      getModifierState: To,
+      getModifierState: bo,
       charCode: function(b) {
         return b.type === "keypress" ? At(b) : 0;
       },
@@ -2173,7 +2173,7 @@ Error generating stack: ` + K.message + `
       metaKey: 0,
       ctrlKey: 0,
       shiftKey: 0,
-      getModifierState: To
+      getModifierState: bo
     }), Sa = jn(Ea), Ja = d({}, gr, {
       propertyName: 0,
       elapsedTime: 0,
@@ -2197,7 +2197,7 @@ Error generating stack: ` + K.message + `
       32
     ], sA = St && "CompositionEvent" in window, Fs = null;
     St && "documentMode" in document && (Fs = document.documentMode);
-    var oA = St && "TextEvent" in window && !Fs, ql = St && (!sA || Fs && 8 < Fs && 11 >= Fs), bo = " ", ts = false;
+    var oA = St && "TextEvent" in window && !Fs, ql = St && (!sA || Fs && 8 < Fs && 11 >= Fs), yo = " ", ts = false;
     function nl(b, N) {
       switch (b) {
         case "keyup":
@@ -2215,21 +2215,21 @@ Error generating stack: ` + K.message + `
     function Fe(b) {
       return b = b.detail, typeof b == "object" && "data" in b ? b.data : null;
     }
-    var vn = false;
+    var wn = false;
     function qa(b, N) {
       switch (b) {
         case "compositionend":
           return Fe(N);
         case "keypress":
-          return N.which !== 32 ? null : (ts = true, bo);
+          return N.which !== 32 ? null : (ts = true, yo);
         case "textInput":
-          return b = N.data, b === bo && ts ? null : b;
+          return b = N.data, b === yo && ts ? null : b;
         default:
           return null;
       }
     }
     function ni(b, N) {
-      if (vn) return b === "compositionend" || !sA && nl(b, N) ? (b = Hn(), Mn = $n = Tn = null, vn = false, b) : null;
+      if (wn) return b === "compositionend" || !sA && nl(b, N) ? (b = Yn(), Mn = Wn = Tn = null, wn = false, b) : null;
       switch (b) {
         case "paste":
           return null;
@@ -2420,7 +2420,7 @@ Error generating stack: ` + K.message + `
       for (L in N) if (N.hasOwnProperty(L) && L in Rt) return $e[b] = N[L];
       return b;
     }
-    var On = gt("animationend"), yn = gt("animationiteration"), Qn = gt("animationstart"), ar = gt("transitionrun"), Rn = gt("transitionstart"), ha = gt("transitioncancel"), Ia = gt("transitionend"), wa = /* @__PURE__ */ new Map(), cr = "abort auxClick beforeToggle cancel canPlay canPlayThrough click close contextMenu copy cut drag dragEnd dragEnter dragExit dragLeave dragOver dragStart drop durationChange emptied encrypted ended error gotPointerCapture input invalid keyDown keyPress keyUp load loadedData loadedMetadata loadStart lostPointerCapture mouseDown mouseMove mouseOut mouseOver mouseUp paste pause play playing pointerCancel pointerDown pointerMove pointerOut pointerOver pointerUp progress rateChange reset resize seeked seeking stalled submit suspend timeUpdate touchCancel touchEnd touchStart volumeChange scroll toggle touchMove waiting wheel".split(" ");
+    var On = gt("animationend"), yn = gt("animationiteration"), Qn = gt("animationstart"), ir = gt("transitionrun"), Rn = gt("transitionstart"), ha = gt("transitioncancel"), Ia = gt("transitionend"), wa = /* @__PURE__ */ new Map(), cr = "abort auxClick beforeToggle cancel canPlay canPlayThrough click close contextMenu copy cut drag dragEnd dragEnter dragExit dragLeave dragOver dragStart drop durationChange emptied encrypted ended error gotPointerCapture input invalid keyDown keyPress keyUp load loadedData loadedMetadata loadStart lostPointerCapture mouseDown mouseMove mouseOut mouseOver mouseUp paste pause play playing pointerCancel pointerDown pointerMove pointerOut pointerOver pointerUp progress rateChange reset resize seeked seeking stalled submit suspend timeUpdate touchCancel touchEnd touchStart volumeChange scroll toggle touchMove waiting wheel".split(" ");
     cr.push("scrollEnd");
     function va(b, N) {
       wa.set(b, N), en(N, [
@@ -2455,7 +2455,7 @@ Error generating stack: ` + K.message + `
           var Je = K.pending;
           Je === null ? de.next = de : (de.next = Je.next, Je.next = de), K.pending = de;
         }
-        Ie !== 0 && Os(L, de, Ie);
+        Ie !== 0 && Ps(L, de, Ie);
       }
     }
     function il(b, N, L, K) {
@@ -2467,7 +2467,7 @@ Error generating stack: ` + K.message + `
     function Li(b, N) {
       return il(b, null, null, N), Zt(b);
     }
-    function Os(b, N, L) {
+    function Ps(b, N, L) {
       b.lanes |= L;
       var K = b.alternate;
       K !== null && (K.lanes |= L);
@@ -2805,7 +2805,7 @@ Error generating stack: ` + K.message + `
           return L();
         });
       };
-    }, pf = t.unstable_scheduleCallback, Pb = t.unstable_NormalPriority, yo = {
+    }, pf = t.unstable_scheduleCallback, Pb = t.unstable_NormalPriority, Qo = {
       $$typeof: B,
       Consumer: null,
       Provider: null,
@@ -2878,7 +2878,7 @@ Error generating stack: ` + K.message + `
     function ym() {
       var b = bm();
       return b === null ? null : {
-        parent: yo._currentValue,
+        parent: Qo._currentValue,
         pool: b
       };
     }
@@ -3044,43 +3044,43 @@ Error generating stack: ` + K.message + `
         return null;
       }
       function Yr(rn, Yt, cn, Fn) {
-        for (var Aa = null, as = null, Zr = Yt, gi = Yt = 0, Pi = null; Zr !== null && gi < cn.length; gi++) {
-          Zr.index > gi ? (Pi = Zr, Zr = null) : Pi = Zr.sibling;
-          var is = hn(rn, Zr, cn[gi], Fn);
+        for (var Aa = null, as = null, Xr = Yt, gi = Yt = 0, Pi = null; Xr !== null && gi < cn.length; gi++) {
+          Xr.index > gi ? (Pi = Xr, Xr = null) : Pi = Xr.sibling;
+          var is = hn(rn, Xr, cn[gi], Fn);
           if (is === null) {
-            Zr === null && (Zr = Pi);
+            Xr === null && (Xr = Pi);
             break;
           }
-          b && Zr && is.alternate === null && N(rn, Zr), Yt = Ie(is, Yt, gi), as === null ? Aa = is : as.sibling = is, as = is, Zr = Pi;
+          b && Xr && is.alternate === null && N(rn, Xr), Yt = Ie(is, Yt, gi), as === null ? Aa = is : as.sibling = is, as = is, Xr = Pi;
         }
-        if (gi === cn.length) return L(rn, Zr), wi && Sl(rn, gi), Aa;
-        if (Zr === null) {
-          for (; gi < cn.length; gi++) Zr = Gn(rn, cn[gi], Fn), Zr !== null && (Yt = Ie(Zr, Yt, gi), as === null ? Aa = Zr : as.sibling = Zr, as = Zr);
+        if (gi === cn.length) return L(rn, Xr), wi && Sl(rn, gi), Aa;
+        if (Xr === null) {
+          for (; gi < cn.length; gi++) Xr = Gn(rn, cn[gi], Fn), Xr !== null && (Yt = Ie(Xr, Yt, gi), as === null ? Aa = Xr : as.sibling = Xr, as = Xr);
           return wi && Sl(rn, gi), Aa;
         }
-        for (Zr = K(Zr); gi < cn.length; gi++) Pi = Cn(Zr, rn, gi, cn[gi], Fn), Pi !== null && (b && Pi.alternate !== null && Zr.delete(Pi.key === null ? gi : Pi.key), Yt = Ie(Pi, Yt, gi), as === null ? Aa = Pi : as.sibling = Pi, as = Pi);
-        return b && Zr.forEach(function(K0) {
+        for (Xr = K(Xr); gi < cn.length; gi++) Pi = Cn(Xr, rn, gi, cn[gi], Fn), Pi !== null && (b && Pi.alternate !== null && Xr.delete(Pi.key === null ? gi : Pi.key), Yt = Ie(Pi, Yt, gi), as === null ? Aa = Pi : as.sibling = Pi, as = Pi);
+        return b && Xr.forEach(function(K0) {
           return N(rn, K0);
         }), wi && Sl(rn, gi), Aa;
       }
       function Ba(rn, Yt, cn, Fn) {
         if (cn == null) throw Error(a(151));
-        for (var Aa = null, as = null, Zr = Yt, gi = Yt = 0, Pi = null, is = cn.next(); Zr !== null && !is.done; gi++, is = cn.next()) {
-          Zr.index > gi ? (Pi = Zr, Zr = null) : Pi = Zr.sibling;
-          var K0 = hn(rn, Zr, is.value, Fn);
+        for (var Aa = null, as = null, Xr = Yt, gi = Yt = 0, Pi = null, is = cn.next(); Xr !== null && !is.done; gi++, is = cn.next()) {
+          Xr.index > gi ? (Pi = Xr, Xr = null) : Pi = Xr.sibling;
+          var K0 = hn(rn, Xr, is.value, Fn);
           if (K0 === null) {
-            Zr === null && (Zr = Pi);
+            Xr === null && (Xr = Pi);
             break;
           }
-          b && Zr && K0.alternate === null && N(rn, Zr), Yt = Ie(K0, Yt, gi), as === null ? Aa = K0 : as.sibling = K0, as = K0, Zr = Pi;
+          b && Xr && K0.alternate === null && N(rn, Xr), Yt = Ie(K0, Yt, gi), as === null ? Aa = K0 : as.sibling = K0, as = K0, Xr = Pi;
         }
-        if (is.done) return L(rn, Zr), wi && Sl(rn, gi), Aa;
-        if (Zr === null) {
+        if (is.done) return L(rn, Xr), wi && Sl(rn, gi), Aa;
+        if (Xr === null) {
           for (; !is.done; gi++, is = cn.next()) is = Gn(rn, is.value, Fn), is !== null && (Yt = Ie(is, Yt, gi), as === null ? Aa = is : as.sibling = is, as = is);
           return wi && Sl(rn, gi), Aa;
         }
-        for (Zr = K(Zr); !is.done; gi++, is = cn.next()) is = Cn(Zr, rn, gi, is.value, Fn), is !== null && (b && is.alternate !== null && Zr.delete(is.key === null ? gi : is.key), Yt = Ie(is, Yt, gi), as === null ? Aa = is : as.sibling = is, as = is);
-        return b && Zr.forEach(function(CR) {
+        for (Xr = K(Xr); !is.done; gi++, is = cn.next()) is = Cn(Xr, rn, gi, is.value, Fn), is !== null && (b && is.alternate !== null && Xr.delete(is.key === null ? gi : is.key), Yt = Ie(is, Yt, gi), as === null ? Aa = is : as.sibling = is, as = is);
+        return b && Xr.forEach(function(CR) {
           return N(rn, CR);
         }), wi && Sl(rn, gi), Aa;
       }
@@ -3143,9 +3143,9 @@ Error generating stack: ` + K.message + `
           Qm = 0;
           var Aa = Bs(rn, Yt, cn, Fn);
           return Cf = null, Aa;
-        } catch (Zr) {
-          if (Zr === D0 || Zr === ux) throw Zr;
-          var as = oo(29, Zr, null, rn.mode);
+        } catch (Xr) {
+          if (Xr === D0 || Xr === ux) throw Xr;
+          var as = oo(29, Xr, null, rn.mode);
           return as.lanes = Fn, as.return = rn, as;
         }
       };
@@ -3187,7 +3187,7 @@ Error generating stack: ` + K.message + `
       if (K === null) return null;
       if (K = K.shared, (cs & 2) !== 0) {
         var de = K.pending;
-        return de === null ? N.next = N : (N.next = de.next, de.next = N), K.pending = N, N = Zt(b), Os(b, null, L), N;
+        return de === null ? N.next = N : (N.next = de.next, de.next = N), K.pending = N, N = Zt(b), Ps(b, null, L), N;
       }
       return il(b, K, N, L), Zt(b);
     }
@@ -3318,21 +3318,21 @@ Error generating stack: ` + K.message + `
     var Xl = se(null), Qc = null;
     function R0(b) {
       var N = b.alternate;
-      Ce(Qo, Qo.current & 1), Ce(Xl, b), Qc === null && (N === null || Ef.current !== null || N.memoizedState !== null) && (Qc = b);
+      Ce(wo, wo.current & 1), Ce(Xl, b), Qc === null && (N === null || Ef.current !== null || N.memoizedState !== null) && (Qc = b);
     }
     function qb(b) {
-      Ce(Qo, Qo.current), Ce(Xl, b), Qc === null && (Qc = b);
+      Ce(wo, wo.current), Ce(Xl, b), Qc === null && (Qc = b);
     }
     function Zb(b) {
-      b.tag === 22 ? (Ce(Qo, Qo.current), Ce(Xl, b), Qc === null && (Qc = b)) : Eg();
+      b.tag === 22 ? (Ce(wo, wo.current), Ce(Xl, b), Qc === null && (Qc = b)) : Eg();
     }
     function Eg() {
-      Ce(Qo, Qo.current), Ce(Xl, Xl.current);
+      Ce(wo, wo.current), Ce(Xl, Xl.current);
     }
     function $l(b) {
-      he(Xl), Qc === b && (Qc = null), he(Qo);
+      he(Xl), Qc === b && (Qc = null), he(wo);
     }
-    var Qo = se(0);
+    var wo = se(0);
     function Cx(b) {
       for (var N = b; N !== null; ) {
         if (N.tag === 13) {
@@ -3415,7 +3415,7 @@ Error generating stack: ` + K.message + `
       };
       return an === null ? ja.memoizedState = an = b : an = an.next = b, an;
     }
-    function wo() {
+    function vo() {
       if (hs === null) {
         var b = ja.alternate;
         b = b !== null ? b.memoizedState : null;
@@ -3474,7 +3474,7 @@ Error generating stack: ` + K.message + `
       return typeof N == "function" ? N(b) : N;
     }
     function Qg(b) {
-      var N = wo();
+      var N = vo();
       return ey(N, hs, b);
     }
     function ey(b, N, L) {
@@ -3539,7 +3539,7 @@ Error generating stack: ` + K.message + `
       ];
     }
     function bx(b) {
-      var N = wo(), L = N.queue;
+      var N = vo(), L = N.queue;
       if (L === null) throw Error(a(311));
       L.lastRenderedReducer = b;
       var K = L.dispatch, de = L.pending, Ie = N.memoizedState;
@@ -3557,7 +3557,7 @@ Error generating stack: ` + K.message + `
       ];
     }
     function Vv(b, N, L) {
-      var K = ja, de = wo(), Ie = wi;
+      var K = ja, de = vo(), Ie = wi;
       if (Ie) {
         if (L === void 0) throw Error(a(407));
         L = L();
@@ -3745,7 +3745,7 @@ Error generating stack: ` + K.message + `
       ];
     }
     function iy(b) {
-      var N = wo();
+      var N = vo();
       return wx(N, hs, b);
     }
     function wx(b, N, L) {
@@ -3755,7 +3755,7 @@ Error generating stack: ` + K.message + `
         throw Je === D0 ? ux : Je;
       }
       else K = N;
-      N = wo();
+      N = vo();
       var de = N.queue, Ie = de.dispatch;
       return L !== N.memoizedState && (ja.flags |= 2048, Ju(9, {
         destroy: void 0
@@ -3769,9 +3769,9 @@ Error generating stack: ` + K.message + `
       b.action = N;
     }
     function sy(b) {
-      var N = wo(), L = hs;
+      var N = vo(), L = hs;
       if (L !== null) return wx(N, L, b);
-      wo(), N = N.memoizedState, L = wo();
+      vo(), N = N.memoizedState, L = vo();
       var K = L.queue.dispatch;
       return L.memoizedState = b, [
         N,
@@ -3789,7 +3789,7 @@ Error generating stack: ` + K.message + `
       }, N = ja.updateQueue, N === null && (N = bf(), ja.updateQueue = N), L = N.lastEffect, L === null ? N.lastEffect = b.next = b : (K = L.next, L.next = b, b.next = K, N.lastEffect = b), b;
     }
     function Sm() {
-      return wo().memoizedState;
+      return vo().memoizedState;
     }
     function vx(b, N, L, K) {
       var de = Al();
@@ -3798,7 +3798,7 @@ Error generating stack: ` + K.message + `
       }, L, K === void 0 ? null : K);
     }
     function Nx(b, N, L, K) {
-      var de = wo();
+      var de = vo();
       K = K === void 0 ? null : K;
       var Ie = de.memoizedState.inst;
       hs !== null && K !== null && Xb(K, hs.memoizedState.deps) ? de.memoizedState = Ju(N, Ie, L, K) : (ja.flags |= b, de.memoizedState = Ju(1 | N, Ie, L, K));
@@ -3823,7 +3823,7 @@ Error generating stack: ` + K.message + `
       }
     }
     function kx(b) {
-      var N = wo().memoizedState;
+      var N = vo().memoizedState;
       return Zv({
         ref: N,
         nextImpl: b
@@ -3858,7 +3858,7 @@ Error generating stack: ` + K.message + `
     function cy() {
     }
     function e2(b, N) {
-      var L = wo();
+      var L = vo();
       N = N === void 0 ? null : N;
       var K = L.memoizedState;
       return N !== null && Xb(N, K[1]) ? K[0] : (L.memoizedState = [
@@ -3867,7 +3867,7 @@ Error generating stack: ` + K.message + `
       ], b);
     }
     function t2(b, N) {
-      var L = wo();
+      var L = vo();
       N = N === void 0 ? null : N;
       var K = L.memoizedState;
       if (N !== null && Xb(N, K[1])) return K[0];
@@ -3899,15 +3899,15 @@ Error generating stack: ` + K.message + `
         var Mt = de(), ln = ee.S;
         if (ln !== null && ln(dt, Mt), Mt !== null && typeof Mt == "object" && typeof Mt.then == "function") {
           var Nn = eR(Mt, K);
-          Vu(b, N, Nn, No(b));
-        } else Vu(b, N, K, No(b));
+          Vu(b, N, Nn, Do(b));
+        } else Vu(b, N, K, Do(b));
       } catch (Gn) {
         Vu(b, N, {
           then: function() {
           },
           status: "rejected",
           reason: Gn
-        }, No());
+        }, Do());
       } finally {
         ae.p = Ie, Je !== null && dt.types !== null && (Je.types = dt.types), ee.T = Je;
       }
@@ -3954,23 +3954,23 @@ Error generating stack: ` + K.message + `
     }
     function dy(b) {
       var N = r2(b);
-      N.next === null && (N = b.alternate.memoizedState), Vu(b, N.next.queue, {}, No());
+      N.next === null && (N = b.alternate.memoizedState), Vu(b, N.next.queue, {}, Do());
     }
     function Ku() {
       return nA(Gg);
     }
     function Dd() {
-      return wo().memoizedState;
+      return vo().memoizedState;
     }
     function Rm() {
-      return wo().memoizedState;
+      return vo().memoizedState;
     }
     function jm(b) {
       for (var N = b.return; N !== null; ) {
         switch (N.tag) {
           case 24:
           case 3:
-            var L = No();
+            var L = Do();
             b = vd(L);
             var K = Nd(N, b, L);
             K !== null && (HA(K, N, L), xf(K, N, L)), N = {
@@ -3982,7 +3982,7 @@ Error generating stack: ` + K.message + `
       }
     }
     function rR(b, N, L) {
-      var K = No();
+      var K = Do();
       L = {
         lane: K,
         revertLane: 0,
@@ -3994,7 +3994,7 @@ Error generating stack: ` + K.message + `
       }, wc(b) ? uy(N, L) : (L = Or(b, N, L, K), L !== null && (HA(L, b, K), jx(L, N, K)));
     }
     function gy(b, N, L) {
-      var K = No();
+      var K = Do();
       Vu(b, N, L, K);
     }
     function Vu(b, N, L, K) {
@@ -4238,11 +4238,11 @@ Error generating stack: ` + K.message + `
       },
       useDebugValue: cy,
       useDeferredValue: function(b, N) {
-        var L = wo();
+        var L = vo();
         return n2(L, hs.memoizedState, b, N);
       },
       useTransition: function() {
-        var b = Qg(nd)[0], N = wo().memoizedState;
+        var b = Qg(nd)[0], N = vo().memoizedState;
         return [
           typeof b == "boolean" ? b : yg(b),
           N
@@ -4254,7 +4254,7 @@ Error generating stack: ` + K.message + `
       useFormState: iy,
       useActionState: iy,
       useOptimistic: function(b, N) {
-        var L = wo();
+        var L = vo();
         return km(L, hs, b, N);
       },
       useMemoCache: yf,
@@ -4278,11 +4278,11 @@ Error generating stack: ` + K.message + `
       },
       useDebugValue: cy,
       useDeferredValue: function(b, N) {
-        var L = wo();
+        var L = vo();
         return hs === null ? Sx(L, b, N) : n2(L, hs.memoizedState, b, N);
       },
       useTransition: function() {
-        var b = bx(nd)[0], N = wo().memoizedState;
+        var b = bx(nd)[0], N = vo().memoizedState;
         return [
           typeof b == "boolean" ? b : yg(b),
           N
@@ -4294,7 +4294,7 @@ Error generating stack: ` + K.message + `
       useFormState: sy,
       useActionState: sy,
       useOptimistic: function(b, N) {
-        var L = wo();
+        var L = vo();
         return hs !== null ? km(L, hs, b, N) : (L.baseState = b, [
           b,
           L.queue.dispatch
@@ -4310,17 +4310,17 @@ Error generating stack: ` + K.message + `
     var F0 = {
       enqueueSetState: function(b, N, L) {
         b = b._reactInternals;
-        var K = No(), de = vd(K);
+        var K = Do(), de = vd(K);
         de.payload = N, L != null && (de.callback = L), N = Nd(b, de, K), N !== null && (HA(N, b, K), xf(N, b, K));
       },
       enqueueReplaceState: function(b, N, L) {
         b = b._reactInternals;
-        var K = No(), de = vd(K);
+        var K = Do(), de = vd(K);
         de.tag = 1, de.payload = N, L != null && (de.callback = L), N = Nd(b, de, K), N !== null && (HA(N, b, K), xf(N, b, K));
       },
       enqueueForceUpdate: function(b, N) {
         b = b._reactInternals;
-        var L = No(), K = vd(L);
+        var L = Do(), K = vd(L);
         K.tag = 2, N != null && (K.callback = N), N = Nd(b, K, L), N !== null && (HA(N, b, L), xf(N, b, L));
       }
     };
@@ -4520,7 +4520,7 @@ Error generating stack: ` + K.message + `
     function Cy(b, N, L, K, de) {
       var Ie = bm();
       return Ie = Ie === null ? null : {
-        parent: yo._currentValue,
+        parent: Qo._currentValue,
         pool: Ie
       }, N.memoizedState = {
         baseLanes: L,
@@ -4626,7 +4626,7 @@ Error generating stack: ` + K.message + `
     }
     function Df(b, N, L) {
       var K = N.pendingProps, de = false, Ie = (N.flags & 128) !== 0, Je;
-      if ((Je = Ie) || (Je = b !== null && b.memoizedState === null ? false : (Qo.current & 2) !== 0), Je && (de = true, N.flags &= -129), Je = (N.flags & 32) !== 0, N.flags &= -33, b === null) {
+      if ((Je = Ie) || (Je = b !== null && b.memoizedState === null ? false : (wo.current & 2) !== 0), Je && (de = true, N.flags &= -129), Je = (N.flags & 32) !== 0, N.flags &= -33, b === null) {
         if (wi) {
           if (de ? R0(N) : Eg(), (b = ci) ? (b = nQ(b, sl), b = b !== null && b.data !== "&" ? b : null, b !== null && (N.memoizedState = {
             dehydrated: b,
@@ -4667,7 +4667,7 @@ Error generating stack: ` + K.message + `
       return de ? (Eg(), dt = K.fallback, de = N.mode, Mt = b.child, ln = Mt.sibling, K = ns(Mt, {
         mode: "hidden",
         children: K.children
-      }), K.subtreeFlags = Mt.subtreeFlags & 65011712, ln !== null ? dt = ns(ln, dt) : (dt = wd(dt, de, L, null), dt.flags |= 2), dt.return = N, K.return = N, K.sibling = dt, N.child = K, Nf(null, K), K = N.child, dt = b.child.memoizedState, dt === null ? dt = zx(L) : (de = dt.cachePool, de !== null ? (Mt = yo._currentValue, de = de.parent !== Mt ? {
+      }), K.subtreeFlags = Mt.subtreeFlags & 65011712, ln !== null ? dt = ns(ln, dt) : (dt = wd(dt, de, L, null), dt.flags |= 2), dt.return = N, K.return = N, K.sibling = dt, N.child = K, Nf(null, K), K = N.child, dt = b.child.memoizedState, dt === null ? dt = zx(L) : (de = dt.cachePool, de !== null ? (Mt = Qo._currentValue, de = de.parent !== Mt ? {
         parent: Mt,
         pool: Mt
       } : de) : de = ym(), dt = {
@@ -4712,8 +4712,8 @@ Error generating stack: ` + K.message + `
     function Xu(b, N, L) {
       var K = N.pendingProps, de = K.revealOrder, Ie = K.tail;
       K = K.children;
-      var Je = Qo.current, dt = (Je & 2) !== 0;
-      if (dt ? (Je = Je & 1 | 2, N.flags |= 128) : Je &= 1, Ce(Qo, Je), BA(b, N, K, L), K = wi ? mg : 0, !dt && b !== null && (b.flags & 128) !== 0) e: for (b = N.child; b !== null; ) {
+      var Je = wo.current, dt = (Je & 2) !== 0;
+      if (dt ? (Je = Je & 1 | 2, N.flags |= 128) : Je &= 1, Ce(wo, Je), BA(b, N, K, L), K = wi ? mg : 0, !dt && b !== null && (b.flags & 128) !== 0) e: for (b = N.child; b !== null; ) {
         if (b.tag === 13) b.memoizedState !== null && by(b, L, N);
         else if (b.tag === 19) by(b, L, N);
         else if (b.child !== null) {
@@ -4768,7 +4768,7 @@ Error generating stack: ` + K.message + `
     function Px(b, N, L) {
       switch (N.tag) {
         case 3:
-          ze(N, N.stateNode.containerInfo), us(N, yo, b.memoizedState.cache), Cg();
+          ze(N, N.stateNode.containerInfo), us(N, Qo, b.memoizedState.cache), Cg();
           break;
         case 27:
         case 5:
@@ -4794,12 +4794,12 @@ Error generating stack: ` + K.message + `
             if (K) return Xu(b, N, L);
             N.flags |= 128;
           }
-          if (de = N.memoizedState, de !== null && (de.rendering = null, de.tail = null, de.lastEffect = null), Ce(Qo, Qo.current), K) break;
+          if (de = N.memoizedState, de !== null && (de.rendering = null, de.tail = null, de.lastEffect = null), Ce(wo, wo.current), K) break;
           return null;
         case 22:
           return N.lanes = 0, vf(b, N, L, N.pendingProps);
         case 24:
-          us(N, yo, b.memoizedState.cache);
+          us(N, Qo, b.memoizedState.cache);
       }
       return rd(b, N, L);
     }
@@ -4841,8 +4841,8 @@ Error generating stack: ` + K.message + `
             var Ie = N.memoizedState;
             de = Ie.element, Yb(b, N), Bf(N, K, null, L);
             var Je = N.memoizedState;
-            if (K = Je.cache, us(N, yo, K), K !== Ie.cache && cx(N, [
-              yo
+            if (K = Je.cache, us(N, Qo, K), K !== Ie.cache && cx(N, [
+              Qo
             ], L, true), Gu(), K = Je.element, Ie.isDehydrated) if (Ie = {
               element: K,
               isDehydrated: false,
@@ -4899,14 +4899,14 @@ Error generating stack: ` + K.message + `
         case 22:
           return vf(b, N, L, N.pendingProps);
         case 24:
-          return Fu(N), K = nA(yo), b === null ? (de = bm(), de === null && (de = xs, Ie = gx(), de.pooledCache = Ie, Ie.refCount++, Ie !== null && (de.pooledCacheLanes |= L), de = Ie), N.memoizedState = {
+          return Fu(N), K = nA(Qo), b === null ? (de = bm(), de === null && (de = xs, Ie = gx(), de.pooledCache = Ie, Ie.refCount++, Ie !== null && (de.pooledCacheLanes |= L), de = Ie), N.memoizedState = {
             parent: K,
             cache: de
-          }, fx(N), us(N, yo, de)) : ((b.lanes & L) !== 0 && (Yb(b, N), Bf(N, null, null, L), Gu()), de = b.memoizedState, Ie = N.memoizedState, de.parent !== K ? (de = {
+          }, fx(N), us(N, Qo, de)) : ((b.lanes & L) !== 0 && (Yb(b, N), Bf(N, null, null, L), Gu()), de = b.memoizedState, Ie = N.memoizedState, de.parent !== K ? (de = {
             parent: K,
             cache: K
-          }, N.memoizedState = de, N.lanes === 0 && (N.memoizedState = N.updateQueue.baseState = de), us(N, yo, K)) : (K = Ie.cache, us(N, yo, K), K !== de.cache && cx(N, [
-            yo
+          }, N.memoizedState = de, N.lanes === 0 && (N.memoizedState = N.updateQueue.baseState = de), us(N, Qo, K)) : (K = Ie.cache, us(N, Qo, K), K !== de.cache && cx(N, [
+            Qo
           ], L, true))), BA(b, N, N.pendingProps.children, L), N.child;
         case 29:
           throw N.pendingProps;
@@ -4966,7 +4966,7 @@ Error generating stack: ` + K.message + `
         case 1:
           return Ss(N), null;
         case 3:
-          return L = N.stateNode, K = null, b !== null && (K = b.memoizedState.cache), N.memoizedState.cache !== K && (N.flags |= 2048), xg(yo), Se(), L.pendingContext && (L.context = L.pendingContext, L.pendingContext = null), (b === null || b.child === null) && (hf(N) ? ec(N) : b === null || b.memoizedState.isDehydrated && (N.flags & 256) === 0 || (N.flags |= 1024, lx())), Ss(N), null;
+          return L = N.stateNode, K = null, b !== null && (K = b.memoizedState.cache), N.memoizedState.cache !== K && (N.flags |= 2048), xg(Qo), Se(), L.pendingContext && (L.context = L.pendingContext, L.pendingContext = null), (b === null || b.child === null) && (hf(N) ? ec(N) : b === null || b.memoizedState.isDehydrated && (N.flags & 256) === 0 || (N.flags |= 1024, lx())), Ss(N), null;
         case 26:
           var de = N.type, Ie = N.memoizedState;
           return b === null ? (ec(N), Ie !== null ? (Ss(N), vy(N, Ie)) : (Ss(N), wy(N, de, null, K, L))) : Ie ? Ie !== b.memoizedState ? (ec(N), Ss(N), vy(N, Ie)) : (Ss(N), N.flags &= -16777217) : (b = b.memoizedProps, b !== K && ec(N), Ss(N), wy(N, de, b, K, L)), null;
@@ -5097,13 +5097,13 @@ Error generating stack: ` + K.message + `
         case 10:
           return xg(N.type), Ss(N), null;
         case 19:
-          if (he(Qo), K = N.memoizedState, K === null) return Ss(N), null;
+          if (he(wo), K = N.memoizedState, K === null) return Ss(N), null;
           if (de = (N.flags & 128) !== 0, Ie = K.rendering, Ie === null) if (de) kf(K, false);
           else {
             if (co !== 0 || b !== null && (b.flags & 128) !== 0) for (b = N.child; b !== null; ) {
               if (Ie = Cx(b), Ie !== null) {
                 for (N.flags |= 128, kf(K, false), b = Ie.updateQueue, N.updateQueue = b, $u(N, b), N.subtreeFlags = 0, b = L, L = N.child; L !== null; ) Zc(L, b), L = L.sibling;
-                return Ce(Qo, Qo.current & 1 | 2), wi && Sl(N, K.treeForkCount), N.child;
+                return Ce(wo, wo.current & 1 | 2), wi && Sl(N, K.treeForkCount), N.child;
               }
               b = b.sibling;
             }
@@ -5115,12 +5115,12 @@ Error generating stack: ` + K.message + `
             } else 2 * we() - K.renderingStartTime > Km && L !== 536870912 && (N.flags |= 128, de = true, kf(K, false), N.lanes = 4194304);
             K.isBackwards ? (Ie.sibling = N.child, N.child = Ie) : (b = K.last, b !== null ? b.sibling = Ie : N.child = Ie, K.last = Ie);
           }
-          return K.tail !== null ? (b = K.tail, K.rendering = b, K.tail = b.sibling, K.renderingStartTime = we(), b.sibling = null, L = Qo.current, Ce(Qo, de ? L & 1 | 2 : L & 1), wi && Sl(N, K.treeForkCount), b) : (Ss(N), null);
+          return K.tail !== null ? (b = K.tail, K.rendering = b, K.tail = b.sibling, K.renderingStartTime = we(), b.sibling = null, L = wo.current, Ce(wo, de ? L & 1 | 2 : L & 1), wi && Sl(N, K.treeForkCount), b) : (Ss(N), null);
         case 22:
         case 23:
           return $l(N), Ix(), K = N.memoizedState !== null, b !== null ? b.memoizedState !== null !== K && (N.flags |= 8192) : K && (N.flags |= 8192), K ? (L & 536870912) !== 0 && (N.flags & 128) === 0 && (Ss(N), N.subtreeFlags & 6 && (N.flags |= 8192)) : Ss(N), L = N.updateQueue, L !== null && $u(N, L.retryQueue), L = null, b !== null && b.memoizedState !== null && b.memoizedState.cachePool !== null && (L = b.memoizedState.cachePool.pool), K = null, N.memoizedState !== null && N.memoizedState.cachePool !== null && (K = N.memoizedState.cachePool.pool), K !== L && (N.flags |= 2048), b !== null && he(N0), null;
         case 24:
-          return L = null, b !== null && (L = b.memoizedState.cache), N.memoizedState.cache !== L && (N.flags |= 2048), xg(yo), Ss(N), null;
+          return L = null, b !== null && (L = b.memoizedState.cache), N.memoizedState.cache !== L && (N.flags |= 2048), xg(Qo), Ss(N), null;
         case 25:
           return null;
         case 30:
@@ -5133,7 +5133,7 @@ Error generating stack: ` + K.message + `
         case 1:
           return b = N.flags, b & 65536 ? (N.flags = b & -65537 | 128, N) : null;
         case 3:
-          return xg(yo), Se(), b = N.flags, (b & 65536) !== 0 && (b & 128) === 0 ? (N.flags = b & -65537 | 128, N) : null;
+          return xg(Qo), Se(), b = N.flags, (b & 65536) !== 0 && (b & 128) === 0 ? (N.flags = b & -65537 | 128, N) : null;
         case 26:
         case 27:
         case 5:
@@ -5151,7 +5151,7 @@ Error generating stack: ` + K.message + `
           }
           return b = N.flags, b & 65536 ? (N.flags = b & -65537 | 128, N) : null;
         case 19:
-          return he(Qo), null;
+          return he(wo), null;
         case 4:
           return Se(), null;
         case 10:
@@ -5160,7 +5160,7 @@ Error generating stack: ` + K.message + `
         case 23:
           return $l(N), Ix(), b !== null && he(N0), b = N.flags, b & 65536 ? (N.flags = b & -65537 | 128, N) : null;
         case 24:
-          return xg(yo), null;
+          return xg(Qo), null;
         case 25:
           return null;
         default:
@@ -5170,7 +5170,7 @@ Error generating stack: ` + K.message + `
     function Ny(b, N) {
       switch (wr(N), N.tag) {
         case 3:
-          xg(yo), Se();
+          xg(Qo), Se();
           break;
         case 26:
         case 27:
@@ -5187,7 +5187,7 @@ Error generating stack: ` + K.message + `
           $l(N);
           break;
         case 19:
-          he(Qo);
+          he(wo);
           break;
         case 10:
           xg(N.type);
@@ -5197,7 +5197,7 @@ Error generating stack: ` + K.message + `
           $l(N), Ix(), b !== null && he(N0);
           break;
         case 24:
-          xg(yo);
+          xg(Qo);
       }
     }
     function Sf(b, N) {
@@ -6167,15 +6167,15 @@ Error generating stack: ` + K.message + `
     }
     var _A = {
       getCacheForType: function(b) {
-        var N = nA(yo), L = N.data.get(b);
+        var N = nA(Qo), L = N.data.get(b);
         return L === void 0 && (L = b(), N.data.set(b, L)), L;
       },
       cacheSignal: function() {
-        return nA(yo).controller.signal;
+        return nA(Qo).controller.signal;
       }
-    }, u2 = typeof WeakMap == "function" ? WeakMap : Map, cs = 0, xs = null, vi = null, Ii = 0, xr = 0, Fr = null, Nc = false, dl = false, Ty = false, Rg = 0, co = 0, z0 = 0, ac = 0, Vx = 0, jl = 0, ic = 0, ah = null, gl = null, G0 = false, Mf = 0, Ly = 0, Km = 1 / 0, ih = null, _i = null, vo = 0, Dc = null, Ff = null, jg = 0, Vm = 0, Tf = null, Wx = null, Td = 0, qx = null;
-    function No() {
-      return (cs & 2) !== 0 && Ii !== 0 ? Ii & -Ii : ee.T !== null ? iB() : Ot();
+    }, u2 = typeof WeakMap == "function" ? WeakMap : Map, cs = 0, xs = null, vi = null, Ii = 0, xr = 0, Fr = null, Nc = false, dl = false, Ty = false, Rg = 0, co = 0, z0 = 0, ac = 0, Vx = 0, jl = 0, ic = 0, ah = null, gl = null, G0 = false, Mf = 0, Ly = 0, Km = 1 / 0, ih = null, _i = null, No = 0, Dc = null, Ff = null, jg = 0, Vm = 0, Tf = null, Wx = null, Td = 0, qx = null;
+    function Do() {
+      return (cs & 2) !== 0 && Ii !== 0 ? Ii & -Ii : ee.T !== null ? iB() : Pt();
     }
     function zy() {
       if (jl === 0) if ((Ii & 536870912) === 0 || wi) {
@@ -6537,7 +6537,7 @@ Error generating stack: ` + K.message + `
       b.cancelPendingCommit = null;
       do
         Zm();
-      while (vo !== 0);
+      while (No !== 0);
       if ((cs & 6) !== 0) throw Error(a(327));
       if (N !== null) {
         if (N === b.current) throw Error(a(177));
@@ -6551,12 +6551,12 @@ Error generating stack: ` + K.message + `
             cs = Je, ae.p = de, ee.T = K;
           }
         }
-        vo = 1, eB(), h2(), tB();
+        No = 1, eB(), h2(), tB();
       }
     }
     function eB() {
-      if (vo === 1) {
-        vo = 0;
+      if (No === 1) {
+        No = 0;
         var b = Dc, N = Ff, L = (N.flags & 13878) !== 0;
         if ((N.subtreeFlags & 13878) !== 0 || L) {
           L = ee.T, ee.T = null;
@@ -6599,12 +6599,12 @@ Error generating stack: ` + K.message + `
             cs = de, ae.p = K, ee.T = L;
           }
         }
-        b.current = N, vo = 2;
+        b.current = N, No = 2;
       }
     }
     function h2() {
-      if (vo === 2) {
-        vo = 0;
+      if (No === 2) {
+        No = 0;
         var b = Dc, N = Ff, L = (N.flags & 8772) !== 0;
         if ((N.subtreeFlags & 8772) !== 0 || L) {
           L = ee.T, ee.T = null;
@@ -6618,14 +6618,14 @@ Error generating stack: ` + K.message + `
             cs = de, ae.p = K, ee.T = L;
           }
         }
-        vo = 3;
+        No = 3;
       }
     }
     function tB() {
-      if (vo === 4 || vo === 3) {
-        vo = 0, Ue();
+      if (No === 4 || No === 3) {
+        No = 0, Ue();
         var b = Dc, N = Ff, L = jg, K = Wx;
-        (N.subtreeFlags & 10256) !== 0 || (N.flags & 10256) !== 0 ? vo = 5 : (vo = 0, Ff = Dc = null, nB(b, b.pendingLanes));
+        (N.subtreeFlags & 10256) !== 0 || (N.flags & 10256) !== 0 ? No = 5 : (No = 0, Ff = Dc = null, nB(b, b.pendingLanes));
         var de = b.pendingLanes;
         if (de === 0 && (_i = null), Ft(L), N = N.stateNode, Pe && typeof Pe.onCommitFiberRoot == "function") try {
           Pe.onCommitFiberRoot(Le, N, void 0, (N.current.flags & 128) === 128);
@@ -6654,14 +6654,14 @@ Error generating stack: ` + K.message + `
       return eB(), h2(), tB(), f2();
     }
     function f2() {
-      if (vo !== 5) return false;
+      if (No !== 5) return false;
       var b = Dc, N = Vm;
       Vm = 0;
       var L = Ft(jg), K = ee.T, de = ae.p;
       try {
         ae.p = 32 > L ? 32 : L, ee.T = null, L = Tf, Tf = null;
         var Ie = Dc, Je = jg;
-        if (vo = 0, Ff = Dc = null, jg = 0, (cs & 6) !== 0) throw Error(a(331));
+        if (No = 0, Ff = Dc = null, jg = 0, (cs & 6) !== 0) throw Error(a(331));
         var dt = cs;
         if (cs |= 4, Rl(Ie.current), Kx(Ie, Ie.current, Je, L), cs = dt, Xm(0, false), Pe && typeof Pe.onPostCommitFiberRoot == "function") try {
           Pe.onPostCommitFiberRoot(Le, Ie);
@@ -6768,7 +6768,7 @@ Error generating stack: ` + K.message + `
         var de = K.next, Ie = Yy(K, N);
         Ie === 0 ? (K.next = null, L === null ? rB = de : L.next = de, de === null && (zf = L)) : (L = K, (b !== 0 || (Ie & 3) !== 0) && (aB = true)), K = de;
       }
-      vo !== 0 && vo !== 5 || Xm(b), P0 !== 0 && (P0 = 0);
+      No !== 0 && No !== 5 || Xm(b), P0 !== 0 && (P0 = 0);
     }
     function Yy(b, N) {
       for (var L = b.suspendedLanes, K = b.pingedLanes, de = b.expirationTimes, Ie = b.pendingLanes & -62914561; 0 < Ie; ) {
@@ -6797,7 +6797,7 @@ Error generating stack: ` + K.message + `
       return K !== null && K !== null && fe(K), b.callbackPriority = 2, b.callbackNode = null, 2;
     }
     function Gf(b, N) {
-      if (vo !== 0 && vo !== 5) return b.callbackNode = null, b.callbackPriority = 0, null;
+      if (No !== 0 && No !== 5) return b.callbackNode = null, b.callbackPriority = 0, null;
       var L = b.callbackNode;
       if (Zm() && b.callbackNode !== L) return null;
       var K = Ii;
@@ -6864,7 +6864,7 @@ Error generating stack: ` + K.message + `
       var eI = cr[Uf], oR = eI.toLowerCase(), b2 = eI[0].toUpperCase() + eI.slice(1);
       va(oR, "on" + b2);
     }
-    va(On, "onAnimationEnd"), va(yn, "onAnimationIteration"), va(Qn, "onAnimationStart"), va("dblclick", "onDoubleClick"), va("focusin", "onFocus"), va("focusout", "onBlur"), va(ar, "onTransitionRun"), va(Rn, "onTransitionStart"), va(ha, "onTransitionCancel"), va(Ia, "onTransitionEnd"), Bn("onMouseEnter", [
+    va(On, "onAnimationEnd"), va(yn, "onAnimationIteration"), va(Qn, "onAnimationStart"), va("dblclick", "onDoubleClick"), va("focusin", "onFocus"), va("focusout", "onBlur"), va(ir, "onTransitionRun"), va(Rn, "onTransitionStart"), va(ha, "onTransitionCancel"), va(Ia, "onTransitionEnd"), Bn("onMouseEnter", [
       "mouseout",
       "mouseover"
     ]), Bn("onMouseLeave", [
@@ -7102,18 +7102,18 @@ Error generating stack: ` + K.message + `
             else if (Jr(hn)) if (bd) as = hm;
             else {
               as = sf;
-              var Zr = af;
+              var Xr = af;
             }
             else Cn = hn.nodeName, !Cn || Cn.toLowerCase() !== "input" || hn.type !== "checkbox" && hn.type !== "radio" ? ln && fi(ln.elementType) && (as = Ua) : as = sx;
             if (as && (as = as(b, ln))) {
               Cs(Gn, as, L, Nn);
               break e;
             }
-            Zr && Zr(b, hn, ln), b === "focusout" && ln && hn.type === "number" && ln.memoizedProps.value != null && _n(hn, "number", hn.value);
+            Xr && Xr(b, hn, ln), b === "focusout" && ln && hn.type === "number" && ln.memoizedProps.value != null && _n(hn, "number", hn.value);
           }
-          switch (Zr = ln ? Kr(ln) : window, b) {
+          switch (Xr = ln ? Kr(ln) : window, b) {
             case "focusin":
-              (Jr(Zr) || Zr.contentEditable === "true") && (al = Zr, df = ln, yd = null);
+              (Jr(Xr) || Xr.contentEditable === "true") && (al = Xr, df = ln, yd = null);
               break;
             case "focusout":
               yd = df = al = null;
@@ -7147,14 +7147,14 @@ Error generating stack: ` + K.message + `
             }
             Pi = void 0;
           }
-          else vn ? nl(b, L) && (Pi = "onCompositionEnd") : b === "keydown" && L.keyCode === 229 && (Pi = "onCompositionStart");
-          Pi && (ql && L.locale !== "ko" && (vn || Pi !== "onCompositionStart" ? Pi === "onCompositionEnd" && vn && (gi = Hn()) : (Tn = Nn, $n = "value" in Tn ? Tn.value : Tn.textContent, vn = true)), Zr = lB(ln, Pi), 0 < Zr.length && (Pi = new RA(Pi, b, null, L, Nn), Gn.push({
+          else wn ? nl(b, L) && (Pi = "onCompositionEnd") : b === "keydown" && L.keyCode === 229 && (Pi = "onCompositionStart");
+          Pi && (ql && L.locale !== "ko" && (wn || Pi !== "onCompositionStart" ? Pi === "onCompositionEnd" && wn && (gi = Yn()) : (Tn = Nn, Wn = "value" in Tn ? Tn.value : Tn.textContent, wn = true)), Xr = lB(ln, Pi), 0 < Xr.length && (Pi = new RA(Pi, b, null, L, Nn), Gn.push({
             event: Pi,
-            listeners: Zr
-          }), gi ? Pi.data = gi : (gi = Fe(L), gi !== null && (Pi.data = gi)))), (gi = oA ? qa(b, L) : ni(b, L)) && (Pi = lB(ln, "onBeforeInput"), 0 < Pi.length && (Zr = new RA("onBeforeInput", "beforeinput", null, L, Nn), Gn.push({
-            event: Zr,
+            listeners: Xr
+          }), gi ? Pi.data = gi : (gi = Fe(L), gi !== null && (Pi.data = gi)))), (gi = oA ? qa(b, L) : ni(b, L)) && (Pi = lB(ln, "onBeforeInput"), 0 < Pi.length && (Xr = new RA("onBeforeInput", "beforeinput", null, L, Nn), Gn.push({
+            event: Xr,
             listeners: Pi
-          }), Zr.data = gi)), Ky(Gn, b, ln, L, Nn);
+          }), Xr.data = gi)), Ky(Gn, b, ln, L, Nn);
         }
         y2(Gn, N);
       });
@@ -7414,7 +7414,7 @@ Error generating stack: ` + K.message + `
         case "textContent":
           break;
         default:
-          if (!_t.hasOwnProperty(L)) e: {
+          if (!Ot.hasOwnProperty(L)) e: {
             if (L[0] === "o" && L[1] === "n" && (de = L.endsWith("Capture"), N = L.slice(2, de ? L.length - 7 : void 0), Ie = b[rr] || null, Ie = Ie != null ? Ie[L] : null, typeof Ie == "function" && b.removeEventListener(N, Ie, de), typeof K == "function")) {
               typeof Ie != "function" && Ie !== null && (L in b ? b[L] = null : b.hasAttribute(L) && b.removeAttribute(L)), b.addEventListener(N, K, de);
               break e;
@@ -7503,7 +7503,7 @@ Error generating stack: ` + K.message + `
             default:
               qi(b, N, de, dt, L, null);
           }
-          N = Ie, L = Je, b.multiple = !!K, N != null ? sr(b, !!K, N, false) : L != null && sr(b, !!K, L, true);
+          N = Ie, L = Je, b.multiple = !!K, N != null ? ar(b, !!K, N, false) : L != null && ar(b, !!K, L, true);
           return;
         case "textarea":
           Ni("invalid", b), Ie = de = K = null;
@@ -7655,7 +7655,7 @@ Error generating stack: ` + K.message + `
             default:
               Ie !== Mt && qi(b, N, de, Ie, K, Mt);
           }
-          N = dt, L = Je, K = Cn, hn != null ? sr(b, !!L, hn, false) : !!K != !!L && (N != null ? sr(b, !!L, N, true) : sr(b, !!L, L ? [] : "", false));
+          N = dt, L = Je, K = Cn, hn != null ? ar(b, !!L, hn, false) : !!K != !!L && (N != null ? ar(b, !!L, N, true) : ar(b, !!L, L ? [] : "", false));
           return;
         case "textarea":
           Cn = hn = null;
@@ -8416,7 +8416,7 @@ Error generating stack: ` + K.message + `
     }
     function Jf(b) {
       if (b.tag === 13 || b.tag === 31) {
-        var N = No();
+        var N = Do();
         N = Ve(N);
         var L = Li(b, N);
         L !== null && HA(L, b, N), cI(b, N);
@@ -8651,14 +8651,14 @@ Error generating stack: ` + K.message + `
         if (L !== null) {
           if (N = L.tag, N === 13) {
             if (N = o(L), N !== null) {
-              b.blockedOn = N, Pt(b.priority, function() {
+              b.blockedOn = N, Ht(b.priority, function() {
                 Jf(L);
               });
               return;
             }
           } else if (N === 31) {
             if (N = A(L), N !== null) {
-              b.blockedOn = N, Pt(b.priority, function() {
+              b.blockedOn = N, Ht(b.priority, function() {
                 Jf(L);
               });
               return;
@@ -8774,7 +8774,7 @@ Error generating stack: ` + K.message + `
     kB.prototype.render = gQ.prototype.render = function(b) {
       var N = this._internalRoot;
       if (N === null) throw Error(a(409));
-      var L = N.current, K = No();
+      var L = N.current, K = Do();
       BB(L, K, b, N, null, null);
     }, kB.prototype.unmount = gQ.prototype.unmount = function() {
       var b = this._internalRoot;
@@ -8789,7 +8789,7 @@ Error generating stack: ` + K.message + `
     }
     kB.prototype.unstable_scheduleHydration = function(b) {
       if (b) {
-        var N = Ot();
+        var N = Pt();
         b = {
           blockedOn: null,
           target: b,
@@ -8827,7 +8827,7 @@ Error generating stack: ` + K.message + `
     }, DQ.hydrateRoot = function(b, N, L) {
       if (!i(b)) throw Error(a(299));
       var K = false, de = "", Ie = Fm, Je = Tm, dt = py, Mt = null;
-      return L != null && (L.unstable_strictMode === true && (K = true), L.identifierPrefix !== void 0 && (de = L.identifierPrefix), L.onUncaughtError !== void 0 && (Ie = L.onUncaughtError), L.onCaughtError !== void 0 && (Je = L.onCaughtError), L.onRecoverableError !== void 0 && (dt = L.onRecoverableError), L.formState !== void 0 && (Mt = L.formState)), N = cQ(b, 1, true, N, L ?? null, K, de, Mt, Ie, Je, dt, K2), N.context = P2(null), L = N.current, K = No(), K = Ve(K), de = vd(K), de.callback = null, Nd(L, de, K), L = K, N.current.lanes = L, Ne(N, L), zd(N), b[dn] = N.current, oB(b), new kB(N);
+      return L != null && (L.unstable_strictMode === true && (K = true), L.identifierPrefix !== void 0 && (de = L.identifierPrefix), L.onUncaughtError !== void 0 && (Ie = L.onUncaughtError), L.onCaughtError !== void 0 && (Je = L.onCaughtError), L.onRecoverableError !== void 0 && (dt = L.onRecoverableError), L.formState !== void 0 && (Mt = L.formState)), N = cQ(b, 1, true, N, L ?? null, K, de, Mt, Ie, Je, dt, K2), N.context = P2(null), L = N.current, K = Do(), K = Ve(K), de = vd(K), de.callback = null, Nd(L, de, K), L = K, N.current.lanes = L, Ne(N, L), zd(N), b[dn] = N.current, oB(b), new kB(N);
     }, DQ.version = "19.2.3", DQ;
   }
   var vP;
@@ -10568,15 +10568,15 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
       if (!(e in r)) throw new Error(`Unknown ${a} value: ${e}.`);
     }
   }
-  class ko {
+  class So {
     static get isBrowser() {
-      return !ko.isNode && typeof window == "object" && typeof window.document == "object";
+      return !So.isNode && typeof window == "object" && typeof window.document == "object";
     }
     static get isWebWorker() {
-      return !ko.isNode && typeof self == "object" && "importScripts" in self;
+      return !So.isNode && typeof self == "object" && "importScripts" in self;
     }
     static get isReactNative() {
-      return !ko.isNode && typeof window == "object" && typeof window.document > "u";
+      return !So.isNode && typeof window == "object" && typeof window.document > "u";
     }
     static get isNode() {
       return typeof process < "u" && process.release && process.release.name === "node";
@@ -10652,7 +10652,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
   }
   function UE() {
     let t = "X-SignalR-User-Agent";
-    return ko.isNode && (t = "User-Agent"), [
+    return So.isNode && (t = "User-Agent"), [
       t,
       Ihe(hhe, Che(), Bhe(), xhe())
     ];
@@ -10663,7 +10663,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
     return i += `${s[0]}.${s[1]}`, i += ` (${t}; `, e && e !== "" ? i += `${e}; ` : i += "Unknown OS; ", i += `${r}`, a ? i += `; ${a}` : i += "; Unknown Runtime Version", i += ")", i;
   }
   function Che() {
-    if (ko.isNode) switch (process.platform) {
+    if (So.isNode) switch (process.platform) {
       case "win32":
         return "Windows NT";
       case "darwin":
@@ -10676,10 +10676,10 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
     else return "";
   }
   function xhe() {
-    if (ko.isNode) return process.versions.node;
+    if (So.isNode) return process.versions.node;
   }
   function Bhe() {
-    return ko.isNode ? "NodeJS" : "Browser";
+    return So.isNode ? "NodeJS" : "Browser";
   }
   function M4(t) {
     return t.stack ? t.stack : t.message ? t.message : `${t}`;
@@ -10693,7 +10693,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
   }
   class bhe extends HS {
     constructor(e) {
-      if (super(), this._logger = e, typeof fetch > "u" || ko.isNode) {
+      if (super(), this._logger = e, typeof fetch > "u" || So.isNode) {
         const r = typeof __webpack_require__ == "function" ? __non_webpack_require__ : require;
         this._jar = new (r("tough-cookie")).CookieJar(), typeof fetch > "u" ? this._fetchType = r("node-fetch") : this._fetchType = fetch, this._fetchType = r("fetch-cookie")(this._fetchType, this._jar);
       } else this._fetchType = fetch.bind(Ehe());
@@ -10748,7 +10748,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
     }
     getCookieString(e) {
       let r = "";
-      return ko.isNode && this._jar && this._jar.getCookies(e, (a, i) => r = i.join("; ")), r;
+      return So.isNode && this._jar && this._jar.getCookies(e, (a, i) => r = i.join("; ")), r;
     }
   }
   function FP(t, e) {
@@ -10795,7 +10795,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
   }
   class Qhe extends HS {
     constructor(e) {
-      if (super(), typeof fetch < "u" || ko.isNode) this._httpClient = new bhe(e);
+      if (super(), typeof fetch < "u" || So.isNode) this._httpClient = new bhe(e);
       else if (typeof XMLHttpRequest < "u") this._httpClient = new yhe(e);
       else throw new Error("No usable HttpClient found.");
     }
@@ -10997,7 +10997,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
       if (this._connectionState !== Di.Disconnected) return Promise.reject(new Error("Cannot start a HubConnection that is not in the 'Disconnected' state."));
       this._connectionState = Di.Connecting, this._logger.log(Ln.Debug, "Starting HubConnection.");
       try {
-        await this._startInternal(), ko.isBrowser && window.document.addEventListener("freeze", this._freezeEventListener), this._connectionState = Di.Connected, this._connectionStarted = true, this._logger.log(Ln.Debug, "HubConnection connected successfully.");
+        await this._startInternal(), So.isBrowser && window.document.addEventListener("freeze", this._freezeEventListener), this._connectionState = Di.Connected, this._connectionStarted = true, this._logger.log(Ln.Debug, "HubConnection connected successfully.");
       } catch (e) {
         return this._connectionState = Di.Disconnected, this._logger.log(Ln.Debug, `HubConnection failed to start successfully because of error '${e}'.`), Promise.reject(e);
       }
@@ -11206,7 +11206,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
     }
     _completeClose(e) {
       if (this._connectionStarted) {
-        this._connectionState = Di.Disconnected, this._connectionStarted = false, this._messageBuffer && (this._messageBuffer._dispose(e ?? new Error("Connection closed.")), this._messageBuffer = void 0), ko.isBrowser && window.document.removeEventListener("freeze", this._freezeEventListener);
+        this._connectionState = Di.Disconnected, this._connectionStarted = false, this._messageBuffer && (this._messageBuffer._dispose(e ?? new Error("Connection closed.")), this._messageBuffer = void 0), So.isBrowser && window.document.removeEventListener("freeze", this._freezeEventListener);
         try {
           this._closedCallbacks.forEach((r) => r.apply(this, [
             e
@@ -11549,7 +11549,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
           return;
         }
         let o;
-        if (ko.isBrowser || ko.isWebWorker) o = new this._options.EventSource(e, {
+        if (So.isBrowser || So.isWebWorker) o = new this._options.EventSource(e, {
           withCredentials: this._options.withCredentials
         });
         else {
@@ -11605,7 +11605,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
         let o;
         const A = this._httpClient.getCookieString(e);
         let l = false;
-        if (ko.isNode || ko.isReactNative) {
+        if (So.isNode || So.isReactNative) {
           const c = {}, [g, d] = UE();
           c[g] = d, a && (c[gC.Authorization] = `Bearer ${a}`), A && (c[gC.Cookie] = A), o = new this._webSocketConstructor(e, void 0, {
             headers: {
@@ -11659,11 +11659,11 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
       else throw new Error("withCredentials option was not a 'boolean' or 'undefined' value");
       r.timeout = r.timeout === void 0 ? 100 * 1e3 : r.timeout;
       let a = null, i = null;
-      if (ko.isNode && typeof require < "u") {
+      if (So.isNode && typeof require < "u") {
         const s = typeof __webpack_require__ == "function" ? __non_webpack_require__ : require;
         a = s("ws"), i = s("eventsource");
       }
-      !ko.isNode && typeof WebSocket < "u" && !r.WebSocket ? r.WebSocket = WebSocket : ko.isNode && !r.WebSocket && a && (r.WebSocket = a), !ko.isNode && typeof EventSource < "u" && !r.EventSource ? r.EventSource = EventSource : ko.isNode && !r.EventSource && typeof i < "u" && (r.EventSource = i), this._httpClient = new Mhe(r.httpClient || new Qhe(this._logger), r.accessTokenFactory), this._connectionState = "Disconnected", this._connectionStarted = false, this._options = r, this.onreceive = null, this.onclose = null;
+      !So.isNode && typeof WebSocket < "u" && !r.WebSocket ? r.WebSocket = WebSocket : So.isNode && !r.WebSocket && a && (r.WebSocket = a), !So.isNode && typeof EventSource < "u" && !r.EventSource ? r.EventSource = EventSource : So.isNode && !r.EventSource && typeof i < "u" && (r.EventSource = i), this._httpClient = new Mhe(r.httpClient || new Qhe(this._logger), r.accessTokenFactory), this._connectionState = "Disconnected", this._connectionStarted = false, this._options = r, this.onreceive = null, this.onclose = null;
     }
     async start(e) {
       if (e = e || Ul.Binary, fA.isIn(e, Ul, "transferFormat"), this._logger.log(Ln.Debug, `Starting connection with transfer format '${Ul[e]}'.`), this._connectionState !== "Disconnected") return Promise.reject(new Error("Cannot start an HttpConnection that is not in the 'Disconnected' state."));
@@ -11851,7 +11851,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
     }
     _resolveUrl(e) {
       if (e.lastIndexOf("https://", 0) === 0 || e.lastIndexOf("http://", 0) === 0) return e;
-      if (!ko.isBrowser) throw new Error(`Cannot resolve '${e}'.`);
+      if (!So.isBrowser) throw new Error(`Cannot resolve '${e}'.`);
       const r = window.document.createElement("a");
       return r.href = e, this._logger.log(Ln.Information, `Normalizing '${e}' to '${r.href}'.`), r.href;
     }
@@ -19949,7 +19949,7 @@ Reports dispatched to hospital portal & patient WhatsApp.`,
     }
   }
   function YS(t, e, r, a = {}) {
-    var _a2, _b, _c2, _d2, _e, _f, _g2, _h2, _i, _j2, _k2, _l2, _m, _n, _o2, _p2, _q2, _r, _s2, _t, _u, _v, _w2, _x, _y, _z2, _A, _B2, _C2, _D2, _E2, _F2, _G2, _H2, _I2, _J2, _K2, _L2, _M2, _N2, _O2, _P2, _Q2, _R, _S2, _T2, _U, _V2, _W2, _X2, _Y2, _Z2, __2, _$2, _aa, _ba, _ca, _da, _ea, _fa, _ga, _ha, _ia, _ja, _ka, _la, _ma, _na, _oa, _pa, _qa, _ra, _sa, _ta, _ua, _va, _wa, _xa, _ya, _za, _Aa, _Ba, _Ca, _Da, _Ea, _Fa, _Ga, _Ha, _Ia, _Ja, _Ka, _La, _Ma, _Na, _Oa, _Pa, _Qa, _Ra, _Sa, _Ta, _Ua;
+    var _a2, _b, _c2, _d2, _e, _f, _g2, _h2, _i, _j2, _k2, _l2, _m, _n, _o2, _p2, _q2, _r, _s2, _t2, _u, _v, _w2, _x, _y, _z2, _A, _B2, _C2, _D2, _E2, _F2, _G2, _H2, _I2, _J2, _K2, _L2, _M2, _N2, _O2, _P2, _Q2, _R, _S2, _T2, _U, _V2, _W2, _X2, _Y2, _Z2, __2, _$2, _aa, _ba, _ca, _da, _ea, _fa, _ga, _ha, _ia, _ja, _ka, _la, _ma, _na, _oa, _pa, _qa, _ra, _sa, _ta, _ua, _va, _wa, _xa, _ya, _za, _Aa, _Ba, _Ca, _Da, _Ea, _Fa, _Ga, _Ha, _Ia, _Ja, _Ka, _La, _Ma, _Na, _Oa, _Pa, _Qa, _Ra, _Sa, _Ta, _Ua;
     const i = Vd[t] || {}, s = e && e.boxes ? JSON.parse(JSON.stringify(e)) : JSON.parse(JSON.stringify(i));
     if (!s || !s.boxes || !r) return s;
     i.boxes && Object.keys(i.boxes).forEach((c) => {
@@ -20068,7 +20068,7 @@ Reports dispatched to hospital portal & patient WhatsApp.`,
         break;
       }
       case "prepaid_patient_a4_slip": {
-        const c = r.patient || {}, g = r.referringDoctorName || r.partnerName || ((_q2 = (_p2 = (_o2 = r.billing) == null ? void 0 : _o2.referral) == null ? void 0 : _p2.partner) == null ? void 0 : _q2.displayName) || ((_t = (_s2 = (_r = r.billing) == null ? void 0 : _r.referral) == null ? void 0 : _s2.partner) == null ? void 0 : _t.name) || ((_u = r.billingContext) == null ? void 0 : _u.referralPartnerName) || "Referring Doctor / Clinic";
+        const c = r.patient || {}, g = r.referringDoctorName || r.partnerName || ((_q2 = (_p2 = (_o2 = r.billing) == null ? void 0 : _o2.referral) == null ? void 0 : _p2.partner) == null ? void 0 : _q2.displayName) || ((_t2 = (_s2 = (_r = r.billing) == null ? void 0 : _r.referral) == null ? void 0 : _s2.partner) == null ? void 0 : _t2.name) || ((_u = r.billingContext) == null ? void 0 : _u.referralPartnerName) || "Referring Doctor / Clinic";
         if (r.partnerClinic || ((_v = r.billingContext) == null ? void 0 : _v.referralPartnerClinic), ((_w2 = o.docBadge) == null ? void 0 : _w2.fields) && (o.docBadge.fields.billNumber && (o.docBadge.fields.billNumber.value = r.billNumber || r.invoiceNumber || (r.token ? `ORD-${r.token}` : o.docBadge.fields.billNumber.value)), o.docBadge.fields.date && (o.docBadge.fields.date.value = r.date || r.dateTime ? new Date(r.date || r.dateTime).toLocaleString([], {
           dateStyle: "short",
           timeStyle: "short"
@@ -22024,7 +22024,7 @@ Minimum version required to store current data is: ` + P + `.
     })}`;
   }
   function Nw(t = {}) {
-    var _a2, _b, _c2, _d2, _e, _f, _g2, _h2, _i, _j2, _k2, _l2, _m, _n, _o2, _p2, _q2, _r, _s2, _t, _u, _v, _w2, _x, _y, _z2, _A, _B2, _C2, _D2, _E2, _F2, _G2, _H2, _I2, _J2, _K2, _L2, _M2, _N2, _O2, _P2, _Q2, _R, _S2, _T2, _U, _V2, _W2, _X2, _Y2, _Z2, __2, _$2, _aa, _ba, _ca, _da, _ea, _fa, _ga, _ha, _ia, _ja, _ka, _la, _ma, _na;
+    var _a2, _b, _c2, _d2, _e, _f, _g2, _h2, _i, _j2, _k2, _l2, _m, _n, _o2, _p2, _q2, _r, _s2, _t2, _u, _v, _w2, _x, _y, _z2, _A, _B2, _C2, _D2, _E2, _F2, _G2, _H2, _I2, _J2, _K2, _L2, _M2, _N2, _O2, _P2, _Q2, _R, _S2, _T2, _U, _V2, _W2, _X2, _Y2, _Z2, __2, _$2, _aa, _ba, _ca, _da, _ea, _fa, _ga, _ha, _ia, _ja, _ka, _la, _ma, _na;
     const e = t.isPrepaid || t.billingMode === "PrepaidPartner" || t.Method === "PartnerCollects" || t.PaymentCollectionModel === "PartnerCollects" || ((_a2 = t.billing) == null ? void 0 : _a2.paymentMethod) === "Corporate B2B Prepaid" || ((_b = t.billing) == null ? void 0 : _b.paymentMethod) === "PartnerAccount" || ((_c2 = t.billing) == null ? void 0 : _c2.paymentMethod) === "Prepaid" || ((_d2 = t.billing) == null ? void 0 : _d2.paymentMethod) === "PartnerCollects";
     if (e && !t.forceStandardReceipt) return ape(t);
     if ((t.isInsurance || t.billingMode === "Insurance" || t.billingMode === "TPA" || t.PaymentCollectionModel === "Insurance" || ((_e = t.billing) == null ? void 0 : _e.paymentMethod) === "Insurance" || ((_f = t.billing) == null ? void 0 : _f.paymentMethod) === "TPA" || ((_g2 = t.billing) == null ? void 0 : _g2.isInsurance)) && !t.forceStandardReceipt) return ipe(t);
@@ -22100,7 +22100,7 @@ Minimum version required to store current data is: ` + P + `.
     }, ne = YS("patient_thermal_receipt", f, ae, p), { boxes: J } = ne;
     let $ = "";
     if ((_s2 = J.header) == null ? void 0 : _s2.enabled) {
-      const ze = J.header.fields || {}, Se = p.labLegalName || p.legalName || ((_t = ze.legalName) == null ? void 0 : _t.value) || "SRI DIVYA DIAGNOSTIC CENTRE", le = p.labTradeName || p.tagline || ((_u = ze.tagline) == null ? void 0 : _u.value) || "", q = le && le.trim().toLowerCase() !== Se.trim().toLowerCase() ? le : "", pe = p.address || ((_v = ze.address) == null ? void 0 : _v.value) || "Wyra Road, Khammam | Ph: 9876543210", oe = p.gstin || ((_w2 = ze.gstin) == null ? void 0 : _w2.value) || "", xe = p.phone || ((_x = ze.phone) == null ? void 0 : _x.value) || "", Ee = p.logoUrl || (typeof window < "u" ? (_y = window.localStorage) == null ? void 0 : _y.getItem("synos_lab_logo") : "");
+      const ze = J.header.fields || {}, Se = p.labLegalName || p.legalName || ((_t2 = ze.legalName) == null ? void 0 : _t2.value) || "SRI DIVYA DIAGNOSTIC CENTRE", le = p.labTradeName || p.tagline || ((_u = ze.tagline) == null ? void 0 : _u.value) || "", q = le && le.trim().toLowerCase() !== Se.trim().toLowerCase() ? le : "", pe = p.address || ((_v = ze.address) == null ? void 0 : _v.value) || "Wyra Road, Khammam | Ph: 9876543210", oe = p.gstin || ((_w2 = ze.gstin) == null ? void 0 : _w2.value) || "", xe = p.phone || ((_x = ze.phone) == null ? void 0 : _x.value) || "", Ee = p.logoUrl || (typeof window < "u" ? (_y = window.localStorage) == null ? void 0 : _y.getItem("synos_lab_logo") : "");
       $ = `
             <div style="text-align: center; border-bottom: 2px solid #000000; padding-bottom: 5px; margin-bottom: 5px;">
                 ${Ee ? `
@@ -22378,7 +22378,7 @@ Minimum version required to store current data is: ` + P + `.
     `;
   }
   function ape(t = {}) {
-    var _a2, _b, _c2, _d2, _e, _f, _g2, _h2, _i, _j2, _k2, _l2, _m, _n, _o2, _p2, _q2, _r, _s2, _t, _u, _v, _w2, _x, _y, _z2, _A, _B2, _C2, _D2, _E2, _F2, _G2, _H2, _I2, _J2, _K2, _L2, _M2, _N2, _O2, _P2, _Q2, _R, _S2, _T2, _U, _V2;
+    var _a2, _b, _c2, _d2, _e, _f, _g2, _h2, _i, _j2, _k2, _l2, _m, _n, _o2, _p2, _q2, _r, _s2, _t2, _u, _v, _w2, _x, _y, _z2, _A, _B2, _C2, _D2, _E2, _F2, _G2, _H2, _I2, _J2, _K2, _L2, _M2, _N2, _O2, _P2, _Q2, _R, _S2, _T2, _U, _V2;
     const e = t.token || t.Token || t.visitToken || "", r = t.patient || t.Patient || {}, a = r.name || r.fullName || t.patientName || t.PatientName || "Patient", i = r.uhid || r.mrn || t.mrn || t.Mrn || "SYN-2026-0001", s = r.age || t.age || t.Age || "", o = r.gender || r.sex || t.gender || t.Gender || "M", A = t.billing || t.Billing || t.financial || {}, l = t.orders || t.Orders || t.items || [], c = t.referringDoctorName || t.ReferringDoctorName || ((_b = (_a2 = A == null ? void 0 : A.referral) == null ? void 0 : _a2.partner) == null ? void 0 : _b.displayName) || "", g = t.sponsorName || t.partnerName || ((_d2 = (_c2 = A == null ? void 0 : A.referral) == null ? void 0 : _c2.partner) == null ? void 0 : _d2.displayName) || ((_f = (_e = A == null ? void 0 : A.referral) == null ? void 0 : _e.partner) == null ? void 0 : _f.name) || c || "B2B Referral Partner";
     t.labName || t.LabName;
     const d = t.branch || t.Branch || {}, u = t.customLayout;
@@ -22456,7 +22456,7 @@ Minimum version required to store current data is: ` + P + `.
         `;
     }
     let v = "";
-    if ((_t = Q.docBadge) == null ? void 0 : _t.enabled) {
+    if ((_t2 = Q.docBadge) == null ? void 0 : _t2.enabled) {
       const U = Q.docBadge.fields || {}, O = ((_u = U.badgeTitle) == null ? void 0 : _u.value) || "PREPAID PATIENT SLIP", _ = ((_v = U.date) == null ? void 0 : _v.value) || C.dateTime, te = ((_w2 = U.receiptNumber) == null ? void 0 : _w2.value) || C.receiptNumber;
       v = `
             <div style="text-align: center; margin-bottom: 5px; border-bottom: 1.5px solid #000000; padding-bottom: 5px;">
@@ -22661,7 +22661,7 @@ Minimum version required to store current data is: ` + P + `.
     `;
   }
   function ipe(t = {}) {
-    var _a2, _b, _c2, _d2, _e, _f, _g2, _h2, _i, _j2, _k2, _l2, _m, _n, _o2, _p2, _q2, _r, _s2, _t, _u, _v, _w2, _x, _y, _z2, _A, _B2, _C2, _D2;
+    var _a2, _b, _c2, _d2, _e, _f, _g2, _h2, _i, _j2, _k2, _l2, _m, _n, _o2, _p2, _q2, _r, _s2, _t2, _u, _v, _w2, _x, _y, _z2, _A, _B2, _C2, _D2;
     const e = t.token || t.Token || t.visitToken || "", r = t.patient || t.Patient || {}, a = r.name || r.fullName || t.patientName || t.PatientName || "Patient", i = r.uhid || r.mrn || t.mrn || t.Mrn || "SYN-2026-0001", s = r.age || t.age || t.Age || "", o = r.gender || r.sex || t.gender || t.Gender || "M", A = t.billing || t.Billing || t.financial || {}, l = t.orders || t.Orders || t.items || [], c = t.labName || t.LabName || "", g = t.branch || t.Branch || {}, d = t.customLayout;
     let u = d || Vd.insurance_thermal_receipt, h = {};
     if (typeof window < "u" && window.localStorage) try {
@@ -22796,7 +22796,7 @@ Minimum version required to store current data is: ` + P + `.
         `;
     }
     let ee = "";
-    if (((_t = U.billerDetails) == null ? void 0 : _t.enabled) !== false) {
+    if (((_t2 = U.billerDetails) == null ? void 0 : _t2.enabled) !== false) {
       const $ = ((_u = U.billerDetails) == null ? void 0 : _u.fields) || {};
       ee = `
             <div style="border-bottom: 1px dashed #000000; padding-bottom: 4px; margin-bottom: 5px;">
@@ -24481,7 +24481,7 @@ Minimum version required to store current data is: ` + P + `.
         key: "mthhwq"
       }
     ]
-  ], jo = nn("chevron-right", qpe);
+  ], Mo = nn("chevron-right", qpe);
   const Zpe = [
     [
       "path",
@@ -25638,7 +25638,7 @@ Minimum version required to store current data is: ` + P + `.
         key: "1fdv2h"
       }
     ]
-  ], Fo = nn("history", Kme);
+  ], To = nn("history", Kme);
   const Vme = [
     [
       "polyline",
@@ -25691,7 +25691,7 @@ Minimum version required to store current data is: ` + P + `.
         key: "1nkvk2"
       }
     ]
-  ], Gs = nn("indian-rupee", qme);
+  ], Ys = nn("indian-rupee", qme);
   const Zme = [
     [
       "circle",
@@ -28412,7 +28412,7 @@ Minimum version required to store current data is: ` + P + `.
         key: "17ys0d"
       }
     ]
-  ], Ys = nn("user", gxe);
+  ], Hs = nn("user", gxe);
   const uxe = [
     [
       "path",
@@ -28627,7 +28627,7 @@ Minimum version required to store current data is: ` + P + `.
         key: "xoc0q4"
       }
     ]
-  ], Us = nn("wallet", Bxe);
+  ], Gs = nn("wallet", Bxe);
   const Exe = [
     [
       "path",
@@ -28787,7 +28787,7 @@ Minimum version required to store current data is: ` + P + `.
         key: "d8bk6v"
       }
     ]
-  ], Yn = nn("x", Sxe);
+  ], Hn = nn("x", Sxe);
   const Rxe = [
     [
       "path",
@@ -29229,7 +29229,7 @@ Minimum version required to store current data is: ` + P + `.
             n.jsx("button", {
               onClick: e,
               className: me("p-2 -mr-2 rounded-full transition-all duration-200 active:scale-95", o ? "hover:bg-white/10 text-zinc-400 hover:text-white" : "hover:bg-black/5 text-zinc-500 hover:text-zinc-900"),
-              children: n.jsx(Yn, {
+              children: n.jsx(Hn, {
                 className: "w-5 h-5"
               })
             })
@@ -30242,7 +30242,7 @@ Details: ${A.inner}`);
                     n.jsxs("div", {
                       className: "flex items-center gap-1.5 shrink-0",
                       children: [
-                        n.jsx(Ys, {
+                        n.jsx(Hs, {
                           className: "w-3.5 h-3.5 opacity-70 shrink-0"
                         }),
                         n.jsxs("span", {
@@ -30598,7 +30598,7 @@ Details: ${A.inner}`);
                 children: n.jsxs("div", {
                   className: "flex items-center gap-1.5 leading-none",
                   children: [
-                    n.jsx(Ys, {
+                    n.jsx(Hs, {
                       className: "w-3.5 h-3.5 text-zinc-400 shrink-0"
                     }),
                     n.jsx("span", {
@@ -30920,12 +30920,12 @@ Details: ${A.inner}`);
       if (C.includes("removed test")) return n.jsx(Qs, {
         className: "h-4 w-4 text-muted-foreground"
       });
-      if (C.includes("referral partner")) return n.jsx(Ys, {
+      if (C.includes("referral partner")) return n.jsx(Hs, {
         className: "h-4 w-4 text-muted-foreground"
       });
       switch (I) {
         case "VISIT_CREATED":
-          return n.jsx(Ys, {
+          return n.jsx(Hs, {
             className: "h-4 w-4 text-muted-foreground"
           });
         case "PAYMENT_RECEIVED":
@@ -31306,7 +31306,7 @@ Details: ${A.inner}`);
         children: [
           n.jsx("div", {
             className: me("row-span-3 self-center rounded-full flex items-center justify-center shrink-0 transition-transform", s ? "w-10 h-10 sm:w-11 sm:h-11" : "w-9 h-9 sm:w-10 sm:h-10", s ? v ? "bg-sky-950/60 text-sky-400 border-2 border-zinc-800 shadow-md" : "bg-gradient-to-b from-[#E0F2FE] to-[#BAE6FD] text-[#0284C7] border-2 border-white shadow-[0_3px_10px_rgba(2,132,199,0.2)]" : v ? "bg-zinc-800 text-zinc-300 border border-zinc-700 shadow-xs" : "bg-slate-100 text-slate-600 border border-slate-200 shadow-xs"),
-            children: n.jsx(Ys, {
+            children: n.jsx(Hs, {
               className: s ? "w-5 h-5 text-[#0284C7]" : "w-4 h-4"
             })
           }),
@@ -31954,7 +31954,7 @@ Details: ${A.inner}`);
                 n.jsxs("div", {
                   className: "relative",
                   children: [
-                    n.jsx(Ys, {
+                    n.jsx(Hs, {
                       className: "absolute left-3 top-2.5 w-4 h-4 text-zinc-400"
                     }),
                     n.jsx("input", {
@@ -32845,7 +32845,7 @@ Details: ${A.inner}`);
         id: "Standard",
         title: "Direct / Standard",
         subtitle: "Desk collection & standard tariff",
-        icon: Gs,
+        icon: Ys,
         badge: "Retail"
       },
       {
@@ -33368,7 +33368,7 @@ Details: ${A.inner}`);
                   I ? n.jsx(Ds, {
                     size: 13,
                     className: "text-zinc-400"
-                  }) : n.jsx(jo, {
+                  }) : n.jsx(Mo, {
                     size: 13,
                     className: "text-zinc-400"
                   }),
@@ -33674,7 +33674,7 @@ Details: ${A.inner}`);
                 type: "button",
                 onClick: e,
                 className: me("p-1.5 rounded-lg transition-all cursor-pointer", a ? "hover:bg-white/10 text-zinc-400 hover:text-white" : "hover:bg-black/5 text-zinc-500 hover:text-zinc-900"),
-                children: n.jsx(Yn, {
+                children: n.jsx(Hn, {
                   className: "w-4 h-4"
                 })
               })
@@ -33874,7 +33874,7 @@ Details: ${A.inner}`);
                 type: "button",
                 onClick: e,
                 className: me("p-1.5 rounded-lg transition-all cursor-pointer", a ? "hover:bg-white/10 text-zinc-400 hover:text-white" : "hover:bg-black/5 text-zinc-500 hover:text-zinc-900"),
-                children: n.jsx(Yn, {
+                children: n.jsx(Hn, {
                   className: "w-4 h-4"
                 })
               })
@@ -34097,7 +34097,7 @@ Details: ${A.inner}`);
                 type: "button",
                 onClick: e,
                 className: me("p-1.5 rounded-lg transition-all cursor-pointer", s ? "hover:bg-white/10 text-zinc-400 hover:text-white" : "hover:bg-black/5 text-zinc-500 hover:text-zinc-900"),
-                children: n.jsx(Yn, {
+                children: n.jsx(Hn, {
                   className: "w-4 h-4"
                 })
               })
@@ -34264,7 +34264,7 @@ Details: ${A.inner}`);
                 type: "button",
                 onClick: e,
                 className: me("p-1.5 rounded-lg transition-all cursor-pointer", r ? "hover:bg-white/10 text-zinc-400 hover:text-white" : "hover:bg-black/5 text-zinc-500 hover:text-zinc-900"),
-                children: n.jsx(Yn, {
+                children: n.jsx(Hn, {
                   className: "w-4 h-4"
                 })
               })
@@ -34381,7 +34381,7 @@ Details: ${A.inner}`);
     });
   }
   function Xxe({ snapshot: t, visitId: e, onVisitUpdated: r, onOptimisticAddTest: a, onOptimisticRemoveTest: i, setIsPrepaidIntent: s, isCorrectionIntent: o, billingMode: A = "Standard", onOpenModal: l, stagedAddedTests: c = [], onAddStagedTest: g, stagedRemovedOrderIds: d = [], onToggleRemoveOrderId: u, onRemoveStagedAddedTest: h, stagedReferralPartnerId: f, stagedSecondaryPartnerId: p, onStageReferral: I, onStageSecondaryReferral: x }) {
-    var _a2, _b, _c2, _d2, _e, _f, _g2, _h2, _i, _j2, _k2, _l2, _m, _n, _o2, _p2, _q2, _r, _s2, _t, _u, _v, _w2, _x, _y, _z2, _A, _B2, _C2, _D2, _E2, _F2, _G2, _H2, _I2, _J2, _K2, _L2, _M2, _N2, _O2, _P2;
+    var _a2, _b, _c2, _d2, _e, _f, _g2, _h2, _i, _j2, _k2, _l2, _m, _n, _o2, _p2, _q2, _r, _s2, _t2, _u, _v, _w2, _x, _y, _z2, _A, _B2, _C2, _D2, _E2, _F2, _G2, _H2, _I2, _J2, _K2, _L2, _M2, _N2, _O2, _P2;
     const { closePanel: C } = u9(), [B, Q] = F.useState(""), [D, v] = F.useState(false), [M, j] = F.useState(0), G = F.useRef(null), H = F.useRef(null), P = F.useRef(null), U = F.useRef(null), O = F.useRef(null), [_, te] = F.useState([]), [ee, ae] = F.useState([]), [ne, J] = F.useState([]), [$, se] = F.useState([]), [he, Ce] = F.useState([]), [Me, je] = F.useState([]), [Qe, Re] = F.useState([]), [ze, Se] = F.useState(false);
     F.useEffect(() => {
       if (M >= 0 && G.current) {
@@ -34439,11 +34439,11 @@ Details: ${A.inner}`);
       testCode: "px-2 py-0.5 rounded-md bg-white text-slate-700 border border-slate-200/90 shadow-[0_1px_2px_rgba(15,35,60,0.06)] font-mono text-xs font-bold",
       modal: "bg-white border-slate-200 text-slate-900",
       modalInput: "bg-slate-50 border-slate-200 text-slate-900 focus:border-blue-500"
-    }, it = ((_t = t == null ? void 0 : t.uiHints) == null ? void 0 : _t.readOnlyReason) || (ye ? xe.status.toUpperCase() : Xe ? "LOCKED" : null);
+    }, it = ((_t2 = t == null ? void 0 : t.uiHints) == null ? void 0 : _t2.readOnlyReason) || (ye ? xe.status.toUpperCase() : Xe ? "LOCKED" : null);
     F.useEffect(() => {
       let Ve = true;
       return (async () => {
-        const [Ot, Pt, Un, bn, rr, dn] = await Promise.allSettled([
+        const [Pt, Ht, Un, bn, rr, dn] = await Promise.allSettled([
           B9(),
           Dw(),
           YW(),
@@ -34452,7 +34452,7 @@ Details: ${A.inner}`);
           Xt.getCorporateAccounts()
         ]);
         if (Ve) {
-          if (Ot.status === "fulfilled" ? te(Ot.value || []) : console.error("Failed to load test catalog", Ot.reason), Pt.status === "fulfilled" ? ae(Pt.value || []) : console.warn("Failed to load referral partners", Pt.reason), Un.status === "fulfilled") {
+          if (Pt.status === "fulfilled" ? te(Pt.value || []) : console.error("Failed to load test catalog", Pt.reason), Ht.status === "fulfilled" ? ae(Ht.value || []) : console.warn("Failed to load referral partners", Ht.reason), Un.status === "fulfilled") {
             const on = Un.value;
             J((on == null ? void 0 : on.data) || on || []);
           } else console.warn("Failed to load reference labs", Un.reason);
@@ -34485,9 +34485,9 @@ Details: ${A.inner}`);
     ]);
     const En = async (Ve, Ft = {}) => {
       if (!e || fe) return;
-      const { silent: Ot = false, persist: Pt = true, refreshSnapshot: Un = true } = Ft;
-      if ((t == null ? void 0 : t.visit) && (Ve.employeeId !== void 0 && (t.visit.employeeId = Ve.employeeId), Ve.policyNumber !== void 0 && (t.visit.policyNumber = Ve.policyNumber), Ve.preAuthApprovalNumber !== void 0 && (t.visit.preAuthApprovalNumber = Ve.preAuthApprovalNumber), Ve.insuranceCoPayAmount !== void 0 && (t.visit.insuranceCoPayAmount = Ve.insuranceCoPayAmount), Ve.corporateAccountId !== void 0 && (t.visit.corporateAccountId = Ve.corporateAccountId), Ve.corporatePackageId !== void 0 && (t.visit.corporatePackageId = Ve.corporatePackageId), Ve.insuranceCompanyId !== void 0 && (t.visit.insuranceCompanyId = Ve.insuranceCompanyId), Ve.billingType !== void 0 && (t.visit.billingType = Ve.billingType)), !!Pt) {
-        Ot || Se(true);
+      const { silent: Pt = false, persist: Ht = true, refreshSnapshot: Un = true } = Ft;
+      if ((t == null ? void 0 : t.visit) && (Ve.employeeId !== void 0 && (t.visit.employeeId = Ve.employeeId), Ve.policyNumber !== void 0 && (t.visit.policyNumber = Ve.policyNumber), Ve.preAuthApprovalNumber !== void 0 && (t.visit.preAuthApprovalNumber = Ve.preAuthApprovalNumber), Ve.insuranceCoPayAmount !== void 0 && (t.visit.insuranceCoPayAmount = Ve.insuranceCoPayAmount), Ve.corporateAccountId !== void 0 && (t.visit.corporateAccountId = Ve.corporateAccountId), Ve.corporatePackageId !== void 0 && (t.visit.corporatePackageId = Ve.corporatePackageId), Ve.insuranceCompanyId !== void 0 && (t.visit.insuranceCompanyId = Ve.insuranceCompanyId), Ve.billingType !== void 0 && (t.visit.billingType = Ve.billingType)), !!Ht) {
+        Pt || Se(true);
         try {
           const bn = t == null ? void 0 : t.visit, rr = {
             visitId: e,
@@ -34502,19 +34502,19 @@ Details: ${A.inner}`);
           };
           await Xt.updateBillingContext(rr), Un && r && r();
         } catch (bn) {
-          console.error("Failed to update billing context:", bn), Ot || alert("Failed to update billing details: " + bn.message);
+          console.error("Failed to update billing context:", bn), Pt || alert("Failed to update billing details: " + bn.message);
         } finally {
-          Ot || Se(false);
+          Pt || Se(false);
         }
       }
     }, kn = (Ve) => {
-      const Ft = (Ve.testCode || Ve.code || "").toLowerCase(), Ot = Ve.id || Ve.testId;
+      const Ft = (Ve.testCode || Ve.code || "").toLowerCase(), Pt = Ve.id || Ve.testId;
       if ((A === "Corporate" || A === "Insurance") && Qe.length > 0) {
-        const Pt = Qe.find((bn) => bn.testCode && bn.testCode.toLowerCase() === Ft || bn.packageCode && bn.packageCode.toLowerCase() === Ft || bn.testId && Ot && bn.testId === Ot), Un = Pt ? Pt.contractedPrice ?? Pt.corporatePrice : null;
+        const Ht = Qe.find((bn) => bn.testCode && bn.testCode.toLowerCase() === Ft || bn.packageCode && bn.packageCode.toLowerCase() === Ft || bn.testId && Pt && bn.testId === Pt), Un = Ht ? Ht.contractedPrice ?? Ht.corporatePrice : null;
         if (Un != null) return {
           price: Un,
           isCorporateRate: true,
-          standardPrice: Pt.standardPrice || Ve.basePrice || Ve.price || Ve.Price || Un
+          standardPrice: Ht.standardPrice || Ve.basePrice || Ve.price || Ve.Price || Un
         };
         if (Ve.isCorporateRate) return {
           price: Ve.price,
@@ -34659,7 +34659,7 @@ Details: ${A.inner}`);
           isPackage: dn.isPackage || false,
           includedTests: dn.includedTests || []
         };
-      }), Ft = new Set(Qe.map((dn) => (dn.testCode || dn.packageCode || "").toLowerCase()).filter(Boolean)), Ot = _.filter((dn) => {
+      }), Ft = new Set(Qe.map((dn) => (dn.testCode || dn.packageCode || "").toLowerCase()).filter(Boolean)), Pt = _.filter((dn) => {
         const on = (dn.testCode || dn.code || "").toLowerCase();
         return Ft.has(on) || dn.pricing && dn.pricing.corporate > 0;
       }).map((dn) => {
@@ -34671,13 +34671,13 @@ Details: ${A.inner}`);
           basePrice: dn.basePrice || dn.price,
           isCorporateRate: true
         };
-      }), Pt = /* @__PURE__ */ new Set(), Un = [];
+      }), Ht = /* @__PURE__ */ new Set(), Un = [];
       for (const dn of [
         ...Ve,
-        ...Ot
+        ...Pt
       ]) {
         const on = (dn.testCode || dn.code || "").toLowerCase();
-        on && !Pt.has(on) && (Pt.add(on), Un.push(dn));
+        on && !Ht.has(on) && (Ht.add(on), Un.push(dn));
       }
       const bn = Un.filter((dn) => !Ee.some((on) => (on.code || "").toLowerCase() === (dn.testCode || dn.code || "").toLowerCase())), rr = B.replace(/^[\/\\#\s]+/, "").trim().toLowerCase();
       rr.length > 0 ? ie = bn.filter((dn) => (dn.testName || dn.name || "").toLowerCase().includes(rr) || (dn.testCode || dn.code || "").toLowerCase().includes(rr)) : ie = [];
@@ -34686,10 +34686,10 @@ Details: ${A.inner}`);
       const Ve = (dn) => {
         const on = (dn.testCode || dn.code || "").toUpperCase(), Ir = (dn.testName || dn.name || "").toLowerCase(), Pr = (dn.category || dn.Category || "").toLowerCase();
         return dn.isPackage === true || dn.isCorporateRate === true || on.startsWith("PKG-") || Pr.includes("corporate") || Ir.includes("employee wellness");
-      }, Ft = Ee.filter((dn) => !(o && d.includes(dn.orderId || dn.OrderId || dn.TestId || dn.testId))).map((dn) => (dn.testCode || dn.code || "").toLowerCase()), Ot = c.map((dn) => (dn.testCode || dn.code || "").toLowerCase()), Pt = (dn) => {
+      }, Ft = Ee.filter((dn) => !(o && d.includes(dn.orderId || dn.OrderId || dn.TestId || dn.testId))).map((dn) => (dn.testCode || dn.code || "").toLowerCase()), Pt = c.map((dn) => (dn.testCode || dn.code || "").toLowerCase()), Ht = (dn) => {
         const on = (dn.testCode || dn.code || "").toLowerCase();
-        return Ft.includes(on) || Ot.includes(on);
-      }, Un = B.replace(/^[\/\\#\s]+/, "").trim().toLowerCase(), bn = Un.length < 1 ? [] : _.filter((dn) => !Ve(dn) && ((dn.testName || dn.name || "").toLowerCase().includes(Un) || (dn.testCode || dn.code || "").toLowerCase().includes(Un)) && !Pt(dn)), rr = Un.length < 1 ? [] : $.filter((dn) => !Ve(dn) && ((dn.testName || dn.name || "").toLowerCase().includes(Un) || (dn.testCode || dn.code || "").toLowerCase().includes(Un)) && !Pt(dn));
+        return Ft.includes(on) || Pt.includes(on);
+      }, Un = B.replace(/^[\/\\#\s]+/, "").trim().toLowerCase(), bn = Un.length < 1 ? [] : _.filter((dn) => !Ve(dn) && ((dn.testName || dn.name || "").toLowerCase().includes(Un) || (dn.testCode || dn.code || "").toLowerCase().includes(Un)) && !Ht(dn)), rr = Un.length < 1 ? [] : $.filter((dn) => !Ve(dn) && ((dn.testName || dn.name || "").toLowerCase().includes(Un) || (dn.testCode || dn.code || "").toLowerCase().includes(Un)) && !Ht(dn));
       ie = [
         ...bn,
         ...rr
@@ -34755,7 +34755,7 @@ Details: ${A.inner}`);
         return;
       }
       if (fe) return;
-      const Ot = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]')), Pt = document.getElementById(`btn-remove-test-${Ve}`) || document.getElementById(`btn-undo-test-${Ve}`), Un = Pt ? Ot.indexOf(Pt) : -1;
+      const Pt = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]')), Ht = document.getElementById(`btn-remove-test-${Ve}`) || document.getElementById(`btn-undo-test-${Ve}`), Un = Ht ? Pt.indexOf(Ht) : -1;
       i && i(Ve, Ft);
       const bn = () => {
         requestAnimationFrame(() => {
@@ -34779,10 +34779,10 @@ Details: ${A.inner}`);
       if (Ve && Ve.offsetParent !== null) return Ve;
       const Ft = document.getElementById("btn-settlement-full");
       if (Ft && Ft.offsetParent !== null) return Ft;
-      const Ot = document.getElementById("btn-settlement-partial");
-      if (Ot && Ot.offsetParent !== null) return Ot;
-      const Pt = document.getElementById("input-b2b-discount");
+      const Pt = document.getElementById("btn-settlement-partial");
       if (Pt && Pt.offsetParent !== null) return Pt;
+      const Ht = document.getElementById("input-b2b-discount");
+      if (Ht && Ht.offsetParent !== null) return Ht;
       const Un = document.getElementById("input-b2b-doctor-search");
       if (Un && Un.offsetParent !== null) return Un;
       const bn = document.querySelector('[data-payment-method="true"]');
@@ -34796,17 +34796,17 @@ Details: ${A.inner}`);
       return dn && dn.offsetParent !== null ? dn : null;
     }, jt = (Ve) => {
       if (Ve.key === "Tab") {
-        const Ft = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]')), Ot = Ft.indexOf(Ve.currentTarget);
-        if (Ve.shiftKey) if (Ot > 0) Ve.preventDefault(), Ve.stopPropagation(), Ft[Ot - 1].focus();
+        const Ft = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]')), Pt = Ft.indexOf(Ve.currentTarget);
+        if (Ve.shiftKey) if (Pt > 0) Ve.preventDefault(), Ve.stopPropagation(), Ft[Pt - 1].focus();
         else {
           Ve.preventDefault(), Ve.stopPropagation();
-          const Pt = document.getElementById("input-test-search") || (H == null ? void 0 : H.current);
-          Pt && Pt.focus();
+          const Ht = document.getElementById("input-test-search") || (H == null ? void 0 : H.current);
+          Ht && Ht.focus();
         }
-        else if (Ot !== -1 && Ot < Ft.length - 1) Ve.preventDefault(), Ve.stopPropagation(), Ft[Ot + 1].focus();
+        else if (Pt !== -1 && Pt < Ft.length - 1) Ve.preventDefault(), Ve.stopPropagation(), Ft[Pt + 1].focus();
         else {
-          const Pt = document.getElementById("btn-outsource-test");
-          if (Pt && Pt.offsetParent !== null) Ve.preventDefault(), Ve.stopPropagation(), Pt.focus();
+          const Ht = document.getElementById("btn-outsource-test");
+          if (Ht && Ht.offsetParent !== null) Ve.preventDefault(), Ve.stopPropagation(), Ht.focus();
           else {
             const Un = mt();
             Un && (Ve.preventDefault(), Ve.stopPropagation(), Un.focus());
@@ -34971,7 +34971,7 @@ Details: ${A.inner}`);
                       disabled: ze,
                       className: "text-zinc-400 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors shrink-0",
                       title: "Remove Primary Doctor",
-                      children: n.jsx(Yn, {
+                      children: n.jsx(Hn, {
                         className: "w-3.5 h-3.5"
                       })
                     })
@@ -35014,7 +35014,7 @@ Details: ${A.inner}`);
                       disabled: ze,
                       className: "text-zinc-400 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors shrink-0",
                       title: "Remove Second Referral Doctor",
-                      children: n.jsx(Yn, {
+                      children: n.jsx(Hn, {
                         className: "w-3.5 h-3.5"
                       })
                     })
@@ -35054,16 +35054,16 @@ Details: ${A.inner}`);
                               if (Ft) Ft.focus();
                               else {
                                 window.dispatchEvent(new CustomEvent("synos:collapse-doctor-section"));
-                                const Ot = document.getElementById("input-test-search") || (H == null ? void 0 : H.current);
-                                Ot && (Ot.focus(), v(true));
+                                const Pt = document.getElementById("input-test-search") || (H == null ? void 0 : H.current);
+                                Pt && (Pt.focus(), v(true));
                               }
                             } else if (Ve.key === "Tab" && Ve.shiftKey) {
                               Ve.preventDefault(), Ve.stopPropagation();
                               const Ft = document.getElementById("btn-remove-prescribing-doctor");
                               if (Ft) Ft.focus();
                               else {
-                                const Ot = document.getElementById("input-prescribing-doctor") || document.getElementById("card-prescribing-doctor");
-                                Ot && Ot.focus();
+                                const Pt = document.getElementById("input-prescribing-doctor") || document.getElementById("card-prescribing-doctor");
+                                Pt && Pt.focus();
                               }
                             }
                           },
@@ -35086,8 +35086,8 @@ Details: ${A.inner}`);
                           const Ft = document.getElementById("btn-remove-prescribing-doctor");
                           if (Ft) Ft.focus();
                           else {
-                            const Ot = document.getElementById("btn-add-prescribing-doctor");
-                            Ot && Ot.focus();
+                            const Pt = document.getElementById("btn-add-prescribing-doctor");
+                            Pt && Pt.focus();
                           }
                         } else if (Ve.key === "Tab" && Ve.shiftKey) {
                           Ve.preventDefault(), Ve.stopPropagation(), window.dispatchEvent(new CustomEvent("synos:expand-payer-mode"));
@@ -35145,7 +35145,7 @@ Details: ${A.inner}`);
                           },
                           className: "ml-auto text-zinc-500 hover:text-red-400 p-1 hover:bg-red-400/10 rounded transition-colors cursor-pointer synos-focus-btn",
                           title: "Remove Primary Doctor",
-                          children: n.jsx(Yn, {
+                          children: n.jsx(Hn, {
                             className: "w-4 h-4"
                           })
                         })
@@ -35233,8 +35233,8 @@ Details: ${A.inner}`);
                               const Ft = document.getElementById("btn-remove-secondary-doctor");
                               if (Ft) Ft.focus();
                               else {
-                                const Ot = document.getElementById("input-secondary-doctor") || document.getElementById("card-secondary-doctor");
-                                Ot && Ot.focus();
+                                const Pt = document.getElementById("input-secondary-doctor") || document.getElementById("card-secondary-doctor");
+                                Pt && Pt.focus();
                               }
                             }
                           },
@@ -35257,8 +35257,8 @@ Details: ${A.inner}`);
                           const Ft = document.getElementById("btn-remove-secondary-doctor");
                           if (Ft) Ft.focus();
                           else {
-                            const Ot = document.getElementById("btn-add-secondary-doctor");
-                            Ot && Ot.focus();
+                            const Pt = document.getElementById("btn-add-secondary-doctor");
+                            Pt && Pt.focus();
                           }
                         } else if (Ve.key === "Tab" && Ve.shiftKey) {
                           Ve.preventDefault(), Ve.stopPropagation();
@@ -35316,7 +35316,7 @@ Details: ${A.inner}`);
                           },
                           className: "ml-auto text-zinc-500 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer synos-focus-btn",
                           title: "Remove Second Referral Doctor",
-                          children: n.jsx(Yn, {
+                          children: n.jsx(Hn, {
                             className: "w-4 h-4"
                           })
                         })
@@ -35381,8 +35381,8 @@ Details: ${A.inner}`);
                               const Ft = document.getElementById("btn-remove-prepaid-doctor");
                               if (Ft) Ft.focus();
                               else {
-                                const Ot = document.getElementById("input-prescribing-doctor") || document.getElementById("card-prescribing-doctor");
-                                Ot && Ot.focus();
+                                const Pt = document.getElementById("input-prescribing-doctor") || document.getElementById("card-prescribing-doctor");
+                                Pt && Pt.focus();
                               }
                             }
                           },
@@ -35405,8 +35405,8 @@ Details: ${A.inner}`);
                           const Ft = document.getElementById("btn-remove-prepaid-doctor");
                           if (Ft) Ft.focus();
                           else {
-                            const Ot = document.getElementById("btn-add-prescribing-doctor");
-                            Ot && Ot.focus();
+                            const Pt = document.getElementById("btn-add-prescribing-doctor");
+                            Pt && Pt.focus();
                           }
                         } else if (Ve.key === "Tab" && Ve.shiftKey) {
                           Ve.preventDefault(), Ve.stopPropagation(), window.dispatchEvent(new CustomEvent("synos:expand-payer-mode"));
@@ -35451,7 +35451,7 @@ Details: ${A.inner}`);
                           },
                           className: "ml-auto text-zinc-400 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer synos-focus-btn",
                           title: "Remove Doctor",
-                          children: n.jsx(Yn, {
+                          children: n.jsx(Hn, {
                             className: "w-3.5 h-3.5"
                           })
                         })
@@ -35614,14 +35614,14 @@ Details: ${A.inner}`);
                     else if (Ve.key === "Escape") Ve.preventDefault(), Ve.stopPropagation(), v(false);
                     else if (Ve.key === "Tab") if (v(false), Ve.shiftKey) {
                       Ve.preventDefault(), Ve.stopPropagation(), window.dispatchEvent(new CustomEvent("synos:expand-doctor-section"));
-                      const Ft = document.getElementById("btn-add-secondary-doctor"), Ot = document.getElementById("btn-add-prescribing-doctor"), Pt = Ft || Ot;
-                      Pt && Pt.focus();
+                      const Ft = document.getElementById("btn-add-secondary-doctor"), Pt = document.getElementById("btn-add-prescribing-doctor"), Ht = Ft || Pt;
+                      Ht && Ht.focus();
                     } else {
                       const Ft = document.getElementById("btn-outsource-test");
                       if (Ft && Ft.offsetParent !== null) Ve.preventDefault(), Ve.stopPropagation(), Ft.focus();
                       else {
-                        const Ot = mt();
-                        Ot && (Ve.preventDefault(), Ve.stopPropagation(), Ot.focus());
+                        const Pt = mt();
+                        Pt && (Ve.preventDefault(), Ve.stopPropagation(), Pt.focus());
                       }
                     }
                   },
@@ -35636,23 +35636,23 @@ Details: ${A.inner}`);
                   ref: G,
                   className: me("absolute top-full left-0 right-0 mt-1.5 rounded-xl p-1 shadow-xl z-20 border overflow-y-auto space-y-1 backdrop-blur-md max-h-64", Pe.suggestionBox, Le ? "bg-zinc-900/95 border-zinc-700/60 shadow-black/50" : "bg-white/95 border-zinc-200/90 shadow-zinc-900/10"),
                   children: ie.map((Ve, Ft) => {
-                    const Ot = kn(Ve), Pt = Ft === M;
+                    const Pt = kn(Ve), Ht = Ft === M;
                     return n.jsxs("button", {
                       type: "button",
                       onMouseEnter: () => j(Ft),
                       onMouseDown: (Un) => {
                         Un.preventDefault(), Ne({
                           ...Ve,
-                          price: Ot.price
+                          price: Pt.price
                         });
                       },
                       onClick: (Un) => {
                         Un.preventDefault(), Ne({
                           ...Ve,
-                          price: Ot.price
+                          price: Pt.price
                         });
                       },
-                      className: me("w-full text-left px-3 py-2.5 rounded-lg flex items-center justify-between group transition-all duration-150 cursor-pointer", Pt ? Le ? "bg-blue-500/15 border border-blue-400/40 text-white font-bold shadow-xs scale-[0.99]" : "bg-blue-50/90 border border-blue-400/50 text-blue-900 font-bold shadow-xs scale-[0.99]" : Le ? "hover:bg-zinc-800/70 border border-transparent text-zinc-300 hover:text-white" : "hover:bg-zinc-50 border border-transparent text-zinc-700 hover:text-zinc-900"),
+                      className: me("w-full text-left px-3 py-2.5 rounded-lg flex items-center justify-between group transition-all duration-150 cursor-pointer", Ht ? Le ? "bg-blue-500/15 border border-blue-400/40 text-white font-bold shadow-xs scale-[0.99]" : "bg-blue-50/90 border border-blue-400/50 text-blue-900 font-bold shadow-xs scale-[0.99]" : Le ? "hover:bg-zinc-800/70 border border-transparent text-zinc-300 hover:text-white" : "hover:bg-zinc-50 border border-transparent text-zinc-700 hover:text-zinc-900"),
                       children: [
                         n.jsxs("div", {
                           className: "flex items-center gap-2",
@@ -35673,7 +35673,7 @@ Details: ${A.inner}`);
                                       className: "text-xs px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-500 font-bold border border-amber-500/30",
                                       children: "Package"
                                     }),
-                                    Ot.isCorporateRate && n.jsx("span", {
+                                    Pt.isCorporateRate && n.jsx("span", {
                                       className: "text-xs px-2 py-0.5 rounded-md bg-indigo-500/15 text-indigo-500 dark:text-indigo-400 font-bold border border-indigo-500/30",
                                       children: ht ? "Insurance Rate" : "Special Rate"
                                     })
@@ -35693,17 +35693,17 @@ Details: ${A.inner}`);
                               className: "flex flex-col items-end",
                               children: [
                                 n.jsxs("span", {
-                                  className: me("type-code", Ot.isCorporateRate ? "text-indigo-400 font-bold" : ""),
+                                  className: me("type-code", Pt.isCorporateRate ? "text-indigo-400 font-bold" : ""),
                                   children: [
                                     "\u20B9",
-                                    Ot.price
+                                    Pt.price
                                   ]
                                 }),
-                                Ot.isCorporateRate && Ot.standardPrice !== Ot.price && n.jsxs("span", {
+                                Pt.isCorporateRate && Pt.standardPrice !== Pt.price && n.jsxs("span", {
                                   className: "text-xs line-through text-zinc-500 font-mono",
                                   children: [
                                     "\u20B9",
-                                    Ot.standardPrice
+                                    Pt.standardPrice
                                   ]
                                 })
                               ]
@@ -35720,7 +35720,7 @@ Details: ${A.inner}`);
               ]
             }),
             (() => {
-              const Ve = ue.length + (o ? c.length : 0), Ft = Ve > 2, Ot = Ve > 6;
+              const Ve = ue.length + (o ? c.length : 0), Ft = Ve > 2, Pt = Ve > 6;
               return Ve === 0 && (!fe || o) ? n.jsxs("div", {
                 className: "rounded-xl border border-dashed border-slate-200 dark:border-zinc-700/80 bg-slate-50/50 dark:bg-zinc-800/30 p-6 flex flex-col items-center justify-center text-center gap-1.5",
                 children: [
@@ -35737,10 +35737,10 @@ Details: ${A.inner}`);
                   })
                 ]
               }) : n.jsxs("div", {
-                className: me(Ft ? "grid grid-cols-1 sm:grid-cols-2 gap-2.5" : "space-y-2.5", Ot && "max-h-[260px] overflow-y-auto pr-1.5 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-zinc-700"),
+                className: me(Ft ? "grid grid-cols-1 sm:grid-cols-2 gap-2.5" : "space-y-2.5", Pt && "max-h-[260px] overflow-y-auto pr-1.5 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-zinc-700"),
                 children: [
-                  ue.map((Pt) => {
-                    const Un = Pt.orderId || Pt.OrderId || Pt.TestId || Pt.testId, bn = o && d.includes(Un);
+                  ue.map((Ht) => {
+                    const Un = Ht.orderId || Ht.OrderId || Ht.TestId || Ht.testId, bn = o && d.includes(Un);
                     return n.jsxs("div", {
                       className: me("rounded-xl p-3 flex items-center justify-between group animate-in zoom-in-95 duration-200 border transition-all min-w-0", bn ? "opacity-50 bg-red-950/20 border-red-500/30 line-through" : Pe.testCard),
                       children: [
@@ -35749,7 +35749,7 @@ Details: ${A.inner}`);
                           children: [
                             n.jsx("div", {
                               className: me("px-2.5 py-1 min-w-[32px] min-h-[28px] max-w-[120px] rounded-lg flex items-center justify-center border shrink-0 font-mono text-xs font-bold truncate", Pe.testCode),
-                              children: Pt.testCode || Pt.code
+                              children: Ht.testCode || Ht.code
                             }),
                             n.jsxs("div", {
                               className: "min-w-0",
@@ -35759,7 +35759,7 @@ Details: ${A.inner}`);
                                   children: [
                                     n.jsx("span", {
                                       className: "text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate",
-                                      children: Pt.testName || Pt.name
+                                      children: Ht.testName || Ht.name
                                     }),
                                     bn && n.jsx("span", {
                                       className: "text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-red-500/20 text-red-400 border border-red-500/30 no-underline not-italic shrink-0",
@@ -35769,7 +35769,7 @@ Details: ${A.inner}`);
                                 }),
                                 n.jsx("div", {
                                   className: "text-[11px] font-semibold text-slate-500 dark:text-zinc-400 mt-0.5 uppercase tracking-wide truncate",
-                                  children: Pt.dept || Pt.category || Pt.department
+                                  children: Ht.dept || Ht.category || Ht.department
                                 })
                               ]
                             })
@@ -35782,38 +35782,38 @@ Details: ${A.inner}`);
                               className: "text-sm sm:text-base font-bold font-mono text-slate-900 dark:text-white tabular-nums",
                               children: [
                                 "\u20B9",
-                                Pt.basePrice || Pt.price || Pt.Price
+                                Ht.basePrice || Ht.price || Ht.Price
                               ]
                             }),
                             (!fe || o) && (bn ? n.jsx("button", {
                               type: "button",
-                              id: `btn-undo-test-${Pt.testCode || Pt.code}`,
+                              id: `btn-undo-test-${Ht.testCode || Ht.code}`,
                               "data-test-remove-btn": "true",
-                              onClick: () => $t(Pt.testCode || Pt.code, Un),
+                              onClick: () => $t(Ht.testCode || Ht.code, Un),
                               onKeyDown: jt,
                               className: "text-xs font-bold text-synos-primary hover:underline px-2 py-0.5 bg-synos-primary/10 rounded cursor-pointer no-underline focus:outline-none focus:ring-2 focus:ring-blue-500",
                               children: "Undo"
                             }) : n.jsx("button", {
                               type: "button",
-                              id: `btn-remove-test-${Pt.testCode || Pt.code}`,
+                              id: `btn-remove-test-${Ht.testCode || Ht.code}`,
                               "data-test-remove-btn": "true",
                               onClick: () => {
-                                $t(Pt.testCode || Pt.code, Un);
+                                $t(Ht.testCode || Ht.code, Un);
                               },
                               onKeyDown: jt,
                               disabled: ze,
                               className: "text-zinc-400 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer synos-focus-btn",
                               title: "Remove Test",
-                              children: n.jsx(Yn, {
+                              children: n.jsx(Hn, {
                                 className: "w-4 h-4"
                               })
                             }))
                           ]
                         })
                       ]
-                    }, Pt.testCode || Pt.code);
+                    }, Ht.testCode || Ht.code);
                   }),
-                  o && c.length > 0 && c.map((Pt, Un) => n.jsxs("div", {
+                  o && c.length > 0 && c.map((Ht, Un) => n.jsxs("div", {
                     className: "rounded-xl p-3 flex items-center justify-between group border border-emerald-500/40 bg-emerald-500/10 animate-in zoom-in-95 duration-200 min-w-0",
                     children: [
                       n.jsxs("div", {
@@ -35821,7 +35821,7 @@ Details: ${A.inner}`);
                         children: [
                           n.jsx("div", {
                             className: "px-2.5 py-1 min-w-[32px] min-h-[28px] max-w-[120px] rounded-lg flex items-center justify-center border shrink-0 font-mono text-xs font-bold truncate bg-emerald-500/20 border-emerald-500/40 text-emerald-400",
-                            children: Pt.code || Pt.testCode
+                            children: Ht.code || Ht.testCode
                           }),
                           n.jsxs("div", {
                             className: "min-w-0",
@@ -35831,7 +35831,7 @@ Details: ${A.inner}`);
                                 children: [
                                   n.jsx("span", {
                                     className: "text-sm sm:text-base font-bold text-emerald-600 dark:text-emerald-400 truncate",
-                                    children: Pt.name || Pt.testName
+                                    children: Ht.name || Ht.testName
                                   }),
                                   n.jsx("span", {
                                     className: "text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 shrink-0",
@@ -35841,7 +35841,7 @@ Details: ${A.inner}`);
                               }),
                               n.jsx("div", {
                                 className: "text-[11px] font-semibold text-emerald-600/80 dark:text-emerald-500/80 mt-0.5 uppercase tracking-wide truncate",
-                                children: Pt.specimenTypeCode ? `Specimen: ${Pt.specimenTypeCode}` : Pt.dept || Pt.department || "Add-On Test"
+                                children: Ht.specimenTypeCode ? `Specimen: ${Ht.specimenTypeCode}` : Ht.dept || Ht.department || "Add-On Test"
                               })
                             ]
                           })
@@ -35854,7 +35854,7 @@ Details: ${A.inner}`);
                             className: "text-sm sm:text-base font-bold font-mono text-emerald-600 dark:text-emerald-400 tabular-nums",
                             children: [
                               "\u20B9",
-                              Pt.price || Pt.basePrice || 0
+                              Ht.price || Ht.basePrice || 0
                             ]
                           }),
                           n.jsx("button", {
@@ -35865,14 +35865,14 @@ Details: ${A.inner}`);
                             onKeyDown: jt,
                             className: "text-emerald-500 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer synos-focus-btn",
                             title: "Discard Add-On",
-                            children: n.jsx(Yn, {
+                            children: n.jsx(Hn, {
                               className: "w-4 h-4"
                             })
                           })
                         ]
                       })
                     ]
-                  }, `staged-add-${Pt.code || Pt.testCode}-${Un}`))
+                  }, `staged-add-${Ht.code || Ht.testCode}-${Un}`))
                 ]
               });
             })()
@@ -35918,13 +35918,13 @@ Details: ${A.inner}`);
               className: "grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-0.5",
               children: qt.map((Ve) => {
                 var _a3;
-                const Ft = Ve.testCode || Ve.packageCode || Ve.code, Ot = Ve.packageName || Ve.testName || Ve.name, Pt = Ve.contractedPrice ?? Ve.corporatePrice ?? Ve.price ?? 0, Un = Ee.find((rr) => (rr.code || "").toLowerCase() === (Ft || "").toLowerCase()), bn = !!Un;
+                const Ft = Ve.testCode || Ve.packageCode || Ve.code, Pt = Ve.packageName || Ve.testName || Ve.name, Ht = Ve.contractedPrice ?? Ve.corporatePrice ?? Ve.price ?? 0, Un = Ee.find((rr) => (rr.code || "").toLowerCase() === (Ft || "").toLowerCase()), bn = !!Un;
                 return n.jsxs("div", {
                   onClick: () => {
                     ze || fe && !o || (bn && Un ? $t(Un.code || Ft, Un.orderId || Un.OrderId || Un.TestId || Un.testId) : Ne({
                       testCode: Ft,
-                      name: Ot,
-                      price: Pt,
+                      name: Pt,
+                      price: Ht,
                       isPackage: true
                     }));
                   },
@@ -35958,7 +35958,7 @@ Details: ${A.inner}`);
                             n.jsxs("div", {
                               className: "text-right shrink-0",
                               children: [
-                                Ve.standardPrice > Pt && n.jsxs("span", {
+                                Ve.standardPrice > Ht && n.jsxs("span", {
                                   className: "text-xs text-zinc-400 line-through font-mono block leading-tight",
                                   children: [
                                     "\u20B9",
@@ -35969,7 +35969,7 @@ Details: ${A.inner}`);
                                   className: "type-code text-sm font-bold",
                                   children: [
                                     "\u20B9",
-                                    Pt.toLocaleString()
+                                    Ht.toLocaleString()
                                   ]
                                 })
                               ]
@@ -35978,7 +35978,7 @@ Details: ${A.inner}`);
                         }),
                         n.jsx("div", {
                           className: "type-value leading-snug line-clamp-1 group-hover:text-synos-primary transition-colors",
-                          children: Ot
+                          children: Pt
                         }),
                         Ve.includedTests && Ve.includedTests.length > 0 && n.jsxs("div", {
                           className: "type-label flex items-center gap-1 flex-wrap text-xs opacity-80",
@@ -36025,7 +36025,7 @@ Details: ${A.inner}`);
                             disabled: ze || fe && !o,
                             className: "text-xs font-bold text-rose-500 hover:text-rose-600 dark:text-rose-400 hover:underline flex items-center gap-1 cursor-pointer",
                             children: [
-                              n.jsx(Yn, {
+                              n.jsx(Hn, {
                                 size: 12
                               }),
                               " Remove"
@@ -36045,8 +36045,8 @@ Details: ${A.inner}`);
                             onClick: (rr) => {
                               rr.stopPropagation(), Ne({
                                 testCode: Ft,
-                                name: Ot,
-                                price: Pt,
+                                name: Pt,
+                                price: Ht,
                                 isPackage: true
                               });
                             },
@@ -36171,7 +36171,7 @@ Details: ${A.inner}`);
                         disabled: ze,
                         className: "text-zinc-500 hover:text-red-400 p-1 hover:bg-red-400/10 rounded transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-red-400",
                         title: "Remove Outsourced Test",
-                        children: n.jsx(Yn, {
+                        children: n.jsx(Hn, {
                           className: "w-4 h-4"
                         })
                       })
@@ -36206,8 +36206,8 @@ Details: ${A.inner}`);
                 const Ft = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]'));
                 if (Ft.length > 0) Ft[Ft.length - 1].focus();
                 else {
-                  const Ot = document.getElementById("input-test-search") || (H == null ? void 0 : H.current);
-                  Ot && Ot.focus();
+                  const Pt = document.getElementById("input-test-search") || (H == null ? void 0 : H.current);
+                  Pt && Pt.focus();
                 }
               }
             },
@@ -36534,7 +36534,7 @@ Details: ${A.inner}`);
                         n.jsxs("span", {
                           className: "flex items-center gap-1.5",
                           children: [
-                            n.jsx(Us, {
+                            n.jsx(Gs, {
                               className: "w-4 h-4 text-emerald-600"
                             }),
                             "Cash from Patient"
@@ -36987,7 +36987,7 @@ Details: ${A.inner}`);
       if (An.current = jt, Ve.current = $t == null ? void 0 : $t.appliedDiscount, ($t == null ? void 0 : $t.appliedDiscount) && ($t == null ? void 0 : $t.discountAmount) > 0) {
         const fn = $t.appliedDiscount, _n2 = (fn.type || fn.Type || "").toUpperCase() === "PERCENTAGE" ? "PERCENTAGE" : "FLAT";
         Me(_n2);
-        const sr = fn.value ?? fn.Value, In = sr != null && sr > 0 ? String(sr) : $t.discountAmount > 0 ? String($t.discountAmount) : "";
+        const ar = fn.value ?? fn.Value, In = ar != null && ar > 0 ? String(ar) : $t.discountAmount > 0 ? String($t.discountAmount) : "";
         Qe(In);
         const Kn = fn.reason || fn.Reason || fn.name || fn.Name || "";
         ze(Kn);
@@ -36997,12 +36997,11 @@ Details: ${A.inner}`);
       $t == null ? void 0 : $t.appliedDiscount,
       $t == null ? void 0 : $t.discountAmount
     ]);
-    const { theme: Ft } = Ji(), Ot = Ft === "dark", Pt = Ot ? {
+    const { theme: Ft } = Ji(), Pt = Ft === "dark", Ht = Pt ? {
       indicator: "bg-slate-600 text-white border-transparent",
       headerText: "text-base sm:text-lg font-bold text-white tracking-normal",
       container: "rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-xl p-3.5 sm:p-4 space-y-2.5",
       rowLabel: "text-xs sm:text-sm font-medium text-zinc-400",
-      rowValue: "text-xs sm:text-sm font-mono font-bold text-zinc-100",
       input: "bg-zinc-950/70 border-zinc-800 text-xs sm:text-sm focus:border-synos-primary rounded-xl h-9 sm:h-10 px-3 tracking-normal",
       method: {
         active: "bg-zinc-100 text-zinc-900 border-white shadow-md",
@@ -37013,7 +37012,6 @@ Details: ${A.inner}`);
       headerText: "text-base sm:text-lg font-bold text-slate-900 tracking-normal",
       container: "rounded-2xl bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF] p-3.5 sm:p-4 space-y-2.5",
       rowLabel: "text-xs sm:text-sm font-medium text-slate-600",
-      rowValue: "text-xs sm:text-sm font-mono font-bold text-slate-900",
       input: "bg-white/90 border border-[#D5E2EC] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04)] text-xs sm:text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all rounded-xl h-9 sm:h-10 px-3 tracking-normal",
       method: {
         active: "bg-slate-900 text-white border-slate-900 shadow-sm",
@@ -37171,14 +37169,14 @@ Details: ${A.inner}`);
       const _n2 = (($t == null ? void 0 : $t.discountAmount) || 0) + zt;
       Lt(true), ne(true);
       try {
-        const sr = `${nt.trim()} [Authorized Secondary Concession: -\u20B9${zt}]`;
+        const ar = `${nt.trim()} [Authorized Secondary Concession: -\u20B9${zt}]`;
         await Xt.applyDiscountToVisit(jt, {
           mode: "Flat",
           customValue: _n2,
-          reason: sr
+          reason: ar
         }), fe(false), qe(""), e && e();
-      } catch (sr) {
-        console.error("Failed to apply secondary concession", sr), alert("Failed to apply secondary concession: " + sr.message);
+      } catch (ar) {
+        console.error("Failed to apply secondary concession", ar), alert("Failed to apply secondary concession: " + ar.message);
       } finally {
         Lt(false), ne(false);
       }
@@ -37194,12 +37192,12 @@ Details: ${A.inner}`);
         return;
       }
       if (!jt) return;
-      const sr = ($t == null ? void 0 : $t.grossAmount) || 0;
+      const ar = ($t == null ? void 0 : $t.grossAmount) || 0;
       let In = 0;
       if (fn === "PERCENTAGE") {
         const Kn = Math.min(100, Math.max(0, _n2));
-        In = Math.round(sr * (Kn / 100) * 100) / 100;
-      } else In = Math.min(sr, Math.max(0, _n2));
+        In = Math.round(ar * (Kn / 100) * 100) / 100;
+      } else In = Math.min(ar, Math.max(0, _n2));
       ne(true);
       try {
         await Xt.updateB2BDiscountRate(jt, {
@@ -37270,8 +37268,8 @@ Details: ${A.inner}`);
       } finally {
         ne(false);
       }
-    }, zr = a || i === "PrepaidPartner" || ($t == null ? void 0 : $t.paymentModel) === "PartnerCollects", Gr = i === "Insurance", Qt = i === "Corporate", _t = !zr && !Qt && !Gr, en = ((_k2 = t == null ? void 0 : t.visit) == null ? void 0 : _k2.token) || ((_l2 = t == null ? void 0 : t.visit) == null ? void 0 : _l2.visitToken) || "", Bn = !en || en.toUpperCase().startsWith("D-") || (((_m = t == null ? void 0 : t.visit) == null ? void 0 : _m.status) || "").toLowerCase() === "draft", wn = zr ? 0 : p || $t.totalPaid || 0, fr = h !== void 0 ? h : $t.netAmount || 0, sa = f !== void 0 ? f : fr - wn, ya = r && wn > 0 && Math.abs(sa) > 0.01, Jn = h !== void 0 ? h : ($t == null ? void 0 : $t.netAmount) || ($t == null ? void 0 : $t.totalAmount) || 0, lr = Math.max(0, Jn - wn), ka = _t && !Bn && lr > 0 && (r || ($t == null ? void 0 : $t.paymentStatus) === "PartialPayment" || ($t == null ? void 0 : $t.paymentStatus) === "PartialDue" || wn > 0 && lr > 0 || ((_n = t == null ? void 0 : t.billing) == null ? void 0 : _n.isLocked));
-    let Er = lr, oi = ($t == null ? void 0 : $t.paymentStatus) === "Paid" ? "Total Bill Amount" : wn > 0 ? "Remaining Due to Collect" : "Amount to Collect";
+    }, zr = a || i === "PrepaidPartner" || ($t == null ? void 0 : $t.paymentModel) === "PartnerCollects", Gr = i === "Insurance", Qt = i === "Corporate", Ot = !zr && !Qt && !Gr, en = ((_k2 = t == null ? void 0 : t.visit) == null ? void 0 : _k2.token) || ((_l2 = t == null ? void 0 : t.visit) == null ? void 0 : _l2.visitToken) || "", Bn = !en || en.toUpperCase().startsWith("D-") || (((_m = t == null ? void 0 : t.visit) == null ? void 0 : _m.status) || "").toLowerCase() === "draft", vn = zr ? 0 : p || $t.totalPaid || 0, fr = h !== void 0 ? h : $t.netAmount || 0, sa = f !== void 0 ? f : fr - vn, ya = r && vn > 0 && Math.abs(sa) > 0.01, Jn = h !== void 0 ? h : ($t == null ? void 0 : $t.netAmount) || ($t == null ? void 0 : $t.totalAmount) || 0, lr = Math.max(0, Jn - vn), ka = Ot && !Bn && lr > 0 && (r || ($t == null ? void 0 : $t.paymentStatus) === "PartialPayment" || ($t == null ? void 0 : $t.paymentStatus) === "PartialDue" || vn > 0 && lr > 0 || ((_n = t == null ? void 0 : t.billing) == null ? void 0 : _n.isLocked));
+    let Er = lr, oi = ($t == null ? void 0 : $t.paymentStatus) === "Paid" ? "Total Bill Amount" : vn > 0 ? "Remaining Due to Collect" : "Amount to Collect";
     zr ? (Er = 0, oi = "Amount to Collect (Prepaid Partner)") : Qt ? (Er = 0, oi = "Billed to Corporate (\u20B90 at desk)") : Gr && (Er = ((_o2 = t == null ? void 0 : t.visit) == null ? void 0 : _o2.insuranceCoPayAmount) || 0, oi = Er > 0 ? "Patient Co-Pay to Collect" : "Cashless Claim (\u20B90 at desk)");
     const ks = (r && d !== void 0 ? d : ($t == null ? void 0 : $t.grossAmount) || 0) > 0 || (((_p2 = t == null ? void 0 : t.tests) == null ? void 0 : _p2.length) || 0) > 0, As = Bn || r, Kt = As && (Se !== null ? !!Se : !!(ks && dn && !zr && !Qt && (($t == null ? void 0 : $t.paymentStatus) === "PendingPayment" || !($t == null ? void 0 : $t.paymentStatus)))), Ai = (at) => {
       As && le(typeof at == "function" ? at(Kt) : at);
@@ -37288,11 +37286,11 @@ Details: ${A.inner}`);
               className: "flex items-center gap-2.5",
               children: [
                 n.jsx("div", {
-                  className: me("w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-xs", Pt.indicator),
+                  className: me("w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold shadow-xs", Ht.indicator),
                   children: "3"
                 }),
                 n.jsx("h3", {
-                  className: Pt.headerText,
+                  className: Ht.headerText,
                   children: "Financials"
                 }),
                 ae && n.jsx(Vn, {
@@ -37301,13 +37299,13 @@ Details: ${A.inner}`);
               ]
             }),
             $t.paymentStatus && n.jsx("div", {
-              className: me("px-3 py-1 rounded-full text-xs sm:text-sm font-bold border tracking-normal shrink-0", $t.paymentStatus === "Paid" ? Ot ? "bg-emerald-950/40 text-emerald-400 border-emerald-800" : "bg-[#EAF5F0] text-[#245E49] border-[#CFE8DD]" : ($t.paymentStatus === "PartialPayment", Ot ? "bg-amber-950/30 text-amber-300 border-amber-900/40" : "bg-[#FFF8EE] text-[#9A6B2F] border-[#F5E2C8]")),
+              className: me("px-3 py-1 rounded-full text-xs sm:text-sm font-bold border tracking-normal shrink-0", $t.paymentStatus === "Paid" ? Pt ? "bg-emerald-950/40 text-emerald-400 border-emerald-800" : "bg-[#EAF5F0] text-[#245E49] border-[#CFE8DD]" : ($t.paymentStatus === "PartialPayment", Pt ? "bg-amber-950/30 text-amber-300 border-amber-900/40" : "bg-[#FFF8EE] text-[#9A6B2F] border-[#F5E2C8]")),
               children: $t.paymentStatus === "PartialPayment" ? "Partial Due" : $t.paymentStatus
             })
           ]
         }),
         ya && n.jsxs("div", {
-          className: me("p-4 rounded-xl border flex items-center justify-between shadow-xs animate-in slide-in-from-top-2 duration-300 shrink-0", f > 0 ? Ot ? "bg-emerald-950/40 border-emerald-500/50 text-emerald-100" : "bg-emerald-50 border-emerald-200 text-emerald-800" : Ot ? "bg-red-950/40 border-red-500/50 text-red-100" : "bg-red-50 border-red-200 text-red-800"),
+          className: me("p-4 rounded-xl border flex items-center justify-between shadow-xs animate-in slide-in-from-top-2 duration-300 shrink-0", f > 0 ? Pt ? "bg-emerald-950/40 border-emerald-500/50 text-emerald-100" : "bg-emerald-50 border-emerald-200 text-emerald-800" : Pt ? "bg-red-950/40 border-red-500/50 text-red-100" : "bg-red-50 border-red-200 text-red-800"),
           children: [
             n.jsxs("div", {
               className: "flex flex-col",
@@ -37332,213 +37330,218 @@ Details: ${A.inner}`);
           ]
         }),
         n.jsxs("div", {
-          className: me("relative flex-1 min-h-0 overflow-y-auto pr-1.5 sm:pr-2", Pt.container),
+          className: me("relative flex-1 min-h-0 overflow-y-auto pr-1.5 sm:pr-2", Ht.container),
           children: [
             (() => {
               var _a3, _b2, _c3, _d3, _e2, _f2, _g3, _h3, _i2, _j3, _k3;
-              const at = r ? !!c && !c.remove : !!$t.appliedDiscount && $t.discountAmount > 0, zt = r && c ? u || 0 : $t.discountAmount || 0, fn = r && d !== void 0 ? d : $t.grossAmount || 0, _n2 = $t.taxAmount || 0, sr = r && c ? c.reason || c.name || (c.type === "Percentage" ? `${c.value}%` : `\u20B9${c.value}`) : ((_a3 = $t.appliedDiscount) == null ? void 0 : _a3.reason) || ((_b2 = $t.appliedDiscount) == null ? void 0 : _b2.name) || "";
+              const at = r ? !!c && !c.remove : !!$t.appliedDiscount && $t.discountAmount > 0, zt = r && c ? u || 0 : $t.discountAmount || 0, fn = r && d !== void 0 ? d : $t.grossAmount || 0, _n2 = $t.taxAmount || 0, ar = r && c ? c.reason || c.name || (c.type === "Percentage" ? `${c.value}%` : `\u20B9${c.value}`) : ((_a3 = $t.appliedDiscount) == null ? void 0 : _a3.reason) || ((_b2 = $t.appliedDiscount) == null ? void 0 : _b2.name) || "";
               return n.jsxs(n.Fragment, {
                 children: [
                   n.jsxs("div", {
-                    className: "flex items-center justify-between gap-3 p-3.5 rounded-2xl bg-white/75 dark:bg-zinc-800/60 border border-[#CCDCE8]/80 dark:border-zinc-700/70 shadow-[0_1px_3px_rgba(15,35,60,0.03)]",
+                    className: "p-3 sm:p-3.5 rounded-2xl bg-white/75 dark:bg-zinc-800/60 border border-[#CCDCE8]/80 dark:border-zinc-700/70 shadow-[0_1px_3px_rgba(15,35,60,0.03)] space-y-2.5",
                     children: [
                       n.jsxs("div", {
-                        className: "flex items-center gap-2.5 min-w-0",
+                        className: "flex items-center justify-between gap-3 min-w-0",
                         children: [
-                          n.jsx("span", {
-                            className: "text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 shrink-0",
-                            children: "Referral:"
-                          }),
-                          ((_d3 = (_c3 = t == null ? void 0 : t.billing) == null ? void 0 : _c3.referral) == null ? void 0 : _d3.secondaryPartner) ? n.jsxs("div", {
+                          n.jsxs("div", {
                             className: "flex items-center gap-2 min-w-0",
                             children: [
                               n.jsx("span", {
-                                className: "w-2.5 h-2.5 rounded-full bg-[#3D9970] shadow-[0_0_6px_rgba(61,153,112,0.35)] shrink-0"
+                                className: "text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 shrink-0",
+                                children: "Referral:"
                               }),
-                              n.jsx("span", {
-                                className: "font-bold text-sm sm:text-base text-slate-900 dark:text-white truncate",
-                                children: t.billing.referral.secondaryPartner.displayName
-                              }),
-                              n.jsx("span", {
-                                className: "text-xs px-2.5 py-0.5 rounded-md bg-[#E1F1E8] text-[#245E49] dark:bg-emerald-950/40 dark:text-emerald-300 font-bold border border-[#BCE2CD] dark:border-emerald-800 shrink-0",
-                                children: "Secondary (RMP)"
-                              }),
-                              ((_f2 = (_e2 = t == null ? void 0 : t.billing) == null ? void 0 : _e2.referral) == null ? void 0 : _f2.partner) && n.jsxs("span", {
-                                className: "text-xs text-slate-500 dark:text-zinc-400 truncate hidden sm:inline",
+                              ((_d3 = (_c3 = t == null ? void 0 : t.billing) == null ? void 0 : _c3.referral) == null ? void 0 : _d3.secondaryPartner) ? n.jsxs("div", {
+                                className: "flex items-center gap-1.5 min-w-0",
                                 children: [
-                                  "(Main: ",
-                                  t.billing.referral.partner.displayName,
-                                  ")"
-                                ]
-                              })
-                            ]
-                          }) : ((_h3 = (_g3 = t == null ? void 0 : t.billing) == null ? void 0 : _g3.referral) == null ? void 0 : _h3.partner) ? n.jsxs("div", {
-                            className: "flex items-center gap-2 min-w-0",
-                            children: [
-                              n.jsx("span", {
-                                className: "w-2.5 h-2.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)] shrink-0"
-                              }),
-                              n.jsx("span", {
-                                className: "font-bold text-sm sm:text-base text-slate-900 dark:text-white truncate",
-                                children: t.billing.referral.partner.displayName
-                              }),
-                              n.jsx("span", {
-                                className: "text-xs px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-bold border border-indigo-500/20 shrink-0",
-                                children: "Doctor"
-                              })
-                            ]
-                          }) : (((_j3 = (_i2 = t == null ? void 0 : t.billing) == null ? void 0 : _i2.referral) == null ? void 0 : _j3.referrerText) || "").trim().toUpperCase() === "SELF" ? n.jsxs("div", {
-                            className: "flex items-center gap-2 min-w-0",
-                            children: [
-                              n.jsx("span", {
-                                className: "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] shrink-0"
-                              }),
-                              n.jsx("span", {
-                                className: "font-bold text-sm sm:text-base text-slate-900 dark:text-white truncate",
-                                children: "SELF"
-                              }),
-                              n.jsx("span", {
-                                className: "text-xs px-2.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/20 shrink-0",
-                                children: "Direct Walk-in"
-                              })
-                            ]
-                          }) : n.jsx("span", {
-                            className: "text-sm font-medium text-slate-500 dark:text-zinc-400 italic",
-                            children: "No Referral Partner (Direct Walk-in)"
-                          })
-                        ]
-                      }),
-                      dn && !zr && n.jsxs("button", {
-                        ref: pe,
-                        "data-concession-trigger": "true",
-                        type: "button",
-                        disabled: !As,
-                        onClick: () => {
-                          As && Ai((In) => !In);
-                        },
-                        onKeyDown: (In) => {
-                          var _a4;
-                          if (As && In.key === "Tab") if (!In.shiftKey) at && (In.preventDefault(), In.stopPropagation(), (_a4 = document.getElementById("btn-remove-discount")) == null ? void 0 : _a4.focus());
-                          else {
-                            In.preventDefault(), In.stopPropagation();
-                            const Kn = document.getElementById("btn-outsource-test");
-                            if (Kn) Kn.focus();
-                            else {
-                              const Pn = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]'));
-                              if (Pn.length > 0) Pn[Pn.length - 1].focus();
-                              else {
-                                const Dr = document.getElementById("input-test-search");
-                                Dr && Dr.focus();
-                              }
-                            }
-                          }
-                        },
-                        className: me("px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all border shadow-2xs shrink-0 synos-focus-btn", As ? Kt ? "bg-slate-900 text-white border-slate-900 dark:bg-zinc-700 dark:border-zinc-600 shadow-xs cursor-pointer" : at ? "bg-[#EBF5EF] dark:bg-emerald-950/30 text-[#245E49] dark:text-emerald-300 border border-[#CCE8D8] dark:border-emerald-800 hover:bg-[#DFF0E6] cursor-pointer" : "bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 border-[#CCDCE8] dark:border-zinc-700 hover:bg-slate-50 cursor-pointer" : "opacity-45 cursor-not-allowed bg-slate-100 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500 border-slate-200 dark:border-zinc-700 select-none"),
-                        title: As ? at ? "Edit Discount" : "+ Discount" : "Initial registration discount is locked.",
-                        children: [
-                          n.jsx(u0, {
-                            className: "w-3.5 h-3.5 text-slate-500 dark:text-zinc-400"
-                          }),
-                          n.jsx("span", {
-                            children: at ? "Edit Discount" : "+ Discount"
-                          }),
-                          As && n.jsx(Ds, {
-                            className: me("w-3.5 h-3.5 transition-transform duration-200", Kt && "rotate-180")
-                          })
-                        ]
-                      })
-                    ]
-                  }),
-                  n.jsxs("div", {
-                    className: "space-y-3 text-base pt-1",
-                    children: [
-                      n.jsxs("div", {
-                        className: "flex justify-between items-center",
-                        children: [
-                          n.jsx("span", {
-                            className: Pt.rowLabel,
-                            children: "Total Amount"
-                          }),
-                          n.jsxs("span", {
-                            className: Pt.rowValue,
-                            children: [
-                              "\u20B9",
-                              fn.toLocaleString()
-                            ]
-                          })
-                        ]
-                      }),
-                      n.jsxs("div", {
-                        className: "flex justify-between items-center",
-                        children: [
-                          n.jsx("span", {
-                            className: Pt.rowLabel,
-                            children: "Discount"
-                          }),
-                          at ? n.jsxs("div", {
-                            className: "flex items-center gap-2",
-                            children: [
-                              n.jsxs("span", {
-                                className: me("font-mono font-bold flex items-center gap-1.5", Ot ? "text-emerald-400" : "text-[#1F6E54]"),
-                                children: [
-                                  "- \u20B9",
-                                  zt.toLocaleString(),
-                                  sr && n.jsxs("span", {
-                                    className: "text-sm opacity-80 font-semibold",
+                                  n.jsx("span", {
+                                    className: "w-2.5 h-2.5 rounded-full bg-[#3D9970] shadow-[0_0_6px_rgba(61,153,112,0.35)] shrink-0"
+                                  }),
+                                  n.jsx("span", {
+                                    className: "font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate",
+                                    children: t.billing.referral.secondaryPartner.displayName
+                                  }),
+                                  n.jsx("span", {
+                                    className: "text-[11px] px-2 py-0.5 rounded-md bg-[#E1F1E8] text-[#245E49] dark:bg-emerald-950/40 dark:text-emerald-300 font-bold border border-[#BCE2CD] dark:border-emerald-800 shrink-0",
+                                    children: "Secondary (RMP)"
+                                  }),
+                                  ((_f2 = (_e2 = t == null ? void 0 : t.billing) == null ? void 0 : _e2.referral) == null ? void 0 : _f2.partner) && n.jsxs("span", {
+                                    className: "text-xs text-slate-500 dark:text-zinc-400 truncate hidden xl:inline",
                                     children: [
-                                      "(",
-                                      sr,
+                                      "(Main: ",
+                                      t.billing.referral.partner.displayName,
                                       ")"
                                     ]
                                   })
                                 ]
-                              }),
-                              dn && wn === 0 && n.jsx("button", {
-                                type: "button",
-                                id: "btn-remove-discount",
-                                "data-remove-discount": "true",
-                                tabIndex: 0,
-                                onClick: Sr,
-                                onKeyDown: (In) => {
-                                  var _a4, _b3;
-                                  if (In.key === "Tab") if (In.preventDefault(), In.stopPropagation(), In.shiftKey) {
-                                    const Kn = document.querySelector('[data-concession-trigger="true"]');
-                                    Kn && Kn.focus();
-                                  } else if (Kt) {
-                                    const Kn = document.getElementById("input-flat-concession") || document.getElementById("btn-minimize-concession");
-                                    Kn ? Kn.focus() : (_a4 = document.getElementById("btn-settlement-full")) == null ? void 0 : _a4.focus();
-                                  } else (_b3 = document.getElementById("btn-settlement-full")) == null ? void 0 : _b3.focus();
-                                },
-                                disabled: ae,
-                                className: me("p-1.5 rounded-lg border transition-all cursor-pointer synos-focus-btn flex items-center justify-center", Ot ? "bg-zinc-800/80 border-zinc-700 hover:bg-rose-950/40 hover:border-rose-800 text-zinc-400 hover:text-rose-400 focus:ring-2 focus:ring-rose-500" : "bg-white border-rose-200 hover:bg-rose-50 hover:border-rose-300 text-rose-500 hover:text-rose-600 shadow-2xs focus:ring-2 focus:ring-rose-500"),
-                                title: "Remove Discount",
-                                children: n.jsx(Yn, {
-                                  className: "w-3.5 h-3.5"
-                                })
-                              }),
-                              wn > 0 && at && n.jsx("span", {
-                                className: "text-[10px] px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-500 font-semibold border border-black/5 dark:border-white/5",
-                                children: "Initial Concession"
+                              }) : ((_h3 = (_g3 = t == null ? void 0 : t.billing) == null ? void 0 : _g3.referral) == null ? void 0 : _h3.partner) ? n.jsxs("div", {
+                                className: "flex items-center gap-1.5 min-w-0",
+                                children: [
+                                  n.jsx("span", {
+                                    className: "w-2.5 h-2.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.5)] shrink-0"
+                                  }),
+                                  n.jsx("span", {
+                                    className: "font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate",
+                                    children: t.billing.referral.partner.displayName
+                                  }),
+                                  n.jsx("span", {
+                                    className: "text-[11px] px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-bold border border-indigo-500/20 shrink-0",
+                                    children: "Doctor"
+                                  })
+                                ]
+                              }) : (((_j3 = (_i2 = t == null ? void 0 : t.billing) == null ? void 0 : _i2.referral) == null ? void 0 : _j3.referrerText) || "").trim().toUpperCase() === "SELF" ? n.jsxs("div", {
+                                className: "flex items-center gap-1.5 min-w-0",
+                                children: [
+                                  n.jsx("span", {
+                                    className: "w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] shrink-0"
+                                  }),
+                                  n.jsx("span", {
+                                    className: "font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate",
+                                    children: "SELF"
+                                  }),
+                                  n.jsx("span", {
+                                    className: "text-[11px] px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/20 shrink-0",
+                                    children: "Direct Walk-in"
+                                  })
+                                ]
+                              }) : n.jsx("span", {
+                                className: "text-xs sm:text-sm font-medium text-slate-500 dark:text-zinc-400 italic",
+                                children: "No Referral Partner (Direct Walk-in)"
                               })
                             ]
-                          }) : n.jsx("span", {
-                            className: "text-sm text-slate-400 dark:text-zinc-500",
-                            children: "No discount applied"
+                          }),
+                          dn && !zr && n.jsxs("button", {
+                            ref: pe,
+                            "data-concession-trigger": "true",
+                            type: "button",
+                            disabled: !As,
+                            onClick: () => {
+                              As && Ai((In) => !In);
+                            },
+                            onKeyDown: (In) => {
+                              var _a4;
+                              if (As && In.key === "Tab") if (!In.shiftKey) at && (In.preventDefault(), In.stopPropagation(), (_a4 = document.getElementById("btn-remove-discount")) == null ? void 0 : _a4.focus());
+                              else {
+                                In.preventDefault(), In.stopPropagation();
+                                const Kn = document.getElementById("btn-outsource-test");
+                                if (Kn) Kn.focus();
+                                else {
+                                  const Pn = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]'));
+                                  if (Pn.length > 0) Pn[Pn.length - 1].focus();
+                                  else {
+                                    const Dr = document.getElementById("input-test-search");
+                                    Dr && Dr.focus();
+                                  }
+                                }
+                              }
+                            },
+                            className: me("px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1 transition-all border shadow-2xs shrink-0 synos-focus-btn", As ? Kt ? "bg-slate-900 text-white border-slate-900 dark:bg-zinc-700 dark:border-zinc-600 shadow-xs cursor-pointer" : at ? "bg-[#EBF5EF] dark:bg-emerald-950/30 text-[#245E49] dark:text-emerald-300 border border-[#CCE8D8] dark:border-emerald-800 hover:bg-[#DFF0E6] cursor-pointer" : "bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 border-[#CCDCE8] dark:border-zinc-700 hover:bg-slate-50 cursor-pointer" : "opacity-45 cursor-not-allowed bg-slate-100 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500 border-slate-200 dark:border-zinc-700 select-none"),
+                            title: As ? at ? "Edit Discount" : "+ Discount" : "Initial registration discount is locked.",
+                            children: [
+                              n.jsx(u0, {
+                                className: "w-3.5 h-3.5 text-slate-500 dark:text-zinc-400"
+                              }),
+                              n.jsx("span", {
+                                children: at ? "Edit Discount" : "+ Discount"
+                              }),
+                              As && n.jsx(Ds, {
+                                className: me("w-3 h-3 transition-transform duration-200", Kt && "rotate-180")
+                              })
+                            ]
                           })
                         ]
                       }),
+                      n.jsx("div", {
+                        className: "border-t border-slate-200/70 dark:border-zinc-700/60"
+                      }),
                       n.jsxs("div", {
-                        className: "flex justify-between items-center text-base",
+                        className: "grid grid-cols-3 gap-2 sm:gap-4 items-baseline",
                         children: [
-                          n.jsx("span", {
-                            className: Pt.rowLabel,
-                            children: "GST / Tax"
-                          }),
-                          n.jsxs("span", {
-                            className: Pt.rowValue,
+                          n.jsxs("div", {
                             children: [
-                              "\u20B9",
-                              _n2.toLocaleString()
+                              n.jsx("span", {
+                                className: "text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 block",
+                                children: "Total Amount"
+                              }),
+                              n.jsxs("span", {
+                                className: "font-mono font-bold text-base sm:text-lg text-slate-900 dark:text-white block mt-0.5",
+                                children: [
+                                  "\u20B9",
+                                  fn.toLocaleString()
+                                ]
+                              })
+                            ]
+                          }),
+                          n.jsxs("div", {
+                            children: [
+                              n.jsx("span", {
+                                className: "text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 block",
+                                children: "Discount"
+                              }),
+                              n.jsx("div", {
+                                className: "mt-0.5",
+                                children: at ? n.jsxs("div", {
+                                  className: "flex items-center gap-1.5 flex-wrap",
+                                  children: [
+                                    n.jsxs("span", {
+                                      className: me("font-mono font-bold text-base sm:text-lg", Pt ? "text-emerald-400" : "text-[#1F6E54]"),
+                                      children: [
+                                        "-\u20B9",
+                                        zt.toLocaleString()
+                                      ]
+                                    }),
+                                    ar && n.jsxs("span", {
+                                      className: "text-xs text-slate-500 dark:text-zinc-400 font-medium truncate max-w-[80px]",
+                                      title: ar,
+                                      children: [
+                                        "(",
+                                        ar,
+                                        ")"
+                                      ]
+                                    }),
+                                    dn && vn === 0 && n.jsx("button", {
+                                      type: "button",
+                                      id: "btn-remove-discount",
+                                      "data-remove-discount": "true",
+                                      tabIndex: 0,
+                                      onClick: Sr,
+                                      onKeyDown: (In) => {
+                                        var _a4, _b3;
+                                        if (In.key === "Tab") if (In.preventDefault(), In.stopPropagation(), In.shiftKey) {
+                                          const Kn = document.querySelector('[data-concession-trigger="true"]');
+                                          Kn && Kn.focus();
+                                        } else if (Kt) {
+                                          const Kn = document.getElementById("input-flat-concession") || document.getElementById("btn-minimize-concession");
+                                          Kn ? Kn.focus() : (_a4 = document.getElementById("btn-settlement-full")) == null ? void 0 : _a4.focus();
+                                        } else (_b3 = document.getElementById("btn-settlement-full")) == null ? void 0 : _b3.focus();
+                                      },
+                                      disabled: ae,
+                                      className: me("p-1 rounded-md border transition-all cursor-pointer synos-focus-btn flex items-center justify-center shrink-0", Pt ? "bg-zinc-800 border-zinc-700 hover:bg-rose-950/40 text-zinc-400 hover:text-rose-400 focus:ring-2 focus:ring-rose-500" : "bg-white border-rose-200 hover:bg-rose-50 hover:border-rose-300 text-rose-500 hover:text-rose-600 shadow-2xs focus:ring-2 focus:ring-rose-500"),
+                                      title: "Remove Discount",
+                                      children: n.jsx(Hn, {
+                                        className: "w-3 h-3"
+                                      })
+                                    })
+                                  ]
+                                }) : n.jsx("span", {
+                                  className: "font-mono font-bold text-base sm:text-lg text-slate-400 dark:text-zinc-500 block mt-0.5",
+                                  children: "\u2014"
+                                })
+                              })
+                            ]
+                          }),
+                          n.jsxs("div", {
+                            children: [
+                              n.jsx("span", {
+                                className: "text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 block",
+                                children: "GST / Tax"
+                              }),
+                              n.jsxs("span", {
+                                className: "font-mono font-bold text-base sm:text-lg text-slate-900 dark:text-white block mt-0.5",
+                                children: [
+                                  "\u20B9",
+                                  _n2.toLocaleString()
+                                ]
+                              })
                             ]
                           })
                         ]
@@ -37561,27 +37564,27 @@ Details: ${A.inner}`);
                       })
                     ]
                   }),
-                  Er !== Jn && n.jsxs("div", {
+                  r && Er !== Jn && n.jsxs("div", {
                     className: "flex justify-between items-center pt-1",
                     children: [
                       n.jsx("span", {
-                        className: me(Pt.rowLabel, "text-base font-bold text-slate-800 dark:text-zinc-200"),
-                        children: r ? "Revised Net Amount" : "Net Bill Total"
+                        className: me(Ht.rowLabel, "text-base font-bold text-slate-800 dark:text-zinc-200"),
+                        children: "Revised Net Amount"
                       }),
                       n.jsxs("span", {
                         className: me("font-mono text-2xl font-black text-slate-950 dark:text-white"),
                         children: [
                           "\u20B9",
-                          (_k3 = r && h !== void 0 ? h : Jn) == null ? void 0 : _k3.toLocaleString()
+                          (_k3 = h !== void 0 ? h : Jn) == null ? void 0 : _k3.toLocaleString()
                         ]
                       })
                     ]
                   }),
-                  wn > 0 && n.jsxs("div", {
+                  r && vn > 0 && n.jsxs("div", {
                     className: "flex justify-between items-center text-sm sm:text-base pt-1",
                     children: [
                       n.jsxs("span", {
-                        className: me(Pt.rowLabel, "flex items-center gap-2 font-bold text-emerald-800 dark:text-emerald-300"),
+                        className: me(Ht.rowLabel, "flex items-center gap-2 font-bold text-emerald-800 dark:text-emerald-300"),
                         children: [
                           n.jsx(yr, {
                             className: "w-4 h-4 text-emerald-500"
@@ -37595,31 +37598,13 @@ Details: ${A.inner}`);
                         className: "font-mono font-bold text-base text-emerald-600 dark:text-emerald-400",
                         children: [
                           "- \u20B9",
-                          wn.toLocaleString()
-                        ]
-                      })
-                    ]
-                  }),
-                  wn > 0 && lr > 0 && n.jsxs("div", {
-                    className: "flex justify-between items-center pt-2.5 border-t border-slate-200/60 dark:border-zinc-800/60",
-                    children: [
-                      n.jsx("span", {
-                        className: "text-sm font-bold text-rose-600 dark:text-rose-400",
-                        children: "Remaining Due to Collect"
-                      }),
-                      n.jsxs("span", {
-                        className: "font-mono font-black text-base text-rose-600 dark:text-rose-400 flex items-center",
-                        children: [
-                          n.jsx(Gs, {
-                            className: "w-4 h-4 mr-0.5"
-                          }),
-                          lr.toLocaleString()
+                          vn.toLocaleString()
                         ]
                       })
                     ]
                   }),
                   ka && dn && n.jsxs("div", {
-                    className: me("p-3.5 sm:p-4 rounded-2xl border space-y-3 transition-all shadow-2xs animate-in fade-in slide-in-from-top-1 duration-200", Ot ? "bg-orange-950/20 border-orange-900/40" : "bg-[#FFF9F3] border-[#FDE3CF]"),
+                    className: me("p-3.5 sm:p-4 rounded-2xl border space-y-3 transition-all shadow-2xs animate-in fade-in slide-in-from-top-1 duration-200", Pt ? "bg-orange-950/20 border-orange-900/40" : "bg-[#FFF9F3] border-[#FDE3CF]"),
                     children: [
                       n.jsxs("div", {
                         className: "flex items-center justify-between",
@@ -37740,7 +37725,7 @@ Details: ${A.inner}`);
                                       const Kn = In.target.value;
                                       qe(Kn);
                                     },
-                                    className: me("w-full h-10 pl-8 pr-4 rounded-xl text-sm font-mono font-bold outline-none border transition-all bg-white dark:bg-zinc-800 border-[#FDE3CF] dark:border-orange-900/50 focus:border-[#E8864A] focus:ring-2 focus:ring-[#E8864A]/20 text-slate-900 dark:text-white", Pt.input)
+                                    className: me("w-full h-10 pl-8 pr-4 rounded-xl text-sm font-mono font-bold outline-none border transition-all bg-white dark:bg-zinc-800 border-[#FDE3CF] dark:border-orange-900/50 focus:border-[#E8864A] focus:ring-2 focus:ring-[#E8864A]/20 text-slate-900 dark:text-white", Ht.input)
                                   })
                                 ]
                               }),
@@ -37754,7 +37739,7 @@ Details: ${A.inner}`);
                                   n.jsxs("select", {
                                     value: nt,
                                     onChange: (In) => Ge(In.target.value),
-                                    className: me("w-full h-9 rounded-xl px-3 outline-none text-xs font-medium cursor-pointer border bg-white dark:bg-zinc-800 border-[#FDE3CF] dark:border-orange-900/50 text-slate-800 dark:text-zinc-200 focus:border-[#E8864A]", Pt.input),
+                                    className: me("w-full h-9 rounded-xl px-3 outline-none text-xs font-medium cursor-pointer border bg-white dark:bg-zinc-800 border-[#FDE3CF] dark:border-orange-900/50 text-slate-800 dark:text-zinc-200 focus:border-[#E8864A]", Ht.input),
                                     children: [
                                       n.jsx("option", {
                                         value: "Lab Owner Discretionary Concession",
@@ -37919,7 +37904,7 @@ Details: ${A.inner}`);
                         ]
                       }),
                       se === "catalog" ? n.jsxs("select", {
-                        className: me("w-full h-12 rounded-xl px-4 outline-none transition-colors disabled:opacity-50 text-base font-medium focus:ring-1 focus:ring-blue-500 focus:border-blue-500 cursor-pointer border", Pt.input),
+                        className: me("w-full h-12 rounded-xl px-4 outline-none transition-colors disabled:opacity-50 text-base font-medium focus:ring-1 focus:ring-blue-500 focus:border-blue-500 cursor-pointer border", Ht.input),
                         disabled: ae,
                         value: "",
                         onChange: (In) => {
@@ -37934,7 +37919,7 @@ Details: ${A.inner}`);
                           }),
                           J.map((In) => n.jsxs("option", {
                             value: In.code,
-                            className: Ot ? "bg-zinc-900" : "bg-white",
+                            className: Pt ? "bg-zinc-900" : "bg-white",
                             children: [
                               In.name,
                               " (",
@@ -38008,7 +37993,7 @@ Details: ${A.inner}`);
                                     const Kn = In.target.value, Pn = Kn.startsWith("0") && Kn.length > 1 && !Kn.startsWith("0.") ? Kn.replace(/^0+/, "") : Kn;
                                     Qe(Pn);
                                   },
-                                  className: me("w-full h-12 px-4 rounded-xl text-base font-mono font-bold outline-none border synos-focus-input", Pt.input)
+                                  className: me("w-full h-12 px-4 rounded-xl text-base font-mono font-bold outline-none border synos-focus-input", Ht.input)
                                 })
                               })
                             ]
@@ -38098,7 +38083,7 @@ Details: ${A.inner}`);
                                           paddingLeft: "2.75rem",
                                           paddingRight: "2.25rem"
                                         },
-                                        className: me(Pt.input, "w-full h-12 rounded-xl text-base font-medium outline-none border transition-all")
+                                        className: me(Ht.input, "w-full h-12 rounded-xl text-base font-medium outline-none border transition-all")
                                       }),
                                       Re ? n.jsx("button", {
                                         type: "button",
@@ -38107,7 +38092,7 @@ Details: ${A.inner}`);
                                         },
                                         className: "absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 cursor-pointer",
                                         title: "Clear reason",
-                                        children: n.jsx(Yn, {
+                                        children: n.jsx(Hn, {
                                           className: "w-4 h-4"
                                         })
                                       }) : n.jsx("button", {
@@ -38122,7 +38107,7 @@ Details: ${A.inner}`);
                                       }),
                                       Ee && n.jsxs("div", {
                                         ref: Xe,
-                                        className: me("absolute top-full left-0 right-0 mt-1.5 rounded-xl p-1 shadow-xl z-50 border overflow-y-auto space-y-1 backdrop-blur-md max-h-52", Ot ? "bg-zinc-900/95 border-zinc-700/60 shadow-black/50 text-zinc-200" : "bg-white/95 border-slate-200/90 shadow-slate-900/10 text-slate-900"),
+                                        className: me("absolute top-full left-0 right-0 mt-1.5 rounded-xl p-1 shadow-xl z-50 border overflow-y-auto space-y-1 backdrop-blur-md max-h-52", Pt ? "bg-zinc-900/95 border-zinc-700/60 shadow-black/50 text-zinc-200" : "bg-white/95 border-slate-200/90 shadow-slate-900/10 text-slate-900"),
                                         children: [
                                           on.length === 0 ? n.jsx("div", {
                                             className: "px-3 py-2 text-xs text-slate-400 italic",
@@ -38135,14 +38120,14 @@ Details: ${A.inner}`);
                                               onMouseDown: (Dr) => {
                                                 Dr.preventDefault(), ze(In.reasonText), ue(false);
                                               },
-                                              className: me("w-full text-left px-3 py-2 rounded-lg transition-all duration-150 text-xs flex items-center justify-between cursor-pointer", Pn ? Ot ? "bg-blue-500/15 border border-blue-400/40 text-white font-bold shadow-xs scale-[0.99]" : "bg-blue-50/90 border border-blue-400/50 text-blue-900 font-bold shadow-xs scale-[0.99]" : Ot ? "hover:bg-zinc-800/70 border border-transparent text-zinc-300 hover:text-white" : "hover:bg-slate-50 border border-transparent text-slate-700 hover:text-slate-900"),
+                                              className: me("w-full text-left px-3 py-2 rounded-lg transition-all duration-150 text-xs flex items-center justify-between cursor-pointer", Pn ? Pt ? "bg-blue-500/15 border border-blue-400/40 text-white font-bold shadow-xs scale-[0.99]" : "bg-blue-50/90 border border-blue-400/50 text-blue-900 font-bold shadow-xs scale-[0.99]" : Pt ? "hover:bg-zinc-800/70 border border-transparent text-zinc-300 hover:text-white" : "hover:bg-slate-50 border border-transparent text-slate-700 hover:text-slate-900"),
                                               children: [
                                                 n.jsx("span", {
                                                   className: "truncate text-xs font-semibold",
                                                   children: In.reasonText
                                                 }),
                                                 In.category && n.jsx("span", {
-                                                  className: me("text-[9px] font-bold px-1.5 py-0.5 rounded border leading-none shrink-0 ml-2", Ot ? "bg-zinc-800 border-zinc-700 text-zinc-400" : "bg-slate-100 border-slate-200 text-slate-500"),
+                                                  className: me("text-[9px] font-bold px-1.5 py-0.5 rounded border leading-none shrink-0 ml-2", Pt ? "bg-zinc-800 border-zinc-700 text-zinc-400" : "bg-slate-100 border-slate-200 text-slate-500"),
                                                   children: In.category
                                                 })
                                               ]
@@ -38153,7 +38138,7 @@ Details: ${A.inner}`);
                                             onMouseDown: (In) => {
                                               In.preventDefault(), ue(false), A && A("discountReason");
                                             },
-                                            className: me("w-full text-left px-3 py-2 text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer border-t", Ot ? "border-zinc-800 text-synos-primary hover:bg-zinc-800/60" : "border-slate-100 text-synos-primary hover:bg-blue-50/50"),
+                                            className: me("w-full text-left px-3 py-2 text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer border-t", Pt ? "border-zinc-800 text-synos-primary hover:bg-zinc-800/60" : "border-slate-100 text-synos-primary hover:bg-blue-50/50"),
                                             children: [
                                               n.jsx(Ta, {
                                                 className: "w-3.5 h-3.5"
@@ -38190,16 +38175,16 @@ Details: ${A.inner}`);
             })(),
             r && (() => {
               if (zr) {
-                const at = ($t == null ? void 0 : $t.grossAmount) || 0, zt = oE(t), fn = zt.rawAmount || 0, _n2 = Math.max(0, at - fn), sr = d !== void 0 ? d : at;
+                const at = ($t == null ? void 0 : $t.grossAmount) || 0, zt = oE(t), fn = zt.rawAmount || 0, _n2 = Math.max(0, at - fn), ar = d !== void 0 ? d : at;
                 let In = 0;
                 if (u !== void 0) In = u;
                 else {
                   const Dr = Number(tt) || zt.rawVal || 0;
-                  tr === "PERCENTAGE" ? In = Math.round(sr * (Dr / 100) * 100) / 100 : In = Math.min(sr, Dr);
+                  tr === "PERCENTAGE" ? In = Math.round(ar * (Dr / 100) * 100) / 100 : In = Math.min(ar, Dr);
                 }
-                const Kn = Math.max(0, sr - In), Pn = Kn - _n2;
+                const Kn = Math.max(0, ar - In), Pn = Kn - _n2;
                 return n.jsxs("div", {
-                  className: me("p-3.5 rounded-xl border space-y-2.5 transition-all shadow-xs animate-in fade-in duration-200", Ot ? "bg-zinc-900/60 border-zinc-800 text-zinc-200" : "bg-black/[0.04] border-black/5 text-zinc-900"),
+                  className: me("p-3.5 rounded-xl border space-y-2.5 transition-all shadow-xs animate-in fade-in duration-200", Pt ? "bg-zinc-900/60 border-zinc-800 text-zinc-200" : "bg-black/[0.04] border-black/5 text-zinc-900"),
                   children: [
                     n.jsxs("div", {
                       className: "flex items-center justify-between",
@@ -38287,7 +38272,7 @@ Details: ${A.inner}`);
                 });
               }
               return n.jsxs("div", {
-                className: me("p-3.5 rounded-xl border space-y-2.5 transition-all shadow-xs animate-in fade-in duration-200", Ot ? "bg-zinc-900/60 border-zinc-800 text-zinc-200" : "bg-black/[0.04] border-black/5 text-zinc-900"),
+                className: me("p-3.5 rounded-xl border space-y-2.5 transition-all shadow-xs animate-in fade-in duration-200", Pt ? "bg-zinc-900/60 border-zinc-800 text-zinc-200" : "bg-black/[0.04] border-black/5 text-zinc-900"),
                 children: [
                   n.jsxs("div", {
                     className: "flex items-center justify-between",
@@ -38374,7 +38359,7 @@ Details: ${A.inner}`);
                           onClick: () => o && o(at),
                           className: me("py-1 px-2 text-xs font-bold rounded-lg border transition-all cursor-pointer flex items-center justify-center gap-1", s === at ? "bg-emerald-600 text-white border-emerald-600 shadow-xs" : "bg-white/70 dark:bg-zinc-800/70 border-zinc-200 dark:border-zinc-700 hover:bg-white dark:hover:bg-zinc-800"),
                           children: [
-                            at === "Cash" && n.jsx(Gs, {
+                            at === "Cash" && n.jsx(Ys, {
                               className: "w-3 h-3"
                             }),
                             at === "UPI" && n.jsx(wE, {
@@ -38424,7 +38409,7 @@ Details: ${A.inner}`);
                           onClick: () => o && o(at),
                           className: me("py-1 px-2 text-xs font-bold rounded-lg border transition-all cursor-pointer flex items-center justify-center gap-1", s === at ? "bg-synos-primary text-white border-synos-primary shadow-xs" : "bg-white/70 dark:bg-zinc-800/70 border-zinc-200 dark:border-zinc-700 hover:bg-white dark:hover:bg-zinc-800"),
                           children: [
-                            at === "Cash" && n.jsx(Gs, {
+                            at === "Cash" && n.jsx(Ys, {
                               className: "w-3 h-3"
                             }),
                             at === "UPI" && n.jsx(wE, {
@@ -38444,17 +38429,17 @@ Details: ${A.inner}`);
             })(),
             zr && (() => {
               const at = d !== void 0 ? d : ($t == null ? void 0 : $t.grossAmount) || 0, zt = oE(t), _n2 = ht ? Number(tt) || 0 : (c == null ? void 0 : c.value) !== void 0 ? Number(c.value) : Number(tt) || zt.rawVal || 0;
-              let sr = 0;
+              let ar = 0;
               if (tr === "PERCENTAGE") {
                 const Kn = Math.min(100, Math.max(0, _n2));
-                sr = Math.round(at * (Kn / 100) * 100) / 100;
-              } else sr = Math.min(at, Math.max(0, _n2));
-              const In = Math.max(0, at - sr);
+                ar = Math.round(at * (Kn / 100) * 100) / 100;
+              } else ar = Math.min(at, Math.max(0, _n2));
+              const In = Math.max(0, at - ar);
               return n.jsxs("div", {
                 className: "space-y-3",
                 children: [
                   n.jsxs("div", {
-                    className: me("p-4 sm:p-5 rounded-2xl border space-y-4 shadow-sm", Ot ? "bg-zinc-900/80 border-zinc-800 text-zinc-200" : "bg-black/[0.04] border-black/5 text-zinc-900"),
+                    className: me("p-4 sm:p-5 rounded-2xl border space-y-4 shadow-sm", Pt ? "bg-zinc-900/80 border-zinc-800 text-zinc-200" : "bg-black/[0.04] border-black/5 text-zinc-900"),
                     children: [
                       n.jsx("div", {
                         className: "flex items-center justify-between",
@@ -38567,7 +38552,7 @@ Details: ${A.inner}`);
                                         onKeyDown: (Kn) => {
                                           Kn.key === "Enter" && (Kn.preventDefault(), er(Kn.target.value, tr));
                                         },
-                                        className: me("w-28 sm:w-32 h-11 px-3 text-right text-base sm:text-lg font-mono font-black rounded-xl border outline-none synos-focus-input", Ot ? "bg-zinc-900 border-zinc-700 text-zinc-100 focus:border-synos-primary" : "bg-white border-zinc-300 text-zinc-900 focus:border-synos-primary shadow-xs"),
+                                        className: me("w-28 sm:w-32 h-11 px-3 text-right text-base sm:text-lg font-mono font-black rounded-xl border outline-none synos-focus-input", Pt ? "bg-zinc-900 border-zinc-700 text-zinc-100 focus:border-synos-primary" : "bg-white border-zinc-300 text-zinc-900 focus:border-synos-primary shadow-xs"),
                                         placeholder: "0"
                                       }),
                                       ht && n.jsx("button", {
@@ -38595,7 +38580,7 @@ Details: ${A.inner}`);
                                     className: "font-mono font-bold text-zinc-700 dark:text-zinc-300",
                                     children: [
                                       "\u20B9",
-                                      sr.toLocaleString()
+                                      ar.toLocaleString()
                                     ]
                                   })
                                 ]
@@ -38626,7 +38611,7 @@ Details: ${A.inner}`);
                     var _a3, _b2, _c3, _d3, _e2, _f2;
                     const Kn = ((_b2 = (_a3 = t == null ? void 0 : t.billing) == null ? void 0 : _a3.referral) == null ? void 0 : _b2.partner) || ((_c3 = t == null ? void 0 : t.visit) == null ? void 0 : _c3.referralPartner), Pn = ((_e2 = (_d3 = t == null ? void 0 : t.billing) == null ? void 0 : _d3.referral) == null ? void 0 : _e2.secondaryPartner) || ((_f2 = t == null ? void 0 : t.visit) == null ? void 0 : _f2.secondaryReferralPartner), Dr = !!Pn;
                     return n.jsxs("div", {
-                      className: me("p-4 sm:p-5 rounded-2xl border space-y-3.5 transition-all shadow-sm", Dr ? Ot ? "bg-amber-950/20 border-amber-500/40" : "bg-amber-50/70 border-amber-200" : Ot ? "bg-zinc-900/80 border-zinc-800 text-zinc-200" : "bg-black/[0.04] border-black/5 text-zinc-900"),
+                      className: me("p-4 sm:p-5 rounded-2xl border space-y-3.5 transition-all shadow-sm", Dr ? Pt ? "bg-amber-950/20 border-amber-500/40" : "bg-amber-50/70 border-amber-200" : Pt ? "bg-zinc-900/80 border-zinc-800 text-zinc-200" : "bg-black/[0.04] border-black/5 text-zinc-900"),
                       children: [
                         n.jsxs("div", {
                           className: "flex items-center justify-between",
@@ -38665,7 +38650,7 @@ Details: ${A.inner}`);
                           ]
                         }),
                         Dr ? n.jsxs("div", {
-                          className: me("flex items-center justify-between gap-2 p-2.5 rounded-xl border text-xs font-semibold animate-in fade-in duration-200", Ot ? "bg-zinc-900 border-amber-500/30 text-zinc-100" : "bg-white border-amber-300 text-zinc-900 shadow-xs"),
+                          className: me("flex items-center justify-between gap-2 p-2.5 rounded-xl border text-xs font-semibold animate-in fade-in duration-200", Pt ? "bg-zinc-900 border-amber-500/30 text-zinc-100" : "bg-white border-amber-300 text-zinc-900 shadow-xs"),
                           children: [
                             n.jsxs("div", {
                               className: "flex items-center gap-2.5 min-w-0",
@@ -38695,7 +38680,7 @@ Details: ${A.inner}`);
                               className: "px-2 py-1 rounded text-[11px] font-bold text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 cursor-pointer transition-colors shrink-0 flex items-center gap-1 synos-focus-btn",
                               title: "Revert billing back to prescribing doctor",
                               children: [
-                                n.jsx(Yn, {
+                                n.jsx(Hn, {
                                   className: "w-3 h-3"
                                 }),
                                 " Revert"
@@ -38706,7 +38691,7 @@ Details: ${A.inner}`);
                           className: "space-y-2",
                           children: [
                             n.jsxs("div", {
-                              className: me("flex items-center justify-between p-2 rounded-lg border text-xs font-medium", Ot ? "bg-zinc-900/40 border-zinc-700/60 text-zinc-300" : "bg-white/80 border-slate-200 text-slate-700 shadow-2xs"),
+                              className: me("flex items-center justify-between p-2 rounded-lg border text-xs font-medium", Pt ? "bg-zinc-900/40 border-zinc-700/60 text-zinc-300" : "bg-white/80 border-slate-200 text-slate-700 shadow-2xs"),
                               children: [
                                 n.jsxs("div", {
                                   className: "flex items-center gap-2 min-w-0",
@@ -38750,7 +38735,7 @@ Details: ${A.inner}`);
                                     setTimeout(() => Le(false), 200);
                                   },
                                   disabled: !dn || ae,
-                                  className: me("w-full h-8 pl-8 pr-7 rounded-md text-xs font-medium outline-none border transition-all synos-focus-input", Pt.input)
+                                  className: me("w-full h-8 pl-8 pr-7 rounded-md text-xs font-medium outline-none border transition-all synos-focus-input", Ht.input)
                                 }),
                                 Dt ? n.jsx("button", {
                                   type: "button",
@@ -38758,7 +38743,7 @@ Details: ${A.inner}`);
                                     jr.preventDefault(), pt(""), Le(true);
                                   },
                                   className: "absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer",
-                                  children: n.jsx(Yn, {
+                                  children: n.jsx(Hn, {
                                     className: "w-3.5 h-3.5"
                                   })
                                 }) : n.jsx("button", {
@@ -38773,7 +38758,7 @@ Details: ${A.inner}`);
                                 }),
                                 ft && n.jsx("div", {
                                   ref: Bt,
-                                  className: me("absolute top-full left-0 right-0 mt-1.5 rounded-xl p-1 shadow-xl z-50 border overflow-y-auto space-y-1 backdrop-blur-md max-h-52", Ot ? "bg-zinc-900/95 border-zinc-700/60 shadow-black/50 text-zinc-200" : "bg-white/95 border-zinc-200/90 shadow-zinc-900/10 text-zinc-900"),
+                                  className: me("absolute top-full left-0 right-0 mt-1.5 rounded-xl p-1 shadow-xl z-50 border overflow-y-auto space-y-1 backdrop-blur-md max-h-52", Pt ? "bg-zinc-900/95 border-zinc-700/60 shadow-black/50 text-zinc-200" : "bg-white/95 border-zinc-200/90 shadow-zinc-900/10 text-zinc-900"),
                                   children: Jt.length === 0 ? n.jsx("div", {
                                     className: "px-3 py-2 text-[11px] text-zinc-400 italic",
                                     children: 'No matching doctor found. Click "+ Add Doctor" to create one.'
@@ -38785,14 +38770,14 @@ Details: ${A.inner}`);
                                       onMouseDown: (_r) => {
                                         _r.preventDefault(), En(jr.referralPartnerId || jr.id);
                                       },
-                                      className: me("w-full text-left px-3 py-2 rounded-lg transition-all duration-150 type-label flex items-center justify-between cursor-pointer", fi ? Ot ? "bg-blue-500/15 border border-blue-400/40 text-white font-bold shadow-xs scale-[0.99]" : "bg-blue-50/90 border border-blue-400/50 text-blue-900 font-bold shadow-xs scale-[0.99]" : Ot ? "hover:bg-zinc-800/70 border border-transparent text-zinc-300 hover:text-white" : "hover:bg-zinc-50 border border-transparent text-zinc-700 hover:text-zinc-900"),
+                                      className: me("w-full text-left px-3 py-2 rounded-lg transition-all duration-150 type-label flex items-center justify-between cursor-pointer", fi ? Pt ? "bg-blue-500/15 border border-blue-400/40 text-white font-bold shadow-xs scale-[0.99]" : "bg-blue-50/90 border border-blue-400/50 text-blue-900 font-bold shadow-xs scale-[0.99]" : Pt ? "hover:bg-zinc-800/70 border border-transparent text-zinc-300 hover:text-white" : "hover:bg-zinc-50 border border-transparent text-zinc-700 hover:text-zinc-900"),
                                       children: [
                                         n.jsx("span", {
                                           className: "truncate text-xs font-semibold",
                                           children: jr.name || jr.displayName
                                         }),
                                         n.jsx("span", {
-                                          className: me("text-[9px] font-bold px-1.5 py-0.5 rounded border leading-none shrink-0 ml-2", Ot ? "bg-zinc-800 border-zinc-700 text-zinc-400" : "bg-zinc-100 border-zinc-200 text-zinc-500"),
+                                          className: me("text-[9px] font-bold px-1.5 py-0.5 rounded border leading-none shrink-0 ml-2", Pt ? "bg-zinc-800 border-zinc-700 text-zinc-400" : "bg-zinc-100 border-zinc-200 text-zinc-500"),
                                           children: jr.partnerType || "Doctor"
                                         })
                                       ]
@@ -38939,7 +38924,7 @@ Details: ${A.inner}`);
                           },
                           onFocus: (at) => at.target.select(),
                           placeholder: `1 - ${Er}`,
-                          className: me("w-full h-12 !pl-9 !pr-4 rounded-xl text-base font-mono font-bold outline-none border transition-all", Pt.input)
+                          className: me("w-full h-12 !pl-9 !pr-4 rounded-xl text-base font-mono font-bold outline-none border transition-all", Ht.input)
                         })
                       ]
                     }),
@@ -39019,9 +39004,9 @@ Details: ${A.inner}`);
                     onClick: () => {
                       o && o(at), U && U(false);
                     },
-                    className: me("flex flex-col items-center justify-center py-2.5 rounded-xl border text-sm font-bold tracking-normal transition-all active:scale-95 cursor-pointer synos-focus-btn", !P && s === at ? Pt.method.active : Pt.method.inactive),
+                    className: me("flex flex-col items-center justify-center py-2.5 rounded-xl border text-sm font-bold tracking-normal transition-all active:scale-95 cursor-pointer synos-focus-btn", !P && s === at ? Ht.method.active : Ht.method.inactive),
                     children: [
-                      at === "Cash" && n.jsx(Gs, {
+                      at === "Cash" && n.jsx(Ys, {
                         className: "w-3 h-3 mb-1"
                       }),
                       at === "UPI" && n.jsx(wE, {
@@ -39055,7 +39040,7 @@ Details: ${A.inner}`);
               ]
             }),
             Un && n.jsxs("div", {
-              className: me("p-4 rounded-xl border flex items-center justify-between shadow-xs", $t.paymentModel === "PartnerCollects" || zr ? Ot ? "bg-indigo-950/40 border-indigo-500/40 text-indigo-300" : "bg-indigo-50/80 border-indigo-200 text-indigo-900" : Ot ? "bg-emerald-950/40 border-emerald-500/40 text-emerald-300" : "bg-emerald-50/80 border-emerald-200 text-emerald-900"),
+              className: me("p-4 rounded-xl border flex items-center justify-between shadow-xs", $t.paymentModel === "PartnerCollects" || zr ? Pt ? "bg-indigo-950/40 border-indigo-500/40 text-indigo-300" : "bg-indigo-50/80 border-indigo-200 text-indigo-900" : Pt ? "bg-emerald-950/40 border-emerald-500/40 text-emerald-300" : "bg-emerald-50/80 border-emerald-200 text-emerald-900"),
               children: [
                 n.jsxs("div", {
                   className: "flex items-center gap-3",
@@ -39088,7 +39073,7 @@ Details: ${A.inner}`);
         un.isOpen && n.jsx("div", {
           className: "fixed inset-0 z-50 flex items-center justify-center bg-black/40 animate-in fade-in duration-200",
           children: n.jsxs("div", {
-            className: me("w-96 rounded-xl shadow-2xl p-6 space-y-4 animate-in zoom-in-95 duration-200 border", Ot ? "bg-zinc-900 border-white/10 text-white" : "bg-white border-zinc-200 text-zinc-900"),
+            className: me("w-96 rounded-xl shadow-2xl p-6 space-y-4 animate-in zoom-in-95 duration-200 border", Pt ? "bg-zinc-900 border-white/10 text-white" : "bg-white border-zinc-200 text-zinc-900"),
             children: [
               n.jsxs("div", {
                 className: "space-y-1",
@@ -39104,7 +39089,7 @@ Details: ${A.inner}`);
                   }),
                   n.jsx("p", {
                     className: "type-label",
-                    children: Ot ? "This action will be audited." : "Mandatory audit reason required for financial override."
+                    children: Pt ? "This action will be audited." : "Mandatory audit reason required for financial override."
                   })
                 ]
               }),
@@ -39112,7 +39097,7 @@ Details: ${A.inner}`);
                 className: "space-y-2",
                 children: [
                   n.jsxs("div", {
-                    className: me("type-code p-2 rounded border", Ot ? "bg-black/50 border-zinc-800 text-zinc-400" : "bg-zinc-50 border-zinc-200 text-zinc-600"),
+                    className: me("type-code p-2 rounded border", Pt ? "bg-black/50 border-zinc-800 text-zinc-400" : "bg-zinc-50 border-zinc-200 text-zinc-600"),
                     children: [
                       un.type,
                       ": ",
@@ -39126,7 +39111,7 @@ Details: ${A.inner}`);
                       reason: at.target.value
                     })),
                     placeholder: "Reason for this change (Required)...",
-                    className: me("w-full rounded-lg p-3 outline-none min-h-[80px] transition-all type-body", Ot ? "bg-black border-zinc-700 text-white focus:border-zinc-500" : "bg-zinc-50 border-zinc-200 text-zinc-900 focus:border-zinc-900"),
+                    className: me("w-full rounded-lg p-3 outline-none min-h-[80px] transition-all type-body", Pt ? "bg-black border-zinc-700 text-white focus:border-zinc-500" : "bg-zinc-50 border-zinc-200 text-zinc-900 focus:border-zinc-900"),
                     autoFocus: true
                   })
                 ]
@@ -40693,7 +40678,7 @@ Details: ${A.inner}`);
                     n.jsx("button", {
                       onClick: e,
                       className: "p-2 rounded-xl bg-zinc-200/80 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 transition-all cursor-pointer",
-                      children: n.jsx(Yn, {
+                      children: n.jsx(Hn, {
                         size: 16
                       })
                     })
@@ -40807,7 +40792,7 @@ Details: ${A.inner}`);
           },
           className: "p-1 text-zinc-500 hover:bg-zinc-200 dark:text-zinc-400 dark:hover:bg-zinc-800 rounded cursor-pointer shrink-0",
           title: "Cancel (Esc)",
-          children: n.jsx(Yn, {
+          children: n.jsx(Hn, {
             size: 12
           })
         }),
@@ -40957,7 +40942,7 @@ Details: ${A.inner}`);
       ]
     });
   }, VW = ({ schema: t, onUpdateSchema: e, letterheadMode: r = "digital", topMarginMm: a = 40, labSettings: i = {}, onUpdateLabSetting: s, onToggleBox: o, readOnly: A = false }) => {
-    var _a2, _b, _c2, _d2, _e, _f, _g2, _h2, _i, _j2, _k2, _l2, _m, _n, _o2, _p2, _q2, _r, _s2, _t, _u, _v, _w2, _x, _y, _z2, _A, _B2, _C2, _D2, _E2, _F2, _G2, _H2, _I2, _J2, _K2, _L2, _M2, _N2, _O2, _P2, _Q2, _R, _S2, _T2, _U, _V2, _W2, _X2, _Y2, _Z2, __2, _$2, _aa, _ba, _ca, _da, _ea, _fa, _ga, _ha, _ia, _ja, _ka, _la, _ma, _na, _oa, _pa, _qa, _ra, _sa, _ta, _ua, _va, _wa, _xa, _ya, _za, _Aa, _Ba, _Ca, _Da;
+    var _a2, _b, _c2, _d2, _e, _f, _g2, _h2, _i, _j2, _k2, _l2, _m, _n, _o2, _p2, _q2, _r, _s2, _t2, _u, _v, _w2, _x, _y, _z2, _A, _B2, _C2, _D2, _E2, _F2, _G2, _H2, _I2, _J2, _K2, _L2, _M2, _N2, _O2, _P2, _Q2, _R, _S2, _T2, _U, _V2, _W2, _X2, _Y2, _Z2, __2, _$2, _aa, _ba, _ca, _da, _ea, _fa, _ga, _ha, _ia, _ja, _ka, _la, _ma, _na, _oa, _pa, _qa, _ra, _sa, _ta, _ua, _va, _wa, _xa, _ya, _za, _Aa, _Ba, _Ca, _Da;
     const [l, c] = F.useState(false), [g, d] = F.useState(""), [u, h] = F.useState(null), [f, p] = F.useState(""), I = (J) => {
       e && e(J);
     };
@@ -41355,7 +41340,7 @@ Details: ${A.inner}`);
                           valueClassName: "text-[11px] font-bold text-zinc-600 block"
                         })
                       }),
-                      ((_t = (_s2 = x.header.fields) == null ? void 0 : _s2.address) == null ? void 0 : _t.enabled) && n.jsx("div", {
+                      ((_t2 = (_s2 = x.header.fields) == null ? void 0 : _s2.address) == null ? void 0 : _t2.enabled) && n.jsx("div", {
                         className: "block",
                         children: n.jsx(Va, {
                           value: x.header.fields.address.value || i.address,
@@ -41848,7 +41833,7 @@ Details: ${A.inner}`);
                             type: "button",
                             onClick: () => c(false),
                             className: "text-zinc-400 hover:text-zinc-600 p-0.5 cursor-pointer",
-                            children: n.jsx(Yn, {
+                            children: n.jsx(Hn, {
                               size: 12
                             })
                           })
@@ -42371,7 +42356,7 @@ Details: ${A.inner}`);
                   className: "px-1.5 py-0.5 rounded bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold flex items-center gap-0.5 cursor-pointer",
                   title: "Reset to dynamic QR",
                   children: [
-                    n.jsx(Yn, {
+                    n.jsx(Hn, {
                       size: 10
                     }),
                     " Reset QR"
@@ -42887,7 +42872,7 @@ Details: ${A.inner}`);
                       type: "button",
                       onClick: () => h(null),
                       className: "p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer transition-colors",
-                      children: n.jsx(Yn, {
+                      children: n.jsx(Hn, {
                         size: 16
                       })
                     })
@@ -43022,7 +43007,7 @@ Details: ${A.inner}`);
     });
   };
   function rBe({ onVisitUpdated: t }) {
-    var _a2, _b, _c2, _d2, _e2, _f, _g2, _h2, _i, _j2, _k2, _l2, _m, _n2, _o2, _p2, _q2, _r2, _s2, _t2, _u, _v, _w2, _x, _y, _z2, _A, _B2, _C2, _D2, _E2, _F2, _G2, _H2, _I2, _J2, _K2, _L2, _M2, _N2, _O2, _P2, _Q2, _R, _S2, _T2, _U, _V2, _W2, _X2, _Y2, _Z2, __2, _$2, _aa, _ba, _ca, _da, _ea, _fa, _ga, _ha, _ia, _ja, _ka, _la, _ma, _na, _oa, _pa, _qa, _ra, _sa, _ta, _ua, _va, _wa, _xa, _ya, _za, _Aa, _Ba, _Ca, _Da, _Ea, _Fa, _Ga, _Ha, _Ia, _Ja, _Ka, _La, _Ma, _Na, _Oa, _Pa, _Qa, _Ra, _Sa, _Ta;
+    var _a2, _b, _c2, _d2, _e2, _f, _g2, _h2, _i, _j2, _k2, _l2, _m, _n2, _o2, _p2, _q2, _r2, _s2, _t2, _u, _v, _w2, _x, _y, _z2, _A, _B2, _C2, _D2, _E2, _F2, _G2, _H2, _I2, _J2, _K2, _L2, _M2, _N2, _O2, _P2, _Q2, _R, _S2, _T2, _U, _V2, _W2, _X2, _Y2, _Z2, __2, _$2, _aa, _ba, _ca, _da, _ea, _fa, _ga, _ha, _ia, _ja, _ka, _la, _ma, _na, _oa, _pa, _qa, _ra, _sa, _ta, _ua, _va, _wa, _xa, _ya, _za, _Aa, _Ba, _Ca, _Da, _Ea, _Fa, _Ga, _Ha, _Ia, _Ja, _Ka, _La, _Ma, _Na, _Oa, _Pa, _Qa, _Ra, _Sa, _Ta, _Ua, _Va, _Wa, _Xa, _Ya;
     const { user: e } = xa(), { isOpen: r, closePanel: a, drawerState: i, openResumeIntent: s, openCorrectionIntent: o } = u9(), A = F.useRef(null), l = F.useRef(null);
     f9(A, r), c1(A, r, a);
     const c = i == null ? void 0 : i.intent, g = c === "correction", d = c === "resume", [u, h] = F.useState(false), [f, p] = F.useState("Standard"), I = F.useRef(0), [x, C] = F.useState("Cash"), [B, Q] = F.useState(""), [D, v] = F.useState(""), [M, j] = F.useState(false), [G, H] = F.useState(false), [P, U] = F.useState(""), [O, _] = F.useState(""), [te, ee] = F.useState(null), [ae, ne] = F.useState(null), [J, $] = F.useState(null), [se, he] = F.useState(false), [Ce, Me] = F.useState(null), [je, Qe] = F.useState(null), [Re, ze] = F.useState(null), [Se, le] = F.useState([]), [q, pe] = F.useState([]), [oe, xe] = F.useState(null), [Ee, ue] = F.useState(null), [Oe, ye] = F.useState(void 0), [Xe, ve] = F.useState(void 0), [fe, De] = F.useState([]), [Ue, we] = F.useState(false), [qe, nt] = F.useState({
@@ -43032,7 +43017,7 @@ Details: ${A.inner}`);
       ageUnit: "Years",
       gender: "Male",
       mobile: ""
-    }), [Ge, Nt] = F.useState(false), [Lt, Dt] = F.useState(""), [pt, ft] = F.useState(false), [Le, Pe] = F.useState(false), [it, Bt] = F.useState(false), [Jt, qt] = F.useState(""), [En, kn] = F.useState(true), [nr, tr] = F.useState(false), [ce, tt] = F.useState(null), [ie, ht] = F.useState("thermal"), [Et, un] = F.useState(() => typeof window < "u" && localStorage.getItem("synos_receipt_printer_name") || "default"), [Ne, $t] = F.useState(false), [mt, jt] = F.useState(null), [An, Ve] = F.useState([]), [Ft, Ot] = F.useState(null), [Pt, Un] = F.useState(false);
+    }), [Ge, Nt] = F.useState(false), [Lt, Dt] = F.useState(""), [pt, ft] = F.useState(false), [Le, Pe] = F.useState(false), [it, Bt] = F.useState(false), [Jt, qt] = F.useState(""), [En, kn] = F.useState(true), [nr, tr] = F.useState(false), [ce, tt] = F.useState(null), [ie, ht] = F.useState("thermal"), [Et, un] = F.useState(() => typeof window < "u" && localStorage.getItem("synos_receipt_printer_name") || "default"), [Ne, $t] = F.useState(false), [mt, jt] = F.useState(null), [An, Ve] = F.useState([]), [Ft, Pt] = F.useState(null), [Ht, Un] = F.useState(false);
     F.useEffect(() => {
       async function ct() {
         if (window.api && typeof window.api.invoke == "function") {
@@ -43244,11 +43229,11 @@ Details: ${A.inner}`);
         console.error("Failed to switch billing mode:", Sn);
       }
     }, er = () => {
-      tt(null), ht("thermal"), Ot(null), jt(null), Me(null), $(null), Da(), a(), t && t();
+      tt(null), ht("thermal"), Pt(null), jt(null), Me(null), $(null), Da(), a(), t && t();
     }, [Sr, Kr] = F.useState(false), [zr, Gr] = F.useState({
       isOpen: false,
       data: null
-    }), [Qt, _t] = F.useState(false), [en, Bn] = F.useState("Patient unable to wait / Long queue"), [wn, fr] = F.useState(""), [sa, ya] = F.useState("Cash Refund"), [Jn, lr] = F.useState(""), [ka, Er] = F.useState(false);
+    }), [Qt, Ot] = F.useState(false), [en, Bn] = F.useState("Patient unable to wait / Long queue"), [vn, fr] = F.useState(""), [sa, ya] = F.useState("Cash Refund"), [Jn, lr] = F.useState(""), [ka, Er] = F.useState(false);
     F.useEffect(() => {
       var _a3;
       if (Qt) {
@@ -43272,10 +43257,10 @@ Details: ${A.inner}`);
           const Gt = Number(((_c3 = J == null ? void 0 : J.billing) == null ? void 0 : _c3.totalPaid) || 0), gn = Jn === "" ? Gt : Math.min(Gt, Math.max(0, Number(Jn)));
           await Xt.cancelVisit(ct, {
             reason: en,
-            notes: wn,
+            notes: vn,
             refundMethod: sa,
             immediateRefundAmount: gn
-          }), _t(false), er();
+          }), Ot(false), er();
         } catch (Gt) {
           alert("Cancellation Failed: " + (Gt.message || "Unknown error"));
         } finally {
@@ -43414,7 +43399,7 @@ Details: ${A.inner}`);
         return;
       }
       Pr(), t && t(ct, Gt);
-    }, fn = ((_f = J == null ? void 0 : J.visit) == null ? void 0 : _f.tests) || [], _n = fn.filter((ct) => !ct.parentOrderId && !(ct.price === 0 && !ct.isProfile && fn.some((Gt) => Gt.isProfile)) && !q.includes(ct.orderId || ct.OrderId || ct.TestId || ct.testId)), sr = _n.reduce((ct, Gt) => ct + (Number(Gt.basePrice || Gt.price || Gt.Price) || 0), 0), In = Se.reduce((ct, Gt) => ct + (Number(Gt.basePrice || Gt.price || Gt.Price) || 0), 0), Kn = sr + In, Pn = f === "PrepaidPartner" || u;
+    }, fn = ((_f = J == null ? void 0 : J.visit) == null ? void 0 : _f.tests) || [], _n = fn.filter((ct) => !ct.parentOrderId && !(ct.price === 0 && !ct.isProfile && fn.some((Gt) => Gt.isProfile)) && !q.includes(ct.orderId || ct.OrderId || ct.TestId || ct.testId)), ar = _n.reduce((ct, Gt) => ct + (Number(Gt.basePrice || Gt.price || Gt.Price) || 0), 0), In = Se.reduce((ct, Gt) => ct + (Number(Gt.basePrice || Gt.price || Gt.Price) || 0), 0), Kn = ar + In, Pn = f === "PrepaidPartner" || u;
     let Dr = 0;
     if (oe == null ? void 0 : oe.remove) Dr = 0;
     else if (oe) {
@@ -43426,7 +43411,7 @@ Details: ${A.inner}`);
     } else Dr = ((_g2 = J == null ? void 0 : J.billing) == null ? void 0 : _g2.appliedDiscount) && Number((_h2 = J == null ? void 0 : J.billing) == null ? void 0 : _h2.discountAmount) || 0;
     const jr = Math.max(0, Kn - Dr), Ha = Pn ? 0 : Number(((_i = J == null ? void 0 : J.billing) == null ? void 0 : _i.totalPaid) ?? ((_j2 = J == null ? void 0 : J.billing) == null ? void 0 : _j2.netAmount) ?? 0), fi = Pn ? 0 : jr - Ha, _r = Se.length + q.length + (oe ? 1 : 0) + (Ee ? 1 : 0) + (Oe !== void 0 ? 1 : 0) + (Xe !== void 0 ? 1 : 0), Hr = () => {
       var _a3, _b2, _c3, _d3, _e3, _f2, _g3, _h3, _i2;
-      const ct = J == null ? void 0 : J.visit, Gt = at || (J == null ? void 0 : J.patient), gn = J == null ? void 0 : J.billing, Sn = Kn !== void 0 ? Kn : (gn == null ? void 0 : gn.grossAmount) || (gn == null ? void 0 : gn.netAmount) || 0, Ea = Dr !== void 0 ? Dr : (gn == null ? void 0 : gn.discountAmount) || 0, Sa = jr !== void 0 ? jr : (gn == null ? void 0 : gn.netAmount) || 0, Ja = Pn ? 0 : (gn == null ? void 0 : gn.totalPaid) !== void 0 ? Number(gn.totalPaid) : 0, li = Pn ? 0 : Math.max(0, Sa - Ja), es = f === "Corporate" || (ct == null ? void 0 : ct.billingType) === "Corporate" || !!(ct == null ? void 0 : ct.corporateAccountId), Ti = f === "Insurance" || (ct == null ? void 0 : ct.billingType) === "Insurance" || !!(ct == null ? void 0 : ct.insuranceCompanyId), Zs = Pn || !!(ct == null ? void 0 : ct.referralPartnerId) || Oe !== void 0, vs = ((_a3 = ct == null ? void 0 : ct.corporateAccount) == null ? void 0 : _a3.companyName) || ((_b2 = ct == null ? void 0 : ct.corporateAccount) == null ? void 0 : _b2.name) || (es ? "Corporate Client" : ""), jA = ((_c3 = ct == null ? void 0 : ct.corporateAccount) == null ? void 0 : _c3.corporateCode) || "", sA = (ct == null ? void 0 : ct.employeeId) || "", Fs = ((_d3 = ct == null ? void 0 : ct.insuranceCompany) == null ? void 0 : _d3.name) || (Ti ? "Insurance Provider" : ""), oA = ((_e3 = ct == null ? void 0 : ct.insuranceCompany) == null ? void 0 : _e3.tpaName) || "", ql = (ct == null ? void 0 : ct.policyNumber) || "", bo = (ct == null ? void 0 : ct.preAuthApprovalNumber) || "", ts = (ct == null ? void 0 : ct.insuranceCoPayAmount) || 0, nl = Oe !== void 0 ? Oe ? fe.find((Ua) => (Ua.referralPartnerId || Ua.id) === Oe) || (ct == null ? void 0 : ct.referralPartner) || ((_f2 = gn == null ? void 0 : gn.referral) == null ? void 0 : _f2.partner) : null : (ct == null ? void 0 : ct.referralPartner) || ((_g3 = gn == null ? void 0 : gn.referral) == null ? void 0 : _g3.partner), Fe = (nl == null ? void 0 : nl.name) || (nl == null ? void 0 : nl.displayName) || (Zs ? "Referral Partner" : "Self / Direct"), vn = (nl == null ? void 0 : nl.clinicName) || "", qa = (nl == null ? void 0 : nl.code) || "", ni = [
+      const ct = J == null ? void 0 : J.visit, Gt = at || (J == null ? void 0 : J.patient), gn = J == null ? void 0 : J.billing, Sn = Kn !== void 0 ? Kn : (gn == null ? void 0 : gn.grossAmount) || (gn == null ? void 0 : gn.netAmount) || 0, Ea = Dr !== void 0 ? Dr : (gn == null ? void 0 : gn.discountAmount) || 0, Sa = jr !== void 0 ? jr : (gn == null ? void 0 : gn.netAmount) || 0, Ja = Pn ? 0 : (gn == null ? void 0 : gn.totalPaid) !== void 0 ? Number(gn.totalPaid) : 0, li = Pn ? 0 : Math.max(0, Sa - Ja), es = f === "Corporate" || (ct == null ? void 0 : ct.billingType) === "Corporate" || !!(ct == null ? void 0 : ct.corporateAccountId), Ti = f === "Insurance" || (ct == null ? void 0 : ct.billingType) === "Insurance" || !!(ct == null ? void 0 : ct.insuranceCompanyId), Zs = Pn || !!(ct == null ? void 0 : ct.referralPartnerId) || Oe !== void 0, vs = ((_a3 = ct == null ? void 0 : ct.corporateAccount) == null ? void 0 : _a3.companyName) || ((_b2 = ct == null ? void 0 : ct.corporateAccount) == null ? void 0 : _b2.name) || (es ? "Corporate Client" : ""), jA = ((_c3 = ct == null ? void 0 : ct.corporateAccount) == null ? void 0 : _c3.corporateCode) || "", sA = (ct == null ? void 0 : ct.employeeId) || "", Fs = ((_d3 = ct == null ? void 0 : ct.insuranceCompany) == null ? void 0 : _d3.name) || (Ti ? "Insurance Provider" : ""), oA = ((_e3 = ct == null ? void 0 : ct.insuranceCompany) == null ? void 0 : _e3.tpaName) || "", ql = (ct == null ? void 0 : ct.policyNumber) || "", yo = (ct == null ? void 0 : ct.preAuthApprovalNumber) || "", ts = (ct == null ? void 0 : ct.insuranceCoPayAmount) || 0, nl = Oe !== void 0 ? Oe ? fe.find((Ua) => (Ua.referralPartnerId || Ua.id) === Oe) || (ct == null ? void 0 : ct.referralPartner) || ((_f2 = gn == null ? void 0 : gn.referral) == null ? void 0 : _f2.partner) : null : (ct == null ? void 0 : ct.referralPartner) || ((_g3 = gn == null ? void 0 : gn.referral) == null ? void 0 : _g3.partner), Fe = (nl == null ? void 0 : nl.name) || (nl == null ? void 0 : nl.displayName) || (Zs ? "Referral Partner" : "Self / Direct"), wn = (nl == null ? void 0 : nl.clinicName) || "", qa = (nl == null ? void 0 : nl.code) || "", ni = [
         ..._n,
         ...Se.map((Ua) => ({
           ...Ua,
@@ -43455,11 +43440,11 @@ Details: ${A.inner}`);
           insuranceCompanyName: Fs,
           insuranceTpaName: oA,
           policyNumber: ql,
-          preAuthApprovalNumber: bo,
+          preAuthApprovalNumber: yo,
           insuranceCoPayAmount: ts,
           isReferred: Zs,
           referralPartnerName: Fe,
-          referralPartnerClinic: vn,
+          referralPartnerClinic: wn,
           referralPartnerCode: qa,
           hasOutsourcedTests: io,
           outsourcedLabNames: Jr
@@ -43477,7 +43462,7 @@ Details: ${A.inner}`);
           insuranceCompanyName: Fs,
           insuranceTpaName: oA,
           policyNumber: ql,
-          preAuthNumber: bo,
+          preAuthNumber: yo,
           billingMode: f || (ct == null ? void 0 : ct.billingType) || "Standard"
         },
         items: ni.map((Ua, bd) => ({
@@ -43510,15 +43495,15 @@ Details: ${A.inner}`);
           name: ts.testName || ts.name || ts.testCode,
           price: Number(ts.basePrice || ts.price || ts.Price) || 0
         }))
-      ], Fs = Oe !== void 0 ? Oe ? fe.find((ts) => (ts.referralPartnerId || ts.id) === Oe) || (gn == null ? void 0 : gn.referralPartner) || ((_k3 = (_j3 = J == null ? void 0 : J.billing) == null ? void 0 : _j3.referral) == null ? void 0 : _k3.partner) : null : (gn == null ? void 0 : gn.referralPartner) || ((_m2 = (_l3 = J == null ? void 0 : J.billing) == null ? void 0 : _l3.referral) == null ? void 0 : _m2.partner), oA = Number((ce == null ? void 0 : ce.changeDue) || ((_n3 = J == null ? void 0 : J.billing) == null ? void 0 : _n3.changeDue) || 0), ql = Math.max(0, Number(Zs || 0) - Number(Ti || 0)), bo = Math.max(oA, ql);
+      ], Fs = Oe !== void 0 ? Oe ? fe.find((ts) => (ts.referralPartnerId || ts.id) === Oe) || (gn == null ? void 0 : gn.referralPartner) || ((_k3 = (_j3 = J == null ? void 0 : J.billing) == null ? void 0 : _j3.referral) == null ? void 0 : _k3.partner) : null : (gn == null ? void 0 : gn.referralPartner) || ((_m2 = (_l3 = J == null ? void 0 : J.billing) == null ? void 0 : _l3.referral) == null ? void 0 : _m2.partner), oA = Number((ce == null ? void 0 : ce.changeDue) || ((_n3 = J == null ? void 0 : J.billing) == null ? void 0 : _n3.changeDue) || 0), ql = Math.max(0, Number(Zs || 0) - Number(Ti || 0)), yo = Math.max(oA, ql);
       return {
         visitId: (gn == null ? void 0 : gn.visitId) || Re,
         token: Ja,
         isPrepaid: Pn || f === "PrepaidPartner",
         isInsurance: f === "Insurance",
-        changeDue: bo,
+        changeDue: yo,
         tenderedAmount: Number(B || (ce == null ? void 0 : ce.tenderedAmount) || 0),
-        isChangeRetainedAsDue: !!(M || (ce == null ? void 0 : ce.isChangeRetainedAsDue) || bo > 0),
+        isChangeRetainedAsDue: !!(M || (ce == null ? void 0 : ce.isChangeRetainedAsDue) || yo > 0),
         biller: {
           billedBy: jA,
           discountReason: vs
@@ -43538,7 +43523,7 @@ Details: ${A.inner}`);
           discountReason: vs,
           netAmount: Ti,
           totalPaid: Zs,
-          changeDue: bo,
+          changeDue: yo,
           tenderedAmount: Number(B || (ce == null ? void 0 : ce.tenderedAmount) || 0),
           paymentMethod: Pn ? "Corporate B2B Prepaid" : ((_o3 = J == null ? void 0 : J.billing) == null ? void 0 : _o3.paymentMethod) || x || "Cash"
         },
@@ -43579,7 +43564,7 @@ Details: ${A.inner}`);
           visitIds: [
             ct
           ]
-        }).then((Gt) => Ot(Gt)).catch((Gt) => console.warn("Could not load partner claim statement:", Gt)).finally(() => Un(false)));
+        }).then((Gt) => Pt(Gt)).catch((Gt) => console.warn("Could not load partner claim statement:", Gt)).finally(() => Un(false)));
       }
     }, [
       ie,
@@ -43929,11 +43914,11 @@ Details: ${A.inner}`);
       } finally {
         ft(false);
       }
-    }, $n = !!(J == null ? void 0 : J.patient), Mn = !!(J == null ? void 0 : J.visit), Hn = ((_k2 = J == null ? void 0 : J.billing) == null ? void 0 : _k2.netAmount) || 0, At = ((_l2 = J == null ? void 0 : J.billing) == null ? void 0 : _l2.totalPaid) || 0, wt = Math.max(0, Hn - At), sn = !!(((_m = J == null ? void 0 : J.visit) == null ? void 0 : _m.tests) && ((_n2 = J == null ? void 0 : J.visit) == null ? void 0 : _n2.tests.length) > 0 || ((_o2 = J == null ? void 0 : J.billing) == null ? void 0 : _o2.items) && ((_p2 = J == null ? void 0 : J.billing) == null ? void 0 : _p2.items.length) > 0 || ((_q2 = J == null ? void 0 : J.billing) == null ? void 0 : _q2.grossAmount) > 0 || Se && Se.length > 0);
+    }, Wn = !!(J == null ? void 0 : J.patient), Mn = !!(J == null ? void 0 : J.visit), Yn = ((_k2 = J == null ? void 0 : J.billing) == null ? void 0 : _k2.netAmount) || 0, At = ((_l2 = J == null ? void 0 : J.billing) == null ? void 0 : _l2.totalPaid) || 0, wt = Math.max(0, Yn - At), sn = !!(((_m = J == null ? void 0 : J.visit) == null ? void 0 : _m.tests) && ((_n2 = J == null ? void 0 : J.visit) == null ? void 0 : _n2.tests.length) > 0 || ((_o2 = J == null ? void 0 : J.billing) == null ? void 0 : _o2.items) && ((_p2 = J == null ? void 0 : J.billing) == null ? void 0 : _p2.items.length) > 0 || ((_q2 = J == null ? void 0 : J.billing) == null ? void 0 : _q2.grossAmount) > 0 || Se && Se.length > 0);
     sn || Se && Se.length > 0 || Oe !== void 0 || ((_r2 = J == null ? void 0 : J.visit) == null ? void 0 : _r2.referralPartnerId) || ((_s2 = J == null ? void 0 : J.visit) == null ? void 0 : _s2.id) || ((_t2 = J == null ? void 0 : J.visit) == null ? void 0 : _t2.visitId);
-    const jn = sn && wt === 0, gr = (((_u = J == null ? void 0 : J.billing) == null ? void 0 : _u.paymentStatus) === "PendingPayment" || ((_v = J == null ? void 0 : J.billing) == null ? void 0 : _v.paymentStatus) === "PartialPayment") && (wt > 0 || jn), Qr = (u || f === "PrepaidPartner") && !((_w2 = J == null ? void 0 : J.billing) == null ? void 0 : _w2.isLocked), ti = ((_x = J == null ? void 0 : J.billing) == null ? void 0 : _x.paymentStatus) === "Paid" || wt <= 0 && Hn > 0 || !!((_y = J == null ? void 0 : J.billing) == null ? void 0 : _y.isLocked), Ya = En !== null ? !En : !!ti, $r = !!ce || ti && !g, Ga = jr !== void 0 ? jr : ((_z2 = J == null ? void 0 : J.billing) == null ? void 0 : _z2.netAmount) || ((_A = J == null ? void 0 : J.billing) == null ? void 0 : _A.totalAmount) || 0, aa = (ce == null ? void 0 : ce.paidAmount) !== void 0 ? ce.paidAmount : Pn ? 0 : ((_B2 = J == null ? void 0 : J.billing) == null ? void 0 : _B2.totalPaid) !== void 0 ? Number(J.billing.totalPaid) : ti ? Ga : 0, da = Math.max(0, Ga - aa), Bi = Math.max(0, aa - Ga), ia = Math.max(0, Number((ce == null ? void 0 : ce.changeDue) || ((_C2 = J == null ? void 0 : J.billing) == null ? void 0 : _C2.changeDue) || 0), Bi), Oi = aa === 0 && da > 0;
+    const jn = sn && wt === 0, gr = (((_u = J == null ? void 0 : J.billing) == null ? void 0 : _u.paymentStatus) === "PendingPayment" || ((_v = J == null ? void 0 : J.billing) == null ? void 0 : _v.paymentStatus) === "PartialPayment") && (wt > 0 || jn), Qr = (u || f === "PrepaidPartner") && !((_w2 = J == null ? void 0 : J.billing) == null ? void 0 : _w2.isLocked), ti = ((_x = J == null ? void 0 : J.billing) == null ? void 0 : _x.paymentStatus) === "Paid" || wt <= 0 && Yn > 0 || !!((_y = J == null ? void 0 : J.billing) == null ? void 0 : _y.isLocked), Ya = En !== null ? !En : !!ti, Zr = !!ce || ti && !g, Ga = jr !== void 0 ? jr : ((_z2 = J == null ? void 0 : J.billing) == null ? void 0 : _z2.netAmount) || ((_A = J == null ? void 0 : J.billing) == null ? void 0 : _A.totalAmount) || 0, aa = (ce == null ? void 0 : ce.paidAmount) !== void 0 ? ce.paidAmount : Pn ? 0 : ((_B2 = J == null ? void 0 : J.billing) == null ? void 0 : _B2.totalPaid) !== void 0 ? Number(J.billing.totalPaid) : ti ? Ga : 0, da = Math.max(0, Ga - aa), Bi = Math.max(0, aa - Ga), ia = Math.max(0, Number((ce == null ? void 0 : ce.changeDue) || ((_C2 = J == null ? void 0 : J.billing) == null ? void 0 : _C2.changeDue) || 0), Bi), Oi = aa === 0 && da > 0;
     F.useEffect(() => {
-      if (!r || !$r) return;
+      if (!r || !Zr) return;
       const ct = setTimeout(() => {
         const Gt = document.getElementById("btn-doc-format-thermal");
         Gt && Gt.focus();
@@ -43941,7 +43926,7 @@ Details: ${A.inner}`);
       return () => clearTimeout(ct);
     }, [
       r,
-      $r
+      Zr
     ]);
     const Ur = Oe !== void 0 ? Oe ? fe.find((ct) => (ct.referralPartnerId || ct.id) === Oe) || ((_D2 = J == null ? void 0 : J.visit) == null ? void 0 : _D2.referralPartner) || ((_F2 = (_E2 = J == null ? void 0 : J.billing) == null ? void 0 : _E2.referral) == null ? void 0 : _F2.partner) : null : ((_G2 = J == null ? void 0 : J.visit) == null ? void 0 : _G2.referralPartner) || ((_I2 = (_H2 = J == null ? void 0 : J.billing) == null ? void 0 : _H2.referral) == null ? void 0 : _I2.partner), ur = Xe !== void 0 ? Xe ? fe.find((ct) => (ct.referralPartnerId || ct.id) === Xe) || ((_J2 = J == null ? void 0 : J.visit) == null ? void 0 : _J2.secondaryReferralPartner) || ((_L2 = (_K2 = J == null ? void 0 : J.billing) == null ? void 0 : _K2.referral) == null ? void 0 : _L2.secondaryPartner) : null : ((_M2 = J == null ? void 0 : J.visit) == null ? void 0 : _M2.secondaryReferralPartner) || ((_O2 = (_N2 = J == null ? void 0 : J.billing) == null ? void 0 : _N2.referral) == null ? void 0 : _O2.secondaryPartner), Ui = Ur ? Ur.displayName || Ur.name : ((_Q2 = (_P2 = J == null ? void 0 : J.billing) == null ? void 0 : _P2.referral) == null ? void 0 : _Q2.referrerText) || ((_R = J == null ? void 0 : J.visit) == null ? void 0 : _R.referringDoctorName) || "Direct / Self", Is = ur ? ur.displayName || ur.name : null, pi = F.useRef(null), [Eo, tl] = F.useState(1.35), [RA, iA] = F.useState(1);
     F.useEffect(() => {
@@ -43954,7 +43939,7 @@ Details: ${A.inner}`);
       };
       return ct(), window.addEventListener("resize", ct), () => window.removeEventListener("resize", ct);
     }, []), F.useEffect(() => {
-      if (!r || !$r) return;
+      if (!r || !Zr) return;
       const ct = () => {
         if (!pi.current) return;
         const Sn = pi.current.clientWidth, Ea = pi.current.clientHeight, Sa = Math.max(200, Sn - 24), Ja = Math.max(200, Ea - 32), li = Sa / 794, es = Ja / 1123, Ti = Math.max(0.42, Math.min(li, es));
@@ -43967,12 +43952,12 @@ Details: ${A.inner}`);
       };
     }, [
       r,
-      $r,
+      Zr,
       ie
     ]);
     const Vc = (oe == null ? void 0 : oe.remove) ? "" : (oe == null ? void 0 : oe.reason) || (oe == null ? void 0 : oe.name) || ((_T2 = (_S2 = J == null ? void 0 : J.billing) == null ? void 0 : _S2.appliedDiscount) == null ? void 0 : _T2.reason) || ((_V2 = (_U = J == null ? void 0 : J.billing) == null ? void 0 : _U.appliedDiscount) == null ? void 0 : _V2.name) || ((_W2 = J == null ? void 0 : J.billing) == null ? void 0 : _W2.discountReason) || ((_X2 = J == null ? void 0 : J.billing) == null ? void 0 : _X2.DiscountReason) || "";
     if (F.useEffect(() => {
-      if (!r || !$r) return;
+      if (!r || !Zr) return;
       const ct = (Gt) => {
         var _a3;
         if (Gt.key === "Enter" && !Gt.shiftKey && !Gt.ctrlKey && !Gt.metaKey) {
@@ -43988,13 +43973,13 @@ Details: ${A.inner}`);
       return window.addEventListener("keydown", ct), () => window.removeEventListener("keydown", ct);
     }, [
       r,
-      $r,
+      Zr,
       ie,
       Et,
       za
     ]), !r) return null;
     let Ms = "Identify Patient & Start Visit", eA = false;
-    if (!Mn && $n) Ms = "Add Tests to Proceed", eA = false;
+    if (!Mn && Wn) Ms = "Add Tests to Proceed", eA = false;
     else if (Mn) if (ti && !g) Ms = "Visit Complete (Close)", eA = true;
     else if (f === "Insurance") {
       const ct = ((_Y2 = J == null ? void 0 : J.visit) == null ? void 0 : _Y2.insuranceCoPayAmount) || 0;
@@ -44018,12 +44003,21 @@ Details: ${A.inner}`);
       eA = true;
     }
     else Ms = sn ? "Visit Complete (Close)" : "Add Tests to Proceed", eA = sn;
-    let To = "Registration";
-    return d && (To = ti ? "Visit Finalized & Print Dispatch" : "Resume Visit"), g && (To = "Visit Correction"), $r && (To = "Visit Finalized & Print Dispatch"), n.jsxs("div", {
+    let bo = "Registration";
+    return d && (bo = ti ? "Visit Finalized & Print Dispatch" : "Resume Visit"), g && (bo = "Visit Correction"), Zr && (bo = "Visit Finalized & Print Dispatch"), n.jsxs("div", {
       ref: A,
-      className: me("flex flex-col h-full overflow-hidden rounded-[24px] transition-[width,transform,opacity] duration-300 ease-out z-30 shadow-2xl", $n || g ? "absolute right-0 top-0 bottom-0 w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[86vw] xl:w-[85vw] 2xl:w-[85vw] max-w-[85vw]" : "absolute right-0 top-0 bottom-0 w-[96vw] sm:w-[92vw] md:w-[75vw] lg:w-[50vw] xl:w-[44vw] 2xl:w-[40vw] min-w-[580px] max-w-[880px]", Ir.panel),
+      className: me("flex flex-col h-full overflow-hidden rounded-[24px] transition-[width,transform,opacity] duration-300 ease-out z-30 shadow-2xl", Wn || g ? "absolute right-0 top-0 bottom-0 w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[86vw] xl:w-[85vw] 2xl:w-[85vw] max-w-[85vw]" : "absolute right-0 top-0 bottom-0 w-[96vw] sm:w-[92vw] md:w-[75vw] lg:w-[50vw] xl:w-[44vw] 2xl:w-[40vw] min-w-[580px] max-w-[880px]", Ir.panel),
       children: [
-        n.jsxs("div", {
+        (Wn || g) && !Zr ? n.jsx("button", {
+          type: "button",
+          tabIndex: 0,
+          onClick: er,
+          className: me("absolute right-4 top-3.5 z-40 p-2 rounded-full transition-all duration-200 active:scale-95 cursor-pointer", on ? "hover:bg-white/10 text-zinc-400 hover:text-white" : "hover:bg-slate-100 text-slate-400 hover:text-slate-700"),
+          title: "Close",
+          children: n.jsx(Hn, {
+            className: "w-5 h-5"
+          })
+        }) : n.jsxs("div", {
           className: me("h-13 sm:h-14 flex items-center justify-between px-5 sm:px-7 shrink-0 border-b border-black/[0.06] dark:border-white/[0.06]", Ir.header),
           children: [
             n.jsxs("div", {
@@ -44032,7 +44026,7 @@ Details: ${A.inner}`);
                 n.jsxs("h2", {
                   className: me("text-lg sm:text-xl font-bold tracking-normal flex items-baseline gap-2", Ir.title),
                   children: [
-                    To,
+                    bo,
                     (((_Z2 = J == null ? void 0 : J.visit) == null ? void 0 : _Z2.visitToken) || ((__2 = J == null ? void 0 : J.visit) == null ? void 0 : __2.token)) && n.jsxs("span", {
                       className: "text-xs font-mono font-bold text-slate-500 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800/80 px-2 py-0.5 rounded-full border border-slate-200/60 dark:border-zinc-700/60",
                       children: [
@@ -44042,7 +44036,7 @@ Details: ${A.inner}`);
                     })
                   ]
                 }),
-                ((_ba = J == null ? void 0 : J.visit) == null ? void 0 : _ba.visitId) && !g && !$r && n.jsxs("button", {
+                ((_ba = J == null ? void 0 : J.visit) == null ? void 0 : _ba.visitId) && !g && !Zr && n.jsxs("button", {
                   type: "button",
                   id: "btn-header-visit-correction",
                   onClick: () => o(J.visit.visitId),
@@ -44057,7 +44051,7 @@ Details: ${A.inner}`);
                     })
                   ]
                 }),
-                $r && n.jsx("span", {
+                Zr && n.jsx("span", {
                   className: me("inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border", f === "PrepaidPartner" ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800" : Oi || da > 0 ? "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border-amber-200 dark:border-amber-800" : "bg-[#EDF7F2] text-[#245E49] dark:bg-emerald-950/40 dark:text-emerald-300 border-[#CBE5D7] dark:border-emerald-800"),
                   children: f === "PrepaidPartner" ? n.jsxs(n.Fragment, {
                     children: [
@@ -44100,10 +44094,10 @@ Details: ${A.inner}`);
               ]
             }),
             n.jsx("button", {
-              tabIndex: $r ? -1 : 0,
+              tabIndex: Zr ? -1 : 0,
               onClick: er,
               className: me("p-2 rounded-full transition-all duration-200 active:scale-95 cursor-pointer", on ? "hover:bg-white/10 text-zinc-400 hover:text-white" : "hover:bg-slate-100 text-slate-400 hover:text-slate-700"),
-              children: n.jsx(Yn, {
+              children: n.jsx(Hn, {
                 className: "w-5 h-5"
               })
             })
@@ -44141,14 +44135,14 @@ Details: ${A.inner}`);
                   onClick: () => Me(null),
                   className: "p-1 hover:bg-slate-200 dark:hover:bg-zinc-700 rounded-lg transition-colors text-slate-500 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white shrink-0 cursor-pointer",
                   title: "Dismiss error",
-                  children: n.jsx(Yn, {
+                  children: n.jsx(Hn, {
                     className: "w-4 h-4"
                   })
                 })
               ]
             }),
             J && n.jsx(n.Fragment, {
-              children: !$n && !g ? n.jsx("div", {
+              children: !Wn && !g ? n.jsx("div", {
                 className: "relative h-full flex-1 min-h-0",
                 children: n.jsx(Oxe, {
                   snapshot: {
@@ -44160,7 +44154,7 @@ Details: ${A.inner}`);
                   onEditPatient: Wt,
                   isCorrectionIntent: g
                 })
-              }) : $r ? n.jsxs("div", {
+              }) : Zr ? n.jsxs("div", {
                 className: "p-3.5 sm:p-5 max-w-full mx-auto w-full flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-300",
                 style: RA < 1 ? {
                   zoom: RA
@@ -44208,7 +44202,7 @@ Details: ${A.inner}`);
                                     n.jsxs("button", {
                                       id: "btn-doc-format-thermal",
                                       "data-summary-nav": "true",
-                                      "data-initial-focus": $r ? "true" : void 0,
+                                      "data-initial-focus": Zr ? "true" : void 0,
                                       type: "button",
                                       onClick: () => ht("thermal"),
                                       onKeyDown: (ct) => {
@@ -44381,7 +44375,7 @@ Details: ${A.inner}`);
                                 }),
                                 ie === "claim" && n.jsx("div", {
                                   className: "w-full flex justify-center py-2 overflow-x-hidden",
-                                  children: Pt ? n.jsxs("div", {
+                                  children: Ht ? n.jsxs("div", {
                                     className: "flex flex-col items-center justify-center h-64 gap-2 text-slate-500",
                                     children: [
                                       n.jsx(Vn, {
@@ -45374,7 +45368,7 @@ Details: ${A.inner}`);
                           n.jsxs("div", {
                             className: "flex items-center gap-2",
                             children: [
-                              n.jsx(Fo, {
+                              n.jsx(To, {
                                 className: "w-4 h-4 text-synos-primary"
                               }),
                               n.jsx("span", {
@@ -45516,299 +45510,320 @@ Details: ${A.inner}`);
             })
           ]
         }),
-        !$r && n.jsx("div", {
-          className: me("py-2.5 px-4 flex justify-center shrink-0 border-t border-black/[0.06] dark:border-white/[0.06]", Ir.footer),
-          children: g ? n.jsxs("div", {
-            className: "flex items-center gap-2 w-full max-w-2xl mx-auto",
-            children: [
-              n.jsxs("button", {
-                type: "button",
-                onClick: () => Gr({
-                  isOpen: true,
-                  slotId: Pn ? "prepaid_patient_a4_slip" : "patient_tax_invoice",
-                  data: Hr(),
-                  title: Pn ? "Prepaid Patient Slip (A4)" : "Patient Tax Invoice (A4)"
-                }),
-                className: "py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-synos-primary/40 text-synos-primary bg-synos-primary/10 hover:bg-synos-primary/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1",
-                title: Pn ? "Preview & Print Prepaid Patient Slip (A4)" : "Preview & Print Full A4 Tax Invoice",
-                children: [
-                  n.jsx(Qi, {
-                    className: "w-4 h-4"
-                  }),
-                  " A4 Receipt"
-                ]
-              }),
-              n.jsxs("button", {
-                type: "button",
-                onClick: () => _e(),
-                className: "py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 hover:bg-emerald-100 transition-all active:scale-95 shadow-2xs shrink-0 cursor-pointer",
-                title: "Print Thermal 80mm POS Slip",
-                children: [
-                  n.jsx(La, {
-                    className: "w-4 h-4 text-emerald-700 dark:text-emerald-300"
-                  }),
-                  " Thermal"
-                ]
-              }),
-              n.jsxs("button", {
-                type: "button",
-                disabled: Ze,
-                onClick: ot,
-                className: "py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-indigo-500/40 text-indigo-500 dark:text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1",
-                title: "Print Doctor's Receivable Statement for Safe Keeping & Claims",
-                children: [
-                  Ze ? n.jsx(Vn, {
-                    className: "w-3.5 h-3.5 animate-spin"
-                  }) : n.jsx(Na, {
-                    className: "w-3.5 h-3.5"
-                  }),
-                  "Doc Claim"
-                ]
-              }),
-              _r > 0 ? n.jsxs(n.Fragment, {
-                children: [
-                  n.jsxs("button", {
-                    type: "button",
-                    onClick: () => _t(true),
-                    className: "py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-rose-500/30 text-rose-500 hover:bg-rose-500/10 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer",
-                    title: "Cancel this visit and automatically process refunds",
-                    children: [
-                      n.jsx(hp, {
-                        className: "w-3.5 h-3.5"
-                      }),
-                      n.jsx("span", {
-                        children: "Cancel Visit"
-                      })
-                    ]
-                  }),
-                  n.jsx("button", {
-                    type: "button",
-                    onClick: () => {
-                      le([]), pe([]), xe(null), ue(null), ye(void 0), ve(void 0), s(Re || i.visitId);
-                    },
-                    className: "py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-zinc-600/40 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer",
-                    title: "Discard staged edits and exit correction mode",
-                    children: "Cancel"
-                  }),
-                  n.jsxs("button", {
-                    type: "button",
-                    onClick: () => Nt(true),
-                    className: "flex-1 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer bg-synos-primary text-white hover:bg-synos-primary/90 focus:outline-none focus:ring-2 focus:ring-synos-primary",
-                    children: [
-                      n.jsx("span", {
-                        children: "Save Changes & Settle"
-                      }),
-                      n.jsx("span", {
-                        className: "px-2 py-0.5 rounded-full bg-white/20 text-xs font-mono font-bold",
-                        children: _r
-                      }),
-                      n.jsx(Ko, {
-                        className: "w-4 h-4"
-                      })
-                    ]
-                  })
-                ]
-              }) : n.jsxs(n.Fragment, {
-                children: [
-                  n.jsxs("button", {
-                    type: "button",
-                    onClick: () => _t(true),
-                    className: "py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 transition-all active:scale-95 shadow-2xs cursor-pointer shrink-0",
-                    title: "Cancel this visit and issue automated refund",
-                    children: [
-                      n.jsx(hp, {
-                        className: "w-4 h-4"
-                      }),
-                      n.jsx("span", {
-                        children: "Cancel Visit"
-                      })
-                    ]
-                  }),
-                  n.jsxs("button", {
-                    type: "button",
-                    onClick: () => s(Re || i.visitId),
-                    className: me("flex-1 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1", Ir.actionBtn.enabled),
-                    children: [
-                      "Close Editor ",
-                      n.jsx(yr, {
-                        className: "w-4 h-4"
-                      })
-                    ]
-                  })
-                ]
-              })
-            ]
-          }) : ti ? n.jsxs("div", {
-            className: "flex items-center gap-2.5 w-full max-w-2xl mx-auto",
-            children: [
-              n.jsxs("button", {
-                type: "button",
-                onClick: () => Gr({
-                  isOpen: true,
-                  slotId: Pn ? "prepaid_patient_a4_slip" : "patient_tax_invoice",
-                  data: Hr(),
-                  title: Pn ? "Prepaid Patient Slip (A4)" : "Patient Tax Invoice (A4)"
-                }),
-                className: "py-2.5 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 border border-sky-200 dark:border-sky-800 text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/30 hover:bg-sky-100 transition-all active:scale-95 shadow-2xs shrink-0 cursor-pointer",
-                title: Pn ? "Preview & Print Prepaid Patient Slip (A4)" : "Preview & Print Full A4 Tax Invoice",
-                children: [
-                  n.jsx(Qi, {
-                    className: "w-4 h-4"
-                  }),
-                  " A4 Receipt"
-                ]
-              }),
-              n.jsxs("button", {
-                type: "button",
-                onClick: () => Gr({
-                  isOpen: true,
-                  slotId: Pn ? "patient_thermal_prepaid_slip" : f === "Insurance" ? "insurance_thermal_receipt" : "patient_thermal_receipt",
-                  paperSize: "thermal80",
-                  data: Hr(),
-                  title: Pn ? "Prepaid Patient Slip (80mm)" : f === "Insurance" ? "Insurance Thermal Receipt (80mm)" : "Thermal Slip (80mm)"
-                }),
-                className: "py-2.5 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 hover:bg-emerald-100 transition-all active:scale-95 shadow-2xs shrink-0 cursor-pointer",
-                title: "Preview & Print Thermal 80mm POS Slip",
-                children: [
-                  n.jsx(La, {
-                    className: "w-4 h-4"
-                  }),
-                  " Thermal"
-                ]
-              }),
-              n.jsxs("button", {
-                type: "button",
-                disabled: Ze,
-                onClick: ot,
-                className: "py-2.5 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 hover:bg-indigo-100 transition-all active:scale-95 shadow-2xs shrink-0 cursor-pointer",
-                title: "Print Doctor's Receivable Statement for Safe Keeping & Claims",
-                children: [
-                  Ze ? n.jsx(Vn, {
-                    className: "w-4 h-4 animate-spin"
-                  }) : n.jsx(Na, {
-                    className: "w-4 h-4"
-                  }),
-                  "Doc Claim"
-                ]
-              }),
-              n.jsxs("button", {
-                type: "button",
-                onClick: () => o(Re || i.visitId),
-                className: "flex-1 py-3 px-5 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 border border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-all active:scale-95 shadow-2xs cursor-pointer",
-                title: "Enter Full-Fledged Visit Correction Mode to Add/Remove Tests or Alter Billing",
-                children: [
-                  n.jsx(Il, {
-                    className: "w-4 h-4 text-synos-primary"
-                  }),
-                  n.jsx("span", {
-                    children: "Visit Correction"
-                  })
-                ]
-              }),
-              n.jsxs("button", {
-                type: "button",
-                onClick: () => _t(true),
-                className: "py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 transition-all active:scale-95 shadow-2xs cursor-pointer shrink-0",
-                title: "Cancel this visit and issue automated refund",
-                children: [
-                  n.jsx(hp, {
-                    className: "w-4 h-4"
-                  }),
-                  n.jsx("span", {
-                    children: "Cancel Visit"
-                  })
-                ]
-              }),
-              n.jsx("button", {
-                type: "button",
-                onClick: er,
-                className: "py-3 px-5 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-1.5 border border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 transition-all active:scale-95 shadow-2xs cursor-pointer shrink-0",
-                children: "Close"
-              })
-            ]
-          }) : Mn && n.jsxs("div", {
-            className: "flex flex-col gap-2 w-full max-w-2xl mx-auto",
-            children: [
-              n.jsxs("div", {
-                className: "flex items-center gap-2.5 w-full",
-                children: [
-                  ((_ta = J == null ? void 0 : J.visit) == null ? void 0 : _ta.visitId) && ((((_ua = J == null ? void 0 : J.visit) == null ? void 0 : _ua.status) || "").toLowerCase() === "draft" || (((_va = J == null ? void 0 : J.visit) == null ? void 0 : _va.token) || "").toUpperCase().startsWith("D-") || (((_wa = J == null ? void 0 : J.visit) == null ? void 0 : _wa.visitToken) || "").toUpperCase().startsWith("D-") || (((_xa = J == null ? void 0 : J.visit) == null ? void 0 : _xa.token) || "").toUpperCase().startsWith("DRAFT") ? n.jsxs("button", {
-                    type: "button",
-                    id: "btn-delete-draft",
-                    onClick: As,
-                    disabled: Rr || se || Sr,
-                    className: "py-2.5 px-3.5 rounded-xl border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn disabled:opacity-50",
-                    title: "Permanently discard and delete this draft visit",
-                    children: [
-                      Rr ? n.jsx(Vn, {
-                        className: "w-3.5 h-3.5 animate-spin"
-                      }) : n.jsx(Wa, {
-                        className: "w-3.5 h-3.5"
-                      }),
-                      n.jsx("span", {
-                        children: "Delete Draft"
-                      })
-                    ]
-                  }) : n.jsxs(n.Fragment, {
-                    children: [
-                      n.jsxs("button", {
-                        type: "button",
-                        id: "btn-resume-visit-correction",
-                        onClick: () => o(J.visit.visitId),
-                        className: "py-2.5 px-3.5 rounded-xl border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/30 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn",
-                        title: "Open Visit Correction to amend tests, tariffs, or discounts with audit trail",
-                        children: [
-                          n.jsx(Yp, {
-                            className: "w-3.5 h-3.5"
-                          }),
-                          n.jsx("span", {
-                            children: "Visit Correction"
-                          })
-                        ]
-                      }),
-                      n.jsxs("button", {
-                        type: "button",
-                        id: "btn-cancel-visit",
-                        onClick: () => _t(true),
-                        className: "py-2.5 px-3.5 rounded-xl border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn",
-                        title: "Cancel this visit with reason and process refund",
-                        children: [
-                          n.jsx(hp, {
-                            className: "w-3.5 h-3.5"
-                          }),
-                          n.jsx("span", {
-                            children: "Cancel Visit"
-                          })
-                        ]
-                      })
-                    ]
-                  })),
-                  n.jsx("button", {
-                    id: "btn-unified-action",
-                    "data-action-submit": "true",
-                    onClick: bt,
-                    disabled: !eA || se || Sr,
-                    className: me("w-full py-2.5 px-5 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition-all active:scale-[0.99] shadow-sm synos-focus-btn", eA && !Sr ? Ir.actionBtn.enabled : Ir.actionBtn.disabled),
-                    children: se || Sr ? n.jsx(Vn, {
-                      className: "w-4 h-4 animate-spin"
-                    }) : n.jsxs(n.Fragment, {
+        !Zr && n.jsxs("div", {
+          className: me("py-2.5 px-5 sm:px-7 shrink-0 border-t border-black/[0.06] dark:border-white/[0.06] bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md", Wn || g ? "flex items-center justify-between" : "flex justify-center", Ir.footer),
+          children: [
+            (Wn || g) && n.jsxs("div", {
+              className: "flex items-center gap-2.5 sm:gap-3 shrink-0",
+              children: [
+                n.jsxs("h2", {
+                  className: "text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2",
+                  children: [
+                    n.jsx("span", {
+                      children: bo
+                    }),
+                    (((_ta = J == null ? void 0 : J.visit) == null ? void 0 : _ta.visitToken) || ((_ua = J == null ? void 0 : J.visit) == null ? void 0 : _ua.token)) && n.jsxs("span", {
+                      className: "text-xs font-mono font-bold text-slate-500 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full border border-slate-200/60 dark:border-zinc-700/60",
                       children: [
-                        Ms,
-                        " ",
+                        "#",
+                        ((_va = J == null ? void 0 : J.visit) == null ? void 0 : _va.visitToken) || ((_wa = J == null ? void 0 : J.visit) == null ? void 0 : _wa.token)
+                      ]
+                    })
+                  ]
+                }),
+                ((_xa = J == null ? void 0 : J.visit) == null ? void 0 : _xa.visitId) && !g && n.jsxs("button", {
+                  type: "button",
+                  id: "btn-footer-visit-correction",
+                  onClick: () => o(J.visit.visitId),
+                  className: "px-2.5 py-1 rounded-lg text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/50 border border-blue-200 dark:border-blue-800 flex items-center gap-1 transition-all active:scale-95 cursor-pointer shadow-2xs",
+                  title: "Open Visit Correction to amend tests, tariffs, or discounts with audit trail",
+                  children: [
+                    n.jsx(Yp, {
+                      className: "w-3.5 h-3.5"
+                    }),
+                    n.jsx("span", {
+                      children: "Visit Correction"
+                    })
+                  ]
+                }),
+                n.jsx("div", {
+                  className: "h-5 w-px bg-slate-300 dark:bg-zinc-700 mx-1 hidden sm:block"
+                })
+              ]
+            }),
+            g ? n.jsxs("div", {
+              className: "flex items-center gap-2 shrink-0",
+              children: [
+                n.jsxs("button", {
+                  type: "button",
+                  onClick: () => Gr({
+                    isOpen: true,
+                    slotId: Pn ? "prepaid_patient_a4_slip" : "patient_tax_invoice",
+                    data: Hr(),
+                    title: Pn ? "Prepaid Patient Slip (A4)" : "Patient Tax Invoice (A4)"
+                  }),
+                  className: "py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-synos-primary/40 text-synos-primary bg-synos-primary/10 hover:bg-synos-primary/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1",
+                  title: Pn ? "Preview & Print Prepaid Patient Slip (A4)" : "Preview & Print Full A4 Tax Invoice",
+                  children: [
+                    n.jsx(Qi, {
+                      className: "w-4 h-4"
+                    }),
+                    " A4 Receipt"
+                  ]
+                }),
+                n.jsxs("button", {
+                  type: "button",
+                  onClick: () => _e(),
+                  className: "py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/30 hover:bg-emerald-100 transition-all active:scale-95 shadow-2xs shrink-0 cursor-pointer",
+                  title: "Print Thermal 80mm POS Slip",
+                  children: [
+                    n.jsx(La, {
+                      className: "w-4 h-4 text-emerald-700 dark:text-emerald-300"
+                    }),
+                    " Thermal"
+                  ]
+                }),
+                n.jsxs("button", {
+                  type: "button",
+                  disabled: Ze,
+                  onClick: ot,
+                  className: "py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-indigo-500/40 text-indigo-500 dark:text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/20 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1",
+                  title: "Print Doctor's Receivable Statement for Safe Keeping & Claims",
+                  children: [
+                    Ze ? n.jsx(Vn, {
+                      className: "w-3.5 h-3.5 animate-spin"
+                    }) : n.jsx(Na, {
+                      className: "w-3.5 h-3.5"
+                    }),
+                    "Doc Claim"
+                  ]
+                }),
+                _r > 0 ? n.jsxs(n.Fragment, {
+                  children: [
+                    n.jsxs("button", {
+                      type: "button",
+                      onClick: () => Ot(true),
+                      className: "py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-rose-500/30 text-rose-500 hover:bg-rose-500/10 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer",
+                      title: "Cancel this visit and automatically process refunds",
+                      children: [
+                        n.jsx(hp, {
+                          className: "w-3.5 h-3.5"
+                        }),
+                        n.jsx("span", {
+                          children: "Cancel Visit"
+                        })
+                      ]
+                    }),
+                    n.jsx("button", {
+                      type: "button",
+                      onClick: () => {
+                        le([]), pe([]), xe(null), ue(null), ye(void 0), ve(void 0), s(Re || i.visitId);
+                      },
+                      className: "py-2.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 border border-zinc-600/40 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all active:scale-95 shadow-sm shrink-0 cursor-pointer",
+                      title: "Discard staged edits and exit correction mode",
+                      children: "Cancel"
+                    }),
+                    n.jsxs("button", {
+                      type: "button",
+                      onClick: () => Nt(true),
+                      className: "py-2.5 px-5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer bg-synos-primary text-white hover:bg-synos-primary/90 focus:outline-none focus:ring-2 focus:ring-synos-primary",
+                      children: [
+                        n.jsx("span", {
+                          children: "Save Changes & Settle"
+                        }),
+                        n.jsx("span", {
+                          className: "px-2 py-0.5 rounded-full bg-white/20 text-xs font-mono font-bold",
+                          children: _r
+                        }),
                         n.jsx(Ko, {
                           className: "w-4 h-4"
                         })
                       ]
                     })
-                  })
-                ]
-              }),
-              Qr && !(((_za = (_ya = J == null ? void 0 : J.billing) == null ? void 0 : _ya.referral) == null ? void 0 : _za.partner) || ((_Ba = (_Aa = J == null ? void 0 : J.billing) == null ? void 0 : _Aa.referral) == null ? void 0 : _Ba.draft)) && n.jsx("p", {
-                className: "text-xs text-amber-500 dark:text-amber-400 font-medium text-center",
-                children: "* Please select a Referral Partner above (Who collected payment outside?)"
-              })
-            ]
-          })
+                  ]
+                }) : n.jsxs(n.Fragment, {
+                  children: [
+                    n.jsxs("button", {
+                      type: "button",
+                      onClick: () => Ot(true),
+                      className: "py-2.5 px-3.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 transition-all active:scale-95 shadow-2xs cursor-pointer shrink-0",
+                      title: "Cancel this visit and issue automated refund",
+                      children: [
+                        n.jsx(hp, {
+                          className: "w-4 h-4"
+                        }),
+                        n.jsx("span", {
+                          children: "Cancel Visit"
+                        })
+                      ]
+                    }),
+                    n.jsxs("button", {
+                      type: "button",
+                      onClick: () => s(Re || i.visitId),
+                      className: me("py-2.5 px-5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1", Ir.actionBtn.enabled),
+                      children: [
+                        "Close Editor ",
+                        n.jsx(yr, {
+                          className: "w-4 h-4"
+                        })
+                      ]
+                    })
+                  ]
+                })
+              ]
+            }) : ti ? n.jsxs("div", {
+              className: "flex items-center gap-2.5 shrink-0",
+              children: [
+                n.jsxs("button", {
+                  type: "button",
+                  onClick: () => Gr({
+                    isOpen: true,
+                    slotId: Pn ? "prepaid_patient_a4_slip" : "patient_tax_invoice",
+                    data: Hr(),
+                    title: Pn ? "Prepaid Patient Slip (A4)" : "Patient Tax Invoice (A4)"
+                  }),
+                  className: "py-2.5 px-3.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-sky-200 dark:border-sky-800 text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/30 hover:bg-sky-100 transition-all active:scale-95 shadow-2xs shrink-0 cursor-pointer",
+                  title: Pn ? "Preview & Print Prepaid Patient Slip (A4)" : "Preview & Print Full A4 Tax Invoice",
+                  children: [
+                    n.jsx(Qi, {
+                      className: "w-4 h-4"
+                    }),
+                    " A4 Receipt"
+                  ]
+                }),
+                n.jsxs("button", {
+                  type: "button",
+                  onClick: () => Gr({
+                    isOpen: true,
+                    slotId: Pn ? "patient_thermal_prepaid_slip" : f === "Insurance" ? "insurance_thermal_receipt" : "patient_thermal_receipt",
+                    paperSize: "thermal80",
+                    data: Hr(),
+                    title: Pn ? "Prepaid Patient Slip (80mm)" : f === "Insurance" ? "Insurance Thermal Receipt (80mm)" : "Thermal Slip (80mm)"
+                  }),
+                  className: "py-2.5 px-3.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 hover:bg-emerald-100 transition-all active:scale-95 shadow-2xs shrink-0 cursor-pointer",
+                  title: "Preview & Print Thermal 80mm POS Slip",
+                  children: [
+                    n.jsx(La, {
+                      className: "w-4 h-4"
+                    }),
+                    " Thermal"
+                  ]
+                }),
+                n.jsxs("button", {
+                  type: "button",
+                  disabled: Ze,
+                  onClick: ot,
+                  className: "py-2.5 px-3.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 hover:bg-indigo-100 transition-all active:scale-95 shadow-2xs shrink-0 cursor-pointer",
+                  title: "Print Doctor's Receivable Statement for Safe Keeping & Claims",
+                  children: [
+                    Ze ? n.jsx(Vn, {
+                      className: "w-3.5 h-3.5 animate-spin"
+                    }) : n.jsx(Na, {
+                      className: "w-3.5 h-3.5"
+                    }),
+                    "Doc Claim"
+                  ]
+                }),
+                n.jsxs("button", {
+                  type: "button",
+                  onClick: () => o(Re || i.visitId),
+                  className: "py-2.5 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-all active:scale-95 shadow-2xs cursor-pointer",
+                  title: "Enter Full-Fledged Visit Correction Mode to Add/Remove Tests or Alter Billing",
+                  children: [
+                    n.jsx(Il, {
+                      className: "w-3.5 h-3.5 text-synos-primary"
+                    }),
+                    n.jsx("span", {
+                      children: "Visit Correction"
+                    })
+                  ]
+                }),
+                n.jsxs("button", {
+                  type: "button",
+                  onClick: () => Ot(true),
+                  className: "py-2.5 px-3.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 transition-all active:scale-95 shadow-2xs cursor-pointer shrink-0",
+                  title: "Cancel this visit and issue automated refund",
+                  children: [
+                    n.jsx(hp, {
+                      className: "w-4 h-4"
+                    }),
+                    n.jsx("span", {
+                      children: "Cancel Visit"
+                    })
+                  ]
+                }),
+                n.jsx("button", {
+                  type: "button",
+                  onClick: er,
+                  className: "py-2.5 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 transition-all active:scale-95 shadow-2xs cursor-pointer shrink-0",
+                  children: "Close"
+                })
+              ]
+            }) : n.jsxs("div", {
+              className: "flex flex-col items-end gap-1 shrink-0",
+              children: [
+                n.jsxs("div", {
+                  className: "flex items-center gap-2.5",
+                  children: [
+                    ((_ya = J == null ? void 0 : J.visit) == null ? void 0 : _ya.visitId) && ((((_za = J == null ? void 0 : J.visit) == null ? void 0 : _za.status) || "").toLowerCase() === "draft" || (((_Aa = J == null ? void 0 : J.visit) == null ? void 0 : _Aa.token) || "").toUpperCase().startsWith("D-") || (((_Ba = J == null ? void 0 : J.visit) == null ? void 0 : _Ba.visitToken) || "").toUpperCase().startsWith("D-") || (((_Ca = J == null ? void 0 : J.visit) == null ? void 0 : _Ca.token) || "").toUpperCase().startsWith("DRAFT") ? n.jsxs("button", {
+                      type: "button",
+                      id: "btn-delete-draft",
+                      onClick: As,
+                      disabled: Rr || se || Sr,
+                      className: "py-2.5 px-3.5 rounded-xl border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn disabled:opacity-50",
+                      title: "Permanently discard and delete this draft visit",
+                      children: [
+                        Rr ? n.jsx(Vn, {
+                          className: "w-3.5 h-3.5 animate-spin"
+                        }) : n.jsx(Wa, {
+                          className: "w-3.5 h-3.5"
+                        }),
+                        n.jsx("span", {
+                          children: "Delete Draft"
+                        })
+                      ]
+                    }) : n.jsxs("button", {
+                      type: "button",
+                      id: "btn-cancel-visit",
+                      onClick: () => Ot(true),
+                      className: "py-2.5 px-3.5 rounded-xl border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn",
+                      title: "Cancel this visit with reason and process refund",
+                      children: [
+                        n.jsx(hp, {
+                          className: "w-3.5 h-3.5"
+                        }),
+                        n.jsx("span", {
+                          children: "Cancel Visit"
+                        })
+                      ]
+                    })),
+                    n.jsx("button", {
+                      id: "btn-unified-action",
+                      "data-action-submit": "true",
+                      onClick: bt,
+                      disabled: !eA || se || Sr,
+                      className: me("py-2.5 px-6 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.99] shadow-sm synos-focus-btn min-w-[200px]", eA && !Sr ? Ir.actionBtn.enabled : Ir.actionBtn.disabled),
+                      children: se || Sr ? n.jsx(Vn, {
+                        className: "w-4 h-4 animate-spin"
+                      }) : n.jsxs(n.Fragment, {
+                        children: [
+                          Ms,
+                          " ",
+                          n.jsx(Ko, {
+                            className: "w-4 h-4"
+                          })
+                        ]
+                      })
+                    })
+                  ]
+                }),
+                Qr && !(((_Ea = (_Da = J == null ? void 0 : J.billing) == null ? void 0 : _Da.referral) == null ? void 0 : _Ea.partner) || ((_Ga = (_Fa = J == null ? void 0 : J.billing) == null ? void 0 : _Fa.referral) == null ? void 0 : _Ga.draft)) && n.jsx("p", {
+                  className: "text-xs text-amber-500 dark:text-amber-400 font-medium text-right",
+                  children: "* Please select a Referral Partner above (Who collected payment outside?)"
+                })
+              ]
+            })
+          ]
         }),
         zr.isOpen && zr.data && n.jsx(Vl, {
           isOpen: zr.isOpen,
@@ -45816,7 +45831,7 @@ Details: ${A.inner}`);
             isOpen: false,
             data: null
           }),
-          title: zr.title || `Patient Tax Invoice - ${((_Da = (_Ca = zr.data) == null ? void 0 : _Ca.patient) == null ? void 0 : _Da.name) || ""}`,
+          title: zr.title || `Patient Tax Invoice - ${((_Ia = (_Ha = zr.data) == null ? void 0 : _Ha.patient) == null ? void 0 : _Ia.name) || ""}`,
           defaultLetterheadMode: "digital",
           paperSize: zr.paperSize || "a4",
           children: n.jsx(qA, {
@@ -45927,7 +45942,7 @@ Details: ${A.inner}`);
                     type: "button",
                     onClick: () => we(false),
                     className: "p-1 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors",
-                    children: n.jsx(Yn, {
+                    children: n.jsx(Hn, {
                       className: "w-4 h-4"
                     })
                   })
@@ -46135,7 +46150,7 @@ Details: ${A.inner}`);
                             className: "text-xs text-zinc-500 mt-1 font-mono",
                             children: [
                               "Token: ",
-                              ((_Ea = J == null ? void 0 : J.visit) == null ? void 0 : _Ea.token) || "N/A"
+                              ((_Ja = J == null ? void 0 : J.visit) == null ? void 0 : _Ja.token) || "N/A"
                             ]
                           })
                         ]
@@ -46146,7 +46161,7 @@ Details: ${A.inner}`);
                     type: "button",
                     onClick: () => Nt(false),
                     className: "p-1 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer",
-                    children: n.jsx(Yn, {
+                    children: n.jsx(Hn, {
                       className: "w-4 h-4"
                     })
                   })
@@ -46356,7 +46371,7 @@ Details: ${A.inner}`);
                       })
                     ]
                   }),
-                  ((_Ga = (_Fa = J == null ? void 0 : J.visit) == null ? void 0 : _Fa.reports) == null ? void 0 : _Ga.some((ct) => ct.status === "Signed" || ct.status === "ManualVerified")) && n.jsxs("div", {
+                  ((_La = (_Ka = J == null ? void 0 : J.visit) == null ? void 0 : _Ka.reports) == null ? void 0 : _La.some((ct) => ct.status === "Signed" || ct.status === "ManualVerified")) && n.jsxs("div", {
                     className: "p-3 rounded-xl border border-purple-500/30 bg-purple-50/70 dark:bg-purple-950/30 space-y-1 text-purple-700 dark:text-purple-300",
                     children: [
                       n.jsx("div", {
@@ -46700,7 +46715,7 @@ Details: ${A.inner}`);
                               "Token: ",
                               n.jsx("span", {
                                 className: "font-mono font-bold text-zinc-700 dark:text-zinc-200",
-                                children: ((_Ha = J == null ? void 0 : J.visit) == null ? void 0 : _Ha.token) || ((_Ia = J == null ? void 0 : J.visit) == null ? void 0 : _Ia.visitToken) || "WAIT"
+                                children: ((_Ma = J == null ? void 0 : J.visit) == null ? void 0 : _Ma.token) || ((_Na = J == null ? void 0 : J.visit) == null ? void 0 : _Na.visitToken) || "WAIT"
                               })
                             ]
                           })
@@ -46710,9 +46725,9 @@ Details: ${A.inner}`);
                   }),
                   n.jsx("button", {
                     type: "button",
-                    onClick: () => _t(false),
+                    onClick: () => Ot(false),
                     className: "p-1 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer",
-                    children: n.jsx(Yn, {
+                    children: n.jsx(Hn, {
                       className: "w-4 h-4"
                     })
                   })
@@ -46745,7 +46760,7 @@ Details: ${A.inner}`);
                         className: "font-mono font-bold",
                         children: [
                           "\u20B9",
-                          Number(((_Ja = J == null ? void 0 : J.billing) == null ? void 0 : _Ja.netAmount) || 0).toLocaleString()
+                          Number(((_Oa = J == null ? void 0 : J.billing) == null ? void 0 : _Oa.netAmount) || 0).toLocaleString()
                         ]
                       })
                     ]
@@ -46761,14 +46776,14 @@ Details: ${A.inner}`);
                         className: "font-mono font-black text-sm text-rose-600 dark:text-rose-400",
                         children: [
                           "\u20B9",
-                          Number(((_Ka = J == null ? void 0 : J.billing) == null ? void 0 : _Ka.totalPaid) || 0).toLocaleString()
+                          Number(((_Pa = J == null ? void 0 : J.billing) == null ? void 0 : _Pa.totalPaid) || 0).toLocaleString()
                         ]
                       })
                     ]
                   })
                 ]
               }),
-              Number(((_La = J == null ? void 0 : J.billing) == null ? void 0 : _La.totalPaid) || 0) > 0 && n.jsxs("div", {
+              Number(((_Qa = J == null ? void 0 : J.billing) == null ? void 0 : _Qa.totalPaid) || 0) > 0 && n.jsxs("div", {
                 className: "p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 space-y-2.5",
                 children: [
                   n.jsxs("div", {
@@ -46813,7 +46828,7 @@ Details: ${A.inner}`);
                           n.jsx("input", {
                             type: "number",
                             min: "0",
-                            max: Number(((_Ma = J == null ? void 0 : J.billing) == null ? void 0 : _Ma.totalPaid) || 0),
+                            max: Number(((_Ra = J == null ? void 0 : J.billing) == null ? void 0 : _Ra.totalPaid) || 0),
                             value: Jn,
                             onChange: (ct) => lr(ct.target.value),
                             className: me("w-full pl-7 pr-3 py-1.5 text-xs font-bold rounded-lg border outline-none font-mono", on ? "bg-zinc-950 border-amber-500/40 text-white focus:border-amber-400" : "bg-white border-amber-300 text-slate-900 focus:border-amber-500")
@@ -46837,7 +46852,7 @@ Details: ${A.inner}`);
                       })
                     ]
                   }),
-                  Number(((_Na = J == null ? void 0 : J.billing) == null ? void 0 : _Na.totalPaid) || 0) > Number(Jn || 0) && n.jsxs("div", {
+                  Number(((_Sa = J == null ? void 0 : J.billing) == null ? void 0 : _Sa.totalPaid) || 0) > Number(Jn || 0) && n.jsxs("div", {
                     className: "text-[11px] font-medium text-amber-800 dark:text-amber-200 flex items-center justify-between pt-1 border-t border-amber-500/20",
                     children: [
                       n.jsx("span", {
@@ -46847,7 +46862,7 @@ Details: ${A.inner}`);
                         className: "font-mono font-bold text-rose-600 dark:text-rose-400",
                         children: [
                           "\u20B9",
-                          (Number(((_Oa = J == null ? void 0 : J.billing) == null ? void 0 : _Oa.totalPaid) || 0) - Number(Jn || 0)).toLocaleString()
+                          (Number(((_Ta = J == null ? void 0 : J.billing) == null ? void 0 : _Ta.totalPaid) || 0) - Number(Jn || 0)).toLocaleString()
                         ]
                       })
                     ]
@@ -46894,7 +46909,7 @@ Details: ${A.inner}`);
                     children: "Administrative Notes (Optional)"
                   }),
                   n.jsx("textarea", {
-                    value: wn,
+                    value: vn,
                     onChange: (ct) => fr(ct.target.value),
                     placeholder: "Additional audit notes or remarks...",
                     className: me("w-full px-3 py-2 text-xs rounded-xl border outline-none font-medium min-h-[50px] resize-none", on ? "bg-black border-zinc-700 text-white focus:border-zinc-500" : "bg-white border-zinc-300 text-zinc-900 focus:border-zinc-900")
@@ -46907,7 +46922,7 @@ Details: ${A.inner}`);
                   n.jsx("button", {
                     type: "button",
                     disabled: ka,
-                    onClick: () => _t(false),
+                    onClick: () => Ot(false),
                     className: "px-4 py-2 rounded-xl text-xs font-semibold text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors cursor-pointer",
                     children: "Keep Visit"
                   }),
@@ -46923,7 +46938,7 @@ Details: ${A.inner}`);
                         className: "w-4 h-4"
                       }),
                       n.jsx("span", {
-                        children: Number(((_Pa = J == null ? void 0 : J.billing) == null ? void 0 : _Pa.totalPaid) || 0) > 0 ? Number(Jn || 0) === 0 ? `Cancel & Queue Full Refund Later (\u20B9${Number(((_Qa = J == null ? void 0 : J.billing) == null ? void 0 : _Qa.totalPaid) || 0).toLocaleString()})` : Number(Jn || 0) < Number(((_Ra = J == null ? void 0 : J.billing) == null ? void 0 : _Ra.totalPaid) || 0) ? `Pay \u20B9${Number(Jn || 0).toLocaleString()} & Queue \u20B9${(Number(((_Sa = J == null ? void 0 : J.billing) == null ? void 0 : _Sa.totalPaid) || 0) - Number(Jn || 0)).toLocaleString()} Later` : `Cancel & Refund \u20B9${Number(((_Ta = J == null ? void 0 : J.billing) == null ? void 0 : _Ta.totalPaid) || 0).toLocaleString()}` : "Confirm Cancellation"
+                        children: Number(((_Ua = J == null ? void 0 : J.billing) == null ? void 0 : _Ua.totalPaid) || 0) > 0 ? Number(Jn || 0) === 0 ? `Cancel & Queue Full Refund Later (\u20B9${Number(((_Va = J == null ? void 0 : J.billing) == null ? void 0 : _Va.totalPaid) || 0).toLocaleString()})` : Number(Jn || 0) < Number(((_Wa = J == null ? void 0 : J.billing) == null ? void 0 : _Wa.totalPaid) || 0) ? `Pay \u20B9${Number(Jn || 0).toLocaleString()} & Queue \u20B9${(Number(((_Xa = J == null ? void 0 : J.billing) == null ? void 0 : _Xa.totalPaid) || 0) - Number(Jn || 0)).toLocaleString()} Later` : `Cancel & Refund \u20B9${Number(((_Ya = J == null ? void 0 : J.billing) == null ? void 0 : _Ya.totalPaid) || 0).toLocaleString()}` : "Confirm Cancellation"
                       })
                     ]
                   })
@@ -47266,7 +47281,7 @@ Details: ${A.inner}`);
                   onClick: e,
                   className: me("p-1.5 sm:p-2 rounded-full transition-all duration-200 active:scale-95 cursor-pointer shrink-0", o ? "hover:bg-white/10 text-zinc-400 hover:text-white" : "hover:bg-slate-100 text-slate-400 hover:text-slate-700"),
                   title: "Close Terminal (Esc)",
-                  children: n.jsx(Yn, {
+                  children: n.jsx(Hn, {
                     className: "w-5 h-5"
                   })
                 })
@@ -47293,7 +47308,7 @@ Details: ${A.inner}`);
                     onClick: () => c("history"),
                     className: me("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer", l === "history" ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-xs font-extrabold" : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"),
                     children: [
-                      n.jsx(Fo, {
+                      n.jsx(To, {
                         className: "w-3.5 h-3.5"
                       }),
                       n.jsx("span", {
@@ -47667,7 +47682,7 @@ Details: ${A.inner}`);
                                           },
                                           className: "p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-700 text-slate-400 hover:text-rose-500 transition-colors cursor-pointer",
                                           title: "Change Supplier",
-                                          children: n.jsx(Yn, {
+                                          children: n.jsx(Hn, {
                                             className: "w-4 h-4"
                                           })
                                         })
@@ -47928,7 +47943,7 @@ Details: ${A.inner}`);
                                 {
                                   id: "Cash",
                                   label: "Cash Drawer",
-                                  icon: Us
+                                  icon: Gs
                                 },
                                 {
                                   id: "UPI",
@@ -48336,7 +48351,7 @@ Details: ${A.inner}`);
                         }),
                         n.jsx("div", {
                           className: "p-2.5 rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20",
-                          children: n.jsx(Us, {
+                          children: n.jsx(Gs, {
                             className: "w-4 h-4"
                           })
                         })
@@ -48724,7 +48739,7 @@ Details: ${A.inner}`);
                   n.jsx("button", {
                     onClick: () => te(null),
                     className: "p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-zinc-800",
-                    children: n.jsx(Yn, {
+                    children: n.jsx(Hn, {
                       className: "w-4 h-4 text-zinc-400"
                     })
                   })
@@ -48876,7 +48891,7 @@ Details: ${A.inner}`);
                   n.jsx("button", {
                     onClick: () => J(null),
                     className: "p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-zinc-800",
-                    children: n.jsx(Yn, {
+                    children: n.jsx(Hn, {
                       className: "w-4 h-4 text-zinc-400"
                     })
                   })
@@ -49259,7 +49274,7 @@ Details: ${A.inner}`);
                   onClick: e,
                   className: me("p-1.5 sm:p-2 rounded-full transition-all duration-200 active:scale-95 cursor-pointer shrink-0", o ? "hover:bg-white/10 text-zinc-400 hover:text-white" : "hover:bg-slate-100 text-slate-400 hover:text-slate-700"),
                   title: "Close Terminal (Esc)",
-                  children: n.jsx(Yn, {
+                  children: n.jsx(Hn, {
                     className: "w-5 h-5"
                   })
                 })
@@ -49291,7 +49306,7 @@ Details: ${A.inner}`);
                       onClick: () => c("history"),
                       className: me("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer", l === "history" ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs font-bold border border-slate-200/80" : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"),
                       children: [
-                        n.jsx(Fo, {
+                        n.jsx(To, {
                           className: "w-3.5 h-3.5 text-blue-600"
                         }),
                         n.jsx("span", {
@@ -50258,7 +50273,7 @@ Details: ${A.inner}`);
                                       {
                                         id: "Cash",
                                         label: "Cash Drawer",
-                                        icon: Us,
+                                        icon: Gs,
                                         desc: "Adds to counter cash"
                                       },
                                       {
@@ -51005,7 +51020,7 @@ Details: ${A.inner}`);
                   type: "button",
                   onClick: r,
                   className: "p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 cursor-pointer",
-                  children: n.jsx(Yn, {
+                  children: n.jsx(Hn, {
                     className: "w-5 h-5"
                   })
                 })
@@ -51102,7 +51117,7 @@ Details: ${A.inner}`);
                 }),
                 n.jsx("div", {
                   className: "p-3 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400",
-                  children: n.jsx(Us, {
+                  children: n.jsx(Gs, {
                     className: "w-6 h-6"
                   })
                 })
@@ -51329,7 +51344,7 @@ Details: ${A.inner}`);
                               n.jsx("span", {
                                 children: Ce ? "Disburse Change" : "Disburse Refund"
                               }),
-                              n.jsx(jo, {
+                              n.jsx(Mo, {
                                 className: "w-3.5 h-3.5"
                               })
                             ]
@@ -51406,7 +51421,7 @@ Details: ${A.inner}`);
                     type: "button",
                     onClick: () => p(null),
                     className: "p-1 rounded-lg text-slate-400 hover:text-slate-600 cursor-pointer",
-                    children: n.jsx(Yn, {
+                    children: n.jsx(Hn, {
                       className: "w-4 h-4"
                     })
                   })
@@ -51519,7 +51534,7 @@ Details: ${A.inner}`);
                         onClick: () => B("Cash"),
                         className: me("p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-all", C === "Cash" ? "bg-emerald-600 text-white border-emerald-600 shadow-xs" : "bg-slate-50 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-700"),
                         children: [
-                          n.jsx(Us, {
+                          n.jsx(Gs, {
                             className: "w-4 h-4"
                           }),
                           n.jsx("span", {
@@ -51628,7 +51643,7 @@ Details: ${A.inner}`);
                     type: "button",
                     onClick: () => G(null),
                     className: "p-1 rounded-lg text-slate-400 hover:text-slate-600 cursor-pointer",
-                    children: n.jsx(Yn, {
+                    children: n.jsx(Hn, {
                       className: "w-4 h-4"
                     })
                   })
@@ -51827,7 +51842,7 @@ Details: ${A.inner}`);
                 }),
                 n.jsx("div", {
                   className: "p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20",
-                  children: n.jsx(Us, {
+                  children: n.jsx(Gs, {
                     className: "w-5 h-5"
                   })
                 }),
@@ -51889,7 +51904,7 @@ Details: ${A.inner}`);
                   type: "button",
                   onClick: r,
                   className: "p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 cursor-pointer",
-                  children: n.jsx(Yn, {
+                  children: n.jsx(Hn, {
                     className: "w-4 h-4"
                   })
                 })
@@ -52063,7 +52078,7 @@ Details: ${A.inner}`);
             }) : B.length === 0 ? n.jsxs("div", {
               className: "flex flex-col items-center justify-center p-12 text-center",
               children: [
-                n.jsx(Us, {
+                n.jsx(Gs, {
                   className: "w-10 h-10 text-slate-300 dark:text-zinc-700 mb-2"
                 }),
                 n.jsx("h3", {
@@ -52220,7 +52235,7 @@ Details: ${A.inner}`);
                     type: "button",
                     onClick: () => I(false),
                     className: "p-1 rounded-lg text-slate-400 hover:text-slate-600 cursor-pointer",
-                    children: n.jsx(Yn, {
+                    children: n.jsx(Hn, {
                       className: "w-4 h-4"
                     })
                   })
@@ -52772,7 +52787,7 @@ Details: ${A.inner}`);
                   onClick: r,
                   className: "p-2 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-zinc-800 transition-colors cursor-pointer",
                   title: "Close (Esc)",
-                  children: n.jsx(Yn, {
+                  children: n.jsx(Hn, {
                     className: "w-5 h-5"
                   })
                 })
@@ -53313,7 +53328,7 @@ Details: ${A.inner}`);
                             children: [
                               n.jsx("div", {
                                 className: "p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20",
-                                children: n.jsx(Us, {
+                                children: n.jsx(Gs, {
                                   className: "w-4 h-4"
                                 })
                               }),
@@ -53968,7 +53983,7 @@ Details: ${A.inner}`);
                     type: "button",
                     onClick: () => P(null),
                     className: "p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-400",
-                    children: n.jsx(Yn, {
+                    children: n.jsx(Hn, {
                       className: "w-4 h-4"
                     })
                   })
@@ -54141,7 +54156,7 @@ Details: ${A.inner}`);
                     type: "button",
                     onClick: () => ae(false),
                     className: "p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-400",
-                    children: n.jsx(Yn, {
+                    children: n.jsx(Hn, {
                       className: "w-4 h-4"
                     })
                   })
@@ -54547,7 +54562,7 @@ Details: ${A.inner}`);
         id: "cash-drawer-ledger",
         title: "My Cash Drawer Ledger",
         desc: "Shift cash journal, petty-cash breakdown & handover slip",
-        icon: Us,
+        icon: Gs,
         iconBg: "bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20",
         onClick: () => g("ledger")
       },
@@ -54713,7 +54728,7 @@ Details: ${A.inner}`);
                   onClick: e,
                   className: "p-1.5 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-zinc-800 transition-colors cursor-pointer",
                   title: "Close Options (Esc)",
-                  children: n.jsx(Yn, {
+                  children: n.jsx(Hn, {
                     className: "w-5 h-5"
                   })
                 })
@@ -54775,7 +54790,7 @@ Details: ${A.inner}`);
                                 })
                               ]
                             }),
-                            n.jsx(jo, {
+                            n.jsx(Mo, {
                               className: "w-4 h-4 text-slate-400 group-hover:text-slate-700 dark:group-hover:text-white transition-colors shrink-0"
                             })
                           ]
@@ -54837,7 +54852,7 @@ Details: ${A.inner}`);
                                 })
                               ]
                             }),
-                            n.jsx(jo, {
+                            n.jsx(Mo, {
                               className: "w-4 h-4 text-slate-400 group-hover:text-slate-700 dark:group-hover:text-white transition-colors shrink-0"
                             })
                           ]
@@ -54899,7 +54914,7 @@ Details: ${A.inner}`);
                                 })
                               ]
                             }),
-                            n.jsx(jo, {
+                            n.jsx(Mo, {
                               className: "w-4 h-4 text-slate-400 group-hover:text-slate-700 dark:group-hover:text-white transition-colors shrink-0"
                             })
                           ]
@@ -54952,7 +54967,7 @@ Details: ${A.inner}`);
                                 })
                               ]
                             }),
-                            n.jsx(jo, {
+                            n.jsx(Mo, {
                               className: "w-4 h-4 text-slate-400 group-hover:text-slate-700 dark:group-hover:text-white transition-colors shrink-0"
                             })
                           ]
@@ -55081,7 +55096,7 @@ Details: ${A.inner}`);
               type: "button",
               onClick: r,
               className: "p-1.5 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-zinc-800 transition-colors cursor-pointer",
-              children: n.jsx(Yn, {
+              children: n.jsx(Hn, {
                 className: "w-5 h-5"
               })
             })
@@ -55345,7 +55360,7 @@ Details: ${A.inner}`);
                   type: "button",
                   onClick: r,
                   className: "p-1.5 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-zinc-800 transition-colors cursor-pointer",
-                  children: n.jsx(Yn, {
+                  children: n.jsx(Hn, {
                     className: "w-5 h-5"
                   })
                 })
@@ -55500,7 +55515,7 @@ Details: ${A.inner}`);
                   type: "button",
                   onClick: r,
                   className: "p-1.5 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-zinc-800 transition-colors cursor-pointer",
-                  children: n.jsx(Yn, {
+                  children: n.jsx(Hn, {
                     className: "w-5 h-5"
                   })
                 })
@@ -55566,7 +55581,7 @@ Details: ${A.inner}`);
               }) : d && (u = n.jsxs("span", {
                 className: "px-2.5 py-0.5 bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/20 text-[11px] font-bold rounded-full flex items-center gap-1 font-mono",
                 children: [
-                  n.jsx(Yn, {
+                  n.jsx(Hn, {
                     className: "w-3 h-3"
                   }),
                   " Rejected"
@@ -55816,7 +55831,7 @@ Details: ${A.inner}`);
         poolLabel: "Pool Total",
         label: "Cash in the Drawer",
         shortLabel: "Cash Drawer",
-        icon: Us,
+        icon: Gs,
         color: "emerald"
       }
     ] : [
@@ -55880,7 +55895,7 @@ Details: ${A.inner}`);
         poolLabel: "Pool Total",
         label: "Cash in the Drawer",
         shortLabel: "Cash Drawer",
-        icon: Us,
+        icon: Gs,
         color: "default"
       }
     ], Qe = [
@@ -56528,7 +56543,7 @@ Details: ${A.inner}`);
   function Xk(t, e) {
     return (r) => r > 0 ? e : t;
   }
-  const Ro = (t, e, r) => t + (e - t) * r, uj = (t, e, r) => {
+  const jo = (t, e, r) => t + (e - t) * r, uj = (t, e, r) => {
     const a = t * t, i = r * (e * e - a) + a;
     return i < 0 ? 0 : Math.sqrt(i);
   }, JBe = [
@@ -56548,7 +56563,7 @@ Details: ${A.inner}`);
     const i = {
       ...r
     };
-    return (s) => (i.red = uj(r.red, a.red, s), i.green = uj(r.green, a.green, s), i.blue = uj(r.blue, a.blue, s), i.alpha = Ro(r.alpha, a.alpha, s), $I.transform(i));
+    return (s) => (i.red = uj(r.red, a.red, s), i.green = uj(r.green, a.green, s), i.blue = uj(r.blue, a.blue, s), i.alpha = jo(r.alpha, a.alpha, s), $I.transform(i));
   }, OF = /* @__PURE__ */ new Set([
     "none",
     "hidden"
@@ -56557,7 +56572,7 @@ Details: ${A.inner}`);
     return OF.has(t) ? (r) => r <= 0 ? t : e : (r) => r >= 1 ? e : t;
   }
   function WBe(t, e) {
-    return (r) => Ro(t, e, r);
+    return (r) => jo(t, e, r);
   }
   function U9(t) {
     return typeof t == "number" ? WBe : typeof t == "string" ? L9(t) ? Xk : uA.test(t) ? LO : XBe : Array.isArray(t) ? Bq : typeof t == "object" ? uA.test(t) ? LO : qBe : Xk;
@@ -56599,7 +56614,7 @@ Details: ${A.inner}`);
     return a.indexes.var.length === i.indexes.var.length && a.indexes.color.length === i.indexes.color.length && a.indexes.number.length >= i.indexes.number.length ? OF.has(t) && !i.values.length || OF.has(e) && !a.values.length ? VBe(t, e) : gv(Bq(ZBe(a, i), i.values), r) : Xk(t, e);
   };
   function Eq(t, e, r) {
-    return typeof t == "number" && typeof e == "number" && typeof r == "number" ? Ro(t, e, r) : U9(t)(t, e);
+    return typeof t == "number" && typeof e == "number" && typeof r == "number" ? jo(t, e, r) : U9(t)(t, e);
   }
   const $Be = (t) => {
     const e = ({ timestamp: r }) => t(r);
@@ -56879,7 +56894,7 @@ Details: ${A.inner}`);
     const r = t[t.length - 1];
     for (let a = 1; a <= e; a++) {
       const i = d1(0, e, a);
-      t.push(Ro(r, 1, i));
+      t.push(jo(r, 1, i));
     }
   }
   function dEe(t) {
@@ -58713,7 +58728,7 @@ Details: ${A.inner}`);
     t.min = t.min + e, t.max = t.max + e;
   }
   function s_(t, e, r, a, i = 0.5) {
-    const s = Ro(t.min, t.max, i);
+    const s = jo(t.min, t.max, i);
     sT(t, e, r, s, a);
   }
   function o_(t, e) {
@@ -58804,7 +58819,7 @@ Details: ${A.inner}`);
       if (i.length > 5) return a;
       const s = h0.createTransformer(t), o = typeof i[0] != "number" ? 1 : 0, A = r.x.scale * e.x, l = r.y.scale * e.y;
       i[0 + o] /= A, i[1 + o] /= l;
-      const c = Ro(A, l, 0.5);
+      const c = jo(A, l, 0.5);
       return typeof i[2 + o] == "number" && (i[2 + o] /= c), typeof i[3 + o] == "number" && (i[3 + o] /= c), s(i);
     }
   }, oT = {
@@ -59132,7 +59147,7 @@ Details: ${A.inner}`);
     return Math.abs(t - e) <= r;
   }
   function d_(t, e, r, a = 0.5) {
-    t.origin = a, t.originPoint = Ro(e.min, e.max, t.origin), t.scale = Cc(r) / Cc(e), t.translate = Ro(r.min, r.max, t.origin) - t.originPoint, (t.scale >= uye && t.scale <= hye || isNaN(t.scale)) && (t.scale = 1), (t.translate >= fye && t.translate <= pye || isNaN(t.translate)) && (t.translate = 0);
+    t.origin = a, t.originPoint = jo(e.min, e.max, t.origin), t.scale = Cc(r) / Cc(e), t.translate = jo(r.min, r.max, t.origin) - t.originPoint, (t.scale >= uye && t.scale <= hye || isNaN(t.scale)) && (t.scale = 1), (t.translate >= fye && t.translate <= pye || isNaN(t.translate)) && (t.translate = 0);
   }
   function Rw(t, e, r, a) {
     d_(t.x, e.x, r.x, a ? a.originX : void 0), d_(t.y, e.y, r.y, a ? a.originY : void 0);
@@ -59153,8 +59168,8 @@ Details: ${A.inner}`);
     return t -= e, t = n5(t, 1 / r, a), i !== void 0 && (t = n5(t, 1 / i, a)), t;
   }
   function Cye(t, e = 0, r = 1, a = 0.5, i, s = t, o = t) {
-    if (pu.test(e) && (e = parseFloat(e), e = Ro(o.min, o.max, e / 100) - o.min), typeof e != "number") return;
-    let A = Ro(s.min, s.max, a);
+    if (pu.test(e) && (e = parseFloat(e), e = jo(o.min, o.max, e / 100) - o.min), typeof e != "number") return;
+    let A = jo(s.min, s.max, a);
     t === s && (A -= e), t.min = h_(t.min, e, r, A, i), t.max = h_(t.max, e, r, A, i);
   }
   function f_(t, e, [r, a, i], s, o) {
@@ -59219,14 +59234,14 @@ Details: ${A.inner}`);
     "BottomRight"
   ], yye = IZ.length, E_ = (t) => typeof t == "string" ? parseFloat(t) : t, b_ = (t) => typeof t == "number" || qr.test(t);
   function Qye(t, e, r, a, i, s) {
-    i ? (t.opacity = Ro(0, r.opacity ?? 1, wye(a)), t.opacityExit = Ro(e.opacity ?? 1, 0, vye(a))) : s && (t.opacity = Ro(e.opacity ?? 1, r.opacity ?? 1, a));
+    i ? (t.opacity = jo(0, r.opacity ?? 1, wye(a)), t.opacityExit = jo(e.opacity ?? 1, 0, vye(a))) : s && (t.opacity = jo(e.opacity ?? 1, r.opacity ?? 1, a));
     for (let o = 0; o < yye; o++) {
       const A = `border${IZ[o]}Radius`;
       let l = y_(e, A), c = y_(r, A);
       if (l === void 0 && c === void 0) continue;
-      l || (l = 0), c || (c = 0), l === 0 || c === 0 || b_(l) === b_(c) ? (t[A] = Math.max(Ro(E_(l), E_(c), a), 0), (pu.test(c) || pu.test(l)) && (t[A] += "%")) : t[A] = c;
+      l || (l = 0), c || (c = 0), l === 0 || c === 0 || b_(l) === b_(c) ? (t[A] = Math.max(jo(E_(l), E_(c), a), 0), (pu.test(c) || pu.test(l)) && (t[A] += "%")) : t[A] = c;
     }
-    (e.rotate || r.rotate) && (t.rotate = Ro(e.rotate || 0, r.rotate || 0, a));
+    (e.rotate || r.rotate) && (t.rotate = jo(e.rotate || 0, r.rotate || 0, a));
   }
   function y_(t, e) {
     return t[e] !== void 0 ? t[e] : t.borderRadius;
@@ -59867,10 +59882,10 @@ Details: ${A.inner}`);
     t.removeLeadSnapshot();
   }
   function N_(t, e, r) {
-    t.translate = Ro(e.translate, 0, r), t.scale = Ro(e.scale, 1, r), t.origin = e.origin, t.originPoint = e.originPoint;
+    t.translate = jo(e.translate, 0, r), t.scale = jo(e.scale, 1, r), t.origin = e.origin, t.originPoint = e.originPoint;
   }
   function D_(t, e, r, a) {
-    t.min = Ro(e.min, r.min, a), t.max = Ro(e.max, r.max, a);
+    t.min = jo(e.min, r.min, a), t.max = jo(e.max, r.max, a);
   }
   function Yye(t, e, r, a) {
     D_(t.x, e.x, r.x, a), D_(t.y, e.y, r.y, a);
@@ -60771,7 +60786,7 @@ Details: ${A.inner}`);
     return o.x === 1 / 0 && (o.x = 0), o.y === 1 / 0 && (o.y = 0), o;
   }
   function LQe(t, { min: e, max: r }, a) {
-    return e !== void 0 && t < e ? t = a ? Ro(e, t, a.min) : Math.max(t, e) : r !== void 0 && t > r && (t = a ? Ro(r, t, a.max) : Math.min(t, r)), t;
+    return e !== void 0 && t < e ? t = a ? jo(e, t, a.min) : Math.max(t, e) : r !== void 0 && t > r && (t = a ? jo(r, t, a.max) : Math.min(t, r)), t;
   }
   function P_(t, e, r) {
     return {
@@ -60974,7 +60989,7 @@ Details: ${A.inner}`);
         const { projection: i } = this.visualElement, s = this.getAxisMotionValue(r);
         if (i && i.layout) {
           const { min: o, max: A } = i.layout.layoutBox[r], l = s.get() || 0;
-          s.set(e[r] - Ro(o, A, 0.5) + l);
+          s.set(e[r] - jo(o, A, 0.5) + l);
         }
       });
     }
@@ -61001,7 +61016,7 @@ Details: ${A.inner}`);
       this.visualElement.current.style.transform = s ? s({}, "") : "none", a.root && a.root.updateScroll(), a.updateLayout(), this.constraints = false, this.resolveConstraints(), tu((o) => {
         if (!QN(o, e, null)) return;
         const A = this.getAxisMotionValue(o), { min: l, max: c } = this.constraints[o];
-        A.set(Ro(l, c, i[o]));
+        A.set(jo(l, c, i[o]));
       }), this.visualElement.render();
     }
     addListeners() {
@@ -61631,7 +61646,7 @@ Details: ${A.inner}`);
             n.jsx("button", {
               onClick: r,
               className: me("p-2 -mr-2 rounded-full transition-all duration-200 active:scale-95", o ? "hover:bg-white/10 text-zinc-400 hover:text-white" : "hover:bg-black/5 text-zinc-500 hover:text-zinc-900"),
-              children: n.jsx(Yn, {
+              children: n.jsx(Hn, {
                 className: "w-5 h-5"
               })
             })
@@ -63028,7 +63043,7 @@ Details: ${A.inner}`);
               onClick: a,
               className: "px-6 py-2 text-sm font-bold text-zinc-500 hover:text-zinc-700 transition-colors flex items-center gap-2",
               children: [
-                n.jsx(Yn, {
+                n.jsx(Hn, {
                   className: "w-4 h-4"
                 }),
                 "Cancel"
@@ -66290,30 +66305,30 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
       return iX(kC(t, i));
     }, r;
   }
-  const Mo = iX(Cv);
-  Mo.Axios = mC;
-  Mo.CanceledError = xv;
-  Mo.CancelToken = eve;
-  Mo.isCancel = ZZ;
-  Mo.VERSION = rX;
-  Mo.toFormData = a3;
-  Mo.AxiosError = _a;
-  Mo.Cancel = Mo.CanceledError;
-  Mo.all = function(e) {
+  const Fo = iX(Cv);
+  Fo.Axios = mC;
+  Fo.CanceledError = xv;
+  Fo.CancelToken = eve;
+  Fo.isCancel = ZZ;
+  Fo.VERSION = rX;
+  Fo.toFormData = a3;
+  Fo.AxiosError = _a;
+  Fo.Cancel = Fo.CanceledError;
+  Fo.all = function(e) {
     return Promise.all(e);
   };
-  Mo.spread = tve;
-  Mo.isAxiosError = nve;
-  Mo.mergeConfig = kC;
-  Mo.AxiosHeaders = _c;
-  Mo.formToJSON = (t) => WZ(mn.isHTMLForm(t) ? new FormData(t) : t);
-  Mo.getAdapter = nX.getAdapter;
-  Mo.HttpStatusCode = fT;
-  Mo.default = Mo;
-  const { Axios: Gst, AxiosError: Ust, CanceledError: Pst, isCancel: Ost, CancelToken: _st, VERSION: Hst, all: Yst, Cancel: Jst, isAxiosError: Kst, spread: Vst, toFormData: Wst, AxiosHeaders: qst, HttpStatusCode: Zst, formToJSON: Xst, getAdapter: $st, mergeConfig: eot } = Mo, Sj = "/api/v1/users", Aw = {
+  Fo.spread = tve;
+  Fo.isAxiosError = nve;
+  Fo.mergeConfig = kC;
+  Fo.AxiosHeaders = _c;
+  Fo.formToJSON = (t) => WZ(mn.isHTMLForm(t) ? new FormData(t) : t);
+  Fo.getAdapter = nX.getAdapter;
+  Fo.HttpStatusCode = fT;
+  Fo.default = Fo;
+  const { Axios: Gst, AxiosError: Ust, CanceledError: Pst, isCancel: Ost, CancelToken: _st, VERSION: Hst, all: Yst, Cancel: Jst, isAxiosError: Kst, spread: Vst, toFormData: Wst, AxiosHeaders: qst, HttpStatusCode: Zst, formToJSON: Xst, getAdapter: $st, mergeConfig: eot } = Fo, Sj = "/api/v1/users", Aw = {
     getProfile: async () => {
       const t = localStorage.getItem("synos_jwt");
-      return (await Mo.get(`${Sj}/profile`, {
+      return (await Fo.get(`${Sj}/profile`, {
         headers: {
           Authorization: `Bearer ${t}`
         }
@@ -66321,7 +66336,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
     },
     uploadSignature: async (t, e) => {
       const r = localStorage.getItem("synos_jwt"), a = new FormData();
-      return a.append("file", e), (await Mo.post(`${Sj}/${t}/signature`, a, {
+      return a.append("file", e), (await Fo.post(`${Sj}/${t}/signature`, a, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${r}`
@@ -66330,7 +66345,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
     },
     updateProfile: async (t) => {
       const e = localStorage.getItem("synos_jwt");
-      return (await Mo.patch(`${Sj}/profile`, t, {
+      return (await Fo.patch(`${Sj}/profile`, t, {
         headers: {
           Authorization: `Bearer ${e}`
         }
@@ -68105,7 +68120,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
       r -= l, a -= l;
     }
   }
-  class Wn {
+  class qn {
     constructor(e, r) {
       if (this.content = e, this.size = r || 0, r == null) for (let a = 0; a < e.length; a++) this.size += e[a].nodeSize;
     }
@@ -68134,7 +68149,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
       if (!this.size) return e;
       let r = this.lastChild, a = e.firstChild, i = this.content.slice(), s = 0;
       for (r.isText && r.sameMarkup(a) && (i[i.length - 1] = r.withText(r.text + a.text), s = 1); s < e.content.length; s++) i.push(e.content[s]);
-      return new Wn(i, this.size + e.size);
+      return new qn(i, this.size + e.size);
     }
     cut(e, r = this.size) {
       if (e == 0 && r == this.size) return this;
@@ -68143,24 +68158,24 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
         let A = this.content[s], l = o + A.nodeSize;
         l > e && ((o < e || l > r) && (A.isText ? A = A.cut(Math.max(0, e - o), Math.min(A.text.length, r - o)) : A = A.cut(Math.max(0, e - o - 1), Math.min(A.content.size, r - o - 1))), a.push(A), i += A.nodeSize), o = l;
       }
-      return new Wn(a, i);
+      return new qn(a, i);
     }
     cutByIndex(e, r) {
-      return e == r ? Wn.empty : e == 0 && r == this.content.length ? this : new Wn(this.content.slice(e, r));
+      return e == r ? qn.empty : e == 0 && r == this.content.length ? this : new qn(this.content.slice(e, r));
     }
     replaceChild(e, r) {
       let a = this.content[e];
       if (a == r) return this;
       let i = this.content.slice(), s = this.size + r.nodeSize - a.nodeSize;
-      return i[e] = r, new Wn(i, s);
+      return i[e] = r, new qn(i, s);
     }
     addToStart(e) {
-      return new Wn([
+      return new qn([
         e
       ].concat(this.content), this.size + e.nodeSize);
     }
     addToEnd(e) {
-      return new Wn(this.content.concat(e), this.size + e.nodeSize);
+      return new qn(this.content.concat(e), this.size + e.nodeSize);
     }
     eq(e) {
       if (this.content.length != e.content.length) return false;
@@ -68216,30 +68231,30 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
       return this.content.length ? this.content.map((e) => e.toJSON()) : null;
     }
     static fromJSON(e, r) {
-      if (!r) return Wn.empty;
+      if (!r) return qn.empty;
       if (!Array.isArray(r)) throw new RangeError("Invalid input for Fragment.fromJSON");
-      return Wn.fromArray(r.map(e.nodeFromJSON));
+      return qn.fromArray(r.map(e.nodeFromJSON));
     }
     static fromArray(e) {
-      if (!e.length) return Wn.empty;
+      if (!e.length) return qn.empty;
       let r, a = 0;
       for (let i = 0; i < e.length; i++) {
         let s = e[i];
         a += s.nodeSize, i && s.isText && e[i - 1].sameMarkup(s) ? (r || (r = e.slice(0, i)), r[r.length - 1] = s.withText(r[r.length - 1].text + s.text)) : r && r.push(s);
       }
-      return new Wn(r || e, a);
+      return new qn(r || e, a);
     }
     static from(e) {
-      if (!e) return Wn.empty;
-      if (e instanceof Wn) return e;
+      if (!e) return qn.empty;
+      if (e instanceof qn) return e;
       if (Array.isArray(e)) return this.fromArray(e);
-      if (e.attrs) return new Wn([
+      if (e.attrs) return new qn([
         e
       ], e.nodeSize);
       throw new RangeError("Can not convert " + e + " to a Fragment" + (e.nodesBetween ? " (looks like multiple versions of prosemirror-model were loaded)" : ""));
     }
   }
-  Wn.empty = new Wn([], 0);
+  qn.empty = new qn([], 0);
   const Fj = {
     index: 0,
     offset: 0
@@ -68355,7 +68370,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
       if (!r) return Cr.empty;
       let a = r.openStart || 0, i = r.openEnd || 0;
       if (typeof a != "number" || typeof i != "number") throw new RangeError("Invalid input for Slice.fromJSON");
-      return new Cr(Wn.fromJSON(e, r.content), a, i);
+      return new Cr(qn.fromJSON(e, r.content), a, i);
     }
     static maxOpen(e, r = true) {
       let a = 0, i = 0;
@@ -68364,7 +68379,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
       return new Cr(e, a, i);
     }
   }
-  Cr.empty = new Cr(Wn.empty, 0, 0);
+  Cr.empty = new Cr(qn.empty, 0, 0);
   function hX(t, e, r) {
     let { index: a, offset: i } = t.findIndex(e), s = t.maybeChild(a), { index: o, offset: A } = t.findIndex(r);
     if (i == e || s.isText) {
@@ -68421,7 +68436,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
   }
   function IX(t, e, r, a, i) {
     let s = t.depth > i && IT(t, e, i + 1), o = a.depth > i && IT(r, a, i + 1), A = [];
-    return Mw(null, t, i, A), s && o && e.index(i) == r.index(i) ? (mX(s, o), IC(CC(s, IX(t, e, r, a, i + 1)), A)) : (s && IC(CC(s, A5(t, e, i + 1)), A), Mw(e, r, i, A), o && IC(CC(o, A5(r, a, i + 1)), A)), Mw(a, null, i, A), new Wn(A);
+    return Mw(null, t, i, A), s && o && e.index(i) == r.index(i) ? (mX(s, o), IC(CC(s, IX(t, e, r, a, i + 1)), A)) : (s && IC(CC(s, A5(t, e, i + 1)), A), Mw(e, r, i, A), o && IC(CC(o, A5(r, a, i + 1)), A)), Mw(a, null, i, A), new qn(A);
   }
   function A5(t, e, r) {
     let a = [];
@@ -68429,11 +68444,11 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
       let i = IT(t, e, r + 1);
       IC(CC(i, A5(t, e, r + 1)), a);
     }
-    return Mw(e, null, r, a), new Wn(a);
+    return Mw(e, null, r, a), new qn(a);
   }
   function dve(t, e) {
     let r = e.depth - t.openStart, i = e.node(r).copy(t.content);
-    for (let s = r - 1; s >= 0; s--) i = e.node(s).copy(Wn.from(i));
+    for (let s = r - 1; s >= 0; s--) i = e.node(s).copy(qn.from(i));
     return {
       start: i.resolveNoCache(t.openStart + r),
       end: i.resolveNoCache(i.content.size - t.openEnd - r)
@@ -68587,7 +68602,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
   const hve = /* @__PURE__ */ Object.create(null);
   let Lp = class CT {
     constructor(e, r, a, i = zs.none) {
-      this.type = e, this.attrs = r, this.marks = i, this.content = a || Wn.empty;
+      this.type = e, this.attrs = r, this.marks = i, this.content = a || qn.empty;
     }
     get children() {
       return this.content.content;
@@ -68727,7 +68742,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
       if (!r) throw new Error("Called contentMatchAt on a node with invalid content");
       return r;
     }
-    canReplace(e, r, a = Wn.empty, i = 0, s = a.childCount) {
+    canReplace(e, r, a = qn.empty, i = 0, s = a.childCount) {
       let o = this.contentMatchAt(e).matchFragment(a, i, s), A = o && o.matchFragment(this.content, r);
       if (!A || !A.validEnd) return false;
       for (let l = i; l < s; l++) if (!this.type.allowsMarks(a.child(l).marks)) return false;
@@ -68772,7 +68787,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
         if (typeof r.text != "string") throw new RangeError("Invalid text node in JSON");
         return e.text(r.text, a);
       }
-      let i = Wn.fromJSON(e, r.content), s = e.nodeType(r.type).create(r.attrs, i, a);
+      let i = qn.fromJSON(e, r.content), s = e.nodeType(r.type).create(r.attrs, i, a);
       return s.type.checkAttrs(s.attrs), s;
     }
   };
@@ -68856,7 +68871,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
       ];
       function s(o, A) {
         let l = o.matchFragment(e, a);
-        if (l && (!r || l.validEnd)) return Wn.from(A.map((c) => c.createAndFill()));
+        if (l && (!r || l.validEnd)) return qn.from(A.map((c) => c.createAndFill()));
         for (let c = 0; c < o.next.length; c++) {
           let { type: g, next: d } = o.next[c];
           if (!(g.isText || g.hasRequiredAttrs()) && i.indexOf(d) == -1) {
@@ -69203,18 +69218,18 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
     }
     create(e = null, r, a) {
       if (this.isText) throw new Error("NodeType.create can't construct text nodes");
-      return new Lp(this, this.computeAttrs(e), Wn.from(r), zs.setFrom(a));
+      return new Lp(this, this.computeAttrs(e), qn.from(r), zs.setFrom(a));
     }
     createChecked(e = null, r, a) {
-      return r = Wn.from(r), this.checkContent(r), new Lp(this, this.computeAttrs(e), r, zs.setFrom(a));
+      return r = qn.from(r), this.checkContent(r), new Lp(this, this.computeAttrs(e), r, zs.setFrom(a));
     }
     createAndFill(e = null, r, a) {
-      if (e = this.computeAttrs(e), r = Wn.from(r), r.size) {
+      if (e = this.computeAttrs(e), r = qn.from(r), r.size) {
         let o = this.contentMatch.fillBefore(r);
         if (!o) return null;
         r = o.append(r);
       }
-      let i = this.contentMatch.matchFragment(r), s = i && i.fillBefore(Wn.empty, true);
+      let i = this.contentMatch.matchFragment(r), s = i && i.fillBefore(qn.empty, true);
       return s ? new Lp(this, e, r.append(s), zs.setFrom(a)) : null;
     }
     validContent(e) {
@@ -69491,7 +69506,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
     findWrapping(e) {
       if (!this.match) {
         if (!this.type) return [];
-        let r = this.type.contentMatch.fillBefore(Wn.from(e));
+        let r = this.type.contentMatch.fillBefore(qn.from(e));
         if (r) this.match = this.type.contentMatch.matchFragment(r);
         else {
           let a = this.type.contentMatch, i;
@@ -69508,8 +69523,8 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
           a.text.length == i[0].length ? this.content.pop() : this.content[this.content.length - 1] = s.withText(s.text.slice(0, s.text.length - i[0].length));
         }
       }
-      let r = Wn.from(this.content);
-      return !e && this.match && (r = r.append(this.match.fillBefore(Wn.empty, true))), this.type ? this.type.create(this.attrs, r, this.marks) : r;
+      let r = qn.from(this.content);
+      return !e && this.match && (r = r.append(this.match.fillBefore(qn.empty, true))), this.type ? this.type.create(this.attrs, r, this.marks) : r;
     }
     inlineContext(e) {
       return this.type ? this.type.inlineContent : this.content.length ? this.content[0].isInline : e.parentNode && !NX.hasOwnProperty(e.parentNode.nodeName.toLowerCase());
@@ -70093,7 +70108,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
       let s = t.child(i);
       s.content.size && (s = s.copy(uL(s.content, e, s))), s.isInline && (s = e(s, r, i)), a.push(s);
     }
-    return Wn.fromArray(a);
+    return qn.fromArray(a);
   }
   class wp extends Wl {
     constructor(e, r, a) {
@@ -70167,7 +70182,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
       let r = e.nodeAt(this.pos);
       if (!r) return mA.fail("No node at mark step's position");
       let a = r.type.create(r.attrs, null, this.mark.addToSet(r.marks));
-      return mA.fromReplace(e, this.pos, this.pos + 1, new Cr(Wn.from(a), 0, r.isLeaf ? 0 : 1));
+      return mA.fromReplace(e, this.pos, this.pos + 1, new Cr(qn.from(a), 0, r.isLeaf ? 0 : 1));
     }
     invert(e) {
       let r = e.nodeAt(this.pos);
@@ -70205,7 +70220,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
       let r = e.nodeAt(this.pos);
       if (!r) return mA.fail("No node at mark step's position");
       let a = r.type.create(r.attrs, null, this.mark.removeFromSet(r.marks));
-      return mA.fromReplace(e, this.pos, this.pos + 1, new Cr(Wn.from(a), 0, r.isLeaf ? 0 : 1));
+      return mA.fromReplace(e, this.pos, this.pos + 1, new Cr(qn.from(a), 0, r.isLeaf ? 0 : 1));
     }
     invert(e) {
       let r = e.nodeAt(this.pos);
@@ -70384,13 +70399,13 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
         for (let u = 0; u < c.marks.length; u++) r.allowsMarkType(c.marks[u].type) || t.step(new A0(A, g, c.marks[u]));
         if (i && c.isText && r.whitespace != "pre") {
           let u, h = /\r?\n|\r/g, f;
-          for (; u = h.exec(c.text); ) f || (f = new Cr(Wn.from(r.schema.text(" ", r.allowedMarks(c.marks))), 0, 0)), o.push(new hA(A + u.index, A + u.index + u[0].length, f));
+          for (; u = h.exec(c.text); ) f || (f = new Cr(qn.from(r.schema.text(" ", r.allowedMarks(c.marks))), 0, 0)), o.push(new hA(A + u.index, A + u.index + u[0].length, f));
         }
       }
       A = g;
     }
     if (!a.validEnd) {
-      let l = a.fillBefore(Wn.empty, true);
+      let l = a.fillBefore(qn.empty, true);
       t.replace(A, A, new Cr(l, 0, 0));
     }
     for (let l = o.length - 1; l >= 0; l--) t.step(o[l]);
@@ -70409,10 +70424,10 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
     return null;
   }
   function zve(t, e, r) {
-    let { $from: a, $to: i, depth: s } = e, o = a.before(s + 1), A = i.after(s + 1), l = o, c = A, g = Wn.empty, d = 0;
-    for (let f = s, p = false; f > r; f--) p || a.index(f) > 0 ? (p = true, g = Wn.from(a.node(f).copy(g)), d++) : l--;
-    let u = Wn.empty, h = 0;
-    for (let f = s, p = false; f > r; f--) p || i.after(f + 1) < i.end(f) ? (p = true, u = Wn.from(i.node(f).copy(u)), h++) : c++;
+    let { $from: a, $to: i, depth: s } = e, o = a.before(s + 1), A = i.after(s + 1), l = o, c = A, g = qn.empty, d = 0;
+    for (let f = s, p = false; f > r; f--) p || a.index(f) > 0 ? (p = true, g = qn.from(a.node(f).copy(g)), d++) : l--;
+    let u = qn.empty, h = 0;
+    for (let f = s, p = false; f > r; f--) p || i.after(f + 1) < i.end(f) ? (p = true, u = qn.from(i.node(f).copy(u)), h++) : c++;
     t.step(new ZA(l, c, o, A, new Cr(g.append(u), d, h), g.size - d, true));
   }
   function fL(t, e, r = null, a = t) {
@@ -70442,13 +70457,13 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
     return !l || !l.validEnd ? null : o;
   }
   function Pve(t, e, r) {
-    let a = Wn.empty;
+    let a = qn.empty;
     for (let o = r.length - 1; o >= 0; o--) {
       if (a.size) {
         let A = r[o].type.contentMatch.matchFragment(a);
         if (!A || !A.validEnd) throw new RangeError("Wrapper type given to Transform.wrap does not form valid content of its parent wrapper");
       }
-      a = Wn.from(r[o].type.create(r[o].attrs, a));
+      a = qn.from(r[o].type.create(r[o].attrs, a));
     }
     let i = e.start, s = e.end;
     t.step(new ZA(i, s, i, s, new Cr(a, 0, 0), r.length, true));
@@ -70466,7 +70481,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
         }
         c === false && TX(t, o, A, s), hL(t, t.mapping.slice(s).map(A, 1), a, void 0, c === null);
         let g = t.mapping.slice(s), d = g.map(A, 1), u = g.map(A + o.nodeSize, 1);
-        return t.step(new ZA(d, u, d + 1, u - 1, new Cr(Wn.from(a.create(l, null, o.marks)), 0, 0), 1, true)), c === true && FX(t, o, A, s), false;
+        return t.step(new ZA(d, u, d + 1, u - 1, new Cr(qn.from(a.create(l, null, o.marks)), 0, 0), 1, true)), c === true && FX(t, o, A, s), false;
       }
     });
   }
@@ -70501,7 +70516,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
     let o = r.create(a, null, i || s.marks);
     if (s.isLeaf) return t.replaceWith(e, e + s.nodeSize, o);
     if (!r.validContent(s.content)) throw new RangeError("Invalid content for node type " + r.name);
-    t.step(new ZA(e, e + s.nodeSize, e + 1, e + s.nodeSize - 1, new Cr(Wn.from(o), 0, 0), 1, true));
+    t.step(new ZA(e, e + s.nodeSize, e + 1, e + s.nodeSize - 1, new Cr(qn.from(o), 0, 0), 1, true));
   }
   function _h(t, e, r = 1, a) {
     let i = t.resolve(e), s = i.depth - r, o = a && a[a.length - 1] || i.parent;
@@ -70518,11 +70533,11 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
     return i.node(s).canReplaceWith(A, A, l ? l.type : i.node(s + 1).type);
   }
   function Yve(t, e, r = 1, a) {
-    let i = t.doc.resolve(e), s = Wn.empty, o = Wn.empty;
+    let i = t.doc.resolve(e), s = qn.empty, o = qn.empty;
     for (let A = i.depth, l = i.depth - r, c = r - 1; A > l; A--, c--) {
-      s = Wn.from(i.node(A).copy(s));
+      s = qn.from(i.node(A).copy(s));
       let g = a && a[c];
-      o = Wn.from(g ? g.type.create(g.attrs, o) : i.node(A).copy(o));
+      o = qn.from(g ? g.type.create(g.attrs, o) : i.node(A).copy(o));
     }
     t.step(new hA(e, e, new Cr(s.append(o), r, r), true));
   }
@@ -70611,7 +70626,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
   }
   class Wve {
     constructor(e, r, a) {
-      this.$from = e, this.$to = r, this.unplaced = a, this.frontier = [], this.placed = Wn.empty;
+      this.$from = e, this.$to = r, this.unplaced = a, this.frontier = [], this.placed = qn.empty;
       for (let i = 0; i <= e.depth; i++) {
         let s = e.node(i);
         this.frontier.push({
@@ -70619,7 +70634,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
           match: s.contentMatchAt(e.indexAfter(i))
         });
       }
-      for (let i = e.depth; i > 0; i--) this.placed = Wn.from(e.node(i).copy(this.placed));
+      for (let i = e.depth; i > 0; i--) this.placed = qn.from(e.node(i).copy(this.placed));
     }
     get depth() {
       return this.frontier.length - 1;
@@ -70652,7 +70667,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
         let o = i.firstChild;
         for (let A = this.depth; A >= 0; A--) {
           let { type: l, match: c } = this.frontier[A], g, d = null;
-          if (r == 1 && (o ? c.matchType(o.type) || (d = c.fillBefore(Wn.from(o), false)) : s && l.compatibleContent(s.type))) return {
+          if (r == 1 && (o ? c.matchType(o.type) || (d = c.fillBefore(qn.from(o), false)) : s && l.compatibleContent(s.type))) return {
             sliceDepth: a,
             frontierDepth: A,
             parent: s,
@@ -70694,7 +70709,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
         c++, (c > 1 || l == 0 || p.content.size) && (d = I, g.push(UX(p.mark(u.allowedMarks(p.marks)), c == 1 ? l : 0, c == A.childCount ? h : -1)));
       }
       let f = c == A.childCount;
-      f || (h = -1), this.placed = dw(this.placed, r, Wn.from(g)), this.frontier[r].match = d, f && h < 0 && a && a.type == this.frontier[this.depth].type && this.frontier.length > 1 && this.closeFrontierNode();
+      f || (h = -1), this.placed = dw(this.placed, r, qn.from(g)), this.frontier[r].match = d, f && h < 0 && a && a.type == this.frontier[this.depth].type && this.frontier.length > 1 && this.closeFrontierNode();
       for (let p = 0, I = A; p < h; p++) {
         let x = I.lastChild;
         this.frontier.push({
@@ -70741,13 +70756,13 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
     }
     openFrontierNode(e, r = null, a) {
       let i = this.frontier[this.depth];
-      i.match = i.match.matchType(e), this.placed = dw(this.placed, this.depth, Wn.from(e.create(r, a))), this.frontier.push({
+      i.match = i.match.matchType(e), this.placed = dw(this.placed, this.depth, qn.from(e.create(r, a))), this.frontier.push({
         type: e,
         match: e.contentMatch
       });
     }
     closeFrontierNode() {
-      let r = this.frontier.pop().match.fillBefore(Wn.empty, true);
+      let r = this.frontier.pop().match.fillBefore(qn.empty, true);
       r.childCount && (this.placed = dw(this.placed, this.frontier.length, r));
     }
   }
@@ -70764,7 +70779,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
   function UX(t, e, r) {
     if (e <= 0) return t;
     let a = t.content;
-    return e > 1 && (a = a.replaceChild(0, UX(a.firstChild, e - 1, a.childCount == 1 ? r - 1 : 0))), e > 0 && (a = t.type.contentMatch.fillBefore(a).append(a), r <= 0 && (a = a.append(t.type.contentMatch.matchFragment(a).fillBefore(Wn.empty, true)))), t.copy(a);
+    return e > 1 && (a = a.replaceChild(0, UX(a.firstChild, e - 1, a.childCount == 1 ? r - 1 : 0))), e > 0 && (a = t.type.contentMatch.fillBefore(a).append(a), r <= 0 && (a = a.append(t.type.contentMatch.matchFragment(a).fillBefore(qn.empty, true)))), t.copy(a);
   }
   function zj(t, e, r, a, i) {
     let s = t.node(e), o = i ? t.indexAfter(e) : t.index(e);
@@ -70825,7 +70840,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
     }
     if (e > a) {
       let s = i.contentMatchAt(0), o = s.fillBefore(t).append(t);
-      t = o.append(s.matchFragment(o).fillBefore(Wn.empty, true));
+      t = o.append(s.matchFragment(o).fillBefore(qn.empty, true));
     }
     return t;
   }
@@ -70834,7 +70849,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
       let i = Vve(t.doc, e, a.type);
       i != null && (e = r = i);
     }
-    t.replaceRange(e, r, new Cr(Wn.from(a), 0, 0));
+    t.replaceRange(e, r, new Cr(qn.from(a), 0, 0));
   }
   function e2e(t, e, r) {
     let a = t.doc.resolve(e), i = t.doc.resolve(r);
@@ -70877,7 +70892,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
       for (let s in r.attrs) a[s] = r.attrs[s];
       a[this.attr] = this.value;
       let i = r.type.create(a, null, r.marks);
-      return mA.fromReplace(e, this.pos, this.pos + 1, new Cr(Wn.from(i), 0, r.isLeaf ? 0 : 1));
+      return mA.fromReplace(e, this.pos, this.pos + 1, new Cr(qn.from(i), 0, r.isLeaf ? 0 : 1));
     }
     getMap() {
       return ud.empty;
@@ -70985,7 +71000,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
       return i && this.step(i), this;
     }
     replaceWith(e, r, a) {
-      return this.replace(e, r, new Cr(Wn.from(a), 0, 0));
+      return this.replace(e, r, new Cr(qn.from(a), 0, 0));
     }
     delete(e, r) {
       return this.replace(e, r, Cr.empty);
@@ -71213,7 +71228,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
       return a ? Fa.near(s) : new ma(s);
     }
     content() {
-      return new Cr(Wn.from(this.node), 0, 0);
+      return new Cr(qn.from(this.node), 0, 0);
     }
     eq(e) {
       return e instanceof ma && e.anchor == this.anchor;
@@ -71818,9 +71833,9 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
     let c = !l && e.parent.canReplace(e.index(), e.index() + 1);
     if (c && (o = (A = i.contentMatchAt(i.childCount)).findWrapping(s.type)) && A.matchType(o[0] || s.type).validEnd) {
       if (r) {
-        let h = e.pos + s.nodeSize, f = Wn.empty;
-        for (let x = o.length - 1; x >= 0; x--) f = Wn.from(o[x].create(null, f));
-        f = Wn.from(i.copy(f));
+        let h = e.pos + s.nodeSize, f = qn.empty;
+        for (let x = o.length - 1; x >= 0; x--) f = qn.from(o[x].create(null, f));
+        f = qn.from(i.copy(f));
         let p = t.tr.step(new ZA(e.pos - 1, h, e.pos, h, new Cr(f, 1, 0), o.length, true)), I = p.doc.resolve(h + 2 * o.length);
         I.nodeAfter && I.nodeAfter.type == i.type && Am(p.doc, I.pos) && p.join(I.pos), r(p.scrollIntoView());
       }
@@ -71835,8 +71850,8 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
       for (; !p.isTextblock; p = p.firstChild) I++;
       if (h.canReplace(h.childCount, h.childCount, p.content)) {
         if (r) {
-          let x = Wn.empty;
-          for (let B = f.length - 1; B >= 0; B--) x = Wn.from(f[B].copy(x));
+          let x = qn.empty;
+          for (let B = f.length - 1; B >= 0; B--) x = qn.from(f[B].copy(x));
           let C = t.tr.step(new ZA(e.pos - f.length, e.pos + s.nodeSize, e.pos + I, e.pos + s.nodeSize - I, new Cr(x, f.length, 0), 0, true));
           r(C.scrollIntoView());
         }
@@ -71917,8 +71932,8 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
     return A ? (t && C2e(t, e, A, i, r), true) : false;
   }
   function C2e(t, e, r, a, i) {
-    let s = Wn.empty;
-    for (let g = r.length - 1; g >= 0; g--) s = Wn.from(r[g].type.create(r[g].attrs, s));
+    let s = qn.empty;
+    for (let g = r.length - 1; g >= 0; g--) s = qn.from(r[g].type.create(r[g].attrs, s));
     t.step(new ZA(e.start - (a ? 2 : 0), e.end, e.start, e.end, new Cr(s, 0, 0), r.length, true));
     let o = 0;
     for (let g = 0; g < r.length; g++) r[g].type == i && (o = g + 1);
@@ -71934,7 +71949,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
   }
   function B2e(t, e, r, a) {
     let i = t.tr, s = a.end, o = a.$to.end(a.depth);
-    s < o && (i.step(new ZA(s - 1, o, s, o, new Cr(Wn.from(r.create(null, a.parent.copy())), 1, 0), 1, true)), a = new l5(i.doc.resolve(a.$from.pos), i.doc.resolve(o), a.depth));
+    s < o && (i.step(new ZA(s - 1, o, s, o, new Cr(qn.from(r.create(null, a.parent.copy())), 1, 0), 1, true)), a = new l5(i.doc.resolve(a.$from.pos), i.doc.resolve(o), a.depth));
     const A = wb(a);
     if (A == null) return false;
     i.lift(a, A);
@@ -71947,9 +71962,9 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
     let s = a.doc.resolve(r.start), o = s.nodeAfter;
     if (a.mapping.map(r.end) != r.start + s.nodeAfter.nodeSize) return false;
     let A = r.startIndex == 0, l = r.endIndex == i.childCount, c = s.node(-1), g = s.index(-1);
-    if (!c.canReplace(g + (A ? 0 : 1), g + 1, o.content.append(l ? Wn.empty : Wn.from(i)))) return false;
+    if (!c.canReplace(g + (A ? 0 : 1), g + 1, o.content.append(l ? qn.empty : qn.from(i)))) return false;
     let d = s.pos, u = d + o.nodeSize;
-    return a.step(new ZA(d - (A ? 1 : 0), u + (l ? 1 : 0), d + 1, u - 1, new Cr((A ? Wn.empty : Wn.from(i.copy(Wn.empty))).append(l ? Wn.empty : Wn.from(i.copy(Wn.empty))), A ? 0 : 1, l ? 0 : 1), A ? 0 : 1)), e(a.scrollIntoView()), true;
+    return a.step(new ZA(d - (A ? 1 : 0), u + (l ? 1 : 0), d + 1, u - 1, new Cr((A ? qn.empty : qn.from(i.copy(qn.empty))).append(l ? qn.empty : qn.from(i.copy(qn.empty))), A ? 0 : 1, l ? 0 : 1), A ? 0 : 1)), e(a.scrollIntoView()), true;
   }
   function b2e(t) {
     return function(e, r) {
@@ -71960,7 +71975,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
       let A = s.parent, l = A.child(o - 1);
       if (l.type != t) return false;
       if (r) {
-        let c = l.lastChild && l.lastChild.type == A.type, g = Wn.from(c ? t.create() : null), d = new Cr(Wn.from(t.create(null, Wn.from(A.type.create(null, g)))), c ? 3 : 1, 0), u = s.start, h = s.end;
+        let c = l.lastChild && l.lastChild.type == A.type, g = qn.from(c ? t.create() : null), d = new Cr(qn.from(t.create(null, qn.from(A.type.create(null, g)))), c ? 3 : 1, 0), u = s.start, h = s.end;
         r(e.tr.step(new ZA(u - (c ? 3 : 1), h, u, h, d, 1, true)).scrollIntoView());
       }
       return true;
@@ -72855,7 +72870,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
             break;
           }
         }
-        e.contentElement || (e.getContent = () => Wn.empty);
+        e.contentElement || (e.getContent = () => qn.empty);
       }
       return e;
     }
@@ -73692,7 +73707,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
     if (l) {
       if (t.someProp("transformPastedText", (u) => {
         e = u(e, s || a, t);
-      }), s) return A = new Cr(Wn.from(t.state.schema.text(e.replace(/\r\n?/g, `
+      }), s) return A = new Cr(qn.from(t.state.schema.text(e.replace(/\r\n?/g, `
 `))), 0, 0), t.someProp("transformPasted", (u) => {
         A = u(A, t, true);
       }), A;
@@ -73749,29 +73764,29 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
           let g = y$(A, l);
           o.push(g), i = i.matchType(g.type), s = l;
         }
-      }), o) return Wn.from(o);
+      }), o) return qn.from(o);
     }
     return t;
   }
   function y$(t, e, r = 0) {
-    for (let a = e.length - 1; a >= r; a--) t = e[a].create(null, Wn.from(t));
+    for (let a = e.length - 1; a >= r; a--) t = e[a].create(null, qn.from(t));
     return t;
   }
   function Q$(t, e, r, a, i) {
     if (i < t.length && i < e.length && t[i] == e[i]) {
       let s = Q$(t, e, r, a.lastChild, i + 1);
       if (s) return a.copy(a.content.replaceChild(a.childCount - 1, s));
-      if (a.contentMatchAt(a.childCount).matchType(i == t.length - 1 ? r.type : t[i + 1])) return a.copy(a.content.append(Wn.from(y$(r, t, i + 1))));
+      if (a.contentMatchAt(a.childCount).matchType(i == t.length - 1 ? r.type : t[i + 1])) return a.copy(a.content.append(qn.from(y$(r, t, i + 1))));
     }
   }
   function w$(t, e) {
     if (e == 0) return t;
-    let r = t.content.replaceChild(t.childCount - 1, w$(t.lastChild, e - 1)), a = t.contentMatchAt(t.childCount).fillBefore(Wn.empty, true);
+    let r = t.content.replaceChild(t.childCount - 1, w$(t.lastChild, e - 1)), a = t.contentMatchAt(t.childCount).fillBefore(qn.empty, true);
     return t.copy(r.append(a));
   }
   function ST(t, e, r, a, i, s) {
     let o = e < 0 ? t.firstChild : t.lastChild, A = o.content;
-    return t.childCount > 1 && (s = 0), i < a - 1 && (A = ST(A, e, r, a, i + 1, s)), i >= r && (A = e < 0 ? o.contentMatchAt(0).fillBefore(A, s <= i).append(A) : A.append(o.contentMatchAt(o.childCount).fillBefore(Wn.empty, true))), t.replaceChild(e < 0 ? 0 : t.childCount - 1, o.copy(A));
+    return t.childCount > 1 && (s = 0), i < a - 1 && (A = ST(A, e, r, a, i + 1, s)), i >= r && (A = e < 0 ? o.contentMatchAt(0).fillBefore(A, s <= i).append(A) : A.append(o.contentMatchAt(o.childCount).fillBefore(qn.empty, true))), t.replaceChild(e < 0 ? 0 : t.childCount - 1, o.copy(A));
   }
   function eH(t, e, r) {
     return e < t.openStart && (t = new Cr(ST(t.content, -1, e, t.openStart, 0, t.openEnd), e, t.openEnd)), r < t.openEnd && (t = new Cr(ST(t.content, 1, r, t.openEnd, 0, 0), t.openStart, r)), t;
@@ -73848,7 +73863,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
     for (let A = a.length - 2; A >= 0; A -= 2) {
       let l = r.nodes[a[A]];
       if (!l || l.hasRequiredAttrs()) break;
-      i = Wn.from(l.create(a[A + 1], i)), s++, o++;
+      i = qn.from(l.create(a[A + 1], i)), s++, o++;
     }
     return new Cr(i, s, o);
   }
@@ -74359,7 +74374,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
     }
   }
   const nE = [], xC = {};
-  class Hs {
+  class _s {
     constructor(e, r) {
       this.local = e.length ? e : nE, this.children = r.length ? r : nE;
     }
@@ -74389,10 +74404,10 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
         let l = this.local[A].map(e, a, i);
         l && l.type.valid(r, l) ? (o || (o = [])).push(l) : s.onRemove && s.onRemove(this.local[A].spec);
       }
-      return this.children.length ? PNe(this.children, o || [], e, r, a, i, s) : o ? new Hs(o.sort(BC), nE) : zl;
+      return this.children.length ? PNe(this.children, o || [], e, r, a, i, s) : o ? new _s(o.sort(BC), nE) : zl;
     }
     add(e, r) {
-      return r.length ? this == zl ? Hs.create(e, r) : this.addInner(e, r, 0) : this;
+      return r.length ? this == zl ? _s.create(e, r) : this.addInner(e, r, 0) : this;
     }
     addInner(e, r, a) {
       let i, s = 0;
@@ -74405,7 +74420,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
       });
       let o = T$(s ? z$(r) : r, -a);
       for (let A = 0; A < o.length; A++) o[A].type.valid(e, o[A]) || o.splice(A--, 1);
-      return new Hs(o.length ? this.local.concat(o).sort(BC) : this.local, i || this.children);
+      return new _s(o.length ? this.local.concat(o).sort(BC) : this.local, i || this.children);
     }
     remove(e) {
       return e.length == 0 || this == zl ? this : this.removeInner(e, 0);
@@ -74423,11 +74438,11 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
       if (i.length) {
         for (let s = 0, o; s < e.length; s++) if (o = e[s]) for (let A = 0; A < i.length; A++) i[A].eq(o, r) && (i == this.local && (i = this.local.slice()), i.splice(A--, 1));
       }
-      return a == this.children && i == this.local ? this : i.length || a.length ? new Hs(i, a) : zl;
+      return a == this.children && i == this.local ? this : i.length || a.length ? new _s(i, a) : zl;
     }
     forChild(e, r) {
       if (this == zl) return this;
-      if (r.isLeaf) return Hs.empty;
+      if (r.isLeaf) return _s.empty;
       let a, i;
       for (let A = 0; A < this.children.length; A += 3) if (this.children[A] >= e) {
         this.children[A] == e && (a = this.children[A + 2]);
@@ -74442,7 +74457,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
         }
       }
       if (i) {
-        let A = new Hs(i.sort(BC), nE);
+        let A = new _s(i.sort(BC), nE);
         return a ? new xp([
           A,
           a
@@ -74452,7 +74467,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
     }
     eq(e) {
       if (this == e) return true;
-      if (!(e instanceof Hs) || this.local.length != e.local.length || this.children.length != e.children.length) return false;
+      if (!(e instanceof _s) || this.local.length != e.local.length || this.children.length != e.children.length) return false;
       for (let r = 0; r < this.local.length; r++) if (!this.local[r].eq(e.local[r])) return false;
       for (let r = 0; r < this.children.length; r += 3) if (this.children[r] != e.children[r] || this.children[r + 1] != e.children[r + 1] || !this.children[r + 2].eq(e.children[r + 2])) return false;
       return true;
@@ -74471,9 +74486,9 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
       e(this);
     }
   }
-  Hs.empty = new Hs([], []);
-  Hs.removeOverlap = kL;
-  const zl = Hs.empty;
+  _s.empty = new _s([], []);
+  _s.removeOverlap = kL;
+  const zl = _s.empty;
   class xp {
     constructor(e) {
       this.members = e;
@@ -74483,7 +74498,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
       return xp.from(a);
     }
     forChild(e, r) {
-      if (r.isLeaf) return Hs.empty;
+      if (r.isLeaf) return _s.empty;
       let a = [];
       for (let i = 0; i < this.members.length; i++) {
         let s = this.members[i].forChild(e, r);
@@ -74515,7 +74530,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
         case 1:
           return e[0];
         default:
-          return new xp(e.every((r) => r instanceof Hs) ? e : e.reduce((r, a) => r.concat(a instanceof Hs ? a : a.members), []));
+          return new xp(e.every((r) => r instanceof _s) ? e : e.reduce((r, a) => r.concat(a instanceof _s ? a : a.members), []));
       }
     }
     forEachSet(e) {
@@ -74564,7 +74579,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
         A.splice(u, 0, g.children[d], g.children[d + 1], g.children[d + 2]);
       }
     }
-    return new Hs(e.sort(BC), A);
+    return new _s(e.sort(BC), A);
   }
   function T$(t, e) {
     if (!e || !t.length) return t;
@@ -74609,7 +74624,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
     });
     let o = T$(s ? z$(t) : t, -r).sort(BC);
     for (let A = 0; A < o.length; A++) o[A].type.valid(e, o[A]) || (a.onRemove && a.onRemove(o[A].spec), o.splice(A--, 1));
-    return o.length || i.length ? new Hs(o, i) : zl;
+    return o.length || i.length ? new _s(o, i) : zl;
   }
   function BC(t, e) {
     return t.from - e.from || t.to - e.to;
@@ -74640,7 +74655,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
     return t.someProp("decorations", (r) => {
       let a = r(t.state);
       a && a != zl && e.push(a);
-    }), t.cursorWrapper && e.push(Hs.create(t.state.doc, [
+    }), t.cursorWrapper && e.push(_s.create(t.state.doc, [
       t.cursorWrapper.deco
     ])), xp.from(e);
   }
@@ -75015,7 +75030,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
     else return null;
     let c = [];
     for (let g = 0; g < e.childCount; g++) c.push(l(e.child(g)));
-    if (Wn.from(c).eq(t)) return {
+    if (qn.from(c).eq(t)) return {
       mark: A,
       type: o
     };
@@ -75811,7 +75826,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
     return H$(r);
   }
   function E1(t, e, r) {
-    if (t instanceof Lp || t instanceof Wn) return t;
+    if (t instanceof Lp || t instanceof qn) return t;
     r = {
       slice: true,
       parseOptions: {},
@@ -75819,7 +75834,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
     };
     const a = typeof t == "object" && t !== null, i = typeof t == "string";
     if (a) try {
-      if (Array.isArray(t) && t.length > 0) return Wn.fromArray(t.map((A) => e.nodeFromJSON(A)));
+      if (Array.isArray(t) && t.length > 0) return qn.fromArray(t.map((A) => e.nodeFromJSON(A)));
       const o = e.nodeFromJSON(t);
       return r.errorOnInvalidContent && o.check(), o;
     } catch (s) {
@@ -75924,7 +75939,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
       let p;
       if (u) {
         if (Array.isArray(e)) p = e.map((I) => I.text || "").join("");
-        else if (e instanceof Wn) {
+        else if (e instanceof qn) {
           let I = "";
           e.forEach((x) => {
             x.text && (I += x.text);
@@ -76794,14 +76809,14 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
     if (l.parent.content.size === 0 && l.node(-1).childCount === l.indexAfter(-1)) {
       if (l.depth === 2 || l.node(-3).type !== A || l.index(-2) !== l.node(-2).childCount - 1) return false;
       if (i) {
-        let x = Wn.empty;
+        let x = qn.empty;
         const C = l.index(-1) ? 1 : l.index(-2) ? 2 : 3;
-        for (let j = l.depth - C; j >= l.depth - 3; j -= 1) x = Wn.from(l.node(j).copy(x));
+        for (let j = l.depth - C; j >= l.depth - 3; j -= 1) x = qn.from(l.node(j).copy(x));
         const B = l.indexAfter(-1) < l.node(-2).childCount ? 1 : l.indexAfter(-2) < l.node(-3).childCount ? 2 : 3, Q = {
           ...Ak(u, l.node().type.name, l.node().attrs),
           ...e
         }, D = ((o = A.contentMatch.defaultType) == null ? void 0 : o.createAndFill(Q)) || void 0;
-        x = x.append(Wn.from(A.createAndFill(null, D) || void 0));
+        x = x.append(qn.from(A.createAndFill(null, D) || void 0));
         const v = l.before(l.depth - (C - 1));
         r.replace(v, l.after(-B), new Cr(x, 4 - C, 0));
         let M = -1;
@@ -77069,7 +77084,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
           const l = i.getMeta("applyInputRules");
           return l && setTimeout(() => {
             let { text: g } = l;
-            typeof g == "string" ? g = g : g = TL(Wn.from(g), o.schema);
+            typeof g == "string" ? g = g : g = TL(qn.from(g), o.schema);
             const { from: d } = l, u = d + g.length;
             RN({
               editor: e,
@@ -77329,7 +77344,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
         if (!p && !I && !C) return;
         if (C) {
           let { text: D } = x;
-          typeof D == "string" ? D = D : D = TL(Wn.from(D), h.schema);
+          typeof D == "string" ? D = D : D = TL(qn.from(D), h.schema);
           const { from: v } = x, M = v + D.length, j = t5e(D);
           return l({
             rule: g,
@@ -82440,15 +82455,15 @@ ${r}
     if (e.inputType != "insertCompositionText" || !(t.state.selection instanceof Ho)) return false;
     let { $from: r } = t.state.selection, a = r.parent.contentMatchAt(r.index()).findWrapping(t.state.schema.nodes.text);
     if (!a) return false;
-    let i = Wn.empty;
-    for (let o = a.length - 1; o >= 0; o--) i = Wn.from(a[o].createAndFill(null, i));
+    let i = qn.empty;
+    for (let o = a.length - 1; o >= 0; o--) i = qn.from(a[o].createAndFill(null, i));
     let s = t.state.tr.replace(r.pos, r.pos, new Cr(i, 0, 0));
     return s.setSelection(pa.near(s.doc.resolve(r.pos + 1))), t.dispatch(s), false;
   }
   function Y3e(t) {
     if (!(t.selection instanceof Ho)) return null;
     let e = document.createElement("div");
-    return e.className = "ProseMirror-gapcursor", Hs.create(t.doc, [
+    return e.className = "ProseMirror-gapcursor", _s.create(t.doc, [
       WA.widget(t.selection.head, e, {
         key: "gapcursor"
       })
@@ -82860,7 +82875,7 @@ ${r}
           props: {
             decorations: ({ doc: t, selection: e }) => {
               const { isEditable: r, isFocused: a } = this.editor, { anchor: i } = e, s = [];
-              if (!r || !a) return Hs.create(t, []);
+              if (!r || !a) return _s.create(t, []);
               let o = 0;
               this.options.mode === "deepest" && t.descendants((l, c) => {
                 if (l.isText) return;
@@ -82874,7 +82889,7 @@ ${r}
                 s.push(WA.node(c, c + l.nodeSize, {
                   class: this.options.className
                 }));
-              }), Hs.create(t, s);
+              }), _s.create(t, s);
             }
           }
         })
@@ -83089,7 +83104,7 @@ ${r}
                   return this.options.includeChildren;
                 });
               }
-              return Hs.create(e, A);
+              return _s.create(e, A);
             }
           }
         })
@@ -83110,7 +83125,7 @@ ${r}
           key: new Zo("selection"),
           props: {
             decorations(r) {
-              return r.selection.empty || t.isFocused || !t.isEditable || nee(r.selection) || t.view.dragging ? null : Hs.create(r.doc, [
+              return r.selection.empty || t.isFocused || !t.isEditable || nee(r.selection) || t.view.dragging ? null : _s.create(r.doc, [
                 WA.inline(r.selection.from, r.selection.to, {
                   class: e.className
                 })
@@ -83586,10 +83601,10 @@ ${r}
           }
           c.push(f);
         }
-        o.push(e.child(l).copy(Wn.from(c)));
+        o.push(e.child(l).copy(qn.from(c)));
       }
       const A = this.isColSelection() && this.isRowSelection() ? e : o;
-      return new Cr(Wn.from(A), 1, 1);
+      return new Cr(qn.from(A), 1, 1);
     }
     replace(e, r = Cr.empty) {
       const a = e.steps.length, i = this.ranges;
@@ -83601,7 +83616,7 @@ ${r}
       s && e.setSelection(s);
     }
     replaceWith(e, r) {
-      this.replace(e, new Cr(Wn.from(r), 0, 0));
+      this.replace(e, new Cr(qn.from(r), 0, 0));
     }
     forEachCell(e) {
       const r = this.$anchorCell.node(-1), a = Yo.get(r), i = this.$anchorCell.start(-1), s = a.cellsInRect(a.rectBetween(this.$anchorCell.pos - i, this.$headCell.pos - i));
@@ -83668,7 +83683,7 @@ ${r}
       e.push(WA.node(a, a + r.nodeSize, {
         class: "selectedCell"
       }));
-    }), Hs.create(t.doc, e);
+    }), _s.create(t.doc, e);
   }
   function DRe({ $from: t, $to: e }) {
     if (t.pos == e.pos || t.pos < e.pos - 6) return false;
@@ -83953,7 +83968,7 @@ ${r}
     if (_Re(i, a)) return false;
     if (e) {
       const s = t.tr, o = {};
-      let A = Wn.empty, l, c;
+      let A = qn.empty, l, c;
       for (let g = a.top; g < a.bottom; g++) for (let d = a.left; d < a.right; d++) {
         const u = i.map[g * i.width + d], h = a.table.nodeAt(u);
         if (!(o[u] || !h)) if (o[u] = true, l == null) l = u, c = h;
@@ -84190,10 +84205,10 @@ ${r}
     }
     let a = 0;
     for (let i = 0; i < r.length; i++) a = Math.max(a, r[i]);
-    for (let i = 0; i < r.length; i++) if (i >= e.length && e.push(Wn.empty), r[i] < a) {
+    for (let i = 0; i < r.length; i++) if (i >= e.length && e.push(qn.empty), r[i] < a) {
       const s = Jl(t).cell.createAndFill(), o = [];
       for (let A = r[i]; A < a; A++) o.push(s);
-      e[i] = e[i].append(Wn.from(o));
+      e[i] = e[i].append(qn.from(o));
     }
     return {
       height: e.length,
@@ -84215,7 +84230,7 @@ ${r}
           g + u.attrs.colspan > a && (u = u.type.createChecked(LC(u.attrs, u.attrs.colspan, g + u.attrs.colspan - a), u.content)), c.push(u), g += u.attrs.colspan;
           for (let h = 1; h < u.attrs.rowspan; h++) s[A + h] = (s[A + h] || 0) + u.attrs.colspan;
         }
-        o.push(Wn.from(c));
+        o.push(qn.from(c));
       }
       r = o, t = a;
     }
@@ -84230,7 +84245,7 @@ ${r}
             rowspan: Math.max(1, i - d.attrs.rowspan)
           }, d.content)), l.push(d);
         }
-        s.push(Wn.from(l));
+        s.push(qn.from(l));
       }
       r = s, e = i;
     }
@@ -84258,7 +84273,7 @@ ${r}
         const I = f >= e.width ? false : r.nodeAt(e.map[p + f]).type == l.header_cell;
         d.push(I ? g || (g = l.header_cell.createAndFill()) : c || (c = l.cell.createAndFill()));
       }
-      const u = l.row.create(null, Wn.from(d)), h = [];
+      const u = l.row.create(null, qn.from(d)), h = [];
       for (let f = e.height; f < s; f++) h.push(u);
       t.insert(t.mapping.slice(o).map(a + r.nodeSize - 2), h);
     }
@@ -84374,7 +84389,7 @@ ${r}
         width: 1,
         height: 1,
         rows: [
-          Wn.from(qT(Jl(t.state.schema).cell, r))
+          qn.from(qT(Jl(t.state.schema).cell, r))
         ]
       });
       const s = i.$anchorCell.node(-1), o = i.$anchorCell.start(-1), A = Yo.get(s).rectBetween(i.$anchorCell.pos - o, i.$headCell.pos - o);
@@ -84643,7 +84658,7 @@ ${r}
   }
   function h4e(t, e) {
     const r = [], a = t.doc.resolve(e), i = a.node(-1);
-    if (!i) return Hs.empty;
+    if (!i) return _s.empty;
     const s = Yo.get(i), o = a.start(-1), A = s.colCount(a.pos - o) + a.nodeAfter.attrs.colspan - 1;
     for (let c = 0; c < s.height; c++) {
       const g = A + c * s.width;
@@ -84655,7 +84670,7 @@ ${r}
         })), r.push(WA.widget(u, h));
       }
     }
-    return Hs.create(t.doc, r);
+    return _s.create(t.doc, r);
   }
   function f4e({ allowTableNodeSelection: t = false } = {}) {
     return new ao({
@@ -86620,7 +86635,7 @@ ${r}
                   onClick: pe,
                   className: "py-2.5 rounded-xl border dark:border-zinc-800 border-zinc-200 dark:hover:bg-zinc-800 hover:bg-zinc-100 dark:text-zinc-400 text-zinc-600 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 active:scale-95",
                   children: [
-                    n.jsx(Yn, {
+                    n.jsx(Hn, {
                       className: "w-3.5 h-3.5 text-red-500"
                     }),
                     "Decline"
@@ -86990,7 +87005,7 @@ ${r}
       y: 0
     }), ue = F.useRef(null), [Oe, ye] = F.useState(550), Xe = F.useRef(false), ve = F.useRef(null), { template: fe, loading: De } = Qb(x), Ue = F.useRef(0), [we, qe] = F.useState("Disconnected"), [nt, Ge] = F.useState(false), [Nt, Lt] = F.useState(false), Dt = F.useRef(null), pt = F.useRef(null), ft = F.useRef(false), Le = F.useMemo(() => {
       if (A) {
-        const Qt = a.find((_t) => _t.reportId === A);
+        const Qt = a.find((Ot) => Ot.reportId === A);
         return {
           reportId: A,
           patientName: (c == null ? void 0 : c.patientName) || (Qt == null ? void 0 : Qt.patientName) || "Unknown Patient"
@@ -87019,23 +87034,23 @@ ${r}
         } catch (lr) {
           console.error("Failed to parse live report draft packet:", lr);
         }
-      }, _t = (Jn) => {
+      }, Ot = (Jn) => {
         Ge(true);
       }, en = (Jn) => {
         Ge(false);
       }, Bn = () => {
         const Jn = pt.current;
         Jn && tt(Jn);
-      }, wn = () => {
+      }, vn = () => {
         const Jn = pt.current;
         Jn && tt(Jn);
       }, fr = () => {
         const Jn = pt.current;
         Jn && tt(Jn);
       }, sa = (Jn) => {
-        Jn.on("ReceiveReportDraftUpdate", Qt), Jn.on("UserJoined", _t), Jn.on("UserLeft", en), Jn.on("ReceiveReportDraftSaved", Bn), Jn.on("ReceiveReportDraftResumed", wn), Jn.on("ReceiveReportSignRequest", fr);
+        Jn.on("ReceiveReportDraftUpdate", Qt), Jn.on("UserJoined", Ot), Jn.on("UserLeft", en), Jn.on("ReceiveReportDraftSaved", Bn), Jn.on("ReceiveReportDraftResumed", vn), Jn.on("ReceiveReportSignRequest", fr);
       }, ya = (Jn) => {
-        Jn.off("ReceiveReportDraftUpdate", Qt), Jn.off("UserJoined", _t), Jn.off("UserLeft", en), Jn.off("ReceiveReportDraftSaved", Bn), Jn.off("ReceiveReportDraftResumed", wn), Jn.off("ReceiveReportSignRequest", fr);
+        Jn.off("ReceiveReportDraftUpdate", Qt), Jn.off("UserJoined", Ot), Jn.off("UserLeft", en), Jn.off("ReceiveReportDraftSaved", Bn), Jn.off("ReceiveReportDraftResumed", vn), Jn.off("ReceiveReportSignRequest", fr);
       };
       return SI ? (clearTimeout(SI), SI = null, Uo && (Dt.current = Uo, sa(Uo), Uo.state === Di.Connected ? (qe("Connected"), Lt(true)) : Uo.state === Di.Connecting ? (qe("Connecting"), Lt(false)) : Uo.state === Di.Reconnecting ? (qe("Reconnecting"), Lt(false)) : (qe("Disconnected"), Lt(false)))) : Bt(sa), () => {
         ft.current = true;
@@ -87047,40 +87062,40 @@ ${r}
     }, []), F.useEffect(() => {
       const Qt = Dt.current;
       if (!(!Qt || Qt.state !== "Connected" || !Nt)) if (A) {
-        const _t = A.toString();
-        pt.current && pt.current !== _t && Qt.invoke("LeaveReportSession", pt.current).catch((en) => console.error(en)), pt.current = _t, Qt.invoke("JoinReportSession", _t).catch((en) => console.error(en));
-      } else pt.current && (Qt.invoke("LeaveReportSession", pt.current).catch((_t) => console.error(_t)), pt.current = null);
+        const Ot = A.toString();
+        pt.current && pt.current !== Ot && Qt.invoke("LeaveReportSession", pt.current).catch((en) => console.error(en)), pt.current = Ot, Qt.invoke("JoinReportSession", Ot).catch((en) => console.error(en));
+      } else pt.current && (Qt.invoke("LeaveReportSession", pt.current).catch((Ot) => console.error(Ot)), pt.current = null);
     }, [
       A,
       we,
       Nt
     ]);
-    const Pe = async (Qt, _t) => {
+    const Pe = async (Qt, Ot) => {
       let en = {};
-      I((wn) => ({
-        ...wn,
-        interpretation: _t
+      I((vn) => ({
+        ...vn,
+        interpretation: Ot
       })), en = {
-        interpretation: _t,
+        interpretation: Ot,
         comments: p.comments
       };
       const Bn = Dt.current;
       if (Bn && Bn.state === "Connected" && A) try {
         await Bn.invoke("SendReportDraftUpdate", A.toString(), JSON.stringify(en));
-      } catch (wn) {
-        console.error("SignalR report broadcast failed:", wn);
+      } catch (vn) {
+        console.error("SignalR report broadcast failed:", vn);
       }
-    }, it = async (Qt, _t) => {
+    }, it = async (Qt, Ot) => {
       U((en) => {
         const Bn = {
           ...en,
-          [Qt]: _t
-        }, wn = Dt.current;
-        if (wn && wn.state === "Connected" && A) {
+          [Qt]: Ot
+        }, vn = Dt.current;
+        if (vn && vn.state === "Connected" && A) {
           const fr = {
             resultsState: Bn
           };
-          wn.invoke("SendReportDraftUpdate", A.toString(), JSON.stringify(fr)).catch((sa) => console.error("SignalR report broadcast failed:", sa));
+          vn.invoke("SendReportDraftUpdate", A.toString(), JSON.stringify(fr)).catch((sa) => console.error("SignalR report broadcast failed:", sa));
         }
         return Bn;
       });
@@ -87094,7 +87109,7 @@ ${r}
         return;
       }
       qe("Connecting"), Lt(false);
-      const _t = new lv().withUrl("/radiologyCollaborationHub", {
+      const Ot = new lv().withUrl("/radiologyCollaborationHub", {
         accessTokenFactory: () => localStorage.getItem("synos_jwt"),
         skipNegotiation: true,
         transport: Oo.WebSockets
@@ -87104,25 +87119,25 @@ ${r}
         5e3,
         1e4
       ]).build();
-      Uo = _t, Dt.current = _t, _t.onreconnecting((en) => {
-        Dt.current === _t && (qe("Reconnecting"), Lt(false));
-      }), _t.onreconnected((en) => {
-        Dt.current === _t && (qe("Connected"), Lt(true), _t.invoke("RegisterPresence", "Pathologist").catch((Bn) => console.error(Bn)));
-      }), _t.onclose((en) => {
-        Dt.current === _t && (qe("Disconnected"), Lt(false));
-      }), Qt(_t), _t.start().then(async () => {
-        if (Dt.current === _t) {
+      Uo = Ot, Dt.current = Ot, Ot.onreconnecting((en) => {
+        Dt.current === Ot && (qe("Reconnecting"), Lt(false));
+      }), Ot.onreconnected((en) => {
+        Dt.current === Ot && (qe("Connected"), Lt(true), Ot.invoke("RegisterPresence", "Pathologist").catch((Bn) => console.error(Bn)));
+      }), Ot.onclose((en) => {
+        Dt.current === Ot && (qe("Disconnected"), Lt(false));
+      }), Qt(Ot), Ot.start().then(async () => {
+        if (Dt.current === Ot) {
           if (ft.current) {
-            _t.stop().catch(() => {
-            }), Uo === _t && (Uo = null), Dt.current = null;
+            Ot.stop().catch(() => {
+            }), Uo === Ot && (Uo = null), Dt.current = null;
             return;
           }
-          qe("Connected"), Lt(true), await _t.invoke("RegisterPresence", "Pathologist");
+          qe("Connected"), Lt(true), await Ot.invoke("RegisterPresence", "Pathologist");
         }
       }).catch((en) => {
-        if (Dt.current === _t) {
+        if (Dt.current === Ot) {
           if (ft.current) {
-            Uo === _t && (Uo = null), Dt.current = null;
+            Uo === Ot && (Uo = null), Dt.current = null;
             return;
           }
           qe("Disconnected"), Lt(false), console.error("Failed to connect to SignalR hub:", en);
@@ -87144,18 +87159,18 @@ ${r}
           designation: (Qt == null ? void 0 : Qt.designation) || "Consultant Pathologist"
         });
       } catch (Qt) {
-        console.warn("Failed to fetch profile (non-fatal):", Qt), _((_t) => _t || {
+        console.warn("Failed to fetch profile (non-fatal):", Qt), _((Ot) => Ot || {
           name: (t == null ? void 0 : t.name) || "Dr. Vasudeva Rao",
           designation: "Consultant Pathologist",
           role: "Pathologist"
-        }), Me((_t) => _t || {
+        }), Me((Ot) => Ot || {
           name: (t == null ? void 0 : t.name) || "Dr. Vasudeva Rao",
           designation: "Consultant Pathologist"
         });
       }
-    }, qt = (Qt, _t) => {
+    }, qt = (Qt, Ot) => {
       var _a3;
-      console.error(`${_t}:`, Qt), ((_a3 = Qt.response) == null ? void 0 : _a3.status) === 401 && he(true);
+      console.error(`${Ot}:`, Qt), ((_a3 = Qt.response) == null ? void 0 : _a3.status) === 401 && he(true);
     };
     F.useEffect(() => {
       A ? (tt(A), Qe(true), le(0.6), pe({
@@ -87170,17 +87185,17 @@ ${r}
     ]), F.useEffect(() => {
       const Qt = ue.current;
       if (!Qt) return;
-      const _t = (en) => {
+      const Ot = (en) => {
         if (en.ctrlKey) {
           en.preventDefault();
-          const wn = -en.deltaY > 0 ? 1.05 : 0.95;
-          le((fr) => Math.min(Math.max(fr * wn, 0.2), 3));
+          const vn = -en.deltaY > 0 ? 1.05 : 0.95;
+          le((fr) => Math.min(Math.max(fr * vn, 0.2), 3));
         }
       };
-      return Qt.addEventListener("wheel", _t, {
+      return Qt.addEventListener("wheel", Ot, {
         passive: false
       }), () => {
-        Qt.removeEventListener("wheel", _t);
+        Qt.removeEventListener("wheel", Ot);
       };
     }, [
       x
@@ -87203,20 +87218,20 @@ ${r}
     F.useEffect(() => {
       const Qt = (en) => {
         if (!ve.current || !Xe.current) return;
-        const Bn = ve.current.getBoundingClientRect(), wn = Math.max(320, Math.min(850, Bn.right - en.clientX));
-        ye(wn);
-      }, _t = () => {
+        const Bn = ve.current.getBoundingClientRect(), vn = Math.max(320, Math.min(850, Bn.right - en.clientX));
+        ye(vn);
+      }, Ot = () => {
         Xe.current && (Xe.current = false, document.body.style.cursor = "", document.body.style.userSelect = "");
       };
-      return window.addEventListener("pointermove", Qt), window.addEventListener("pointerup", _t), () => {
-        window.removeEventListener("pointermove", Qt), window.removeEventListener("pointerup", _t);
+      return window.addEventListener("pointermove", Qt), window.addEventListener("pointerup", Ot), () => {
+        window.removeEventListener("pointermove", Qt), window.removeEventListener("pointerup", Ot);
       };
     }, []);
     const ce = async () => {
       u(true);
       try {
-        const Qt = s ? "Signed,ManualVerified,Finalized,Delivered" : "Draft,ReadyForVerification,Signed,ManualVerified,Delivered", _t = await ba.getReportsByStatus(Qt, "Pathology", s);
-        i(_t);
+        const Qt = s ? "Signed,ManualVerified,Finalized,Delivered" : "Draft,ReadyForVerification,Signed,ManualVerified,Delivered", Ot = await ba.getReportsByStatus(Qt, "Pathology", s);
+        i(Ot);
       } catch (Qt) {
         qt(Qt, "Failed to fetch worklist");
       } finally {
@@ -87226,19 +87241,19 @@ ${r}
       var _a3, _b2, _c3;
       f(true);
       try {
-        const _t = await ba.getFullReportContext(Qt, true);
-        g(_t.report), C(_t.reportData), I({
-          interpretation: ((_a3 = _t.interpretation) == null ? void 0 : _a3.summary) || "",
-          comments: ((_b2 = _t.interpretation) == null ? void 0 : _b2.notes) || ""
+        const Ot = await ba.getFullReportContext(Qt, true);
+        g(Ot.report), C(Ot.reportData), I({
+          interpretation: ((_a3 = Ot.interpretation) == null ? void 0 : _a3.summary) || "",
+          comments: ((_b2 = Ot.interpretation) == null ? void 0 : _b2.notes) || ""
         });
         const en = {};
-        ((_c3 = _t.report) == null ? void 0 : _c3.groups) && _t.report.groups.forEach((Bn) => {
-          Bn.parameters && Bn.parameters.forEach((wn) => {
-            en[wn.parameterCode] = wn.value;
+        ((_c3 = Ot.report) == null ? void 0 : _c3.groups) && Ot.report.groups.forEach((Bn) => {
+          Bn.parameters && Bn.parameters.forEach((vn) => {
+            en[vn.parameterCode] = vn.value;
           });
         }), U(en), v(null);
-      } catch (_t) {
-        qt(_t, "Failed to fetch report detail");
+      } catch (Ot) {
+        qt(Ot, "Failed to fetch report detail");
       } finally {
         f(false);
       }
@@ -87253,16 +87268,16 @@ ${r}
           console.warn("Auto-claim on save skipped:", en);
         }
         if (await ba.updateInterpretation(A, p.interpretation, p.comments), (c == null ? void 0 : c.canEditValues) && Object.keys(P).length > 0) {
-          const en = Object.entries(P).map(([Bn, wn]) => ({
+          const en = Object.entries(P).map(([Bn, vn]) => ({
             ParameterCode: Bn,
-            Value: wn
+            Value: vn
           }));
           await ba.saveResults(c.sourceId, en);
         }
-        const _t = await ba.getFullReportContext(A, true);
-        Qt === Ue.current && (g(_t.report), C(_t.reportData), v(/* @__PURE__ */ new Date()), setTimeout(() => v(null), 3e3));
-      } catch (_t) {
-        throw console.error("Save failed:", _t), _t;
+        const Ot = await ba.getFullReportContext(A, true);
+        Qt === Ue.current && (g(Ot.report), C(Ot.reportData), v(/* @__PURE__ */ new Date()), setTimeout(() => v(null), 3e3));
+      } catch (Ot) {
+        throw console.error("Save failed:", Ot), Ot;
       } finally {
         Q(false);
       }
@@ -87282,11 +87297,11 @@ ${r}
       }
       if (!window.confirm("Are you sure you want to sign this report? This action is irreversible.")) return;
       j(true);
-      const _t = A;
+      const Ot = A;
       try {
-        await ie(), await ba.signReport(_t);
-        const en = Da.filter((Bn) => Bn.status !== "Signed" && Bn.status !== "ManualVerified" && Bn.reportId !== _t);
-        await ce(), en.length > 0 ? (alert(`Reminder: This patient has ${en.length} other report(s) remaining (e.g. ${en.map((Bn) => Bn.testName).join(", ")}). Please ensure all are completed.`), l(en[0].reportId)) : await tt(_t);
+        await ie(), await ba.signReport(Ot);
+        const en = Da.filter((Bn) => Bn.status !== "Signed" && Bn.status !== "ManualVerified" && Bn.reportId !== Ot);
+        await ce(), en.length > 0 ? (alert(`Reminder: This patient has ${en.length} other report(s) remaining (e.g. ${en.map((Bn) => Bn.testName).join(", ")}). Please ensure all are completed.`), l(en[0].reportId)) : await tt(Ot);
       } catch (en) {
         console.error("Signing failed:", en), alert("Digital Signature Protocol Failed: " + (((_b2 = (_a3 = en.response) == null ? void 0 : _a3.data) == null ? void 0 : _b2.message) || en.message));
       } finally {
@@ -87294,14 +87309,14 @@ ${r}
       }
     }, un = async (Qt) => {
       var _a3, _b2, _c3;
-      const _t = Qt.target.files[0];
-      if (_t) {
+      const Ot = Qt.target.files[0];
+      if (Ot) {
         ne(true);
         try {
           await Aw.updateProfile({
             name: Ce.name,
             designation: Ce.designation
-          }), await Aw.uploadSignature(t.id, _t), await Jt(), ee(false);
+          }), await Aw.uploadSignature(t.id, Ot), await Jt(), ee(false);
         } catch (en) {
           console.error("Upload failed:", en), alert("Identity Setup Failed: " + (((_b2 = (_a3 = en.response) == null ? void 0 : _a3.data) == null ? void 0 : _b2.message) || ((_c3 = en.response) == null ? void 0 : _c3.data) || en.message));
         } finally {
@@ -87329,29 +87344,29 @@ ${r}
       return ((_a3 = x == null ? void 0 : x.signatures) == null ? void 0 : _a3.some((Qt) => Qt.role === "Chief Pathologist / Director" || Qt.hash === "BASELINE_IDENTITY" || Qt.signatureImageBase64)) || false;
     }, [
       x
-    ]), Ot = (Qt) => Qt && Qt.trim().length > 0, Pt = [];
-    Ve && Ft || (Ot(O == null ? void 0 : O.name) || Pt.push("Full Name"), Ot(O == null ? void 0 : O.designation) || Pt.push("Professional Designation"), (O == null ? void 0 : O.signatureImageUrl) || Pt.push("Digital Signature Image"));
-    const bn = Pt.length === 0, [rr, dn] = F.useState("available"), on = a.filter((Qt) => !Qt.verifiedByUserId).length, Ir = a.filter((Qt) => Qt.patientName.toLowerCase().includes(G.toLowerCase()) || Qt.testName.toLowerCase().includes(G.toLowerCase()) ? s ? rr === "available" ? Qt.verifiedByUserId !== (t == null ? void 0 : t.id) : Qt.verifiedByUserId === (t == null ? void 0 : t.id) : rr === "available" ? !Qt.verifiedByUserId : Ve ? !!Qt.verifiedByUserId : Qt.verifiedByUserId === (t == null ? void 0 : t.id) : false), Pr = async (Qt) => {
+    ]), Pt = (Qt) => Qt && Qt.trim().length > 0, Ht = [];
+    Ve && Ft || (Pt(O == null ? void 0 : O.name) || Ht.push("Full Name"), Pt(O == null ? void 0 : O.designation) || Ht.push("Professional Designation"), (O == null ? void 0 : O.signatureImageUrl) || Ht.push("Digital Signature Image"));
+    const bn = Ht.length === 0, [rr, dn] = F.useState("available"), on = a.filter((Qt) => !Qt.verifiedByUserId).length, Ir = a.filter((Qt) => Qt.patientName.toLowerCase().includes(G.toLowerCase()) || Qt.testName.toLowerCase().includes(G.toLowerCase()) ? s ? rr === "available" ? Qt.verifiedByUserId !== (t == null ? void 0 : t.id) : Qt.verifiedByUserId === (t == null ? void 0 : t.id) : rr === "available" ? !Qt.verifiedByUserId : Ve ? !!Qt.verifiedByUserId : Qt.verifiedByUserId === (t == null ? void 0 : t.id) : false), Pr = async (Qt) => {
       try {
         await ba.claimReport(Qt), await ce(), dn("assigned"), l(Qt);
-      } catch (_t) {
-        alert("Failed to claim report: " + _t.message);
+      } catch (Ot) {
+        alert("Failed to claim report: " + Ot.message);
       }
     }, Fi = a.find((Qt) => Qt.reportId === A), Da = Fi ? a.filter((Qt) => Qt.visitId === Fi.visitId) : [], zn = Fi ? Da.findIndex((Qt) => Qt.reportId === A) : -1, er = Da.filter((Qt) => Qt.status !== "Signed" && Qt.status !== "ManualVerified").length, Sr = (c == null ? void 0 : c.patientName) || ((_a2 = c == null ? void 0 : c.patient) == null ? void 0 : _a2.name), Kr = (c == null ? void 0 : c.patientAgeGender) || (((_b = c == null ? void 0 : c.patient) == null ? void 0 : _b.age) ? `${c.patient.age} / ${c.patient.gender}` : ""), zr = (c == null ? void 0 : c.token) || ((_c2 = c == null ? void 0 : c.patient) == null ? void 0 : _c2.mrn) || "---", Gr = F.useMemo(() => {
       var _a3;
       if (!x || !fe) return null;
       const Qt = {
         ...x,
-        results: (_a3 = x.results) == null ? void 0 : _a3.map((_t) => {
+        results: (_a3 = x.results) == null ? void 0 : _a3.map((Ot) => {
           var _a4;
           return {
-            ..._t,
-            parameters: (_a4 = _t.parameters) == null ? void 0 : _a4.map((en) => {
-              const Bn = P[en.code], wn = Bn !== void 0 ? Bn : en.value, fr = sY(wn, en.referenceRangeText || en.referenceRange);
+            ...Ot,
+            parameters: (_a4 = Ot.parameters) == null ? void 0 : _a4.map((en) => {
+              const Bn = P[en.code], vn = Bn !== void 0 ? Bn : en.value, fr = sY(vn, en.referenceRangeText || en.referenceRange);
               return {
                 ...en,
-                value: wn,
-                displayValue: wn,
+                value: vn,
+                displayValue: vn,
                 flag: fr,
                 isAbnormal: fr !== "Normal" && fr !== ""
               };
@@ -87609,7 +87624,7 @@ ${r}
                                     className: "text-[10px] text-red-500 font-bold uppercase tracking-wider",
                                     children: [
                                       "Missing: ",
-                                      Pt.join(" \u2022 ")
+                                      Ht.join(" \u2022 ")
                                     ]
                                   })
                                 ]
@@ -87637,7 +87652,7 @@ ${r}
                               }),
                               n.jsx("div", {
                                 className: "w-7 h-7 dark:bg-zinc-800 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-500 shrink-0",
-                                children: n.jsx(Ys, {
+                                children: n.jsx(Hs, {
                                   className: "w-4 h-4"
                                 })
                               }),
@@ -87791,7 +87806,7 @@ ${r}
                                   })
                                 }),
                                 n.jsx("tbody", {
-                                  children: (_e = c == null ? void 0 : c.groups) == null ? void 0 : _e.map((Qt, _t) => n.jsxs(Ws.Fragment, {
+                                  children: (_e = c == null ? void 0 : c.groups) == null ? void 0 : _e.map((Qt, Ot) => n.jsxs(Ws.Fragment, {
                                     children: [
                                       Qt.groupName && n.jsx("tr", {
                                         className: "contents",
@@ -87805,7 +87820,7 @@ ${r}
                                         })
                                       }),
                                       Qt.parameters.map((en, Bn) => {
-                                        const wn = P[en.parameterCode] !== void 0 ? P[en.parameterCode] : en.value || "", fr = sY(wn, en.referenceRange), sa = fr !== "Normal" && fr !== "";
+                                        const vn = P[en.parameterCode] !== void 0 ? P[en.parameterCode] : en.value || "", fr = sY(vn, en.referenceRange), sa = fr !== "Normal" && fr !== "";
                                         return n.jsxs("tr", {
                                           className: me("group transition-colors", sa ? "bg-amber-50 hover:bg-amber-100/70" : "hover:bg-slate-50"),
                                           children: [
@@ -87817,12 +87832,12 @@ ${r}
                                               className: "px-3 py-1.5 text-[13px] font-mono font-semibold text-right dark:text-zinc-100 text-zinc-900 border-y border-transparent",
                                               children: (c == null ? void 0 : c.canEditValues) && !An ? n.jsx("input", {
                                                 type: "text",
-                                                value: wn,
+                                                value: vn,
                                                 onChange: (ya) => it(en.parameterCode, ya.target.value),
                                                 className: me("w-24 text-right bg-indigo-50/50 border-b border-indigo-200 focus:outline-none focus:border-indigo-500 px-1 font-mono font-semibold", sa && "font-black text-red-600 border-red-300 focus:border-red-550")
                                               }) : n.jsx("span", {
                                                 className: me(sa && "font-black text-red-600 underline decoration-red-200 underline-offset-4"),
-                                                children: wn || "-"
+                                                children: vn || "-"
                                               })
                                             }),
                                             n.jsx("td", {
@@ -87844,7 +87859,7 @@ ${r}
                                         }, Bn);
                                       })
                                     ]
-                                  }, _t))
+                                  }, Ot))
                                 })
                               ]
                             })
@@ -88168,7 +88183,7 @@ ${r}
                   n.jsx("button", {
                     onClick: () => ee(false),
                     className: "w-8 h-8 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center transition-colors",
-                    children: n.jsx(Yn, {
+                    children: n.jsx(Hn, {
                       className: "w-4 h-4 text-zinc-400"
                     })
                   })
@@ -89267,9 +89282,9 @@ ${r}
         }
       }, Ft = (on) => {
         fe(true);
-      }, Ot = (on) => {
+      }, Pt = (on) => {
         fe(false);
-      }, Pt = () => {
+      }, Ht = () => {
         const on = Ue.current;
         on && it(on);
       }, Un = () => {
@@ -89294,7 +89309,7 @@ ${r}
           jt || (Xe("Connected"), console.info("SignalR reconnected.", on), An.invoke("RegisterPresence", "Typist").catch((Ir) => console.error(Ir)));
         }), An.onclose((on) => {
           jt || (Xe("Disconnected"), console.error("SignalR connection closed.", on));
-        }), An.on("ReceiveReportDraftUpdate", Ve), An.on("UserJoined", Ft), An.on("UserLeft", Ot), An.on("ReceiveReportDraftSaved", Pt), An.on("ReceiveReportDraftResumed", Un), An.on("ReceiveReportSignRequest", bn);
+        }), An.on("ReceiveReportDraftUpdate", Ve), An.on("UserJoined", Ft), An.on("UserLeft", Pt), An.on("ReceiveReportDraftSaved", Ht), An.on("ReceiveReportDraftResumed", Un), An.on("ReceiveReportSignRequest", bn);
         try {
           if (await An.start(), jt) {
             An.stop().catch(() => {
@@ -89308,7 +89323,7 @@ ${r}
         }
       })();
       return () => {
-        jt = true, An && (An.off("ReceiveReportDraftUpdate", Ve), An.off("UserJoined", Ft), An.off("UserLeft", Ot), An.off("ReceiveReportDraftSaved", Pt), An.off("ReceiveReportDraftResumed", Un), An.off("ReceiveReportSignRequest", bn)), dn.finally(() => {
+        jt = true, An && (An.off("ReceiveReportDraftUpdate", Ve), An.off("UserJoined", Ft), An.off("UserLeft", Pt), An.off("ReceiveReportDraftSaved", Ht), An.off("ReceiveReportDraftResumed", Un), An.off("ReceiveReportSignRequest", bn)), dn.finally(() => {
           An && An.state === Di.Connected && An.stop().catch(() => {
           });
         });
@@ -89336,8 +89351,8 @@ ${r}
     ]);
     const Nt = async (jt, An) => {
       let Ve = {};
-      D((Ot) => ({
-        ...Ot,
+      D((Pt) => ({
+        ...Pt,
         interpretation: An
       })), Ve = {
         interpretation: An,
@@ -89346,20 +89361,20 @@ ${r}
       const Ft = De == null ? void 0 : De.current;
       if (Ft && Ft.state === "Connected" && l) try {
         await Ft.invoke("SendReportDraftUpdate", l.toString(), JSON.stringify(Ve));
-      } catch (Ot) {
-        console.error("SignalR report broadcast failed:", Ot);
+      } catch (Pt) {
+        console.error("SignalR report broadcast failed:", Pt);
       }
     }, Lt = async (jt, An) => {
       p((Ve) => {
         const Ft = {
           ...Ve,
           [jt]: An
-        }, Ot = De == null ? void 0 : De.current;
-        if (Ot && Ot.state === "Connected" && l) {
-          const Pt = {
+        }, Pt = De == null ? void 0 : De.current;
+        if (Pt && Pt.state === "Connected" && l) {
+          const Ht = {
             resultsState: Ft
           };
-          Ot.invoke("SendReportDraftUpdate", l.toString(), JSON.stringify(Pt)).catch((Un) => console.error("SignalR report broadcast failed:", Un));
+          Pt.invoke("SendReportDraftUpdate", l.toString(), JSON.stringify(Ht)).catch((Un) => console.error("SignalR report broadcast failed:", Un));
         }
         return Ft;
       });
@@ -89384,8 +89399,8 @@ ${r}
       const An = (Ve) => {
         if (Ve.ctrlKey) {
           Ve.preventDefault();
-          const Ot = -Ve.deltaY > 0 ? 1.05 : 0.95;
-          se((Pt) => Math.min(Math.max(Pt * Ot, 0.2), 3));
+          const Pt = -Ve.deltaY > 0 ? 1.05 : 0.95;
+          se((Ht) => Math.min(Math.max(Ht * Pt, 0.2), 3));
         }
       };
       return jt.addEventListener("wheel", An, {
@@ -89414,8 +89429,8 @@ ${r}
     F.useEffect(() => {
       const jt = (Ve) => {
         if (!q.current || !le.current) return;
-        const Ft = q.current.getBoundingClientRect(), Ot = Math.max(320, Math.min(850, Ft.right - Ve.clientX));
-        Se(Ot);
+        const Ft = q.current.getBoundingClientRect(), Pt = Math.max(320, Math.min(850, Ft.right - Ve.clientX));
+        Se(Pt);
       }, An = () => {
         le.current && (le.current = false, document.body.style.cursor = "", document.body.style.userSelect = "");
       };
@@ -89444,8 +89459,8 @@ ${r}
         });
         const Ve = {};
         ((_c3 = An.report) == null ? void 0 : _c3.groups) && An.report.groups.forEach((Ft) => {
-          Ft.parameters && Ft.parameters.forEach((Ot) => {
-            Ve[Ot.parameterCode] = Ot.value;
+          Ft.parameters && Ft.parameters.forEach((Pt) => {
+            Ve[Pt.parameterCode] = Pt.value;
           });
         }), p(Ve), G(null);
       } catch (An) {
@@ -89459,9 +89474,9 @@ ${r}
       const jt = ++Ge.current;
       try {
         if ((g == null ? void 0 : g.canEditValues) && Object.keys(f).length > 0) {
-          const Ve = Object.entries(f).map(([Ft, Ot]) => ({
+          const Ve = Object.entries(f).map(([Ft, Pt]) => ({
             ParameterCode: Ft,
-            Value: Ot
+            Value: Pt
           }));
           await ba.saveResults(g.sourceId, Ve);
         }
@@ -89504,13 +89519,13 @@ ${r}
           return {
             ...An,
             parameters: (_a4 = An.parameters) == null ? void 0 : _a4.map((Ve) => {
-              const Ft = f[Ve.code], Ot = Ft !== void 0 ? Ft : Ve.value, Pt = oY(Ot, Ve.referenceRangeText || Ve.referenceRange);
+              const Ft = f[Ve.code], Pt = Ft !== void 0 ? Ft : Ve.value, Ht = oY(Pt, Ve.referenceRangeText || Ve.referenceRange);
               return {
                 ...Ve,
-                value: Ot,
-                displayValue: Ot,
-                flag: Pt,
-                isAbnormal: Pt !== "Normal" && Pt !== ""
+                value: Pt,
+                displayValue: Pt,
+                flag: Ht,
+                isAbnormal: Ht !== "Normal" && Ht !== ""
               };
             })
           };
@@ -89766,7 +89781,7 @@ ${r}
                               }),
                               n.jsx("div", {
                                 className: "w-7 h-7 dark:bg-zinc-800 bg-synos-primary/5 rounded-lg flex items-center justify-center text-synos-primary shrink-0",
-                                children: n.jsx(Ys, {
+                                children: n.jsx(Hs, {
                                   className: "w-4 h-4"
                                 })
                               }),
@@ -89930,7 +89945,7 @@ ${r}
                                         })
                                       }),
                                       jt.parameters.map((Ve, Ft) => {
-                                        const Ot = f[Ve.parameterCode] !== void 0 ? f[Ve.parameterCode] : Ve.value || "", Pt = oY(Ot, Ve.referenceRange), Un = Pt !== "Normal" && Pt !== "";
+                                        const Pt = f[Ve.parameterCode] !== void 0 ? f[Ve.parameterCode] : Ve.value || "", Ht = oY(Pt, Ve.referenceRange), Un = Ht !== "Normal" && Ht !== "";
                                         return n.jsxs("tr", {
                                           className: me("group transition-all duration-300", Un ? "dark:bg-amber-50/5 bg-amber-50" : "hover:dark:bg-white/[0.02] hover:bg-zinc-50"),
                                           children: [
@@ -89942,12 +89957,12 @@ ${r}
                                               className: "px-3 py-1.5 text-[13px] font-mono font-semibold text-right dark:text-zinc-100 text-zinc-900 border-y border-transparent",
                                               children: (g == null ? void 0 : g.canEditValues) && !kn ? n.jsx("input", {
                                                 type: "text",
-                                                value: Ot,
+                                                value: Pt,
                                                 onChange: (bn) => Lt(Ve.parameterCode, bn.target.value),
                                                 className: me("w-24 text-right bg-indigo-50/50 border-b border-indigo-200 focus:outline-none focus:border-indigo-500 px-1 font-mono font-semibold", Un && "font-black text-red-600 border-red-300 focus:border-red-550")
                                               }) : n.jsx("span", {
                                                 className: me(Un && "font-black text-red-600 underline decoration-red-200 underline-offset-4"),
-                                                children: Ot || "-"
+                                                children: Pt || "-"
                                               })
                                             }),
                                             n.jsx("td", {
@@ -89961,8 +89976,8 @@ ${r}
                                             n.jsx("td", {
                                               className: "px-3 py-1.5 last:rounded-r-xl border-y border-transparent",
                                               children: Un && n.jsx("span", {
-                                                className: me("text-[10px] font-bold uppercase px-2 py-0.5 rounded-full", (Pt == null ? void 0 : Pt.includes("Critical")) ? "bg-red-100 text-red-700" : Pt === "Low" ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-700"),
-                                                children: Pt
+                                                className: me("text-[10px] font-bold uppercase px-2 py-0.5 rounded-full", (Ht == null ? void 0 : Ht.includes("Critical")) ? "bg-red-100 text-red-700" : Ht === "Low" ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-700"),
+                                                children: Ht
                                               })
                                             })
                                           ]
@@ -91226,7 +91241,7 @@ ${r}
           },
           {
             name: "Finance (Ops)",
-            icon: Gs,
+            icon: Ys,
             path: "/finance"
           }
         ]
@@ -91638,7 +91653,7 @@ ${r}
                           type: "button",
                           onClick: () => C(false),
                           className: "text-slate-400 hover:text-slate-600 dark:hover:text-white p-0.5 cursor-pointer",
-                          children: n.jsx(Yn, {
+                          children: n.jsx(Hn, {
                             className: "w-3.5 h-3.5"
                           })
                         })
@@ -92358,7 +92373,7 @@ ${r}
             n.jsx(OB, {
               label: "Referrals",
               value: `\u20B9 ${(_e = (_d2 = o == null ? void 0 : o.financials) == null ? void 0 : _d2.referralPayouts) == null ? void 0 : _e.toLocaleString()}`,
-              icon: Us,
+              icon: Gs,
               watermark: X4e,
               isCurrency: true,
               cardStyle: Q,
@@ -92385,7 +92400,7 @@ ${r}
             n.jsx(OB, {
               label: "Net In-Hand",
               value: `\u20B9 ${(_k2 = (_j2 = o == null ? void 0 : o.financials) == null ? void 0 : _j2.netCashInHand) == null ? void 0 : _k2.toLocaleString()}`,
-              icon: Gs,
+              icon: Ys,
               watermark: tje,
               isCurrency: true,
               highlight: true,
@@ -93375,7 +93390,7 @@ ${r}
                                   n.jsxs("div", {
                                     className: "flex items-center gap-1.5",
                                     children: [
-                                      n.jsx(Ys, {
+                                      n.jsx(Hs, {
                                         className: "h-3 w-3 text-emerald-400"
                                       }),
                                       n.jsx("span", {
@@ -95703,10 +95718,10 @@ ${r}
       if (!$e || !$e.isProfile) return [];
       const gt = [];
       return ($e.includedTestIds || []).forEach((yn) => {
-        const Qn = (Rt || []).find((ar) => ar.id === yn);
-        Qn && Qn.parameters && Qn.parameters.forEach((ar) => {
+        const Qn = (Rt || []).find((ir) => ir.id === yn);
+        Qn && Qn.parameters && Qn.parameters.forEach((ir) => {
           gt.push({
-            ...ar,
+            ...ir,
             childTestName: Qn.name,
             childTestCode: Qn.code,
             isFromChild: true
@@ -95792,8 +95807,8 @@ ${r}
           headers: Rt
         });
         if (!yn.ok) throw new Error("Failed to download template");
-        const Qn = await yn.blob(), ar = window.URL.createObjectURL(Qn), Rn = document.createElement("a");
-        Rn.href = ar, Rn.setAttribute("download", "SynOS_Catalog_Master_Template.xlsx"), document.body.appendChild(Rn), Rn.click(), Rn.parentNode.removeChild(Rn);
+        const Qn = await yn.blob(), ir = window.URL.createObjectURL(Qn), Rn = document.createElement("a");
+        Rn.href = ir, Rn.setAttribute("download", "SynOS_Catalog_Master_Template.xlsx"), document.body.appendChild(Rn), Rn.click(), Rn.parentNode.removeChild(Rn);
       } catch ($e) {
         console.error($e), alert($e.message || "Failed to download catalog template");
       }
@@ -95923,7 +95938,7 @@ ${r}
       }
     };
     function ce({ selectedTest: $e }) {
-      const [Rt, gt] = F.useState(null), [On, yn] = F.useState(true), [Qn, ar] = F.useState([]), [Rn, ha] = F.useState([]), [Ia, wa] = F.useState([]), [cr, va] = F.useState([]), [Ei, Za] = F.useState([]), [mi, tA] = F.useState(""), [so, il] = F.useState(""), [Or, Li] = F.useState(1), [Os, Zt] = F.useState("units"), [TA, mm] = F.useState(0), oo = Ia.find((or) => or.consumableId === mi);
+      const [Rt, gt] = F.useState(null), [On, yn] = F.useState(true), [Qn, ir] = F.useState([]), [Rn, ha] = F.useState([]), [Ia, wa] = F.useState([]), [cr, va] = F.useState([]), [Ei, Za] = F.useState([]), [mi, tA] = F.useState(""), [so, il] = F.useState(""), [Or, Li] = F.useState(1), [Ps, Zt] = F.useState("units"), [TA, mm] = F.useState(0), oo = Ia.find((or) => or.consumableId === mi);
       F.useEffect(() => {
         oo && Zt(HW(oo.unitOfMeasure));
       }, [
@@ -95945,7 +95960,7 @@ ${r}
             Oa.getTubes().catch(() => []),
             dr.getRoles().catch(() => [])
           ]);
-          ar(Array.isArray(wr) ? wr : []), ha(Array.isArray(Ra) ? Ra : []), wa(Array.isArray(ls) ? ls : []), va(Array.isArray(ci) ? ci : []), Za(Array.isArray(wi) ? wi : []);
+          ir(Array.isArray(wr) ? wr : []), ha(Array.isArray(Ra) ? Ra : []), wa(Array.isArray(ls) ? ls : []), va(Array.isArray(ci) ? ci : []), Za(Array.isArray(wi) ? wi : []);
         } catch (or) {
           console.error("Failed loading inventory mappings for test", or);
         } finally {
@@ -95953,13 +95968,13 @@ ${r}
         }
       }, ns = async () => {
         if (!mi || !Rt) return;
-        const or = (oo == null ? void 0 : oo.unitOfMeasure) || "units", wr = parseFloat(Or) || 1, Ra = vE(wr, Os, or);
+        const or = (oo == null ? void 0 : oo.unitOfMeasure) || "units", wr = parseFloat(Or) || 1, Ra = vE(wr, Ps, or);
         try {
           await Oa.addTestConsumable(Rt, {
             consumableId: mi,
             quantityPerTest: Ra,
             displayQuantity: wr,
-            displayUnit: Os,
+            displayUnit: Ps,
             usageType: parseInt(TA) || 0
           }), tA(""), await hr();
         } catch (ls) {
@@ -96199,7 +96214,7 @@ ${r}
                                 className: "w-20 border border-zinc-200 dark:border-zinc-800 rounded-xl px-2 py-1 text-xs text-center outline-none bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 font-bold"
                               }),
                               n.jsx("select", {
-                                value: Os,
+                                value: Ps,
                                 onChange: (or) => Zt(or.target.value),
                                 className: "border border-zinc-200 dark:border-zinc-800 rounded-xl px-2 py-1 text-xs font-bold bg-white dark:bg-zinc-900 text-synos-primary outline-none",
                                 children: _E(oo == null ? void 0 : oo.unitOfMeasure).map((or) => n.jsx("option", {
@@ -96254,13 +96269,13 @@ ${r}
                         children: [
                           Or,
                           " ",
-                          Os
+                          Ps
                         ]
                       }),
                       " per test  \u279C  Equiv. ",
                       n.jsxs("strong", {
                         children: [
-                          vE(Or, Os, oo.unitOfMeasure),
+                          vE(Or, Ps, oo.unitOfMeasure),
                           " ",
                           oo.unitOfMeasure
                         ]
@@ -96627,7 +96642,7 @@ ${r}
         ]
       });
     }
-    const [tt, ie] = F.useState(1), ht = F.useRef(null), [Et, un] = F.useState("parameters"), [Ne, $t] = F.useState(false), [mt, jt] = F.useState("digital"), [An, Ve] = F.useState(false), [Ft, Ot] = F.useState(false), [Pt, Un] = F.useState(() => mY || hk);
+    const [tt, ie] = F.useState(1), ht = F.useRef(null), [Et, un] = F.useState("parameters"), [Ne, $t] = F.useState(false), [mt, jt] = F.useState("digital"), [An, Ve] = F.useState(false), [Ft, Pt] = F.useState(false), [Ht, Un] = F.useState(() => mY || hk);
     F.useEffect(() => {
       t && t.length > 0 && t !== hM && (q0 = t);
     }, [
@@ -96682,7 +96697,7 @@ ${r}
             if (ae(yn || []), fY = yn || [], yn && yn.length > 0) {
               const Qn = [
                 "All",
-                ...yn.map((ar) => ar.name)
+                ...yn.map((ir) => ir.name)
               ];
               Q(Qn), VN = Qn;
             }
@@ -96698,14 +96713,14 @@ ${r}
           const gt = (Rt || []).map(uY).filter(Boolean);
           gt.forEach((yn) => {
             yn.dbIncludedTestCodes && yn.dbIncludedTestCodes.length > 0 && (yn.includedTestIds = yn.dbIncludedTestCodes.map((Qn) => {
-              const ar = gt.find((Rn) => Rn.code && Rn.code.toLowerCase() === Qn.toLowerCase());
-              return ar ? ar.id : null;
+              const ir = gt.find((Rn) => Rn.code && Rn.code.toLowerCase() === Qn.toLowerCase());
+              return ir ? ir.id : null;
             }).filter(Boolean));
           }), e(gt), q0 = gt;
           const On = localStorage.getItem("synos_selected_test_id");
           i((yn) => {
             let Qn = null;
-            return (yn == null ? void 0 : yn.id) && (Qn = gt.find((ar) => ar.id === yn.id)), !Qn && On && (Qn = gt.find((ar) => ar.id === On)), !Qn && gt.length > 0 && (Qn = gt[0]), Qn ? (localStorage.setItem("synos_selected_test_id", Qn.id), Qn) : yn;
+            return (yn == null ? void 0 : yn.id) && (Qn = gt.find((ir) => ir.id === yn.id)), !Qn && On && (Qn = gt.find((ir) => ir.id === On)), !Qn && gt.length > 0 && (Qn = gt[0]), Qn ? (localStorage.setItem("synos_selected_test_id", Qn.id), Qn) : yn;
           });
         } catch (Rt) {
           console.error("Failed to fetch database tests on mount:", Rt);
@@ -96714,16 +96729,16 @@ ${r}
         }
       })(), bn();
     }, []);
-    const on = ($e, Rt, gt, On, yn, Qn, ar = false) => {
+    const on = ($e, Rt, gt, On, yn, Qn, ir = false) => {
       $e.preventDefault(), $e.stopPropagation();
       const Rn = $e.clientX, ha = $e.clientY, wa = 1 / ((tt || 1) * 3.78095), cr = (Ei) => {
         const Za = Ei.clientX - Rn, mi = Ei.clientY - ha, tA = Za * wa, so = mi * wa;
-        let il = yn + tA, Or = ar ? Qn - so : Qn + so;
-        il = Math.max(0, Math.min(210, il)), Or = Math.max(0, Math.min(297, Or)), Un((Li) => Li.map((Os) => Os.id === Rt ? {
-          ...Os,
+        let il = yn + tA, Or = ir ? Qn - so : Qn + so;
+        il = Math.max(0, Math.min(210, il)), Or = Math.max(0, Math.min(297, Or)), Un((Li) => Li.map((Ps) => Ps.id === Rt ? {
+          ...Ps,
           [gt]: Math.round(il * 10) / 10,
           [On]: Math.round(Or * 10) / 10
-        } : Os));
+        } : Ps));
       }, va = () => {
         document.removeEventListener("pointermove", cr), document.removeEventListener("pointerup", va), Un((Ei) => {
           const Za = Ei.find((mi) => mi.id === Rt);
@@ -96744,8 +96759,8 @@ ${r}
         });
       };
       document.addEventListener("pointermove", cr), document.addEventListener("pointerup", va);
-    }, [Ir, Pr] = F.useState((a == null ? void 0 : a.name) || ""), [Fi, Da] = F.useState((a == null ? void 0 : a.code) || ""), [zn, er] = F.useState((a == null ? void 0 : a.department) || ""), [Sr, Kr] = F.useState((a == null ? void 0 : a.isProfile) || false), [zr, Gr] = F.useState((a == null ? void 0 : a.specimenTypeCode) || "SERUM"), [Qt, _t] = F.useState((a == null ? void 0 : a.category) || "General"), [en, Bn] = F.useState((a == null ? void 0 : a.modalityId) || ""), [wn, fr] = F.useState(false), [sa, ya] = F.useState("formula"), [Jn, lr] = F.useState(""), [ka, Er] = F.useState(""), [oi, Rr] = F.useState(false), [ks, As] = F.useState(""), [Kt, Ai] = F.useState(false), [at, zt] = F.useState(""), [fn, _n] = F.useState(""), [sr, In] = F.useState(false), [Kn, Pn] = F.useState(""), [Dr, jr] = F.useState(""), [Ha, fi] = F.useState(false), [_r, Hr] = F.useState(""), [Qa, za] = F.useState(""), [Wi, _e] = F.useState(false), [Ze, st] = F.useState(""), [ot, bt] = F.useState(""), [xt, tn] = F.useState(false), [St, Wt] = F.useState(""), [Ut, Tn] = F.useState(""), [$n, Mn] = F.useState(""), [Hn, At] = F.useState(""), [wt, sn] = F.useState(""), [jn, gr] = F.useState(false), [Qr, ti] = F.useState(""), [Ya, $r] = F.useState(""), [Ga, aa] = F.useState(""), [da, Bi] = F.useState(false), [ia, Oi] = F.useState(""), [Ur, ur] = F.useState(""), [Ui, Is] = F.useState(""), [pi, Eo] = F.useState(false), [tl, RA] = F.useState(""), [iA, Vc] = F.useState(""), [Ms, eA] = F.useState(""), [To, ct] = F.useState(false), [Gt, gn] = F.useState(""), [Sn, Ea] = F.useState(""), [Sa, Ja] = F.useState(""), [li, es] = F.useState(false), [Ti, Zs] = F.useState(""), [vs, jA] = F.useState(""), [sA, Fs] = F.useState(""), [oA, ql] = F.useState(false), [bo, ts] = F.useState(""), [nl, Fe] = F.useState(""), [vn, qa] = F.useState(""), [ni, io] = F.useState(false), [Jr, Cs] = F.useState(""), [MA, rl] = F.useState(""), [nf, ug] = F.useState(""), [Ua, bd] = F.useState(false), [Wc, y0] = F.useState(""), [FA, rf] = F.useState(""), [Q0, af] = F.useState(""), sf = ($e) => {
-      i($e), localStorage.setItem("synos_selected_test_id", $e.id), Pr($e.name), Da($e.code), er($e.department), Kr($e.isProfile), Gr($e.specimenTypeCode || "SERUM"), _t($e.category || "General"), Bn($e.modalityId || ""), dn(false), fr(false), !$e.isProfile && Et === "profile-builder" && un("parameters");
+    }, [Ir, Pr] = F.useState((a == null ? void 0 : a.name) || ""), [Fi, Da] = F.useState((a == null ? void 0 : a.code) || ""), [zn, er] = F.useState((a == null ? void 0 : a.department) || ""), [Sr, Kr] = F.useState((a == null ? void 0 : a.isProfile) || false), [zr, Gr] = F.useState((a == null ? void 0 : a.specimenTypeCode) || "SERUM"), [Qt, Ot] = F.useState((a == null ? void 0 : a.category) || "General"), [en, Bn] = F.useState((a == null ? void 0 : a.modalityId) || ""), [vn, fr] = F.useState(false), [sa, ya] = F.useState("formula"), [Jn, lr] = F.useState(""), [ka, Er] = F.useState(""), [oi, Rr] = F.useState(false), [ks, As] = F.useState(""), [Kt, Ai] = F.useState(false), [at, zt] = F.useState(""), [fn, _n] = F.useState(""), [ar, In] = F.useState(false), [Kn, Pn] = F.useState(""), [Dr, jr] = F.useState(""), [Ha, fi] = F.useState(false), [_r, Hr] = F.useState(""), [Qa, za] = F.useState(""), [Wi, _e] = F.useState(false), [Ze, st] = F.useState(""), [ot, bt] = F.useState(""), [xt, tn] = F.useState(false), [St, Wt] = F.useState(""), [Ut, Tn] = F.useState(""), [Wn, Mn] = F.useState(""), [Yn, At] = F.useState(""), [wt, sn] = F.useState(""), [jn, gr] = F.useState(false), [Qr, ti] = F.useState(""), [Ya, Zr] = F.useState(""), [Ga, aa] = F.useState(""), [da, Bi] = F.useState(false), [ia, Oi] = F.useState(""), [Ur, ur] = F.useState(""), [Ui, Is] = F.useState(""), [pi, Eo] = F.useState(false), [tl, RA] = F.useState(""), [iA, Vc] = F.useState(""), [Ms, eA] = F.useState(""), [bo, ct] = F.useState(false), [Gt, gn] = F.useState(""), [Sn, Ea] = F.useState(""), [Sa, Ja] = F.useState(""), [li, es] = F.useState(false), [Ti, Zs] = F.useState(""), [vs, jA] = F.useState(""), [sA, Fs] = F.useState(""), [oA, ql] = F.useState(false), [yo, ts] = F.useState(""), [nl, Fe] = F.useState(""), [wn, qa] = F.useState(""), [ni, io] = F.useState(false), [Jr, Cs] = F.useState(""), [MA, rl] = F.useState(""), [nf, ug] = F.useState(""), [Ua, bd] = F.useState(false), [Wc, y0] = F.useState(""), [FA, rf] = F.useState(""), [Q0, af] = F.useState(""), sf = ($e) => {
+      i($e), localStorage.setItem("synos_selected_test_id", $e.id), Pr($e.name), Da($e.code), er($e.department), Kr($e.isProfile), Gr($e.specimenTypeCode || "SERUM"), Ot($e.category || "General"), Bn($e.modalityId || ""), dn(false), fr(false), !$e.isProfile && Et === "profile-builder" && un("parameters");
     }, sx = () => {
       const $e = ee.find((yn) => yn.name === zn), Rt = $e ? $e.macroDepartment === "Radiology" : zn === "Radiology" || zn === "RAD";
       if (Rt && !en) {
@@ -96757,20 +96772,20 @@ ${r}
         if (yn.id === a.id) {
           let Qn = yn.parameters || [];
           if (Rt) {
-            const ar = Qn.find((Rn) => Rn.code === "FINDINGS") || Qn[0];
+            const ir = Qn.find((Rn) => Rn.code === "FINDINGS") || Qn[0];
             Qn = [
               {
-                code: (ar == null ? void 0 : ar.code) === "FINDINGS" ? "FINDINGS" : (ar == null ? void 0 : ar.code) || "FINDINGS",
-                name: (ar == null ? void 0 : ar.name) || "Findings & Impressions",
+                code: (ir == null ? void 0 : ir.code) === "FINDINGS" ? "FINDINGS" : (ir == null ? void 0 : ir.code) || "FINDINGS",
+                name: (ir == null ? void 0 : ir.name) || "Findings & Impressions",
                 unit: "",
                 minRange: "",
                 maxRange: "",
-                method: (ar == null ? void 0 : ar.method) || "Dictation",
+                method: (ir == null ? void 0 : ir.method) || "Dictation",
                 hasFormula: false,
                 formula: "",
                 analyzerModel: "",
                 analyzerChannel: "",
-                narrativeTemplate: (ar == null ? void 0 : ar.narrativeTemplate) || yn.defaultInterpretation || `FINDINGS:
+                narrativeTemplate: (ir == null ? void 0 : ir.narrativeTemplate) || yn.defaultInterpretation || `FINDINGS:
 
 IMPRESSION:`,
                 genderRanges: {}
@@ -96785,7 +96800,7 @@ IMPRESSION:`,
             modalityId: Rt ? en : null,
             isProfile: Sr,
             specimenTypeCode: Rt ? "NO_SPECIMEN" : zr,
-            category: Rt ? ((_a3 = ne.find((ar) => ar.modalityId === en)) == null ? void 0 : _a3.name) || Qt : "General",
+            category: Rt ? ((_a3 = ne.find((ir) => ir.modalityId === en)) == null ? void 0 : _a3.name) || Qt : "General",
             parameters: Qn
           };
         }
@@ -96847,11 +96862,11 @@ IMPRESSION:`,
           branchB: 500,
           corporate: 450
         }
-      }, ar = [
+      }, ir = [
         ...t,
         Qn
       ];
-      e(ar), i(Qn), Pr(Qn.name), Da(Qn.code), er(Qn.department), Kr(Qn.isProfile), Gr(On ? "NO_SPECIMEN" : "SERUM"), _t(Qn.category), Bn(yn), dn(true), fr(false);
+      e(ir), i(Qn), Pr(Qn.name), Da(Qn.code), er(Qn.department), Kr(Qn.isProfile), Gr(On ? "NO_SPECIMEN" : "SERUM"), Ot(Qn.category), Bn(yn), dn(true), fr(false);
     }, ox = async ($e, Rt) => {
       if (Rt.stopPropagation(), t.length <= 1) return;
       const gt = t.find((yn) => yn.id === $e);
@@ -96859,10 +96874,10 @@ IMPRESSION:`,
         f(true);
         try {
           $e && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test($e) && await dr.deleteTest($e);
-          const Qn = t.filter((ar) => ar.id !== $e);
-          if (e(Qn), u((ar) => ar.filter((Rn) => (Rn.testId || Rn.TestId || Rn.id) !== $e)), a && a.id === $e) {
-            const ar = Qn[0] || null;
-            ar && sf(ar);
+          const Qn = t.filter((ir) => ir.id !== $e);
+          if (e(Qn), u((ir) => ir.filter((Rn) => (Rn.testId || Rn.TestId || Rn.id) !== $e)), a && a.id === $e) {
+            const ir = Qn[0] || null;
+            ir && sf(ir);
           }
           Ve(true), setTimeout(() => Ve(false), 2e3);
         } catch (yn) {
@@ -96901,8 +96916,8 @@ IMPRESSION:`,
       const Qn = {
         ...a,
         parameters: yn
-      }, ar = t.map((Rn) => Rn.id === a.id ? Qn : Rn);
-      e(ar), i(Qn);
+      }, ir = t.map((Rn) => Rn.id === a.id ? Qn : Rn);
+      e(ir), i(Qn);
     }, hg = ($e, Rt) => {
       if ($e === Rt || $e < 0 || Rt < 0 || $e >= a.parameters.length || Rt >= a.parameters.length) return;
       const gt = [
@@ -96915,8 +96930,8 @@ IMPRESSION:`,
       })), Qn = {
         ...a,
         parameters: yn
-      }, ar = t.map((Rn) => Rn.id === a.id ? Qn : Rn);
-      e(ar), i(Qn);
+      }, ir = t.map((Rn) => Rn.id === a.id ? Qn : Rn);
+      e(ir), i(Qn);
     }, of = ($e, Rt) => {
       if ($e === Rt || $e < 0 || Rt < 0 || $e >= a.includedTestIds.length || Rt >= a.includedTestIds.length) return;
       const gt = [
@@ -96926,7 +96941,7 @@ IMPRESSION:`,
       const yn = {
         ...a,
         includedTestIds: gt
-      }, Qn = t.map((ar) => ar.id === a.id ? yn : ar);
+      }, Qn = t.map((ir) => ir.id === a.id ? yn : ir);
       e(Qn), i(yn);
     }, Af = () => {
       const $e = {
@@ -96967,14 +96982,14 @@ IMPRESSION:`,
       const gt = a.parameters.find((mi) => mi.code === $e);
       if (console.log("OPEN_DRAWER_PARAM", gt), !gt) return;
       lr($e), ya(Rt), Er(gt.formula || ""), Rr(gt.hasFormula || false), As(gt.narrativeTemplate || ""), Ai(gt.showNarrative || false), zt(gt.analyzerModel || ""), _n(gt.analyzerChannel || ""), Pn(gt.maleMin !== void 0 && gt.maleMin !== null && gt.maleMin !== "" ? gt.maleMin : ((_a3 = gt.genderRanges) == null ? void 0 : _a3.maleMin) ?? ""), jr(gt.maleMax !== void 0 && gt.maleMax !== null && gt.maleMax !== "" ? gt.maleMax : ((_b2 = gt.genderRanges) == null ? void 0 : _b2.maleMax) ?? ""), Hr(gt.femaleMin !== void 0 && gt.femaleMin !== null && gt.femaleMin !== "" ? gt.femaleMin : ((_c3 = gt.genderRanges) == null ? void 0 : _c3.femaleMin) ?? ""), za(gt.femaleMax !== void 0 && gt.femaleMax !== null && gt.femaleMax !== "" ? gt.femaleMax : ((_d3 = gt.genderRanges) == null ? void 0 : _d3.femaleMax) ?? ""), In(gt.useMale ?? (gt.maleMin !== void 0 && gt.maleMin !== "" && gt.maleMin !== null) ?? (((_e2 = gt.genderRanges) == null ? void 0 : _e2.maleMin) !== void 0 && ((_f = gt.genderRanges) == null ? void 0 : _f.maleMin) !== 0)), fi(gt.useFemale ?? (gt.femaleMin !== void 0 && gt.femaleMin !== "" && gt.femaleMin !== null) ?? (((_g2 = gt.genderRanges) == null ? void 0 : _g2.femaleMin) !== void 0 && ((_h2 = gt.genderRanges) == null ? void 0 : _h2.femaleMin) !== 0)), _e(!!gt.useInfant), st(gt.infantMin !== void 0 && gt.infantMin !== null ? gt.infantMin : ""), bt(gt.infantMax !== void 0 && gt.infantMax !== null ? gt.infantMax : ""), tn(!!gt.useChild), Wt(gt.childMin !== void 0 && gt.childMin !== null ? gt.childMin : ""), Tn(gt.childMax !== void 0 && gt.childMax !== null ? gt.childMax : ""), Mn(gt.adultMin !== void 0 && gt.adultMin !== null ? gt.adultMin : ""), At(gt.adultMax !== void 0 && gt.adultMax !== null ? gt.adultMax : ""), sn(gt.referenceRange || "");
-      const On = gt.useMale ?? (gt.maleMin !== void 0 && gt.maleMin !== "" && gt.maleMin !== null), yn = gt.maleMin !== void 0 && gt.maleMin !== null ? gt.maleMin : "", Qn = gt.maleMax !== void 0 && gt.maleMax !== null ? gt.maleMax : "", ar = gt.useFemale ?? (gt.femaleMin !== void 0 && gt.femaleMin !== "" && gt.femaleMin !== null), Rn = gt.femaleMin !== void 0 && gt.femaleMin !== null ? gt.femaleMin : "", ha = gt.femaleMax !== void 0 && gt.femaleMax !== null ? gt.femaleMax : "";
+      const On = gt.useMale ?? (gt.maleMin !== void 0 && gt.maleMin !== "" && gt.maleMin !== null), yn = gt.maleMin !== void 0 && gt.maleMin !== null ? gt.maleMin : "", Qn = gt.maleMax !== void 0 && gt.maleMax !== null ? gt.maleMax : "", ir = gt.useFemale ?? (gt.femaleMin !== void 0 && gt.femaleMin !== "" && gt.femaleMin !== null), Rn = gt.femaleMin !== void 0 && gt.femaleMin !== null ? gt.femaleMin : "", ha = gt.femaleMax !== void 0 && gt.femaleMax !== null ? gt.femaleMax : "";
       gt.useInfant;
       const Ia = gt.infantMin !== void 0 && gt.infantMin !== null ? gt.infantMin : "", wa = gt.infantMax !== void 0 && gt.infantMax !== null ? gt.infantMax : "";
       gt.useChild;
       const cr = gt.childMin !== void 0 && gt.childMin !== null ? gt.childMin : "", va = gt.childMax !== void 0 && gt.childMax !== null ? gt.childMax : "";
       gt.useAdult;
       const Ei = gt.adultMin !== void 0 && gt.adultMin !== null ? gt.adultMin : "", Za = gt.adultMax !== void 0 && gt.adultMax !== null ? gt.adultMax : "";
-      gr(gt.useNewbornMale ?? false), ti(gt.newbornMaleMin !== void 0 && gt.newbornMaleMin !== null ? gt.newbornMaleMin : ""), $r(gt.newbornMaleMax !== void 0 && gt.newbornMaleMax !== null ? gt.newbornMaleMax : ""), aa(gt.newbornMaleText || ""), Bi(gt.useNewbornFemale ?? false), Oi(gt.newbornFemaleMin !== void 0 && gt.newbornFemaleMin !== null ? gt.newbornFemaleMin : ""), ur(gt.newbornFemaleMax !== void 0 && gt.newbornFemaleMax !== null ? gt.newbornFemaleMax : ""), Is(gt.newbornFemaleText || ""), Eo(gt.useInfantMale ?? (gt.useInfant ? true : On)), RA(gt.infantMaleMin !== void 0 && gt.infantMaleMin !== null ? gt.infantMaleMin : Ia || yn), Vc(gt.infantMaleMax !== void 0 && gt.infantMaleMax !== null ? gt.infantMaleMax : wa || Qn), eA(gt.infantMaleText || ""), ct(gt.useInfantFemale ?? (gt.useInfant ? true : ar)), gn(gt.infantFemaleMin !== void 0 && gt.infantFemaleMin !== null ? gt.infantFemaleMin : Ia || Rn), Ea(gt.infantFemaleMax !== void 0 && gt.infantFemaleMax !== null ? gt.infantFemaleMax : wa || ha), Ja(gt.infantFemaleText || ""), es(gt.useChildMale ?? (gt.useChild ? true : On)), Zs(gt.childMaleMin !== void 0 && gt.childMaleMin !== null ? gt.childMaleMin : cr || yn), jA(gt.childMaleMax !== void 0 && gt.childMaleMax !== null ? gt.childMaleMax : va || Qn), Fs(gt.childMaleText || ""), ql(gt.useChildFemale ?? (gt.useChild ? true : ar)), ts(gt.childFemaleMin !== void 0 && gt.childFemaleMin !== null ? gt.childFemaleMin : cr || Rn), Fe(gt.childFemaleMax !== void 0 && gt.childFemaleMax !== null ? gt.childFemaleMax : va || ha), qa(gt.childFemaleText || ""), io(gt.useAdultMale ?? (gt.useAdult ? true : On)), Cs(gt.adultMaleMin !== void 0 && gt.adultMaleMin !== null ? gt.adultMaleMin : Ei || yn), rl(gt.adultMaleMax !== void 0 && gt.adultMaleMax !== null ? gt.adultMaleMax : Za || Qn), ug(gt.adultMaleText || ""), bd(gt.useAdultFemale ?? (gt.useAdult ? true : ar)), y0(gt.adultFemaleMin !== void 0 && gt.adultFemaleMin !== null ? gt.adultFemaleMin : Ei || Rn), rf(gt.adultFemaleMax !== void 0 && gt.adultFemaleMax !== null ? gt.adultFemaleMax : Za || ha), af(gt.adultFemaleText || ""), fr(true);
+      gr(gt.useNewbornMale ?? false), ti(gt.newbornMaleMin !== void 0 && gt.newbornMaleMin !== null ? gt.newbornMaleMin : ""), Zr(gt.newbornMaleMax !== void 0 && gt.newbornMaleMax !== null ? gt.newbornMaleMax : ""), aa(gt.newbornMaleText || ""), Bi(gt.useNewbornFemale ?? false), Oi(gt.newbornFemaleMin !== void 0 && gt.newbornFemaleMin !== null ? gt.newbornFemaleMin : ""), ur(gt.newbornFemaleMax !== void 0 && gt.newbornFemaleMax !== null ? gt.newbornFemaleMax : ""), Is(gt.newbornFemaleText || ""), Eo(gt.useInfantMale ?? (gt.useInfant ? true : On)), RA(gt.infantMaleMin !== void 0 && gt.infantMaleMin !== null ? gt.infantMaleMin : Ia || yn), Vc(gt.infantMaleMax !== void 0 && gt.infantMaleMax !== null ? gt.infantMaleMax : wa || Qn), eA(gt.infantMaleText || ""), ct(gt.useInfantFemale ?? (gt.useInfant ? true : ir)), gn(gt.infantFemaleMin !== void 0 && gt.infantFemaleMin !== null ? gt.infantFemaleMin : Ia || Rn), Ea(gt.infantFemaleMax !== void 0 && gt.infantFemaleMax !== null ? gt.infantFemaleMax : wa || ha), Ja(gt.infantFemaleText || ""), es(gt.useChildMale ?? (gt.useChild ? true : On)), Zs(gt.childMaleMin !== void 0 && gt.childMaleMin !== null ? gt.childMaleMin : cr || yn), jA(gt.childMaleMax !== void 0 && gt.childMaleMax !== null ? gt.childMaleMax : va || Qn), Fs(gt.childMaleText || ""), ql(gt.useChildFemale ?? (gt.useChild ? true : ir)), ts(gt.childFemaleMin !== void 0 && gt.childFemaleMin !== null ? gt.childFemaleMin : cr || Rn), Fe(gt.childFemaleMax !== void 0 && gt.childFemaleMax !== null ? gt.childFemaleMax : va || ha), qa(gt.childFemaleText || ""), io(gt.useAdultMale ?? (gt.useAdult ? true : On)), Cs(gt.adultMaleMin !== void 0 && gt.adultMaleMin !== null ? gt.adultMaleMin : Ei || yn), rl(gt.adultMaleMax !== void 0 && gt.adultMaleMax !== null ? gt.adultMaleMax : Za || Qn), ug(gt.adultMaleText || ""), bd(gt.useAdultFemale ?? (gt.useAdult ? true : ir)), y0(gt.adultFemaleMin !== void 0 && gt.adultFemaleMin !== null ? gt.adultFemaleMin : Ei || Rn), rf(gt.adultFemaleMax !== void 0 && gt.adultFemaleMax !== null ? gt.adultFemaleMax : Za || ha), af(gt.adultFemaleText || ""), fr(true);
     }, cf = () => {
       const $e = a.parameters.map((On) => On.code === Jn ? {
         ...On,
@@ -96991,11 +97006,11 @@ IMPRESSION:`,
         useFemale: false,
         femaleMin: null,
         femaleMax: null,
-        useInfant: pi || To,
-        infantMin: pi ? tl !== "" ? Number(tl) : null : To && Gt !== "" ? Number(Gt) : null,
-        infantMax: pi ? iA !== "" ? Number(iA) : null : To && Sn !== "" ? Number(Sn) : null,
+        useInfant: pi || bo,
+        infantMin: pi ? tl !== "" ? Number(tl) : null : bo && Gt !== "" ? Number(Gt) : null,
+        infantMax: pi ? iA !== "" ? Number(iA) : null : bo && Sn !== "" ? Number(Sn) : null,
         useChild: li || oA,
-        childMin: li ? Ti !== "" ? Number(Ti) : null : oA && bo !== "" ? Number(bo) : null,
+        childMin: li ? Ti !== "" ? Number(Ti) : null : oA && yo !== "" ? Number(yo) : null,
         childMax: li ? vs !== "" ? Number(vs) : null : oA && nl !== "" ? Number(nl) : null,
         useAdult: ni || Ua,
         adultMin: ni ? Jr !== "" ? Number(Jr) : null : Ua && Wc !== "" ? Number(Wc) : null,
@@ -97012,18 +97027,18 @@ IMPRESSION:`,
         infantMaleMin: pi && tl !== "" ? Number(tl) : null,
         infantMaleMax: pi && iA !== "" ? Number(iA) : null,
         infantMaleText: pi ? Ms : null,
-        useInfantFemale: To,
-        infantFemaleMin: To && Gt !== "" ? Number(Gt) : null,
-        infantFemaleMax: To && Sn !== "" ? Number(Sn) : null,
-        infantFemaleText: To ? Sa : null,
+        useInfantFemale: bo,
+        infantFemaleMin: bo && Gt !== "" ? Number(Gt) : null,
+        infantFemaleMax: bo && Sn !== "" ? Number(Sn) : null,
+        infantFemaleText: bo ? Sa : null,
         useChildMale: li,
         childMaleMin: li && Ti !== "" ? Number(Ti) : null,
         childMaleMax: li && vs !== "" ? Number(vs) : null,
         childMaleText: li ? sA : null,
         useChildFemale: oA,
-        childFemaleMin: oA && bo !== "" ? Number(bo) : null,
+        childFemaleMin: oA && yo !== "" ? Number(yo) : null,
         childFemaleMax: oA && nl !== "" ? Number(nl) : null,
-        childFemaleText: oA ? vn : null,
+        childFemaleText: oA ? wn : null,
         useAdultMale: ni,
         adultMaleMin: ni && Jr !== "" ? Number(Jr) : null,
         adultMaleMax: ni && MA !== "" ? Number(MA) : null,
@@ -97072,7 +97087,7 @@ IMPRESSION:`,
       }, yn = {
         ...a,
         pricing: On
-      }, Qn = t.map((ar) => ar.id === a.id ? yn : ar);
+      }, Qn = t.map((ir) => ir.id === a.id ? yn : ir);
       e(Qn), i(yn);
     }, gf = async () => {
       var _a3;
@@ -97081,9 +97096,9 @@ IMPRESSION:`,
         ...a,
         templateId: $e
       }, gt = t.map((On) => On.id === a.id ? Rt : On);
-      e(gt), i(Rt), localStorage.setItem("synos_selected_test_id", a.id), Ot(true);
+      e(gt), i(Rt), localStorage.setItem("synos_selected_test_id", a.id), Pt(true);
       try {
-        const On = a.id, yn = ee.find((Rn) => Rn.name === a.department), Qn = yn ? yn.macroDepartment === "Radiology" : a.department === "Radiology" || a.department === "RAD", ar = {
+        const On = a.id, yn = ee.find((Rn) => Rn.name === a.department), Qn = yn ? yn.macroDepartment === "Radiology" : a.department === "Radiology" || a.department === "RAD", ir = {
           TestCode: a.code,
           TestName: a.name,
           Department: a.department || "Biochemistry",
@@ -97099,11 +97114,11 @@ IMPRESSION:`,
           ReportTitle: a.reportTitle || null,
           IsActive: a.isActive !== false
         };
-        await dr.updateTest(On, ar), lX(), Ve(true), setTimeout(() => Ve(false), 2e3);
+        await dr.updateTest(On, ir), lX(), Ve(true), setTimeout(() => Ve(false), 2e3);
       } catch (On) {
         console.error("Failed to persist report template assignment:", On), alert("Failed to save default template assignment: " + (On.message || On.toString()));
       } finally {
-        Ot(false);
+        Pt(false);
       }
     }, uf = async () => {
       if (!a) return;
@@ -97133,30 +97148,30 @@ Please use a unique code.`);
       }
       f(true);
       try {
-        const Qn = a.minRange !== void 0 && a.minRange !== null && a.minRange !== "" ? Number(a.minRange) : null, ar = a.maxRange !== void 0 && a.maxRange !== null && a.maxRange !== "" ? Number(a.maxRange) : null, Rn = {
+        const Qn = a.minRange !== void 0 && a.minRange !== null && a.minRange !== "" ? Number(a.minRange) : null, ir = a.maxRange !== void 0 && a.maxRange !== null && a.maxRange !== "" ? Number(a.maxRange) : null, Rn = {
           ...a,
           parameters: (a.parameters || []).map((Or) => {
-            const Li = Or.minRange !== void 0 && Or.minRange !== null && Or.minRange !== "" ? Number(Or.minRange) : null, Os = Or.maxRange !== void 0 && Or.maxRange !== null && Or.maxRange !== "" ? Number(Or.maxRange) : null;
+            const Li = Or.minRange !== void 0 && Or.minRange !== null && Or.minRange !== "" ? Number(Or.minRange) : null, Ps = Or.maxRange !== void 0 && Or.maxRange !== null && Or.maxRange !== "" ? Number(Or.maxRange) : null;
             return {
               ...Or,
               minRange: Li !== null && !isNaN(Li) ? Li : void 0,
-              maxRange: Os !== null && !isNaN(Os) ? Os : void 0
+              maxRange: Ps !== null && !isNaN(Ps) ? Ps : void 0
             };
           })
         }, ha = (Or) => {
           var _a3, _b2;
-          const Li = ee.find((Zt) => Zt.name === Or.department), Os = Li ? Li.macroDepartment === "Radiology" : Or.department === "Radiology" || Or.department === "RAD";
+          const Li = ee.find((Zt) => Zt.name === Or.department), Ps = Li ? Li.macroDepartment === "Radiology" : Or.department === "Radiology" || Or.department === "RAD";
           return {
             TestCode: Or.code,
             TestName: Or.name,
             Department: Or.department || "Biochemistry",
-            ModalityId: Os ? Or.modalityId : null,
-            Category: Os ? ((_a3 = ne.find((Zt) => Zt.modalityId === Or.modalityId)) == null ? void 0 : _a3.name) || Or.category || "X-Ray" : Or.category || "General",
+            ModalityId: Ps ? Or.modalityId : null,
+            Category: Ps ? ((_a3 = ne.find((Zt) => Zt.modalityId === Or.modalityId)) == null ? void 0 : _a3.name) || Or.category || "X-Ray" : Or.category || "General",
             BasePrice: Number(Or.basePrice) || 0,
             CorporatePrice: Number((_b2 = Or.pricing) == null ? void 0 : _b2.corporate) || Number(Or.corporatePrice) || 0,
             TAT_Hours: Number(Or.tatHours || Or.TAT_Hours) || 24,
             IsOutsourced: !!(Or.isOutsourced || Or.outsource && Or.outsource.enabled),
-            SpecimenTypeCode: Os ? "NO_SPECIMEN" : Or.specimenTypeCode || "SERUM",
+            SpecimenTypeCode: Ps ? "NO_SPECIMEN" : Or.specimenTypeCode || "SERUM",
             IsProfile: !!Or.isProfile,
             ReportTemplateId: Or.templateId || null,
             DefaultInterpretation: Or.defaultInterpretation || null,
@@ -97247,10 +97262,10 @@ Please use a unique code.`);
         } else {
           const Or = ha(Rn);
           try {
-            const Li = await dr.createTest(Or), Os = Li.testId || Li.TestId || Li.id;
+            const Li = await dr.createTest(Or), Ps = Li.testId || Li.TestId || Li.id;
             Za = {
               ...Rn,
-              id: Os
+              id: Ps
             };
           } catch (Li) {
             console.error(`Failed to create test ${Rn.code}:`, Li), mi.push({
@@ -97281,9 +97296,9 @@ ${Or}`);
     }, qc = () => {
       var _a3, _b2, _c3;
       if (!Ne) return null;
-      const $e = Zje(a, Pt), Rt = Xje($e), gt = $e.columns && $e.columns.length > 0, On = gt ? $e.columns.reduce((cr, va) => cr + va.weight, 0) : 1, yn = r(a, t), Qn = new Set(yn.map((cr) => cr.code)), ar = (a.parameters || []).filter((cr) => !Qn.has(cr.code)), Rn = [
+      const $e = Zje(a, Ht), Rt = Xje($e), gt = $e.columns && $e.columns.length > 0, On = gt ? $e.columns.reduce((cr, va) => cr + va.weight, 0) : 1, yn = r(a, t), Qn = new Set(yn.map((cr) => cr.code)), ir = (a.parameters || []).filter((cr) => !Qn.has(cr.code)), Rn = [
         ...yn,
-        ...ar
+        ...ir
       ], ha = Et === "interpretation" ? a.defaultInterpretation || "" : a.defaultInterpretation || ((a.reportStyle === "Descriptive Narrative" || ((_a3 = a.department) == null ? void 0 : _a3.toUpperCase()) === "RADIOLOGY") && Rn && ((_b2 = Rn[0]) == null ? void 0 : _b2.narrativeTemplate) ? (_c3 = Rn[0]) == null ? void 0 : _c3.narrativeTemplate : ""), Ia = (Et === "interpretation" || a.showInterpretation) && !!ha, wa = gY(ha);
       return n.jsxs("div", {
         className: "lg:col-span-6 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-inner space-y-4 lg:h-full lg:overflow-y-auto custom-scrollbar flex flex-col min-h-0",
@@ -98124,7 +98139,7 @@ ${Or}`);
                         p && n.jsx("button", {
                           onClick: () => I(""),
                           className: "absolute right-3 top-1/2 -translate-y-1/2 p-0.5 hover:bg-zinc-200 dark:hover:bg-zinc-850 rounded-md text-zinc-400 hover:text-zinc-650 dark:hover:text-zinc-250 transition-colors",
-                          children: n.jsx(Yn, {
+                          children: n.jsx(Hn, {
                             className: "w-3 h-3"
                           })
                         })
@@ -98190,7 +98205,7 @@ ${Or}`);
                             },
                             className: "pointer-events-auto p-1 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-full shadow-md text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 hover:scale-105 transition-all flex items-center justify-center",
                             title: "Scroll right",
-                            children: n.jsx(jo, {
+                            children: n.jsx(Mo, {
                               className: "w-3.5 h-3.5"
                             })
                           })
@@ -98256,7 +98271,7 @@ ${Or}`);
                                 className: "w-3.5 h-3.5"
                               })
                             }),
-                            n.jsx(jo, {
+                            n.jsx(Mo, {
                               className: "w-3.5 h-3.5 text-synos-primary translate-x-0 group-hover:translate-x-0.5 transition-transform"
                             })
                           ]
@@ -98560,7 +98575,7 @@ ${Or}`);
                             onClick: () => un("pricing"),
                             className: me("px-4 py-2 text-xs font-medium border-b-2 transition-all flex items-center gap-1.5 -mb-px", Et === "pricing" ? "border-synos-primary text-synos-primary font-semibold" : "border-transparent text-zinc-400 dark:text-zinc-500 hover:text-zinc-600 dark:hover:text-zinc-300"),
                             children: [
-                              n.jsx(Gs, {
+                              n.jsx(Ys, {
                                 className: "w-3.5 h-3.5"
                               }),
                               " Pricing"
@@ -98613,8 +98628,8 @@ ${Or}`);
                       Et === "parameters" && (() => {
                         if (zn === "Radiology" || zn === "RAD") {
                           const Qn = a.parameters || [];
-                          let ar = Qn[0];
-                          ar || (ar = {
+                          let ir = Qn[0];
+                          ir || (ir = {
                             code: "FINDINGS",
                             name: "Findings & Impressions",
                             unit: "",
@@ -98695,7 +98710,7 @@ ${Or}`);
                                           n.jsx("input", {
                                             type: "text",
                                             className: "bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary uppercase font-bold",
-                                            value: ar.code,
+                                            value: ir.code,
                                             onChange: (ha) => Rn("code", ha.target.value)
                                           })
                                         ]
@@ -98709,7 +98724,7 @@ ${Or}`);
                                           n.jsx("input", {
                                             type: "text",
                                             className: "bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary",
-                                            value: ar.name,
+                                            value: ir.name,
                                             onChange: (ha) => Rn("name", ha.target.value)
                                           })
                                         ]
@@ -98723,7 +98738,7 @@ ${Or}`);
                                           n.jsx("input", {
                                             type: "text",
                                             className: "bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3.5 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary",
-                                            value: ar.method || "Dictation",
+                                            value: ir.method || "Dictation",
                                             onChange: (ha) => Rn("method", ha.target.value)
                                           })
                                         ]
@@ -98766,7 +98781,7 @@ Normal chest study.`);
                                         rows: "12",
                                         className: "bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary font-mono leading-relaxed",
                                         placeholder: "Type normal study findings template here...",
-                                        value: ar.narrativeTemplate || "",
+                                        value: ir.narrativeTemplate || "",
                                         onChange: (ha) => {
                                           Rn("narrativeTemplate", ha.target.value);
                                         }
@@ -98883,8 +98898,8 @@ Normal chest study.`);
                                   }),
                                   n.jsx("tbody", {
                                     className: "divide-y divide-zinc-200 dark:divide-zinc-800 bg-white/50 dark:bg-zinc-900/10",
-                                    children: yn.map((Qn, ar) => {
-                                      const Rn = !!Qn.isFromChild, ha = ar - Rt.length;
+                                    children: yn.map((Qn, ir) => {
+                                      const Rn = !!Qn.isFromChild, ha = ir - Rt.length;
                                       return n.jsxs("tr", {
                                         draggable: !Rn,
                                         onDragStart: (Ia) => {
@@ -98905,7 +98920,7 @@ Normal chest study.`);
                                             className: "py-1 px-1 text-center w-[60px] select-none",
                                             children: Rn ? n.jsx("span", {
                                               className: "text-zinc-400 dark:text-zinc-500 font-medium text-xs",
-                                              children: ar + 1
+                                              children: ir + 1
                                             }) : n.jsxs("div", {
                                               className: "flex items-center gap-1 justify-center",
                                               children: [
@@ -98916,7 +98931,7 @@ Normal chest study.`);
                                                   type: "number",
                                                   min: "1",
                                                   max: yn.length,
-                                                  value: ar + 1,
+                                                  value: ir + 1,
                                                   onChange: (Ia) => {
                                                     const wa = parseInt(Ia.target.value, 10);
                                                     if (!isNaN(wa)) {
@@ -99037,7 +99052,7 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
                                             })
                                           })
                                         ]
-                                      }, ar);
+                                      }, ir);
                                     })
                                   })
                                 ]
@@ -99113,7 +99128,7 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
                                                 value: "",
                                                 children: "Default (Auto-detect by modality)"
                                               }),
-                                              Pt.map(($e) => n.jsxs("option", {
+                                              Ht.map(($e) => n.jsxs("option", {
                                                 value: $e.id,
                                                 children: [
                                                   $e.title,
@@ -99338,7 +99353,7 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
                                               On && On.classList.remove("hidden");
                                               try {
                                                 const yn = await dr.importInterpretation(Rt), Qn = yn.content || yn.Content || "";
-                                                let ar = Qn;
+                                                let ir = Qn;
                                                 if (!Qn.startsWith("{")) {
                                                   const Ia = Qn.split(`
 `).map((wa) => ({
@@ -99350,14 +99365,14 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
                                                       }
                                                     ] : []
                                                   }));
-                                                  ar = JSON.stringify({
+                                                  ir = JSON.stringify({
                                                     type: "doc",
                                                     content: Ia
                                                   });
                                                 }
                                                 const Rn = {
                                                   ...a,
-                                                  defaultInterpretation: ar
+                                                  defaultInterpretation: ir
                                                 }, ha = t.map((Ia) => Ia.id === a.id ? Rn : Ia);
                                                 e(ha), i(Rn);
                                               } catch (yn) {
@@ -99581,7 +99596,7 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
                                   ]
                                 }) : n.jsxs(n.Fragment, {
                                   children: [
-                                    n.jsx(Gs, {
+                                    n.jsx(Ys, {
                                       className: "w-3.5 h-3.5"
                                     }),
                                     " Save Pricing Changes"
@@ -99784,7 +99799,7 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
                                                     children: n.jsx("button", {
                                                       onClick: () => pm($e),
                                                       className: "p-1 text-zinc-400 hover:text-red-500 rounded transition-colors",
-                                                      children: n.jsx(Yn, {
+                                                      children: n.jsx(Hn, {
                                                         className: "w-3.5 h-3.5"
                                                       })
                                                     })
@@ -99843,7 +99858,7 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
           ]
         }),
         n.jsx("div", {
-          className: me("fixed top-12 bottom-0 right-0 z-[100] w-full max-w-[360px] bg-white dark:bg-zinc-950 border-l border-zinc-200 dark:border-zinc-800 shadow-2xl transition-all duration-300 ease-in-out transform flex flex-col justify-between", wn ? "translate-x-0" : "translate-x-full"),
+          className: me("fixed top-12 bottom-0 right-0 z-[100] w-full max-w-[360px] bg-white dark:bg-zinc-950 border-l border-zinc-200 dark:border-zinc-800 shadow-2xl transition-all duration-300 ease-in-out transform flex flex-col justify-between", vn ? "translate-x-0" : "translate-x-full"),
           children: n.jsxs("div", {
             className: "flex-1 flex flex-col min-h-0",
             children: [
@@ -99865,7 +99880,7 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
                   n.jsx("button", {
                     onClick: () => fr(false),
                     className: "p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 dark:bg-zinc-950 rounded-lg text-zinc-400 transition-colors",
-                    children: n.jsx(Yn, {
+                    children: n.jsx(Hn, {
                       className: "w-4 h-4"
                     })
                   })
@@ -99952,23 +99967,23 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
                               n.jsx("div", {
                                 className: "flex flex-wrap gap-1",
                                 children: (() => {
-                                  const $e = r(a, t), Rt = new Set($e.map((ar) => ar.code)), gt = (a.parameters || []).filter((ar) => !Rt.has(ar.code)), On = [
+                                  const $e = r(a, t), Rt = new Set($e.map((ir) => ir.code)), gt = (a.parameters || []).filter((ir) => !Rt.has(ir.code)), On = [
                                     ...$e,
                                     ...gt
                                   ], yn = [], Qn = /* @__PURE__ */ new Set();
-                                  return On.forEach((ar) => {
-                                    ar && ar.code && !Qn.has(ar.code) && (Qn.add(ar.code), yn.push(ar));
-                                  }), yn.filter((ar) => ar.code !== Jn).map((ar) => n.jsxs("button", {
-                                    onClick: () => Er((Rn) => Rn + (Rn === "" ? "" : " ") + ar.code),
+                                  return On.forEach((ir) => {
+                                    ir && ir.code && !Qn.has(ir.code) && (Qn.add(ir.code), yn.push(ir));
+                                  }), yn.filter((ir) => ir.code !== Jn).map((ir) => n.jsxs("button", {
+                                    onClick: () => Er((Rn) => Rn + (Rn === "" ? "" : " ") + ir.code),
                                     className: "px-2 py-1 bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 rounded-lg text-[9px] font-bold font-mono text-zinc-600 dark:text-zinc-400 hover:text-synos-primary hover:border-synos-primary/30 transition-all flex items-center gap-1",
                                     children: [
                                       n.jsx(Ta, {
                                         className: "w-2 h-2"
                                       }),
                                       " ",
-                                      ar.code
+                                      ir.code
                                     ]
-                                  }, ar.code));
+                                  }, ir.code));
                                 })()
                               }),
                               n.jsx("p", {
@@ -100052,7 +100067,7 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
                         maleMin: Qr,
                         setMaleMin: ti,
                         maleMax: Ya,
-                        setMaleMax: $r,
+                        setMaleMax: Zr,
                         maleText: Ga,
                         setMaleText: aa,
                         useFemale: da,
@@ -100075,7 +100090,7 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
                         setMaleMax: Vc,
                         maleText: Ms,
                         setMaleText: eA,
-                        useFemale: To,
+                        useFemale: bo,
                         setUseFemale: ct,
                         femaleMin: Gt,
                         setFemaleMin: gn,
@@ -100097,11 +100112,11 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
                         setMaleText: Fs,
                         useFemale: oA,
                         setUseFemale: ql,
-                        femaleMin: bo,
+                        femaleMin: yo,
                         setFemaleMin: ts,
                         femaleMax: nl,
                         setFemaleMax: Fe,
-                        femaleText: vn,
+                        femaleText: wn,
                         setFemaleText: qa,
                         colorClass: "text-emerald-600 dark:text-emerald-400"
                       }),
@@ -100496,7 +100511,7 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
                       Xe(false), fe(null), qe(null), Lt(null);
                     },
                     className: "text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 text-xl font-semibold p-1",
-                    children: n.jsx(Yn, {
+                    children: n.jsx(Hn, {
                       className: "w-5 h-5"
                     })
                   })
@@ -102449,7 +102464,7 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
                                               },
                                               className: "p-1.5 hover:bg-rose-500/10 text-rose-500 rounded-lg transition-colors border border-transparent hover:border-rose-500/20",
                                               title: "Remove Custom Backdrop",
-                                              children: n.jsx(Yn, {
+                                              children: n.jsx(Hn, {
                                                 className: "w-3.5 h-3.5"
                                               })
                                             })
@@ -103045,7 +103060,7 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
                                                       onClick: () => ze("logoUrl", ""),
                                                       className: "p-1.5 hover:bg-rose-500/10 text-rose-500 rounded-lg transition-colors border border-transparent hover:border-rose-500/20",
                                                       title: "Remove Logo",
-                                                      children: n.jsx(Yn, {
+                                                      children: n.jsx(Hn, {
                                                         className: "w-3.5 h-3.5"
                                                       })
                                                     })
@@ -107402,7 +107417,7 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
                                           }),
                                           ze ? n.jsx(Ds, {
                                             size: 12
-                                          }) : n.jsx(jo, {
+                                          }) : n.jsx(Mo, {
                                             size: 12
                                           })
                                         ]
@@ -108410,13 +108425,13 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
       TargetArchitecture: "x64",
       RequiredDiskSpaceGB: 10,
       DatabaseVersion: "LocalDB v15.0"
-    }, null, 2)), [ft, Le] = F.useState([]), [Pe, it] = F.useState(null), [Bt, Jt] = F.useState(false), [qt, En] = F.useState([]), [kn, nr] = F.useState(null), [tr, ce] = F.useState(false), [tt, ie] = F.useState(null), [ht, Et] = F.useState(null), [un, Ne] = F.useState(false), [$t, mt] = F.useState(null), [jt, An] = F.useState(false), [Ve, Ft] = F.useState(""), [Ot, Pt] = F.useState(false), [Un, bn] = F.useState(null), [rr, dn] = F.useState([]), [on, Ir] = F.useState([]), [Pr, Fi] = F.useState([]), Da = F.useRef(null), zn = F.useRef(null), er = F.useRef(null), [Sr, Kr] = F.useState(0);
+    }, null, 2)), [ft, Le] = F.useState([]), [Pe, it] = F.useState(null), [Bt, Jt] = F.useState(false), [qt, En] = F.useState([]), [kn, nr] = F.useState(null), [tr, ce] = F.useState(false), [tt, ie] = F.useState(null), [ht, Et] = F.useState(null), [un, Ne] = F.useState(false), [$t, mt] = F.useState(null), [jt, An] = F.useState(false), [Ve, Ft] = F.useState(""), [Pt, Ht] = F.useState(false), [Un, bn] = F.useState(null), [rr, dn] = F.useState([]), [on, Ir] = F.useState([]), [Pr, Fi] = F.useState([]), Da = F.useRef(null), zn = F.useRef(null), er = F.useRef(null), [Sr, Kr] = F.useState(0);
     F.useEffect(() => {
       if (o === "permissions" && er.current) {
         const Fe = () => {
           er.current && Kr(er.current.scrollWidth);
-        }, vn = new ResizeObserver(Fe);
-        return vn.observe(er.current), Fe(), () => vn.disconnect();
+        }, wn = new ResizeObserver(Fe);
+        return wn.observe(er.current), Fe(), () => wn.disconnect();
       }
     }, [
       o,
@@ -108428,15 +108443,15 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
       zn.current && Da.current && (zn.current.scrollLeft = Da.current.scrollLeft);
     }, Gr = () => {
       zn.current && Da.current && (Da.current.scrollLeft = zn.current.scrollLeft);
-    }, [Qt, _t] = F.useState([]), [en, Bn] = F.useState([]), [wn, fr] = F.useState(null), [sa, ya] = F.useState(false), [Jn, lr] = F.useState(null), [ka, Er] = F.useState(false), [oi, Rr] = F.useState([]), [ks, As] = F.useState([]), [Kt, Ai] = F.useState(null), [at, zt] = F.useState(false), [fn, _n] = F.useState(null), [sr, In] = F.useState(false), [Kn, Pn] = F.useState([]), [Dr, jr] = F.useState(0), [Ha] = F.useState(15), [fi, _r] = F.useState(0), [Hr, Qa] = F.useState([]), [za, Wi] = F.useState(""), [_e, Ze] = F.useState(""), [st, ot] = F.useState(""), [bt, xt] = F.useState(""), [tn, St] = F.useState(""), [Wt, Ut] = F.useState(null), [Tn, $n] = F.useState([]), [Mn, Hn] = F.useState([]), [At, wt] = F.useState(null), [sn, jn] = F.useState(false), [gr, Qr] = F.useState(null), [ti, Ya] = F.useState(false), $r = async () => {
+    }, [Qt, Ot] = F.useState([]), [en, Bn] = F.useState([]), [vn, fr] = F.useState(null), [sa, ya] = F.useState(false), [Jn, lr] = F.useState(null), [ka, Er] = F.useState(false), [oi, Rr] = F.useState([]), [ks, As] = F.useState([]), [Kt, Ai] = F.useState(null), [at, zt] = F.useState(false), [fn, _n] = F.useState(null), [ar, In] = F.useState(false), [Kn, Pn] = F.useState([]), [Dr, jr] = F.useState(0), [Ha] = F.useState(15), [fi, _r] = F.useState(0), [Hr, Qa] = F.useState([]), [za, Wi] = F.useState(""), [_e, Ze] = F.useState(""), [st, ot] = F.useState(""), [bt, xt] = F.useState(""), [tn, St] = F.useState(""), [Wt, Ut] = F.useState(null), [Tn, Wn] = F.useState([]), [Mn, Yn] = F.useState([]), [At, wt] = F.useState(null), [sn, jn] = F.useState(false), [gr, Qr] = F.useState(null), [ti, Ya] = F.useState(false), Zr = async () => {
       h(true);
       try {
-        const [Fe, vn, qa] = await Promise.all([
+        const [Fe, wn, qa] = await Promise.all([
           dr.getBranchPrinters(),
           dr.getTerminalPrinterConfigs(),
           dr.getBranches()
         ]);
-        $n(Fe || []), Hn(vn || []), Le(qa || []);
+        Wn(Fe || []), Yn(wn || []), Le(qa || []);
       } catch (Fe) {
         x(Fe.message || "Failed to load printing hardware configurations.");
       } finally {
@@ -108458,9 +108473,9 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
           printerType: At.printerType || "Thermal80mm",
           isActive: At.isActive ?? true,
           branchId: At.branchId
-        }), p("New branch printer registered successfully.")), jn(false), wt(null), await $r();
-      } catch (vn) {
-        x(vn.message || "Failed to save printer.");
+        }), p("New branch printer registered successfully.")), jn(false), wt(null), await Zr();
+      } catch (wn) {
+        x(wn.message || "Failed to save printer.");
       } finally {
         h(false);
       }
@@ -108468,9 +108483,9 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
       if (window.confirm("Are you sure you want to delete this branch printer?")) {
         h(true), x(null), p(null);
         try {
-          await dr.deleteBranchPrinter(Fe), p("Printer deleted successfully."), await $r();
-        } catch (vn) {
-          x(vn.message || "Failed to delete printer.");
+          await dr.deleteBranchPrinter(Fe), p("Printer deleted successfully."), await Zr();
+        } catch (wn) {
+          x(wn.message || "Failed to delete printer.");
         } finally {
           h(false);
         }
@@ -108481,15 +108496,15 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
       if (!gr.branchId) return x("Please select a branch.");
       h(true), x(null), p(null);
       try {
-        const vn = {
+        const wn = {
           terminalIdentifier: gr.terminalIdentifier.trim(),
           branchId: gr.branchId,
           isLeadPrintTerminal: gr.isLeadPrintTerminal ?? false,
           specificReceiptPrinterId: gr.specificReceiptPrinterId || null
         };
-        Mn.some((ni) => ni.terminalIdentifier === gr.terminalIdentifier) ? (await dr.updateTerminalPrinterConfig(gr.terminalIdentifier, vn), p("Terminal printer configuration updated successfully.")) : (await dr.createTerminalPrinterConfig(vn), p("Terminal printer configuration registered successfully.")), Ya(false), Qr(null), await $r();
-      } catch (vn) {
-        x(vn.message || "Failed to save terminal configuration.");
+        Mn.some((ni) => ni.terminalIdentifier === gr.terminalIdentifier) ? (await dr.updateTerminalPrinterConfig(gr.terminalIdentifier, wn), p("Terminal printer configuration updated successfully.")) : (await dr.createTerminalPrinterConfig(wn), p("Terminal printer configuration registered successfully.")), Ya(false), Qr(null), await Zr();
+      } catch (wn) {
+        x(wn.message || "Failed to save terminal configuration.");
       } finally {
         h(false);
       }
@@ -108497,9 +108512,9 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
       if (window.confirm("Are you sure you want to remove this terminal authorization?")) {
         h(true), x(null), p(null);
         try {
-          await dr.deleteTerminalPrinterConfig(Fe), p("Terminal authorization removed successfully."), await $r();
-        } catch (vn) {
-          x(vn.message || "Failed to delete terminal configuration.");
+          await dr.deleteTerminalPrinterConfig(Fe), p("Terminal authorization removed successfully."), await Zr();
+        } catch (wn) {
+          x(wn.message || "Failed to delete terminal configuration.");
         } finally {
           h(false);
         }
@@ -108537,11 +108552,11 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
     }, ur = async () => {
       h(true);
       try {
-        const [Fe, vn] = await Promise.all([
+        const [Fe, wn] = await Promise.all([
           dr.getDepartmentPolicies(),
           dr.getDepartments()
         ]);
-        _t(Fe || []), Bn(vn || []);
+        Ot(Fe || []), Bn(wn || []);
       } catch {
         x("Failed to load department configuration.");
       } finally {
@@ -108550,11 +108565,11 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
     }, Ui = async () => {
       h(true);
       try {
-        const [Fe, vn] = await Promise.all([
+        const [Fe, wn] = await Promise.all([
           dr.getDiscounts(),
           dr.getReferralPartners()
         ]);
-        Rr(Fe || []), As(vn || []);
+        Rr(Fe || []), As(wn || []);
       } catch {
         x("Failed to load discounts and pricing.");
       } finally {
@@ -108565,8 +108580,8 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
       try {
         let Fe = `?limit=${Ha}&offset=${fi}`;
         za && (Fe += `&actorUserId=${za}`), _e && (Fe += `&resourceType=${_e}`), st && (Fe += `&action=${st}`), bt && (Fe += `&startDate=${ZN(bt)}`), tn && (Fe += `&endDate=${ZN(tn)}`);
-        const vn = await dr.getAuditLogs(Fe);
-        if (Pn((vn == null ? void 0 : vn.logs) || []), jr((vn == null ? void 0 : vn.totalCount) || 0), Hr.length === 0) {
+        const wn = await dr.getAuditLogs(Fe);
+        if (Pn((wn == null ? void 0 : wn.logs) || []), jr((wn == null ? void 0 : wn.totalCount) || 0), Hr.length === 0) {
           const qa = await dr.getUsers();
           Qa(qa || []);
         }
@@ -108604,8 +108619,8 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
           phone: ((_g2 = Pe.phone) == null ? void 0 : _g2.trim()) || null,
           email: ((_h2 = Pe.email) == null ? void 0 : _h2.trim()) || null
         }), p("New branch registered successfully.")), Jt(false), it(null), await pi();
-      } catch (vn) {
-        x(vn.message || "Failed to save branch.");
+      } catch (wn) {
+        x(wn.message || "Failed to save branch.");
       } finally {
         h(false);
       }
@@ -108614,8 +108629,8 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
         h(true), x(null), p(null);
         try {
           await dr.deleteBranch(Fe), p("Branch deleted successfully."), await pi();
-        } catch (vn) {
-          x(vn.message || "Failed to delete branch.");
+        } catch (wn) {
+          x(wn.message || "Failed to delete branch.");
         } finally {
           h(false);
         }
@@ -108643,8 +108658,8 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
           name: kn.name.trim(),
           routePath: kn.routePath.trim()
         }), p("New workspace registered successfully.")), ce(false), nr(null), await RA();
-      } catch (vn) {
-        x(vn.message || "Failed to save workspace.");
+      } catch (wn) {
+        x(wn.message || "Failed to save workspace.");
       } finally {
         h(false);
       }
@@ -108653,8 +108668,8 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
         h(true), x(null), p(null);
         try {
           await dr.deleteWorkspace(Fe), p("Workspace deleted successfully."), await RA();
-        } catch (vn) {
-          x(vn.message || "Failed to delete workspace.");
+        } catch (wn) {
+          x(wn.message || "Failed to delete workspace.");
         } finally {
           h(false);
         }
@@ -108679,11 +108694,11 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
       } finally {
         D(false);
       }
-    }, To = async (Fe, vn) => {
-      if (window.confirm(`Are you sure you want to restore database to backup "${vn}"? This will restart host operations.`)) {
+    }, bo = async (Fe, wn) => {
+      if (window.confirm(`Are you sure you want to restore database to backup "${wn}"? This will restart host operations.`)) {
         M(Fe), p(null), x(null);
         try {
-          const qa = await Dn.post(`/api/v1/admin/operations/backups/restore?backupId=${Fe}&fileName=${vn}`);
+          const qa = await Dn.post(`/api/v1/admin/operations/backups/restore?backupId=${Fe}&fileName=${wn}`);
           p((qa == null ? void 0 : qa.message) || "Restore completed successfully"), Ms();
         } catch (qa) {
           x(qa.message || "Failed to restore database.");
@@ -108692,11 +108707,11 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
         }
       }
     }, ct = async (Fe) => {
-      const vn = Fe.target.files[0];
-      if (!vn) return;
+      const wn = Fe.target.files[0];
+      if (!wn) return;
       G(true), p(null), x(null);
       const qa = new FormData();
-      qa.append("file", vn);
+      qa.append("file", wn);
       try {
         const ni = await Dn.post("/api/v1/admin/operations/backups/upload", qa);
         p((ni == null ? void 0 : ni.message) || "Backup uploaded successfully."), Ms();
@@ -108721,14 +108736,14 @@ Would you like to switch to "${Qn.childTestName}" now?`) && sf(Ia) : alert(`Chil
       }
       je(true), se(""), Ce("");
       try {
-        const vn = U === "deployment" ? "/api/v1/admin/settings/client-deployment-reset" : "/api/v1/admin/settings/reset-operational-data", qa = await Dn.post(vn, {
+        const wn = U === "deployment" ? "/api/v1/admin/settings/client-deployment-reset" : "/api/v1/admin/settings/reset-operational-data", qa = await Dn.post(wn, {
           password: _,
           scope: U
         });
         Ce((qa == null ? void 0 : qa.message) || "Data successfully reset."), P(false), te(""), ae(""), J(false), alert(`Success: ${(qa == null ? void 0 : qa.message) || "Data successfully reset."}
 Backup ID: ${qa == null ? void 0 : qa.backupId}`);
-      } catch (vn) {
-        se(((_b = (_a3 = vn.response) == null ? void 0 : _a3.data) == null ? void 0 : _b.error) || vn.message || "Failed to execute reset.");
+      } catch (wn) {
+        se(((_b = (_a3 = wn.response) == null ? void 0 : _a3.data) == null ? void 0 : _b.error) || wn.message || "Failed to execute reset.");
       } finally {
         je(false);
       }
@@ -108745,15 +108760,15 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
     }, Sn = async (Fe) => {
       Fe.preventDefault(), Se(true), p(null), x(null);
       try {
-        const vn = await Dn.post("/api/v1/admin/operations/tickets/create", {
+        const wn = await Dn.post("/api/v1/admin/operations/tickets/create", {
           title: le,
           description: pe,
           priority: xe,
           category: ue
         });
-        p((vn == null ? void 0 : vn.message) || "Support ticket queued successfully"), q(""), oe(""), gn();
-      } catch (vn) {
-        x(vn.message || "Failed to submit support ticket.");
+        p((wn == null ? void 0 : wn.message) || "Support ticket queued successfully"), q(""), oe(""), gn();
+      } catch (wn) {
+        x(wn.message || "Failed to submit support ticket.");
       } finally {
         Se(false);
       }
@@ -108772,7 +108787,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
       try {
         const Fe = await Dn.post("/api/v1/admin/operations/updates/check");
         if ((Fe == null ? void 0 : Fe.updateAvailable) || (Fe == null ? void 0 : Fe.UpdateAvailable)) {
-          const vn = {
+          const wn = {
             updateAvailable: Fe.updateAvailable ?? Fe.UpdateAvailable,
             version: Fe.version ?? Fe.Version,
             releaseNotes: Fe.releaseNotes ?? Fe.ReleaseNotes,
@@ -108783,7 +108798,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
             deploymentId: Fe.deploymentId ?? Fe.DeploymentId,
             packageId: Fe.packageId ?? Fe.PackageId
           };
-          qe(vn), p(`Update v${vn.version} is available!`);
+          qe(wn), p(`Update v${wn.version} is available!`);
         } else p((Fe == null ? void 0 : Fe.message) || "The system is already running the latest software version.");
         Ea();
       } catch (Fe) {
@@ -108794,22 +108809,22 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
     }, Ja = async (Fe) => {
       Lt(true), p(null), x(null), Ge(null);
       try {
-        const vn = await Dn.post("/api/v1/admin/operations/updates/assess", Fe);
+        const wn = await Dn.post("/api/v1/admin/operations/updates/assess", Fe);
         Ge({
           manifest: Fe,
-          report: vn
+          report: wn
         });
-      } catch (vn) {
-        x(vn.message || "Failed to assess update readiness.");
+      } catch (wn) {
+        x(wn.message || "Failed to assess update readiness.");
       } finally {
         Lt(false);
       }
-    }, li = async (Fe, vn) => {
+    }, li = async (Fe, wn) => {
       Ue(true), p(null), x(null), Ge(null);
       try {
         const qa = {
           ...Fe,
-          backupId: vn
+          backupId: wn
         }, ni = await Dn.post("/api/v1/admin/operations/updates/apply", qa);
         p((ni == null ? void 0 : ni.message) || "Update successfully applied."), Ea();
       } catch (qa) {
@@ -108826,7 +108841,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
         });
         return;
       }
-      Pt(true), bn(null);
+      Ht(true), bn(null);
       try {
         const Fe = await dr.updateLicenseKey(Ve.trim());
         Fe.success ? (bn({
@@ -108842,11 +108857,11 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
           text: ((_b = (_a3 = Fe.response) == null ? void 0 : _a3.data) == null ? void 0 : _b.message) || Fe.message || "Failed to connect to backend server."
         });
       } finally {
-        Pt(false);
+        Ht(false);
       }
     };
     F.useEffect(() => {
-      x(null), p(null), o === "settings" && ia(), o === "permissions" && Ur(), o === "departments" && ur(), o === "pricing" && Ui(), o === "branches" && pi(), o === "workspaces" && RA(), o === "printing" && $r(), o === "audit" && Is(), o === "backup" && Ms(), o === "advanced" && Oi(), o === "about" && (Ea(), ia());
+      x(null), p(null), o === "settings" && ia(), o === "permissions" && Ur(), o === "departments" && ur(), o === "pricing" && Ui(), o === "branches" && pi(), o === "workspaces" && RA(), o === "printing" && Zr(), o === "audit" && Is(), o === "backup" && Ms(), o === "advanced" && Oi(), o === "about" && (Ea(), ia());
     }, [
       o,
       fi
@@ -108865,8 +108880,8 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
         h(true), p(null), x(null);
         try {
           await dr.updateSettings(tt), p("Global system configuration successfully updated.");
-        } catch (vn) {
-          x(vn.message || "Error occurred while saving configurations.");
+        } catch (wn) {
+          x(wn.message || "Error occurred while saving configurations.");
         } finally {
           h(false);
         }
@@ -108876,15 +108891,15 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
         Ne(true), p(null), x(null);
         try {
           await dr.updateAdvancedSettings(ht), p("Advanced system configurations successfully saved to appsettings.json. Some changes may require restarting the application host.");
-        } catch (vn) {
-          x(vn.message || "Failed to update advanced settings.");
+        } catch (wn) {
+          x(wn.message || "Failed to update advanced settings.");
         } finally {
           Ne(false);
         }
       }
     }, vs = async (Fe) => {
-      let vn = "";
-      if (Fe === "jwt" ? vn = "Regenerating the JWT secret logs out all users. Are you sure you want to proceed?" : Fe === "backup" ? vn = "Rotating the backup key affects future backups. Are you sure you want to proceed?" : Fe === "diagnostics" ? vn = "Rotating the diagnostics key affects future diagnostic bundles. Are you sure you want to proceed?" : Fe === "middleware" && (vn = "Generating a new Middleware API Key will invalidate the current key immediately, disconnecting the Middleware until the new key is updated in its configuration. Are you sure you want to proceed?"), !!window.confirm(vn)) {
+      let wn = "";
+      if (Fe === "jwt" ? wn = "Regenerating the JWT secret logs out all users. Are you sure you want to proceed?" : Fe === "backup" ? wn = "Rotating the backup key affects future backups. Are you sure you want to proceed?" : Fe === "diagnostics" ? wn = "Rotating the diagnostics key affects future diagnostic bundles. Are you sure you want to proceed?" : Fe === "middleware" && (wn = "Generating a new Middleware API Key will invalidate the current key immediately, disconnecting the Middleware until the new key is updated in its configuration. Are you sure you want to proceed?"), !!window.confirm(wn)) {
         x(null), p(null);
         try {
           const qa = await dr.rotateSecret(Fe);
@@ -108893,22 +108908,22 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
           x(qa.message || "Secret rotation failed.");
         }
       }
-    }, jA = async (Fe, vn) => {
-      const qa = Pr.some((io) => io.roleId === Fe && io.capabilityId === vn);
+    }, jA = async (Fe, wn) => {
+      const qa = Pr.some((io) => io.roleId === Fe && io.capabilityId === wn);
       let ni = [];
-      qa ? ni = Pr.filter((io) => io.roleId === Fe && io.capabilityId !== vn).map((io) => io.capabilityId) : ni = [
+      qa ? ni = Pr.filter((io) => io.roleId === Fe && io.capabilityId !== wn).map((io) => io.capabilityId) : ni = [
         ...Pr.filter((io) => io.roleId === Fe).map((io) => io.capabilityId),
-        vn
+        wn
       ];
       try {
         await dr.updateRoleCapabilities({
           roleId: Fe,
           capabilityIds: ni
-        }), Fi((io) => qa ? io.filter((Jr) => !(Jr.roleId === Fe && Jr.capabilityId === vn)) : [
+        }), Fi((io) => qa ? io.filter((Jr) => !(Jr.roleId === Fe && Jr.capabilityId === wn)) : [
           ...io,
           {
             roleId: Fe,
-            capabilityId: vn
+            capabilityId: wn
           }
         ]);
       } catch {
@@ -108919,8 +108934,8 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
         h(true);
         try {
           await dr.saveDepartmentPolicy(Jn), Er(false), lr(null), p("Department operating config saved."), ur();
-        } catch (vn) {
-          x(vn.message || "Conflict mapping or invalid database payload.");
+        } catch (wn) {
+          x(wn.message || "Conflict mapping or invalid database payload.");
         } finally {
           h(false);
         }
@@ -108938,20 +108953,20 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
       }
     }, oA = async (Fe) => {
       var _a3, _b, _c2, _d2;
-      if (Fe.preventDefault(), !((_a3 = wn.code) == null ? void 0 : _a3.trim()) || !((_b = wn.name) == null ? void 0 : _b.trim())) return x("Department Code and Name cannot be empty.");
+      if (Fe.preventDefault(), !((_a3 = vn.code) == null ? void 0 : _a3.trim()) || !((_b = vn.name) == null ? void 0 : _b.trim())) return x("Department Code and Name cannot be empty.");
       h(true), x(null), p(null);
       try {
-        wn.departmentId ? (await dr.updateDepartment(wn.departmentId, {
-          name: wn.name.trim(),
-          macroDepartment: ((_c2 = wn.macroDepartment) == null ? void 0 : _c2.trim()) || "Pathology",
-          isActive: wn.isActive
+        vn.departmentId ? (await dr.updateDepartment(vn.departmentId, {
+          name: vn.name.trim(),
+          macroDepartment: ((_c2 = vn.macroDepartment) == null ? void 0 : _c2.trim()) || "Pathology",
+          isActive: vn.isActive
         }), p("Department details updated successfully.")) : (await dr.createDepartment({
-          code: wn.code.trim().toUpperCase(),
-          name: wn.name.trim(),
-          macroDepartment: ((_d2 = wn.macroDepartment) == null ? void 0 : _d2.trim()) || "Pathology"
+          code: vn.code.trim().toUpperCase(),
+          name: vn.name.trim(),
+          macroDepartment: ((_d2 = vn.macroDepartment) == null ? void 0 : _d2.trim()) || "Pathology"
         }), p("New department registered successfully.")), ya(false), fr(null), await ur();
-      } catch (vn) {
-        x(vn.message || "Failed to save department.");
+      } catch (wn) {
+        x(wn.message || "Failed to save department.");
       } finally {
         h(false);
       }
@@ -108960,19 +108975,19 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
         h(true), x(null), p(null);
         try {
           await dr.deleteDepartment(Fe), p("Department deleted successfully."), await ur();
-        } catch (vn) {
-          x(vn.message || "Failed to delete department.");
+        } catch (wn) {
+          x(wn.message || "Failed to delete department.");
         } finally {
           h(false);
         }
       }
-    }, bo = async (Fe) => {
+    }, yo = async (Fe) => {
       if (Fe.preventDefault(), !!Kt) {
         h(true);
         try {
           Kt.discountDefinitionId ? await dr.updateDiscount(Kt.discountDefinitionId, Kt) : await dr.createDiscount(Kt), zt(false), Ai(null), p("Discount record saved."), Ui();
-        } catch (vn) {
-          x(vn.message || "Error occurred saving discount rules.");
+        } catch (wn) {
+          x(wn.message || "Error occurred saving discount rules.");
         } finally {
           h(false);
         }
@@ -108982,8 +108997,8 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
         h(true);
         try {
           fn.referralPartnerId ? await dr.updateReferralPartner(fn.referralPartnerId, fn) : await dr.createReferralPartner(fn), In(false), _n(null), p("Referral partner details saved."), Ui();
-        } catch (vn) {
-          x(vn.message || "Error saving referral details.");
+        } catch (wn) {
+          x(wn.message || "Error saving referral details.");
         } finally {
           h(false);
         }
@@ -109132,7 +109147,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                   {
                     id: "audit",
                     label: "Audit Logs",
-                    icon: Fo
+                    icon: To
                   },
                   {
                     id: "backup",
@@ -110003,11 +110018,11 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                               badge: "Enhanced Legibility"
                             }
                           ].map((Fe) => {
-                            const vn = (e || "medium") === Fe.id;
+                            const wn = (e || "medium") === Fe.id;
                             return n.jsxs("button", {
                               type: "button",
                               onClick: () => r(Fe.id),
-                              className: `text-left p-5 rounded-2xl border transition-all cursor-pointer relative flex flex-col justify-between ${vn ? "bg-indigo-500/10 dark:bg-indigo-500/20 border-indigo-500 ring-2 ring-indigo-500/30 shadow-md" : "bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"}`,
+                              className: `text-left p-5 rounded-2xl border transition-all cursor-pointer relative flex flex-col justify-between ${wn ? "bg-indigo-500/10 dark:bg-indigo-500/20 border-indigo-500 ring-2 ring-indigo-500/30 shadow-md" : "bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"}`,
                               children: [
                                 n.jsxs("div", {
                                   className: "space-y-2",
@@ -110019,7 +110034,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                           className: "font-extrabold text-sm text-zinc-900 dark:text-zinc-100",
                                           children: Fe.label
                                         }),
-                                        vn && n.jsx("span", {
+                                        wn && n.jsx("span", {
                                           className: "w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]",
                                           children: "\u2713"
                                         })
@@ -110043,8 +110058,8 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                       children: Fe.badge
                                     }),
                                     n.jsx("span", {
-                                      className: vn ? "text-indigo-600 dark:text-indigo-400" : "text-zinc-400",
-                                      children: vn ? "Active Mode" : "Click to Apply"
+                                      className: wn ? "text-indigo-600 dark:text-indigo-400" : "text-zinc-400",
+                                      children: wn ? "Active Mode" : "Click to Apply"
                                     })
                                   ]
                                 })
@@ -110249,17 +110264,17 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                   className: "p-4 font-mono text-zinc-400",
                                   children: Fe.module
                                 }),
-                                rr.map((vn) => {
-                                  const qa = Pr.some((ni) => ni.roleId === vn.roleId && ni.capabilityId === Fe.capabilityId);
+                                rr.map((wn) => {
+                                  const qa = Pr.some((ni) => ni.roleId === wn.roleId && ni.capabilityId === Fe.capabilityId);
                                   return n.jsx("td", {
                                     className: "p-4 text-center",
                                     children: n.jsx("input", {
                                       type: "checkbox",
                                       checked: qa,
-                                      onChange: () => jA(vn.roleId, Fe.capabilityId),
+                                      onChange: () => jA(wn.roleId, Fe.capabilityId),
                                       className: "form-checkbox h-4.5 w-4.5 text-synos-primary rounded bg-white dark:bg-zinc-950 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
                                     })
-                                  }, vn.roleId);
+                                  }, wn.roleId);
                                 })
                               ]
                             }, Fe.capabilityId))
@@ -110307,7 +110322,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                         n.jsx("div", {
                           className: "grid grid-cols-1 md:grid-cols-3 gap-6",
                           children: en.map((Fe) => {
-                            const vn = Fe.code === "GENERAL" || Fe.code === "RAD" || Fe.name.toLowerCase() === "radiology" || Fe.name.toLowerCase() === "general laboratory operations";
+                            const wn = Fe.code === "GENERAL" || Fe.code === "RAD" || Fe.name.toLowerCase() === "radiology" || Fe.name.toLowerCase() === "general laboratory operations";
                             return n.jsxs("div", {
                               className: "border dark:border-zinc-800 border-zinc-200/10 rounded-xl p-5 bg-zinc-50/30 dark:bg-zinc-950/20 flex flex-col justify-between",
                               children: [
@@ -110341,7 +110356,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                             })
                                           ]
                                         }),
-                                        vn && n.jsx("p", {
+                                        wn && n.jsx("p", {
                                           className: "text-xxs text-amber-500/80 italic font-semibold mt-1",
                                           children: "\u26A0\uFE0F Reserved System Department"
                                         })
@@ -110353,7 +110368,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                   className: "flex justify-end space-x-2 mt-4 pt-3 border-t dark:border-zinc-900 border-zinc-100",
                                   children: [
                                     n.jsx("button", {
-                                      disabled: vn,
+                                      disabled: wn,
                                       onClick: () => {
                                         fr(Fe), ya(true);
                                       },
@@ -110364,7 +110379,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                       })
                                     }),
                                     n.jsx("button", {
-                                      disabled: vn,
+                                      disabled: wn,
                                       onClick: () => ql(Fe.departmentId),
                                       className: "p-1.5 bg-red-500/10 text-red-400 hover:bg-red-500/25 border border-red-500/20 rounded-lg transition-colors disabled:opacity-40 disabled:pointer-events-none",
                                       title: "Delete",
@@ -110512,7 +110527,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                         })
                       ]
                     }),
-                    sa && wn && n.jsx("div", {
+                    sa && vn && n.jsx("div", {
                       className: "fixed inset-0 bg-zinc-950/60 dark:bg-black/75 flex items-center justify-center z-50 animate-fadeIn",
                       children: n.jsxs("div", {
                         className: "border border-zinc-200 dark:border-zinc-900 p-6 rounded-2xl w-full max-w-md shadow-2xl text-xs text-zinc-800 dark:text-zinc-250",
@@ -110522,7 +110537,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                         children: [
                           n.jsx("h3", {
                             className: "text-sm font-semibold mb-4 border-b border-zinc-250 dark:border-zinc-850 pb-2 text-zinc-800 dark:text-zinc-200",
-                            children: wn.departmentId ? "Update Department Settings" : "Register New Department"
+                            children: vn.departmentId ? "Update Department Settings" : "Register New Department"
                           }),
                           n.jsxs("form", {
                             onSubmit: oA,
@@ -110537,11 +110552,11 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                   n.jsx("input", {
                                     type: "text",
                                     required: true,
-                                    disabled: !!wn.departmentId,
+                                    disabled: !!vn.departmentId,
                                     placeholder: "e.g. HEM, BIO, RAD",
-                                    value: wn.code || "",
+                                    value: vn.code || "",
                                     onChange: (Fe) => fr({
-                                      ...wn,
+                                      ...vn,
                                       code: Fe.target.value.toUpperCase()
                                     }),
                                     className: "w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-855 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm disabled:opacity-55",
@@ -110561,9 +110576,9 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                     type: "text",
                                     required: true,
                                     placeholder: "e.g. Hematology",
-                                    value: wn.name || "",
+                                    value: vn.name || "",
                                     onChange: (Fe) => fr({
-                                      ...wn,
+                                      ...vn,
                                       name: Fe.target.value
                                     }),
                                     className: "w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-855 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm",
@@ -110580,9 +110595,9 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                     children: "Macro-Department Division"
                                   }),
                                   n.jsxs("select", {
-                                    value: wn.macroDepartment || "Pathology",
+                                    value: vn.macroDepartment || "Pathology",
                                     onChange: (Fe) => fr({
-                                      ...wn,
+                                      ...vn,
                                       macroDepartment: Fe.target.value
                                     }),
                                     className: "w-full px-3 py-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-855 rounded-xl text-xs outline-none focus:border-synos-primary transition-colors text-zinc-700 dark:text-zinc-300 shadow-sm",
@@ -110607,16 +110622,16 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                   })
                                 ]
                               }),
-                              wn.departmentId && n.jsx("div", {
+                              vn.departmentId && n.jsx("div", {
                                 className: "flex items-center space-x-3 py-1",
                                 children: n.jsxs("label", {
                                   className: "flex items-center space-x-3 cursor-pointer select-none",
                                   children: [
                                     n.jsx("input", {
                                       type: "checkbox",
-                                      checked: wn.isActive || false,
+                                      checked: vn.isActive || false,
                                       onChange: (Fe) => fr({
-                                        ...wn,
+                                        ...vn,
                                         isActive: Fe.target.checked
                                       }),
                                       className: "form-checkbox h-4.5 w-4.5 text-synos-primary rounded bg-white dark:bg-zinc-900 border-zinc-300 dark:border-zinc-800 focus:ring-0 cursor-pointer"
@@ -111092,7 +111107,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                             children: Kt.discountDefinitionId ? "Modify Discount Rules" : "New Discount Setup"
                           }),
                           n.jsxs("form", {
-                            onSubmit: bo,
+                            onSubmit: yo,
                             className: "space-y-4",
                             children: [
                               !Kt.discountDefinitionId && n.jsxs("div", {
@@ -111288,7 +111303,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                         ]
                       })
                     }),
-                    sr && fn && n.jsx("div", {
+                    ar && fn && n.jsx("div", {
                       className: "fixed inset-0 bg-black/75 flex items-center justify-center z-50 animate-fadeIn",
                       children: n.jsxs("div", {
                         className: "bg-zinc-900 border border-zinc-800 p-6 rounded-2xl w-full max-w-md shadow-2xl text-xs text-zinc-200",
@@ -111729,13 +111744,13 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                     className: "p-4 text-center",
                                     children: n.jsx("button", {
                                       onClick: () => {
-                                        let vn = Fe.payload;
+                                        let wn = Fe.payload;
                                         if (typeof Fe.payload == "string") try {
-                                          vn = JSON.parse(Fe.payload);
+                                          wn = JSON.parse(Fe.payload);
                                         } catch {
-                                          vn = Fe.payload;
+                                          wn = Fe.payload;
                                         }
-                                        Ut(vn);
+                                        Ut(wn);
                                       },
                                       className: "p-1.5 bg-synos-primary/10 text-synos-primary hover:bg-synos-primary/25 border border-synos-primary/20 rounded-lg transition-colors flex items-center justify-center mx-auto",
                                       title: "View Details",
@@ -111834,7 +111849,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                       ...Wt.New || Wt.new || {}
                                     }).map((Fe) => {
                                       var _a3, _b;
-                                      const vn = (_a3 = Wt.Old || Wt.old) == null ? void 0 : _a3[Fe], qa = (_b = Wt.New || Wt.new) == null ? void 0 : _b[Fe], ni = JSON.stringify(vn) !== JSON.stringify(qa);
+                                      const wn = (_a3 = Wt.Old || Wt.old) == null ? void 0 : _a3[Fe], qa = (_b = Wt.New || Wt.new) == null ? void 0 : _b[Fe], ni = JSON.stringify(wn) !== JSON.stringify(qa);
                                       return n.jsxs("tr", {
                                         className: ni ? "bg-synos-primary/5" : "opacity-55",
                                         children: [
@@ -111844,7 +111859,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                           }),
                                           n.jsx("td", {
                                             className: "p-3 text-red-300 break-all",
-                                            children: vn !== void 0 ? String(vn) : "\u2014"
+                                            children: wn !== void 0 ? String(wn) : "\u2014"
                                           }),
                                           n.jsx("td", {
                                             className: "p-3 text-emerald-300 break-all font-semibold",
@@ -112471,7 +112486,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                         }),
                                         n.jsx("td", {
                                           className: "p-4 text-xs text-zinc-600 dark:text-zinc-300 font-semibold",
-                                          children: ((_a3 = ft.find((vn) => vn.branchId === Fe.branchId)) == null ? void 0 : _a3.name) || "Default Branch"
+                                          children: ((_a3 = ft.find((wn) => wn.branchId === Fe.branchId)) == null ? void 0 : _a3.name) || "Default Branch"
                                         }),
                                         n.jsx("td", {
                                           className: "p-4 text-xs font-bold text-indigo-600 dark:text-indigo-400",
@@ -112591,15 +112606,15 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                 children: [
                                   Mn.map((Fe) => {
                                     var _a3, _b;
-                                    const vn = Fe.terminalIdentifier === localStorage.getItem("synos_terminal_id");
+                                    const wn = Fe.terminalIdentifier === localStorage.getItem("synos_terminal_id");
                                     return n.jsxs("tr", {
-                                      className: `hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors ${vn ? "bg-indigo-500/[0.04]" : ""}`,
+                                      className: `hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors ${wn ? "bg-indigo-500/[0.04]" : ""}`,
                                       children: [
                                         n.jsxs("td", {
                                           className: "p-4 font-mono font-bold text-zinc-850 dark:text-zinc-200",
                                           children: [
                                             Fe.terminalIdentifier,
-                                            vn && n.jsx("span", {
+                                            wn && n.jsx("span", {
                                               className: "ml-2 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-[9px] font-sans font-bold px-2 py-0.5 rounded-full uppercase tracking-wider",
                                               children: "Current Node"
                                             })
@@ -113194,7 +113209,7 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                       className: "p-4 text-center",
                                       children: n.jsx("button", {
                                         type: "button",
-                                        onClick: () => To(Fe.backupId, Fe.fileName),
+                                        onClick: () => bo(Fe.backupId, Fe.fileName),
                                         disabled: v === Fe.backupId,
                                         className: "h-8 px-4 bg-red-600 hover:bg-red-700 text-white font-bold text-xxs tracking-wider rounded-lg transition-all flex items-center justify-center inline-block mx-auto",
                                         children: v === Fe.backupId ? "Restoring..." : "\u{1F504} Restore"
@@ -113783,16 +113798,16 @@ Backup ID: ${qa == null ? void 0 : qa.backupId}`);
                                     type: "button",
                                     onClick: async () => {
                                       try {
-                                        const vn = await (await fetch("/api/v1/delivery/status", {
+                                        const wn = await (await fetch("/api/v1/delivery/status", {
                                           headers: {
                                             Authorization: `Bearer ${localStorage.getItem("synos_jwt")}`
                                           }
                                         })).json();
-                                        vn.isHealthy ? alert(`\u2705 WhatsApp Gateway Connected & Authorized!
+                                        wn.isHealthy ? alert(`\u2705 WhatsApp Gateway Connected & Authorized!
 
-Lab ID: ${vn.labId}
-Endpoint: ${vn.middlewareUrl}
-Pending Events: ${vn.pendingOutboxCount}`) : alert(`\u274C WhatsApp Gateway Connection Error: ${vn.statusMessage || vn.lastError}
+Lab ID: ${wn.labId}
+Endpoint: ${wn.middlewareUrl}
+Pending Events: ${wn.pendingOutboxCount}`) : alert(`\u274C WhatsApp Gateway Connection Error: ${wn.statusMessage || wn.lastError}
 
 Fix Instructions:
 Please verify or update your License Key in System Settings.`);
@@ -114238,9 +114253,9 @@ Please verify or update your License Key in System Settings.`);
                             n.jsx("button", {
                               type: "button",
                               onClick: es,
-                              disabled: Ot,
+                              disabled: Pt,
                               className: "px-6 py-2.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold text-xs rounded-xl shadow-xs active:scale-95 transition-all flex items-center justify-center",
-                              children: Ot ? "Updating..." : "Apply Key"
+                              children: Pt ? "Updating..." : "Apply Key"
                             })
                           ]
                         }),
@@ -114454,12 +114469,12 @@ Please verify or update your License Key in System Settings.`);
                             n.jsx("div", {
                               className: "space-y-3",
                               children: nt.report.checks.map((Fe) => {
-                                const vn = (ni) => ni === 0 || ni === "Success" ? "text-emerald-500 bg-emerald-500/10 border-emerald-500/20" : ni === 1 || ni === "Warning" ? "text-amber-500 bg-amber-500/10 border-amber-500/20" : "text-rose-500 bg-rose-500/10 border-rose-500/20", qa = (ni) => ni === 0 || ni === "Success" ? "\u2713" : ni === 1 || ni === "Warning" ? "\u26A0" : "\u2717";
+                                const wn = (ni) => ni === 0 || ni === "Success" ? "text-emerald-500 bg-emerald-500/10 border-emerald-500/20" : ni === 1 || ni === "Warning" ? "text-amber-500 bg-amber-500/10 border-amber-500/20" : "text-rose-500 bg-rose-500/10 border-rose-500/20", qa = (ni) => ni === 0 || ni === "Success" ? "\u2713" : ni === 1 || ni === "Warning" ? "\u26A0" : "\u2717";
                                 return n.jsxs("div", {
                                   className: "flex items-start gap-3 bg-zinc-50 dark:bg-zinc-900/60 p-3 rounded-xl border border-zinc-200/50 dark:border-zinc-850/50",
                                   children: [
                                     n.jsx("span", {
-                                      className: `flex items-center justify-center h-5 w-5 rounded-full border text-[10px] font-bold shrink-0 ${vn(Fe.severity)}`,
+                                      className: `flex items-center justify-center h-5 w-5 rounded-full border text-[10px] font-bold shrink-0 ${wn(Fe.severity)}`,
                                       children: qa(Fe.severity)
                                     }),
                                     n.jsxs("div", {
@@ -115138,7 +115153,7 @@ Please verify or update your License Key in System Settings.`);
               className: j ? "text-sm font-semibold dark:text-white" : "text-sm text-zinc-500 font-medium",
               children: j ? `${j.name} (${j.itemCode})` : a
             }),
-            n.jsx(jo, {
+            n.jsx(Mo, {
               className: U("w-4 h-4 text-zinc-400 transition-transform duration-300", i && "rotate-90 text-synos-primary")
             })
           ]
@@ -115291,7 +115306,7 @@ Please verify or update your License Key in System Settings.`);
                                 type: "button",
                                 onClick: () => B(false),
                                 className: "bg-zinc-200 dark:bg-white/10 text-zinc-500 p-1 rounded-md",
-                                children: n.jsx(Yn, {
+                                children: n.jsx(Hn, {
                                   className: "w-3.5 h-3.5"
                                 })
                               })
@@ -115629,7 +115644,7 @@ Please verify or update your License Key in System Settings.`);
             }),
             n.jsx("button", {
               onClick: () => f(null),
-              children: n.jsx(Yn, {
+              children: n.jsx(Hn, {
                 className: "w-4 h-4"
               })
             })
@@ -116748,7 +116763,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
                   n.jsx("button", {
                     onClick: () => A(false),
                     className: "p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl",
-                    children: n.jsx(Yn, {
+                    children: n.jsx(Hn, {
                       className: "w-5 h-5 text-zinc-400"
                     })
                   })
@@ -116830,7 +116845,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
                   n.jsx("button", {
                     onClick: () => c(false),
                     className: "p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl",
-                    children: n.jsx(Yn, {
+                    children: n.jsx(Hn, {
                       className: "w-5 h-5 text-zinc-400"
                     })
                   })
@@ -116941,7 +116956,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
               n.jsx("button", {
                 onClick: e,
                 className: "p-2 hover:bg-zinc-200 dark:hover:bg-white/10 rounded-full transition-colors",
-                children: n.jsx(Yn, {
+                children: n.jsx(Hn, {
                   className: "w-5 h-5 text-zinc-500"
                 })
               })
@@ -118227,7 +118242,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
             n.jsx("button", {
               onClick: o,
               className: "p-2 hover:bg-zinc-100 dark:hover:bg-white/5 rounded-lg transition-colors text-zinc-500",
-              children: n.jsx(Fo, {
+              children: n.jsx(To, {
                 className: me("w-5 h-5", r && "animate-spin")
               })
             })
@@ -118429,7 +118444,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
             n.jsx("button", {
               onClick: o,
               className: "p-2 hover:bg-zinc-100 dark:hover:bg-white/5 rounded-lg transition-colors text-zinc-500",
-              children: n.jsx(Fo, {
+              children: n.jsx(To, {
                 className: me("w-5 h-5", r && "animate-spin")
               })
             })
@@ -118651,7 +118666,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
       {
         id: "history",
         label: "Stock History",
-        icon: Fo
+        icon: To
       }
     ];
     return n.jsxs("div", {
@@ -119150,7 +119165,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
                 })
               ]
             }),
-            t.subItems && n.jsx(jo, {
+            t.subItems && n.jsx(Mo, {
               className: `w-3 h-3 transition-transform duration-300 ${a ? "rotate-90" : ""}`
             })
           ]
@@ -119401,7 +119416,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
                 children: [
                   n.jsx("div", {
                     className: "w-6 h-6 sm:w-7 sm:h-7 rounded-[7px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs",
-                    children: n.jsx(Us, {
+                    children: n.jsx(Gs, {
                       size: 14,
                       strokeWidth: 2.4
                     })
@@ -121304,7 +121319,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
                     n.jsxs("span", {
                       className: "text-[11px] font-extrabold tracking-wider uppercase text-slate-500 dark:text-zinc-400 flex items-center gap-1.5",
                       children: [
-                        n.jsx(Us, {
+                        n.jsx(Gs, {
                           className: "w-3.5 h-3.5 text-emerald-500"
                         }),
                         "At Reception Desks"
@@ -121952,7 +121967,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
         description: "Pooja (Counter 1) submitted shift closing cash of \u20B914,500. Awaiting safe vault acknowledgment.",
         actionLabel: "Verify Handover",
         route: "/finance/revenue/drawers",
-        icon: Us,
+        icon: Gs,
         iconColor: "text-amber-500",
         iconBg: "bg-amber-500/10",
         badgeStyle: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/25"
@@ -122136,7 +122151,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
       let zn = true;
       return (async () => {
         try {
-          const [Sr, Kr, zr, Gr, Qt, _t, en, Bn, wn, fr, sa, ya, Jn] = await Promise.allSettled([
+          const [Sr, Kr, zr, Gr, Qt, Ot, en, Bn, vn, fr, sa, ya, Jn] = await Promise.allSettled([
             lt.getVendors(),
             lt.getReferenceLabs(),
             lt.WorkforceApi.getStaff(),
@@ -122156,7 +122171,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
             lt.getRevenueTrends(7).catch(() => null)
           ]);
           if (!zn) return;
-          Sr.status === "fulfilled" && I(Sr.value || []), Kr.status === "fulfilled" && U(Kr.value || []), zr.status === "fulfilled" && _(zr.value || []), Gr.status === "fulfilled" && ee(Gr.value || []), Qt.status === "fulfilled" && ne(Qt.value || []), _t.status === "fulfilled" && he(_t.value || []), en.status === "fulfilled" && C(en.value || []), Bn.status === "fulfilled" && Q(Bn.value || []), wn.status === "fulfilled" && v(wn.value || []), fr.status === "fulfilled" && H(fr.value || []), sa.status === "fulfilled" && $(sa.value || []), ya.status === "fulfilled" && Me(ya.value || []), Jn && Jn.status === "fulfilled" && Jn.value && ze(Jn.value), d.current = true;
+          Sr.status === "fulfilled" && I(Sr.value || []), Kr.status === "fulfilled" && U(Kr.value || []), zr.status === "fulfilled" && _(zr.value || []), Gr.status === "fulfilled" && ee(Gr.value || []), Qt.status === "fulfilled" && ne(Qt.value || []), Ot.status === "fulfilled" && he(Ot.value || []), en.status === "fulfilled" && C(en.value || []), Bn.status === "fulfilled" && Q(Bn.value || []), vn.status === "fulfilled" && v(vn.value || []), fr.status === "fulfilled" && H(fr.value || []), sa.status === "fulfilled" && $(sa.value || []), ya.status === "fulfilled" && Me(ya.value || []), Jn && Jn.status === "fulfilled" && Jn.value && ze(Jn.value), d.current = true;
         } catch (Sr) {
           console.error("Failed to load static finance masters", Sr);
         }
@@ -122166,8 +122181,8 @@ Inventory Dept.`, M = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
     }, []), F.useEffect(() => {
       let zn = true;
       return (async () => {
-        const Sr = i && o ? null : s, Kr = i && o, zr = r === "custom" ? a == null ? void 0 : a.start : null, Gr = r === "custom" ? a == null ? void 0 : a.end : null, Qt = `${Sr || "consolidated"}_${r}_${zr || ""}_${Gr || ""}`, _t = u.current[Qt];
-        _t ? (_t.profitability && f(_t.profitability), _t.concessionData && Qe(_t.concessionData), _t.referrals && j(_t.referrals), _t.receptionSummary && le(_t.receptionSummary), _t.todayActionQueue && pe(_t.todayActionQueue)) : !d.current && A || g(true);
+        const Sr = i && o ? null : s, Kr = i && o, zr = r === "custom" ? a == null ? void 0 : a.start : null, Gr = r === "custom" ? a == null ? void 0 : a.end : null, Qt = `${Sr || "consolidated"}_${r}_${zr || ""}_${Gr || ""}`, Ot = u.current[Qt];
+        Ot ? (Ot.profitability && f(Ot.profitability), Ot.concessionData && Qe(Ot.concessionData), Ot.referrals && j(Ot.referrals), Ot.receptionSummary && le(Ot.receptionSummary), Ot.todayActionQueue && pe(Ot.todayActionQueue)) : !d.current && A || g(true);
         try {
           const en = [
             lt.getProfitabilitySummary(zr, Gr, Sr, Kr, r),
@@ -122184,7 +122199,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
           r === "today" && (en.push(Xt.getDashboardSummary().catch(() => null)), en.push(Xt.getActionQueue(false).catch(() => [])));
           const Bn = await Promise.allSettled(en);
           if (!zn) return;
-          const wn = Bn[0], fr = Bn[1], sa = Bn[2], ya = Bn[3], Jn = r === "today" ? Bn[4] : null, lr = r === "today" ? Bn[5] : null, ka = wn.status === "fulfilled" ? wn.value : null, Er = fr.status === "fulfilled" && fr.value ? fr.value : null, oi = sa.status === "fulfilled" ? sa.value : null, Rr = ya.status === "fulfilled" && Array.isArray(ya.value) ? ya.value : [], ks = (Jn == null ? void 0 : Jn.status) === "fulfilled" && Jn.value ? Jn.value : null, As = (lr == null ? void 0 : lr.status) === "fulfilled" && Array.isArray(lr.value) ? lr.value : [];
+          const vn = Bn[0], fr = Bn[1], sa = Bn[2], ya = Bn[3], Jn = r === "today" ? Bn[4] : null, lr = r === "today" ? Bn[5] : null, ka = vn.status === "fulfilled" ? vn.value : null, Er = fr.status === "fulfilled" && fr.value ? fr.value : null, oi = sa.status === "fulfilled" ? sa.value : null, Rr = ya.status === "fulfilled" && Array.isArray(ya.value) ? ya.value : [], ks = (Jn == null ? void 0 : Jn.status) === "fulfilled" && Jn.value ? Jn.value : null, As = (lr == null ? void 0 : lr.status) === "fulfilled" && Array.isArray(lr.value) ? lr.value : [];
           ka && f(ka), Er && Qe(Er), oi && j(oi), Rr.length > 0 && v(Rr), ks && le(ks), As.length > 0 && pe(As), u.current[Qt] = {
             profitability: ka,
             concessionData: Er,
@@ -122358,11 +122373,11 @@ Inventory Dept.`, M = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
     if (Dt.length === 0 && r === "today") {
       const zn = (q || []).filter((er) => er.dateGroup === "Today" || !er.isFinalized);
       if (zn.length > 0) {
-        let er = 0, Sr = 0, Kr = 0, zr = 0, Gr = 0, Qt = 0, _t = 0, en = 0, Bn = 0, wn = 0, fr = 0, sa = 0, ya = 0, Jn = 0, lr = 0, ka = 0;
+        let er = 0, Sr = 0, Kr = 0, zr = 0, Gr = 0, Qt = 0, Ot = 0, en = 0, Bn = 0, vn = 0, fr = 0, sa = 0, ya = 0, Jn = 0, lr = 0, ka = 0;
         zn.forEach((Er) => {
           var _a2, _b, _c2, _d2, _e, _f, _g2, _h2;
           const oi = Number(Er.totalAmount || Er.totalPaid) || 0, Rr = ((Er.testCodes || []).join(" ") + " " + (Er.departmentCode || "")).toLowerCase();
-          Rr.includes("x-ray") || Rr.includes("xray") || Rr.includes("routine_xray") ? (Bn += oi, wn += Math.max(1, ((_a2 = Er.testCodes) == null ? void 0 : _a2.length) || 1)) : Rr.includes("ct") ? (fr += oi, sa += Math.max(1, ((_b = Er.testCodes) == null ? void 0 : _b.length) || 1)) : Rr.includes("ultra") || Rr.includes("usg") || Rr.includes("echo") ? (ya += oi, Jn += Math.max(1, ((_c2 = Er.testCodes) == null ? void 0 : _c2.length) || 1)) : Rr.includes("mri") || Rr.includes("mr") ? (lr += oi, ka += Math.max(1, ((_d2 = Er.testCodes) == null ? void 0 : _d2.length) || 1)) : Rr.includes("cbp") || Rr.includes("cbc") || Rr.includes("platel") || Rr.includes("blood") || Rr.includes("hemat") ? (er += oi, Sr += Math.max(1, ((_e = Er.testCodes) == null ? void 0 : _e.length) || 1)) : Rr.includes("bio") || Rr.includes("sugar") || Rr.includes("lft") || Rr.includes("kft") || Rr.includes("lipid") ? (Kr += oi, zr += Math.max(1, ((_f = Er.testCodes) == null ? void 0 : _f.length) || 1)) : Rr.includes("micro") || Rr.includes("culture") || Rr.includes("urine") || Rr.includes("stool") ? (Gr += oi, Qt += Math.max(1, ((_g2 = Er.testCodes) == null ? void 0 : _g2.length) || 1)) : (Rr.includes("histo") || Rr.includes("biopsy") || Rr.includes("pap")) && (_t += oi, en += Math.max(1, ((_h2 = Er.testCodes) == null ? void 0 : _h2.length) || 1));
+          Rr.includes("x-ray") || Rr.includes("xray") || Rr.includes("routine_xray") ? (Bn += oi, vn += Math.max(1, ((_a2 = Er.testCodes) == null ? void 0 : _a2.length) || 1)) : Rr.includes("ct") ? (fr += oi, sa += Math.max(1, ((_b = Er.testCodes) == null ? void 0 : _b.length) || 1)) : Rr.includes("ultra") || Rr.includes("usg") || Rr.includes("echo") ? (ya += oi, Jn += Math.max(1, ((_c2 = Er.testCodes) == null ? void 0 : _c2.length) || 1)) : Rr.includes("mri") || Rr.includes("mr") ? (lr += oi, ka += Math.max(1, ((_d2 = Er.testCodes) == null ? void 0 : _d2.length) || 1)) : Rr.includes("cbp") || Rr.includes("cbc") || Rr.includes("platel") || Rr.includes("blood") || Rr.includes("hemat") ? (er += oi, Sr += Math.max(1, ((_e = Er.testCodes) == null ? void 0 : _e.length) || 1)) : Rr.includes("bio") || Rr.includes("sugar") || Rr.includes("lft") || Rr.includes("kft") || Rr.includes("lipid") ? (Kr += oi, zr += Math.max(1, ((_f = Er.testCodes) == null ? void 0 : _f.length) || 1)) : Rr.includes("micro") || Rr.includes("culture") || Rr.includes("urine") || Rr.includes("stool") ? (Gr += oi, Qt += Math.max(1, ((_g2 = Er.testCodes) == null ? void 0 : _g2.length) || 1)) : (Rr.includes("histo") || Rr.includes("biopsy") || Rr.includes("pap")) && (Ot += oi, en += Math.max(1, ((_h2 = Er.testCodes) == null ? void 0 : _h2.length) || 1));
         }), ie = [
           {
             departmentName: "Biochemistry",
@@ -122392,7 +122407,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
             departmentName: "Histopathology",
             category: "Pathology",
             modality: "Histopathology",
-            billedRevenue: _t,
+            billedRevenue: Ot,
             totalTestsCompleted: en,
             testsCompleted: en
           }
@@ -122402,8 +122417,8 @@ Inventory Dept.`, M = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
             category: "Radiology",
             modality: "X-Ray",
             billedRevenue: Bn,
-            totalTestsCompleted: wn,
-            testsCompleted: wn
+            totalTestsCompleted: vn,
+            testsCompleted: vn
           },
           {
             departmentName: "CT Scan",
@@ -122440,7 +122455,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
         "mri"
       ].includes((zn.departmentName || "").toLowerCase()) ? "Radiology" : "Pathology"), Sr = zn.modality || zn.departmentName;
       t(`/finance/revenue/bills?department=${encodeURIComponent(er)}&modality=${encodeURIComponent(Sr)}`);
-    }, mt = O.filter((zn) => zn.isActive !== false), jt = mt.length || O.length || 22, An = te.find((zn) => zn.status === "Draft" || zn.status === "Calculated"), Ve = mt.reduce((zn, er) => zn + (Number(er.baseSalary) || 0), 0), Ft = Number(An == null ? void 0 : An.totalGrossSalary) || 0, Ot = Ft > 0 ? Ft : Ve > 0 ? Ve : jt * 31e3, Pt = Math.round(Ot / 30), Un = r === "today" ? Pt : Ot, bn = B.reduce((zn, er) => zn + (Number(er.amount) || Number(er.amountDue) || 0), 0), rr = x.reduce((zn, er) => zn + (Number(er.amount) || 0), 0), dn = Number(h == null ? void 0 : h.operatingExpenses) || Number(h == null ? void 0 : h.consumableCashOutflow) || 0, on = r === "today" ? dn : bn + rr + dn, Ir = fe > 0 ? Math.min(100, Math.round(on / fe * 1e3) / 10) : 0, Pr = Math.max(fe, 2e6), Fi = r === "today" ? fe > 0 ? Math.min(100, Math.round(Pt / fe * 1e3) / 10) : 34.1 : Math.min(100, Math.max(5, Math.round(Ot / Pr * 1e3) / 10)), Da = (Re == null ? void 0 : Re.Daily) || [];
+    }, mt = O.filter((zn) => zn.isActive !== false), jt = mt.length || O.length || 22, An = te.find((zn) => zn.status === "Draft" || zn.status === "Calculated"), Ve = mt.reduce((zn, er) => zn + (Number(er.baseSalary) || 0), 0), Ft = Number(An == null ? void 0 : An.totalGrossSalary) || 0, Pt = Ft > 0 ? Ft : Ve > 0 ? Ve : jt * 31e3, Ht = Math.round(Pt / 30), Un = r === "today" ? Ht : Pt, bn = B.reduce((zn, er) => zn + (Number(er.amount) || Number(er.amountDue) || 0), 0), rr = x.reduce((zn, er) => zn + (Number(er.amount) || 0), 0), dn = Number(h == null ? void 0 : h.operatingExpenses) || Number(h == null ? void 0 : h.consumableCashOutflow) || 0, on = r === "today" ? dn : bn + rr + dn, Ir = fe > 0 ? Math.min(100, Math.round(on / fe * 1e3) / 10) : 0, Pr = Math.max(fe, 2e6), Fi = r === "today" ? fe > 0 ? Math.min(100, Math.round(Ht / fe * 1e3) / 10) : 34.1 : Math.min(100, Math.max(5, Math.round(Pt / Pr * 1e3) / 10)), Da = (Re == null ? void 0 : Re.Daily) || [];
     return n.jsxs("div", {
       className: "px-5 sm:px-6 py-3.5 sm:py-4 w-full flex-1 flex flex-col justify-start gap-3 sm:gap-3.5 animate-in fade-in duration-500 relative bg-[#CBD5E1] dark:bg-zinc-950",
       children: [
@@ -122505,8 +122520,8 @@ Inventory Dept.`, M = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
           expensesAmount: on,
           expensesRate: Ir,
           payrollAmount: Un,
-          monthlyPayrollAmount: Ot,
-          dailyPayrollAmount: Pt,
+          monthlyPayrollAmount: Pt,
+          dailyPayrollAmount: Ht,
           payrollRate: Fi,
           employeeCount: jt,
           dailyTrends: Da,
@@ -122575,7 +122590,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
               n.jsx("button", {
                 onClick: e,
                 className: "p-1 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-lg transition-colors cursor-pointer",
-                children: n.jsx(Yn, {
+                children: n.jsx(Hn, {
                   className: "w-4 h-4 text-zinc-400"
                 })
               })
@@ -122651,7 +122666,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
                     children: [
                       n.jsx("div", {
                         className: "absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400",
-                        children: n.jsx(Gs, {
+                        children: n.jsx(Ys, {
                           className: "w-4 h-4"
                         })
                       }),
@@ -122687,7 +122702,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
                       {
                         id: "Cash",
                         label: "Cash",
-                        icon: Gs
+                        icon: Ys
                       },
                       {
                         id: "UPI",
@@ -123499,14 +123514,14 @@ Inventory Dept.`, M = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
         value: I(g),
         subtitle: "Physical drawer & gateway collections",
         type: "positive",
-        icon: Us
+        icon: Gs
       },
       {
         title: "Accrual Billed Revenue",
         value: I(d),
         subtitle: "Total diagnostic services invoiced",
         type: "neutral",
-        icon: Gs
+        icon: Ys
       },
       {
         title: "Pending Receivables",
@@ -123741,7 +123756,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
                             }),
                             n.jsx("div", {
                               className: "w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0",
-                              children: n.jsx(Us, {
+                              children: n.jsx(Gs, {
                                 size: 20
                               })
                             })
@@ -123912,7 +123927,7 @@ Inventory Dept.`, M = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
       {
         id: "bills",
         label: "Bills & Collections",
-        icon: Gs
+        icon: Ys
       },
       {
         id: "dues",
@@ -123942,12 +123957,12 @@ Inventory Dept.`, M = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
       {
         id: "history",
         label: "Collection History",
-        icon: Fo
+        icon: To
       },
       {
         id: "drawers",
         label: "Cash Drawer Ledgers",
-        icon: Us
+        icon: Gs
       }
     ], x = {
       overview: {
@@ -125762,7 +125777,7 @@ Thank you!`;
                                 onClick: () => se(le),
                                 className: "px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-xs transition-all active:scale-95 cursor-pointer flex items-center gap-1",
                                 children: [
-                                  n.jsx(Gs, {
+                                  n.jsx(Ys, {
                                     className: "w-3 h-3"
                                   }),
                                   n.jsx("span", {
@@ -125802,7 +125817,7 @@ Thank you!`;
                     children: [
                       n.jsx("div", {
                         className: "w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500",
-                        children: n.jsx(Gs, {
+                        children: n.jsx(Ys, {
                           className: "w-4 h-4"
                         })
                       }),
@@ -125937,7 +125952,7 @@ Thank you!`;
                       onClick: () => D(le),
                       className: me("py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer flex flex-col items-center justify-center gap-1", Q === le ? "bg-amber-500 text-white border-amber-500 shadow-xs" : "bg-zinc-50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100"),
                       children: [
-                        le === "Cash" && n.jsx(Gs, {
+                        le === "Cash" && n.jsx(Ys, {
                           className: "w-3.5 h-3.5"
                         }),
                         le === "UPI" && n.jsx(Smartphone, {
@@ -127283,7 +127298,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                           children: n.jsxs("div", {
                             className: "flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300 font-bold",
                             children: [
-                              n.jsx(Ys, {
+                              n.jsx(Hs, {
                                 className: "w-3.5 h-3.5 text-zinc-400 shrink-0"
                               }),
                               n.jsx("span", {
@@ -127434,7 +127449,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                       n.jsxs("span", {
                         className: "font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1 mt-0.5",
                         children: [
-                          n.jsx(Ys, {
+                          n.jsx(Hs, {
                             className: "w-3.5 h-3.5 text-zinc-400"
                           }),
                           f.createdByName || "Front Desk Staff"
@@ -128856,7 +128871,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                           children: n.jsxs("div", {
                             className: "flex items-center gap-1.5 text-zinc-700 dark:text-zinc-300 font-bold",
                             children: [
-                              n.jsx(Ys, {
+                              n.jsx(Hs, {
                                 className: "w-3.5 h-3.5 text-zinc-400 shrink-0"
                               }),
                               n.jsx("span", {
@@ -129018,7 +129033,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                       n.jsxs("span", {
                         className: "font-bold text-zinc-800 dark:text-zinc-200 flex items-center gap-1 mt-0.5",
                         children: [
-                          n.jsx(Ys, {
+                          n.jsx(Hs, {
                             className: "w-3.5 h-3.5 text-zinc-400"
                           }),
                           p.cancelledByName || "Staff Desk"
@@ -129832,7 +129847,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                   onClick: () => c(O.id),
                   className: me("px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 shrink-0", l === O.id ? "bg-slate-900 dark:bg-white text-white dark:text-zinc-900 shadow-sm" : "bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-700"),
                   children: [
-                    n.jsx(Ys, {
+                    n.jsx(Hs, {
                       className: "w-3.5 h-3.5"
                     }),
                     n.jsx("span", {
@@ -130060,7 +130075,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
           }) : P.length === 0 ? n.jsxs("div", {
             className: "p-16 text-center space-y-3",
             children: [
-              n.jsx(Us, {
+              n.jsx(Gs, {
                 className: "w-10 h-10 text-zinc-400 mx-auto opacity-75"
               }),
               n.jsx("p", {
@@ -130215,7 +130230,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                     type: "button",
                     onClick: () => M(false),
                     className: "p-1 rounded-lg text-slate-400 hover:text-slate-600 cursor-pointer",
-                    children: n.jsx(Yn, {
+                    children: n.jsx(Hn, {
                       className: "w-4 h-4"
                     })
                   })
@@ -130500,7 +130515,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                 type: "button",
                 onClick: e,
                 className: "p-1 rounded-lg text-slate-400 hover:text-slate-600 cursor-pointer",
-                children: n.jsx(Yn, {
+                children: n.jsx(Hn, {
                   className: "w-4 h-4"
                 })
               })
@@ -130684,7 +130699,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                       {
                         id: "Cash",
                         label: "Cash Drawer",
-                        icon: Us
+                        icon: Gs
                       },
                       {
                         id: "UPI",
@@ -130976,7 +130991,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                         className: "text-[10px] font-black uppercase text-zinc-400 group-hover:text-synos-primary transition-colors flex items-center gap-1",
                         children: [
                           "View Ledger ",
-                          n.jsx(jo, {
+                          n.jsx(Mo, {
                             className: "w-3 h-3"
                           })
                         ]
@@ -131011,7 +131026,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                   n.jsx("button", {
                     onClick: () => A(false),
                     className: "p-3 hover:bg-zinc-200 dark:hover:bg-white/10 rounded-2xl transition-colors",
-                    children: n.jsx(Yn, {
+                    children: n.jsx(Hn, {
                       className: "w-6 h-6 text-zinc-500"
                     })
                   })
@@ -131378,7 +131393,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                     n.jsx("button", {
                       onClick: B,
                       className: "p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg text-zinc-500 hover:text-zinc-800 transition-all",
-                      children: n.jsx(jo, {
+                      children: n.jsx(Mo, {
                         className: "w-4 h-4"
                       })
                     })
@@ -131755,7 +131770,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
               n.jsx("button", {
                 onClick: r,
                 className: "p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-xl transition-colors",
-                children: n.jsx(Yn, {
+                children: n.jsx(Hn, {
                   className: "w-5 h-5 text-zinc-500"
                 })
               })
@@ -132006,7 +132021,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
               n.jsx("button", {
                 onClick: e,
                 className: "p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-xl transition-colors",
-                children: n.jsx(Yn, {
+                children: n.jsx(Hn, {
                   className: "w-5 h-5 text-zinc-500"
                 })
               })
@@ -132425,7 +132440,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
               n.jsx("button", {
                 onClick: e,
                 className: "p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-xl transition-colors",
-                children: n.jsx(Yn, {
+                children: n.jsx(Hn, {
                   className: "w-5 h-5 text-zinc-500"
                 })
               })
@@ -133181,7 +133196,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
             n.jsxs("h1", {
               className: "text-xl font-bold dark:text-white text-zinc-900 flex items-center gap-2",
               children: [
-                n.jsx(Gs, {
+                n.jsx(Ys, {
                   className: "w-5 h-5 text-emerald-500"
                 }),
                 "Daily Expenses"
@@ -133331,7 +133346,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                   children: r.length === 0 ? n.jsxs("div", {
                     className: "p-8 border-2 border-dashed dark:border-zinc-800 border-zinc-200 rounded-2xl flex flex-col items-center justify-center text-zinc-400",
                     children: [
-                      n.jsx(Gs, {
+                      n.jsx(Ys, {
                         className: "w-8 h-8 mb-2 opacity-20"
                       }),
                       n.jsx("p", {
@@ -133457,7 +133472,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
               n.jsx("button", {
                 onClick: e,
                 className: "p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-xl transition-colors",
-                children: n.jsx(Yn, {
+                children: n.jsx(Hn, {
                   className: "w-5 h-5 text-zinc-500"
                 })
               })
@@ -133582,7 +133597,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
               n.jsx("button", {
                 onClick: e,
                 className: "p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-xl transition-colors",
-                children: n.jsx(Yn, {
+                children: n.jsx(Hn, {
                   className: "w-5 h-5 text-zinc-500"
                 })
               })
@@ -134134,7 +134149,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                         },
                         className: "p-2 bg-rose-500/10 text-rose-500 rounded-xl hover:bg-rose-500 hover:text-white transition-all",
                         title: "Delete Partner",
-                        children: n.jsx(Yn, {
+                        children: n.jsx(Hn, {
                           className: "w-4 h-4"
                         })
                       })
@@ -134498,7 +134513,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
               n.jsx("button", {
                 onClick: e,
                 className: "p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-xl transition-colors",
-                children: n.jsx(Yn, {
+                children: n.jsx(Hn, {
                   className: "w-5 h-5 text-zinc-500"
                 })
               })
@@ -134871,7 +134886,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
               n.jsx("button", {
                 onClick: t,
                 className: "p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-xl transition-all",
-                children: n.jsx(Yn, {
+                children: n.jsx(Hn, {
                   size: 20,
                   className: "text-zinc-400"
                 })
@@ -135573,7 +135588,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                   n.jsx("button", {
                     onClick: () => d(null),
                     className: "p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800",
-                    children: n.jsx(Yn, {
+                    children: n.jsx(Hn, {
                       className: "w-4 h-4 text-zinc-400"
                     })
                   })
@@ -135938,12 +135953,12 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
       {
         id: "feed",
         label: "Expense Feed",
-        icon: Fo
+        icon: To
       },
       {
         id: "payables",
         label: "Vendor Payables",
-        icon: Gs
+        icon: Ys
       },
       {
         id: "vendors",
@@ -136264,7 +136279,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
       {
         id: "history",
         label: "Settlement History",
-        icon: Fo
+        icon: To
       }
     ];
     F.useEffect(() => {
@@ -137095,7 +137110,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
               title: "Actual Cash Profit",
               value: Q,
               subtext: "Real money left in hand",
-              icon: Us,
+              icon: Gs,
               trend: 12.4,
               isPositive: Q >= 0
             }),
@@ -137567,7 +137582,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                           className: "type-label",
                           children: "Lifetime Referral Revenue"
                         }),
-                        n.jsx(Gs, {
+                        n.jsx(Ys, {
                           className: "w-4 h-4 text-zinc-500"
                         })
                       ]
@@ -137612,7 +137627,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                     l && n.jsx("button", {
                       onClick: () => c(""),
                       className: "absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600",
-                      children: n.jsx(Yn, {
+                      children: n.jsx(Hn, {
                         size: 12
                       })
                     })
@@ -137827,7 +137842,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                           disabled: C >= r.totalPages,
                           onClick: () => B((_) => Math.min(r.totalPages, _ + 1)),
                           className: "p-1 rounded-lg border border-slate-200 dark:border-zinc-800 disabled:opacity-30 hover:bg-slate-100 dark:hover:bg-zinc-900",
-                          children: n.jsx(jo, {
+                          children: n.jsx(Mo, {
                             size: 14
                           })
                         })
@@ -138701,7 +138716,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                     onClick: e,
                     className: "p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-all cursor-pointer",
                     title: "Close File",
-                    children: n.jsx(Yn, {
+                    children: n.jsx(Hn, {
                       size: 20
                     })
                   })
@@ -138748,7 +138763,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                         className: "text-[10px] font-extrabold uppercase tracking-wider",
                         children: "Revenue"
                       }),
-                      n.jsx(Gs, {
+                      n.jsx(Ys, {
                         size: 14,
                         className: "text-indigo-500"
                       })
@@ -139146,7 +139161,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                                           type: "button",
                                           onClick: () => J(""),
                                           className: "absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-0.5",
-                                          children: n.jsx(Yn, {
+                                          children: n.jsx(Hn, {
                                             size: 12
                                           })
                                         })
@@ -139265,7 +139280,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                                     onClick: Re,
                                     className: "inline-flex items-center gap-1 px-3 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg text-xs font-bold mt-1 cursor-pointer",
                                     children: [
-                                      n.jsx(Yn, {
+                                      n.jsx(Hn, {
                                         size: 12
                                       }),
                                       " Clear Filters"
@@ -139430,7 +139445,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                                                   disabled: Q,
                                                   className: "p-1.5 bg-slate-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-slate-300 rounded-xl transition-all",
                                                   title: "Cancel",
-                                                  children: n.jsx(Yn, {
+                                                  children: n.jsx(Hn, {
                                                     size: 14
                                                   })
                                                 })
@@ -139834,7 +139849,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
               n.jsx("button", {
                 onClick: e,
                 className: "p-1 rounded-lg text-zinc-400 hover:text-zinc-600",
-                children: n.jsx(Yn, {
+                children: n.jsx(Hn, {
                   size: 18
                 })
               })
@@ -140172,7 +140187,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
                               n.jsx("button", {
                                 onClick: () => d(g === H.partnerId ? null : H.partnerId),
                                 className: `w-6 h-6 rounded-lg flex items-center justify-center transition-all ${g === H.partnerId ? "bg-synos-primary text-white rotate-90" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:bg-zinc-200"}`,
-                                children: n.jsx(jo, {
+                                children: n.jsx(Mo, {
                                   size: 12
                                 })
                               }),
@@ -140514,7 +140529,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
               n.jsx("button", {
                 onClick: e,
                 className: "p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-xl transition-all",
-                children: n.jsx(Yn, {
+                children: n.jsx(Hn, {
                   size: 20,
                   className: "text-zinc-400"
                 })
@@ -140944,7 +140959,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                 n.jsx("button", {
                                   onClick: () => Q(B === Se.partnerId ? null : Se.partnerId),
                                   className: `w-6 h-6 rounded-lg flex items-center justify-center transition-all ${B === Se.partnerId ? "bg-emerald-500 text-white rotate-90" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:bg-zinc-200"}`,
-                                  children: n.jsx(jo, {
+                                  children: n.jsx(Mo, {
                                     size: 12
                                   })
                                 }),
@@ -141076,7 +141091,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                           onClick: () => j(Se.partnerId, "history"),
                                           className: me("px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2", le === "history" ? "bg-emerald-600 text-white shadow-xs" : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800"),
                                           children: [
-                                            n.jsx(Fo, {
+                                            n.jsx(To, {
                                               size: 13
                                             }),
                                             n.jsx("span", {
@@ -141530,7 +141545,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
               n.jsx("button", {
                 onClick: e,
                 className: "p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-xl transition-all cursor-pointer",
-                children: n.jsx(Yn, {
+                children: n.jsx(Hn, {
                   size: 20,
                   className: "text-zinc-400"
                 })
@@ -141878,7 +141893,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                         children: [
                           n.jsx("div", {
                             className: "p-1.5 rounded-lg bg-zinc-100 dark:bg-zinc-900 text-zinc-500",
-                            children: n.jsx(Ys, {
+                            children: n.jsx(Hs, {
                               size: 12
                             })
                           }),
@@ -142180,7 +142195,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
               n.jsx("button", {
                 onClick: t,
                 className: "p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-xl transition-all",
-                children: n.jsx(Yn, {
+                children: n.jsx(Hn, {
                   size: 20,
                   className: "text-zinc-400"
                 })
@@ -142773,7 +142788,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                           onClick: () => u(""),
                           className: "absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-0.5",
                           title: "Clear search",
-                          children: n.jsx(Yn, {
+                          children: n.jsx(Hn, {
                             size: 12
                           })
                         })
@@ -142892,7 +142907,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                     onClick: v,
                     className: "inline-flex items-center gap-1 px-3 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg text-xs font-bold mt-1 cursor-pointer",
                     children: [
-                      n.jsx(Yn, {
+                      n.jsx(Hn, {
                         size: 12
                       }),
                       " Clear Filters"
@@ -143062,7 +143077,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                   disabled: o,
                                   className: "p-1.5 bg-slate-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-slate-300 rounded-xl transition-all cursor-pointer",
                                   title: "Cancel",
-                                  children: n.jsx(Yn, {
+                                  children: n.jsx(Hn, {
                                     size: 14
                                   })
                                 })
@@ -143295,7 +143310,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                           onClick: () => c(""),
                           className: "absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 p-0.5",
                           title: "Clear search",
-                          children: n.jsx(Yn, {
+                          children: n.jsx(Hn, {
                             size: 12
                           })
                         })
@@ -143414,7 +143429,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                     onClick: Q,
                     className: "inline-flex items-center gap-1 px-3 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg text-xs font-bold mt-1 cursor-pointer",
                     children: [
-                      n.jsx(Yn, {
+                      n.jsx(Hn, {
                         size: 12
                       }),
                       " Clear Filters"
@@ -143531,7 +143546,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                   onClick: () => i(t.referralPartnerId, v.testId, "type", "Flat"),
                                   className: me("flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer", j.type === "Flat" ? "bg-white dark:bg-zinc-950 text-synos-primary shadow-xs font-extrabold" : "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"),
                                   children: [
-                                    n.jsx(Gs, {
+                                    n.jsx(Ys, {
                                       size: 11
                                     }),
                                     n.jsx("span", {
@@ -144179,7 +144194,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
       {
         id: "history",
         label: "Settlement History",
-        icon: Fo
+        icon: To
       },
       {
         id: "rules",
@@ -144990,7 +145005,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                       onClick: v,
                       className: "p-2 border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 rounded-xl transition-all cursor-pointer",
                       title: "Refresh Summary",
-                      children: n.jsx(Fo, {
+                      children: n.jsx(To, {
                         size: 16,
                         className: "text-zinc-500"
                       })
@@ -145086,7 +145101,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
       {
         id: "settlements",
         label: "Corporate Settlements",
-        icon: Fo
+        icon: To
       }
     ], Ge = async () => {
       u.length > 0 || f.length > 0 ? D(true) : B(true);
@@ -145688,7 +145703,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                           onClick: Ge,
                           className: "p-2 border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 rounded-xl transition-all cursor-pointer",
                           title: "Refresh",
-                          children: n.jsx(Fo, {
+                          children: n.jsx(To, {
                             size: 16,
                             className: "text-zinc-500"
                           })
@@ -146703,7 +146718,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                                   onClick: () => fe(null),
                                                   className: "p-1 rounded bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors cursor-pointer",
                                                   title: "Cancel",
-                                                  children: n.jsx(Yn, {
+                                                  children: n.jsx(Hn, {
                                                     size: 12
                                                   })
                                                 })
@@ -146815,7 +146830,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                     onClick: () => Oe((tt) => Math.min(kn, tt + 1)),
                                     disabled: ue === kn,
                                     className: "p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-30 cursor-pointer",
-                                    children: n.jsx(jo, {
+                                    children: n.jsx(Mo, {
                                       size: 14
                                     })
                                   })
@@ -147125,7 +147140,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                   n.jsx("button", {
                     onClick: () => Ce(false),
                     className: "p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer",
-                    children: n.jsx(Yn, {
+                    children: n.jsx(Hn, {
                       size: 16
                     })
                   })
@@ -147359,7 +147374,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
               n.jsx("button", {
                 onClick: o,
                 className: "p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer",
-                children: n.jsx(Yn, {
+                children: n.jsx(Hn, {
                   size: 16
                 })
               })
@@ -147612,7 +147627,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
               n.jsx("button", {
                 onClick: a,
                 className: "p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer",
-                children: n.jsx(Yn, {
+                children: n.jsx(Hn, {
                   size: 16
                 })
               })
@@ -147846,7 +147861,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
               n.jsx("button", {
                 onClick: i,
                 className: "p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer",
-                children: n.jsx(Yn, {
+                children: n.jsx(Hn, {
                   size: 16
                 })
               })
@@ -147960,7 +147975,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
       {
         id: "settlements",
         label: "Settlements",
-        icon: Fo
+        icon: To
       }
     ], _ = async () => {
       d.length > 0 || h.length > 0 ? C(true) : I(true);
@@ -148417,7 +148432,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                       onClick: _,
                       className: "p-2 border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 rounded-xl transition-all cursor-pointer",
                       title: "Refresh",
-                      children: n.jsx(Fo, {
+                      children: n.jsx(To, {
                         size: 16,
                         className: "text-zinc-500"
                       })
@@ -149380,7 +149395,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                   n.jsx("button", {
                     onClick: () => U(false),
                     className: "p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer",
-                    children: n.jsx(Yn, {
+                    children: n.jsx(Hn, {
                       size: 16
                     })
                   })
@@ -149560,7 +149575,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
               n.jsx("button", {
                 onClick: a,
                 className: "p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg cursor-pointer",
-                children: n.jsx(Yn, {
+                children: n.jsx(Hn, {
                   size: 16
                 })
               })
@@ -149787,7 +149802,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
       bg: "bg-[#FAF5FF] text-[#C084FC] border border-purple-100/80 shadow-2xs"
     },
     {
-      icon: n.jsx(Ys, {
+      icon: n.jsx(Hs, {
         size: 22,
         strokeWidth: 2.2
       }),
@@ -150698,7 +150713,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
       {
         id: "history",
         label: "Discount History",
-        icon: Fo
+        icon: To
       },
       {
         id: "staff",
@@ -150718,16 +150733,16 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
       }
       try {
         x(true);
-        const Pt = await lt.getConcessionIntelligence({
+        const Ht = await lt.getConcessionIntelligence({
           preset: o,
           fromDate: An || void 0,
           toDate: Ve || void 0,
           branchId: mt,
           isConsolidated: jt
         }) || _B;
-        h.current[Ft] = Pt, p(Pt);
-      } catch (Ot) {
-        console.error("Failed to load concession intelligence, using baseline:", Ot);
+        h.current[Ft] = Ht, p(Ht);
+      } catch (Pt) {
+        console.error("Failed to load concession intelligence, using baseline:", Pt);
       } finally {
         x(false);
       }
@@ -150775,7 +150790,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
       }
       try {
         x(true);
-        const Ot = await lt.getDiscountHistory({
+        const Pt = await lt.getDiscountHistory({
           source: ue,
           search: ye.trim() || void 0,
           preset: o,
@@ -150783,10 +150798,10 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
           toDate: Ve || void 0,
           branchId: mt,
           isConsolidated: jt
-        }), Pt = Array.isArray(Ot) ? Ot : [];
-        h.current[Ft] = Pt, oe(Pt);
-      } catch (Ot) {
-        console.error("Failed to load discount history:", Ot);
+        }), Ht = Array.isArray(Pt) ? Pt : [];
+        h.current[Ft] = Ht, oe(Ht);
+      } catch (Pt) {
+        console.error("Failed to load discount history:", Pt);
       } finally {
         x(false), Ee(false);
       }
@@ -150877,15 +150892,15 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
         "Effective From",
         "Effective To",
         "Status"
-      ], jt = C.map((Pt) => [
-        `"${Pt.code || ""}"`,
-        `"${(Pt.name || "").replace(/"/g, '""')}"`,
-        Pt.type === 0 || Pt.type === "Percentage" ? "Percentage" : "Flat",
-        Pt.value || 0,
-        Pt.maxLimit || "None",
-        Pt.effectiveFrom ? new Date(Pt.effectiveFrom).toLocaleDateString() : "Immediate",
-        Pt.effectiveTo ? new Date(Pt.effectiveTo).toLocaleDateString() : "Perpetual",
-        Pt.isActive ? "Active" : "Inactive"
+      ], jt = C.map((Ht) => [
+        `"${Ht.code || ""}"`,
+        `"${(Ht.name || "").replace(/"/g, '""')}"`,
+        Ht.type === 0 || Ht.type === "Percentage" ? "Percentage" : "Flat",
+        Ht.value || 0,
+        Ht.maxLimit || "None",
+        Ht.effectiveFrom ? new Date(Ht.effectiveFrom).toLocaleDateString() : "Immediate",
+        Ht.effectiveTo ? new Date(Ht.effectiveTo).toLocaleDateString() : "Perpetual",
+        Ht.isActive ? "Active" : "Inactive"
       ])) : u === "reasons" ? (mt = [
         "Reason / Authority",
         "Category",
@@ -150897,17 +150912,17 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
         "Status",
         "Created By",
         "Created At"
-      ], jt = tt.map((Pt) => [
-        `"${(Pt.reasonText || "").replace(/"/g, '""')}"`,
-        `"${(Pt.category || "").replace(/"/g, '""')}"`,
-        Pt.usageCount ?? 0,
-        Pt.totalDiscountAmount ?? 0,
-        Pt.avgDiscountAmount ?? 0,
-        `"${(Pt.description || "").replace(/"/g, '""')}"`,
-        Pt.sortOrder ?? 0,
-        Pt.isActive ? "Active" : "Inactive",
-        `"${(Pt.createdBy || "").replace(/"/g, '""')}"`,
-        Pt.createdAt ? new Date(Pt.createdAt).toLocaleString() : ""
+      ], jt = tt.map((Ht) => [
+        `"${(Ht.reasonText || "").replace(/"/g, '""')}"`,
+        `"${(Ht.category || "").replace(/"/g, '""')}"`,
+        Ht.usageCount ?? 0,
+        Ht.totalDiscountAmount ?? 0,
+        Ht.avgDiscountAmount ?? 0,
+        `"${(Ht.description || "").replace(/"/g, '""')}"`,
+        Ht.sortOrder ?? 0,
+        Ht.isActive ? "Active" : "Inactive",
+        `"${(Ht.createdBy || "").replace(/"/g, '""')}"`,
+        Ht.createdAt ? new Date(Ht.createdAt).toLocaleString() : ""
       ])) : u === "staff" ? (mt = [
         "Staff Member",
         "Number of Discounts",
@@ -150915,13 +150930,13 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
         "Average Discount (INR)",
         "Percentage Count",
         "Flat Count"
-      ], jt = Et.map((Pt) => [
-        `"${(Pt.name || "").replace(/"/g, '""')}"`,
-        Pt.count,
-        Pt.totalDiscount,
-        Pt.count > 0 ? Math.round(Pt.totalDiscount / Pt.count) : 0,
-        Pt.percentageCount,
-        Pt.flatCount
+      ], jt = Et.map((Ht) => [
+        `"${(Ht.name || "").replace(/"/g, '""')}"`,
+        Ht.count,
+        Ht.totalDiscount,
+        Ht.count > 0 ? Math.round(Ht.totalDiscount / Ht.count) : 0,
+        Ht.percentageCount,
+        Ht.flatCount
       ])) : (mt = [
         "Date & Time",
         "Token",
@@ -150935,26 +150950,26 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
         "Final Bill (INR)",
         "Given By",
         "Reason"
-      ], jt = pe.map((Pt) => [
-        `"${new Date(Pt.occurredAt).toLocaleString()}"`,
-        `"${Pt.visitToken || ""}"`,
-        `"${(Pt.patientName || "").replace(/"/g, '""')}"`,
-        `"${Pt.source || "Patient"}"`,
-        `"${(Pt.discountName || "").replace(/"/g, '""')}"`,
-        Pt.discountType || "Flat",
-        Pt.discountValue || 0,
-        Pt.grossAmount || 0,
-        Pt.discountAmount || 0,
-        Pt.netAmount || 0,
-        `"${(Pt.appliedBy || "").replace(/"/g, '""')}"`,
-        `"${(Pt.reason || "").replace(/"/g, '""')}"`
+      ], jt = pe.map((Ht) => [
+        `"${new Date(Ht.occurredAt).toLocaleString()}"`,
+        `"${Ht.visitToken || ""}"`,
+        `"${(Ht.patientName || "").replace(/"/g, '""')}"`,
+        `"${Ht.source || "Patient"}"`,
+        `"${(Ht.discountName || "").replace(/"/g, '""')}"`,
+        Ht.discountType || "Flat",
+        Ht.discountValue || 0,
+        Ht.grossAmount || 0,
+        Ht.discountAmount || 0,
+        Ht.netAmount || 0,
+        `"${(Ht.appliedBy || "").replace(/"/g, '""')}"`,
+        `"${(Ht.reason || "").replace(/"/g, '""')}"`
       ]));
       const Ve = "data:text/csv;charset=utf-8," + [
         mt.join(","),
-        ...jt.map((Pt) => Pt.join(","))
+        ...jt.map((Ht) => Ht.join(","))
       ].join(`
-`), Ft = encodeURI(Ve), Ot = document.createElement("a");
-      Ot.setAttribute("href", Ft), Ot.setAttribute("download", An), document.body.appendChild(Ot), Ot.click(), document.body.removeChild(Ot);
+`), Ft = encodeURI(Ve), Pt = document.createElement("a");
+      Pt.setAttribute("href", Ft), Pt.setAttribute("download", An), document.body.appendChild(Pt), Pt.click(), document.body.removeChild(Pt);
     };
     return n.jsxs("div", {
       className: "px-5 sm:px-6 py-3.5 sm:py-4 w-full flex flex-col justify-start gap-3 sm:gap-3.5 pb-16 animate-in fade-in duration-500 relative bg-[#CBD5E1] dark:bg-zinc-950",
@@ -151204,7 +151219,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                           children: [
                             n.jsx("div", {
                               className: "w-6 h-6 sm:w-7 sm:h-7 rounded-[8px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs",
-                              children: n.jsx(Ys, {
+                              children: n.jsx(Hs, {
                                 size: 14,
                                 strokeWidth: 2.3
                               })
@@ -151292,7 +151307,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                   className: "col-span-1 md:col-span-1 lg:col-span-4 h-full",
                   children: n.jsx(DY, {
                     title: "Patient Walk-In Presets",
-                    icon: Ys,
+                    icon: Hs,
                     iconBg: "bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/80 dark:border-sky-800/40",
                     totalAmount: f.patientDiscountAmount,
                     totalBills: f.patientBillsCount,
@@ -151388,7 +151403,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                         } : jt.find((er) => {
                           var _a4;
                           return (_a4 = er.mechanism) == null ? void 0 : _a4.includes("Percentage");
-                        }) || jt[1], Ft = (Number(An.totalAmount) || 0) + (Number(Ve.totalAmount) || 0), Ot = Ft > 0 ? Number(An.percentage) || Math.round(An.totalAmount / Ft * 1e3) / 10 : 0, Pt = Ft > 0 ? Math.round((100 - Ot) * 10) / 10 : 0, Un = 74, bn = 22, rr = 2 * Math.PI * Un, on = 2 * (bn / 2) + 6, Ir = rr - 2 * on, Pr = Math.max(Ir * Ot / 100, 2), Fi = Math.max(Ir * Pt / 100, 2), Da = -14, zn = -(on / 2 + Pr + on);
+                        }) || jt[1], Ft = (Number(An.totalAmount) || 0) + (Number(Ve.totalAmount) || 0), Pt = Ft > 0 ? Number(An.percentage) || Math.round(An.totalAmount / Ft * 1e3) / 10 : 0, Ht = Ft > 0 ? Math.round((100 - Pt) * 10) / 10 : 0, Un = 74, bn = 22, rr = 2 * Math.PI * Un, on = 2 * (bn / 2) + 6, Ir = rr - 2 * on, Pr = Math.max(Ir * Pt / 100, 2), Fi = Math.max(Ir * Ht / 100, 2), Da = -14, zn = -(on / 2 + Pr + on);
                         return n.jsxs("div", {
                           className: "space-y-2 my-auto",
                           children: [
@@ -151452,7 +151467,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                           strokeWidth: bn,
                                           fill: "none"
                                         }),
-                                        Ot > 0 && n.jsx("circle", {
+                                        Pt > 0 && n.jsx("circle", {
                                           cx: "100",
                                           cy: "100",
                                           r: Un,
@@ -151464,7 +151479,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                           fill: "none",
                                           className: "transition-all duration-1000"
                                         }),
-                                        Pt > 0 && n.jsx("circle", {
+                                        Ht > 0 && n.jsx("circle", {
                                           cx: "100",
                                           cy: "100",
                                           r: Un,
@@ -151527,7 +151542,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                             n.jsxs("div", {
                                               className: "text-[11px] sm:text-xs font-semibold text-slate-600 dark:text-zinc-300 tabular-nums",
                                               children: [
-                                                Ot.toFixed(1),
+                                                Pt.toFixed(1),
                                                 "% ",
                                                 n.jsxs("span", {
                                                   className: "text-[10px] font-medium text-slate-500 dark:text-zinc-400",
@@ -151571,7 +151586,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                             n.jsxs("div", {
                                               className: "text-[11px] sm:text-xs font-semibold text-slate-600 dark:text-zinc-300 tabular-nums",
                                               children: [
-                                                Pt.toFixed(1),
+                                                Ht.toFixed(1),
                                                 "% ",
                                                 n.jsxs("span", {
                                                   className: "text-[10px] font-medium text-slate-500 dark:text-zinc-400",
@@ -151604,9 +151619,9 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                       className: "tabular-nums font-bold text-slate-900 dark:text-white",
                                       children: [
                                         "Flat ",
-                                        Ot.toFixed(1),
-                                        "% \u2022 Pct ",
                                         Pt.toFixed(1),
+                                        "% \u2022 Pct ",
+                                        Ht.toFixed(1),
                                         "%"
                                       ]
                                     })
@@ -151618,13 +151633,13 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                     n.jsx("div", {
                                       className: "h-full rounded-l-full bg-gradient-to-r from-[#60A5FA] to-[#38BDF8] shadow-[0_2px_8px_rgba(56,189,248,0.35)] transition-all duration-500",
                                       style: {
-                                        width: `${Ot}%`
+                                        width: `${Pt}%`
                                       }
                                     }),
                                     n.jsx("div", {
                                       className: "h-full rounded-r-full bg-gradient-to-r from-[#C084FC] to-[#A855F7] shadow-[0_2px_8px_rgba(168,85,247,0.35)] transition-all duration-500",
                                       style: {
-                                        width: `${Pt}%`
+                                        width: `${Ht}%`
                                       }
                                     })
                                   ]
@@ -151665,7 +151680,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                       className: "space-y-2.5 my-auto",
                       children: [
                         (() => {
-                          const mt = (Number(f.totalDiscountAmount) || 0) === 0, jt = f.departmentSplit || _B.departmentSplit, An = mt ? 0 : jt.pathologyAmount ?? 7430, Ve = mt ? 0 : Number(jt.pathologyPercentage) || 62.7, Ft = mt ? 0 : jt.pathologyBillsCount ?? 21, Ot = mt ? 0 : jt.pathologyInvestigationsCount ?? 142;
+                          const mt = (Number(f.totalDiscountAmount) || 0) === 0, jt = f.departmentSplit || _B.departmentSplit, An = mt ? 0 : jt.pathologyAmount ?? 7430, Ve = mt ? 0 : Number(jt.pathologyPercentage) || 62.7, Ft = mt ? 0 : jt.pathologyBillsCount ?? 21, Pt = mt ? 0 : jt.pathologyInvestigationsCount ?? 142;
                           return n.jsxs("div", {
                             className: "flex items-center gap-2",
                             children: [
@@ -151722,7 +151737,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                     children: [
                                       Ft,
                                       " Bills \u2022 ",
-                                      Ot,
+                                      Pt,
                                       " Investigations"
                                     ]
                                   })
@@ -151732,7 +151747,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                           });
                         })(),
                         (() => {
-                          const mt = (Number(f.totalDiscountAmount) || 0) === 0, jt = f.departmentSplit || _B.departmentSplit, An = mt ? 0 : jt.radiologyAmount ?? 4432, Ve = mt ? 0 : Number(jt.radiologyPercentage) || 37.3, Ft = mt ? 0 : jt.radiologyBillsCount ?? 13, Ot = mt ? 0 : jt.radiologyInvestigationsCount ?? 48;
+                          const mt = (Number(f.totalDiscountAmount) || 0) === 0, jt = f.departmentSplit || _B.departmentSplit, An = mt ? 0 : jt.radiologyAmount ?? 4432, Ve = mt ? 0 : Number(jt.radiologyPercentage) || 37.3, Ft = mt ? 0 : jt.radiologyBillsCount ?? 13, Pt = mt ? 0 : jt.radiologyInvestigationsCount ?? 48;
                           return n.jsxs("div", {
                             className: "flex items-center gap-2",
                             children: [
@@ -151789,7 +151804,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                     children: [
                                       Ft,
                                       " Bills \u2022 ",
-                                      Ot,
+                                      Pt,
                                       " Investigations"
                                     ]
                                   })
@@ -151896,7 +151911,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                           ...bn,
                           totalAmount: dn
                         });
-                      }), Ot = 15e3, Pt = [
+                      }), Pt = 15e3, Ht = [
                         {
                           label: "\u20B915K",
                           value: 15e3
@@ -151924,7 +151939,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                           children: [
                             n.jsx("div", {
                               className: "flex flex-col justify-between items-end text-xs font-semibold text-slate-500 dark:text-zinc-400 tabular-nums w-10 shrink-0 pb-12 select-none",
-                              children: Pt.map((bn, rr) => n.jsx("span", {
+                              children: Ht.map((bn, rr) => n.jsx("span", {
                                 className: "leading-none",
                                 children: bn.label
                               }, rr))
@@ -151955,7 +151970,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                     n.jsx("div", {
                                       className: "relative z-0 grid grid-cols-7 w-full h-full items-end pb-[10px]",
                                       children: Un.map((bn, rr) => {
-                                        const dn = Math.min(100, Math.max(12, bn.totalAmount / Ot * 100));
+                                        const dn = Math.min(100, Math.max(12, bn.totalAmount / Pt * 100));
                                         return n.jsxs("div", {
                                           className: "relative flex flex-col items-center justify-end h-full",
                                           children: [
@@ -152005,12 +152020,12 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                           strokeLinecap: "round",
                                           strokeLinejoin: "round",
                                           points: Un.map((bn) => {
-                                            const rr = 145 - Math.min(Ot, bn.totalAmount) / Ot * 115;
+                                            const rr = 145 - Math.min(Pt, bn.totalAmount) / Pt * 115;
                                             return `${bn.x},${rr.toFixed(1)}`;
                                           }).join(" ")
                                         }),
                                         Un.map((bn, rr) => {
-                                          const dn = 145 - Math.min(Ot, bn.totalAmount) / Ot * 115;
+                                          const dn = 145 - Math.min(Pt, bn.totalAmount) / Pt * 115;
                                           return n.jsx("circle", {
                                             cx: bn.x,
                                             cy: dn,
@@ -152179,7 +152194,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                         }),
                         n.jsx("div", {
                           className: "w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0",
-                          children: n.jsx(Gs, {
+                          children: n.jsx(Ys, {
                             size: 17
                           })
                         })
@@ -152333,7 +152348,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                 children: [
                                   jt ? n.jsx(Zd, {
                                     className: "w-3 h-3"
-                                  }) : n.jsx(Gs, {
+                                  }) : n.jsx(Ys, {
                                     className: "w-3 h-3"
                                   }),
                                   jt ? "Percentage" : "Flat \u20B9"
@@ -152490,7 +152505,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                         }),
                         n.jsx("div", {
                           className: "w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0",
-                          children: n.jsx(Ys, {
+                          children: n.jsx(Hs, {
                             size: 17
                           })
                         })
@@ -152869,7 +152884,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                         }),
                         n.jsx("div", {
                           className: "w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0",
-                          children: n.jsx(Gs, {
+                          children: n.jsx(Ys, {
                             size: 17
                           })
                         })
@@ -153186,7 +153201,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                               children: n.jsxs("div", {
                                 className: "inline-flex items-center gap-1.5 font-semibold text-xs text-zinc-900 dark:text-zinc-200",
                                 children: [
-                                  n.jsx(Ys, {
+                                  n.jsx(Hs, {
                                     className: "w-3.5 h-3.5 text-zinc-400"
                                   }),
                                   n.jsx("span", {
@@ -153269,7 +153284,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                         }),
                         n.jsx("div", {
                           className: "w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0",
-                          children: n.jsx(Gs, {
+                          children: n.jsx(Ys, {
                             size: 17
                           })
                         })
@@ -153302,7 +153317,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                         }),
                         n.jsx("div", {
                           className: "w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0",
-                          children: n.jsx(Ys, {
+                          children: n.jsx(Hs, {
                             size: 17
                           })
                         })
@@ -153437,7 +153452,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                   children: [
                                     n.jsx("div", {
                                       className: "w-7 h-7 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300",
-                                      children: n.jsx(Ys, {
+                                      children: n.jsx(Hs, {
                                         className: "w-3.5 h-3.5"
                                       })
                                     }),
@@ -153706,7 +153721,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                 type: "button",
                 onClick: e,
                 className: "p-1 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer",
-                children: n.jsx(Yn, {
+                children: n.jsx(Hn, {
                   className: "w-4 h-4"
                 })
               })
@@ -153957,7 +153972,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                 type: "button",
                 onClick: e,
                 className: "p-1 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer",
-                children: n.jsx(Yn, {
+                children: n.jsx(Hn, {
                   className: "w-4 h-4"
                 })
               })
@@ -154244,7 +154259,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
               n.jsx("button", {
                 onClick: e,
                 className: "p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-full transition-colors",
-                children: n.jsx(Yn, {
+                children: n.jsx(Hn, {
                   className: "w-5 h-5 text-zinc-400"
                 })
               })
@@ -154853,7 +154868,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                 children: [
                   n.jsx("div", {
                     className: "p-2.5 bg-amber-500/10 rounded-xl",
-                    children: n.jsx(Us, {
+                    children: n.jsx(Gs, {
                       className: "w-5 h-5 text-amber-500"
                     })
                   }),
@@ -154874,7 +154889,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
               n.jsx("button", {
                 onClick: e,
                 className: "p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-full transition-colors",
-                children: n.jsx(Yn, {
+                children: n.jsx(Hn, {
                   className: "w-5 h-5 text-zinc-400"
                 })
               })
@@ -154894,7 +154909,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                   n.jsxs("div", {
                     className: "relative",
                     children: [
-                      n.jsx(Ys, {
+                      n.jsx(Hs, {
                         className: "absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400"
                       }),
                       n.jsxs("select", {
@@ -154940,7 +154955,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                       n.jsxs("div", {
                         className: "relative",
                         children: [
-                          n.jsx(Gs, {
+                          n.jsx(Ys, {
                             className: "absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400"
                           }),
                           n.jsx("input", {
@@ -155097,7 +155112,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
               n.jsx("button", {
                 onClick: e,
                 className: "p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-full transition-colors",
-                children: n.jsx(Yn, {
+                children: n.jsx(Hn, {
                   className: "w-5 h-5 text-zinc-400"
                 })
               })
@@ -155339,7 +155354,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                 n.jsx("button", {
                   onClick: e,
                   className: "p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors",
-                  children: n.jsx(Yn, {
+                  children: n.jsx(Hn, {
                     className: "w-5 h-5 text-zinc-400"
                   })
                 })
@@ -155476,7 +155491,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                 n.jsx("button", {
                   onClick: e,
                   className: "p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors",
-                  children: n.jsx(Yn, {
+                  children: n.jsx(Hn, {
                     className: "w-5 h-5 text-zinc-400"
                   })
                 })
@@ -156095,7 +156110,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
             n.jsx(tD, {
               label: "Pending Advances",
               value: `\u20B9${i.pendingAdvances}`,
-              icon: Us,
+              icon: Gs,
               trend: "0 requests",
               color: "amber"
             })
@@ -156346,7 +156361,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                   number: 1,
                   label: "Period"
                 }),
-                n.jsx(jo, {
+                n.jsx(Mo, {
                   className: "w-4 h-4 text-zinc-400"
                 }),
                 n.jsx(BM, {
@@ -156354,7 +156369,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                   number: 2,
                   label: "Calculate"
                 }),
-                n.jsx(jo, {
+                n.jsx(Mo, {
                   className: "w-4 h-4 text-zinc-400"
                 }),
                 n.jsx(BM, {
@@ -157148,7 +157163,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                       disabled: u,
                       className: "flex flex-col items-center gap-2 p-6 bg-zinc-50 dark:bg-zinc-950 hover:bg-zinc-100/50 dark:hover:bg-zinc-900 border dark:border-zinc-800 border-zinc-200 rounded-2xl transition-all hover:-translate-y-0.5 hover:border-amber-500",
                       children: [
-                        n.jsx(Us, {
+                        n.jsx(Gs, {
                           className: "w-8 h-8 text-amber-500"
                         }),
                         n.jsx("span", {
@@ -157914,7 +157929,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                 n.jsxs("h3", {
                   className: "text-sm font-bold uppercase tracking-widest text-zinc-500 flex items-center gap-2",
                   children: [
-                    n.jsx(Us, {
+                    n.jsx(Gs, {
                       className: "w-4 h-4"
                     }),
                     " Salary Advances Manager"
@@ -158724,7 +158739,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                   disabled: u,
                   className: "flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400 px-3.5 py-1.5 rounded-xl text-xs transition-colors border dark:border-zinc-700 shadow-sm",
                   children: [
-                    n.jsx(Fo, {
+                    n.jsx(To, {
                       className: `w-3.5 h-3.5 ${u ? "animate-spin" : ""}`
                     }),
                     "Migration Bridge (Dev)"
@@ -159159,7 +159174,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                   },
                                   className: "p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg text-zinc-500 transition-colors",
                                   title: "Upload Stamp/Signature",
-                                  children: n.jsx(Fo, {
+                                  children: n.jsx(To, {
                                     className: "w-3.5 h-3.5"
                                   })
                                 }),
@@ -159329,7 +159344,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                           onClick: () => M(null),
                                           className: "p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 rounded transition-colors",
                                           title: "Cancel",
-                                          children: n.jsx(Yn, {
+                                          children: n.jsx(Hn, {
                                             className: "w-3.5 h-3.5"
                                           })
                                         })
@@ -159592,7 +159607,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                       onClick: () => Ce(null),
                                       className: "p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 rounded transition-colors",
                                       title: "Cancel",
-                                      children: n.jsx(Yn, {
+                                      children: n.jsx(Hn, {
                                         className: "w-3.5 h-3.5"
                                       })
                                     })
@@ -160592,7 +160607,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
         title: "Active Advances",
         value: t.activeAdvances.toString(),
         type: t.activeAdvances > 0 ? "warning" : "neutral",
-        icon: Us,
+        icon: Gs,
         color: "text-rose-500",
         bg: "bg-rose-500/10",
         description: "Salary advances awaiting settlement"
@@ -160811,7 +160826,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
       {
         id: "history",
         label: "Payroll History",
-        icon: Fo
+        icon: To
       },
       {
         id: "adjustments",
@@ -161496,7 +161511,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
         id: "dashboard",
         label: "Overview",
         path: "/my-hr",
-        icon: Ys
+        icon: Hs
       },
       {
         id: "attendance",
@@ -161514,7 +161529,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
         id: "requests",
         label: "My Requests",
         path: "/my-hr/requests",
-        icon: Fo
+        icon: To
       }
     ];
     return n.jsxs("div", {
@@ -162308,7 +162323,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
             }) : l && (c = n.jsxs("span", {
               className: "px-3 py-1 bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 text-xs font-bold rounded-full flex items-center gap-1.5",
               children: [
-                n.jsx(Yn, {
+                n.jsx(Hn, {
                   className: "w-3.5 h-3.5"
                 }),
                 " Rejected"
@@ -162639,7 +162654,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                         "Advanced Query Filters"
                       ]
                     }),
-                    n.jsx(jo, {
+                    n.jsx(Mo, {
                       className: me("w-3.5 h-3.5 transition-transform duration-300", Qe && "rotate-90")
                     })
                   ]
@@ -162937,7 +162952,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                       onClick: () => B((ve) => Math.min(Xe, ve + 1)),
                       disabled: C >= Xe,
                       className: "p-1 rounded-lg border dark:border-white/5 border-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors",
-                      children: n.jsx(jo, {
+                      children: n.jsx(Mo, {
                         className: "w-3.5 h-3.5 text-zinc-500"
                       })
                     })
@@ -163460,7 +163475,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                       disabled: i.length < g || o,
                       className: "p-1.5 rounded-lg border dark:border-zinc-800 border-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 disabled:opacity-40 disabled:cursor-not-allowed transition-colors",
                       title: "Next Page",
-                      children: n.jsx(jo, {
+                      children: n.jsx(Mo, {
                         className: "w-4 h-4"
                       })
                     })
@@ -163675,7 +163690,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
             {
               id: "profile",
               label: "Demographics & History",
-              icon: Ys
+              icon: Hs
             },
             {
               id: "visits",
@@ -163732,7 +163747,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                             onClick: () => I(false),
                             className: "px-4 py-2 border border-red-500/20 hover:bg-red-500/15 text-red-400 text-[11px] font-semibold rounded-xl transition-all flex items-center gap-1.5",
                             children: [
-                              n.jsx(Yn, {
+                              n.jsx(Hn, {
                                 className: "w-3 h-3"
                               }),
                               "Cancel"
@@ -167572,7 +167587,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                               children: [
                                 h ? n.jsx(Vn, {
                                   className: "h-3 w-3 animate-spin"
-                                }) : n.jsx(Ys, {
+                                }) : n.jsx(Hs, {
                                   className: "h-3 w-3"
                                 }),
                                 n.jsx("span", {
@@ -176860,7 +176875,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       e(a);
     });
   }
-  function Ps() {
+  function Us() {
     let t = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : {}, e = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
     ane(e);
     const r = [];
@@ -177491,7 +177506,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     newTypedArray: vb,
     newTypedArrayFrom: Q3,
     normalizeWheel: une,
-    obj: Ps,
+    obj: Us,
     proxy: cne,
     proxyPropertyMapping: dne,
     proxyPropertyState: gne,
@@ -177533,7 +177548,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     formatNumbersWithThousandSeparator: rne,
     setImmediateVTK: gz,
     measurePromiseExecution: sne,
-    obj: Ps,
+    obj: Us,
     get: bc,
     set: Qv,
     setGet: $o,
@@ -179033,7 +179048,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
   function Hz(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
     if (Object.assign(e, xLe, r), !e.empty && !e.values && !e.size) throw new TypeError("Cannot create vtkDataArray object without: size > 0, values");
-    if (e.values ? Array.isArray(e.values) && (e.values = Q3(e.dataType, e.values)) : e.values = vb(e.dataType, e.size), e.values && (e.size = e.size ?? e.values.length, e.dataType = _z(e.values)), Ps(t, e), Qv(t, e, [
+    if (e.values ? Array.isArray(e.values) && (e.values = Q3(e.dataType, e.values)) : e.values = vb(e.dataType, e.size), e.values && (e.size = e.size ?? e.values.length, e.dataType = _z(e.values)), Us(t, e), Qv(t, e, [
       "name",
       "numberOfComponents"
     ]), e.size % e.numberOfComponents !== 0) throw new RangeError("model.size is not a multiple of model.numberOfComponents");
@@ -181103,7 +181118,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     var e = new el(16);
     return e[0] = t[0], e[1] = t[1], e[2] = t[2], e[3] = t[3], e[4] = t[4], e[5] = t[5], e[6] = t[6], e[7] = t[7], e[8] = t[8], e[9] = t[9], e[10] = t[10], e[11] = t[11], e[12] = t[12], e[13] = t[13], e[14] = t[14], e[15] = t[15], e;
   }
-  function So(t, e) {
+  function Ro(t, e) {
     return t[0] = e[0], t[1] = e[1], t[2] = e[2], t[3] = e[3], t[4] = e[4], t[5] = e[5], t[6] = e[6], t[7] = e[7], t[8] = e[8], t[9] = e[9], t[10] = e[10], t[11] = e[11], t[12] = e[12], t[13] = e[13], t[14] = e[14], t[15] = e[15], t;
   }
   function Zze(t, e, r, a, i, s, o, A, l, c, g, d, u, h, f, p) {
@@ -181285,7 +181300,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     add: fGe,
     adjoint: $ze,
     clone: qze,
-    copy: So,
+    copy: Ro,
     create: tG,
     determinant: eGe,
     equals: CGe,
@@ -183330,9 +183345,9 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
   };
   function Zae(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, TUe, r), ws.extend(t, e, r), e.sendParametersTime = {}, Ps(e.sendParametersTime, {
+    Object.assign(e, TUe, r), ws.extend(t, e, r), e.sendParametersTime = {}, Us(e.sendParametersTime, {
       mtime: 0
-    }), e.textureBuildTime = {}, Ps(e.textureBuildTime, {
+    }), e.textureBuildTime = {}, Us(e.textureBuildTime, {
       mtime: 0
     }), Qv(t, e, [
       "format",
@@ -183474,7 +183489,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
   };
   function $ae(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, zUe, r), Ps(t, e), e.colorBuffers && ki("you cannot initialize colorBuffers through the constructor. You should call setColorBuffer() instead."), e.colorBuffers = [], Nb(t, e, [
+    Object.assign(e, zUe, r), Us(t, e), e.colorBuffers && ki("you cannot initialize colorBuffers through the constructor. You should call setColorBuffer() instead."), e.colorBuffers = [], Nb(t, e, [
       "colorBuffers"
     ]), LUe(t, e);
   }
@@ -183988,7 +184003,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
     ]), i6e(t, e);
   }
   const o6e = We.newInstance(oie, "vtkShaderProgram");
-  var Ht = {
+  var _t = {
     newInstance: o6e,
     extend: oie,
     substitute: a6e
@@ -184136,18 +184151,18 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       e.primitiveType === cp.Points || a.getProperty().getRepresentation() === Ql.POINTS ? t.getProgram().setUniformf("pointSize", a.getProperty().getPointSize()) : e.pointPicking && t.getProgram().setUniformf("pointSize", t.getPointPickingPrimitiveSize());
     }, t.replaceShaderPositionVC = (r, a, i) => {
       let s = r.Vertex;
-      s = Ht.substitute(s, "//VTK::PositionVC::Dec", [
+      s = _t.substitute(s, "//VTK::PositionVC::Dec", [
         "//VTK::PositionVC::Dec",
         "uniform float pointSize;"
-      ]).result, s = Ht.substitute(s, "//VTK::PositionVC::Impl", [
+      ]).result, s = _t.substitute(s, "//VTK::PositionVC::Impl", [
         "//VTK::PositionVC::Impl",
         "  gl_PointSize = pointSize;"
-      ], false).result, t.getOpenGLMode(i.getProperty().getRepresentation()) === e.context.LINES && t.haveWideLines(a, i) && (s = Ht.substitute(s, "//VTK::PositionVC::Dec", [
+      ], false).result, t.getOpenGLMode(i.getProperty().getRepresentation()) === e.context.LINES && t.haveWideLines(a, i) && (s = _t.substitute(s, "//VTK::PositionVC::Dec", [
         "//VTK::PositionVC::Dec",
         "uniform vec2 viewportSize;",
         "uniform float lineWidthStepSize;",
         "uniform float halfLineWidth;"
-      ]).result, s = Ht.substitute(s, "//VTK::PositionVC::Impl", [
+      ]).result, s = _t.substitute(s, "//VTK::PositionVC::Impl", [
         "//VTK::PositionVC::Impl",
         " if (halfLineWidth > 0.0)",
         "   {",
@@ -184181,7 +184196,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
       "CABO",
       "primitiveType",
       "pointPicking"
-    ]), e.program = Ht.newInstance(), e.VAO = CG.newInstance(), e.CABO = $Ue.newInstance(), d6e(t, e);
+    ]), e.program = _t.newInstance(), e.VAO = CG.newInstance(), e.CABO = $Ue.newInstance(), d6e(t, e);
   }
   const u6e = We.newInstance(lie);
   var ku = {
@@ -184294,7 +184309,7 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
   };
   const { Representation: I6e } = jb, { vtkErrorMacro: aK } = We;
   function C6e(t) {
-    const e = Ht.substitute(t.Fragment, "//VTK::RenderPassFragmentShader::Impl", `
+    const e = _t.substitute(t.Fragment, "//VTK::RenderPassFragmentShader::Impl", `
       float weight = gl_FragData[0].a * pow(max(1.1 - gl_FragCoord.z, 0.0), 2.0);
       gl_FragData[0] = vec4(gl_FragData[0].rgb*weight, gl_FragData[0].a);
       gl_FragData[1].r = weight;
@@ -185116,7 +185131,7 @@ void main()
   function q6e(t, e) {
     e.classHierarchy.push("vtkShaderCache"), t.replaceShaderValues = (r, a, i) => {
       let s = a;
-      i.length > 0 && (s = Ht.substitute(s, "VSOut", "GSOut").result);
+      i.length > 0 && (s = _t.substitute(s, "VSOut", "GSOut").result);
       const o = e._openGLRenderWindow.getWebgl2();
       let A = `
 `, l = `#version 100
@@ -185130,7 +185145,7 @@ void main()
 ` : (e.context.getExtension("OES_standard_derivatives"), e.context.getExtension("EXT_frag_depth") && (A = `#extension GL_EXT_frag_depth : enable
 `), e.context.getExtension("EXT_shader_texture_lod") && (A += `#extension GL_EXT_shader_texture_lod : enable
 #define textureCubeLod textureCubeLodEXT
-#define texture2DLod texture2DLodEXT`)), s = Ht.substitute(s, "//VTK::System::Dec", [
+#define texture2DLod texture2DLodEXT`)), s = _t.substitute(s, "//VTK::System::Dec", [
         `${l}
 `,
         o ? "" : `#extension GL_OES_standard_derivatives : enable
@@ -185144,7 +185159,7 @@ void main()
         "precision mediump int;",
         "#endif"
       ]).result;
-      let c = Ht.substitute(r, "//VTK::System::Dec", [
+      let c = _t.substitute(r, "//VTK::System::Dec", [
         `${l}
 `,
         "#ifdef GL_FRAGMENT_PRECISION_HIGH",
@@ -185156,13 +185171,13 @@ void main()
         "#endif"
       ]).result;
       if (o) {
-        c = Ht.substitute(c, "varying", "out").result, s = Ht.substitute(s, "varying", "in").result;
+        c = _t.substitute(c, "varying", "out").result, s = _t.substitute(s, "varying", "in").result;
         let d = "", u = 0;
-        for (; s.includes(`gl_FragData[${u}]`); ) s = Ht.substitute(s, `gl_FragData\\[${u}\\]`, `fragOutput${u}`).result, d += `layout(location = ${u}) out vec4 fragOutput${u};
+        for (; s.includes(`gl_FragData[${u}]`); ) s = _t.substitute(s, `gl_FragData\\[${u}\\]`, `fragOutput${u}`).result, d += `layout(location = ${u}) out vec4 fragOutput${u};
 `, u++;
-        s = Ht.substitute(s, "//VTK::Output::Dec", d).result;
+        s = _t.substitute(s, "//VTK::Output::Dec", d).result;
       }
-      const g = Ht.substitute(i, "//VTK::System::Dec", l).result;
+      const g = _t.substitute(i, "//VTK::System::Dec", l).result;
       return {
         VSSource: c,
         FSSource: s,
@@ -185174,7 +185189,7 @@ void main()
     }, t.readyShaderProgram = (r) => !r || !r.getCompiled() && !r.compileShader() || !t.bindShaderProgram(r) ? null : r, t.getShaderProgram = (r, a, i) => {
       const s = `${r}${a}${i}`, o = V6e.hash(s);
       if (!(o in e.shaderPrograms)) {
-        const A = Ht.newInstance();
+        const A = _t.newInstance();
         return A.setContext(e.context), A.getVertexShader().setSource(r), A.getFragmentShader().setSource(a), i && A.getGeometryShader().setSource(i), A.setMd5Hash(o), e.shaderPrograms[o] = A, A;
       }
       return e.shaderPrograms[o];
@@ -186182,7 +186197,7 @@ void main()
     }, t.translucentPass = (r, a) => {
       if (r) e.context.depthMask(false), t.activateTextures();
       else if (e.activeTextures) for (let i = 0; i < e.activeTextures.length; i++) e.activeTextures[i].deactivate();
-    }, t.getKeyMatrices = () => (e.renderable.getMTime() > e.keyMatrixTime.getMTime() && (e.renderable.computeMatrix(), So(e.keyMatrices.mcwc, e.renderable.getMatrix()), Ri(e.keyMatrices.mcwc, e.keyMatrices.mcwc), e.renderable.getIsIdentity() ? og(e.keyMatrices.normalMatrix) : (j3(e.keyMatrices.normalMatrix, e.keyMatrices.mcwc), Dv(e.keyMatrices.normalMatrix, e.keyMatrices.normalMatrix), eG(e.keyMatrices.normalMatrix, e.keyMatrices.normalMatrix)), e.keyMatrixTime.modified()), e.keyMatrices);
+    }, t.getKeyMatrices = () => (e.renderable.getMTime() > e.keyMatrixTime.getMTime() && (e.renderable.computeMatrix(), Ro(e.keyMatrices.mcwc, e.renderable.getMatrix()), Ri(e.keyMatrices.mcwc, e.keyMatrices.mcwc), e.renderable.getIsIdentity() ? og(e.keyMatrices.normalMatrix) : (j3(e.keyMatrices.normalMatrix, e.keyMatrices.mcwc), Dv(e.keyMatrices.normalMatrix, e.keyMatrices.normalMatrix), eG(e.keyMatrices.normalMatrix, e.keyMatrices.normalMatrix)), e.keyMatrixTime.modified()), e.keyMatrices);
   }
   const BPe = {
     context: null,
@@ -186192,7 +186207,7 @@ void main()
   };
   function EPe(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, BPe, r), ws.extend(t, e, r), e.keyMatrixTime = {}, Ps(e.keyMatrixTime, {
+    Object.assign(e, BPe, r), ws.extend(t, e, r), e.keyMatrixTime = {}, Us(e.keyMatrixTime, {
       mtime: 0
     }), e.keyMatrices = {
       normalMatrix: og(new Float64Array(9)),
@@ -186275,9 +186290,9 @@ void main()
       }
     }, t.translucentPass = t.opaquePass, t.zBufferPass = t.opaquePass, t.opaqueZBufferPass = t.opaquePass, t.volumePass = t.opaquePass, t.getKeyMatrices = (r) => {
       if (r !== e.lastRenderer || e._openGLRenderWindow.getMTime() > e.keyMatrixTime.getMTime() || t.getMTime() > e.keyMatrixTime.getMTime() || r.getMTime() > e.keyMatrixTime.getMTime() || e.renderable.getMTime() > e.keyMatrixTime.getMTime()) {
-        So(e.keyMatrices.wcvc, e.renderable.getViewMatrix()), j3(e.keyMatrices.normalMatrix, e.keyMatrices.wcvc), Dv(e.keyMatrices.normalMatrix, e.keyMatrices.normalMatrix), Ri(e.keyMatrices.wcvc, e.keyMatrices.wcvc);
+        Ro(e.keyMatrices.wcvc, e.renderable.getViewMatrix()), j3(e.keyMatrices.normalMatrix, e.keyMatrices.wcvc), Dv(e.keyMatrices.normalMatrix, e.keyMatrices.normalMatrix), Ri(e.keyMatrices.wcvc, e.keyMatrices.wcvc);
         const a = e._openGLRenderer.getAspectRatio();
-        So(e.keyMatrices.vcpc, e.renderable.getProjectionMatrix(a, -1, 1)), Ri(e.keyMatrices.vcpc, e.keyMatrices.vcpc), ji(e.keyMatrices.wcpc, e.keyMatrices.vcpc, e.keyMatrices.wcvc), e.keyMatrixTime.modified(), e.lastRenderer = r;
+        Ro(e.keyMatrices.vcpc, e.renderable.getProjectionMatrix(a, -1, 1)), Ri(e.keyMatrices.vcpc, e.keyMatrices.vcpc), ji(e.keyMatrices.wcpc, e.keyMatrices.vcpc, e.keyMatrices.wcvc), e.keyMatrixTime.modified(), e.lastRenderer = r;
       }
       return e.keyMatrices;
     };
@@ -186290,7 +186305,7 @@ void main()
   };
   function kPe(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, DPe, r), ws.extend(t, e, r), e.keyMatrixTime = {}, Ps(e.keyMatrixTime), e.keyMatrices = {
+    Object.assign(e, DPe, r), ws.extend(t, e, r), e.keyMatrixTime = {}, Us(e.keyMatrixTime), e.keyMatrices = {
       normalMatrix: new Float64Array(9),
       vcpc: new Float64Array(16),
       wcvc: new Float64Array(16),
@@ -187123,16 +187138,16 @@ void main()
       const s = t.getCoincidentParameters(a, i);
       if (s && (s.factor !== 0 || s.offset !== 0)) {
         let o = r.Fragment;
-        o = Ht.substitute(o, "//VTK::Coincident::Dec", [
+        o = _t.substitute(o, "//VTK::Coincident::Dec", [
           "uniform float cfactor;",
           "uniform float coffset;"
-        ]).result, e.context.getExtension("EXT_frag_depth") && (s.factor !== 0 ? (o = Ht.substitute(o, "//VTK::UniformFlow::Impl", [
+        ]).result, e.context.getExtension("EXT_frag_depth") && (s.factor !== 0 ? (o = _t.substitute(o, "//VTK::UniformFlow::Impl", [
           "float cscale = length(vec2(dFdx(gl_FragCoord.z),dFdy(gl_FragCoord.z)));",
           "//VTK::UniformFlow::Impl"
-        ], false).result, o = Ht.substitute(o, "//VTK::Depth::Impl", "gl_FragDepthEXT = gl_FragCoord.z + cfactor*cscale + 0.000016*coffset;").result) : o = Ht.substitute(o, "//VTK::Depth::Impl", "gl_FragDepthEXT = gl_FragCoord.z + 0.000016*coffset;").result), e._openGLRenderWindow.getWebgl2() && (s.factor !== 0 ? (o = Ht.substitute(o, "//VTK::UniformFlow::Impl", [
+        ], false).result, o = _t.substitute(o, "//VTK::Depth::Impl", "gl_FragDepthEXT = gl_FragCoord.z + cfactor*cscale + 0.000016*coffset;").result) : o = _t.substitute(o, "//VTK::Depth::Impl", "gl_FragDepthEXT = gl_FragCoord.z + 0.000016*coffset;").result), e._openGLRenderWindow.getWebgl2() && (s.factor !== 0 ? (o = _t.substitute(o, "//VTK::UniformFlow::Impl", [
           "float cscale = length(vec2(dFdx(gl_FragCoord.z),dFdy(gl_FragCoord.z)));",
           "//VTK::UniformFlow::Impl"
-        ], false).result, o = Ht.substitute(o, "//VTK::Depth::Impl", "gl_FragDepth = gl_FragCoord.z + cfactor*cscale + 0.000016*coffset;").result) : o = Ht.substitute(o, "//VTK::Depth::Impl", "gl_FragDepth = gl_FragCoord.z + 0.000016*coffset;").result), r.Fragment = o;
+        ], false).result, o = _t.substitute(o, "//VTK::Depth::Impl", "gl_FragDepth = gl_FragCoord.z + cfactor*cscale + 0.000016*coffset;").result) : o = _t.substitute(o, "//VTK::Depth::Impl", "gl_FragDepth = gl_FragCoord.z + 0.000016*coffset;").result), r.Fragment = o;
       }
     };
   }
@@ -187142,7 +187157,7 @@ void main()
       if (a && (s = a.ShaderReplacements), s) for (let o = 0; o < s.length; o++) {
         const A = s[o];
         if (i && A.replaceFirst || !i && !A.replaceFirst) {
-          const l = A.shaderType, c = r[l], g = Ht.substitute(c, A.originalValue, A.replacementValue, A.replaceAll);
+          const l = A.shaderType, c = r[l], g = _t.substitute(c, A.originalValue, A.replacementValue, A.replaceAll);
           r[l] = g.result;
         }
       }
@@ -187237,21 +187252,21 @@ void main()
         "  specularPower = specularPowerUniform;"
       ])), e.lastBoundBO.getCABO().getColorComponents() !== 0 && !e.drawingEdges && (g = g.concat([
         "varying vec4 vertexColorVSOutput;"
-      ]), o = Ht.substitute(o, "//VTK::Color::Dec", [
+      ]), o = _t.substitute(o, "//VTK::Color::Dec", [
         "attribute vec4 scalarColor;",
         "varying vec4 vertexColorVSOutput;"
-      ]).result, o = Ht.substitute(o, "//VTK::Color::Impl", [
+      ]).result, o = _t.substitute(o, "//VTK::Color::Impl", [
         "vertexColorVSOutput =  scalarColor;"
-      ]).result, A = Ht.substitute(A, "//VTK::Color::Dec", [
+      ]).result, A = _t.substitute(A, "//VTK::Color::Dec", [
         "in vec4 vertexColorVSOutput[];",
         "out vec4 vertexColorGSOutput;"
-      ]).result, A = Ht.substitute(A, "//VTK::Color::Impl", [
+      ]).result, A = _t.substitute(A, "//VTK::Color::Impl", [
         "vertexColorGSOutput = vertexColorVSOutput[i];"
-      ]).result), e.lastBoundBO.getCABO().getColorComponents() !== 0 && !e.drawingEdges ? l = Ht.substitute(l, "//VTK::Color::Impl", d.concat([
+      ]).result), e.lastBoundBO.getCABO().getColorComponents() !== 0 && !e.drawingEdges ? l = _t.substitute(l, "//VTK::Color::Impl", d.concat([
         "  diffuseColor = vertexColorVSOutput.rgb;",
         "  ambientColor = vertexColorVSOutput.rgb;",
         "  opacity = opacity*vertexColorVSOutput.a;"
-      ])).result : e.renderable.getInterpolateScalarsBeforeMapping() && e.renderable.getColorCoordinates() && !e.drawingEdges ? l = Ht.substitute(l, "//VTK::Color::Impl", d.concat([
+      ])).result : e.renderable.getInterpolateScalarsBeforeMapping() && e.renderable.getColorCoordinates() && !e.drawingEdges ? l = _t.substitute(l, "//VTK::Color::Impl", d.concat([
         "  vec4 texColor = texture2D(texture1, tcoordVCVSOutput.st);",
         "  diffuseColor = texColor.rgb;",
         "  ambientColor = texColor.rgb;",
@@ -187280,20 +187295,20 @@ void main()
         "  opacity = opacityUniformBF; }"
       ])), e.haveCellScalars && !e.drawingEdges && (g = g.concat([
         "uniform samplerBuffer texture1;"
-      ])), l = Ht.substitute(l, "//VTK::Color::Impl", d).result), l = Ht.substitute(l, "//VTK::Color::Dec", g).result, a.Vertex = o, a.Geometry = A, a.Fragment = l;
+      ])), l = _t.substitute(l, "//VTK::Color::Impl", d).result), l = _t.substitute(l, "//VTK::Color::Dec", g).result, a.Vertex = o, a.Geometry = A, a.Fragment = l;
     }, t.replaceShaderLight = (a, i, s) => {
       let o = a.Fragment;
       const A = "", l = e.lastBoundBO.getReferenceByName("lastLightComplexity"), c = e.lastBoundBO.getReferenceByName("lastLightCount");
       let g = [];
       switch (l) {
         case 0:
-          o = Ht.substitute(o, "//VTK::Light::Impl", [
+          o = _t.substitute(o, "//VTK::Light::Impl", [
             "  gl_FragData[0] = vec4(ambientColor * ambient + diffuseColor * diffuse, opacity);",
             "  //VTK::Light::Impl"
           ], false).result;
           break;
         case 1:
-          o = Ht.substitute(o, "//VTK::Light::Impl", [
+          o = _t.substitute(o, "//VTK::Light::Impl", [
             "  float df = max(0.0, normalVCVSOutput.z);",
             "  float sf = pow(df, specularPower);",
             "  vec3 diffuseL = df * diffuseColor;",
@@ -187308,7 +187323,7 @@ void main()
             `uniform vec3 lightDirectionVC${d}; // normalized`,
             `uniform vec3 lightHalfAngleVC${d}; // normalized`
           ]);
-          o = Ht.substitute(o, "//VTK::Light::Dec", g).result, g = [
+          o = _t.substitute(o, "//VTK::Light::Dec", g).result, g = [
             "vec3 diffuseL = vec3(0,0,0);",
             "  vec3 specularL = vec3(0,0,0);",
             "  float df;"
@@ -187330,7 +187345,7 @@ void main()
             "  specularL = specularL * specularColor;",
             "  gl_FragData[0] = vec4(ambientColor * ambient + diffuseL * diffuse + specularL * specular, opacity);",
             "  //VTK::Light::Impl"
-          ]), o = Ht.substitute(o, "//VTK::Light::Impl", g, false).result;
+          ]), o = _t.substitute(o, "//VTK::Light::Impl", g, false).result;
           break;
         case 3:
           for (let d = 0; d < c; ++d) g = g.concat([
@@ -187343,7 +187358,7 @@ void main()
             `uniform float lightExponent${d};`,
             `uniform int lightPositional${d};`
           ]);
-          o = Ht.substitute(o, "//VTK::Light::Dec", g).result, g = [
+          o = _t.substitute(o, "//VTK::Light::Dec", g).result, g = [
             "vec3 diffuseL = vec3(0,0,0);",
             "  vec3 specularL = vec3(0,0,0);",
             "  vec3 vertLightDirectionVC;",
@@ -187397,7 +187412,7 @@ void main()
             "  specularL = specularL * specularColor;",
             "  gl_FragData[0] = vec4(ambientColor * ambient + diffuseL * diffuse + specularL * specular, opacity);",
             "  //VTK::Light::Impl"
-          ]), o = Ht.substitute(o, "//VTK::Light::Impl", g, false).result;
+          ]), o = _t.substitute(o, "//VTK::Light::Impl", g, false).result;
           break;
         default:
           TI("bad light complexity");
@@ -187406,45 +187421,45 @@ void main()
     }, t.replaceShaderNormal = (a, i, s) => {
       if (e.lastBoundBO.getReferenceByName("lastLightComplexity") > 0) {
         let A = a.Vertex, l = a.Geometry, c = a.Fragment;
-        e.lastBoundBO.getCABO().getNormalOffset() ? (A = Ht.substitute(A, "//VTK::Normal::Dec", [
+        e.lastBoundBO.getCABO().getNormalOffset() ? (A = _t.substitute(A, "//VTK::Normal::Dec", [
           "attribute vec3 normalMC;",
           "uniform mat3 normalMatrix;",
           "varying vec3 normalVCVSOutput;"
-        ]).result, A = Ht.substitute(A, "//VTK::Normal::Impl", [
+        ]).result, A = _t.substitute(A, "//VTK::Normal::Impl", [
           "normalVCVSOutput = normalMatrix * normalMC;"
-        ]).result, l = Ht.substitute(l, "//VTK::Normal::Dec", [
+        ]).result, l = _t.substitute(l, "//VTK::Normal::Dec", [
           "in vec3 normalVCVSOutput[];",
           "out vec3 normalVCGSOutput;"
-        ]).result, l = Ht.substitute(l, "//VTK::Normal::Impl", [
+        ]).result, l = _t.substitute(l, "//VTK::Normal::Impl", [
           "normalVCGSOutput = normalVCVSOutput[i];"
-        ]).result, c = Ht.substitute(c, "//VTK::Normal::Dec", [
+        ]).result, c = _t.substitute(c, "//VTK::Normal::Dec", [
           "varying vec3 normalVCVSOutput;"
-        ]).result, c = Ht.substitute(c, "//VTK::Normal::Impl", [
+        ]).result, c = _t.substitute(c, "//VTK::Normal::Impl", [
           "vec3 normalVCVSOutput = normalize(normalVCVSOutput);",
           "  if (gl_FrontFacing == false) { normalVCVSOutput = -normalVCVSOutput; }"
-        ]).result) : e.haveCellNormals ? (c = Ht.substitute(c, "//VTK::Normal::Dec", [
+        ]).result) : e.haveCellNormals ? (c = _t.substitute(c, "//VTK::Normal::Dec", [
           "uniform mat3 normalMatrix;",
           "uniform samplerBuffer textureN;"
-        ]).result, c = Ht.substitute(c, "//VTK::Normal::Impl", [
+        ]).result, c = _t.substitute(c, "//VTK::Normal::Impl", [
           "vec3 normalVCVSOutput = normalize(normalMatrix *",
           "    texelFetchBuffer(textureN, gl_PrimitiveID + PrimitiveIDOffset).xyz);",
           "  if (gl_FrontFacing == false) { normalVCVSOutput = -normalVCVSOutput; }"
-        ]).result) : e.lastBoundBO.getOpenGLMode(s.getProperty().getRepresentation()) === e.context.LINES ? (c = Ht.substitute(c, "//VTK::UniformFlow::Impl", [
+        ]).result) : e.lastBoundBO.getOpenGLMode(s.getProperty().getRepresentation()) === e.context.LINES ? (c = _t.substitute(c, "//VTK::UniformFlow::Impl", [
           "  vec3 fdx = dFdx(vertexVC.xyz);",
           "  vec3 fdy = dFdy(vertexVC.xyz);",
           "  //VTK::UniformFlow::Impl"
-        ]).result, c = Ht.substitute(c, "//VTK::Normal::Impl", [
+        ]).result, c = _t.substitute(c, "//VTK::Normal::Impl", [
           "vec3 normalVCVSOutput;",
           "  if (abs(fdx.x) > 0.0)",
           "    { fdx = normalize(fdx); normalVCVSOutput = normalize(cross(vec3(fdx.y, -fdx.x, 0.0), fdx)); }",
           "  else { fdy = normalize(fdy); normalVCVSOutput = normalize(cross(vec3(fdy.y, -fdy.x, 0.0), fdy));}"
-        ]).result) : (c = Ht.substitute(c, "//VTK::Normal::Dec", [
+        ]).result) : (c = _t.substitute(c, "//VTK::Normal::Dec", [
           "uniform int cameraParallel;"
-        ]).result, c = Ht.substitute(c, "//VTK::UniformFlow::Impl", [
+        ]).result, c = _t.substitute(c, "//VTK::UniformFlow::Impl", [
           "  vec3 fdx = dFdx(vertexVC.xyz);",
           "  vec3 fdy = dFdy(vertexVC.xyz);",
           "  //VTK::UniformFlow::Impl"
-        ]).result, c = Ht.substitute(c, "//VTK::Normal::Impl", [
+        ]).result, c = _t.substitute(c, "//VTK::Normal::Impl", [
           "  fdx = normalize(fdx);",
           "  fdy = normalize(fdy);",
           "  vec3 normalVCVSOutput = normalize(cross(fdx,fdy));",
@@ -187455,52 +187470,52 @@ void main()
     }, t.replaceShaderPositionVC = (a, i, s) => {
       e.lastBoundBO.replaceShaderPositionVC(a, i, s);
       let o = a.Vertex, A = a.Geometry, l = a.Fragment;
-      e.lastBoundBO.getReferenceByName("lastLightComplexity") > 0 ? (o = Ht.substitute(o, "//VTK::PositionVC::Dec", [
+      e.lastBoundBO.getReferenceByName("lastLightComplexity") > 0 ? (o = _t.substitute(o, "//VTK::PositionVC::Dec", [
         "varying vec4 vertexVCVSOutput;"
-      ]).result, o = Ht.substitute(o, "//VTK::PositionVC::Impl", [
+      ]).result, o = _t.substitute(o, "//VTK::PositionVC::Impl", [
         "vertexVCVSOutput = MCVCMatrix * vertexMC;",
         "  gl_Position = MCPCMatrix * vertexMC;"
-      ]).result, o = Ht.substitute(o, "//VTK::Camera::Dec", [
+      ]).result, o = _t.substitute(o, "//VTK::Camera::Dec", [
         "uniform mat4 MCPCMatrix;",
         "uniform mat4 MCVCMatrix;"
-      ]).result, A = Ht.substitute(A, "//VTK::PositionVC::Dec", [
+      ]).result, A = _t.substitute(A, "//VTK::PositionVC::Dec", [
         "in vec4 vertexVCVSOutput[];",
         "out vec4 vertexVCGSOutput;"
-      ]).result, A = Ht.substitute(A, "//VTK::PositionVC::Impl", [
+      ]).result, A = _t.substitute(A, "//VTK::PositionVC::Impl", [
         "vertexVCGSOutput = vertexVCVSOutput[i];"
-      ]).result, l = Ht.substitute(l, "//VTK::PositionVC::Dec", [
+      ]).result, l = _t.substitute(l, "//VTK::PositionVC::Dec", [
         "varying vec4 vertexVCVSOutput;"
-      ]).result, l = Ht.substitute(l, "//VTK::PositionVC::Impl", [
+      ]).result, l = _t.substitute(l, "//VTK::PositionVC::Impl", [
         "vec4 vertexVC = vertexVCVSOutput;"
-      ]).result) : (o = Ht.substitute(o, "//VTK::Camera::Dec", [
+      ]).result) : (o = _t.substitute(o, "//VTK::Camera::Dec", [
         "uniform mat4 MCPCMatrix;"
-      ]).result, o = Ht.substitute(o, "//VTK::PositionVC::Impl", [
+      ]).result, o = _t.substitute(o, "//VTK::PositionVC::Impl", [
         "  gl_Position = MCPCMatrix * vertexMC;"
       ]).result), a.Vertex = o, a.Geometry = A, a.Fragment = l;
     }, t.replaceShaderTCoord = (a, i, s) => {
       if (e.lastBoundBO.getCABO().getTCoordOffset()) {
         let o = a.Vertex, A = a.Geometry, l = a.Fragment;
         if (e.drawingEdges) return;
-        o = Ht.substitute(o, "//VTK::TCoord::Impl", "tcoordVCVSOutput = tcoordMC;").result;
+        o = _t.substitute(o, "//VTK::TCoord::Impl", "tcoordVCVSOutput = tcoordMC;").result;
         const c = e.openGLActor.getActiveTextures();
         let g = 2, d = 2;
         if (c && c.length > 0 && (g = c[0].getComponents(), c[0].getTarget() === e.context.TEXTURE_CUBE_MAP && (d = 3)), e.renderable.getColorTextureMap() && (g = e.renderable.getColorTextureMap().getPointData().getScalars().getNumberOfComponents(), d = 2), d === 2) {
-          if (o = Ht.substitute(o, "//VTK::TCoord::Dec", "attribute vec2 tcoordMC; varying vec2 tcoordVCVSOutput;").result, A = Ht.substitute(A, "//VTK::TCoord::Dec", [
+          if (o = _t.substitute(o, "//VTK::TCoord::Dec", "attribute vec2 tcoordMC; varying vec2 tcoordVCVSOutput;").result, A = _t.substitute(A, "//VTK::TCoord::Dec", [
             "in vec2 tcoordVCVSOutput[];",
             "out vec2 tcoordVCGSOutput;"
-          ]).result, A = Ht.substitute(A, "//VTK::TCoord::Impl", "tcoordVCGSOutput = tcoordVCVSOutput[i];").result, l = Ht.substitute(l, "//VTK::TCoord::Dec", [
+          ]).result, A = _t.substitute(A, "//VTK::TCoord::Impl", "tcoordVCGSOutput = tcoordVCVSOutput[i];").result, l = _t.substitute(l, "//VTK::TCoord::Dec", [
             "varying vec2 tcoordVCVSOutput;",
             "uniform sampler2D texture1;"
           ]).result, c && c.length >= 1) switch (g) {
             case 1:
-              l = Ht.substitute(l, "//VTK::TCoord::Impl", [
+              l = _t.substitute(l, "//VTK::TCoord::Impl", [
                 "  vec4 tcolor = texture2D(texture1, tcoordVCVSOutput);",
                 "  ambientColor = ambientColor*tcolor.r;",
                 "  diffuseColor = diffuseColor*tcolor.r;"
               ]).result;
               break;
             case 2:
-              l = Ht.substitute(l, "//VTK::TCoord::Impl", [
+              l = _t.substitute(l, "//VTK::TCoord::Impl", [
                 "  vec4 tcolor = texture2D(texture1, tcoordVCVSOutput);",
                 "  ambientColor = ambientColor*tcolor.r;",
                 "  diffuseColor = diffuseColor*tcolor.r;",
@@ -187508,29 +187523,29 @@ void main()
               ]).result;
               break;
             default:
-              l = Ht.substitute(l, "//VTK::TCoord::Impl", [
+              l = _t.substitute(l, "//VTK::TCoord::Impl", [
                 "  vec4 tcolor = texture2D(texture1, tcoordVCVSOutput);",
                 "  ambientColor = ambientColor*tcolor.rgb;",
                 "  diffuseColor = diffuseColor*tcolor.rgb;",
                 "  opacity = opacity * tcolor.a;"
               ]).result;
           }
-        } else switch (o = Ht.substitute(o, "//VTK::TCoord::Dec", "attribute vec3 tcoordMC; varying vec3 tcoordVCVSOutput;").result, A = Ht.substitute(A, "//VTK::TCoord::Dec", [
+        } else switch (o = _t.substitute(o, "//VTK::TCoord::Dec", "attribute vec3 tcoordMC; varying vec3 tcoordVCVSOutput;").result, A = _t.substitute(A, "//VTK::TCoord::Dec", [
           "in vec3 tcoordVCVSOutput[];",
           "out vec3 tcoordVCGSOutput;"
-        ]).result, A = Ht.substitute(A, "//VTK::TCoord::Impl", "tcoordVCGSOutput = tcoordVCVSOutput[i];").result, l = Ht.substitute(l, "//VTK::TCoord::Dec", [
+        ]).result, A = _t.substitute(A, "//VTK::TCoord::Impl", "tcoordVCGSOutput = tcoordVCVSOutput[i];").result, l = _t.substitute(l, "//VTK::TCoord::Dec", [
           "varying vec3 tcoordVCVSOutput;",
           "uniform samplerCube texture1;"
         ]).result, g) {
           case 1:
-            l = Ht.substitute(l, "//VTK::TCoord::Impl", [
+            l = _t.substitute(l, "//VTK::TCoord::Impl", [
               "  vec4 tcolor = textureCube(texture1, tcoordVCVSOutput);",
               "  ambientColor = ambientColor*tcolor.r;",
               "  diffuseColor = diffuseColor*tcolor.r;"
             ]).result;
             break;
           case 2:
-            l = Ht.substitute(l, "//VTK::TCoord::Impl", [
+            l = _t.substitute(l, "//VTK::TCoord::Impl", [
               "  vec4 tcolor = textureCube(texture1, tcoordVCVSOutput);",
               "  ambientColor = ambientColor*tcolor.r;",
               "  diffuseColor = diffuseColor*tcolor.r;",
@@ -187538,7 +187553,7 @@ void main()
             ]).result;
             break;
           default:
-            l = Ht.substitute(l, "//VTK::TCoord::Impl", [
+            l = _t.substitute(l, "//VTK::TCoord::Impl", [
               "  vec4 tcolor = textureCube(texture1, tcoordVCVSOutput);",
               "  ambientColor = ambientColor*tcolor.rgb;",
               "  diffuseColor = diffuseColor*tcolor.rgb;",
@@ -187551,11 +187566,11 @@ void main()
       let o = a.Vertex, A = a.Fragment;
       if (e.renderable.getNumberOfClippingPlanes()) {
         const l = e.renderable.getNumberOfClippingPlanes();
-        o = Ht.substitute(o, "//VTK::Clip::Dec", [
+        o = _t.substitute(o, "//VTK::Clip::Dec", [
           "uniform int numClipPlanes;",
           `uniform vec4 clipPlanes[${l}];`,
           `varying float clipDistancesVSOutput[${l}];`
-        ]).result, o = Ht.substitute(o, "//VTK::Clip::Impl", [
+        ]).result, o = _t.substitute(o, "//VTK::Clip::Impl", [
           `for (int planeNum = 0; planeNum < ${l}; planeNum++)`,
           "    {",
           "    if (planeNum >= numClipPlanes)",
@@ -187564,10 +187579,10 @@ void main()
           "        }",
           "    clipDistancesVSOutput[planeNum] = dot(clipPlanes[planeNum], vertexMC);",
           "    }"
-        ]).result, A = Ht.substitute(A, "//VTK::Clip::Dec", [
+        ]).result, A = _t.substitute(A, "//VTK::Clip::Dec", [
           "uniform int numClipPlanes;",
           `varying float clipDistancesVSOutput[${l}];`
-        ]).result, A = Ht.substitute(A, "//VTK::Clip::Impl", [
+        ]).result, A = _t.substitute(A, "//VTK::Clip::Impl", [
           `for (int planeNum = 0; planeNum < ${l}; planeNum++)`,
           "    {",
           "    if (planeNum >= numClipPlanes)",
@@ -187593,36 +187608,36 @@ void main()
       return A && A.getFieldAssociation() === $M.FIELD_ASSOCIATION_POINTS && (s.offset -= 2), s;
     }, t.replaceShaderPicking = (a, i, s) => {
       let o = a.Fragment, A = a.Vertex;
-      if (o = Ht.substitute(o, "//VTK::Picking::Dec", [
+      if (o = _t.substitute(o, "//VTK::Picking::Dec", [
         "uniform int picking;",
         "//VTK::Picking::Dec"
       ]).result, !!e._openGLRenderer.getSelector()) {
-        switch ((e.lastSelectionState === pc.ID_LOW24 || e.lastSelectionState === pc.ID_HIGH24) && (A = Ht.substitute(A, "//VTK::Picking::Dec", [
+        switch ((e.lastSelectionState === pc.ID_LOW24 || e.lastSelectionState === pc.ID_HIGH24) && (A = _t.substitute(A, "//VTK::Picking::Dec", [
           `flat out int vertexIDVSOutput;
 `,
           `uniform int VertexIDOffset;
 `
-        ]).result, A = Ht.substitute(A, "//VTK::Picking::Impl", `  vertexIDVSOutput = gl_VertexID + VertexIDOffset;
-`).result, o = Ht.substitute(o, "//VTK::Picking::Dec", `flat in int vertexIDVSOutput;
-`).result, o = Ht.substitute(o, "//VTK::Picking::Impl", [
+        ]).result, A = _t.substitute(A, "//VTK::Picking::Impl", `  vertexIDVSOutput = gl_VertexID + VertexIDOffset;
+`).result, o = _t.substitute(o, "//VTK::Picking::Dec", `flat in int vertexIDVSOutput;
+`).result, o = _t.substitute(o, "//VTK::Picking::Impl", [
           "  int idx = vertexIDVSOutput;",
           "//VTK::Picking::Impl"
         ]).result), e.lastSelectionState) {
           case pc.ID_LOW24:
-            o = Ht.substitute(o, "//VTK::Picking::Impl", "  gl_FragData[0] = vec4(float(idx%256)/255.0, float((idx/256)%256)/255.0, float((idx/65536)%256)/255.0, 1.0);").result;
+            o = _t.substitute(o, "//VTK::Picking::Impl", "  gl_FragData[0] = vec4(float(idx%256)/255.0, float((idx/256)%256)/255.0, float((idx/65536)%256)/255.0, 1.0);").result;
             break;
           case pc.ID_HIGH24:
-            o = Ht.substitute(o, "//VTK::Picking::Impl", "  gl_FragData[0] = vec4(float(idx)/255.0, 0.0, 0.0, 1.0);").result;
+            o = _t.substitute(o, "//VTK::Picking::Impl", "  gl_FragData[0] = vec4(float(idx)/255.0, 0.0, 0.0, 1.0);").result;
             break;
           default:
-            o = Ht.substitute(o, "//VTK::Picking::Dec", "uniform vec3 mapperIndex;").result, o = Ht.substitute(o, "//VTK::Picking::Impl", "  gl_FragData[0] = picking != 0 ? vec4(mapperIndex,1.0) : gl_FragData[0];").result;
+            o = _t.substitute(o, "//VTK::Picking::Dec", "uniform vec3 mapperIndex;").result, o = _t.substitute(o, "//VTK::Picking::Impl", "  gl_FragData[0] = picking != 0 ? vec4(mapperIndex,1.0) : gl_FragData[0];").result;
         }
         a.Fragment = o, a.Vertex = A;
       }
     }, t.replaceShaderValues = (a, i, s) => {
       if (t.replaceShaderColor(a, i, s), t.replaceShaderNormal(a, i, s), t.replaceShaderLight(a, i, s), t.replaceShaderTCoord(a, i, s), t.replaceShaderPicking(a, i, s), t.replaceShaderClip(a, i, s), t.replaceShaderCoincidentOffset(a, i, s), t.replaceShaderPositionVC(a, i, s), e.haveSeenDepthRequest) {
         let o = a.Fragment;
-        o = Ht.substitute(o, "//VTK::ZBuffer::Dec", "uniform int depthRequest;").result, o = Ht.substitute(o, "//VTK::ZBuffer::Impl", [
+        o = _t.substitute(o, "//VTK::ZBuffer::Dec", "uniform int depthRequest;").result, o = _t.substitute(o, "//VTK::ZBuffer::Impl", [
           "if (depthRequest == 1) {",
           "float iz = floor(gl_FragCoord.z*65535.0 + 0.1);",
           "float rf = floor(iz/256.0)/255.0;",
@@ -187663,7 +187678,7 @@ void main()
         }), a.getProgram().isAttributeUsed("tcoordMC") && a.getCABO().getTCoordOffset() ? a.getVAO().addAttributeArray(a.getProgram(), a.getCABO(), "tcoordMC", a.getCABO().getTCoordOffset(), a.getCABO().getStride(), e.context.FLOAT, a.getCABO().getTCoordComponents(), false) || TI("Error setting tcoordMC in shader VAO.") : a.getVAO().removeAttributeArray("tcoordMC"), a.getProgram().isAttributeUsed("scalarColor") && a.getCABO().getColorComponents() ? a.getVAO().addAttributeArray(a.getProgram(), a.getCABO().getColorBO(), "scalarColor", a.getCABO().getColorOffset(), a.getCABO().getColorBOStride(), e.context.UNSIGNED_BYTE, 4, true) || TI("Error setting scalarColor in shader VAO.") : a.getVAO().removeAttributeArray("scalarColor"), a.getAttributeUpdateTime().modified();
       }
       if (e.renderable.getNumberOfClippingPlanes()) {
-        const l = e.renderable.getNumberOfClippingPlanes(), c = [], d = a.getCABO().getCoordShiftAndScaleEnabled() ? a.getCABO().getInverseShiftAndScaleMatrix() : null, u = d ? So(e.tmpMat4, s.getMatrix()) : s.getMatrix();
+        const l = e.renderable.getNumberOfClippingPlanes(), c = [], d = a.getCABO().getCoordShiftAndScaleEnabled() ? a.getCABO().getInverseShiftAndScaleMatrix() : null, u = d ? Ro(e.tmpMat4, s.getMatrix()) : s.getMatrix();
         d && (Ri(u, u), ji(u, u, d), Ri(u, u));
         for (let h = 0; h < l; h++) {
           const f = [];
@@ -187908,9 +187923,9 @@ void main()
     }, true);
     $o(t, e, [
       "context"
-    ]), e.VBOBuildTime = {}, Ps(e.VBOBuildTime, {
+    ]), e.VBOBuildTime = {}, Us(e.VBOBuildTime, {
       mtime: 0
-    }), e.selectionStateChanged = {}, Ps(e.selectionStateChanged, {
+    }), e.selectionStateChanged = {}, Us(e.selectionStateChanged, {
       mtime: 0
     }), hOe(t, e);
   }
@@ -187947,12 +187962,12 @@ void main()
     }, t.replaceShaderNormal = (a, i, s) => {
       if (e.hardwareSupport && e.lastBoundBO.getReferenceByName("lastLightComplexity") > 0) {
         let A = a.Vertex;
-        e.lastBoundBO.getCABO().getNormalOffset() && (A = Ht.substitute(A, "//VTK::Normal::Dec", [
+        e.lastBoundBO.getCABO().getNormalOffset() && (A = _t.substitute(A, "//VTK::Normal::Dec", [
           "attribute vec3 normalMC;",
           "attribute mat3 gNormal;",
           "uniform mat3 normalMatrix;",
           "varying vec3 normalVCVSOutput;"
-        ]).result, A = Ht.substitute(A, "//VTK::Normal::Impl", [
+        ]).result, A = _t.substitute(A, "//VTK::Normal::Impl", [
           "normalVCVSOutput = normalMatrix * gNormal * normalMC;"
         ]).result), a.Vertex = A;
       }
@@ -187986,38 +188001,38 @@ void main()
           "  specularPower = specularPowerUniform;"
         ])), e.drawingEdges || (g = g.concat([
           "varying vec4 vertexColorVSOutput;"
-        ]), o = Ht.substitute(o, "//VTK::Color::Dec", [
+        ]), o = _t.substitute(o, "//VTK::Color::Dec", [
           "attribute vec4 gColor;",
           "varying vec4 vertexColorVSOutput;"
-        ]).result, o = Ht.substitute(o, "//VTK::Color::Impl", [
+        ]).result, o = _t.substitute(o, "//VTK::Color::Impl", [
           "vertexColorVSOutput = gColor;"
-        ]).result, A = Ht.substitute(A, "//VTK::Color::Dec", [
+        ]).result, A = _t.substitute(A, "//VTK::Color::Dec", [
           "in vec4 vertexColorVSOutput[];",
           "out vec4 vertexColorGSOutput;"
-        ]).result, A = Ht.substitute(A, "//VTK::Color::Impl", [
+        ]).result, A = _t.substitute(A, "//VTK::Color::Impl", [
           "vertexColorGSOutput = vertexColorVSOutput[i];"
         ]).result, d = d.concat([
           "  diffuseColor = vertexColorVSOutput.rgb;",
           "  ambientColor = vertexColorVSOutput.rgb;",
           "  opacity = opacity*vertexColorVSOutput.a;"
-        ])), l = Ht.substitute(l, "//VTK::Color::Impl", d).result, l = Ht.substitute(l, "//VTK::Color::Dec", g).result, a.Vertex = o, a.Geometry = A, a.Fragment = l;
+        ])), l = _t.substitute(l, "//VTK::Color::Impl", d).result, l = _t.substitute(l, "//VTK::Color::Dec", g).result, a.Vertex = o, a.Geometry = A, a.Fragment = l;
       }
       r.replaceShaderColor(a, i, s);
     }, t.replaceShaderPositionVC = (a, i, s) => {
       if (e.hardwareSupport) {
         let o = a.Vertex;
-        e.lastBoundBO.getReferenceByName("lastLightComplexity") > 0 ? (o = Ht.substitute(o, "//VTK::PositionVC::Impl", [
+        e.lastBoundBO.getReferenceByName("lastLightComplexity") > 0 ? (o = _t.substitute(o, "//VTK::PositionVC::Impl", [
           "vec4 gVertexMC = gMatrix * vertexMC;",
           "vertexVCVSOutput = MCVCMatrix * gVertexMC;",
           "  gl_Position = MCPCMatrix * gVertexMC;"
-        ]).result, o = Ht.substitute(o, "//VTK::Camera::Dec", [
+        ]).result, o = _t.substitute(o, "//VTK::Camera::Dec", [
           "attribute mat4 gMatrix;",
           "uniform mat4 MCPCMatrix;",
           "uniform mat4 MCVCMatrix;"
-        ]).result) : (o = Ht.substitute(o, "//VTK::Camera::Dec", [
+        ]).result) : (o = _t.substitute(o, "//VTK::Camera::Dec", [
           "attribute mat4 gMatrix;",
           "uniform mat4 MCPCMatrix;"
-        ]).result, o = Ht.substitute(o, "//VTK::PositionVC::Impl", [
+        ]).result, o = _t.substitute(o, "//VTK::PositionVC::Impl", [
           "vec4 gVertexMC = gMatrix * vertexMC;",
           "  gl_Position = MCPCMatrix * gVertexMC;"
         ]).result), a.Vertex = o;
@@ -188026,14 +188041,14 @@ void main()
     }, t.replaceShaderPicking = (a, i, s) => {
       if (e.hardwareSupport) {
         let o = a.Fragment, A = a.Vertex;
-        A = Ht.substitute(A, "//VTK::Picking::Dec", [
+        A = _t.substitute(A, "//VTK::Picking::Dec", [
           "attribute vec3 mapperIndexVS;",
           "varying vec3 mapperIndexVSOutput;"
-        ]).result, A = Ht.substitute(A, "//VTK::Picking::Impl", "  mapperIndexVSOutput = mapperIndexVS;").result, a.Vertex = A, o = Ht.substitute(o, "//VTK::Picking::Dec", [
+        ]).result, A = _t.substitute(A, "//VTK::Picking::Impl", "  mapperIndexVSOutput = mapperIndexVS;").result, a.Vertex = A, o = _t.substitute(o, "//VTK::Picking::Dec", [
           "varying vec3 mapperIndexVSOutput;",
           "uniform vec3 mapperIndex;",
           "uniform int picking;"
-        ]).result, o = Ht.substitute(o, "//VTK::Picking::Impl", [
+        ]).result, o = _t.substitute(o, "//VTK::Picking::Impl", [
           "  vec4 pickColor = picking == 2 ? vec4(mapperIndexVSOutput,1.0) : vec4(mapperIndex,1.0);",
           "  gl_FragData[0] = picking != 0 ? pickColor : gl_FragData[0];"
         ]).result, a.Fragment = o;
@@ -188094,7 +188109,7 @@ void main()
   };
   function EOe(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, BOe, r), U3.extend(t, e, r), e.tmpMat3 = og(new Float64Array(9)), e.normalMatrix = og(new Float64Array(9)), e.mcpcMatrix = ta(new Float64Array(16)), e.mcvcMatrix = ta(new Float64Array(16)), e.tmpColor = [], e.glyphBOBuildTime = {}, Ps(e.glyphBOBuildTime, {
+    Object.assign(e, BOe, r), U3.extend(t, e, r), e.tmpMat3 = og(new Float64Array(9)), e.normalMatrix = og(new Float64Array(9)), e.mcpcMatrix = ta(new Float64Array(16)), e.mcvcMatrix = ta(new Float64Array(16)), e.tmpColor = [], e.glyphBOBuildTime = {}, Us(e.glyphBOBuildTime, {
       mtime: 0
     }), xOe(t, e);
   }
@@ -188159,11 +188174,11 @@ void main()
       r.Vertex = wG, r.Fragment = Sv, r.Geometry = "";
     }, t.replaceShaderValues = (r, a, i) => {
       let s = r.Vertex, o = r.Fragment;
-      s = Ht.substitute(s, "//VTK::Camera::Dec", [
+      s = _t.substitute(s, "//VTK::Camera::Dec", [
         "uniform mat4 MCPCMatrix;"
-      ]).result, s = Ht.substitute(s, "//VTK::PositionVC::Impl", [
+      ]).result, s = _t.substitute(s, "//VTK::PositionVC::Impl", [
         "  gl_Position = MCPCMatrix * vertexMC;"
-      ]).result, s = Ht.substitute(s, "//VTK::TCoord::Impl", "tcoordVCVSOutput = tcoordMC;").result, s = Ht.substitute(s, "//VTK::TCoord::Dec", "attribute vec2 tcoordMC; varying vec2 tcoordVCVSOutput;").result;
+      ]).result, s = _t.substitute(s, "//VTK::TCoord::Impl", "tcoordVCVSOutput = tcoordMC;").result, s = _t.substitute(s, "//VTK::TCoord::Dec", "attribute vec2 tcoordMC; varying vec2 tcoordVCVSOutput;").result;
       const A = e.openGLTexture.getComponents(), l = i.getProperty().getIndependentComponents();
       let c = [
         "varying vec2 tcoordVCVSOutput;",
@@ -188226,7 +188241,7 @@ void main()
             VB("Unsupported number of independent coordinates.");
         }
       }
-      if (o = Ht.substitute(o, "//VTK::TCoord::Dec", c).result, i.getProperty().getUseLabelOutline() === true && (o = Ht.substitute(o, "//VTK::LabelOutline::Dec", [
+      if (o = _t.substitute(o, "//VTK::TCoord::Dec", c).result, i.getProperty().getUseLabelOutline() === true && (o = _t.substitute(o, "//VTK::LabelOutline::Dec", [
         "uniform int outlineThickness;",
         "uniform float vpWidth;",
         "uniform float vpHeight;",
@@ -188235,7 +188250,7 @@ void main()
         "uniform mat4 PCWCMatrix;",
         "uniform mat4 vWCtoIDX;",
         "uniform ivec3 imageDimensions;"
-      ]).result, o = Ht.substitute(o, "//VTK::ImageLabelOutlineOn", "#define vtkImageLabelOutlineOn").result, o = Ht.substitute(o, "//VTK::LabelOutlineHelperFunction", [
+      ]).result, o = _t.substitute(o, "//VTK::ImageLabelOutlineOn", "#define vtkImageLabelOutlineOn").result, o = _t.substitute(o, "//VTK::LabelOutlineHelperFunction", [
         "#ifdef vtkImageLabelOutlineOn",
         "vec3 fragCoordToIndexSpace(vec4 fragCoord) {",
         "  vec4 pcPos = vec4(",
@@ -188294,10 +188309,10 @@ void main()
           default:
             VB("Unsupported number of independent coordinates.");
         }
-        o = Ht.substitute(o, "//VTK::TCoord::Impl", u).result;
+        o = _t.substitute(o, "//VTK::TCoord::Impl", u).result;
       } else switch (A) {
         case 1:
-          o = Ht.substitute(o, "//VTK::TCoord::Impl", [
+          o = _t.substitute(o, "//VTK::TCoord::Impl", [
             ...wOe(`
                 #ifdef vtkImageLabelOutlineOn
                   vec3 centerPosIS = fragCoordToIndexSpace(gl_FragCoord); 
@@ -188351,14 +188366,14 @@ void main()
           ]).result;
           break;
         case 2:
-          o = Ht.substitute(o, "//VTK::TCoord::Impl", [
+          o = _t.substitute(o, "//VTK::TCoord::Impl", [
             "vec4 tcolor = texture2D(texture1, tcoordVCVSOutput);",
             "float intensity = tcolor.r*cscale0 + cshift0;",
             "gl_FragData[0] = vec4(texture2D(colorTexture1, vec2(intensity, 0.5)).rgb, pwfscale0*tcolor.g + pwfshift0);"
           ]).result;
           break;
         case 3:
-          o = Ht.substitute(o, "//VTK::TCoord::Impl", [
+          o = _t.substitute(o, "//VTK::TCoord::Impl", [
             "vec4 tcolor = cscale0*texture2D(texture1, tcoordVCVSOutput.st) + cshift0;",
             "gl_FragData[0] = vec4(texture2D(colorTexture1, vec2(tcolor.r,0.5)).r,",
             "  texture2D(colorTexture1, vec2(tcolor.g,0.5)).r,",
@@ -188366,14 +188381,14 @@ void main()
           ]).result;
           break;
         default:
-          o = Ht.substitute(o, "//VTK::TCoord::Impl", [
+          o = _t.substitute(o, "//VTK::TCoord::Impl", [
             "vec4 tcolor = cscale0*texture2D(texture1, tcoordVCVSOutput.st) + cshift0;",
             "gl_FragData[0] = vec4(texture2D(colorTexture1, vec2(tcolor.r,0.5)).r,",
             "  texture2D(colorTexture1, vec2(tcolor.g,0.5)).r,",
             "  texture2D(colorTexture1, vec2(tcolor.b,0.5)).r, tcolor.a);"
           ]).result;
       }
-      e.haveSeenDepthRequest && (o = Ht.substitute(o, "//VTK::ZBuffer::Dec", "uniform int depthRequest;").result, o = Ht.substitute(o, "//VTK::ZBuffer::Impl", [
+      e.haveSeenDepthRequest && (o = _t.substitute(o, "//VTK::ZBuffer::Dec", "uniform int depthRequest;").result, o = _t.substitute(o, "//VTK::ZBuffer::Impl", [
         "if (depthRequest == 1) {",
         "float iz = floor(gl_FragCoord.z*65535.0 + 0.1);",
         "float rf = floor(iz/256.0)/255.0;",
@@ -188384,11 +188399,11 @@ void main()
       let s = r.Vertex, o = r.Fragment;
       if (e.renderable.getNumberOfClippingPlanes()) {
         let A = e.renderable.getNumberOfClippingPlanes();
-        A > 6 && (ki("OpenGL has a limit of 6 clipping planes"), A = 6), s = Ht.substitute(s, "//VTK::Clip::Dec", [
+        A > 6 && (ki("OpenGL has a limit of 6 clipping planes"), A = 6), s = _t.substitute(s, "//VTK::Clip::Dec", [
           "uniform int numClipPlanes;",
           "uniform vec4 clipPlanes[6];",
           "varying float clipDistancesVSOutput[6];"
-        ]).result, s = Ht.substitute(s, "//VTK::Clip::Impl", [
+        ]).result, s = _t.substitute(s, "//VTK::Clip::Impl", [
           "for (int planeNum = 0; planeNum < 6; planeNum++)",
           "    {",
           "    if (planeNum >= numClipPlanes)",
@@ -188397,10 +188412,10 @@ void main()
           "        }",
           "    clipDistancesVSOutput[planeNum] = dot(clipPlanes[planeNum], vertexMC);",
           "    }"
-        ]).result, o = Ht.substitute(o, "//VTK::Clip::Dec", [
+        ]).result, o = _t.substitute(o, "//VTK::Clip::Dec", [
           "uniform int numClipPlanes;",
           "varying float clipDistancesVSOutput[6];"
-        ]).result, o = Ht.substitute(o, "//VTK::Clip::Impl", [
+        ]).result, o = _t.substitute(o, "//VTK::Clip::Impl", [
           "for (int planeNum = 0; planeNum < 6; planeNum++)",
           "    {",
           "    if (planeNum >= numClipPlanes)",
@@ -188467,7 +188482,7 @@ void main()
       if (r.getProgram().setUniformi("labelOutlineTexture1", d), e.renderable.getNumberOfClippingPlanes()) {
         let h = e.renderable.getNumberOfClippingPlanes();
         h > 6 && (ki("OpenGL has a limit of 6 clipping planes"), h = 6);
-        const p = r.getCABO().getCoordShiftAndScaleEnabled() ? r.getCABO().getInverseShiftAndScaleMatrix() : null, I = p ? So(e.imagematinv, i.getMatrix()) : i.getMatrix();
+        const p = r.getCABO().getCoordShiftAndScaleEnabled() ? r.getCABO().getInverseShiftAndScaleMatrix() : null, I = p ? Ro(e.imagematinv, i.getMatrix()) : i.getMatrix();
         p && (Ri(I, I), ji(I, I, p), Ri(I, I)), Ri(e.imagemat, e.currentInput.getIndexToWorld()), ji(e.imagematinv, I, e.imagemat);
         const x = [];
         for (let C = 0; C < h; C++) {
@@ -188690,7 +188705,7 @@ void main()
   };
   function DOe(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, NOe, r), ws.extend(t, e, r), yu.implementReplaceShaderCoincidentOffset(t, e, r), yu.implementBuildShadersWithReplacements(t, e, r), e.tris = ku.newInstance(), e.imagemat = ta(new Float64Array(16)), e.imagematinv = ta(new Float64Array(16)), e.projectionToWorld = ta(new Float64Array(16)), e.idxToView = ta(new Float64Array(16)), e.idxNormalMatrix = og(new Float64Array(9)), e.modelToView = ta(new Float64Array(16)), e.projectionToView = ta(new Float64Array(16)), $o(t, e, []), e.VBOBuildTime = {}, Ps(e.VBOBuildTime), vOe(t, e);
+    Object.assign(e, NOe, r), ws.extend(t, e, r), yu.implementReplaceShaderCoincidentOffset(t, e, r), yu.implementBuildShadersWithReplacements(t, e, r), e.tris = ku.newInstance(), e.imagemat = ta(new Float64Array(16)), e.imagematinv = ta(new Float64Array(16)), e.projectionToWorld = ta(new Float64Array(16)), e.idxToView = ta(new Float64Array(16)), e.idxNormalMatrix = og(new Float64Array(9)), e.modelToView = ta(new Float64Array(16)), e.projectionToView = ta(new Float64Array(16)), $o(t, e, []), e.VBOBuildTime = {}, Us(e.VBOBuildTime), vOe(t, e);
   }
   const Gie = Vi(DOe, "vtkOpenGLImageMapper");
   var kOe = {
@@ -188724,7 +188739,7 @@ void main()
       r && e.context.depthMask(true);
     }, t.translucentPass = (r, a) => {
       e.context.depthMask(!r);
-    }, t.getKeyMatrices = () => (e.renderable.getMTime() > e.keyMatrixTime.getMTime() && (So(e.keyMatrices.mcwc, e.renderable.getMatrix()), Ri(e.keyMatrices.mcwc, e.keyMatrices.mcwc), e.keyMatrixTime.modified()), e.keyMatrices);
+    }, t.getKeyMatrices = () => (e.renderable.getMTime() > e.keyMatrixTime.getMTime() && (Ro(e.keyMatrices.mcwc, e.renderable.getMatrix()), Ri(e.keyMatrices.mcwc, e.keyMatrices.mcwc), e.keyMatrixTime.modified()), e.keyMatrices);
   }
   const ROe = {
     context: null,
@@ -188733,7 +188748,7 @@ void main()
   };
   function jOe(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, ROe, r), ws.extend(t, e, r), e.keyMatrixTime = {}, Ps(e.keyMatrixTime, {
+    Object.assign(e, ROe, r), ws.extend(t, e, r), e.keyMatrixTime = {}, Us(e.keyMatrixTime, {
       mtime: 0
     }), e.keyMatrices = {
       mcwc: ta(new Float64Array(16))
@@ -188949,7 +188964,7 @@ void main()
   };
   function KOe(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, JOe, r), ws.extend(t, e, r), e.openGLTexture = xo.newInstance(), e.tris = ku.newInstance(), e.keyMatrixTime = {}, Ps(e.keyMatrixTime, {
+    Object.assign(e, JOe, r), ws.extend(t, e, r), e.openGLTexture = xo.newInstance(), e.tris = ku.newInstance(), e.keyMatrixTime = {}, Us(e.keyMatrixTime, {
       mtime: 0
     }), e.keyMatrices = {
       normalMatrix: og(new Float64Array(9)),
@@ -189057,13 +189072,13 @@ void main()
       a.Vertex = WOe, a.Fragment = Sv, a.Geometry = "";
     }, t.replaceShaderValues = (a, i, s) => {
       let o = a.Vertex, A = a.Fragment;
-      o = Ht.substitute(o, "//VTK::Camera::Dec", [
+      o = _t.substitute(o, "//VTK::Camera::Dec", [
         `uniform mat4 VCPCMatrix;
 `,
         "uniform mat4 MCVCMatrix;"
-      ]).result, A = Ht.substitute(A, "//VTK::PositionVC::Dec", [
+      ]).result, A = _t.substitute(A, "//VTK::PositionVC::Dec", [
         "varying vec4 vertexVCVSOutput;"
-      ]).result, A = Ht.substitute(A, "//VTK::PositionVC::Impl", [
+      ]).result, A = _t.substitute(A, "//VTK::PositionVC::Impl", [
         `vec4 vertexVC = vertexVCVSOutput;
 `
       ]).result;
@@ -189079,11 +189094,11 @@ void main()
         `uniform mat4 VCPCMatrix;
 `
       ];
-      A = Ht.substitute(A, "//VTK::Normal::Dec", l).result;
+      A = _t.substitute(A, "//VTK::Normal::Dec", l).result;
       let c = "";
       e.context.getExtension("EXT_frag_depth") && (c = `gl_FragDepthEXT = (pos.z / pos.w + 1.0) / 2.0;
 `), e._openGLRenderWindow.getWebgl2() && (c = `gl_FragDepth = (pos.z / pos.w + 1.0) / 2.0;
-`), A = Ht.substitute(A, "//VTK::Depth::Impl", [
+`), A = _t.substitute(A, "//VTK::Depth::Impl", [
         `  vec3 EyePos;
 `,
         `  vec3 EyeDir;
@@ -189137,7 +189152,7 @@ void main()
         `  vec4 pos = VCPCMatrix * vertexVC;
 `,
         c
-      ]).result, A = Ht.substitute(A, "//VTK::Normal::Impl", "").result, e.haveSeenDepthRequest && (A = Ht.substitute(A, "//VTK::ZBuffer::Impl", [
+      ]).result, A = _t.substitute(A, "//VTK::Normal::Impl", "").result, e.haveSeenDepthRequest && (A = _t.substitute(A, "//VTK::ZBuffer::Impl", [
         "if (depthRequest == 1) {",
         "float computedZ = (pos.z / pos.w + 1.0) / 2.0;",
         "float iz = floor(computedZ * 65535.0 + 0.1);",
@@ -189301,11 +189316,11 @@ void main()
       a.Vertex = t_e, a.Fragment = Sv, a.Geometry = "";
     }, t.replaceShaderValues = (a, i, s) => {
       let o = a.Vertex, A = a.Fragment;
-      o = Ht.substitute(o, "//VTK::Camera::Dec", [
+      o = _t.substitute(o, "//VTK::Camera::Dec", [
         `uniform mat4 VCPCMatrix;
 `,
         "uniform mat4 MCVCMatrix;"
-      ]).result, A = Ht.substitute(A, "//VTK::PositionVC::Dec", "varying vec4 vertexVCVSOutput;").result, A = Ht.substitute(A, "//VTK::PositionVC::Impl", `  vec4 vertexVC = vertexVCVSOutput;
+      ]).result, A = _t.substitute(A, "//VTK::PositionVC::Dec", "varying vec4 vertexVCVSOutput;").result, A = _t.substitute(A, "//VTK::PositionVC::Impl", `  vec4 vertexVC = vertexVCVSOutput;
 `).result;
       const l = [
         `uniform int cameraParallel;
@@ -189321,11 +189336,11 @@ void main()
         `uniform mat4 VCPCMatrix;
 `
       ];
-      A = Ht.substitute(A, "//VTK::Normal::Dec", l).result;
+      A = _t.substitute(A, "//VTK::Normal::Dec", l).result;
       let c = "";
       e.context.getExtension("EXT_frag_depth") && (c = `  gl_FragDepthEXT = (pos.z / pos.w + 1.0) / 2.0;
 `), e._openGLRenderWindow.getWebgl2() && (c = `gl_FragDepth = (pos.z / pos.w + 1.0) / 2.0;
-`), A = Ht.substitute(A, "//VTK::Depth::Impl", [
+`), A = _t.substitute(A, "//VTK::Depth::Impl", [
         `  vec3 EyePos;
 `,
         `  vec3 EyeDir;
@@ -189427,7 +189442,7 @@ void main()
         `  vec4 pos = VCPCMatrix * vertexVC;
 `,
         c
-      ]).result, A = Ht.substitute(A, "//VTK::Normal::Impl", "").result, e.haveSeenDepthRequest && (A = Ht.substitute(A, "//VTK::ZBuffer::Impl", [
+      ]).result, A = _t.substitute(A, "//VTK::Normal::Impl", "").result, e.haveSeenDepthRequest && (A = _t.substitute(A, "//VTK::ZBuffer::Impl", [
         "if (depthRequest == 1) {",
         "float computedZ = (pos.z / pos.w + 1.0) / 2.0;",
         "float iz = floor(computedZ * 65535.0 + 0.1);",
@@ -189513,7 +189528,7 @@ void main()
       !e.renderable || !e.renderable.getNestedVisibility() || e._openGLRenderer.getSelector() && !e.renderable.getNestedPickable() || (t.apply(r, true), e.children[0].traverse(r), t.apply(r, false));
     }, t.volumePass = (r) => {
       !e.renderable || !e.renderable.getVisibility() || e.context.depthMask(!r);
-    }, t.getKeyMatrices = () => (e.renderable.getMTime() > e.keyMatrixTime.getMTime() && (e.renderable.computeMatrix(), So(e.MCWCMatrix, e.renderable.getMatrix()), Ri(e.MCWCMatrix, e.MCWCMatrix), e.renderable.getIsIdentity() ? og(e.normalMatrix) : (j3(e.normalMatrix, e.MCWCMatrix), Dv(e.normalMatrix, e.normalMatrix), eG(e.normalMatrix, e.normalMatrix)), e.keyMatrixTime.modified()), {
+    }, t.getKeyMatrices = () => (e.renderable.getMTime() > e.keyMatrixTime.getMTime() && (e.renderable.computeMatrix(), Ro(e.MCWCMatrix, e.renderable.getMatrix()), Ri(e.MCWCMatrix, e.MCWCMatrix), e.renderable.getIsIdentity() ? og(e.normalMatrix) : (j3(e.normalMatrix, e.MCWCMatrix), Dv(e.normalMatrix, e.normalMatrix), eG(e.normalMatrix, e.normalMatrix)), e.keyMatrixTime.modified()), {
       mcwc: e.MCWCMatrix,
       normalMatrix: e.normalMatrix
     });
@@ -189521,7 +189536,7 @@ void main()
   const o_e = {};
   function A_e(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, o_e, r), ws.extend(t, e, r), e.keyMatrixTime = {}, Ps(e.keyMatrixTime, {
+    Object.assign(e, o_e, r), ws.extend(t, e, r), e.keyMatrixTime = {}, Us(e.keyMatrixTime, {
       mtime: 0
     }), e.normalMatrix = new Float64Array(9), e.MCWCMatrix = new Float64Array(16), $o(t, e, [
       "context"
@@ -191390,30 +191405,30 @@ void main()
     }, t.replaceShaderValues = (a, i, s) => {
       const o = s.getProperty();
       let A = a.Fragment;
-      o.getInterpolationType() === k8.LINEAR && (A = Ht.substitute(A, "//VTK::TrilinearOn", "#define vtkTrilinearOn").result), o.getUseLabelOutline() === true && (A = Ht.substitute(A, "//VTK::ImageLabelOutlineOn", "#define vtkImageLabelOutlineOn").result);
+      o.getInterpolationType() === k8.LINEAR && (A = _t.substitute(A, "//VTK::TrilinearOn", "#define vtkTrilinearOn").result), o.getUseLabelOutline() === true && (A = _t.substitute(A, "//VTK::ImageLabelOutlineOn", "#define vtkImageLabelOutlineOn").result);
       const g = e.scalarTexture.getComponents();
-      A = Ht.substitute(A, "//VTK::NumComponents", `#define vtkNumComponents ${g}`).result;
+      A = _t.substitute(A, "//VTK::NumComponents", `#define vtkNumComponents ${g}`).result;
       const d = t.useIndependentComponents(o);
-      d && (A = Ht.substitute(A, "//VTK::IndependentComponentsOn", "#define UseIndependentComponents").result);
+      d && (A = _t.substitute(A, "//VTK::IndependentComponentsOn", "#define UseIndependentComponents").result);
       const u = [], h = [];
       for (let D = 0; D < g; D++) o.getOpacityMode(D) === Kie.PROPORTIONAL && u.push(`#define vtkComponent${D}Proportional`), o.getForceNearestInterpolation(D) && h.push(`#define vtkComponent${D}ForceNearest`);
-      A = Ht.substitute(A, "//VTK::vtkProportionalComponents", u.join(`
-`)).result, A = Ht.substitute(A, "//VTK::vtkForceNearestComponents", h.join(`
+      A = _t.substitute(A, "//VTK::vtkProportionalComponents", u.join(`
+`)).result, A = _t.substitute(A, "//VTK::vtkForceNearestComponents", h.join(`
 `)).result;
       const f = o.getColorMixPreset(), p = u_e(f);
-      p && (A = Ht.substitute(A, "//VTK::CustomComponentsColorMixOn", "#define vtkCustomComponentsColorMix").result, A = Ht.substitute(A, "//VTK::CustomComponentsColorMix::Impl", p).result);
+      p && (A = _t.substitute(A, "//VTK::CustomComponentsColorMixOn", "#define vtkCustomComponentsColorMix").result, A = _t.substitute(A, "//VTK::CustomComponentsColorMix::Impl", p).result);
       const I = e.currentInput.getSpatialExtent(), x = e.currentInput.getSpacing(), C = new Float64Array(3);
       Ns(C, (I[1] - I[0]) * x[0], (I[3] - I[2]) * x[1], (I[5] - I[4]) * x[2]);
       const B = ME(C) / t.getCurrentSampleDistance(i);
-      A = Ht.substitute(A, "//VTK::MaximumSamplesValue", `${Math.ceil(B)}`).result, A = Ht.substitute(A, "//VTK::LightComplexity", `#define vtkLightComplexity ${e.lightComplexity}`).result, e.lightComplexity > 0 && (e.renderable.getVolumetricScatteringBlending() > 0 && (A = Ht.substitute(A, "//VTK::VolumeShadowOn", "#define VolumeShadowOn").result), e.renderable.getVolumetricScatteringBlending() < 1 && (A = Ht.substitute(A, "//VTK::SurfaceShadowOn", "#define SurfaceShadowOn").result), e.renderable.getLocalAmbientOcclusion() && o.getAmbient() > 0 && (A = Ht.substitute(A, "//VTK::localAmbientOcclusionOn", "#define localAmbientOcclusionOn").result));
+      A = _t.substitute(A, "//VTK::MaximumSamplesValue", `${Math.ceil(B)}`).result, A = _t.substitute(A, "//VTK::LightComplexity", `#define vtkLightComplexity ${e.lightComplexity}`).result, e.lightComplexity > 0 && (e.renderable.getVolumetricScatteringBlending() > 0 && (A = _t.substitute(A, "//VTK::VolumeShadowOn", "#define VolumeShadowOn").result), e.renderable.getVolumetricScatteringBlending() < 1 && (A = _t.substitute(A, "//VTK::SurfaceShadowOn", "#define SurfaceShadowOn").result), e.renderable.getLocalAmbientOcclusion() && o.getAmbient() > 0 && (A = _t.substitute(A, "//VTK::localAmbientOcclusionOn", "#define localAmbientOcclusionOn").result));
       const Q = d ? g : 1;
       e.gopacity = false;
       for (let D = 0; !e.gopacity && D < Q; ++D) e.gopacity || (e.gopacity = o.getUseGradientOpacity(D));
-      e.gopacity && (A = Ht.substitute(A, "//VTK::GradientOpacityOn", "#define vtkGradientOpacityOn").result), e.renderable.getComputeNormalFromOpacity() && (A = Ht.substitute(A, "//VTK::vtkComputeNormalFromOpacity", "#define vtkComputeNormalFromOpacity").result), e.zBufferTexture !== null && (A = Ht.substitute(A, "//VTK::ZBuffer::Dec", [
+      e.gopacity && (A = _t.substitute(A, "//VTK::GradientOpacityOn", "#define vtkGradientOpacityOn").result), e.renderable.getComputeNormalFromOpacity() && (A = _t.substitute(A, "//VTK::vtkComputeNormalFromOpacity", "#define vtkComputeNormalFromOpacity").result), e.zBufferTexture !== null && (A = _t.substitute(A, "//VTK::ZBuffer::Dec", [
         "uniform sampler2D zBufferTexture;",
         "uniform float vpZWidth;",
         "uniform float vpZHeight;"
-      ]).result, A = Ht.substitute(A, "//VTK::ZBuffer::Impl", [
+      ]).result, A = _t.substitute(A, "//VTK::ZBuffer::Impl", [
         "vec4 depthVec = texture2D(zBufferTexture, vec2(gl_FragCoord.x / vpZWidth, gl_FragCoord.y/vpZHeight));",
         "float zdepth = (depthVec.r*256.0 + depthVec.g)/257.0;",
         "zdepth = zdepth * 2.0 - 1.0;",
@@ -191424,32 +191439,32 @@ void main()
 `,
         "zdepth = -zdepth/rayDir.z;",
         "dists.y = min(zdepth,dists.y);"
-      ]).result), A = Ht.substitute(A, "//VTK::BlendMode", `${e.renderable.getBlendMode()}`).result, a.Fragment = A, t.replaceShaderLight(a, i, s), t.replaceShaderClippingPlane(a, i, s);
+      ]).result), A = _t.substitute(A, "//VTK::BlendMode", `${e.renderable.getBlendMode()}`).result, a.Fragment = A, t.replaceShaderLight(a, i, s), t.replaceShaderClippingPlane(a, i, s);
     }, t.replaceShaderLight = (a, i, s) => {
       if (e.lightComplexity === 0) return;
       let o = a.Fragment, A = 0;
       i.getLights().forEach((l) => {
         l.getSwitch() && (A += 1);
-      }), o = Ht.substitute(o, "//VTK::Light::Dec", [
+      }), o = _t.substitute(o, "//VTK::Light::Dec", [
         "uniform int lightNum;",
         "uniform bool twoSidedLighting;",
         `uniform vec3 lightColor[${A}];`,
         `uniform vec3 lightDirectionVC[${A}]; // normalized`,
         `uniform vec3 lightHalfAngleVC[${A}];`,
         "//VTK::Light::Dec"
-      ], false).result, e.lightComplexity === 3 && (o = Ht.substitute(o, "//VTK::Light::Dec", [
+      ], false).result, e.lightComplexity === 3 && (o = _t.substitute(o, "//VTK::Light::Dec", [
         `uniform vec3 lightPositionVC[${A}];`,
         `uniform vec3 lightAttenuation[${A}];`,
         `uniform float lightConeAngle[${A}];`,
         `uniform float lightExponent[${A}];`,
         `uniform int lightPositional[${A}];`
-      ], false).result), e.renderable.getVolumetricScatteringBlending() > 0 && (o = Ht.substitute(o, "//VTK::VolumeShadow::Dec", [
+      ], false).result), e.renderable.getVolumetricScatteringBlending() > 0 && (o = _t.substitute(o, "//VTK::VolumeShadow::Dec", [
         "uniform float volumetricScatteringBlending;",
         "uniform float giReach;",
         "uniform float volumeShadowSamplingDistFactor;",
         "uniform float anisotropy;",
         "uniform float anisotropy2;"
-      ], false).result), e.renderable.getLocalAmbientOcclusion() && s.getProperty().getAmbient() > 0 && (o = Ht.substitute(o, "//VTK::LAO::Dec", [
+      ], false).result), e.renderable.getLocalAmbientOcclusion() && s.getProperty().getAmbient() > 0 && (o = _t.substitute(o, "//VTK::LAO::Dec", [
         "uniform int kernelRadius;",
         `uniform vec2 kernelSample[${e.renderable.getLAOKernelRadius()}];`,
         "uniform int kernelSize;"
@@ -191458,14 +191473,14 @@ void main()
       let o = a.Fragment;
       if (e.renderable.getClippingPlanes().length > 0) {
         const A = e.renderable.getClippingPlanes().length;
-        o = Ht.substitute(o, "//VTK::ClipPlane::Dec", [
+        o = _t.substitute(o, "//VTK::ClipPlane::Dec", [
           "uniform vec3 vClipPlaneNormals[6];",
           "uniform float vClipPlaneDistances[6];",
           "uniform vec3 vClipPlaneOrigins[6];",
           "uniform int clip_numPlanes;",
           "//VTK::ClipPlane::Dec",
           "#define vtkClippingPlanesOn"
-        ], false).result, o = Ht.substitute(o, "//VTK::ClipPlane::Impl", [
+        ], false).result, o = _t.substitute(o, "//VTK::ClipPlane::Impl", [
           `for(int i = 0; i < ${A}; i++) {`,
           "  float rayDirRatio = dot(rayDir, vClipPlaneNormals[i]);",
           "  float equationResult = dot(vertexVCVSOutput, vClipPlaneNormals[i]) + vClipPlaneDistances[i];",
@@ -191889,7 +191904,7 @@ void main()
   };
   function Wie(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, f_e, r), ws.extend(t, e, r), yu.implementBuildShadersWithReplacements(t, e, r), e.VBOBuildTime = {}, Ps(e.VBOBuildTime, {
+    Object.assign(e, f_e, r), ws.extend(t, e, r), yu.implementBuildShadersWithReplacements(t, e, r), e.VBOBuildTime = {}, Us(e.VBOBuildTime, {
       mtime: 0
     }), e.tris = ku.newInstance(), e.scalarTexture = xo.newInstance(), e.opacityTexture = xo.newInstance(), e.colorTexture = xo.newInstance(), e.jitterTexture = xo.newInstance(), e.jitterTexture.setWrapS(H1.REPEAT), e.jitterTexture.setWrapT(H1.REPEAT), e.labelOutlineThicknessTexture = xo.newInstance(), e.framebuffer = T3.newInstance(), e.idxToView = ta(new Float64Array(16)), e.idxNormalMatrix = og(new Float64Array(9)), e.modelToView = ta(new Float64Array(16)), e.projectionToView = ta(new Float64Array(16)), e.projectionToWorld = ta(new Float64Array(16)), $o(t, e, [
       "context"
@@ -192153,8 +192168,8 @@ void main()
     }, t.getOrientation = () => {
     }, t.getOrientationWXYZ = () => {
     }, t.getFrustumPlanes = (p) => {
-    }, t.getCameraLightTransformMatrix = (p) => (So(p, e.cameraLightTransform), p), t.computeCameraLightTransform = () => {
-      So(s, t.getViewMatrix()), IA(s, s), sG(o, [
+    }, t.getCameraLightTransformMatrix = (p) => (Ro(p, e.cameraLightTransform), p), t.computeCameraLightTransform = () => {
+      Ro(s, t.getViewMatrix()), IA(s, s), sG(o, [
         e.distance,
         e.distance,
         e.distance
@@ -192186,19 +192201,19 @@ void main()
     }, t.computeViewParametersFromPhysicalMatrix = (p) => {
       t.getWorldToPhysicalMatrix(s), ji(s, p, s), t.computeViewParametersFromViewMatrix(s);
     }, t.setViewMatrix = (p) => {
-      e.viewMatrix = p, e.viewMatrix && (So(s, e.viewMatrix), t.computeViewParametersFromViewMatrix(s), Ri(e.viewMatrix, e.viewMatrix));
+      e.viewMatrix = p, e.viewMatrix && (Ro(s, e.viewMatrix), t.computeViewParametersFromViewMatrix(s), Ri(e.viewMatrix, e.viewMatrix));
     }, t.getViewMatrix = () => {
       if (e.viewMatrix) return e.viewMatrix;
       rae(s, e.position, e.focalPoint, e.viewUp), Ri(s, s);
       const p = new Float64Array(16);
-      return So(p, s), p;
+      return Ro(p, s), p;
     }, t.setProjectionMatrix = (p) => {
       e.projectionMatrix = p;
     }, t.getProjectionMatrix = (p, I, x) => {
       const C = new Float64Array(16);
       if (ta(C), e.projectionMatrix) {
         const D = 1 / e.physicalScale;
-        return Ns(A, D, D, D), So(C, e.projectionMatrix), rm(C, C, A), Ri(C, C), C;
+        return Ns(A, D, D, D), Ro(C, e.projectionMatrix), rm(C, C, A), Ri(C, C), C;
       }
       ta(s);
       const B = e.clippingRange[1] - e.clippingRange[0], Q = [
@@ -192218,7 +192233,7 @@ void main()
           s[0] = 2 * U / (G - j), s[5] = 2 * U / (P - H), s[2] = (j + G) / (G - j), s[6] = (H + P) / (P - H), s[10] = -(U + O) / (O - U), s[14] = -1, s[11] = -2 * U * O / (O - U), s[15] = 0;
         }
       }
-      return So(C, s), C;
+      return Ro(C, s), C;
     }, t.getCompositeProjectionMatrix = (p, I, x) => {
       const C = t.getViewMatrix(), B = t.getProjectionMatrix(p, I, x);
       return ji(B, C, B), B;
@@ -193741,7 +193756,7 @@ void main()
     newInstance: u7e,
     extend: hse
   };
-  const _s = {
+  const Os = {
     VTK_EMPTY_CELL: 0,
     VTK_VERTEX: 1,
     VTK_POLY_VERTEX: 2,
@@ -193831,10 +193846,10 @@ void main()
     return S8.findIndex(t);
   }
   function m7e(t) {
-    return t < _s.VTK_QUADRATIC_EDGE || t === _s.VTK_CONVEX_POINT_SET || t === _s.VTK_POLYHEDRON;
+    return t < Os.VTK_QUADRATIC_EDGE || t === Os.VTK_CONVEX_POINT_SET || t === Os.VTK_POLYHEDRON;
   }
   function I7e(t) {
-    return t === _s.VTK_TRIANGLE_STRIP || t === _s.VTK_POLY_LINE || t === _s.VTK_POLY_VERTEX;
+    return t === Os.VTK_TRIANGLE_STRIP || t === Os.VTK_POLY_LINE || t === Os.VTK_POLY_VERTEX;
   }
   const C7e = {
     getClassNameFromTypeId: f7e,
@@ -193851,7 +193866,7 @@ void main()
     }, t.insertNextCell = (r, a) => (t.insertCell(++e.maxId, r, a), e.maxId), t.setCellTypes = (r, a, i) => {
       e.size = r, e.typeArray = a, e.locationArray = i, e.maxId = r - 1;
     }, t.getCellLocation = (r) => e.locationArray[r], t.deleteCell = (r) => {
-      e.typeArray[r] = _s.VTK_EMPTY_CELL;
+      e.typeArray[r] = Os.VTK_EMPTY_CELL;
     }, t.getNumberOfTypes = () => e.maxId + 1, t.isType = (r) => {
       const a = t.getNumberOfTypes();
       for (let i = 0; i < a; ++i) if (r === t.getCellType(i)) return true;
@@ -194233,9 +194248,9 @@ void main()
     "polys",
     "strips"
   ], { vtkWarningMacro: EK } = We, Bse = {
-    [_s.VTK_LINE]: Kd,
-    [_s.VTK_POLY_LINE]: Kd,
-    [_s.VTK_TRIANGLE]: z7e
+    [Os.VTK_LINE]: Kd,
+    [Os.VTK_POLY_LINE]: Kd,
+    [Os.VTK_TRIANGLE]: z7e
   };
   function G7e(t, e) {
     e.classHierarchy.push("vtkPolyData");
@@ -194259,13 +194274,13 @@ void main()
       if (i) {
         let h = 0;
         e.verts.getCellSizes().forEach((f, p) => {
-          u[p] = h, g[p] = f > 1 ? _s.VTK_POLY_VERTEX : _s.VTK_VERTEX, h += f + 1;
+          u[p] = h, g[p] = f > 1 ? Os.VTK_POLY_VERTEX : Os.VTK_VERTEX, h += f + 1;
         }), u = u.subarray(i), g = g.subarray(i);
       }
       if (s) {
         let h = 0;
         e.lines.getCellSizes().forEach((f, p) => {
-          u[p] = h, g[p] = f > 2 ? _s.VTK_POLY_LINE : _s.VTK_LINE, f === 1 && EK("Building VTK_LINE ", p, " with only one point, but VTK_LINE needs at least two points. Check the input."), h += f + 1;
+          u[p] = h, g[p] = f > 2 ? Os.VTK_POLY_LINE : Os.VTK_LINE, f === 1 && EK("Building VTK_LINE ", p, " with only one point, but VTK_LINE needs at least two points. Check the input."), h += f + 1;
         }), u = u.subarray(s), g = g.subarray(s);
       }
       if (o) {
@@ -194273,13 +194288,13 @@ void main()
         e.polys.getCellSizes().forEach((f, p) => {
           switch (u[p] = h, f) {
             case 3:
-              g[p] = _s.VTK_TRIANGLE;
+              g[p] = Os.VTK_TRIANGLE;
               break;
             case 4:
-              g[p] = _s.VTK_QUAD;
+              g[p] = Os.VTK_QUAD;
               break;
             default:
-              g[p] = _s.VTK_POLYGON;
+              g[p] = Os.VTK_POLYGON;
               break;
           }
           f < 3 && EK("Building VTK_TRIANGLE ", p, " with less than three points, but VTK_TRIANGLE needs at least three points. Check the input."), h += f + 1;
@@ -194287,7 +194302,7 @@ void main()
       }
       if (A) {
         let h = 0;
-        g.fill(_s.VTK_TRIANGLE_STRIP, 0, A), e.strips.getCellSizes().forEach((f, p) => {
+        g.fill(Os.VTK_TRIANGLE_STRIP, 0, A), e.strips.getCellSizes().forEach((f, p) => {
           u[p] = h, h += f + 1;
         });
       }
@@ -194299,20 +194314,20 @@ void main()
       const s = t.getCellType(i);
       let o = null;
       switch (s) {
-        case _s.VTK_VERTEX:
-        case _s.VTK_POLY_VERTEX:
+        case Os.VTK_VERTEX:
+        case Os.VTK_POLY_VERTEX:
           o = e.verts;
           break;
-        case _s.VTK_LINE:
-        case _s.VTK_POLY_LINE:
+        case Os.VTK_LINE:
+        case Os.VTK_POLY_LINE:
           o = e.lines;
           break;
-        case _s.VTK_TRIANGLE:
-        case _s.VTK_QUAD:
-        case _s.VTK_POLYGON:
+        case Os.VTK_TRIANGLE:
+        case Os.VTK_QUAD:
+        case Os.VTK_POLYGON:
           o = e.polys;
           break;
-        case _s.VTK_TRIANGLE_STRIP:
+        case Os.VTK_TRIANGLE_STRIP:
           o = e.strips;
           break;
         default:
@@ -194402,7 +194417,7 @@ void main()
       a,
       i,
       s
-    ], ta(e.rotation), t.rotateZ(s), t.rotateX(a), t.rotateY(i), t.modified(), true), t.setUserMatrix = (a) => Db(e.userMatrix, a) ? false : (So(e.userMatrix, a), t.modified(), true), t.getMatrix = () => (t.computeMatrix(), e.matrix), t.computeMatrix = () => {
+    ], ta(e.rotation), t.rotateZ(s), t.rotateX(a), t.rotateY(i), t.modified(), true), t.setUserMatrix = (a) => Db(e.userMatrix, a) ? false : (Ro(e.userMatrix, a), t.modified(), true), t.getMatrix = () => (t.computeMatrix(), e.matrix), t.computeMatrix = () => {
       if (t.getMTime() > e.matrixMTime.getMTime()) {
         ta(e.matrix), e.userMatrix && ji(e.matrix, e.matrix, e.userMatrix), mo(e.matrix, e.matrix, e.origin), mo(e.matrix, e.matrix, e.position), ji(e.matrix, e.matrix, e.rotation), rm(e.matrix, e.matrix, e.scale), mo(e.matrix, e.matrix, [
           -e.origin[0],
@@ -195090,7 +195105,7 @@ void main()
   }, Symbol.toStringTag, {
     value: "Module"
   }));
-  var Xr = 1e-6, Mi = typeof Float32Array < "u" ? Float32Array : Array, c0 = Math.random, kse = "zyx";
+  var $r = 1e-6, Mi = typeof Float32Array < "u" ? Float32Array : Array, c0 = Math.random, kse = "zyx";
   function hu(t) {
     return t >= 0 ? Math.round(t) : t % 0.5 === 0 ? Math.floor(t) : Math.round(t);
   }
@@ -195105,7 +195120,7 @@ void main()
     return t * xHe;
   }
   function R8(t, e) {
-    var r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : Xr;
+    var r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : $r;
     return Math.abs(t - e) <= r * Math.max(1, Math.abs(t), Math.abs(e));
   }
   const bHe = Object.freeze(Object.defineProperty({
@@ -195114,7 +195129,7 @@ void main()
     get ARRAY_TYPE() {
       return Mi;
     },
-    EPSILON: Xr,
+    EPSILON: $r,
     RANDOM: c0,
     equals: R8,
     round: hu,
@@ -195206,7 +195221,7 @@ void main()
   }
   function _He(t, e) {
     var r = t[0], a = t[1], i = t[2], s = t[3], o = e[0], A = e[1], l = e[2], c = e[3];
-    return Math.abs(r - o) <= Xr * Math.max(1, Math.abs(r), Math.abs(o)) && Math.abs(a - A) <= Xr * Math.max(1, Math.abs(a), Math.abs(A)) && Math.abs(i - l) <= Xr * Math.max(1, Math.abs(i), Math.abs(l)) && Math.abs(s - c) <= Xr * Math.max(1, Math.abs(s), Math.abs(c));
+    return Math.abs(r - o) <= $r * Math.max(1, Math.abs(r), Math.abs(o)) && Math.abs(a - A) <= $r * Math.max(1, Math.abs(a), Math.abs(A)) && Math.abs(i - l) <= $r * Math.max(1, Math.abs(i), Math.abs(l)) && Math.abs(s - c) <= $r * Math.max(1, Math.abs(s), Math.abs(c));
   }
   function HHe(t, e, r) {
     return t[0] = e[0] * r, t[1] = e[1] * r, t[2] = e[2] * r, t[3] = e[3] * r, t;
@@ -195323,7 +195338,7 @@ void main()
   }
   function fYe(t, e) {
     var r = t[0], a = t[1], i = t[2], s = t[3], o = t[4], A = t[5], l = e[0], c = e[1], g = e[2], d = e[3], u = e[4], h = e[5];
-    return Math.abs(r - l) <= Xr * Math.max(1, Math.abs(r), Math.abs(l)) && Math.abs(a - c) <= Xr * Math.max(1, Math.abs(a), Math.abs(c)) && Math.abs(i - g) <= Xr * Math.max(1, Math.abs(i), Math.abs(g)) && Math.abs(s - d) <= Xr * Math.max(1, Math.abs(s), Math.abs(d)) && Math.abs(o - u) <= Xr * Math.max(1, Math.abs(o), Math.abs(u)) && Math.abs(A - h) <= Xr * Math.max(1, Math.abs(A), Math.abs(h));
+    return Math.abs(r - l) <= $r * Math.max(1, Math.abs(r), Math.abs(l)) && Math.abs(a - c) <= $r * Math.max(1, Math.abs(a), Math.abs(c)) && Math.abs(i - g) <= $r * Math.max(1, Math.abs(i), Math.abs(g)) && Math.abs(s - d) <= $r * Math.max(1, Math.abs(s), Math.abs(d)) && Math.abs(o - u) <= $r * Math.max(1, Math.abs(o), Math.abs(u)) && Math.abs(A - h) <= $r * Math.max(1, Math.abs(A), Math.abs(h));
   }
   var pYe = jse, mYe = Mse;
   const IYe = Object.freeze(Object.defineProperty({
@@ -195462,7 +195477,7 @@ void main()
   }
   function _Ye(t, e) {
     var r = t[0], a = t[1], i = t[2], s = t[3], o = t[4], A = t[5], l = t[6], c = t[7], g = t[8], d = e[0], u = e[1], h = e[2], f = e[3], p = e[4], I = e[5], x = e[6], C = e[7], B = e[8];
-    return Math.abs(r - d) <= Xr * Math.max(1, Math.abs(r), Math.abs(d)) && Math.abs(a - u) <= Xr * Math.max(1, Math.abs(a), Math.abs(u)) && Math.abs(i - h) <= Xr * Math.max(1, Math.abs(i), Math.abs(h)) && Math.abs(s - f) <= Xr * Math.max(1, Math.abs(s), Math.abs(f)) && Math.abs(o - p) <= Xr * Math.max(1, Math.abs(o), Math.abs(p)) && Math.abs(A - I) <= Xr * Math.max(1, Math.abs(A), Math.abs(I)) && Math.abs(l - x) <= Xr * Math.max(1, Math.abs(l), Math.abs(x)) && Math.abs(c - C) <= Xr * Math.max(1, Math.abs(c), Math.abs(C)) && Math.abs(g - B) <= Xr * Math.max(1, Math.abs(g), Math.abs(B));
+    return Math.abs(r - d) <= $r * Math.max(1, Math.abs(r), Math.abs(d)) && Math.abs(a - u) <= $r * Math.max(1, Math.abs(a), Math.abs(u)) && Math.abs(i - h) <= $r * Math.max(1, Math.abs(i), Math.abs(h)) && Math.abs(s - f) <= $r * Math.max(1, Math.abs(s), Math.abs(f)) && Math.abs(o - p) <= $r * Math.max(1, Math.abs(o), Math.abs(p)) && Math.abs(A - I) <= $r * Math.max(1, Math.abs(A), Math.abs(I)) && Math.abs(l - x) <= $r * Math.max(1, Math.abs(l), Math.abs(x)) && Math.abs(c - C) <= $r * Math.max(1, Math.abs(c), Math.abs(C)) && Math.abs(g - B) <= $r * Math.max(1, Math.abs(g), Math.abs(B));
   }
   var HYe = Tse, YYe = Lse;
   const JYe = Object.freeze(Object.defineProperty({
@@ -195556,7 +195571,7 @@ void main()
   }
   function XYe(t, e, r, a) {
     var i = a[0], s = a[1], o = a[2], A = Math.sqrt(i * i + s * s + o * o), l, c, g, d, u, h, f, p, I, x, C, B, Q, D, v, M, j, G, H, P, U, O, _, te;
-    return A < Xr ? null : (A = 1 / A, i *= A, s *= A, o *= A, l = Math.sin(r), c = Math.cos(r), g = 1 - c, d = e[0], u = e[1], h = e[2], f = e[3], p = e[4], I = e[5], x = e[6], C = e[7], B = e[8], Q = e[9], D = e[10], v = e[11], M = i * i * g + c, j = s * i * g + o * l, G = o * i * g - s * l, H = i * s * g - o * l, P = s * s * g + c, U = o * s * g + i * l, O = i * o * g + s * l, _ = s * o * g - i * l, te = o * o * g + c, t[0] = d * M + p * j + B * G, t[1] = u * M + I * j + Q * G, t[2] = h * M + x * j + D * G, t[3] = f * M + C * j + v * G, t[4] = d * H + p * P + B * U, t[5] = u * H + I * P + Q * U, t[6] = h * H + x * P + D * U, t[7] = f * H + C * P + v * U, t[8] = d * O + p * _ + B * te, t[9] = u * O + I * _ + Q * te, t[10] = h * O + x * _ + D * te, t[11] = f * O + C * _ + v * te, e !== t && (t[12] = e[12], t[13] = e[13], t[14] = e[14], t[15] = e[15]), t);
+    return A < $r ? null : (A = 1 / A, i *= A, s *= A, o *= A, l = Math.sin(r), c = Math.cos(r), g = 1 - c, d = e[0], u = e[1], h = e[2], f = e[3], p = e[4], I = e[5], x = e[6], C = e[7], B = e[8], Q = e[9], D = e[10], v = e[11], M = i * i * g + c, j = s * i * g + o * l, G = o * i * g - s * l, H = i * s * g - o * l, P = s * s * g + c, U = o * s * g + i * l, O = i * o * g + s * l, _ = s * o * g - i * l, te = o * o * g + c, t[0] = d * M + p * j + B * G, t[1] = u * M + I * j + Q * G, t[2] = h * M + x * j + D * G, t[3] = f * M + C * j + v * G, t[4] = d * H + p * P + B * U, t[5] = u * H + I * P + Q * U, t[6] = h * H + x * P + D * U, t[7] = f * H + C * P + v * U, t[8] = d * O + p * _ + B * te, t[9] = u * O + I * _ + Q * te, t[10] = h * O + x * _ + D * te, t[11] = f * O + C * _ + v * te, e !== t && (t[12] = e[12], t[13] = e[13], t[14] = e[14], t[15] = e[15]), t);
   }
   function $Ye(t, e, r) {
     var a = Math.sin(r), i = Math.cos(r), s = e[4], o = e[5], A = e[6], l = e[7], c = e[8], g = e[9], d = e[10], u = e[11];
@@ -195578,7 +195593,7 @@ void main()
   }
   function Ose(t, e, r) {
     var a = r[0], i = r[1], s = r[2], o = Math.sqrt(a * a + i * i + s * s), A, l, c;
-    return o < Xr ? null : (o = 1 / o, a *= o, i *= o, s *= o, A = Math.sin(e), l = Math.cos(e), c = 1 - l, t[0] = a * a * c + l, t[1] = i * a * c + s * A, t[2] = s * a * c - i * A, t[3] = 0, t[4] = a * i * c - s * A, t[5] = i * i * c + l, t[6] = s * i * c + a * A, t[7] = 0, t[8] = a * s * c + i * A, t[9] = i * s * c - a * A, t[10] = s * s * c + l, t[11] = 0, t[12] = 0, t[13] = 0, t[14] = 0, t[15] = 1, t);
+    return o < $r ? null : (o = 1 / o, a *= o, i *= o, s *= o, A = Math.sin(e), l = Math.cos(e), c = 1 - l, t[0] = a * a * c + l, t[1] = i * a * c + s * A, t[2] = s * a * c - i * A, t[3] = 0, t[4] = a * i * c - s * A, t[5] = i * i * c + l, t[6] = s * i * c + a * A, t[7] = 0, t[8] = a * s * c + i * A, t[9] = i * s * c - a * A, t[10] = s * s * c + l, t[11] = 0, t[12] = 0, t[13] = 0, t[14] = 0, t[15] = 1, t);
   }
   function rJe(t, e) {
     var r = Math.sin(e), a = Math.cos(e);
@@ -195668,7 +195683,7 @@ void main()
   }
   function pJe(t, e, r, a) {
     var i, s, o, A, l, c, g, d, u, h, f = e[0], p = e[1], I = e[2], x = a[0], C = a[1], B = a[2], Q = r[0], D = r[1], v = r[2];
-    return Math.abs(f - Q) < Xr && Math.abs(p - D) < Xr && Math.abs(I - v) < Xr ? ES(t) : (g = f - Q, d = p - D, u = I - v, h = 1 / Math.sqrt(g * g + d * d + u * u), g *= h, d *= h, u *= h, i = C * u - B * d, s = B * g - x * u, o = x * d - C * g, h = Math.sqrt(i * i + s * s + o * o), h ? (h = 1 / h, i *= h, s *= h, o *= h) : (i = 0, s = 0, o = 0), A = d * o - u * s, l = u * i - g * o, c = g * s - d * i, h = Math.sqrt(A * A + l * l + c * c), h ? (h = 1 / h, A *= h, l *= h, c *= h) : (A = 0, l = 0, c = 0), t[0] = i, t[1] = A, t[2] = g, t[3] = 0, t[4] = s, t[5] = l, t[6] = d, t[7] = 0, t[8] = o, t[9] = c, t[10] = u, t[11] = 0, t[12] = -(i * f + s * p + o * I), t[13] = -(A * f + l * p + c * I), t[14] = -(g * f + d * p + u * I), t[15] = 1, t);
+    return Math.abs(f - Q) < $r && Math.abs(p - D) < $r && Math.abs(I - v) < $r ? ES(t) : (g = f - Q, d = p - D, u = I - v, h = 1 / Math.sqrt(g * g + d * d + u * u), g *= h, d *= h, u *= h, i = C * u - B * d, s = B * g - x * u, o = x * d - C * g, h = Math.sqrt(i * i + s * s + o * o), h ? (h = 1 / h, i *= h, s *= h, o *= h) : (i = 0, s = 0, o = 0), A = d * o - u * s, l = u * i - g * o, c = g * s - d * i, h = Math.sqrt(A * A + l * l + c * c), h ? (h = 1 / h, A *= h, l *= h, c *= h) : (A = 0, l = 0, c = 0), t[0] = i, t[1] = A, t[2] = g, t[3] = 0, t[4] = s, t[5] = l, t[6] = d, t[7] = 0, t[8] = o, t[9] = c, t[10] = u, t[11] = 0, t[12] = -(i * f + s * p + o * I), t[13] = -(A * f + l * p + c * I), t[14] = -(g * f + d * p + u * I), t[15] = 1, t);
   }
   function mJe(t, e, r, a) {
     var i = e[0], s = e[1], o = e[2], A = a[0], l = a[1], c = a[2], g = i - r[0], d = s - r[1], u = o - r[2], h = g * g + d * d + u * u;
@@ -195699,7 +195714,7 @@ void main()
   }
   function yJe(t, e) {
     var r = t[0], a = t[1], i = t[2], s = t[3], o = t[4], A = t[5], l = t[6], c = t[7], g = t[8], d = t[9], u = t[10], h = t[11], f = t[12], p = t[13], I = t[14], x = t[15], C = e[0], B = e[1], Q = e[2], D = e[3], v = e[4], M = e[5], j = e[6], G = e[7], H = e[8], P = e[9], U = e[10], O = e[11], _ = e[12], te = e[13], ee = e[14], ae = e[15];
-    return Math.abs(r - C) <= Xr * Math.max(1, Math.abs(r), Math.abs(C)) && Math.abs(a - B) <= Xr * Math.max(1, Math.abs(a), Math.abs(B)) && Math.abs(i - Q) <= Xr * Math.max(1, Math.abs(i), Math.abs(Q)) && Math.abs(s - D) <= Xr * Math.max(1, Math.abs(s), Math.abs(D)) && Math.abs(o - v) <= Xr * Math.max(1, Math.abs(o), Math.abs(v)) && Math.abs(A - M) <= Xr * Math.max(1, Math.abs(A), Math.abs(M)) && Math.abs(l - j) <= Xr * Math.max(1, Math.abs(l), Math.abs(j)) && Math.abs(c - G) <= Xr * Math.max(1, Math.abs(c), Math.abs(G)) && Math.abs(g - H) <= Xr * Math.max(1, Math.abs(g), Math.abs(H)) && Math.abs(d - P) <= Xr * Math.max(1, Math.abs(d), Math.abs(P)) && Math.abs(u - U) <= Xr * Math.max(1, Math.abs(u), Math.abs(U)) && Math.abs(h - O) <= Xr * Math.max(1, Math.abs(h), Math.abs(O)) && Math.abs(f - _) <= Xr * Math.max(1, Math.abs(f), Math.abs(_)) && Math.abs(p - te) <= Xr * Math.max(1, Math.abs(p), Math.abs(te)) && Math.abs(I - ee) <= Xr * Math.max(1, Math.abs(I), Math.abs(ee)) && Math.abs(x - ae) <= Xr * Math.max(1, Math.abs(x), Math.abs(ae));
+    return Math.abs(r - C) <= $r * Math.max(1, Math.abs(r), Math.abs(C)) && Math.abs(a - B) <= $r * Math.max(1, Math.abs(a), Math.abs(B)) && Math.abs(i - Q) <= $r * Math.max(1, Math.abs(i), Math.abs(Q)) && Math.abs(s - D) <= $r * Math.max(1, Math.abs(s), Math.abs(D)) && Math.abs(o - v) <= $r * Math.max(1, Math.abs(o), Math.abs(v)) && Math.abs(A - M) <= $r * Math.max(1, Math.abs(A), Math.abs(M)) && Math.abs(l - j) <= $r * Math.max(1, Math.abs(l), Math.abs(j)) && Math.abs(c - G) <= $r * Math.max(1, Math.abs(c), Math.abs(G)) && Math.abs(g - H) <= $r * Math.max(1, Math.abs(g), Math.abs(H)) && Math.abs(d - P) <= $r * Math.max(1, Math.abs(d), Math.abs(P)) && Math.abs(u - U) <= $r * Math.max(1, Math.abs(u), Math.abs(U)) && Math.abs(h - O) <= $r * Math.max(1, Math.abs(h), Math.abs(O)) && Math.abs(f - _) <= $r * Math.max(1, Math.abs(f), Math.abs(_)) && Math.abs(p - te) <= $r * Math.max(1, Math.abs(p), Math.abs(te)) && Math.abs(I - ee) <= $r * Math.max(1, Math.abs(I), Math.abs(ee)) && Math.abs(x - ae) <= $r * Math.max(1, Math.abs(x), Math.abs(ae));
   }
   var QJe = Gse, wJe = qse;
   const vJe = Object.freeze(Object.defineProperty({
@@ -195903,7 +195918,7 @@ void main()
   }
   function KJe(t, e) {
     var r = t[0], a = t[1], i = t[2], s = e[0], o = e[1], A = e[2];
-    return Math.abs(r - s) <= Xr * Math.max(1, Math.abs(r), Math.abs(s)) && Math.abs(a - o) <= Xr * Math.max(1, Math.abs(a), Math.abs(o)) && Math.abs(i - A) <= Xr * Math.max(1, Math.abs(i), Math.abs(A));
+    return Math.abs(r - s) <= $r * Math.max(1, Math.abs(r), Math.abs(s)) && Math.abs(a - o) <= $r * Math.max(1, Math.abs(a), Math.abs(o)) && Math.abs(i - A) <= $r * Math.max(1, Math.abs(i), Math.abs(A));
   }
   var Iu = VA, VJe = Xse, WJe = $se, qJe = _3, ZJe = eoe, roe = O3, XJe = toe, $Je = (function() {
     var t = ga();
@@ -196081,7 +196096,7 @@ void main()
   }
   function fKe(t, e) {
     var r = t[0], a = t[1], i = t[2], s = t[3], o = e[0], A = e[1], l = e[2], c = e[3];
-    return Math.abs(r - o) <= Xr * Math.max(1, Math.abs(r), Math.abs(o)) && Math.abs(a - A) <= Xr * Math.max(1, Math.abs(a), Math.abs(A)) && Math.abs(i - l) <= Xr * Math.max(1, Math.abs(i), Math.abs(l)) && Math.abs(s - c) <= Xr * Math.max(1, Math.abs(s), Math.abs(c));
+    return Math.abs(r - o) <= $r * Math.max(1, Math.abs(r), Math.abs(o)) && Math.abs(a - A) <= $r * Math.max(1, Math.abs(a), Math.abs(A)) && Math.abs(i - l) <= $r * Math.max(1, Math.abs(i), Math.abs(l)) && Math.abs(s - c) <= $r * Math.max(1, Math.abs(s), Math.abs(c));
   }
   var pKe = coe, mKe = doe, IKe = goe, CKe = hoe, xKe = foe, BKe = UG, EKe = PG, bKe = (function() {
     var t = aoe();
@@ -196151,7 +196166,7 @@ void main()
   }
   function wKe(t, e) {
     var r = Math.acos(e[3]) * 2, a = Math.sin(r / 2);
-    return a > Xr ? (t[0] = e[0] / a, t[1] = e[1] / a, t[2] = e[2] / a) : (t[0] = 1, t[1] = 0, t[2] = 0), r;
+    return a > $r ? (t[0] = e[0] / a, t[1] = e[1] / a, t[2] = e[2] / a) : (t[0] = 1, t[1] = 0, t[2] = 0), r;
   }
   function vKe(t, e) {
     var r = HG(t, e);
@@ -196193,7 +196208,7 @@ void main()
   }
   function jk(t, e, r, a) {
     var i = e[0], s = e[1], o = e[2], A = e[3], l = r[0], c = r[1], g = r[2], d = r[3], u, h, f, p, I;
-    return h = i * l + s * c + o * g + A * d, h < 0 && (h = -h, l = -l, c = -c, g = -g, d = -d), 1 - h > Xr ? (u = Math.acos(h), f = Math.sin(u), p = Math.sin((1 - a) * u) / f, I = Math.sin(a * u) / f) : (p = 1 - a, I = a), t[0] = p * i + I * l, t[1] = p * s + I * c, t[2] = p * o + I * g, t[3] = p * A + I * d, t;
+    return h = i * l + s * c + o * g + A * d, h < 0 && (h = -h, l = -l, c = -c, g = -g, d = -d), 1 - h > $r ? (u = Math.acos(h), f = Math.sin(u), p = Math.sin((1 - a) * u) / f, I = Math.sin(a * u) / f) : (p = 1 - a, I = a), t[0] = p * i + I * l, t[1] = p * s + I * c, t[2] = p * o + I * g, t[3] = p * A + I * d, t;
   }
   function kKe(t) {
     var e = c0(), r = c0(), a = c0(), i = Math.sqrt(1 - e), s = Math.sqrt(e);
@@ -196250,7 +196265,7 @@ void main()
   }
   var FKe = ioe, TKe = soe, _G = ooe, LKe = Aoe, zKe = loe, GKe = xoe, voe = uoe, HG = OG, UKe = moe, YG = UG, PKe = YG, JG = PG, OKe = JG, KG = poe, _Ke = Ioe;
   function HKe(t, e) {
-    return Math.abs(OG(t, e)) >= 1 - Xr;
+    return Math.abs(OG(t, e)) >= 1 - $r;
   }
   var YKe = (function() {
     var t = ga(), e = Yc(1, 0, 0), r = Yc(0, 1, 0);
@@ -196393,7 +196408,7 @@ void main()
     return t[0] = a * g + o * A + i * c - s * l, t[1] = i * g + o * l + s * A - a * c, t[2] = s * g + o * c + a * l - i * A, t[3] = o * g - a * A - i * l - s * c, A = r[4], l = r[5], c = r[6], g = r[7], t[4] = a * g + o * A + i * c - s * l, t[5] = i * g + o * l + s * A - a * c, t[6] = s * g + o * c + a * l - i * A, t[7] = o * g - a * A - i * l - s * c, t;
   }
   function fVe(t, e, r, a) {
-    if (Math.abs(a) < Xr) return Doe(t, e);
+    if (Math.abs(a) < $r) return Doe(t, e);
     var i = Math.sqrt(r[0] * r[0] + r[1] * r[1] + r[2] * r[2]);
     a = a * 0.5;
     var s = Math.sin(a), o = s * r[0] / i, A = s * r[1] / i, l = s * r[2] / i, c = Math.cos(a), g = e[0], d = e[1], u = e[2], h = e[3];
@@ -196442,7 +196457,7 @@ void main()
   }
   function vVe(t, e) {
     var r = t[0], a = t[1], i = t[2], s = t[3], o = t[4], A = t[5], l = t[6], c = t[7], g = e[0], d = e[1], u = e[2], h = e[3], f = e[4], p = e[5], I = e[6], x = e[7];
-    return Math.abs(r - g) <= Xr * Math.max(1, Math.abs(r), Math.abs(g)) && Math.abs(a - d) <= Xr * Math.max(1, Math.abs(a), Math.abs(d)) && Math.abs(i - u) <= Xr * Math.max(1, Math.abs(i), Math.abs(u)) && Math.abs(s - h) <= Xr * Math.max(1, Math.abs(s), Math.abs(h)) && Math.abs(o - f) <= Xr * Math.max(1, Math.abs(o), Math.abs(f)) && Math.abs(A - p) <= Xr * Math.max(1, Math.abs(A), Math.abs(p)) && Math.abs(l - I) <= Xr * Math.max(1, Math.abs(l), Math.abs(I)) && Math.abs(c - x) <= Xr * Math.max(1, Math.abs(c), Math.abs(x));
+    return Math.abs(r - g) <= $r * Math.max(1, Math.abs(r), Math.abs(g)) && Math.abs(a - d) <= $r * Math.max(1, Math.abs(a), Math.abs(d)) && Math.abs(i - u) <= $r * Math.max(1, Math.abs(i), Math.abs(u)) && Math.abs(s - h) <= $r * Math.max(1, Math.abs(s), Math.abs(h)) && Math.abs(o - f) <= $r * Math.max(1, Math.abs(o), Math.abs(f)) && Math.abs(A - p) <= $r * Math.max(1, Math.abs(A), Math.abs(p)) && Math.abs(l - I) <= $r * Math.max(1, Math.abs(l), Math.abs(I)) && Math.abs(c - x) <= $r * Math.max(1, Math.abs(c), Math.abs(x));
   }
   const NVe = Object.freeze(Object.defineProperty({
     __proto__: null,
@@ -196620,7 +196635,7 @@ void main()
   }
   function tWe(t, e) {
     var r = t[0], a = t[1], i = e[0], s = e[1];
-    return Math.abs(r - i) <= Xr * Math.max(1, Math.abs(r), Math.abs(i)) && Math.abs(a - s) <= Xr * Math.max(1, Math.abs(a), Math.abs(s));
+    return Math.abs(r - i) <= $r * Math.max(1, Math.abs(r), Math.abs(i)) && Math.abs(a - s) <= $r * Math.max(1, Math.abs(a), Math.abs(s));
   }
   var nWe = Loe, J1 = Y1, rWe = joe, aWe = Moe, iWe = Foe, sWe = Toe, oWe = zoe, AWe = (function() {
     var t = VG();
@@ -197506,7 +197521,7 @@ void main()
   };
   function Ooe(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, NWe, r), Ps(t, e), fz(t, e, 1, 1), $o(t, e, [
+    Object.assign(e, NWe, r), Us(t, e), fz(t, e, 1, 1), $o(t, e, [
       "cutFunction",
       "cutValue"
     ]), vWe(t, e);
@@ -197594,7 +197609,7 @@ void main()
       return this.matrix;
     }
     setMatrix(e) {
-      return e && e.length === 16 && So(this.matrix, e), this;
+      return e && e.length === 16 && Ro(this.matrix, e), this;
     }
   };
   function RWe() {
@@ -198144,7 +198159,7 @@ void main()
         const l = a.getCABO().getCoordShiftAndScaleEnabled() ? a.getCABO().getInverseShiftAndScaleMatrix() : null;
         if (o.isUniformUsed("WCTCMatrix")) {
           const c = e.currentInput, g = c.getDimensions();
-          So(e.tmpMat4, c.getIndexToWorld()), rm(e.tmpMat4, e.tmpMat4, g), IA(e.tmpMat4, e.tmpMat4), l && ji(e.tmpMat4, e.tmpMat4, l), o.setUniformMatrix("WCTCMatrix", e.tmpMat4);
+          Ro(e.tmpMat4, c.getIndexToWorld()), rm(e.tmpMat4, e.tmpMat4, g), IA(e.tmpMat4, e.tmpMat4), l && ji(e.tmpMat4, e.tmpMat4, l), o.setUniformMatrix("WCTCMatrix", e.tmpMat4);
         }
         o.isUniformUsed("vboScaling") && o.setUniform3fv("vboScaling", a.getCABO().getCoordScale()), a.getAttributeUpdateTime().modified();
       }
@@ -198202,7 +198217,7 @@ void main()
     }, t.replaceShaderValues = (a, i, s) => {
       if (t.replaceShaderTCoord(a, i, s), t.replaceShaderPositionVC(a, i, s), e.haveSeenDepthRequest) {
         let o = a.Fragment;
-        o = Ht.substitute(o, "//VTK::ZBuffer::Dec", "uniform int depthRequest;").result, o = Ht.substitute(o, "//VTK::ZBuffer::Impl", [
+        o = _t.substitute(o, "//VTK::ZBuffer::Dec", "uniform int depthRequest;").result, o = _t.substitute(o, "//VTK::ZBuffer::Impl", [
           "if (depthRequest == 1) {",
           "float iz = floor(gl_FragCoord.z*65535.0 + 0.1);",
           "float rf = floor(iz/256.0)/255.0;",
@@ -198219,11 +198234,11 @@ void main()
         "uniform mat4 WCTCMatrix;",
         "out vec3 fragTexCoord;"
       ], g = e.renderable.getSlabThickness();
-      o = Ht.substitute(o, "//VTK::TCoord::Dec", c).result;
+      o = _t.substitute(o, "//VTK::TCoord::Dec", c).result;
       const d = [
         "fragTexCoord = (WCTCMatrix * vertexWC).xyz;"
       ];
-      o = Ht.substitute(o, "//VTK::TCoord::Impl", d).result;
+      o = _t.substitute(o, "//VTK::TCoord::Impl", d).result;
       const u = e.openGLTexture.getComponents(), h = s.getProperty().getIndependentComponents();
       let f = [
         "in vec3 fragTexCoord;",
@@ -198314,7 +198329,7 @@ void main()
         "  }",
         "  return retVal;",
         "}"
-      ])), l = Ht.substitute(l, "//VTK::TCoord::Dec", f).result;
+      ])), l = _t.substitute(l, "//VTK::TCoord::Dec", f).result;
       let p = [
         "if (any(greaterThan(fragTexCoord, vec3(1.0))) || any(lessThan(fragTexCoord, vec3(0.0))))",
         "{",
@@ -198431,7 +198446,7 @@ void main()
             "  texture2D(colorTexture1, vec2(tcolor.b,0.5)).r, tcolor.a);"
           ]);
       }
-      l = Ht.substitute(l, "//VTK::TCoord::Impl", p).result, a.Vertex = o, a.Fragment = l, a.Geometry = A;
+      l = _t.substitute(l, "//VTK::TCoord::Impl", p).result, a.Vertex = o, a.Fragment = l, a.Geometry = A;
     }, t.replaceShaderPositionVC = (a, i, s) => {
       let o = a.Vertex;
       const A = a.Geometry;
@@ -198446,14 +198461,14 @@ void main()
         "attribute vec3 normalWC;",
         "varying vec3 normalWCVSOutput;",
         "varying vec4 vertexWCVSOutput;"
-      ])), o = Ht.substitute(o, "//VTK::PositionVC::Dec", g).result;
+      ])), o = _t.substitute(o, "//VTK::PositionVC::Dec", g).result;
       let d = [
         "gl_Position = MCPCMatrix * vertexWC;"
       ];
       c > 0 && (d = d.concat([
         "normalWCVSOutput = normalWC;",
         "vertexWCVSOutput = vertexWC;"
-      ])), o = Ht.substitute(o, "//VTK::PositionVC::Impl", d).result, o = Ht.substitute(o, "//VTK::Camera::Dec", [
+      ])), o = _t.substitute(o, "//VTK::PositionVC::Impl", d).result, o = _t.substitute(o, "//VTK::Camera::Dec", [
         "uniform mat4 MCPCMatrix;",
         "uniform mat4 MCVCMatrix;"
       ]).result;
@@ -198461,7 +198476,7 @@ void main()
       c > 0 && (u = u.concat([
         "varying vec3 normalWCVSOutput;",
         "varying vec4 vertexWCVSOutput;"
-      ])), l = Ht.substitute(l, "//VTK::PositionVC::Dec", u).result, a.Vertex = o, a.Geometry = A, a.Fragment = l;
+      ])), l = _t.substitute(l, "//VTK::PositionVC::Dec", u).result, a.Vertex = o, a.Geometry = A, a.Fragment = l;
     };
     function r(a) {
       $d.normalize(a);
@@ -198591,7 +198606,7 @@ void main()
   };
   function ZWe(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, qWe, r), ws.extend(t, e, r), yu.implementReplaceShaderCoincidentOffset(t, e, r), yu.implementBuildShadersWithReplacements(t, e, r), e.tris = ku.newInstance(), e.openGLTexture = null, e.colorTexture = null, e.pwfTexture = null, e.VBOBuildTime = {}, Ps(e.VBOBuildTime), e.tmpMat4 = ta(new Float64Array(16)), e.outlineFilter = _We.newInstance(), e.outlineFilter.setGenerateFaces(true), e.outlineFilter.setGenerateLines(false), e.cubePolyData = $A.newInstance(), e.cutter = kWe.newInstance(), e.lineToSurfaceFilter = QWe.newInstance(), e.transform = JWe.newInstance(), bc(t, e, [
+    Object.assign(e, qWe, r), ws.extend(t, e, r), yu.implementReplaceShaderCoincidentOffset(t, e, r), yu.implementBuildShadersWithReplacements(t, e, r), e.tris = ku.newInstance(), e.openGLTexture = null, e.colorTexture = null, e.pwfTexture = null, e.VBOBuildTime = {}, Us(e.VBOBuildTime), e.tmpMat4 = ta(new Float64Array(16)), e.outlineFilter = _We.newInstance(), e.outlineFilter.setGenerateFaces(true), e.outlineFilter.setGenerateLines(false), e.cubePolyData = $A.newInstance(), e.cutter = kWe.newInstance(), e.lineToSurfaceFilter = QWe.newInstance(), e.transform = JWe.newInstance(), bc(t, e, [
       "openGLTexture"
     ]), WWe(t, e);
   }
@@ -198788,9 +198803,9 @@ void main()
         "  return vec3(v.x + uvx + uuvx, v.y + uvy + uuvy, v.z + uvz + uuvz);",
         "}"
       ];
-      s = Ht.substitute(s, "//VTK::Camera::Dec", [
+      s = _t.substitute(s, "//VTK::Camera::Dec", [
         "uniform mat4 MCPCMatrix;"
-      ]).result, s = Ht.substitute(s, "//VTK::PositionVC::Impl", [
+      ]).result, s = _t.substitute(s, "//VTK::PositionVC::Impl", [
         "  gl_Position = MCPCMatrix * vertexMC;"
       ]).result;
       const l = [
@@ -198800,12 +198815,12 @@ void main()
         "out vec2 quadOffsetVSOutput;",
         "out vec3 centerlinePosVSOutput;"
       ], c = e.renderable.isProjectionEnabled(), g = e.renderable.getUseUniformOrientation();
-      g ? (l.push("out vec3 samplingDirVSOutput;", "uniform vec4 centerlineOrientation;", "uniform vec3 tangentDirection;", ...A), c && l.push("out vec3 projectionDirVSOutput;", "uniform vec3 bitangentDirection;")) : l.push("out vec4 centerlineTopOrientationVSOutput;", "out vec4 centerlineBotOrientationVSOutput;", "attribute vec4 centerlineTopOrientation;", "attribute vec4 centerlineBotOrientation;"), s = Ht.substitute(s, "//VTK::Color::Dec", l).result;
+      g ? (l.push("out vec3 samplingDirVSOutput;", "uniform vec4 centerlineOrientation;", "uniform vec3 tangentDirection;", ...A), c && l.push("out vec3 projectionDirVSOutput;", "uniform vec3 bitangentDirection;")) : l.push("out vec4 centerlineTopOrientationVSOutput;", "out vec4 centerlineBotOrientationVSOutput;", "attribute vec4 centerlineTopOrientation;", "attribute vec4 centerlineBotOrientation;"), s = _t.substitute(s, "//VTK::Color::Dec", l).result;
       const d = [
         "quadOffsetVSOutput = vec2(width * (mod(quadIndex, 2.0) == 0.0 ? -0.5 : 0.5), quadIndex > 1.0 ? 0.0 : 1.0);",
         "centerlinePosVSOutput = centerlinePosition;"
       ];
-      g ? (d.push("samplingDirVSOutput = applyQuaternionToVec(centerlineOrientation, tangentDirection);"), c && d.push("projectionDirVSOutput = applyQuaternionToVec(centerlineOrientation, bitangentDirection);")) : d.push("centerlineTopOrientationVSOutput = centerlineTopOrientation;", "centerlineBotOrientationVSOutput = centerlineBotOrientation;"), s = Ht.substitute(s, "//VTK::Color::Impl", d).result;
+      g ? (d.push("samplingDirVSOutput = applyQuaternionToVec(centerlineOrientation, tangentDirection);"), c && d.push("projectionDirVSOutput = applyQuaternionToVec(centerlineOrientation, bitangentDirection);")) : d.push("centerlineTopOrientationVSOutput = centerlineTopOrientation;", "centerlineBotOrientationVSOutput = centerlineBotOrientation;"), s = _t.substitute(s, "//VTK::Color::Impl", d).result;
       const u = e.volumeTexture.getComponents(), h = i.getProperty().getIndependentComponents();
       let f = [
         "uniform mat4 MCTCMatrix; // Model coordinates to texture coordinates",
@@ -198871,7 +198886,7 @@ void main()
             ED("Unsupported number of independent coordinates.");
         }
       }
-      o = Ht.substitute(o, "//VTK::TCoord::Dec", f).result;
+      o = _t.substitute(o, "//VTK::TCoord::Dec", f).result;
       let I = [];
       if (g ? (I.push("vec3 samplingDirection = samplingDirVSOutput;"), c && I.push("vec3 projectionDirection = projectionDirVSOutput;")) : (I.push("vec4 q0 = centerlineBotOrientationVSOutput;", "vec4 q1 = centerlineTopOrientationVSOutput;", "float qCosAngle = dot(q0, q1);", "vec4 interpolatedOrientation;", "if (qCosAngle > 0.999 || qCosAngle < -0.999) {", "  // Use LERP instead of SLERP when the two quaternions are close or opposite", "  interpolatedOrientation = normalize(mix(q0, q1, quadOffsetVSOutput.y));", "} else {", "  float omega = acos(qCosAngle);", "  interpolatedOrientation = normalize(sin((1.0 - quadOffsetVSOutput.y) * omega) * q0 + sin(quadOffsetVSOutput.y * omega) * q1);", "}", "vec3 samplingDirection = applyQuaternionToVec(interpolatedOrientation, tangentDirection);"), c && I.push("vec3 projectionDirection = applyQuaternionToVec(interpolatedOrientation, bitangentDirection);")), p ? I.push("float baseOffset = dot(samplingDirection, globalCenterPoint - centerlinePosVSOutput);", "float horizontalOffset = quadOffsetVSOutput.x + baseOffset;") : I.push("float horizontalOffset = quadOffsetVSOutput.x;"), I.push("vec3 volumePosMC = centerlinePosVSOutput + horizontalOffset * samplingDirection;", "vec3 volumePosTC = (MCTCMatrix * vec4(volumePosMC, 1.0)).xyz;", "if (any(lessThan(volumePosTC, vec3(0.0))) || any(greaterThan(volumePosTC, vec3(1.0))))", "{", "  // set the background color and exit", "  gl_FragData[0] = backgroundColor;", "  return;", "}"), c) {
         const x = e.renderable.getProjectionMode();
@@ -198969,7 +198984,7 @@ void main()
             "  texture2D(colorTexture1, vec2(tcolor.b,0.5)).r, tcolor.a);"
           ]);
       }
-      o = Ht.substitute(o, "//VTK::TCoord::Impl", I).result, e.haveSeenDepthRequest && (o = Ht.substitute(o, "//VTK::ZBuffer::Dec", "uniform int depthRequest;").result, o = Ht.substitute(o, "//VTK::ZBuffer::Impl", [
+      o = _t.substitute(o, "//VTK::TCoord::Impl", I).result, e.haveSeenDepthRequest && (o = _t.substitute(o, "//VTK::ZBuffer::Dec", "uniform int depthRequest;").result, o = _t.substitute(o, "//VTK::ZBuffer::Impl", [
         "if (depthRequest == 1) {",
         "float iz = floor(gl_FragCoord.z*65535.0 + 0.1);",
         "float rf = floor(iz/256.0)/255.0;",
@@ -198980,11 +198995,11 @@ void main()
       let s = r.Vertex, o = r.Fragment;
       if (e.renderable.getNumberOfClippingPlanes()) {
         let A = e.renderable.getNumberOfClippingPlanes();
-        A > 6 && (We.vtkErrorMacro("OpenGL has a limit of 6 clipping planes"), A = 6), s = Ht.substitute(s, "//VTK::Clip::Dec", [
+        A > 6 && (We.vtkErrorMacro("OpenGL has a limit of 6 clipping planes"), A = 6), s = _t.substitute(s, "//VTK::Clip::Dec", [
           "uniform int numClipPlanes;",
           "uniform vec4 clipPlanes[6];",
           "varying float clipDistancesVSOutput[6];"
-        ]).result, s = Ht.substitute(s, "//VTK::Clip::Impl", [
+        ]).result, s = _t.substitute(s, "//VTK::Clip::Impl", [
           "for (int planeNum = 0; planeNum < 6; planeNum++)",
           "    {",
           "    if (planeNum >= numClipPlanes)",
@@ -198993,10 +199008,10 @@ void main()
           "        }",
           "    clipDistancesVSOutput[planeNum] = dot(clipPlanes[planeNum], vertexMC);",
           "    }"
-        ]).result, o = Ht.substitute(o, "//VTK::Clip::Dec", [
+        ]).result, o = _t.substitute(o, "//VTK::Clip::Dec", [
           "uniform int numClipPlanes;",
           "varying float clipDistancesVSOutput[6];"
-        ]).result, o = Ht.substitute(o, "//VTK::Clip::Impl", [
+        ]).result, o = _t.substitute(o, "//VTK::Clip::Impl", [
           "for (int planeNum = 0; planeNum < 6; planeNum++)",
           "    {",
           "    if (planeNum >= numClipPlanes)",
@@ -199044,7 +199059,7 @@ void main()
       if (s.setUniformMatrix("MCTCMatrix", d), e.haveSeenDepthRequest && r.getProgram().setUniformi("depthRequest", e.renderDepth ? 1 : 0), e.renderable.getNumberOfClippingPlanes()) {
         let u = e.renderable.getNumberOfClippingPlanes();
         u > 6 && (We.vtkErrorMacro("OpenGL has a limit of 6 clipping planes"), u = 6);
-        const f = o.getCoordShiftAndScaleEnabled() ? o.getInverseShiftAndScaleMatrix() : null, p = f ? So(e.imagematinv, i.getMatrix()) : i.getMatrix();
+        const f = o.getCoordShiftAndScaleEnabled() ? o.getInverseShiftAndScaleMatrix() : null, p = f ? Ro(e.imagematinv, i.getMatrix()) : i.getMatrix();
         f && (Ri(p, p), ji(p, p, f), Ri(p, p)), Ri(e.imagemat, e.currentImageDataInput.getIndexToWorld()), ji(e.imagematinv, p, e.imagemat);
         const I = [];
         for (let x = 0; x < u; x++) {
@@ -199166,7 +199181,7 @@ void main()
       const a = r.getRenderable(), i = r.getParent();
       if (Math.max(i.getMTime(), t.getMTime(), a.getMTime(), e.renderable.getMTime(), r.getStabilizedTime()) > e.keyMatrixTime.getMTime()) {
         const s = e.renderable.getViewMatrix();
-        So(e.keyMatrices.normalMatrix, s), e.keyMatrices.normalMatrix[3] = 0, e.keyMatrices.normalMatrix[7] = 0, e.keyMatrices.normalMatrix[11] = 0, IA(e.keyMatrices.normalMatrix, e.keyMatrices.normalMatrix), Ri(e.keyMatrices.wcvc, s);
+        Ro(e.keyMatrices.normalMatrix, s), e.keyMatrices.normalMatrix[3] = 0, e.keyMatrices.normalMatrix[7] = 0, e.keyMatrices.normalMatrix[11] = 0, IA(e.keyMatrices.normalMatrix, e.keyMatrices.normalMatrix), Ri(e.keyMatrices.wcvc, s);
         const o = r.getStabilizedCenterByReference();
         mo(e.keyMatrices.scvc, e.keyMatrices.wcvc, o);
         const A = r.getAspectRatio(), l = e.renderable.getClippingRangeByReference();
@@ -199367,7 +199382,7 @@ void main()
   };
   function $oe(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, Eqe, r), Ps(t, e), e.layouts = [], e.shaderDescriptions = [], bc(t, e, [
+    Object.assign(e, Eqe, r), Us(t, e), e.layouts = [], e.shaderDescriptions = [], bc(t, e, [
       "handle",
       "pipelineDescription"
     ]), $o(t, e, [
@@ -199872,7 +199887,7 @@ void main()
   };
   function tAe(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, Lqe, r), Ps(t, e), e.bindingDescriptions = [], e.attributeDescriptions = [], e.inputs = [], $o(t, e, [
+    Object.assign(e, Lqe, r), Us(t, e), e.bindingDescriptions = [], e.attributeDescriptions = [], e.inputs = [], $o(t, e, [
       "created",
       "device",
       "handle",
@@ -200563,7 +200578,7 @@ fn main(
   };
   function fZe(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, hZe, r), Ps(t, e), $o(t, e, [
+    Object.assign(e, hZe, r), Us(t, e), $o(t, e, [
       "device"
     ]), uZe(t, e);
   }
@@ -201100,7 +201115,7 @@ fn main(
     }), e.bindGroup.setBindables([
       e.UBO,
       e.SSBO
-    ]), e.tmpMat4 = ta(new Float64Array(16)), e.stabilizedTime = {}, Ps(e.stabilizedTime, {
+    ]), e.tmpMat4 = ta(new Float64Array(16)), e.stabilizedTime = {}, Us(e.stabilizedTime, {
       mtime: 0
     }), bc(t, e, [
       "bindGroup",
@@ -201348,9 +201363,9 @@ fn main(
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
     Object.assign(e, zZe, r), z8.extend(t, e, r), t.setFragmentShaderTemplate(FZe), e.UBO = LE.newInstance({
       label: "mapperUBO"
-    }), e.UBO.addEntry("SCTCMatrix", "mat4x4<f32>"), e.UBO.addEntry("Origin", "vec4<f32>"), e.UBO.addEntry("Axis2", "vec4<f32>"), e.UBO.addEntry("Axis1", "vec4<f32>"), e.UBO.addEntry("cScale", "vec4<f32>"), e.UBO.addEntry("cShift", "vec4<f32>"), e.lutBuildTime = {}, Ps(e.lutBuildTime, {
+    }), e.UBO.addEntry("SCTCMatrix", "mat4x4<f32>"), e.UBO.addEntry("Origin", "vec4<f32>"), e.UBO.addEntry("Axis2", "vec4<f32>"), e.UBO.addEntry("Axis1", "vec4<f32>"), e.UBO.addEntry("cScale", "vec4<f32>"), e.UBO.addEntry("cShift", "vec4<f32>"), e.lutBuildTime = {}, Us(e.lutBuildTime, {
       mtime: 0
-    }), e.imagemat = ta(new Float64Array(16)), e.imagematinv = ta(new Float64Array(16)), e.VBOBuildTime = {}, Ps(e.VBOBuildTime), LZe(t, e);
+    }), e.imagemat = ta(new Float64Array(16)), e.imagematinv = ta(new Float64Array(16)), e.VBOBuildTime = {}, Us(e.VBOBuildTime), LZe(t, e);
   }
   const UZe = Vi(GZe, "vtkWebGPUImageMapper");
   gg("vtkImageMapper", UZe);
@@ -201377,7 +201392,7 @@ fn main(
       if (Math.max(e.renderable.getMTime(), r.getStabilizedTime()) > e.keyMatricesTime.getMTime()) {
         e.renderable.computeMatrix();
         const a = e.renderable.getMatrix(), i = r.getStabilizedCenterByReference();
-        e.bufferShift[0] = a[3] - i[0], e.bufferShift[1] = a[7] - i[1], e.bufferShift[2] = a[11] - i[2], Ri(e.keyMatrices.bcwc, a), e.renderable.getIsIdentity() ? ta(e.keyMatrices.normalMatrix) : (So(e.keyMatrices.normalMatrix, e.keyMatrices.bcwc), e.keyMatrices.normalMatrix[3] = 0, e.keyMatrices.normalMatrix[7] = 0, e.keyMatrices.normalMatrix[11] = 0, IA(e.keyMatrices.normalMatrix, e.keyMatrices.normalMatrix), Ri(e.keyMatrices.normalMatrix, e.keyMatrices.normalMatrix)), mo(e.keyMatrices.bcwc, e.keyMatrices.bcwc, [
+        e.bufferShift[0] = a[3] - i[0], e.bufferShift[1] = a[7] - i[1], e.bufferShift[2] = a[11] - i[2], Ri(e.keyMatrices.bcwc, a), e.renderable.getIsIdentity() ? ta(e.keyMatrices.normalMatrix) : (Ro(e.keyMatrices.normalMatrix, e.keyMatrices.bcwc), e.keyMatrices.normalMatrix[3] = 0, e.keyMatrices.normalMatrix[7] = 0, e.keyMatrices.normalMatrix[11] = 0, IA(e.keyMatrices.normalMatrix, e.keyMatrices.normalMatrix), Ri(e.keyMatrices.normalMatrix, e.keyMatrices.normalMatrix)), mo(e.keyMatrices.bcwc, e.keyMatrices.bcwc, [
           -e.bufferShift[0],
           -e.bufferShift[1],
           -e.bufferShift[2]
@@ -201398,13 +201413,13 @@ fn main(
   };
   function _Ze(t, e) {
     let r = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : {};
-    Object.assign(e, OZe, r), ws.extend(t, e, r), e.keyMatricesTime = {}, Ps(e.keyMatricesTime, {
+    Object.assign(e, OZe, r), ws.extend(t, e, r), e.keyMatricesTime = {}, Us(e.keyMatricesTime, {
       mtime: 0
     }), e.keyMatrices = {
       normalMatrix: new Float64Array(16),
       bcwc: new Float64Array(16),
       bcsc: new Float64Array(16)
-    }, e.keyMatrixTime = {}, Ps(e.keyMatrixTime, {
+    }, e.keyMatrixTime = {}, Us(e.keyMatrixTime, {
       mtime: 0
     }), e.keyMatrices = {
       mcwc: ta(new Float64Array(16))
@@ -201590,14 +201605,14 @@ fn main(
         return sn[At] = tr && wt === void 0 ? a : wt, this;
       }
       $t.prototype.clear = mt, $t.prototype.delete = jt, $t.prototype.get = An, $t.prototype.has = Ve, $t.prototype.set = Ft;
-      function Ot(At) {
+      function Pt(At) {
         var wt = -1, sn = At ? At.length : 0;
         for (this.clear(); ++wt < sn; ) {
           var jn = At[wt];
           this.set(jn[0], jn[1]);
         }
       }
-      function Pt() {
+      function Ht() {
         this.__data__ = [];
       }
       function Un(At) {
@@ -201620,7 +201635,7 @@ fn main(
           wt
         ]) : sn[jn][1] = wt, this;
       }
-      Ot.prototype.clear = Pt, Ot.prototype.delete = Un, Ot.prototype.get = bn, Ot.prototype.has = rr, Ot.prototype.set = dn;
+      Pt.prototype.clear = Ht, Pt.prototype.delete = Un, Pt.prototype.get = bn, Pt.prototype.has = rr, Pt.prototype.set = dn;
       function on(At) {
         var wt = -1, sn = At ? At.length : 0;
         for (this.clear(); ++wt < sn; ) {
@@ -201631,7 +201646,7 @@ fn main(
       function Ir() {
         this.__data__ = {
           hash: new $t(),
-          map: new (qt || Ot)(),
+          map: new (qt || Pt)(),
           string: new $t()
         };
       }
@@ -201649,10 +201664,10 @@ fn main(
       }
       on.prototype.clear = Ir, on.prototype.delete = Pr, on.prototype.get = Fi, on.prototype.has = Da, on.prototype.set = zn;
       function er(At) {
-        this.__data__ = new Ot(At);
+        this.__data__ = new Pt(At);
       }
       function Sr() {
-        this.__data__ = new Ot();
+        this.__data__ = new Pt();
       }
       function Kr(At) {
         return this.__data__.delete(At);
@@ -201665,7 +201680,7 @@ fn main(
       }
       function Qt(At, wt) {
         var sn = this.__data__;
-        if (sn instanceof Ot) {
+        if (sn instanceof Pt) {
           var jn = sn.__data__;
           if (!qt || jn.length < r - 1) return jn.push([
             At,
@@ -201676,7 +201691,7 @@ fn main(
         return sn.set(At, wt), this;
       }
       er.prototype.clear = Sr, er.prototype.delete = Kr, er.prototype.get = zr, er.prototype.has = Gr, er.prototype.set = Qt;
-      function _t(At, wt) {
+      function Ot(At, wt) {
         var sn = ot(At) || st(At) ? pe(At.length, String) : [], jn = sn.length, gr = !!jn;
         for (var Qr in At) we.call(At, Qr) && !(gr && (Qr == "length" || _r(Qr, jn))) && sn.push(Qr);
         return sn;
@@ -201689,22 +201704,22 @@ fn main(
         for (var sn = At.length; sn--; ) if (Ze(At[sn][0], wt)) return sn;
         return -1;
       }
-      function wn(At, wt) {
-        return At && fn(wt, $n(wt), At);
+      function vn(At, wt) {
+        return At && fn(wt, Wn(wt), At);
       }
       function fr(At, wt, sn, jn, gr, Qr, ti) {
         var Ya;
         if (jn && (Ya = Qr ? jn(At, gr, Qr, ti) : jn(At)), Ya !== void 0) return Ya;
         if (!Ut(At)) return At;
-        var $r = ot(At);
-        if ($r) {
+        var Zr = ot(At);
+        if (Zr) {
           if (Ya = jr(At), !wt) return zt(At, Ya);
         } else {
           var Ga = Dr(At), aa = Ga == g || Ga == d;
           if (tn(At)) return Er(At, wt);
           if (Ga == f || Ga == s || aa && !Qr) {
             if (xe(At)) return Qr ? At : {};
-            if (Ya = Ha(aa ? {} : At), !wt) return _n(At, wn(Ya, At));
+            if (Ya = Ha(aa ? {} : At), !wt) return _n(At, vn(Ya, At));
           } else {
             if (!$[Ga]) return Qr ? At : {};
             Ya = fi(At, Ga, fr, wt);
@@ -201713,7 +201728,7 @@ fn main(
         ti || (ti = new er());
         var da = ti.get(At);
         if (da) return da;
-        if (ti.set(At, Ya), !$r) var Bi = sn ? sr(At) : $n(At);
+        if (ti.set(At, Ya), !Zr) var Bi = sn ? ar(At) : Wn(At);
         return Se(Bi || At, function(ia, Oi) {
           Bi && (Oi = ia, ia = At[Oi]), en(Ya, Oi, fr(ia, wt, sn, jn, Oi, At, ti));
         }), Ya;
@@ -201787,8 +201802,8 @@ fn main(
       function _n(At, wt) {
         return fn(At, Pn(At), wt);
       }
-      function sr(At) {
-        return ya(At, $n, Pn);
+      function ar(At) {
+        return ya(At, Wn, Pn);
       }
       function In(At, wt) {
         var sn = At.__data__;
@@ -201898,7 +201913,7 @@ fn main(
       function xt(At) {
         return Tn(At) && bt(At);
       }
-      var tn = it || Hn;
+      var tn = it || Yn;
       function St(At) {
         var wt = Ut(At) ? qe.call(At) : "";
         return wt == g || wt == d;
@@ -201913,13 +201928,13 @@ fn main(
       function Tn(At) {
         return !!At && typeof At == "object";
       }
-      function $n(At) {
-        return bt(At) ? _t(At) : ka(At);
+      function Wn(At) {
+        return bt(At) ? Ot(At) : ka(At);
       }
       function Mn() {
         return [];
       }
-      function Hn() {
+      function Yn() {
         return false;
       }
       t.exports = _e;
@@ -226445,77 +226460,77 @@ void main()
       t.replaceShaderColor(a, i, s), t.replaceShaderTCoord(a, i, s), t.replaceShaderPicking(a, i, s), t.replaceShaderPositionVC(a, i, s);
     }, t.replaceShaderColor = (a, i, s) => {
       let o = a.Vertex, A = a.Geometry, l = a.Fragment;
-      e.haveCellScalars && (l = Ht.substitute(l, "//VTK::Color::Dec", [
+      e.haveCellScalars && (l = _t.substitute(l, "//VTK::Color::Dec", [
         "uniform samplerBuffer texture1;"
-      ]).result, l = Ht.substitute(l, "//VTK::Color::Impl", [
+      ]).result, l = _t.substitute(l, "//VTK::Color::Impl", [
         "gl_FragData[0] = texelFetchBuffer(texture1, gl_PrimitiveID + PrimitiveIDOffset);"
-      ]).result), e.lastBoundBO.getCABO().getColorComponents() !== 0 ? (o = Ht.substitute(o, "//VTK::Color::Dec", [
+      ]).result), e.lastBoundBO.getCABO().getColorComponents() !== 0 ? (o = _t.substitute(o, "//VTK::Color::Dec", [
         "in vec4 diffuseColor;",
         "out vec4 fcolorVSOutput;"
-      ]).result, o = Ht.substitute(o, "//VTK::Color::Impl", [
+      ]).result, o = _t.substitute(o, "//VTK::Color::Impl", [
         "fcolorVSOutput = diffuseColor;"
-      ]).result, A = Ht.substitute(A, "//VTK::Color::Dec", [
+      ]).result, A = _t.substitute(A, "//VTK::Color::Dec", [
         `in vec4 fcolorVSOutput[];
 `,
         "out vec4 fcolorGSOutput;"
-      ]).result, A = Ht.substitute(A, "//VTK::Color::Impl", [
+      ]).result, A = _t.substitute(A, "//VTK::Color::Impl", [
         "fcolorGSOutput = fcolorVSOutput[i];"
-      ]).result, l = Ht.substitute(l, "//VTK::Color::Dec", [
+      ]).result, l = _t.substitute(l, "//VTK::Color::Dec", [
         "in vec4 fcolorVSOutput;"
-      ]).result, l = Ht.substitute(l, "//VTK::Color::Impl", [
+      ]).result, l = _t.substitute(l, "//VTK::Color::Impl", [
         "gl_FragData[0] = fcolorVSOutput;"
-      ]).result) : (l = Ht.substitute(l, "//VTK::Color::Dec", [
+      ]).result) : (l = _t.substitute(l, "//VTK::Color::Dec", [
         "uniform vec4 diffuseColor;"
-      ]).result, l = Ht.substitute(l, "//VTK::Color::Impl", [
+      ]).result, l = _t.substitute(l, "//VTK::Color::Impl", [
         "gl_FragData[0] = diffuseColor;"
       ]).result), a.Vertex = o, a.Geometry = A, a.Fragment = l;
     }, t.replaceShaderTCoord = (a, i, s) => {
       if (e.lastBoundBO.getCABO().getTCoordOffset()) {
         let o = a.Vertex, A = a.Geometry, l = a.Fragment;
         const c = e.lastBoundBO.getCABO().getTCoordComponents();
-        c === 1 ? (o = Ht.substitute(o, "//VTK::TCoord::Dec", [
+        c === 1 ? (o = _t.substitute(o, "//VTK::TCoord::Dec", [
           "in float tcoordMC;",
           "out float tcoordVCVSOutput;"
-        ]).result, o = Ht.substitute(o, "//VTK::TCoord::Impl", [
+        ]).result, o = _t.substitute(o, "//VTK::TCoord::Impl", [
           "tcoordVCVSOutput = tcoordMC;"
-        ]).result, A = Ht.substitute(A, "//VTK::TCoord::Dec", [
+        ]).result, A = _t.substitute(A, "//VTK::TCoord::Dec", [
           `in float tcoordVCVSOutput[];
 `,
           "out float tcoordVCGSOutput;"
-        ]).result, A = Ht.substitute(A, [
+        ]).result, A = _t.substitute(A, [
           "//VTK::TCoord::Impl",
           "tcoordVCGSOutput = tcoordVCVSOutput[i];"
-        ]).result, l = Ht.substitute(l, "//VTK::TCoord::Dec", [
+        ]).result, l = _t.substitute(l, "//VTK::TCoord::Dec", [
           "in float tcoordVCVSOutput;",
           "uniform sampler2D texture1;"
-        ]).result, l = Ht.substitute(l, "//VTK::TCoord::Impl", [
+        ]).result, l = _t.substitute(l, "//VTK::TCoord::Impl", [
           "gl_FragData[0] = gl_FragData[0]*texture2D(texture1, vec2(tcoordVCVSOutput,0));"
-        ]).result) : c === 2 && (o = Ht.substitute(o, "//VTK::TCoord::Dec", [
+        ]).result) : c === 2 && (o = _t.substitute(o, "//VTK::TCoord::Dec", [
           "in vec2 tcoordMC;",
           "out vec2 tcoordVCVSOutput;"
-        ]).result, o = Ht.substitute(o, "//VTK::TCoord::Impl", [
+        ]).result, o = _t.substitute(o, "//VTK::TCoord::Impl", [
           "tcoordVCVSOutput = tcoordMC;"
-        ]).result, A = Ht.substitute(A, "//VTK::TCoord::Dec", [
+        ]).result, A = _t.substitute(A, "//VTK::TCoord::Dec", [
           `in vec2 tcoordVCVSOutput[];
 `,
           "out vec2 tcoordVCGSOutput;"
-        ]).result, A = Ht.substitute(A, "//VTK::TCoord::Impl", [
+        ]).result, A = _t.substitute(A, "//VTK::TCoord::Impl", [
           "tcoordVCGSOutput = tcoordVCVSOutput[i];"
-        ]).result, l = Ht.substitute(l, "//VTK::TCoord::Dec", [
+        ]).result, l = _t.substitute(l, "//VTK::TCoord::Dec", [
           "in vec2 tcoordVCVSOutput;",
           "uniform sampler2D texture1;"
-        ]).result, l = Ht.substitute(l, "//VTK::TCoord::Impl", [
+        ]).result, l = _t.substitute(l, "//VTK::TCoord::Impl", [
           "gl_FragData[0] = gl_FragData[0]*texture2D(texture1, tcoordVCVSOutput.st);"
-        ]).result), e.haveCellScalars && (A = Ht.substitute(A, "//VTK::PrimID::Impl", [
+        ]).result), e.haveCellScalars && (A = _t.substitute(A, "//VTK::PrimID::Impl", [
           "gl_PrimitiveID = gl_PrimitiveIDIn;"
         ]).result), a.Vertex = o, a.Geometry = A, a.Fragment = l;
       }
     }, t.replaceShaderPicking = (a, i, s) => {
       let o = a.Fragment;
-      o = Ht.substitute(o, "//VTK::Picking::Dec", [
+      o = _t.substitute(o, "//VTK::Picking::Dec", [
         "uniform vec3 mapperIndex;",
         "uniform int picking;"
-      ]).result, o = Ht.substitute(o, "//VTK::Picking::Impl", "  gl_FragData[0] = picking != 0 ? vec4(mapperIndex,1.0) : gl_FragData[0];").result, a.Fragment = o;
+      ]).result, o = _t.substitute(o, "//VTK::Picking::Impl", "  gl_FragData[0] = picking != 0 ? vec4(mapperIndex,1.0) : gl_FragData[0];").result, a.Fragment = o;
     }, t.replaceShaderPositionVC = (a, i, s) => {
       e.lastBoundBO.replaceShaderPositionVC(a, i, s);
     }, t.invokeShaderCallbacks = (a, i, s) => {
@@ -226606,7 +226621,7 @@ void main()
     }, true);
     $o(t, e, [
       "context"
-    ]), e.VBOBuildTime = {}, Ps(e.VBOBuildTime, {
+    ]), e.VBOBuildTime = {}, Us(e.VBOBuildTime, {
       mtime: 0
     }), Tnt(t, e);
   }
@@ -227091,7 +227106,7 @@ void main()
         const a = e.renderable.getMatrix();
         e.bufferShift[0] = a[3], e.bufferShift[1] = a[7], e.bufferShift[2] = a[11];
         const i = r.getStabilizedCenterByReference();
-        e.renderable.getCoordinateSystem() === CV.WORLD && (e.bufferShift[0] -= i[0], e.bufferShift[1] -= i[1], e.bufferShift[2] -= i[2]), Ri(e.keyMatrices.bcwc, a), e.renderable.getIsIdentity() ? ta(e.keyMatrices.normalMatrix) : (So(e.keyMatrices.normalMatrix, e.keyMatrices.bcwc), e.keyMatrices.normalMatrix[3] = 0, e.keyMatrices.normalMatrix[7] = 0, e.keyMatrices.normalMatrix[11] = 0, IA(e.keyMatrices.normalMatrix, e.keyMatrices.normalMatrix), Ri(e.keyMatrices.normalMatrix, e.keyMatrices.normalMatrix)), mo(e.keyMatrices.bcwc, e.keyMatrices.bcwc, [
+        e.renderable.getCoordinateSystem() === CV.WORLD && (e.bufferShift[0] -= i[0], e.bufferShift[1] -= i[1], e.bufferShift[2] -= i[2]), Ri(e.keyMatrices.bcwc, a), e.renderable.getIsIdentity() ? ta(e.keyMatrices.normalMatrix) : (Ro(e.keyMatrices.normalMatrix, e.keyMatrices.bcwc), e.keyMatrices.normalMatrix[3] = 0, e.keyMatrices.normalMatrix[7] = 0, e.keyMatrices.normalMatrix[11] = 0, IA(e.keyMatrices.normalMatrix, e.keyMatrices.normalMatrix), Ri(e.keyMatrices.normalMatrix, e.keyMatrices.normalMatrix)), mo(e.keyMatrices.bcwc, e.keyMatrices.bcwc, [
           -e.bufferShift[0],
           -e.bufferShift[1],
           -e.bufferShift[2]
@@ -227099,7 +227114,7 @@ void main()
           -i[0],
           -i[1],
           -i[2]
-        ]) : So(e.keyMatrices.bcsc, e.keyMatrices.bcwc), e.keyMatricesTime.modified();
+        ]) : Ro(e.keyMatrices.bcsc, e.keyMatrices.bcwc), e.keyMatricesTime.modified();
       }
       return e.keyMatrices;
     };
@@ -227155,7 +227170,7 @@ void main()
           -a[0],
           -a[1],
           -a[2]
-        ]) : So(e.keyMatrices.bcsc, e.keyMatrices.bcwc), e.keyMatricesTime.modified();
+        ]) : Ro(e.keyMatrices.bcsc, e.keyMatrices.bcwc), e.keyMatricesTime.modified();
       }
       return e.keyMatrices;
     };
@@ -227777,7 +227792,7 @@ fn main(
         "opacity = mapperUBO.Opacity * input.color.a;"
       ]).result, l.setCode(A);
     }, e.shaderReplacements.set("replaceShaderColor", t.replaceShaderColor), t.replaceShaderTCoord = (r, a, i) => {
-      var _a2, _b, _c2, _d2, _e, _f, _g2, _h2, _i, _j2, _k2, _l2, _m, _n, _o2, _p2, _q2, _r, _s2, _t;
+      var _a2, _b, _c2, _d2, _e, _f, _g2, _h2, _i, _j2, _k2, _l2, _m, _n, _o2, _p2, _q2, _r, _s2, _t2;
       if (!i.hasAttribute("tcoord")) return;
       const s = a.getShaderDescription("vertex"), o = i.getBuffer("tcoord"), A = El.getNumberOfComponentsFromBufferFormat(o.getArrayInformation()[0].format);
       let l = s.getCode();
@@ -227787,7 +227802,7 @@ fn main(
       const c = a.getShaderDescription("fragment");
       l = c.getCode();
       const g = e.WebGPUActor.getRenderable(), d = (h) => h ? h.getDimensionality() === A : false, u = [];
-      (((_c2 = (_b = (_a2 = g.getProperty()).getDiffuseTexture) == null ? void 0 : _b.call(_a2)) == null ? void 0 : _c2.getImageLoaded()) || g.getTextures()[0] || e.colorTexture) && (d((_e = (_d2 = g.getProperty()).getDiffuseTexture) == null ? void 0 : _e.call(_d2)) || d(g.getTextures()[0]) || d(e.colorTexture)) && u.push("_diffuseMap = textureSample(DiffuseTexture, DiffuseTextureSampler, input.tcoordVS);"), ((_h2 = (_g2 = (_f = g.getProperty()).getRoughnessTexture) == null ? void 0 : _g2.call(_f)) == null ? void 0 : _h2.getImageLoaded()) && d(g.getProperty().getRoughnessTexture()) && u.push("_roughnessMap = textureSample(RoughnessTexture, RoughnessTextureSampler, input.tcoordVS);"), ((_k2 = (_j2 = (_i = g.getProperty()).getMetallicTexture) == null ? void 0 : _j2.call(_i)) == null ? void 0 : _k2.getImageLoaded()) && d(g.getProperty().getMetallicTexture()) && u.push("_metallicMap = textureSample(MetallicTexture, MetallicTextureSampler, input.tcoordVS);"), ((_n = (_m = (_l2 = g.getProperty()).getNormalTexture) == null ? void 0 : _m.call(_l2)) == null ? void 0 : _n.getImageLoaded()) && d(g.getProperty().getNormalTexture()) && u.push("_normalMap = textureSample(NormalTexture, NormalTextureSampler, input.tcoordVS);"), ((_q2 = (_p2 = (_o2 = g.getProperty()).getAmbientOcclusionTexture) == null ? void 0 : _p2.call(_o2)) == null ? void 0 : _q2.getImageLoaded()) && d(g.getProperty().getAmbientOcclusionTexture()) && u.push("_ambientOcclusionMap = textureSample(AmbientOcclusionTexture, AmbientOcclusionTextureSampler, input.tcoordVS);"), ((_t = (_s2 = (_r = g.getProperty()).getEmissionTexture) == null ? void 0 : _s2.call(_r)) == null ? void 0 : _t.getImageLoaded()) && d(g.getProperty().getEmissionTexture()) && u.push("_emissionMap = textureSample(EmissionTexture, EmissionTextureSampler, input.tcoordVS);"), l = ys.substitute(l, "//VTK::TCoord::Impl", u).result, c.setCode(l);
+      (((_c2 = (_b = (_a2 = g.getProperty()).getDiffuseTexture) == null ? void 0 : _b.call(_a2)) == null ? void 0 : _c2.getImageLoaded()) || g.getTextures()[0] || e.colorTexture) && (d((_e = (_d2 = g.getProperty()).getDiffuseTexture) == null ? void 0 : _e.call(_d2)) || d(g.getTextures()[0]) || d(e.colorTexture)) && u.push("_diffuseMap = textureSample(DiffuseTexture, DiffuseTextureSampler, input.tcoordVS);"), ((_h2 = (_g2 = (_f = g.getProperty()).getRoughnessTexture) == null ? void 0 : _g2.call(_f)) == null ? void 0 : _h2.getImageLoaded()) && d(g.getProperty().getRoughnessTexture()) && u.push("_roughnessMap = textureSample(RoughnessTexture, RoughnessTextureSampler, input.tcoordVS);"), ((_k2 = (_j2 = (_i = g.getProperty()).getMetallicTexture) == null ? void 0 : _j2.call(_i)) == null ? void 0 : _k2.getImageLoaded()) && d(g.getProperty().getMetallicTexture()) && u.push("_metallicMap = textureSample(MetallicTexture, MetallicTextureSampler, input.tcoordVS);"), ((_n = (_m = (_l2 = g.getProperty()).getNormalTexture) == null ? void 0 : _m.call(_l2)) == null ? void 0 : _n.getImageLoaded()) && d(g.getProperty().getNormalTexture()) && u.push("_normalMap = textureSample(NormalTexture, NormalTextureSampler, input.tcoordVS);"), ((_q2 = (_p2 = (_o2 = g.getProperty()).getAmbientOcclusionTexture) == null ? void 0 : _p2.call(_o2)) == null ? void 0 : _q2.getImageLoaded()) && d(g.getProperty().getAmbientOcclusionTexture()) && u.push("_ambientOcclusionMap = textureSample(AmbientOcclusionTexture, AmbientOcclusionTextureSampler, input.tcoordVS);"), ((_t2 = (_s2 = (_r = g.getProperty()).getEmissionTexture) == null ? void 0 : _s2.call(_r)) == null ? void 0 : _t2.getImageLoaded()) && d(g.getProperty().getEmissionTexture()) && u.push("_emissionMap = textureSample(EmissionTexture, EmissionTextureSampler, input.tcoordVS);"), l = ys.substitute(l, "//VTK::TCoord::Impl", u).result, c.setCode(l);
     }, e.shaderReplacements.set("replaceShaderTCoord", t.replaceShaderTCoord), t.replaceShaderSelect = (r, a, i) => {
       if (r.includes("sel")) {
         const s = a.getShaderDescription("fragment");
@@ -250756,8 +250771,8 @@ Input: ` + this.err.str);
               return at.add(zt), at;
             }
             function Dt(at, zt, fn, _n) {
-              var sr = -1, In = at ? at.length : 0;
-              for (_n; ++sr < In; ) fn = zt(fn, at[sr], sr, at);
+              var ar = -1, In = at ? at.length : 0;
+              for (_n; ++ar < In; ) fn = zt(fn, at[ar], ar, at);
               return fn;
             }
             function pt(at) {
@@ -250770,9 +250785,9 @@ Input: ` + this.err.str);
             }
             function ft(at) {
               var zt = -1, fn = Array(at.size);
-              return at.forEach((function(_n, sr) {
+              return at.forEach((function(_n, ar) {
                 fn[++zt] = [
-                  sr,
+                  ar,
                   _n
                 ];
               })), fn;
@@ -250788,7 +250803,7 @@ Input: ` + this.err.str);
                 fn[++zt] = _n;
               })), fn;
             }
-            var it, Bt = Array.prototype, Jt = Function.prototype, qt = Object.prototype, En = we["__core-js_shared__"], kn = (it = /[^.]+$/.exec(En && En.keys && En.keys.IE_PROTO || "")) ? "Symbol(src)_1." + it : "", nr = Jt.toString, tr = qt.hasOwnProperty, ce = qt.toString, tt = RegExp("^" + nr.call(tr).replace(/[\\^$.*+?()[\]{}|]/g, "\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$"), ie = Ge ? we.Buffer : void 0, ht = we.Symbol, Et = we.Uint8Array, un = Le(Object.getPrototypeOf, Object), Ne = Object.create, $t = qt.propertyIsEnumerable, mt = Bt.splice, jt = Object.getOwnPropertySymbols, An = ie ? ie.isBuffer : void 0, Ve = Le(Object.keys, Object), Ft = fr(we, "DataView"), Ot = fr(we, "Map"), Pt = fr(we, "Promise"), Un = fr(we, "Set"), bn = fr(we, "WeakMap"), rr = fr(Object, "create"), dn = ka(Ft), on = ka(Ot), Ir = ka(Pt), Pr = ka(Un), Fi = ka(bn), Da = ht ? ht.prototype : void 0, zn = Da ? Da.valueOf : void 0;
+            var it, Bt = Array.prototype, Jt = Function.prototype, qt = Object.prototype, En = we["__core-js_shared__"], kn = (it = /[^.]+$/.exec(En && En.keys && En.keys.IE_PROTO || "")) ? "Symbol(src)_1." + it : "", nr = Jt.toString, tr = qt.hasOwnProperty, ce = qt.toString, tt = RegExp("^" + nr.call(tr).replace(/[\\^$.*+?()[\]{}|]/g, "\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$"), ie = Ge ? we.Buffer : void 0, ht = we.Symbol, Et = we.Uint8Array, un = Le(Object.getPrototypeOf, Object), Ne = Object.create, $t = qt.propertyIsEnumerable, mt = Bt.splice, jt = Object.getOwnPropertySymbols, An = ie ? ie.isBuffer : void 0, Ve = Le(Object.keys, Object), Ft = fr(we, "DataView"), Pt = fr(we, "Map"), Ht = fr(we, "Promise"), Un = fr(we, "Set"), bn = fr(we, "WeakMap"), rr = fr(Object, "create"), dn = ka(Ft), on = ka(Pt), Ir = ka(Ht), Pr = ka(Un), Fi = ka(bn), Da = ht ? ht.prototype : void 0, zn = Da ? Da.valueOf : void 0;
             function er(at) {
               var zt = -1, fn = at ? at.length : 0;
               for (this.clear(); ++zt < fn; ) {
@@ -250821,9 +250836,9 @@ Input: ` + this.err.str);
               for (var fn = at.length; fn--; ) if (Er(at[fn][0], zt)) return fn;
               return -1;
             }
-            function _t(at, zt, fn, _n, sr, In, Kn) {
+            function Ot(at, zt, fn, _n, ar, In, Kn) {
               var Pn;
-              if (_n && (Pn = In ? _n(at, sr, In, Kn) : _n(at)), Pn !== void 0) return Pn;
+              if (_n && (Pn = In ? _n(at, ar, In, Kn) : _n(at)), Pn !== void 0) return Pn;
               if (!Kt(at)) return at;
               var Dr = oi(at);
               if (Dr) {
@@ -250899,7 +250914,7 @@ Input: ` + this.err.str);
                       case je:
                         return _e = Hr, zn ? Object(zn.call(_e)) : {};
                     }
-                  })(at, jr, _t, zt);
+                  })(at, jr, Ot, zt);
                 }
               }
               Kn || (Kn = new zr());
@@ -250917,7 +250932,7 @@ Input: ` + this.err.str);
               return (function(Hr, Qa) {
                 for (var za = -1, Wi = Hr ? Hr.length : 0; ++za < Wi && Qa(Hr[za], za) !== false; ) ;
               })(_r || at, (function(Hr, Qa) {
-                _r && (Hr = at[Qa = Hr]), Gr(Pn, Qa, _t(Hr, zt, fn, _n, Qa, at, Kn));
+                _r && (Hr = at[Qa = Hr]), Gr(Pn, Qa, Ot(Hr, zt, fn, _n, Qa, at, Kn));
               })), Pn;
             }
             function en(at) {
@@ -250926,23 +250941,23 @@ Input: ` + this.err.str);
             }
             function Bn(at, zt, fn, _n) {
               fn || (fn = {});
-              for (var sr = -1, In = zt.length; ++sr < In; ) {
-                var Kn = zt[sr], Pn = void 0;
+              for (var ar = -1, In = zt.length; ++ar < In; ) {
+                var Kn = zt[ar], Pn = void 0;
                 Gr(fn, Kn, Pn === void 0 ? at[Kn] : Pn);
               }
               return fn;
             }
-            function wn(at, zt) {
-              var fn, _n, sr = at.__data__;
-              return ((_n = typeof (fn = zt)) == "string" || _n == "number" || _n == "symbol" || _n == "boolean" ? fn !== "__proto__" : fn === null) ? sr[typeof zt == "string" ? "string" : "hash"] : sr.map;
+            function vn(at, zt) {
+              var fn, _n, ar = at.__data__;
+              return ((_n = typeof (fn = zt)) == "string" || _n == "number" || _n == "symbol" || _n == "boolean" ? fn !== "__proto__" : fn === null) ? ar[typeof zt == "string" ? "string" : "hash"] : ar.map;
             }
             function fr(at, zt) {
-              var fn = (function(_n, sr) {
-                return _n == null ? void 0 : _n[sr];
+              var fn = (function(_n, ar) {
+                return _n == null ? void 0 : _n[ar];
               })(at, zt);
               return (function(_n) {
-                return !(!Kt(_n) || (sr = _n, kn && kn in sr)) && (As(_n) || pt(_n) ? tt : Xe).test(ka(_n));
-                var sr;
+                return !(!Kt(_n) || (ar = _n, kn && kn in ar)) && (As(_n) || pt(_n) ? tt : Xe).test(ka(_n));
+                var ar;
               })(fn) ? fn : void 0;
             }
             er.prototype.clear = function() {
@@ -250980,17 +250995,17 @@ Input: ` + this.err.str);
             }, Kr.prototype.clear = function() {
               this.__data__ = {
                 hash: new er(),
-                map: new (Ot || Sr)(),
+                map: new (Pt || Sr)(),
                 string: new er()
               };
             }, Kr.prototype.delete = function(at) {
-              return wn(this, at).delete(at);
+              return vn(this, at).delete(at);
             }, Kr.prototype.get = function(at) {
-              return wn(this, at).get(at);
+              return vn(this, at).get(at);
             }, Kr.prototype.has = function(at) {
-              return wn(this, at).has(at);
+              return vn(this, at).has(at);
             }, Kr.prototype.set = function(at, zt) {
-              return wn(this, at).set(at, zt), this;
+              return vn(this, at).set(at, zt), this;
             }, zr.prototype.clear = function() {
               this.__data__ = new Sr();
             }, zr.prototype.delete = function(at) {
@@ -251003,7 +251018,7 @@ Input: ` + this.err.str);
               var fn = this.__data__;
               if (fn instanceof Sr) {
                 var _n = fn.__data__;
-                if (!Ot || _n.length < 199) return _n.push([
+                if (!Pt || _n.length < 199) return _n.push([
                   at,
                   zt
                 ]), this;
@@ -251039,7 +251054,7 @@ Input: ` + this.err.str);
             function Er(at, zt) {
               return at === zt || at != at && zt != zt;
             }
-            (Ft && ya(new Ft(new ArrayBuffer(1))) != ze || Ot && ya(new Ot()) != ne || Pt && ya(Pt.resolve()) != se || Un && ya(new Un()) != Ce || bn && ya(new bn()) != Qe) && (ya = function(at) {
+            (Ft && ya(new Ft(new ArrayBuffer(1))) != ze || Pt && ya(new Pt()) != ne || Ht && ya(Ht.resolve()) != se || Un && ya(new Un()) != Ce || bn && ya(new bn()) != Qe) && (ya = function(at) {
               var zt = ce.call(at), fn = zt == $ ? at.constructor : void 0, _n = fn ? ka(fn) : void 0;
               if (_n) switch (_n) {
                 case dn:
@@ -251083,8 +251098,8 @@ Input: ` + this.err.str);
                 })(zt) ? (function(Pn, Dr) {
                   for (var jr = -1, Ha = Array(Pn); ++jr < Pn; ) Ha[jr] = Dr(jr);
                   return Ha;
-                })(zt.length, String) : [], sr = _n.length, In = !!sr;
-                for (var Kn in zt) !tr.call(zt, Kn) || In && (Kn == "length" || Jn(Kn, sr)) || _n.push(Kn);
+                })(zt.length, String) : [], ar = _n.length, In = !!ar;
+                for (var Kn in zt) !tr.call(zt, Kn) || In && (Kn == "length" || Jn(Kn, ar)) || _n.push(Kn);
                 return _n;
               })(at) : (function(zt) {
                 if (!lr(zt)) return Ve(zt);
@@ -251094,7 +251109,7 @@ Input: ` + this.err.str);
               })(at);
             }
             j.exports = function(at) {
-              return _t(at, true, true);
+              return Ot(at, true, true);
             };
           },
           485: (j, G, H) => {
@@ -251440,7 +251455,7 @@ Input: ` + this.err.str);
           });
           var j = {};
           v.r(j), v.d(j, {
-            checkAndDefineIsLockedProperty: () => Ot,
+            checkAndDefineIsLockedProperty: () => Pt,
             getAnnotationsLocked: () => An,
             getAnnotationsLockedCount: () => Ft,
             isAnnotationLocked: () => Ve,
@@ -251461,7 +251476,7 @@ Input: ` + this.err.str);
             checkAndDefineIsVisibleProperty: () => Bn,
             isAnnotationVisible: () => en,
             setAnnotationVisibility: () => Qt,
-            showAllAnnotations: () => _t
+            showAllAnnotations: () => Ot
           });
           var P = {};
           v.r(P), v.d(P, {
@@ -251505,7 +251520,7 @@ Input: ` + this.err.str);
             getSegmentation: () => ur,
             getSegmentationIdRepresentations: () => tl,
             getSegmentationRepresentationByUID: () => Ja,
-            getSegmentationRepresentationSpecificConfig: () => To,
+            getSegmentationRepresentationSpecificConfig: () => bo,
             getSegmentationRepresentations: () => pi,
             getSegmentations: () => Ui,
             getToolGroupIdFromSegmentationRepresentationUID: () => gn,
@@ -251525,7 +251540,7 @@ Input: ` + this.err.str);
             copyPoints: () => ha,
             copyPointsList: () => Rn,
             getDeltaDistance: () => yn,
-            getDeltaDistanceBetweenIPoints: () => ar,
+            getDeltaDistanceBetweenIPoints: () => ir,
             getDeltaPoints: () => On,
             getDeltaRotation: () => Qn,
             getMeanPoints: () => Ia,
@@ -251605,7 +251620,7 @@ Input: ` + this.err.str);
             getHoveredContourSegmentationAnnotation: () => AB,
             getSegmentAtLabelmapBorder: () => oB,
             getSegmentAtWorldPoint: () => nI,
-            getUniqueSegmentIndices: () => $r,
+            getUniqueSegmentIndices: () => Zr,
             invalidateBrushCursor: () => Vx,
             isValidRepresentationConfig: () => _y,
             rectangleROIThresholdVolumeByRange: () => rB,
@@ -251884,7 +251899,7 @@ Input: ` + this.err.str);
             drawPath: () => qf,
             drawPolyline: () => V0,
             drawRect: () => Dc,
-            drawRectByCoordinates: () => vo,
+            drawRectByCoordinates: () => No,
             drawRedactionRect: () => H6,
             drawTextBox: () => Fg,
             setAttributesIfNecessary: () => nc,
@@ -251959,7 +251974,7 @@ Input: ` + this.err.str);
           });
           var tr = {};
           v.r(tr), v.d(tr, {
-            AnnotationStyleStates: () => No,
+            AnnotationStyleStates: () => Do,
             ChangeTypes: () => Rr,
             Events: () => Ne,
             KeyboardBindings: () => uo,
@@ -252004,13 +252019,13 @@ Input: ` + this.err.str);
           const Ne = un, $t = /* @__PURE__ */ new Set();
           function mt(S) {
             let m = !(arguments.length > 1 && arguments[1] !== void 0) || arguments[1];
-            const E = Pt();
+            const E = Ht();
             S && (m ? (function(y, w, k) {
               w.has(y) || (w.add(y), k.added.push(y));
             })(S, $t, E) : Un(S, $t, E)), bn(E, $t);
           }
           function jt() {
-            const S = Pt();
+            const S = Ht();
             (function(m, E) {
               m.forEach(((y) => {
                 Un(y, m, E);
@@ -252026,7 +252041,7 @@ Input: ` + this.err.str);
           function Ft() {
             return $t.size;
           }
-          function Ot(S) {
+          function Pt(S) {
             if (S) {
               const m = !!S.isLocked;
               (function(E) {
@@ -252040,7 +252055,7 @@ Input: ` + this.err.str);
               }), mt(S, m);
             }
           }
-          function Pt() {
+          function Ht() {
             return Object.freeze({
               added: [],
               removed: [],
@@ -252109,13 +252124,13 @@ Input: ` + this.err.str);
           const Gr = /* @__PURE__ */ new Set();
           function Qt(S) {
             let m = !(arguments.length > 1 && arguments[1] !== void 0) || arguments[1];
-            const E = wn();
+            const E = vn();
             S && (m ? fr(S, Gr, E) : (function(y, w, k) {
               w.has(y) || (w.add(y), zn(y) && Pr(y), k.lastHidden.push(y));
             })(S, Gr, E)), sa(E);
           }
-          function _t() {
-            const S = wn();
+          function Ot() {
+            const S = vn();
             Gr.forEach(((m) => {
               fr(m, Gr, S);
             })), sa(S);
@@ -252138,7 +252153,7 @@ Input: ` + this.err.str);
               }), Qt(S.annotationUID, E);
             }
           }
-          function wn() {
+          function vn() {
             return Object.freeze({
               lastVisible: [],
               lastHidden: [],
@@ -252199,7 +252214,7 @@ Input: ` + this.err.str);
                 let z = T[y];
                 z || (T[y] = {}, z = T[y]);
                 let Y = z[R];
-                Y || (z[R] = [], Y = z[R]), Y.push(E), Ot(E), Bn(E), ((V) => {
+                Y || (z[R] = [], Y = z[R]), Y.push(E), Pt(E), Bn(E), ((V) => {
                   V.data || (V.data = {}), V.data.handles || (V.data.handles = {}), V.data.handles.textBox || (V.data.handles.textBox = {});
                 })(E), ((V) => {
                   V.data || (V.data = {}), V.data.cachedStats || (V.data.cachedStats = {});
@@ -252304,7 +252319,7 @@ Input: ` + this.err.str);
             const m = Ne.ANNOTATION_REMOVED;
             (0, ce.triggerEvent)(ce.eventTarget, m, S);
           }
-          function sr(S, m) {
+          function ar(S, m) {
             let E = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : Rr.HandlesUpdated;
             const y = (0, ce.getEnabledElement)(m), { viewportId: w, renderingEngineId: k } = y, R = Ne.ANNOTATION_MODIFIED, T = {
               annotation: S,
@@ -252448,7 +252463,7 @@ Input: ` + this.err.str);
             fillAlpha: 0.5,
             fillAlphaInactive: 0.3,
             fillAlphaAutoGenerated: 0.3
-          }, $n = {
+          }, Wn = {
             renderOutline: true,
             outlineWidthActive: 3,
             outlineWidthInactive: 2,
@@ -252460,11 +252475,11 @@ Input: ` + this.err.str);
             outlineOpacity: 1,
             outlineOpacityInactive: 0.85
           }, Mn = function() {
-            return $n;
-          }, Hn = {
+            return Wn;
+          }, Yn = {
             renderFill: true,
             fillAlpha: 1
-          }, At = Mn(), wt = Tn, sn = Hn, jn = {
+          }, At = Mn(), wt = Tn, sn = Yn, jn = {
             colorLUT: [],
             segmentations: [],
             globalConfig: {
@@ -252606,7 +252621,7 @@ Input: ` + this.err.str);
             const m = ti.get(S);
             m && (m.isDirty = true);
           };
-          function $r(S) {
+          function Zr(S) {
             const m = (function(w) {
               const k = ti.get(w);
               return k && !k.isDirty ? k.indices : null;
@@ -252789,7 +252804,7 @@ Input: ` + this.err.str);
             let y = arguments.length > 3 && arguments[3] !== void 0 && arguments[3];
             Ur().setSegmentationRepresentationSpecificConfig(S, m, E), y || da(S, m);
           }
-          function To(S, m) {
+          function bo(S, m) {
             return Ur().getSegmentationRepresentationSpecificConfig(S, m);
           }
           function ct(S, m, E) {
@@ -252895,7 +252910,7 @@ Input: ` + this.err.str);
               }
             };
             !(0, ce.triggerEvent)(m, Ne.MOUSE_DOUBLE_CLICK, k) && (S.stopImmediatePropagation(), S.preventDefault());
-          }, ql = Ne.MOUSE_MOVE, bo = function(S) {
+          }, ql = Ne.MOUSE_MOVE, yo = function(S) {
             const m = S.currentTarget, E = (0, ce.getEnabledElement)(m), { renderingEngineId: y, viewportId: w } = E, k = {
               renderingEngineId: y,
               viewportId: w,
@@ -252906,7 +252921,7 @@ Input: ` + this.err.str);
               event: S
             };
             !(0, ce.triggerEvent)(m, ql, k) && (S.stopImmediatePropagation(), S.preventDefault());
-          }, { MOUSE_DOWN: ts, MOUSE_DOWN_ACTIVATE: nl, MOUSE_CLICK: Fe, MOUSE_UP: vn, MOUSE_DRAG: qa } = Ne, ni = 3, io = {
+          }, { MOUSE_DOWN: ts, MOUSE_DOWN_ACTIVATE: nl, MOUSE_CLICK: Fe, MOUSE_UP: wn, MOUSE_DRAG: qa } = Ne, ni = 3, io = {
             mouseButton: void 0,
             element: null,
             renderingEngineId: void 0,
@@ -253030,7 +253045,7 @@ Input: ` + this.err.str);
           function rl(S) {
             if (clearTimeout(Jr.preventClickTimeout), Cs.doubleClickTimeout) Cs.mouseUpEvent ? y0() : (Cs.mouseUpEvent = S, Jr.element.addEventListener("mousemove", nf));
             else {
-              const m = Jr.isClickEvent ? Fe : vn, E = Fs(S, Jr.element), y = Q0(E, Jr.lastPoints), w = {
+              const m = Jr.isClickEvent ? Fe : wn, E = Fs(S, Jr.element), y = Q0(E, Jr.lastPoints), w = {
                 event: S,
                 eventName: m,
                 mouseButton: Jr.mouseButton,
@@ -253048,7 +253063,7 @@ Input: ` + this.err.str);
             document.removeEventListener("mousemove", MA);
           }
           function nf(S) {
-            ug(Q0(Fs(S, Jr.element), rf(Jr.element, Jr.lastPoints)).canvas) && (bd(), bo(S));
+            ug(Q0(Fs(S, Jr.element), rf(Jr.element, Jr.lastPoints)).canvas) && (bd(), yo(S));
           }
           function ug(S) {
             return Math.abs(S[0]) + Math.abs(S[1]) > ni;
@@ -253081,7 +253096,7 @@ Input: ` + this.err.str);
           }
           function y0() {
             var S, m;
-            document.removeEventListener("mouseup", rl), (S = Jr.element) === null || S === void 0 || S.removeEventListener("mousemove", nf), (m = Jr.element) === null || m === void 0 || m.addEventListener("mousemove", bo), Wc(), Jr = JSON.parse(JSON.stringify(io));
+            document.removeEventListener("mouseup", rl), (S = Jr.element) === null || S === void 0 || S.removeEventListener("mousemove", nf), (m = Jr.element) === null || m === void 0 || m.addEventListener("mousemove", yo), Wc(), Jr = JSON.parse(JSON.stringify(io));
           }
           function FA(S) {
             return JSON.parse(JSON.stringify(S));
@@ -253121,18 +253136,18 @@ Input: ` + this.err.str);
             if (Cs.doubleClickTimeout) return S.buttons === Cs.mouseDownEvent.buttons ? void 0 : (Cs.mouseDownEvent = S, void bd());
             Cs.doubleClickTimeout = setTimeout(bd, S.buttons === 1 ? 400 : 150), Cs.mouseDownEvent = S, Cs.ignoreDoubleClick = false, Jr.element = S.currentTarget, Jr.mouseButton = S.buttons;
             const m = (0, ce.getEnabledElement)(Jr.element), { renderingEngineId: E, viewportId: y } = m;
-            Jr.renderingEngineId = E, Jr.viewportId = y, Jr.preventClickTimeout = setTimeout(Ua, Jr.clickDelay), Jr.element.removeEventListener("mousemove", bo);
+            Jr.renderingEngineId = E, Jr.viewportId = y, Jr.preventClickTimeout = setTimeout(Ua, Jr.clickDelay), Jr.element.removeEventListener("mousemove", yo);
             const w = Fs(S, Jr.element);
             Jr.startPoints = FA(w), Jr.lastPoints = FA(w), document.addEventListener("mouseup", rl), document.addEventListener("mousemove", MA);
           };
           function hm(S) {
-            S.removeEventListener("dblclick", oA), S.removeEventListener("mousedown", sx), S.removeEventListener("mousemove", bo), S.removeEventListener("dblclick", sf, {
+            S.removeEventListener("dblclick", oA), S.removeEventListener("mousedown", sx), S.removeEventListener("mousemove", yo), S.removeEventListener("dblclick", sf, {
               capture: true
             });
           }
           const ox = {
             enable: function(S) {
-              hm(S), S.addEventListener("dblclick", oA), S.addEventListener("mousedown", sx), S.addEventListener("mousemove", bo), S.addEventListener("dblclick", sf, {
+              hm(S), S.addEventListener("dblclick", oA), S.addEventListener("mousedown", sx), S.addEventListener("mousemove", yo), S.addEventListener("dblclick", sf, {
                 capture: true
               });
             },
@@ -253283,7 +253298,7 @@ Input: ` + this.err.str);
           }
           function Qn(S, m) {
           }
-          function ar(S, m) {
+          function ir(S, m) {
             const E = va(S), y = va(m);
             return {
               page: E.page - y.page,
@@ -253423,7 +253438,7 @@ Input: ` + this.err.str);
             return Math.sqrt(Math.pow(S[0] - m[0], 2) + Math.pow(S[1] - m[1], 2) + Math.pow(S[2] - m[2], 2));
           }
           ce.Settings.getRuntimeSettings();
-          const { TOUCH_START: mi, TOUCH_START_ACTIVATE: tA, TOUCH_PRESS: so, TOUCH_DRAG: il, TOUCH_END: Or, TOUCH_TAP: Li, TOUCH_SWIPE: Os } = Ne, Zt = {
+          const { TOUCH_START: mi, TOUCH_START_ACTIVATE: tA, TOUCH_PRESS: so, TOUCH_DRAG: il, TOUCH_END: Or, TOUCH_TAP: Li, TOUCH_SWIPE: Ps } = Ne, Zt = {
             page: [
               0,
               0
@@ -253491,7 +253506,7 @@ Input: ` + this.err.str);
             return (0, ce.triggerEvent)(S, m, E);
           }
           function Su(S) {
-            const m = gt(S, hr.element), E = Ru(hr.element, hr.lastPointsList), y = m.length === E.length ? On(m, E) : Zt, w = m.length === E.length ? ar(m, E) : TA, k = m.length === E.length ? yn(m, hr.lastPointsList) : TA;
+            const m = gt(S, hr.element), E = Ru(hr.element, hr.lastPointsList), y = m.length === E.length ? On(m, E) : Zt, w = m.length === E.length ? ir(m, E) : TA, k = m.length === E.length ? yn(m, hr.lastPointsList) : TA;
             hr.accumulatedDistance = {
               page: hr.accumulatedDistance.page + k.page,
               client: hr.accumulatedDistance.client + k.client,
@@ -253519,19 +253534,19 @@ Input: ` + this.err.str);
               if (hr.swiped || Y - V > hr.swipeToleranceMs) return;
               const [W, Z] = z.canvas, re = {
                 event: T,
-                eventName: Os,
+                eventName: Ps,
                 renderingEngineId: hr.renderingEngineId,
                 viewportId: hr.viewportId,
                 camera: {},
                 element: hr.element,
                 swipe: null
               };
-              Math.abs(W) > hr.swipeDistanceThreshold && (re.swipe = W > 0 ? Rt.RIGHT : Rt.LEFT, Zc(re.element, Os, re), hr.swiped = true), Math.abs(Z) > hr.swipeDistanceThreshold && (re.swipe = Z > 0 ? Rt.DOWN : Rt.UP, Zc(re.element, Os, re), hr.swiped = true);
+              Math.abs(W) > hr.swipeDistanceThreshold && (re.swipe = W > 0 ? Rt.RIGHT : Rt.LEFT, Zc(re.element, Ps, re), hr.swiped = true), Math.abs(Z) > hr.swipeDistanceThreshold && (re.swipe = Z > 0 ? Rt.DOWN : Rt.UP, Zc(re.element, Ps, re), hr.swiped = true);
             })(S, y), hr.lastPointsList = Rn(m);
           }
           function wd(S) {
             clearTimeout(hr.pressTimeout);
-            const m = gt(S, hr.element), E = Ru(hr.element, hr.lastPointsList), y = m.length === E.length ? On(m, E) : On(m, m), w = m.length === E.length ? ar(m, E) : ar(m, m), k = {
+            const m = gt(S, hr.element), E = Ru(hr.element, hr.lastPointsList), y = m.length === E.length ? On(m, E) : On(m, m), w = m.length === E.length ? ir(m, E) : ir(m, m), k = {
               event: S,
               eventName: Or,
               element: hr.element,
@@ -253726,7 +253741,7 @@ Input: ` + this.err.str);
             Ms(S, m);
           }
           function Ig(S, m) {
-            return To(S, m);
+            return bo(S, m);
           }
           function zv(S, m, E) {
             eA(S, m, E);
@@ -253742,7 +253757,7 @@ Input: ` + this.err.str);
             if (!y) return;
             const w = y.find(((z) => z.segmentationRepresentationUID === m));
             if (!w) return;
-            const { segmentsHidden: k, segmentationId: R } = w, T = $r(R);
+            const { segmentsHidden: k, segmentationId: R } = w, T = Zr(R);
             E ? k.clear() : T.forEach(((z) => {
               k.add(z);
             })), da(S, w.segmentationRepresentationUID);
@@ -253750,7 +253765,7 @@ Input: ` + this.err.str);
           function lx(S, m) {
             const E = pi(S).find(((T) => T.segmentationRepresentationUID === m));
             if (!E) return;
-            const { segmentsHidden: y, segmentationId: w } = E, k = $r(w), R = new Set(k);
+            const { segmentsHidden: y, segmentationId: w } = E, k = Zr(w), R = new Set(k);
             return y.forEach(((T) => R.delete(T))), !!R.size;
           }
           function Cm(S, m, E, y) {
@@ -253841,9 +253856,9 @@ Input: ` + this.err.str);
             let m = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : 5;
             return parseFloat(S[0]).toFixed(m) + "," + parseFloat(S[1]).toFixed(m) + "," + parseFloat(S[2]).toFixed(m) + ",";
           }
-          let yo = false;
+          let Qo = false;
           function gx() {
-            yo || (yo = true, (0, ce.getWebWorkerManager)().registerWorker("polySeg", (() => new Worker(new URL(v.p + v.u(985), v.b), {
+            Qo || (Qo = true, (0, ce.getWebWorkerManager)().registerWorker("polySeg", (() => new Worker(new URL(v.p + v.u(985), v.b), {
               name: "polySeg"
             })), {
               maxWorkerInstances: 1,
@@ -254344,7 +254359,7 @@ Input: ` + this.err.str);
             return D0(S, Ut.Labelmap, (() => (async function(E) {
               var y;
               let w = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
-              const k = (y = w.segmentIndices) !== null && y !== void 0 && y.length ? w.segmentIndices : $r(E);
+              const k = (y = w.segmentIndices) !== null && y !== void 0 && y.length ? w.segmentIndices : Zr(E);
               let R;
               const T = ur(E), z = T.representationData;
               try {
@@ -254353,7 +254368,7 @@ Input: ` + this.err.str);
                   let Z = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
                   const re = (V = Z.viewport instanceof ce.VolumeViewport) === null || V === void 0 || V;
                   if (re && !Z.viewport) throw new Error("Cannot compute labelmap from contour segmentation without providing the viewport");
-                  const Ae = (W = Z.segmentIndices) !== null && W !== void 0 && W.length ? Z.segmentIndices : $r(Y), ge = ur(Y).representationData.CONTOUR;
+                  const Ae = (W = Z.segmentIndices) !== null && W !== void 0 && W.length ? Z.segmentIndices : Zr(Y), ge = ur(Y).representationData.CONTOUR;
                   return await (re ? Yv : S0)(ge, {
                     segmentIndices: Ae,
                     segmentationRepresentationUID: Z.segmentationRepresentationUID,
@@ -254365,7 +254380,7 @@ Input: ` + this.err.str);
                 }) : z.SURFACE && (R = await (async function(Y) {
                   var V, W;
                   let Z = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
-                  const re = (V = Z.viewport instanceof ce.VolumeViewport) === null || V === void 0 || V, Ae = (W = Z.segmentIndices) !== null && W !== void 0 && W.length ? Z.segmentIndices : $r(Y), ge = ur(Y), Be = /* @__PURE__ */ new Map();
+                  const re = (V = Z.viewport instanceof ce.VolumeViewport) === null || V === void 0 || V, Ae = (W = Z.segmentIndices) !== null && W !== void 0 && W.length ? Z.segmentIndices : Zr(Y), ge = ur(Y), Be = /* @__PURE__ */ new Map();
                   if (ge.representationData.SURFACE.geometryIds.forEach(((Te, He) => {
                     Ae.includes(He) && Be.set(He, Te);
                   })), re && !Z.viewport) throw new Error("Cannot compute labelmap from surface segmentation without providing the viewport");
@@ -254546,13 +254561,13 @@ Input: ` + this.err.str);
               if (!W) return;
               const { cfun: re, ofun: Ae } = z, ge = E.renderInactiveSegmentations;
               (function(Be, be, ke, Te, He, Ke, et, rt, ut, It) {
-                const { segmentSpecificConfig: vt, segmentationRepresentationSpecificConfig: yt } = et, Tt = yt[Ut.Labelmap], Ct = vs(He), kt = Math.min(256, Ct.length), { uid: Vt } = be, { outlineWidth: xn, renderOutline: pn, outlineOpacity: qn } = Kb(Ke, Tt, rt);
+                const { segmentSpecificConfig: vt, segmentationRepresentationSpecificConfig: yt } = et, Tt = yt[Ut.Labelmap], Ct = vs(He), kt = Math.min(256, Ct.length), { uid: Vt } = be, { outlineWidth: xn, renderOutline: pn, outlineOpacity: Zn } = Kb(Ke, Tt, rt);
                 for (let Nr = 0; Nr < kt; Nr++) {
-                  var Zn;
-                  const pr = Nr, Tr = Ct[pr], Ma = (Zn = vt[pr]) === null || Zn === void 0 ? void 0 : Zn[Ut.Labelmap], { fillAlpha: fa, outlineWidth: Ci, renderFill: bi, renderOutline: Do } = Kb(Ke, Tt, rt, Ma), { forceOpacityUpdate: JA, forceColorUpdate: Ac } = Ef(Be, Vt, pr, {
+                  var Xn;
+                  const pr = Nr, Tr = Ct[pr], Ma = (Xn = vt[pr]) === null || Xn === void 0 ? void 0 : Xn[Ut.Labelmap], { fillAlpha: fa, outlineWidth: Ci, renderFill: bi, renderOutline: ko } = Kb(Ke, Tt, rt, Ma), { forceOpacityUpdate: JA, forceColorUpdate: Ac } = Ef(Be, Vt, pr, {
                     fillAlpha: fa,
                     renderFill: bi,
-                    renderOutline: Do,
+                    renderOutline: ko,
                     segmentColor: Tr,
                     outlineWidth: Ci,
                     segmentsHidden: It
@@ -254562,13 +254577,13 @@ Input: ` + this.err.str);
                     Te.removePoint(pr), Te.addPointLong(pr, ld, 0.5, 1);
                   } else Te.addPointLong(pr, 0.01, 0.5, 1);
                 }
-                const Xn = be.actor;
-                Xn.getProperty().setRGBTransferFunction(0, ke), Te.setClamping(false), Xn.getProperty().setScalarOpacity(0, Te), Xn.getProperty().setInterpolationTypeToNearest(), Xn.getProperty().setUseLabelOutline(pn), Xn.getProperty().setLabelOutlineOpacity(qn);
-                const { activeSegmentIndex: ir } = ur(et.segmentationId), kr = new Array(kt - 1);
-                for (let Nr = 1; Nr < kt; Nr++) It.has(Nr) ? kr[Nr - 1] = 0 : kr[Nr - 1] = Nr === ir ? xn + Ke.activeSegmentOutlineWidthDelta : xn;
-                Xn.getProperty().setLabelOutlineThickness(kr);
+                const $n = be.actor;
+                $n.getProperty().setRGBTransferFunction(0, ke), Te.setClamping(false), $n.getProperty().setScalarOpacity(0, Te), $n.getProperty().setInterpolationTypeToNearest(), $n.getProperty().setUseLabelOutline(pn), $n.getProperty().setLabelOutlineOpacity(Zn);
+                const { activeSegmentIndex: sr } = ur(et.segmentationId), kr = new Array(kt - 1);
+                for (let Nr = 1; Nr < kt; Nr++) It.has(Nr) ? kr[Nr - 1] = 0 : kr[Nr - 1] = Nr === sr ? xn + Ke.activeSegmentOutlineWidthDelta : xn;
+                $n.getProperty().setLabelOutlineThickness(kr);
                 const Br = rt || ut;
-                Xn.setVisibility(Br);
+                $n.setVisibility(Br);
               })(S.id, W, re, Ae, y, E.representations[Ut.Labelmap], m, w, ge, T);
             },
             removeSegmentationRepresentation: function(S, m) {
@@ -256174,7 +256189,7 @@ Input: ` + this.err.str);
             }
             return R;
           }
-          const { Active: $l, Passive: Qo, Enabled: Cx } = at, td = new class {
+          const { Active: $l, Passive: wo, Enabled: Cx } = at, td = new class {
             constructor() {
               ie(this, "hasBeenDestroyed", void 0), ie(this, "_needsRender", /* @__PURE__ */ new Set()), ie(this, "_animationFrameSet", false), ie(this, "_animationFrameHandle", null), ie(this, "_viewportElements", void 0), ie(this, "_renderFlaggedViewports", (() => {
                 this._throwIfDestroyed();
@@ -256224,7 +256239,7 @@ Input: ` + this.err.str);
               if (!(0, ce.getRenderingEngine)(m.renderingEngineId)) return void console.warn("rendering Engine has been destroyed");
               const E = Eg(S, [
                 $l,
-                Qo,
+                wo,
                 Cx
               ]), { renderingEngineId: y, viewportId: w } = m, k = {
                 element: S,
@@ -256357,7 +256372,7 @@ Input: ` + this.err.str);
             let E = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
             const y = ur(S);
             if (y == null || (m = y.representationData) === null || m === void 0 || !m.LABELMAP) return void console.warn("Only support surface update from labelmaps");
-            const w = Qr(y.representationData.LABELMAP), k = y.representationData.LABELMAP, R = E.segmentIndices || $r(S), T = R.map(((V) => (async function(Z, re) {
+            const w = Qr(y.representationData.LABELMAP), k = y.representationData.LABELMAP, R = E.segmentIndices || Zr(S), T = R.map(((V) => (async function(Z, re) {
               let Ae;
               if (arguments.length > 2 && arguments[2] !== void 0 && !arguments[2]) {
                 const { imageIdReferenceMap: et } = Z;
@@ -256396,13 +256411,13 @@ Input: ` + this.err.str);
             return D0(S, Ut.Surface, (() => (async function(E) {
               var y;
               let w = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
-              const k = (y = w.segmentIndices) !== null && y !== void 0 && y.length ? w.segmentIndices : $r(E);
+              const k = (y = w.segmentIndices) !== null && y !== void 0 && y.length ? w.segmentIndices : Zr(E);
               let R;
               const T = ur(E), z = T.representationData;
               try {
                 z.CONTOUR ? R = await (async function(Y) {
                   let V = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
-                  const W = ur(Y).representationData.CONTOUR, Z = (V.segmentIndices || $r(Y)).map((async (re) => {
+                  const W = ur(Y).representationData.CONTOUR, Z = (V.segmentIndices || Zr(Y)).map((async (re) => {
                     const Ae = await (async function(ge, Be) {
                       const { annotationUIDsMap: be } = ge, ke = [], Te = [], He = be.get(Be);
                       for (const et of He) {
@@ -256443,7 +256458,7 @@ Input: ` + this.err.str);
             })(S, m)), (() => (async function(E) {
               const y = await j0(E);
               if (!y) return;
-              const w = ur(E), k = $r(E);
+              const w = ur(E), k = Zr(E);
               if (!k.length) return w.representationData.SURFACE.geometryIds.forEach(((T) => {
                 const z = ce.cache.getGeometry(T).data;
                 z.setPoints([]), z.setPolys([]);
@@ -256494,14 +256509,14 @@ Input: ` + this.err.str);
                     return "".concat(Ct, "_").concat(kt);
                   })(Be, ge.id), Te = (0, ce.getEnabledElement)(Ae), { viewport: He } = Te, Ke = (be = He.getActor(ke)) === null || be === void 0 ? void 0 : be.actor;
                   if (Ke) {
-                    const Ct = Ke.getMapper(), kt = Ct.getInputData(), Vt = ge.getPoints(), xn = ge.getPolys(), pn = kt.getPoints().getData(), qn = kt.getPolys().getData();
-                    if (Vt.length === pn.length && xn.length === qn.length) return;
-                    const Zn = nA().newInstance();
-                    Zn.getPoints().setData(Vt, 3);
-                    const Xn = Ub().newInstance({
+                    const Ct = Ke.getMapper(), kt = Ct.getInputData(), Vt = ge.getPoints(), xn = ge.getPolys(), pn = kt.getPoints().getData(), Zn = kt.getPolys().getData();
+                    if (Vt.length === pn.length && xn.length === Zn.length) return;
+                    const Xn = nA().newInstance();
+                    Xn.getPoints().setData(Vt, 3);
+                    const $n = Ub().newInstance({
                       values: Float32Array.from(xn)
                     });
-                    return Zn.setPolys(Xn), Ct.setInputData(Zn), Ct.modified(), void setTimeout((() => {
+                    return Xn.setPolys($n), Ct.setInputData(Xn), Ct.modified(), void setTimeout((() => {
                       He.getRenderer().resetCameraClippingRange();
                     }), 0);
                   }
@@ -256569,7 +256584,7 @@ Input: ` + this.err.str);
             1
           ], Al = [
             "3,3"
-          ], wo = [
+          ], vo = [
             "4,3"
           ], bf = {
             0: "px",
@@ -256645,7 +256660,7 @@ Input: ` + this.err.str);
               values: k
             };
             if (y.sequenceOfUltrasoundRegions) {
-              const T = y.sequenceOfUltrasoundRegions.filter(((Ae) => Ex.includes(Ae.regionDataType) && wo.includes("".concat(Ae.physicalUnitsXDirection, ",").concat(Ae.physicalUnitsYDirection))));
+              const T = y.sequenceOfUltrasoundRegions.filter(((Ae) => Ex.includes(Ae.regionDataType) && vo.includes("".concat(Ae.physicalUnitsXDirection, ",").concat(Ae.physicalUnitsYDirection))));
               if (T == null || !T.length) return {
                 units: w,
                 values: k
@@ -256828,35 +256843,35 @@ Input: ` + this.err.str);
             for (let Vt = z; Vt <= Y; Vt++) {
               const xn = Ye.vec3.clone(kt);
               for (let pn = R; pn <= T; pn++) {
-                const qn = Ye.vec3.clone(kt);
-                for (let Zn = w; Zn <= k; Zn++) {
-                  const Xn = [
-                    Zn,
+                const Zn = Ye.vec3.clone(kt);
+                for (let Xn = w; Xn <= k; Xn++) {
+                  const $n = [
+                    Xn,
                     pn,
                     Vt
                   ];
-                  if (m(kt, Xn)) {
-                    const ir = Vt * Tt + pn * yt + Zn * vt;
+                  if (m(kt, $n)) {
+                    const sr = Vt * Tt + pn * yt + Xn * vt;
                     let kr;
                     kr = vt > 2 ? [
-                      V[ir],
-                      V[ir + 1],
-                      V[ir + 2]
-                    ] : V[ir], Ct.push({
+                      V[sr],
+                      V[sr + 1],
+                      V[sr + 2]
+                    ] : V[sr], Ct.push({
                       value: kr,
-                      index: ir,
-                      pointIJK: Xn,
+                      index: sr,
+                      pointIJK: $n,
                       pointLPS: kt.slice()
                     }), E && E({
                       value: kr,
-                      index: ir,
-                      pointIJK: Xn,
+                      index: sr,
+                      pointIJK: $n,
                       pointLPS: kt
                     });
                   }
                   Ye.vec3.add(kt, kt, rt);
                 }
-                Ye.vec3.copy(kt, qn), Ye.vec3.add(kt, kt, ut);
+                Ye.vec3.copy(kt, Zn), Ye.vec3.add(kt, kt, ut);
               }
               Ye.vec3.copy(kt, xn), Ye.vec3.add(kt, kt, It);
             }
@@ -257929,9 +257944,9 @@ Input: ` + this.err.str);
                   totalSquaredXYLengths: 1 / 0
                 };
                 for (let xn = 0; xn < Ct; xn++) {
-                  let pn = xn, qn = 0;
-                  for (let Zn = 0; Zn < Ct; Zn++) qn += (yt.x[pn] - Tt.x[Zn]) ** 2 + (yt.y[pn] - Tt.y[Zn]) ** 2 + (yt.z[pn] - Tt.z[Zn]) ** 2, pn++, pn === Ct && (pn = 0);
-                  qn < kt.totalSquaredXYLengths && (kt.totalSquaredXYLengths = qn, kt.startingNode = xn);
+                  let pn = xn, Zn = 0;
+                  for (let Xn = 0; Xn < Ct; Xn++) Zn += (yt.x[pn] - Tt.x[Xn]) ** 2 + (yt.y[pn] - Tt.y[Xn]) ** 2 + (yt.z[pn] - Tt.z[Xn]) ** 2, pn++, pn === Ct && (pn = 0);
+                  Zn < kt.totalSquaredXYLengths && (kt.totalSquaredXYLengths = Zn, kt.startingNode = xn);
                 }
                 const Vt = kt.startingNode;
                 $u(yt.x, Vt), $u(yt.y, Vt), $u(yt.z, Vt), $u(yt.I, Vt);
@@ -257957,18 +257972,18 @@ Input: ` + this.err.str);
             z.kIndex = m[0], Y.kIndex = m[1], S.forEach((function(V) {
               (function(W, Z, re, Ae, ge, Be, be) {
                 const [ke, Te] = Ae, He = (re - ke) / (Te - ke), Ke = ge.get(ke)[0], et = ge.get(Te)[0], rt = (function(vt, yt, Tt, Ct) {
-                  const kt = Ct ? vt.I : yt.I, Vt = ec.fromXYZ(vt), xn = ec.fromXYZ(yt), { length: pn } = Vt, qn = ec.create3(pn), Zn = Ye.vec3.create(), Xn = Ye.vec3.create(), ir = ec.create3(pn);
-                  ir.kIndex = vt.kIndex;
+                  const kt = Ct ? vt.I : yt.I, Vt = ec.fromXYZ(vt), xn = ec.fromXYZ(yt), { length: pn } = Vt, Zn = ec.create3(pn), Xn = Ye.vec3.create(), $n = Ye.vec3.create(), sr = ec.create3(pn);
+                  sr.kIndex = vt.kIndex;
                   const kr = ec.create3(pn);
                   kr.kIndex = yt.kIndex;
                   for (let Br = 0; Br < vt.x.length; Br++) if (kt[Br]) {
                     const Nr = Vt.getPoint(Br), pr = xn.getPoint(Br);
-                    ir.push(Nr), kr.push(pr), Ye.vec3.sub(Zn, pr, Nr), qn.push(Ye.vec3.scaleAndAdd(Xn, Nr, Zn, Tt));
+                    sr.push(Nr), kr.push(pr), Ye.vec3.sub(Xn, pr, Nr), Zn.push(Ye.vec3.scaleAndAdd($n, Nr, Xn, Tt));
                   }
-                  return qn.sources = [
-                    ir,
+                  return Zn.sources = [
+                    sr,
                     kr
-                  ], qn;
+                  ], Zn;
                 })(W, Z, He, Be), ut = He > 0.5 ? et : Ke, It = (function(vt) {
                   let yt = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : 12;
                   const Tt = Mx.create3(yt);
@@ -257977,25 +257992,25 @@ Input: ` + this.err.str);
                   if (kt < 15) return vt.subselect(yt);
                   const xn = Math.floor(Math.max(2 * kt / yt, 10));
                   Vt.forEach((() => Ct.push(Mx.create3(yt))));
-                  const pn = (function(Xn) {
-                    let ir = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : 6;
-                    const { length: kr } = Xn, Br = Ye.vec3.create(), Nr = Ye.vec3.create(), pr = new Float32Array(kr);
+                  const pn = (function($n) {
+                    let sr = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : 6;
+                    const { length: kr } = $n, Br = Ye.vec3.create(), Nr = Ye.vec3.create(), pr = new Float32Array(kr);
                     for (let Tr = 0; Tr < kr; Tr++) {
-                      const Ma = Xn.getPoint(Tr), fa = Xn.getPoint(Tr - ir), Ci = Xn.getPoint((Tr + ir) % kr);
+                      const Ma = $n.getPoint(Tr), fa = $n.getPoint(Tr - sr), Ci = $n.getPoint((Tr + sr) % kr);
                       Ye.vec3.sub(Br, Ma, fa), Ye.vec3.sub(Nr, Ci, Ma);
                       const bi = Ye.vec3.dot(Br, Nr) / (Ye.vec3.len(Br) * Ye.vec3.len(Nr));
                       pr[Tr] = bi;
                     }
                     return pr;
-                  })(vt, 5), qn = (function(Xn, ir) {
+                  })(vt, 5), Zn = (function($n, sr) {
                     const { max: kr, deviation: Br } = (function(Ci) {
                       const { length: bi } = Ci;
-                      let Do = 0, JA = 1 / 0, Ac = -1 / 0, ld = 0;
+                      let ko = 0, JA = 1 / 0, Ac = -1 / 0, ld = 0;
                       for (let lc = 0; lc < bi; lc++) {
                         const Mc = Ci[lc];
-                        Do += Mc, JA = Math.min(JA, Mc), Ac = Math.max(Ac, Mc);
+                        ko += Mc, JA = Math.min(JA, Mc), Ac = Math.max(Ac, Mc);
                       }
-                      const $f = Do / bi;
+                      const $f = ko / bi;
                       for (let lc = 0; lc < bi; lc++) {
                         const Mc = Ci[lc] - $f;
                         ld += Mc * Mc;
@@ -258007,12 +258022,12 @@ Input: ` + this.err.str);
                         sumSq: ld,
                         deviation: Math.sqrt(ld / bi)
                       };
-                    })(Xn), { length: Nr } = Xn;
-                    if (Br < 0.01 || Nr < 3 * ir) return [];
+                    })($n), { length: Nr } = $n;
+                    if (Br < 0.01 || Nr < 3 * sr) return [];
                     const pr = [];
                     let Tr, Ma = null, fa = 0;
                     for (let Ci = 0; Ci < Nr; Ci++) {
-                      const bi = Xn[Ci];
+                      const bi = $n[Ci];
                       bi < kr - Br ? Ma ? (Ma[2] = Ci, bi < Tr && (Tr = bi, fa = Ci), Ma[1] = fa) : (Tr = bi, fa = Ci, Ma = [
                         Ci,
                         Ci,
@@ -258020,23 +258035,23 @@ Input: ` + this.err.str);
                       ]) : Ma && (pr.push(Ma), Ma = null);
                     }
                     return Ma && (pr[0][0] === 0 ? pr[0][0] = Ma[0] : (Ma[1] = fa, Ma[2] = Nr - 1, pr.push(Ma))), pr;
-                  })(pn, yt), Zn = [];
-                  if ((qn == null ? void 0 : qn.length) > 2) {
-                    let Xn = -1;
-                    const ir = xn / 3;
-                    qn.forEach(((Br) => {
+                  })(pn, yt), Xn = [];
+                  if ((Zn == null ? void 0 : Zn.length) > 2) {
+                    let $n = -1;
+                    const sr = xn / 3;
+                    Zn.forEach(((Br) => {
                       const [Nr, , pr] = Br, Tr = Math.ceil((Nr + pr) / 2);
-                      pr - Xn < ir || (Tr - Nr > 2 * ir ? (F0(Zn, Xn, Nr, xn, kt), Xn = F0(Zn, Nr, Tr, xn, kt)) : Xn = F0(Zn, Xn, Tr, xn, kt), pr - Xn > ir && (Xn = F0(Zn, Xn, pr, xn, kt)));
+                      pr - $n < sr || (Tr - Nr > 2 * sr ? (F0(Xn, $n, Nr, xn, kt), $n = F0(Xn, Nr, Tr, xn, kt)) : $n = F0(Xn, $n, Tr, xn, kt), pr - $n > sr && ($n = F0(Xn, $n, pr, xn, kt)));
                     }));
-                    const kr = Zn[0];
-                    Fx(kr + kt - Xn, kt) > 2 * ir && F0(Zn, Xn, kr - ir, xn, kt);
+                    const kr = Xn[0];
+                    Fx(kr + kt - $n, kt) > 2 * sr && F0(Xn, $n, kr - sr, xn, kt);
                   } else {
-                    const Xn = Math.floor(kt / yt);
-                    F0(Zn, -1, kt - Xn, Xn, kt);
+                    const $n = Math.floor(kt / yt);
+                    F0(Xn, -1, kt - $n, $n, kt);
                   }
-                  return Zn.forEach(((Xn) => {
-                    const ir = vt.getPointArray(Xn);
-                    Tt.push(ir), Vt.forEach(((kr, Br) => Ct[Br].push(kr.getPoint(Xn))));
+                  return Xn.forEach((($n) => {
+                    const sr = vt.getPointArray($n);
+                    Tt.push(sr), Vt.forEach(((kr, Br) => Ct[Br].push(kr.getPoint($n))));
                   })), Tt;
                 })(rt);
                 ge.has(re) ? (function(vt, yt, Tt, Ct, kt) {
@@ -258047,13 +258062,13 @@ Input: ` + this.err.str);
                   });
                 })(rt, It, re, ut, be) : (function(vt, yt, Tt, Ct, kt) {
                   var Vt;
-                  const xn = vt.points, { viewport: pn } = kt, qn = Qf(xn, yt, Ct), Zn = pn.getViewReference({
+                  const xn = vt.points, { viewport: pn } = kt, Zn = Qf(xn, yt, Ct), Xn = pn.getViewReference({
                     sliceIndex: Tt
                   });
-                  if (!Zn) throw new Error("Can't find slice ".concat(Tt));
-                  Object.assign(qn.metadata, Zn), Ze(qn, pn.element), (Vt = Ct.onInterpolationComplete) === null || Vt === void 0 || Vt.call(Ct, qn, Ct);
-                  const { parentAnnotationUID: Xn } = Ct;
-                  Xn && Qy(pn, vy(bt(Xn), Tt, kt), qn);
+                  if (!Xn) throw new Error("Can't find slice ".concat(Tt));
+                  Object.assign(Zn.metadata, Xn), Ze(Zn, pn.element), (Vt = Ct.onInterpolationComplete) === null || Vt === void 0 || Vt.call(Ct, Zn, Ct);
+                  const { parentAnnotationUID: $n } = Ct;
+                  $n && Qy(pn, vy(bt($n), Tt, kt), Zn);
                 })(rt, It, re, ut, be);
               })(z, Y, V, m, E, R.x.length > T.x.length, y);
             }));
@@ -259439,7 +259454,7 @@ Input: ` + this.err.str);
               ih(S, m, E, k, w, R);
             }));
           };
-          function vo(S, m, E, y) {
+          function No(S, m, E, y) {
             let w = arguments.length > 4 && arguments[4] !== void 0 ? arguments[4] : {}, k = arguments.length > 5 && arguments[5] !== void 0 ? arguments[5] : "";
             const { color: R, width: T, lineWidth: z, lineDash: Y } = Object.assign({
               color: "rgb(0, 255, 0)",
@@ -259471,7 +259486,7 @@ Input: ` + this.err.str);
           }
           function Dc(S, m, E, y, w) {
             let k = arguments.length > 5 && arguments[5] !== void 0 ? arguments[5] : {}, R = arguments.length > 6 && arguments[6] !== void 0 ? arguments[6] : "";
-            vo(S, m, E, [
+            No(S, m, E, [
               [
                 y[0],
                 y[1]
@@ -259635,14 +259650,14 @@ Input: ` + this.err.str);
           var qx = (function(S) {
             return S.Default = "", S.Highlighted = "Highlighted", S.Selected = "Selected", S.Locked = "Locked", S.AutoGenerated = "AutoGenerated", S;
           })(qx || {});
-          const No = qx, zy = function(S) {
+          const Do = qx, zy = function(S) {
             if (S) {
-              if (S.data && S.highlighted) return No.Highlighted;
-              if (zn(S.annotationUID)) return No.Selected;
-              if (Ve(S)) return No.Locked;
-              if (S.data && S.autoGenerated) return No.AutoGenerated;
+              if (S.data && S.highlighted) return Do.Highlighted;
+              if (zn(S.annotationUID)) return Do.Selected;
+              if (Ve(S)) return Do.Locked;
+              if (S.data && S.autoGenerated) return Do.AutoGenerated;
             }
-            return No.Default;
+            return Do.Default;
           };
           class HA extends us {
             constructor() {
@@ -259737,7 +259752,7 @@ Input: ` + this.err.str);
             static createAndAddAnnotation(m) {
               for (var E = arguments.length, y = new Array(E > 1 ? E - 1 : 0), w = 1; w < E; w++) y[w - 1] = arguments[w];
               const k = this.createAnnotationForViewport(m, ...y);
-              Ze(k, m.element), sr(k, m.element);
+              Ze(k, m.element), ar(k, m.element);
             }
             constructor(m, E) {
               var y, w;
@@ -260398,10 +260413,10 @@ Input: ` + this.err.str);
                   if (ge.cachedStats[Y] && ge.cachedStats[Y].areaUnit != null) {
                     if (re.invalidated && (this._throttledCalculateCachedStats(re, et, rt, V, m), R instanceof ce.VolumeViewport)) {
                       const { referencedImageId: pn } = re.metadata;
-                      for (const qn in ge.cachedStats) qn.startsWith("imageId") && V.getStackViewports().find(((Zn) => {
-                        const Xn = ce.utilities.imageIdToURI(pn), ir = Zn.hasImageURI(Xn), kr = ce.utilities.imageIdToURI(Zn.getCurrentImageId());
-                        return ir && kr !== Xn;
-                      })) && delete ge.cachedStats[qn];
+                      for (const Zn in ge.cachedStats) Zn.startsWith("imageId") && V.getStackViewports().find(((Xn) => {
+                        const $n = ce.utilities.imageIdToURI(pn), sr = Xn.hasImageURI($n), kr = ce.utilities.imageIdToURI(Xn.getCurrentImageId());
+                        return sr && kr !== $n;
+                      })) && delete ge.cachedStats[Zn];
                     }
                   } else ge.cachedStats[Y] = {
                     Modality: null,
@@ -260418,7 +260433,7 @@ Input: ` + this.err.str);
                     ke[be]
                   ]), ut && _i(E, Ae, "0", ut, {
                     color: Te
-                  }), vo(E, Ae, "0", ke, {
+                  }), No(E, Ae, "0", ke, {
                     color: Te,
                     lineDash: Ke,
                     lineWidth: He
@@ -260522,14 +260537,14 @@ Input: ` + this.err.str);
                     ], { scale: Tt, areaUnits: Ct } = UA(ke, yt), kt = Math.abs(It * vt) / (Tt * Tt), Vt = {
                       isPreScaled: Ld(T, be),
                       isSuvScaled: this.isSuvScaled(T, be, m.metadata.referencedImageId)
-                    }, xn = sh(Ke.Modality, m.metadata.referencedImageId, Vt), pn = PA(He, (() => true), this.configuration.statsCalculator.statsCallback, ut), qn = this.configuration.statsCalculator.getStatistics();
+                    }, xn = sh(Ke.Modality, m.metadata.referencedImageId, Vt), pn = PA(He, (() => true), this.configuration.statsCalculator.statsCallback, ut), Zn = this.configuration.statsCalculator.getStatistics();
                     W[be] = {
                       Modality: Ke.Modality,
                       area: kt,
-                      mean: (re = qn.mean) === null || re === void 0 ? void 0 : re.value,
-                      stdDev: (Ae = qn.stdDev) === null || Ae === void 0 ? void 0 : Ae.value,
-                      max: (ge = qn.max) === null || ge === void 0 ? void 0 : ge.value,
-                      statsArray: qn.array,
+                      mean: (re = Zn.mean) === null || re === void 0 ? void 0 : re.value,
+                      stdDev: (Ae = Zn.stdDev) === null || Ae === void 0 ? void 0 : Ae.value,
+                      max: (ge = Zn.max) === null || ge === void 0 ? void 0 : ge.value,
+                      statsArray: Zn.array,
                       pointsInShape: pn,
                       areaUnit: Ct,
                       modalityUnit: xn
@@ -260538,7 +260553,7 @@ Input: ` + this.err.str);
                     Modality: Ke.Modality
                   };
                 }
-                return m.invalidated = false, sr(m, z), W;
+                return m.invalidated = false, ar(m, z), W;
               })), ie(this, "_isInsideVolume", ((m, E, y) => ce.utilities.indexWithinDimensions(m, y) && ce.utilities.indexWithinDimensions(E, y))), this._throttledCalculateCachedStats = xA(this._calculateCachedStats, 100, {
                 trailing: true
               });
@@ -260643,7 +260658,7 @@ Input: ` + this.err.str);
                   const be = this.getStyle("lineWidth", Y, W), ke = this.getStyle("lineDash", Y, W), Te = this.getStyle("color", Y, W);
                   if (!R.getRenderingEngine()) return console.warn("Rendering Engine has been destroyed"), k;
                   let He;
-                  sr(W, T), en(Z) && (Ve(W) || this.editData || ge === null || (He = [
+                  ar(W, T), en(Z) && (Ve(W) || this.editData || ge === null || (He = [
                     Be[ge]
                   ]), He && _i(E, Z, "0", He, {
                     color: Te
@@ -260861,23 +260876,23 @@ Input: ` + this.err.str);
                       const Br = YA(Be);
                       W.handles.textBox.worldPosition = k.canvasToWorld(Br);
                     }
-                    const pn = k.worldToCanvas(W.handles.textBox.worldPosition), qn = EA(E, V, "1", xn, pn, Be, {}, Vt), { x: Zn, y: Xn, width: ir, height: kr } = qn;
+                    const pn = k.worldToCanvas(W.handles.textBox.worldPosition), Zn = EA(E, V, "1", xn, pn, Be, {}, Vt), { x: Xn, y: $n, width: sr, height: kr } = Zn;
                     W.handles.textBox.worldBoundingBox = {
                       topLeft: k.canvasToWorld([
-                        Zn,
-                        Xn
+                        Xn,
+                        $n
                       ]),
                       topRight: k.canvasToWorld([
-                        Zn + ir,
-                        Xn
+                        Xn + sr,
+                        $n
                       ]),
                       bottomLeft: k.canvasToWorld([
-                        Zn,
-                        Xn + kr
+                        Xn,
+                        $n + kr
                       ]),
                       bottomRight: k.canvasToWorld([
-                        Zn + ir,
-                        Xn + kr
+                        Xn + sr,
+                        $n + kr
                       ])
                     };
                   }
@@ -260914,7 +260929,7 @@ Input: ` + this.err.str);
                 const pn = Ah(Ct, ke);
                 if (pn[0] = Math.floor(pn[0]), pn[1] = Math.floor(pn[1]), pn[2] = Math.floor(pn[2]), pn[xn] = Vt[xn], this._isInsideVolume(kt, pn, Tt)) {
                   this.isHandleOutsideImage = false;
-                  const qn = [
+                  const Zn = [
                     [
                       Math.min(kt[0], pn[0]),
                       Math.max(kt[0], pn[0])
@@ -260927,8 +260942,8 @@ Input: ` + this.err.str);
                       Math.min(kt[2], pn[2]),
                       Math.max(kt[2], pn[2])
                     ]
-                  ], Zn = PA(Ct, (() => true), this.configuration.statsCalculator.statsCallback, qn);
-                  ge.push(Zn);
+                  ], Xn = PA(Ct, (() => true), this.configuration.statsCalculator.statsCallback, Zn);
+                  ge.push(Xn);
                 }
               }
               const It = this.configuration.statsCalculator.getStatistics();
@@ -260945,7 +260960,7 @@ Input: ` + this.err.str);
             }
             _calculateCachedStatsTool(m, E) {
               const y = m.data, { viewport: w } = E, { cachedStats: k } = y, R = this.getTargetId(w), T = ce.cache.getVolume(R.split(/volumeId:|\?/)[1]);
-              return this._computeProjectionPoints(m, T), this.configuration.calculatePointsInsideVolume && this._computePointsInsideVolume(m, R, T, E), m.invalidated = false, sr(m, w.element), k;
+              return this._computeProjectionPoints(m, T), this.configuration.calculatePointsInsideVolume && this._computePointsInsideVolume(m, R, T, E), m.invalidated = false, ar(m, w.element), k;
             }
             _getStartCoordinate(m, E) {
               const y = m;
@@ -261614,7 +261629,7 @@ Input: ` + this.err.str);
                   viewportId: m.viewport.id
                 };
                 for (let Z = 0; Z < z.length; Z++) {
-                  const re = z[Z], { annotationUID: Ae, data: ge } = re, { points: Be, activeHandleIndex: be } = ge.handles, ke = Be.map(((Zn) => R.worldToCanvas(Zn)));
+                  const re = z[Z], { annotationUID: Ae, data: ge } = re, { points: Be, activeHandleIndex: be } = ge.handles, ke = Be.map(((Xn) => R.worldToCanvas(Xn)));
                   W.annotationUID = Ae;
                   const { color: Te, lineWidth: He, lineDash: Ke, shadow: et } = this.getAnnotationStyle({
                     annotation: re,
@@ -261682,7 +261697,7 @@ Input: ` + this.err.str);
                   if (!yt || yt.length === 0) continue;
                   let Tt;
                   ge.handles.textBox.hasMoved || (Tt = YA(ke), ge.handles.textBox.worldPosition = R.canvasToWorld(Tt));
-                  const Ct = R.worldToCanvas(ge.handles.textBox.worldPosition), kt = EA(E, Ae, "1", yt, Ct, ke, {}, vt), { x: Vt, y: xn, width: pn, height: qn } = kt;
+                  const Ct = R.worldToCanvas(ge.handles.textBox.worldPosition), kt = EA(E, Ae, "1", yt, Ct, ke, {}, vt), { x: Vt, y: xn, width: pn, height: Zn } = kt;
                   ge.handles.textBox.worldBoundingBox = {
                     topLeft: R.canvasToWorld([
                       Vt,
@@ -261694,11 +261709,11 @@ Input: ` + this.err.str);
                     ]),
                     bottomLeft: R.canvasToWorld([
                       Vt,
-                      xn + qn
+                      xn + Zn
                     ]),
                     bottomRight: R.canvasToWorld([
                       Vt + pn,
-                      xn + qn
+                      xn + Zn
                     ])
                   };
                 }
@@ -261749,7 +261764,7 @@ Input: ` + this.err.str);
                     widthUnit: xn
                   };
                 }
-                return m.invalidated = false, sr(m, k), V;
+                return m.invalidated = false, ar(m, k), V;
               })), ie(this, "_isInsideVolume", ((m, E, y, w, k) => ce.utilities.indexWithinDimensions(m, k) && ce.utilities.indexWithinDimensions(E, k) && ce.utilities.indexWithinDimensions(y, k) && ce.utilities.indexWithinDimensions(w, k))), ie(this, "_getSignedAngle", ((m, E) => Math.atan2(m[0] * E[1] - m[1] * E[0], m[0] * E[0] + m[1] * E[1]))), this._throttledCalculateCachedStats = xA(this._calculateCachedStats, 100, {
                 trailing: true
               });
@@ -264093,7 +264108,7 @@ Input: ` + this.err.str);
               points: z,
               closed: true,
               targetWindingDirection: Xu.Clockwise
-            }, w), R.autoGenerated && (R.autoGenerated = false), sr(R, E);
+            }, w), R.autoGenerated && (R.autoGenerated = false), ar(R, E);
             const V = Y.pop();
             this.editData = {
               prevCanvasPoints: z,
@@ -264185,7 +264200,7 @@ Input: ` + this.err.str);
                   enabled: !!V.enabled,
                   epsilon: V.epsilon
                 }
-              }), w.autoGenerated && (w.autoGenerated = false), sr(w, S);
+              }), w.autoGenerated && (w.autoGenerated = false), ar(w, S);
             }
             this.isEditingClosed = false, this.editData = void 0, this.commonData = void 0, an(y, k), this.deactivateClosedContourEdit(S);
           }
@@ -264214,7 +264229,7 @@ Input: ` + this.err.str);
               movingTextBox: false
             }, Kt.isInteractingWithTool = true, k.addEventListener(Ne.MOUSE_UP, this.mouseUpOpenContourEditCallback), k.addEventListener(Ne.MOUSE_DRAG, this.mouseDragOpenContourEditCallback), k.addEventListener(Ne.MOUSE_CLICK, this.mouseUpOpenContourEditCallback), k.addEventListener(Ne.TOUCH_END, this.mouseUpOpenContourEditCallback), k.addEventListener(Ne.TOUCH_DRAG, this.mouseDragOpenContourEditCallback), k.addEventListener(Ne.TOUCH_TAP, this.mouseUpOpenContourEditCallback), Fr(k);
           }
-          function Zr(S) {
+          function Xr(S) {
             Kt.isInteractingWithTool = false, S.removeEventListener(Ne.MOUSE_UP, this.mouseUpOpenContourEditCallback), S.removeEventListener(Ne.MOUSE_DRAG, this.mouseDragOpenContourEditCallback), S.removeEventListener(Ne.MOUSE_CLICK, this.mouseUpOpenContourEditCallback), S.removeEventListener(Ne.TOUCH_END, this.mouseUpOpenContourEditCallback), S.removeEventListener(Ne.TOUCH_DRAG, this.mouseDragOpenContourEditCallback), S.removeEventListener(Ne.TOUCH_TAP, this.mouseUpOpenContourEditCallback), xr(S);
           }
           function gi(S) {
@@ -264236,7 +264251,7 @@ Input: ` + this.err.str);
             k.data.handles.points = [
               T[0],
               T[T.length - 1]
-            ], k.data.handles.activeHandleIndex = 1, sr(k, E), this.isEditingOpen = false, this.editData = void 0, this.commonData = void 0, this.deactivateOpenContourEdit(E), this.activateOpenContourEndEdit(S, k, R, null);
+            ], k.data.handles.activeHandleIndex = 1, ar(k, E), this.isEditingOpen = false, this.editData = void 0, this.commonData = void 0, this.deactivateOpenContourEdit(E), this.activateOpenContourEndEdit(S, k, R, null);
           }
           function is(S) {
             const m = S.detail, { currentPoints: E, lastPoints: y } = m, w = E.canvas, k = y.canvas, { snapIndex: R, prevCanvasPoints: T, startCrossingIndex: z } = this.editData;
@@ -264329,7 +264344,7 @@ Input: ` + this.err.str);
             R.data.handles.points = [
               V[0],
               V[V.length - 1]
-            ], sr(R, E);
+            ], ar(R, E);
             const W = Y.pop();
             this.editData = {
               prevCanvasPoints: z,
@@ -264362,7 +264377,7 @@ Input: ` + this.err.str);
               w.data.handles.points = [
                 W[0],
                 W[W.length - 1]
-              ], w.data.isOpenUShapeContour && (w.data.openUShapeContourVectorToPeak = dQ(R, E)), sr(w, S);
+              ], w.data.isOpenUShapeContour && (w.data.openUShapeContourVectorToPeak = dQ(R, E)), ar(w, S);
             }
             this.isEditingOpen = false, this.editData = void 0, this.commonData = void 0, an(y, k), this.deactivateOpenContourEdit(S);
           }
@@ -264370,7 +264385,7 @@ Input: ` + this.err.str);
             this.completeOpenContourEdit(S);
           }
           const hce = function(S) {
-            S.activateOpenContourEdit = as.bind(S), S.deactivateOpenContourEdit = Zr.bind(S), S.mouseDragOpenContourEditCallback = gi.bind(S), S.mouseUpOpenContourEditCallback = dce.bind(S), S.fuseEditPointsWithOpenContour = CR.bind(S), S.finishEditOpenOnSecondCrossing = cce.bind(S), S.checkIfShouldOverwriteAnEnd = is.bind(S), S.fuseEditPointsForOpenContourEndEdit = K0.bind(S), S.openContourEditOverwriteEnd = Pi.bind(S), S.cancelOpenContourEdit = uce.bind(S), S.completeOpenContourEdit = gce.bind(S);
+            S.activateOpenContourEdit = as.bind(S), S.deactivateOpenContourEdit = Xr.bind(S), S.mouseDragOpenContourEditCallback = gi.bind(S), S.mouseUpOpenContourEditCallback = dce.bind(S), S.fuseEditPointsWithOpenContour = CR.bind(S), S.finishEditOpenOnSecondCrossing = cce.bind(S), S.checkIfShouldOverwriteAnEnd = is.bind(S), S.fuseEditPointsForOpenContourEndEdit = K0.bind(S), S.openContourEditOverwriteEnd = Pi.bind(S), S.cancelOpenContourEdit = uce.bind(S), S.completeOpenContourEdit = gce.bind(S);
           }, { getSubPixelSpacingAndXYDirections: fce } = le;
           function pce(S, m, E, y) {
             this.isDrawing = true;
@@ -264800,8 +264815,8 @@ Input: ` + this.err.str);
               var kt, Vt, xn, pn;
               if (Be) yt = (kt = It.outlineWidthAutoGenerated) !== null && kt !== void 0 ? kt : yt, vt = (Vt = It.outlineDashAutoGenerated) !== null && Vt !== void 0 ? Vt : vt, Tt = (xn = It.outlineOpacity) !== null && xn !== void 0 ? xn : Tt, Ct = (pn = It.fillAlphaAutoGenerated) !== null && pn !== void 0 ? pn : Ct;
               else if (ge) {
-                var qn, Zn, Xn, ir;
-                yt = (qn = It.outlineWidthActive) !== null && qn !== void 0 ? qn : yt, vt = (Zn = It.outlineDashActive) !== null && Zn !== void 0 ? Zn : vt, Tt = (Xn = It.outlineOpacity) !== null && Xn !== void 0 ? Xn : Tt, Ct = (ir = It.fillAlpha) !== null && ir !== void 0 ? ir : Ct;
+                var Zn, Xn, $n, sr;
+                yt = (Zn = It.outlineWidthActive) !== null && Zn !== void 0 ? Zn : yt, vt = (Xn = It.outlineDashActive) !== null && Xn !== void 0 ? Xn : vt, Tt = ($n = It.outlineOpacity) !== null && $n !== void 0 ? $n : Tt, Ct = (sr = It.fillAlpha) !== null && sr !== void 0 ? sr : Ct;
               } else {
                 var kr, Br, Nr, pr;
                 yt = (kr = It.outlineWidthInactive) !== null && kr !== void 0 ? kr : yt, vt = (Br = It.outlineDashInactive) !== null && Br !== void 0 ? Br : vt, Tt = (Nr = It.outlineOpacityInactive) !== null && Nr !== void 0 ? Nr : Tt, Ct = (pr = It.fillAlphaInactive) !== null && pr !== void 0 ? pr : Ct;
@@ -264934,7 +264949,7 @@ Input: ` + this.err.str);
                     calibratedScale: ke
                   });
                 }
-                return sr(m, w.viewport.element, Rr.StatsUpdated), m.invalidated = false, R;
+                return ar(m, w.viewport.element, Rr.StatsUpdated), m.invalidated = false, R;
               })), ie(this, "_renderStats", ((m, E, y, w) => {
                 var k;
                 const { data: R } = m, T = this.getTargetId(E), z = {
@@ -265077,9 +265092,9 @@ Input: ` + this.err.str);
               kt[0] = Math.floor(kt[0]), kt[1] = Math.floor(kt[1]), kt[2] = Math.floor(kt[2]);
               let Vt = rI(Z) / Ae / Ae;
               Vt *= Ke * et;
-              const xn = 0.01 * (It - ut), pn = 0.01 * (yt - vt), qn = 0.01 * (Ct - Tt);
-              ut = Math.floor(ut - xn), It = Math.ceil(It + xn), vt = Math.floor(vt - pn), yt = Math.ceil(yt + pn), Tt = Math.floor(Tt - qn), Ct = Math.ceil(Ct + qn);
-              const Zn = [
+              const xn = 0.01 * (It - ut), pn = 0.01 * (yt - vt), Zn = 0.01 * (Ct - Tt);
+              ut = Math.floor(ut - xn), It = Math.ceil(It + xn), vt = Math.floor(vt - pn), yt = Math.ceil(yt + pn), Tt = Math.floor(Tt - Zn), Ct = Math.ceil(Ct + Zn);
+              const Xn = [
                 [
                   ut,
                   It
@@ -265092,22 +265107,22 @@ Input: ` + this.err.str);
                   Tt,
                   Ct
                 ]
-              ], Xn = T.indexToWorld([
+              ], $n = T.indexToWorld([
                 It,
                 yt,
                 Ct
-              ]), ir = k.worldToCanvas(Xn);
+              ]), sr = k.worldToCanvas($n);
               let kr = 0, Br = [], Nr = 0;
               const pr = PA(T, ((Ma, fa) => {
                 let Ci = true;
                 const bi = k.worldToCanvas(Ma);
                 return bi[1] != kr && (Nr = 0, kr = bi[1], Br = Wy(Z, bi, [
-                  ir[0],
+                  sr[0],
                   bi[1]
-                ]), Br.sort((function(Do, JA) {
-                  return Do[0] === JA[0] ? 0 : Do[0] < JA[0] ? -1 : 1;
+                ]), Br.sort((function(ko, JA) {
+                  return ko[0] === JA[0] ? 0 : ko[0] < JA[0] ? -1 : 1;
                 }))), Br.length && bi[0] > Br[0][0] && (Br.shift(), Nr++), Nr % 2 == 0 && (Ci = false), Ci;
-              }), this.configuration.statsCalculator.statsCallback, Zn), Tr = this.configuration.statsCalculator.getStatistics();
+              }), this.configuration.statsCalculator.statsCallback, Xn), Tr = this.configuration.statsCalculator.getStatistics();
               Y[V] = {
                 Modality: z.Modality,
                 area: Vt,
@@ -265181,7 +265196,7 @@ Input: ` + this.err.str);
             return D0(S, Ut.Contour, (() => (async function(E) {
               var y, w;
               let k = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
-              const R = (y = k.segmentIndices) !== null && y !== void 0 && y.length ? k.segmentIndices : $r(E);
+              const R = (y = k.segmentIndices) !== null && y !== void 0 && y.length ? k.segmentIndices : Zr(E);
               let T;
               const z = ur(E).representationData;
               try {
@@ -265189,7 +265204,7 @@ Input: ` + this.err.str);
                   var re;
                   let Ae = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : {};
                   if (!Ae.viewport) throw new Error("Viewport is required to compute contour from surface");
-                  const { viewport: ge, segmentationRepresentationUID: Be } = Ae, be = (re = Ae.segmentIndices) !== null && re !== void 0 && re.length ? Ae.segmentIndices : $r(Z), ke = /* @__PURE__ */ new Map(), Te = /* @__PURE__ */ new Map(), He = ur(Z).representationData.SURFACE, Ke = [];
+                  const { viewport: ge, segmentationRepresentationUID: Be } = Ae, be = (re = Ae.segmentIndices) !== null && re !== void 0 && re.length ? Ae.segmentIndices : Zr(Z), ke = /* @__PURE__ */ new Map(), Te = /* @__PURE__ */ new Map(), He = ur(Z).representationData.SURFACE, Ke = [];
                   return He.geometryIds.forEach(((et, rt) => {
                     if (be.includes(rt)) {
                       var ut;
@@ -265746,10 +265761,10 @@ Input: ` + this.err.str);
                 const It = Object.keys(ut.toolOptions), vt = ut.getDefaultMousePrimary(), yt = ke.detail.event, Tt = (He = yt == null ? void 0 : yt.buttons) !== null && He !== void 0 ? He : vt, Ct = oc(yt) || zo.getModifierKey();
                 for (let xn = 0; xn < It.length; xn++) {
                   var kt, Vt;
-                  const pn = It[xn], qn = ut.getToolInstance(pn), Zn = (kt = (Vt = qn.configuration) === null || Vt === void 0 ? void 0 : Vt.actions) !== null && kt !== void 0 ? kt : {}, Xn = Object.values(Zn);
-                  if (Xn == null || !Xn.length || !Te.includes(qn.mode)) continue;
-                  const ir = Xn.find(((kr) => kr.bindings.length && kr.bindings.some(((Br) => Br.mouseButton === Tt && Br.modifierKey === Ct))));
-                  ir && Ke.set(qn, ir);
+                  const pn = It[xn], Zn = ut.getToolInstance(pn), Xn = (kt = (Vt = Zn.configuration) === null || Vt === void 0 ? void 0 : Vt.actions) !== null && kt !== void 0 ? kt : {}, $n = Object.values(Xn);
+                  if ($n == null || !$n.length || !Te.includes(Zn.mode)) continue;
+                  const sr = $n.find(((kr) => kr.bindings.length && kr.bindings.some(((Br) => Br.mouseButton === Tt && Br.modifierKey === Ct))));
+                  sr && Ke.set(Zn, sr);
                 }
                 return Ke;
               })(W, [
@@ -266075,19 +266090,19 @@ Input: ` + this.err.str);
                     points: kt,
                     closed: true,
                     targetWindingDirection: Xu.Clockwise
-                  }, V), Ze(pn, Ke), T0(pn), sr(pn, V.element), (Tt = ke.get(kt)) === null || Tt === void 0 || Tt.forEach(((qn) => za(pn, qn.annotation)));
+                  }, V), Ze(pn, Ke), T0(pn), ar(pn, V.element), (Tt = ke.get(kt)) === null || Tt === void 0 || Tt.forEach(((Zn) => za(pn, Zn.annotation)));
                 }
                 (function(Ct, kt, Vt) {
-                  const { viewport: xn } = Ct, { element: pn } = xn, { renderingEngine: qn } = Ct, Zn = /* @__PURE__ */ new Set([
+                  const { viewport: xn } = Ct, { element: pn } = xn, { renderingEngine: Zn } = Ct, Xn = /* @__PURE__ */ new Set([
                     rd,
                     kt.metadata.toolName,
                     Vt.metadata.toolName
                   ]);
-                  for (const Xn of Zn.values()) {
-                    const ir = Mr(pn, Xn);
-                    an(qn, ir);
+                  for (const $n of Xn.values()) {
+                    const sr = Mr(pn, $n);
+                    an(Zn, sr);
                   }
-                  new Promise(((Xn) => window.requestAnimationFrame(Xn)));
+                  new Promise((($n) => window.requestAnimationFrame($n)));
                 })(et, W, re);
               })(y, T, z, E, k);
             })(S);
@@ -266792,7 +266807,7 @@ Input: ` + this.err.str);
               viewBox: E
             });
           }
-          const fde = Object.keys(tN), pde = No.Highlighted, mde = at.Active;
+          const fde = Object.keys(tN), pde = Do.Highlighted, mde = at.Active;
           class fI extends pQ {
             constructor(m, E, y, w, k) {
               super(m, E, y, w, k);
@@ -267766,7 +267781,7 @@ Input: ` + this.err.str);
                   index: He,
                   Modality: Te
                 };
-                m.invalidated = false, sr(m, T);
+                m.invalidated = false, ar(m, T);
               }
               return Y;
             }
@@ -268720,7 +268735,7 @@ Input: ` + this.err.str);
                   unit: Te
                 };
               }
-              return m.invalidated = false, sr(m, k), z;
+              return m.invalidated = false, ar(m, k), z;
             }
             _isInsideVolume(m, E, y) {
               return ce.utilities.indexWithinDimensions(m, y) && ce.utilities.indexWithinDimensions(E, y);
@@ -269023,7 +269038,7 @@ Input: ` + this.err.str);
                   unit: Te
                 };
               }
-              return m.invalidated = false, sr(m, k), z;
+              return m.invalidated = false, ar(m, k), z;
             }
             _isInsideVolume(m, E, y) {
               return ce.utilities.indexWithinDimensions(m, y) && ce.utilities.indexWithinDimensions(E, y);
@@ -269229,9 +269244,9 @@ Input: ` + this.err.str);
                 et.forEach(((Ct) => {
                   const { data: kt } = Ct;
                   kt.handles.toolCenter = this.toolCenter;
-                  const Vt = V.getViewport(kt.viewportId), xn = Vt.getCamera(), pn = this._getReferenceLineControllable(Vt.id), qn = this._getReferenceLineDraggableRotatable(Vt.id), Zn = this._getReferenceLineSlabThicknessControlsOn(Vt.id), { clientWidth: Xn, clientHeight: ir } = Vt.canvas, kr = Math.sqrt(Xn * Xn + ir * ir), Br = [
-                    0.5 * Xn,
-                    0.5 * ir
+                  const Vt = V.getViewport(kt.viewportId), xn = Vt.getCamera(), pn = this._getReferenceLineControllable(Vt.id), Zn = this._getReferenceLineDraggableRotatable(Vt.id), Xn = this._getReferenceLineSlabThicknessControlsOn(Vt.id), { clientWidth: $n, clientHeight: sr } = Vt.canvas, kr = Math.sqrt($n * $n + sr * sr), Br = [
+                    0.5 * $n,
+                    0.5 * sr
                   ], Nr = Vt.canvasToWorld(Br), pr = [
                     0,
                     0,
@@ -269252,8 +269267,8 @@ Input: ` + this.err.str);
                   Ka().subtract(Nr, pr, Ma);
                   const fa = Y.worldToCanvas(Tr), Ci = Y.worldToCanvas(Nr), bi = Ye.vec2.create();
                   Ye.vec2.subtract(bi, fa, Ci), Ye.vec2.normalize(bi, bi);
-                  const Do = Ye.vec2.create();
-                  Ye.vec2.scale(Do, bi, 100 * ke);
+                  const ko = Ye.vec2.create();
+                  Ye.vec2.scale(ko, bi, 100 * ke);
                   const JA = Ye.vec2.create();
                   Ye.vec2.scale(JA, bi, 0.4 * Te);
                   const Ac = Ye.vec2.create();
@@ -269262,17 +269277,17 @@ Input: ` + this.err.str);
                   Ye.vec2.scale(ld, bi, et.length === 2 ? $f : 0);
                   const lc = Ye.vec2.create(), Mc = Ye.vec2.create(), CI = Ye.vec2.create(), xI = Ye.vec2.create();
                   let hh = Ye.vec2.clone(Ke);
-                  qn && pn || (hh = Ye.vec2.clone(Ci)), Ye.vec2.add(lc, hh, ld), Ye.vec2.add(Mc, hh, Do), Ye.vec2.subtract(CI, hh, ld), Ye.vec2.subtract(xI, hh, Do), Pf(lc, Mc, ut), Pf(CI, xI, ut);
+                  Zn && pn || (hh = Ye.vec2.clone(Ci)), Ye.vec2.add(lc, hh, ld), Ye.vec2.add(Mc, hh, ko), Ye.vec2.subtract(CI, hh, ld), Ye.vec2.subtract(xI, hh, ko), Pf(lc, Mc, ut), Pf(CI, xI, ut);
                   const TB = Ye.vec2.create();
                   Ye.vec2.subtract(TB, Ke, JA);
                   const LB = Ye.vec2.create();
                   Ye.vec2.add(LB, Ke, JA);
                   let Fc = Ye.vec2.clone(Ke);
-                  !qn && Zn && (Fc = Ye.vec2.clone(Ci));
+                  !Zn && Xn && (Fc = Ye.vec2.clone(Ci));
                   let fh = [
                     ...this.toolCenter
                   ];
-                  !qn && Zn && (fh = [
+                  !Zn && Xn && (fh = [
                     ...Nr
                   ]);
                   const BI = [
@@ -269300,13 +269315,13 @@ Input: ` + this.err.str);
                   const y4 = Y.worldToCanvas(lN), Pg = Ye.vec2.create();
                   Ye.vec2.subtract(Pg, Fc, y4);
                   const cc = Ye.vec2.create();
-                  Ye.vec2.subtract(cc, Fc, Do), Ye.vec2.add(cc, cc, Pg);
+                  Ye.vec2.subtract(cc, Fc, ko), Ye.vec2.add(cc, cc, Pg);
                   const QQ = Ye.vec2.create();
-                  Ye.vec2.add(QQ, Fc, Do), Ye.vec2.add(QQ, QQ, Pg), Pf(cc, QQ, ut);
+                  Ye.vec2.add(QQ, Fc, ko), Ye.vec2.add(QQ, QQ, Pg), Pf(cc, QQ, ut);
                   const wQ = Ye.vec2.create();
-                  Ye.vec2.add(wQ, Fc, Do), Ye.vec2.subtract(wQ, wQ, Pg);
+                  Ye.vec2.add(wQ, Fc, ko), Ye.vec2.subtract(wQ, wQ, Pg);
                   const vQ = Ye.vec2.create();
-                  Ye.vec2.subtract(vQ, Fc, Do), Ye.vec2.subtract(vQ, vQ, Pg), Pf(wQ, vQ, ut);
+                  Ye.vec2.subtract(vQ, Fc, ko), Ye.vec2.subtract(vQ, vQ, Pg), Pf(wQ, vQ, ut);
                   const cN = Ye.vec2.create(), dN = Ye.vec2.create(), gN = Ye.vec2.create(), uN = Ye.vec2.create();
                   Ye.vec2.subtract(cN, Fc, Ac), Ye.vec2.add(cN, cN, Pg), Ye.vec2.add(dN, Fc, Ac), Ye.vec2.add(dN, dN, Pg), Ye.vec2.subtract(gN, Fc, Ac), Ye.vec2.subtract(gN, gN, Pg), Ye.vec2.add(uN, Fc, Ac), Ye.vec2.subtract(uN, uN, Pg), rt.push([
                     Vt,
@@ -269329,12 +269344,12 @@ Input: ` + this.err.str);
                 const It = [], vt = [], yt = this._getReferenceLineColor(Y.id), Tt = yt !== void 0 ? yt : "rgb(200, 200, 200)";
                 if (rt.forEach(((Ct, kt) => {
                   var Vt, xn;
-                  const pn = Ct[0], qn = this._getReferenceLineColor(pn.id), Zn = this._getReferenceLineControllable(pn.id), Xn = this._getReferenceLineDraggableRotatable(pn.id) || ((Vt = this.configuration.mobile) === null || Vt === void 0 ? void 0 : Vt.enabled), ir = this._getReferenceLineSlabThicknessControlsOn(pn.id) || ((xn = this.configuration.mobile) === null || xn === void 0 ? void 0 : xn.enabled), kr = He.activeViewportIds.find(((fh) => fh === pn.id));
-                  let Br = qn !== void 0 ? qn : "rgb(200, 200, 200)", Nr = 1;
+                  const pn = Ct[0], Zn = this._getReferenceLineColor(pn.id), Xn = this._getReferenceLineControllable(pn.id), $n = this._getReferenceLineDraggableRotatable(pn.id) || ((Vt = this.configuration.mobile) === null || Vt === void 0 ? void 0 : Vt.enabled), sr = this._getReferenceLineSlabThicknessControlsOn(pn.id) || ((xn = this.configuration.mobile) === null || xn === void 0 ? void 0 : xn.enabled), kr = He.activeViewportIds.find(((fh) => fh === pn.id));
+                  let Br = Zn !== void 0 ? Zn : "rgb(200, 200, 200)", Nr = 1;
                   const pr = He.handles.activeOperation !== null && He.handles.activeOperation === 1 && kr;
                   pr && (Nr = 2.5);
                   let Tr = "".concat(kt);
-                  if (Zn && Xn ? (Tr = "".concat(kt, "One"), di(T, ge, Tr, Ct[1], Ct[2], {
+                  if (Xn && $n ? (Tr = "".concat(kt, "One"), di(T, ge, Tr, Ct[1], Ct[2], {
                     color: Br,
                     lineWidth: Nr
                   }), Tr = "".concat(kt, "Two"), di(T, ge, Tr, Ct[3], Ct[4], {
@@ -269343,9 +269358,9 @@ Input: ` + this.err.str);
                   })) : di(T, ge, Tr, Ct[2], Ct[4], {
                     color: Br,
                     lineWidth: Nr
-                  }), Zn) {
+                  }), Xn) {
                     var Ma;
-                    Br = qn !== void 0 ? qn : "rgb(200, 200, 200)";
+                    Br = Zn !== void 0 ? Zn : "rgb(200, 200, 200)";
                     const fh = He.handles.activeOperation === 2, BI = [
                       Ct[9],
                       Ct[10]
@@ -269387,13 +269402,13 @@ Input: ` + this.err.str);
                       Ct[7],
                       Ct[8]
                     ];
-                    if (vt.push(AN, lN, y4, Pg), (pr || (Ma = this.configuration.mobile) !== null && Ma !== void 0 && Ma.enabled) && !fh && !EI && Xn && ir) {
-                      var fa, Ci, bi, Do, JA, Ac, ld, $f;
+                    if (vt.push(AN, lN, y4, Pg), (pr || (Ma = this.configuration.mobile) !== null && Ma !== void 0 && Ma.enabled) && !fh && !EI && $n && sr) {
+                      var fa, Ci, bi, ko, JA, Ac, ld, $f;
                       let cc = "".concat(kt, "One");
                       _i(T, ge, cc, BI, {
                         color: Br,
                         handleRadius: (fa = this.configuration.mobile) !== null && fa !== void 0 && fa.enabled ? (Ci = this.configuration.mobile) === null || Ci === void 0 ? void 0 : Ci.handleRadius : 3,
-                        opacity: (bi = this.configuration.mobile) !== null && bi !== void 0 && bi.enabled ? (Do = this.configuration.mobile) === null || Do === void 0 ? void 0 : Do.opacity : 1,
+                        opacity: (bi = this.configuration.mobile) !== null && bi !== void 0 && bi.enabled ? (ko = this.configuration.mobile) === null || ko === void 0 ? void 0 : ko.opacity : 1,
                         type: "circle"
                       }), cc = "".concat(kt, "Two"), _i(T, ge, cc, yQ, {
                         color: Br,
@@ -269401,7 +269416,7 @@ Input: ` + this.err.str);
                         opacity: (ld = this.configuration.mobile) !== null && ld !== void 0 && ld.enabled ? ($f = this.configuration.mobile) === null || $f === void 0 ? void 0 : $f.opacity : 1,
                         type: "rect"
                       });
-                    } else if (pr && !fh && !EI && Xn) {
+                    } else if (pr && !fh && !EI && $n) {
                       var lc, Mc, CI, xI;
                       const cc = "".concat(kt);
                       _i(T, ge, cc, BI, {
@@ -269410,7 +269425,7 @@ Input: ` + this.err.str);
                         opacity: (CI = this.configuration.mobile) !== null && CI !== void 0 && CI.enabled ? (xI = this.configuration.mobile) === null || xI === void 0 ? void 0 : xI.opacity : 1,
                         type: "circle"
                       });
-                    } else if (kr && !fh && !EI && ir) {
+                    } else if (kr && !fh && !EI && sr) {
                       var hh, TB, LB, Fc;
                       const cc = "".concat(kt);
                       _i(T, ge, cc, yQ, {
@@ -269419,7 +269434,7 @@ Input: ` + this.err.str);
                         opacity: (LB = this.configuration.mobile) !== null && LB !== void 0 && LB.enabled ? (Fc = this.configuration.mobile) === null || Fc === void 0 ? void 0 : Fc.opacity : 1,
                         type: "rect"
                       });
-                    } else if (fh && Xn) {
+                    } else if (fh && $n) {
                       const cc = "".concat(kt);
                       _i(T, ge, cc, BI, {
                         color: Br,
@@ -269427,13 +269442,13 @@ Input: ` + this.err.str);
                         fill: Br,
                         type: "circle"
                       });
-                    } else EI && kr && ir && _i(T, ge, Tr, yQ, {
+                    } else EI && kr && sr && _i(T, ge, Tr, yQ, {
                       color: Br,
                       handleRadius: 2,
                       fill: Br,
                       type: "rect"
                     });
-                    pn.getSlabThickness() > 0.5 && ir && (Tr = "".concat(kt, "STOne"), di(T, ge, Tr, Ct[5], Ct[6], {
+                    pn.getSlabThickness() > 0.5 && sr && (Tr = "".concat(kt, "STOne"), di(T, ge, Tr, Ct[5], Ct[6], {
                       color: Br,
                       width: 1,
                       lineDash: [
@@ -269603,11 +269618,11 @@ Input: ` + this.err.str);
                   ke.forEach(((Ct) => {
                     const { data: kt } = Ct;
                     kt.handles.toolCenter = Ke;
-                    const Vt = W.getViewport(kt.viewportId), xn = Vt.getCamera(), { viewUp: pn, position: qn, focalPoint: Zn } = xn;
-                    pn[0] += qn[0], pn[1] += qn[1], pn[2] += qn[2], Ye.vec3.transformMat4(Zn, Zn, yt), Ye.vec3.transformMat4(qn, qn, yt), Ye.vec3.transformMat4(pn, pn, yt), pn[0] -= qn[0], pn[1] -= qn[1], pn[2] -= qn[2], Vt.setCamera({
-                      position: qn,
+                    const Vt = W.getViewport(kt.viewportId), xn = Vt.getCamera(), { viewUp: pn, position: Zn, focalPoint: Xn } = xn;
+                    pn[0] += Zn[0], pn[1] += Zn[1], pn[2] += Zn[2], Ye.vec3.transformMat4(Xn, Xn, yt), Ye.vec3.transformMat4(Zn, Zn, yt), Ye.vec3.transformMat4(pn, pn, yt), pn[0] -= Zn[0], pn[1] -= Zn[1], pn[2] -= Zn[2], Vt.setCamera({
+                      position: Zn,
                       viewUp: pn,
-                      focalPoint: Zn
+                      focalPoint: Xn
                     }), Tt.push(Vt.id);
                   })), W.renderViewports(Tt);
                 } else if (ge.activeOperation === 3) {
@@ -269632,9 +269647,9 @@ Input: ` + this.err.str);
                         this.toolCenter[2]
                       ];
                       if (!this._getReferenceLineDraggableRotatable(rt.id)) {
-                        const { rotationPoints: Xn } = this.editData.annotation.data.handles, ir = Xn.filter(((kr) => kr[1].uid === rt.id));
-                        if (ir.length === 2) {
-                          const kr = Z.canvasToWorld(ir[0][3]), Br = Z.canvasToWorld(ir[1][3]);
+                        const { rotationPoints: $n } = this.editData.annotation.data.handles, sr = $n.filter(((kr) => kr[1].uid === rt.id));
+                        if (sr.length === 2) {
+                          const kr = Z.canvasToWorld(sr[0][3]), Br = Z.canvasToWorld(sr[1][3]);
                           Ka().add(kr, Br, kt), Ka().multiplyScalar(kt, 0.5);
                         }
                       }
@@ -269649,14 +269664,14 @@ Input: ` + this.err.str);
                         xn[2]
                       ];
                       Ye.vec3.normalize(pn, pn);
-                      const qn = [
+                      const Zn = [
                         vt[0],
                         vt[1],
                         vt[2]
                       ];
-                      Ye.vec3.normalize(qn, qn);
-                      let Zn = rt.getSlabThickness();
-                      ce.utilities.isOpposite(pn, qn, 1e-3) ? Zn -= yt : Zn += yt, Zn = Math.abs(Zn), Zn = Math.max(VR.MINIMUM_SLAB_THICKNESS, Zn), this._pointNearReferenceLine(Ae, be, 6, rt) && (Zn = VR.MINIMUM_SLAB_THICKNESS), wr(rt.id, W.id).getToolInstance(this.getToolName()).setSlabThickness(rt, Zn), He.push(rt.id);
+                      Ye.vec3.normalize(Zn, Zn);
+                      let Xn = rt.getSlabThickness();
+                      ce.utilities.isOpposite(pn, Zn, 1e-3) ? Xn -= yt : Xn += yt, Xn = Math.abs(Xn), Xn = Math.max(VR.MINIMUM_SLAB_THICKNESS, Xn), this._pointNearReferenceLine(Ae, be, 6, rt) && (Xn = VR.MINIMUM_SLAB_THICKNESS), wr(rt.id, W.id).getToolInstance(this.getToolName()).setSlabThickness(rt, Xn), He.push(rt.id);
                     }
                   })), W.renderViewports(He);
                 }
@@ -270033,7 +270048,7 @@ Input: ` + this.err.str);
                 let xn = [
                   It,
                   vt
-                ].map(((qn) => w.worldToCanvas(qn)));
+                ].map(((Zn) => w.worldToCanvas(Zn)));
                 if (this.configuration.showFullDimension && (xn = this.handleFullDimension(w, It, ge, Be, vt, xn)), xn.length < 2) return T;
                 const pn = "".concat(yt, "-line");
                 return di(E, yt, "1", xn[0], xn[1], {
@@ -270616,12 +270631,12 @@ Input: ` + this.err.str);
                   const { color: Te, lineWidth: He, lineDash: Ke } = this.getAnnotationStyle({
                     annotation: re,
                     styleSpecifier: W
-                  }), et = be.map(((ir) => R.worldToCanvas(ir))), rt = (Math.abs(R.getRotation() - (ge.initialRotation || 0)), Hm(et)), { centerPointRadius: ut } = this.configuration;
+                  }), et = be.map(((sr) => R.worldToCanvas(sr))), rt = (Math.abs(R.getRotation() - (ge.initialRotation || 0)), Hm(et)), { centerPointRadius: ut } = this.configuration;
                   if (ge.cachedStats[Y] && ge.cachedStats[Y].areaUnit != null) {
                     if (re.invalidated && (this._throttledCalculateCachedStats(re, R, V, m), R instanceof ce.VolumeViewport)) {
-                      const { referencedImageId: ir } = re.metadata;
+                      const { referencedImageId: sr } = re.metadata;
                       for (const kr in ge.cachedStats) kr.startsWith("imageId") && V.getStackViewports().find(((Br) => {
-                        const Nr = ce.utilities.imageIdToURI(ir), pr = Br.hasImageURI(Nr), Tr = ce.utilities.imageIdToURI(Br.getCurrentImageId());
+                        const Nr = ce.utilities.imageIdToURI(sr), pr = Br.hasImageURI(Nr), Tr = ce.utilities.imageIdToURI(Br.getCurrentImageId());
                         return pr && Tr !== Nr;
                       })) && delete ge.cachedStats[kr];
                     }
@@ -270647,8 +270662,8 @@ Input: ` + this.err.str);
                     lineDash: Ke,
                     lineWidth: He
                   }, vt), ut > 0 && Math.min(Math.abs(rt[0][0] - rt[1][0]) / 2, Math.abs(rt[0][1] - rt[1][1]) / 2) > 3 * ut) {
-                    const ir = this._getCanvasEllipseCenter(et);
-                    Rl(E, Ae, "".concat(yt, "-center"), ir, ut, {
+                    const sr = this._getCanvasEllipseCenter(et);
+                    Rl(E, Ae, "".concat(yt, "-center"), sr, ut, {
                       color: Te,
                       lineDash: Ke,
                       lineWidth: He
@@ -270693,23 +270708,23 @@ Input: ` + this.err.str);
                   if (!Ct || Ct.length === 0) continue;
                   let kt;
                   ge.handles.textBox.hasMoved || (kt = YA(rt), ge.handles.textBox.worldPosition = R.canvasToWorld(kt));
-                  const Vt = R.worldToCanvas(ge.handles.textBox.worldPosition), xn = EA(E, Ae, "1", Ct, Vt, et, {}, Tt), { x: pn, y: qn, width: Zn, height: Xn } = xn;
+                  const Vt = R.worldToCanvas(ge.handles.textBox.worldPosition), xn = EA(E, Ae, "1", Ct, Vt, et, {}, Tt), { x: pn, y: Zn, width: Xn, height: $n } = xn;
                   ge.handles.textBox.worldBoundingBox = {
                     topLeft: R.canvasToWorld([
                       pn,
-                      qn
+                      Zn
                     ]),
                     topRight: R.canvasToWorld([
-                      pn + Zn,
-                      qn
+                      pn + Xn,
+                      Zn
                     ]),
                     bottomLeft: R.canvasToWorld([
                       pn,
-                      qn + Xn
+                      Zn + $n
                     ]),
                     bottomRight: R.canvasToWorld([
-                      pn + Zn,
-                      qn + Xn
+                      pn + Xn,
+                      Zn + $n
                     ])
                   };
                 }
@@ -270746,10 +270761,10 @@ Input: ` + this.err.str);
                     xRadius: Math.abs(Z[0] - re[0]) / 2,
                     yRadius: Math.abs(Z[1] - re[1]) / 2,
                     zRadius: Math.abs(Z[2] - re[2]) / 2
-                  }, { worldWidth: Vt, worldHeight: xn } = rN(z, Y, Be, be), pn = Vt === 0 && xn === 0, qn = [
+                  }, { worldWidth: Vt, worldHeight: xn } = rN(z, Y, Be, be), pn = Vt === 0 && xn === 0, Zn = [
                     yt,
                     Tt
-                  ], { scale: Zn, areaUnits: Xn } = UA(rt, qn), ir = Math.abs(Math.PI * (Vt / 2) * (xn / 2)) / Zn / Zn, kr = {
+                  ], { scale: Xn, areaUnits: $n } = UA(rt, Zn), sr = Math.abs(Math.PI * (Vt / 2) * (xn / 2)) / Xn / Xn, kr = {
                     isPreScaled: Ld(E, et),
                     isSuvScaled: this.isSuvScaled(E, et, m.metadata.referencedImageId)
                   }, Br = sh(vt.Modality, m.metadata.referencedImageId, kr), Nr = PA(It, ((Tr) => eh(kt, Tr, {
@@ -270757,18 +270772,18 @@ Input: ` + this.err.str);
                   })), this.configuration.statsCalculator.statsCallback, Ct), pr = this.configuration.statsCalculator.getStatistics();
                   Ae[et] = {
                     Modality: vt.Modality,
-                    area: ir,
+                    area: sr,
                     mean: (ke = pr.mean) === null || ke === void 0 ? void 0 : ke.value,
                     max: (Te = pr.max) === null || Te === void 0 ? void 0 : Te.value,
                     stdDev: (He = pr.stdDev) === null || He === void 0 ? void 0 : He.value,
                     statsArray: pr.array,
                     pointsInShape: Nr,
                     isEmptyArea: pn,
-                    areaUnit: Xn,
+                    areaUnit: $n,
                     modalityUnit: Br
                   };
                 }
-                return m.invalidated = false, sr(m, k), Ae;
+                return m.invalidated = false, ar(m, k), Ae;
               })), ie(this, "_isInsideVolume", ((m, E, y) => ce.utilities.indexWithinDimensions(m, y) && ce.utilities.indexWithinDimensions(E, y))), this._throttledCalculateCachedStats = xA(this._calculateCachedStats, 100, {
                 trailing: true
               });
@@ -271097,23 +271112,23 @@ Input: ` + this.err.str);
                   if (!Vt || Vt.length === 0) continue;
                   let xn;
                   ge.handles.textBox.hasMoved || (xn = YA(It), ge.handles.textBox.worldPosition = R.canvasToWorld(xn));
-                  const pn = R.worldToCanvas(ge.handles.textBox.worldPosition), qn = EA(E, Ae, "1", Vt, pn, et, {}, kt), { x: Zn, y: Xn, width: ir, height: kr } = qn;
+                  const pn = R.worldToCanvas(ge.handles.textBox.worldPosition), Zn = EA(E, Ae, "1", Vt, pn, et, {}, kt), { x: Xn, y: $n, width: sr, height: kr } = Zn;
                   ge.handles.textBox.worldBoundingBox = {
                     topLeft: R.canvasToWorld([
-                      Zn,
-                      Xn
+                      Xn,
+                      $n
                     ]),
                     topRight: R.canvasToWorld([
-                      Zn + ir,
-                      Xn
+                      Xn + sr,
+                      $n
                     ]),
                     bottomLeft: R.canvasToWorld([
-                      Zn,
-                      Xn + kr
+                      Xn,
+                      $n + kr
                     ]),
                     bottomRight: R.canvasToWorld([
-                      Zn + ir,
-                      Xn + kr
+                      Xn + sr,
+                      $n + kr
                     ])
                   };
                 }
@@ -271150,10 +271165,10 @@ Input: ` + this.err.str);
                       xRadius: Math.abs(re[0] - Ae[0]) / 2,
                       yRadius: Math.abs(re[1] - Ae[1]) / 2,
                       zRadius: Math.abs(re[2] - Ae[2]) / 2
-                    }, { worldWidth: pn, worldHeight: qn } = rN(Y, V, be, ke), Zn = pn === 0 && qn === 0, Xn = [
+                    }, { worldWidth: pn, worldHeight: Zn } = rN(Y, V, be, ke), Xn = pn === 0 && Zn === 0, $n = [
                       Ct,
                       kt
-                    ], { scale: ir, units: kr, areaUnits: Br } = UA(ut, Xn), Nr = nd(ut), pr = Math.abs(Math.PI * (pn / ir / 2) * (qn / Nr / ir / 2)), Tr = {
+                    ], { scale: sr, units: kr, areaUnits: Br } = UA(ut, $n), Nr = nd(ut), pr = Math.abs(Math.PI * (pn / sr / 2) * (Zn / Nr / sr / 2)), Tr = {
                       isPreScaled: Ld(E, rt),
                       isSuvScaled: this.isSuvScaled(E, rt, m.metadata.referencedImageId)
                     }, Ma = sh(yt.Modality, m.metadata.referencedImageId, Tr), fa = PA(vt, ((bi) => eh(xn, bi, {
@@ -271167,18 +271182,18 @@ Input: ` + this.err.str);
                       stdDev: (Ke = Ci.stdDev) === null || Ke === void 0 ? void 0 : Ke.value,
                       statsArray: Ci.array,
                       pointsInShape: fa,
-                      isEmptyArea: Zn,
+                      isEmptyArea: Xn,
                       areaUnit: Br,
-                      radius: pn / 2 / ir,
+                      radius: pn / 2 / sr,
                       radiusUnit: kr,
-                      perimeter: 2 * Math.PI * (pn / 2) / ir,
+                      perimeter: 2 * Math.PI * (pn / 2) / sr,
                       modalityUnit: Ma
                     };
                   } else this.isHandleOutsideImage = true, ge[rt] = {
                     Modality: yt.Modality
                   };
                 }
-                return m.invalidated = false, sr(m, R), ge;
+                return m.invalidated = false, ar(m, R), ge;
               })), ie(this, "_isInsideVolume", ((m, E, y) => ce.utilities.indexWithinDimensions(m, y) && ce.utilities.indexWithinDimensions(E, y))), this._throttledCalculateCachedStats = xA(this._calculateCachedStats, 100, {
                 trailing: true
               });
@@ -272387,7 +272402,7 @@ Input: ` + this.err.str);
                 m.triggerChangeEvent(R, W, re, Y), m.clearEditData();
               })), ie(this, "triggerChangeEvent", (function(E, y) {
                 let w = arguments.length > 2 && arguments[2] !== void 0 ? arguments[2] : Rr.StatsUpdated, k = arguments.length > 3 && arguments[3] !== void 0 && arguments[3];
-                w === Rr.Completed ? Kn(E, k) : sr(E, y.viewport.element, w);
+                w === Rr.Completed ? Kn(E, k) : ar(E, y.viewport.element, w);
               })), ie(this, "_mouseDownCallback", ((E) => {
                 const y = E.type === Ne.MOUSE_DOUBLE_CLICK, { annotation: w, viewportIdsToRender: k, worldToSlice: R, sliceToWorld: T } = this.editData;
                 if (this.editData.closed) return;
@@ -272713,7 +272728,7 @@ Input: ` + this.err.str);
                   const Ae = R.findPathToPoint(Y(y[(re + 1) % k]));
                   Z.addPoints(Ae);
                 }
-                this.updateAnnotation(Z), this.scissors = null, this.scissorsNext = null, this.editData = null, m.data.handles.interpolationSources = null, z && sr(m, E.viewport.element, Rr.InterpolationUpdated);
+                this.updateAnnotation(Z), this.scissors = null, this.scissorsNext = null, this.editData = null, m.data.handles.interpolationSources = null, z && ar(m, E.viewport.element, Rr.InterpolationUpdated);
               })));
             }
             renderAnnotationInstance(m) {
@@ -272870,7 +272885,7 @@ Input: ` + this.err.str);
                 this.isHandleOutsideImage && this.configuration.preventHandleOutsideImage && ot(w.annotationUID), R ? this.configuration.getTextCallback(((V) => {
                   if (!V) return ot(w.annotationUID), an(Y, k), this.editData = null, void (this.isDrawing = false);
                   w.data.text = V, In(w), an(Y, k);
-                })) : sr(w, y), this.editData = null, this.isDrawing = false;
+                })) : ar(w, y), this.editData = null, this.isDrawing = false;
               })), ie(this, "_dragCallback", ((m) => {
                 this.isDrawing = true;
                 const E = m.detail, { element: y } = E, { annotation: w, viewportIdsToRender: k, handleIndex: R, movingTextBox: T } = this.editData, { data: z } = w;
@@ -273035,7 +273050,7 @@ Input: ` + this.err.str);
             _doneChangingTextCallback(m, E, y) {
               E.data.text = y;
               const w = (0, ce.getEnabledElement)(m), { renderingEngine: k } = w, R = Mr(m, this.getToolName());
-              an(k, R), sr(E, m);
+              an(k, R), ar(E, m);
             }
             _isInsideVolume(m, E, y) {
               return ce.utilities.indexWithinDimensions(m, y) && ce.utilities.indexWithinDimensions(E, y);
@@ -273377,7 +273392,7 @@ Input: ` + this.err.str);
                   angle: isNaN(re) ? "Incomplete Angle" : re
                 };
               }
-              return m.invalidated = false, sr(m, k), Y;
+              return m.invalidated = false, ar(m, k), Y;
             }
           }
           function zge(S, m) {
@@ -273654,8 +273669,8 @@ Input: ` + this.err.str);
                     color: He,
                     lineWidth: "1"
                   })), (re = be.cachedStats[V]) === null || re === void 0 || !re.angle) continue;
-                  const qn = this.getLinkedTextBoxStyle(Z, ge);
-                  if (!qn.visibility) {
+                  const Zn = this.getLinkedTextBoxStyle(Z, ge);
+                  if (!Zn.visibility) {
                     be.handles.textBox = {
                       hasMoved: false,
                       worldPosition: [
@@ -273688,12 +273703,12 @@ Input: ` + this.err.str);
                     };
                     continue;
                   }
-                  const Zn = this.configuration.getTextLines(be, V);
+                  const Xn = this.configuration.getTextLines(be, V);
                   if (!be.handles.textBox.hasMoved) {
                     const Tr = YA(rt);
                     be.handles.textBox.worldPosition = T.canvasToWorld(Tr);
                   }
-                  const Xn = T.worldToCanvas(be.handles.textBox.worldPosition), ir = EA(y, Be, "cobbAngleText", Zn, Xn, rt, {}, qn), { x: kr, y: Br, width: Nr, height: pr } = ir;
+                  const $n = T.worldToCanvas(be.handles.textBox.worldPosition), sr = EA(y, Be, "cobbAngleText", Xn, $n, rt, {}, Zn), { x: kr, y: Br, width: Nr, height: pr } = sr;
                   if (be.handles.textBox.worldBoundingBox = {
                     topLeft: T.canvasToWorld([
                       kr,
@@ -273716,14 +273731,14 @@ Input: ` + this.err.str);
                       "".concat(xn.toFixed(2), " ").concat("\xB0")
                     ], fa = uh(Tt, Ct);
                     Fg(y, Be, Tr, Ma, fa, {
-                      ...qn,
+                      ...Zn,
                       padding: 3
                     });
                     const Ci = "arcAngle2", bi = [
                       "".concat(pn.toFixed(2), " ").concat("\xB0")
-                    ], Do = uh(Vt, kt);
-                    Fg(y, Be, Ci, bi, Do, {
-                      ...qn,
+                    ], ko = uh(Vt, kt);
+                    Fg(y, Be, Ci, bi, ko, {
+                      ...Zn,
                       padding: 3
                     });
                   }
@@ -273890,7 +273905,7 @@ Input: ` + this.err.str);
                   }
                 }
               };
-              return m.invalidated = false, sr(m, Y), Ke;
+              return m.invalidated = false, ar(m, Y), Ke;
             }
           }
           function Uge(S, m) {
@@ -274089,12 +274104,12 @@ Input: ` + this.err.str);
                       Tt[0],
                       Tt[1] + kt
                     ];
-                    let pn = "".concat(Ae, "-line-1"), qn = "1";
-                    di(E, Ae, qn, ke[0], xn, {
+                    let pn = "".concat(Ae, "-line-1"), Zn = "1";
+                    di(E, Ae, Zn, ke[0], xn, {
                       color: be,
                       width: 1,
                       shadow: this.configuration.shadow
-                    }, pn), pn = "".concat(Ae, "-line-2"), qn = "2", di(E, Ae, qn, ke[1], xn, {
+                    }, pn), pn = "".concat(Ae, "-line-2"), Zn = "2", di(E, Ae, Zn, ke[1], xn, {
                       color: be,
                       width: 1,
                       lineDash: [
@@ -274228,7 +274243,7 @@ Input: ` + this.err.str);
                   isUnitless: ut
                 };
               }
-              return m.invalidated = false, sr(m, k), R;
+              return m.invalidated = false, ar(m, k), R;
             }
           }
           function Oge(S, m, E) {
@@ -274341,7 +274356,7 @@ Input: ` + this.err.str);
             _doneChangingTextCallback(m, E, y) {
               E.data.text = y;
               const w = (0, ce.getEnabledElement)(m), { renderingEngine: k } = w, R = Mr(m, this.getToolName());
-              an(k, R), sr(E, m);
+              an(k, R), ar(E, m);
             }
             _isInsideVolume(m, E, y) {
               return ce.utilities.indexWithinDimensions(m, y) && ce.utilities.indexWithinDimensions(E, y);
@@ -275602,7 +275617,7 @@ Input: ` + this.err.str);
             }
             renderAnnotation(m, E) {
               if (!this.editData.viewport) return;
-              const y = this.configuration.scaleLocation, { viewport: w } = m, k = _r(this.getToolName(), w.element).filter(((ir) => ir.data.viewportId == w.id))[0], R = m.viewport.canvas, T = false;
+              const y = this.configuration.scaleLocation, { viewport: w } = m, k = _r(this.getToolName(), w.element).filter(((sr) => sr.data.viewportId == w.id))[0], R = m.viewport.canvas, T = false;
               if (!w) return T;
               const z = {
                 toolGroupId: this.toolGroupId,
@@ -275616,7 +275631,7 @@ Input: ` + this.err.str);
                 Z,
                 W,
                 re
-              ], ge = Ye.vec3.distance(Z, re), Be = Ye.vec3.distance(V, Z), be = this.computeScaleBounds(Y, 0.05, 0.05, y), ke = this.computeScaleBounds(Y, 0.05, 0.05, y), Te = this.computeScaleSize(ge, Be, y), He = this.computeWorldScaleCoordinates(Te, y, Ae).map(((ir) => w.worldToCanvas(ir))), Ke = this.computeCanvasScaleCoordinates(Y, He, ke, be, y), et = this.computeEndScaleTicks(Ke, y), { annotationUID: rt } = k;
+              ], ge = Ye.vec3.distance(Z, re), Be = Ye.vec3.distance(V, Z), be = this.computeScaleBounds(Y, 0.05, 0.05, y), ke = this.computeScaleBounds(Y, 0.05, 0.05, y), Te = this.computeScaleSize(ge, Be, y), He = this.computeWorldScaleCoordinates(Te, y, Ae).map(((sr) => w.worldToCanvas(sr))), Ke = this.computeCanvasScaleCoordinates(Y, He, ke, be, y), et = this.computeEndScaleTicks(Ke, y), { annotationUID: rt } = k;
               z.annotationUID = rt;
               const ut = this.getStyle("lineWidth", z, k), It = this.getStyle("lineDash", z, k), vt = this.getStyle("color", z, k), yt = this.getStyle("shadow", z, k), Tt = "".concat(rt, "-scaleline");
               di(E, rt, "1", Ke[0], Ke[1], {
@@ -275659,13 +275674,13 @@ Input: ` + this.err.str);
               }, xn = [
                 Ke[0][0] + Vt[y][0],
                 Ke[0][1] + Vt[y][1]
-              ], pn = this._getTextLines(Te), { tickIds: qn, tickUIDs: Zn, tickCoordinates: Xn } = this.computeInnerScaleTicks(Te, y, rt, et.endTick1, et.endTick2);
-              for (let ir = 0; ir < Zn.length; ir++) di(E, rt, Zn[ir], Xn[ir][0], Xn[ir][1], {
+              ], pn = this._getTextLines(Te), { tickIds: Zn, tickUIDs: Xn, tickCoordinates: $n } = this.computeInnerScaleTicks(Te, y, rt, et.endTick1, et.endTick2);
+              for (let sr = 0; sr < Xn.length; sr++) di(E, rt, Xn[sr], $n[sr][0], $n[sr][1], {
                 color: vt,
                 width: ut,
                 lineDash: It,
                 shadow: yt
-              }, qn[ir]);
+              }, Zn[sr]);
               return Fg(E, rt, "text0", pn, [
                 xn[0],
                 xn[1]
@@ -275790,7 +275805,7 @@ Input: ` + this.err.str);
                 const E = m.detail, { element: y } = E, w = this.configuration, k = (0, ce.getEnabledElement)(y);
                 this.isActive = false, this.deactivateModify(y), xr(y);
                 const { renderingEngineId: R, viewportId: T } = k, z = wr(T, R).getToolInstance(w.referencedToolName), Y = this.filterSculptableAnnotationsForElement(y).find(((V) => V.annotationUID === this.commonData.activeAnnotationUID));
-                z.configuration.calculateStats && (Y.invalidated = true), sr(Y, y);
+                z.configuration.calculateStats && (Y.invalidated = true), ar(Y, y);
               })), ie(this, "dragCallback", ((m) => {
                 const E = m.detail, y = E.element;
                 this.updateCursor(m);
@@ -275903,8 +275918,8 @@ Input: ` + this.err.str);
                 toolName: this.getToolName(),
                 viewportId: m.viewport.id
               };
-              let z = Td("color", T, No.Default, this.mode);
-              this.isActive && (z = Td("color", T, No.Highlighted, this.mode)), this.registeredShapes.get(this.selectedShape).renderShape(E, this.commonData.canvasLocation, {
+              let z = Td("color", T, Do.Default, this.mode);
+              this.isActive && (z = Td("color", T, Do.Highlighted, this.mode)), this.registeredShapes.get(this.selectedShape).renderShape(E, this.commonData.canvasLocation, {
                 color: z
               });
             }
@@ -276530,25 +276545,25 @@ Input: ` + this.err.str);
                   const Tt = ce.utilities.roundToPrecision(W.startCoordinate), Ct = ce.utilities.roundToPrecision(W.endCoordinate), kt = this._getCoordinateForViewplaneNormal(ut, It), Vt = ce.utilities.roundToPrecision(kt);
                   if (Vt < Math.min(Tt, Ct) || Vt > Math.max(Tt, Ct)) continue;
                   const xn = ce.utilities.roundToPrecision((W.startCoordinate + W.endCoordinate) / 2);
-                  let pn, qn = false;
-                  if (Vt === xn && (qn = true), W.handles.points[0][this._getIndexOfCoordinatesForViewplaneNormal(It)] = xn, Y.invalidated && this._throttledCalculateCachedStats(Y, m), !k.getRenderingEngine()) return console.warn("Rendering Engine has been destroyed"), w;
+                  let pn, Zn = false;
+                  if (Vt === xn && (Zn = true), W.handles.points[0][this._getIndexOfCoordinatesForViewplaneNormal(It)] = xn, Y.invalidated && this._throttledCalculateCachedStats(Y, m), !k.getRenderingEngine()) return console.warn("Rendering Engine has been destroyed"), w;
                   if (!en(V)) continue;
-                  Ve(Y) || this.editData || ge === null || !qn || (pn = [
+                  Ve(Y) || this.editData || ge === null || !Zn || (pn = [
                     Te[ge]
                   ]), pn && _i(E, V, "0", pn, {
                     color: ke
                   });
-                  let Zn = Be, Xn = be;
-                  qn ? (Zn = Be, Xn = []) : Xn = [
+                  let Xn = Be, $n = be;
+                  Zn ? (Xn = Be, $n = []) : $n = [
                     5,
                     5
                   ];
-                  const ir = "0";
-                  if (Rl(E, V, ir, He, Ke, {
+                  const sr = "0";
+                  if (Rl(E, V, sr, He, Ke, {
                     color: ke,
-                    lineDash: Xn,
-                    lineWidth: Zn
-                  }), et > 0 && Ke > 3 * et && Rl(E, V, "".concat(ir, "-center"), He, et, {
+                    lineDash: $n,
+                    lineWidth: Xn
+                  }), et > 0 && Ke > 3 * et && Rl(E, V, "".concat(sr, "-center"), He, et, {
                     color: ke,
                     lineDash: be,
                     lineWidth: Be
@@ -276639,7 +276654,7 @@ Input: ` + this.err.str);
               }, Tt = sh(Y.Modality, m.metadata.referencedImageId, yt);
               for (let kt = 0; kt < Ae.length; kt++) {
                 if (!E) continue;
-                const Vt = Ae[kt][0], xn = Ae[kt].map(((Ci) => Z.worldToCanvas(Ci))), [pn, qn] = CQ(xn), Zn = Z.canvasToWorld(pn), Xn = Z.canvasToWorld(qn), ir = Zn, kr = Xn, { dimensions: Br, imageData: Nr } = E, pr = bQ(Nr, ir), Tr = bQ(Nr, Vt), Ma = this._getIndexOfCoordinatesForViewplaneNormal(V);
+                const Vt = Ae[kt][0], xn = Ae[kt].map(((Ci) => Z.worldToCanvas(Ci))), [pn, Zn] = CQ(xn), Xn = Z.canvasToWorld(pn), $n = Z.canvasToWorld(Zn), sr = Xn, kr = $n, { dimensions: Br, imageData: Nr } = E, pr = bQ(Nr, sr), Tr = bQ(Nr, Vt), Ma = this._getIndexOfCoordinatesForViewplaneNormal(V);
                 pr[0] = Math.floor(pr[0]), pr[1] = Math.floor(pr[1]), pr[2] = Math.floor(pr[2]), pr[Ma] = Tr[Ma];
                 const fa = bQ(Nr, kr);
                 if (fa[0] = Math.floor(fa[0]), fa[1] = Math.floor(fa[1]), fa[2] = Math.floor(fa[2]), fa[Ma] = Tr[Ma], this._isInsideVolume(pr, fa, Br)) {
@@ -276658,11 +276673,11 @@ Input: ` + this.err.str);
                     ]
                   ], bi = {
                     center: Vt,
-                    xRadius: Math.abs(Zn[0] - Xn[0]) / 2,
-                    yRadius: Math.abs(Zn[1] - Xn[1]) / 2,
-                    zRadius: Math.abs(Zn[2] - Xn[2]) / 2
-                  }, Do = PA(Nr, ((JA) => eh(bi, JA)), this.configuration.statsCalculator.statsCallback, Ci);
-                  ge.push(Do);
+                    xRadius: Math.abs(Xn[0] - $n[0]) / 2,
+                    yRadius: Math.abs(Xn[1] - $n[1]) / 2,
+                    zRadius: Math.abs(Xn[2] - $n[2]) / 2
+                  }, ko = PA(Nr, ((JA) => eh(bi, JA)), this.configuration.statsCalculator.statsCallback, Ci);
+                  ge.push(ko);
                 }
               }
               const Ct = this.configuration.statsCalculator.getStatistics();
@@ -276679,7 +276694,7 @@ Input: ` + this.err.str);
             }
             _calculateCachedStatsTool(m, E) {
               const y = m.data, { viewport: w } = E, { cachedStats: k } = y, R = this.getTargetId(w), T = ce.cache.getVolume(R.split(/volumeId:|\?/)[1]);
-              return this._computeProjectionPoints(m, T), this.configuration.calculatePointsInsideVolume && this._computePointsInsideVolume(m, T, R, E), m.invalidated = false, sr(m, w.element), k;
+              return this._computeProjectionPoints(m, T), this.configuration.calculatePointsInsideVolume && this._computePointsInsideVolume(m, T, R, E), m.invalidated = false, ar(m, w.element), k;
             }
             _getStartCoordinate(m, E, y) {
               const w = this.configuration.numSlicesToPropagate, k = Math.round(w / 2), R = Ye.vec3.create();
@@ -276974,8 +276989,8 @@ Input: ` + this.err.str);
                   const { imageIdReferenceMap: Vt } = be, xn = T.viewport.getCurrentImageId(), pn = Vt.get(xn);
                   if (!pn) throw new Error("No active segmentation imageId detected, create one before using scissors tool");
                   He = ce.cache.getImage(pn).getPixelData();
-                  const { imageData: Zn } = z.getImageData();
-                  ke = Zn.getDimensions(), Te = Zn.getDirection(), Ke = pP(Zn, R);
+                  const { imageData: Xn } = z.getImageData();
+                  ke = Xn.getDimensions(), Te = Xn.getDirection(), Ke = pP(Xn, R);
                 }
                 const et = this.getFixedDimension(V, Te);
                 if (et === void 0) return void console.warn("Oblique paint fill not yet supported");
@@ -277299,20 +277314,20 @@ Input: ` + this.err.str);
                   const ke = Ae[be], { imageVolume: Te } = this._getImageVolumeFromTargetUID(ke, k), { dimensions: He, scalarData: Ke, vtkImageData: et, metadata: rt } = Te, ut = Ye.vec3.fromValues(0, 0, 0), It = Ye.vec3.fromValues(0, 0, 0);
                   if (et.worldToIndexVec3(W, ut), ut[0] = Math.floor(ut[0]), ut[1] = Math.floor(ut[1]), ut[2] = Math.floor(ut[2]), et.worldToIndexVec3(Z, It), It[0] = Math.floor(It[0]), It[1] = Math.floor(It[1]), It[2] = Math.floor(It[2]), this._isInsideVolume(ut, It, He)) {
                     this.isHandleOutsideImage = false;
-                    const vt = Math.min(ut[0], It[0]), yt = Math.max(ut[0], It[0]), Tt = Math.min(ut[1], It[1]), Ct = Math.max(ut[1], It[1]), kt = Math.min(ut[2], It[2]), Vt = Math.max(ut[2], It[2]), { worldWidth: xn, worldHeight: pn } = rN(y, w, W, Z), qn = xn * pn;
-                    let Zn = 0, Xn = 0, ir = 0;
+                    const vt = Math.min(ut[0], It[0]), yt = Math.max(ut[0], It[0]), Tt = Math.min(ut[1], It[1]), Ct = Math.max(ut[1], It[1]), kt = Math.min(ut[2], It[2]), Vt = Math.max(ut[2], It[2]), { worldWidth: xn, worldHeight: pn } = rN(y, w, W, Z), Zn = xn * pn;
+                    let Xn = 0, $n = 0, sr = 0;
                     const kr = He[0], Br = He[0] * He[1];
-                    for (let Nr = kt; Nr <= Vt; Nr++) for (let pr = Tt; pr <= Ct; pr++) for (let Tr = vt; Tr <= yt; Tr++) Zn++, Xn += Ke[Nr * Br + pr * kr + Tr];
-                    Xn /= Zn;
+                    for (let Nr = kt; Nr <= Vt; Nr++) for (let pr = Tt; pr <= Ct; pr++) for (let Tr = vt; Tr <= yt; Tr++) Xn++, $n += Ke[Nr * Br + pr * kr + Tr];
+                    $n /= Xn;
                     for (let Nr = kt; Nr <= Vt; Nr++) for (let pr = Tt; pr <= Ct; pr++) for (let Tr = vt; Tr <= yt; Tr++) {
-                      const Ma = Ke[Nr * Br + pr * kr + Tr] - Xn;
-                      ir += Ma * Ma;
+                      const Ma = Ke[Nr * Br + pr * kr + Tr] - $n;
+                      sr += Ma * Ma;
                     }
-                    ir /= Zn, ir = Math.sqrt(ir), re[ke] = {
+                    sr /= Xn, sr = Math.sqrt(sr), re[ke] = {
                       Modality: rt.Modality,
-                      area: qn,
-                      mean: Xn,
-                      stdDev: ir
+                      area: Zn,
+                      mean: $n,
+                      stdDev: sr
                     };
                   } else this.isHandleOutsideImage = true, re[ke] = {
                     Modality: rt.Modality
@@ -279218,7 +279233,7 @@ Input: ` + this.err.str);
             internal: () => Se,
             isColorImage: () => ht,
             isJPEGBaseline8BitColor: () => za,
-            wadors: () => Ot,
+            wadors: () => Pt,
             wadouri: () => In,
             webWorkerManager: () => nr
           });
@@ -279263,12 +279278,12 @@ Input: ` + this.err.str);
             const ot = _e.length / 3;
             let bt = 0, xt = 0, tn = ot, St = 2 * ot;
             if (st) for (let Wt = 0; Wt < ot; Wt++) {
-              const Ut = _e[xt++], Tn = _e[tn++], $n = _e[St++];
-              Ze[bt++] = Ut + 1.402 * ($n - 128), Ze[bt++] = Ut - 0.34414 * (Tn - 128) - 0.71414 * ($n - 128), Ze[bt++] = Ut + 1.772 * (Tn - 128), Ze[bt++] = 255;
+              const Ut = _e[xt++], Tn = _e[tn++], Wn = _e[St++];
+              Ze[bt++] = Ut + 1.402 * (Wn - 128), Ze[bt++] = Ut - 0.34414 * (Tn - 128) - 0.71414 * (Wn - 128), Ze[bt++] = Ut + 1.772 * (Tn - 128), Ze[bt++] = 255;
             }
             else for (let Wt = 0; Wt < ot; Wt++) {
-              const Ut = _e[xt++], Tn = _e[tn++], $n = _e[St++];
-              Ze[bt++] = Ut + 1.402 * ($n - 128), Ze[bt++] = Ut - 0.34414 * (Tn - 128) - 0.71414 * ($n - 128), Ze[bt++] = Ut + 1.772 * (Tn - 128);
+              const Ut = _e[xt++], Tn = _e[tn++], Wn = _e[St++];
+              Ze[bt++] = Ut + 1.402 * (Wn - 128), Ze[bt++] = Ut - 0.34414 * (Tn - 128) - 0.71414 * (Wn - 128), Ze[bt++] = Ut + 1.772 * (Tn - 128);
             }
           }
           s.r(l), s.d(l, {
@@ -279346,9 +279361,9 @@ Input: ` + this.err.str);
               const { metadata: xt, frame: tn } = bt;
               if (xt) {
                 const St = (function(Wt, Ut) {
-                  const { PerFrameFunctionalGroupsSequence: Tn, SharedFunctionalGroupsSequence: $n, NumberOfFrames: Mn, rest: Hn } = Q(Ut);
+                  const { PerFrameFunctionalGroupsSequence: Tn, SharedFunctionalGroupsSequence: Wn, NumberOfFrames: Mn, rest: Yn } = Q(Ut);
                   if (Tn || Mn > 1) {
-                    const { shared: At, perFrame: wt } = B(Tn, $n, Wt), sn = Object.assign(Ut, {
+                    const { shared: At, perFrame: wt } = B(Tn, Wn, Wt), sn = Object.assign(Ut, {
                       frameNumber: Wt
                     });
                     return [
@@ -279358,7 +279373,7 @@ Input: ` + this.err.str);
                       Object.entries(jn).forEach((([gr, Qr]) => {
                         sn[gr] = Qr;
                       }));
-                    })), Object.assign(Hn, {
+                    })), Object.assign(Yn, {
                       "00280008": Mn
                     }, sn);
                   }
@@ -279485,11 +279500,11 @@ Input: ` + this.err.str);
               if (!tn) return;
               const { PerFrameFunctionalGroupsSequence: Wt, SharedFunctionalGroupsSequence: Ut, NumberOfFrames: Tn } = Q(tn);
               if (Wt || Tn > 1) {
-                const { shared: $n, perFrame: Mn } = B(Wt, Ut, St);
+                const { shared: Wn, perFrame: Mn } = B(Wt, Ut, St);
                 return {
                   NumberOfFrames: Tn,
                   PerFrameFunctionalInformation: Mn,
-                  SharedFunctionalInformation: $n
+                  SharedFunctionalInformation: Wn
                 };
               }
               return {
@@ -279550,8 +279565,8 @@ Input: ` + this.err.str);
                 const tn = O(xt), St = _(xt), Wt = I(xt["00280030"], 2);
                 let Ut = null, Tn = null;
                 Wt && (Tn = Wt[0], Ut = Wt[1]);
-                let $n = null, Mn = null;
-                return tn && ($n = [
+                let Wn = null, Mn = null;
+                return tn && (Wn = [
                   parseFloat(tn[0]),
                   parseFloat(tn[1]),
                   parseFloat(tn[2])
@@ -279564,7 +279579,7 @@ Input: ` + this.err.str);
                   rows: p(xt["00280010"]),
                   columns: p(xt["00280011"]),
                   imageOrientationPatient: tn,
-                  rowCosines: $n,
+                  rowCosines: Wn,
                   columnCosines: Mn,
                   imagePositionPatient: St,
                   sliceThickness: p(xt["00180050"]),
@@ -279579,12 +279594,12 @@ Input: ` + this.err.str);
                 sequenceOfUltrasoundRegions: $(xt)
               };
               if (Ze === ot.IMAGE_URL) return (function(tn, St) {
-                const { transferSyntaxUID: Wt } = se(tn, St), Ut = Ha.cornerstone.utilities.isVideoTransferSyntax(Wt), Tn = tn.substring(7), $n = Tn.replace("/frames/", "/thumbnail/");
+                const { transferSyntaxUID: Wt } = se(tn, St), Ut = Ha.cornerstone.utilities.isVideoTransferSyntax(Wt), Tn = tn.substring(7), Wn = Tn.replace("/frames/", "/thumbnail/");
                 let Mn = Tn.replace("/frames/", "/rendered/");
                 return Ut && (Mn = Mn.replace("/rendered/1", "/rendered")), {
                   isVideo: Ut,
                   rendered: Mn,
-                  thumbnail: $n
+                  thumbnail: Wn
                 };
               })(st, xt);
               if (Ze === ot.CINE) return (function(tn, St) {
@@ -279644,10 +279659,10 @@ Input: ` + this.err.str);
                   Ut.length === 4 && (Ut = `x600${Wt.toString(16)}`);
                   const Tn = h(tn[`${Ut}3000`]);
                   if (!Tn) continue;
-                  const $n = [];
-                  for (let Mn = 0; Mn < Tn.length; Mn++) for (let Hn = 0; Hn < 8; Hn++) {
+                  const Wn = [];
+                  for (let Mn = 0; Mn < Tn.length; Mn++) for (let Yn = 0; Yn < 8; Yn++) {
                     const At = tn.Value[Tn.dataOffset + Mn];
-                    $n[8 * Mn + Hn] = At >> Hn & 1;
+                    Wn[8 * Mn + Yn] = At >> Yn & 1;
                   }
                   St.push({
                     rows: p(tn[`${Ut}0010`]),
@@ -279655,7 +279670,7 @@ Input: ` + this.err.str);
                     type: h(tn[`${Ut}0040`]),
                     x: p(tn[`${Ut}0050`], 1) - 1,
                     y: p(tn[`${Ut}0050`], 0) - 1,
-                    pixelData: $n,
+                    pixelData: Wn,
                     description: h(tn[`${Ut}0022`]),
                     label: h(tn[`${Ut}1500`]),
                     roiArea: h(tn[`${Ut}1301`]),
@@ -279721,36 +279736,36 @@ Input: ` + this.err.str);
               }
             }, St = new XMLHttpRequest(), Wt = new Promise(((Ut, Tn) => {
               xt.open(St, _e, st, ot);
-              const $n = xt.beforeSend(St, Ze, st, ot);
+              const Wn = xt.beforeSend(St, Ze, st, ot);
               St.responseType = "arraybuffer";
-              const Mn = Object.assign({}, st, $n);
-              Object.keys(Mn).forEach((function(Hn) {
-                Mn[Hn] !== null && (Hn === "Accept" && _e.indexOf("accept=") !== -1 || St.setRequestHeader(Hn, Mn[Hn]));
+              const Mn = Object.assign({}, st, Wn);
+              Object.keys(Mn).forEach((function(Yn) {
+                Mn[Yn] !== null && (Yn === "Accept" && _e.indexOf("accept=") !== -1 || St.setRequestHeader(Yn, Mn[Yn]));
               })), ot.deferred = {
                 resolve: Ut,
                 reject: Tn
-              }, ot.url = _e, ot.imageId = Ze, St.onloadstart = function(Hn) {
-                xt.onloadstart && xt.onloadstart(Hn, ot);
+              }, ot.url = _e, ot.imageId = Ze, St.onloadstart = function(Yn) {
+                xt.onloadstart && xt.onloadstart(Yn, ot);
                 const At = {
                   url: _e,
                   imageId: Ze
                 };
                 bt.triggerEvent(bt.events, "cornerstoneimageloadstart", At);
-              }, St.onloadend = function(Hn) {
-                xt.onloadend && xt.onloadend(Hn, ot);
+              }, St.onloadend = function(Yn) {
+                xt.onloadend && xt.onloadend(Yn, ot);
                 const At = {
                   url: _e,
                   imageId: Ze
                 };
                 bt.triggerEvent(bt.events, "cornerstoneimageloadend", At);
-              }, St.onreadystatechange = function(Hn) {
-                xt.onreadystatechange ? xt.onreadystatechange(Hn, ot) : St.readyState === 4 && (St.status === 200 || St.status === 206 ? xt.beforeProcessing(St).then(Ut).catch((() => {
+              }, St.onreadystatechange = function(Yn) {
+                xt.onreadystatechange ? xt.onreadystatechange(Yn, ot) : St.readyState === 4 && (St.status === 200 || St.status === 206 ? xt.beforeProcessing(St).then(Ut).catch((() => {
                   tn(St), Tn(St);
                 })) : (tn(St), Tn(St)));
-              }, St.onprogress = function(Hn) {
-                const At = Hn.loaded;
+              }, St.onprogress = function(Yn) {
+                const At = Yn.loaded;
                 let wt;
-                Hn.lengthComputable && (wt = Hn.total, Math.round(At / wt * 100)), xt.onprogress && xt.onprogress(Hn, ot);
+                Yn.lengthComputable && (wt = Yn.total, Math.round(At / wt * 100)), xt.onprogress && xt.onprogress(Yn, ot);
               }, St.onerror = function() {
                 tn(St), Tn(St);
               }, St.onabort = function() {
@@ -279864,19 +279879,19 @@ Input: ` + this.err.str);
             if (xt || (xt = Me(ot, `\r
 \r
 `)), xt === -1) throw new Error("invalid response - no multipart mime header");
-            if (!St && (tn = (function(Mn, Hn, At) {
-              Hn = Hn || 0, At = At || Mn.length - Hn;
+            if (!St && (tn = (function(Mn, Yn, At) {
+              Yn = Yn || 0, At = At || Mn.length - Yn;
               let wt = "";
-              for (let sn = Hn; sn < Hn + At; sn++) wt += String.fromCharCode(Mn[sn]);
+              for (let sn = Yn; sn < Yn + At; sn++) wt += String.fromCharCode(Mn[sn]);
               return wt;
             })(ot, 0, xt).split(`\r
 `), St = (function(Mn) {
-              for (let Hn = 0; Hn < Mn.length; Hn++) if (Mn[Hn].substr(0, 2) === "--") return Mn[Hn];
+              for (let Yn = 0; Yn < Mn.length; Yn++) if (Mn[Yn].substr(0, 2) === "--") return Mn[Yn];
             })(tn), !St)) throw new Error("invalid response - no boundary marker");
             const Ut = xt + 4, Tn = Me(ot, St, Ut);
             if (Tn === -1 && !bt) throw new Error("invalid response - terminating boundary not found");
-            return Wt || (Wt = (function($n) {
-              for (let Mn = 0; Mn < $n.length; Mn++) if ($n[Mn].substr(0, 13) === "Content-Type:") return $n[Mn].substr(13).trim();
+            return Wt || (Wt = (function(Wn) {
+              for (let Mn = 0; Mn < Wn.length; Mn++) if (Wn[Mn].substr(0, 13) === "Content-Type:") return Wn[Mn].substr(13).trim();
             })(tn)), st.tokenIndex = xt, st.boundary = St, st.responseHeaders = tn, st.multipartContentType = Wt, st.isPartial = Tn === -1, {
               contentType: Wt,
               extractDone: !bt || Tn !== -1,
@@ -279896,21 +279911,21 @@ Input: ` + this.err.str);
             const bt = Re(), { retrieveOptions: xt = {}, streamingData: tn = {} } = ot, St = xt.minChunkSize || 131072, Wt = new Oe("streamRequest");
             return Wt.generate((async (Ut, Tn) => {
               var _a2, _b;
-              const $n = (_a2 = bt.beforeSend) == null ? void 0 : _a2.call(bt, null, _e, st, {}), Mn = Object.assign({}, st, $n);
-              Object.keys(Mn).forEach((function(Hn) {
-                Mn[Hn] === null && (Mn[Hn] = void 0), Hn === "Accept" && _e.indexOf("accept=") !== -1 && (Mn[Hn] = void 0);
+              const Wn = (_a2 = bt.beforeSend) == null ? void 0 : _a2.call(bt, null, _e, st, {}), Mn = Object.assign({}, st, Wn);
+              Object.keys(Mn).forEach((function(Yn) {
+                Mn[Yn] === null && (Mn[Yn] = void 0), Yn === "Accept" && _e.indexOf("accept=") !== -1 && (Mn[Yn] = void 0);
               }));
               try {
-                const Hn = await fetch(_e, {
+                const Yn = await fetch(_e, {
                   headers: Mn,
                   signal: void 0
                 });
-                if (Hn.status !== 200) throw new Error(`Couldn't retrieve ${_e} got status ${Hn.status}`);
-                const At = Hn.body.getReader(), wt = Hn.headers, sn = wt.get("content-type"), jn = Number(wt.get("Content-Length"));
+                if (Yn.status !== 200) throw new Error(`Couldn't retrieve ${_e} got status ${Yn.status}`);
+                const At = Yn.body.getReader(), wt = Yn.headers, sn = wt.get("content-type"), jn = Number(wt.get("Content-Length"));
                 let gr = false, Qr = tn.encodedData, ti = tn.lastSize || 0;
                 for (tn.isPartial = true; !gr; ) {
-                  const { done: Ya, value: $r } = await At.read();
-                  if (Qr = Xe(Qr, $r), !Qr) {
+                  const { done: Ya, value: Zr } = await At.read();
+                  if (Qr = Xe(Qr, Zr), !Qr) {
                     if (gr) throw new Error(`Done but no image frame available ${Ze}`);
                     continue;
                   }
@@ -279926,13 +279941,13 @@ Input: ` + this.err.str);
                   };
                   Ut.add(da, gr);
                 }
-              } catch (Hn) {
+              } catch (Yn) {
                 ((At) => {
                   if (typeof bt.errorInterceptor == "function") {
                     const wt = new Error("request failed");
                     bt.errorInterceptor(wt);
                   }
-                })(), console.error(Hn), Tn(Hn);
+                })(), console.error(Yn), Tn(Yn);
               }
             })), Wt.getNextPromise();
           }
@@ -279943,22 +279958,22 @@ Input: ` + this.err.str);
             return st.set(_e, 0), st.set(Ze, _e.length), st;
           }
           function ve(_e, Ze, st = {}, ot = {}) {
-            const bt = Re(), { retrieveOptions: xt = {}, streamingData: tn } = ot, St = tn.chunkSize || (function(Ut, Tn, $n) {
-              const Mn = Tn[$n];
+            const bt = Re(), { retrieveOptions: xt = {}, streamingData: tn } = ot, St = tn.chunkSize || (function(Ut, Tn, Wn) {
+              const Mn = Tn[Wn];
               if (typeof Mn != "function") return Mn;
-              const Hn = G.get(Ut);
-              return Mn(Hn, Ut);
+              const Yn = G.get(Ut);
+              return Mn(Yn, Ut);
             })(Ze, xt, "chunkSize") || 65536;
             return new Promise((async (Ut, Tn) => {
-              const $n = Object.assign({}, st);
-              Object.keys($n).forEach((function(Mn) {
-                $n[Mn] !== null && $n[Mn] !== void 0 || delete $n[Mn];
+              const Wn = Object.assign({}, st);
+              Object.keys(Wn).forEach((function(Mn) {
+                Wn[Mn] !== null && Wn[Mn] !== void 0 || delete Wn[Mn];
               }));
               try {
                 tn.encodedData || (tn.chunkSize = St, tn.rangesFetched = 0);
                 const Mn = (function(ti, Ya) {
-                  const { totalBytes: $r, encodedData: Ga, chunkSize: aa = 65536 } = ti, { rangeIndex: da = 0 } = Ya;
-                  return da !== -1 || $r && Ga ? da === -1 || (Ga == null ? void 0 : Ga.byteLength) > $r - aa ? [
+                  const { totalBytes: Zr, encodedData: Ga, chunkSize: aa = 65536 } = ti, { rangeIndex: da = 0 } = Ya;
+                  return da !== -1 || Zr && Ga ? da === -1 || (Ga == null ? void 0 : Ga.byteLength) > Zr - aa ? [
                     (Ga == null ? void 0 : Ga.byteLength) || 0,
                     ""
                   ] : [
@@ -279968,12 +279983,12 @@ Input: ` + this.err.str);
                     0,
                     ""
                   ];
-                })(tn, xt), { encodedData: Hn, responseHeaders: At } = await (async function(ti, Ya, $r, Ga) {
-                  $r && (Ya = Object.assign(Ya, {
-                    Range: `bytes=${$r[0]}-${$r[1]}`
+                })(tn, xt), { encodedData: Yn, responseHeaders: At } = await (async function(ti, Ya, Zr, Ga) {
+                  Zr && (Ya = Object.assign(Ya, {
+                    Range: `bytes=${Zr[0]}-${Zr[1]}`
                   }));
                   let { encodedData: aa } = Ga;
-                  if ($r[1] && (aa == null ? void 0 : aa.byteLength) > $r[1]) return Ga;
+                  if (Zr[1] && (aa == null ? void 0 : aa.byteLength) > Zr[1]) return Ga;
                   const da = await fetch(ti, {
                     headers: Ya,
                     signal: void 0
@@ -279981,8 +279996,8 @@ Input: ` + this.err.str);
                   let Ur;
                   aa ? (Ur = new Uint8Array(aa.length + ia.length), Ur.set(aa, 0), Ur.set(ia, aa.length), Ga.rangesFetched = 1) : (Ur = new Uint8Array(ia.length), Ur.set(ia, 0), Ga.rangesFetched++), Ga.encodedData = aa = Ur, Ga.responseHeaders = da.headers;
                   const ur = da.headers.get("Content-Range");
-                  return ur ? Ga.totalBytes = Number(ur.split("/")[1]) : Oi === 206 && $r ? $r[1] === "" || (aa == null ? void 0 : aa.length) < $r[1] ? Ga.totalBytes = aa.byteLength : Ga.totalBytes = Number.MAX_SAFE_INTEGER : Ga.totalBytes = aa == null ? void 0 : aa.byteLength, Ga;
-                })(_e, $n, Mn, tn), wt = At.get("content-type"), { totalBytes: sn } = tn, jn = sn === Hn.byteLength, gr = xe(wt, Hn, {
+                  return ur ? Ga.totalBytes = Number(ur.split("/")[1]) : Oi === 206 && Zr ? Zr[1] === "" || (aa == null ? void 0 : aa.length) < Zr[1] ? Ga.totalBytes = aa.byteLength : Ga.totalBytes = Number.MAX_SAFE_INTEGER : Ga.totalBytes = aa == null ? void 0 : aa.byteLength, Ga;
+                })(_e, Wn, Mn, tn), wt = At.get("content-type"), { totalBytes: sn } = tn, jn = sn === Yn.byteLength, gr = xe(wt, Yn, {
                   isPartial: true
                 }), Qr = ue(xt, jn || gr.extractDone);
                 Ut({
@@ -279991,11 +280006,11 @@ Input: ` + this.err.str);
                   percentComplete: gr.extractDone ? 100 : 100 * St / sn
                 });
               } catch (Mn) {
-                ((Hn) => {
+                ((Yn) => {
                   if (typeof bt.errorInterceptor == "function") {
                     const At = new Error("request failed");
                     bt.errorInterceptor(At);
-                  } else console.warn("rangeRequest:Caught", Hn);
+                  } else console.warn("rangeRequest:Caught", Yn);
                 })(Mn), console.error(Mn), Tn(Mn);
               }
             }));
@@ -280011,8 +280026,8 @@ Input: ` + this.err.str);
             if (xt.streaming) return ye(St, Ze, tn, ot);
             const Wt = ze(St, Ze, tn), { xhr: Ut } = Wt;
             return Wt.then((function(Tn) {
-              const $n = xe(Ut.getResponseHeader("Content-Type") || "application/octet-stream", new Uint8Array(Tn));
-              return $n.imageQualityStatus = ue(xt, true), $n;
+              const Wn = xe(Ut.getResponseHeader("Content-Type") || "application/octet-stream", new Uint8Array(Tn));
+              return Wn.imageQualityStatus = ue(xt, true), Wn;
             }));
           }, De = function(_e) {
             let Ze, st = _e[0], ot = _e[0];
@@ -280037,12 +280052,12 @@ Input: ` + this.err.str);
               const tn = ot.length / 2;
               let St = 0, Wt = 0;
               if (xt) for (let Ut = 0; Ut < tn; Ut += 2) {
-                const Tn = ot[St++], $n = ot[St++], Mn = ot[St++], Hn = ot[St++];
-                bt[Wt++] = Tn + 1.402 * (Hn - 128), bt[Wt++] = Tn - 0.34414 * (Mn - 128) - 0.71414 * (Hn - 128), bt[Wt++] = Tn + 1.772 * (Mn - 128), bt[Wt++] = 255, bt[Wt++] = $n + 1.402 * (Hn - 128), bt[Wt++] = $n - 0.34414 * (Mn - 128) - 0.71414 * (Hn - 128), bt[Wt++] = $n + 1.772 * (Mn - 128), bt[Wt++] = 255;
+                const Tn = ot[St++], Wn = ot[St++], Mn = ot[St++], Yn = ot[St++];
+                bt[Wt++] = Tn + 1.402 * (Yn - 128), bt[Wt++] = Tn - 0.34414 * (Mn - 128) - 0.71414 * (Yn - 128), bt[Wt++] = Tn + 1.772 * (Mn - 128), bt[Wt++] = 255, bt[Wt++] = Wn + 1.402 * (Yn - 128), bt[Wt++] = Wn - 0.34414 * (Mn - 128) - 0.71414 * (Yn - 128), bt[Wt++] = Wn + 1.772 * (Mn - 128), bt[Wt++] = 255;
               }
               else for (let Ut = 0; Ut < tn; Ut += 2) {
-                const Tn = ot[St++], $n = ot[St++], Mn = ot[St++], Hn = ot[St++];
-                bt[Wt++] = Tn + 1.402 * (Hn - 128), bt[Wt++] = Tn - 0.34414 * (Mn - 128) - 0.71414 * (Hn - 128), bt[Wt++] = Tn + 1.772 * (Mn - 128), bt[Wt++] = $n + 1.402 * (Hn - 128), bt[Wt++] = $n - 0.34414 * (Mn - 128) - 0.71414 * (Hn - 128), bt[Wt++] = $n + 1.772 * (Mn - 128);
+                const Tn = ot[St++], Wn = ot[St++], Mn = ot[St++], Yn = ot[St++];
+                bt[Wt++] = Tn + 1.402 * (Yn - 128), bt[Wt++] = Tn - 0.34414 * (Mn - 128) - 0.71414 * (Yn - 128), bt[Wt++] = Tn + 1.772 * (Mn - 128), bt[Wt++] = Wn + 1.402 * (Yn - 128), bt[Wt++] = Wn - 0.34414 * (Mn - 128) - 0.71414 * (Yn - 128), bt[Wt++] = Wn + 1.772 * (Mn - 128);
               }
             })(_e.pixelData, Ze, st);
             else {
@@ -280077,8 +280092,8 @@ Input: ` + this.err.str);
                   st.height = Wt.height, st.width = Wt.width, _e.rows = Wt.height, _e.columns = Wt.width;
                   const Ut = st.getContext("2d");
                   Ut.drawImage(this, 0, 0);
-                  const Tn = Ut.getImageData(0, 0, Wt.width, Wt.height), $n = (/* @__PURE__ */ new Date()).getTime();
-                  _e.pixelData = new Uint8Array(Tn.data.buffer), _e.imageData = Tn, _e.decodeTimeInMS = $n - ot;
+                  const Tn = Ut.getImageData(0, 0, Wt.width, Wt.height), Wn = (/* @__PURE__ */ new Date()).getTime();
+                  _e.pixelData = new Uint8Array(Tn.data.buffer), _e.imageData = Tn, _e.decodeTimeInMS = Wn - ot;
                   const Mn = De(_e.pixelData);
                   _e.smallestPixelValue = Mn.min, _e.largestPixelValue = Mn.max, _e.pixelDataLength = _e.pixelData.length, xt(_e);
                 }, Wt.onerror = function(Ut) {
@@ -280311,7 +280326,7 @@ Input: ` + this.err.str);
             }, !(Ze == null ? void 0 : Ze.length)) return Promise.reject(new Error("The pixel data is missing"));
             const { cornerstone: xt } = Ha, { MetadataModules: tn } = xt.Enums, St = document.createElement("canvas"), Wt = ie(_e);
             if (Wt.decodeLevel = ot.decodeLevel, ot.allowFloatRendering = xt.canRenderFloatTextures(), ot.preScale.enabled) {
-              const Hn = (function(At, wt) {
+              const Yn = (function(At, wt) {
                 const sn = At.get("modalityLutModule", wt) || {}, jn = At.get("generalSeriesModule", wt) || {}, { modality: gr } = jn, Qr = {
                   rescaleSlope: sn.rescaleSlope,
                   rescaleIntercept: sn.rescaleIntercept,
@@ -280324,26 +280339,26 @@ Input: ` + this.err.str);
                   }
                 };
               })(xt.metaData, _e);
-              Hn && (ot.preScale = {
+              Yn && (ot.preScale = {
                 ...ot.preScale,
-                scalingParameters: Hn
+                scalingParameters: Yn
               });
             }
             ot.isSharedArrayBuffer = ((_a2 = ot.targetBuffer) == null ? void 0 : _a2.arrayBuffer) && ot.targetBuffer.arrayBuffer instanceof SharedArrayBuffer;
             const { decodeConfig: Ut } = Re();
-            Ut.use16BitDataType = !!(ot && ((_b = ot.targetBuffer) == null ? void 0 : _b.type) === "Uint16Array" || ((_c2 = ot.targetBuffer) == null ? void 0 : _c2.type) === "Int16Array") || ot.useNativeDataType || Ut.use16BitDataType, Object.keys(Wt).forEach(((Hn) => {
-              (typeof Wt[Hn] == "function" || Wt[Hn] instanceof Promise) && delete Wt[Hn];
+            Ut.use16BitDataType = !!(ot && ((_b = ot.targetBuffer) == null ? void 0 : _b.type) === "Uint16Array" || ((_c2 = ot.targetBuffer) == null ? void 0 : _c2.type) === "Int16Array") || ot.useNativeDataType || Ut.use16BitDataType, Object.keys(Wt).forEach(((Yn) => {
+              (typeof Wt[Yn] == "function" || Wt[Yn] instanceof Promise) && delete Wt[Yn];
             }));
-            const Tn = tt(Wt, st, Ze, St, ot, Ut), { use16BitDataType: $n } = Ut, Mn = ht(Wt.photometricInterpretation);
-            return new Promise(((Hn, At) => {
+            const Tn = tt(Wt, st, Ze, St, ot, Ut), { use16BitDataType: Wn } = Ut, Mn = ht(Wt.photometricInterpretation);
+            return new Promise(((Yn, At) => {
               Tn.then((function(wt) {
-                if (ot.skipCreateImage) return Hn(wt);
+                if (ot.skipCreateImage) return Yn(wt);
                 let sn = false;
                 if (ot.targetBuffer && ot.targetBuffer.type && !Mn) {
                   const { arrayBuffer: Bi, type: ia, offset: Oi = 0, length: Ur } = ot.targetBuffer, ur = wt.pixelDataLength, Ui = Oi, Is = Ur ?? ur - Ui, pi = {
                     Uint8Array,
-                    Uint16Array: $n ? Uint16Array : void 0,
-                    Int16Array: $n ? Int16Array : void 0,
+                    Uint16Array: Wn ? Uint16Array : void 0,
+                    Int16Array: Wn ? Int16Array : void 0,
                     Float32Array
                   };
                   if (Is !== wt.pixelDataLength) throw new Error(`target array for image does not have the same length (${Is}) as the decoded image length (${wt.pixelDataLength}).`);
@@ -280352,7 +280367,7 @@ Input: ` + this.err.str);
                   wt.pixelData = tl, sn = true;
                 }
                 sn || un(wt);
-                const jn = xt.metaData.get(tn.IMAGE_PLANE, _e) || {}, gr = xt.metaData.get(tn.VOI_LUT, _e) || {}, Qr = xt.metaData.get(tn.MODALITY_LUT, _e) || {}, ti = xt.metaData.get(tn.SOP_COMMON, _e) || {}, Ya = xt.metaData.get(tn.CALIBRATION, _e) || {}, { rows: $r, columns: Ga } = wt;
+                const jn = xt.metaData.get(tn.IMAGE_PLANE, _e) || {}, gr = xt.metaData.get(tn.VOI_LUT, _e) || {}, Qr = xt.metaData.get(tn.MODALITY_LUT, _e) || {}, ti = xt.metaData.get(tn.SOP_COMMON, _e) || {}, Ya = xt.metaData.get(tn.CALIBRATION, _e) || {}, { rows: Zr, columns: Ga } = wt;
                 if (Mn) {
                   if ((function(ia) {
                     if (ia === void 0) return false;
@@ -280365,7 +280380,7 @@ Input: ` + this.err.str);
                       ...ia,
                       data: new Uint8ClampedArray(3 * wt.columns * wt.rows)
                     }), we(wt, ia.data, bt), wt.imageData = ia, wt.pixelData = ia.data, wt.pixelDataLength = ia.data.length;
-                  } else if (!bt && wt.pixelDataLength === 4 * $r * Ga) {
+                  } else if (!bt && wt.pixelDataLength === 4 * Zr * Ga) {
                     const ia = new Uint8Array(wt.pixelData.length / 4 * 3);
                     wt.pixelData = (function(Oi, Ur) {
                       const ur = Oi.length / 4;
@@ -280421,7 +280436,7 @@ Input: ` + this.err.str);
                   const Bi = aa.imageFrame.minAfterScale, ia = aa.imageFrame.maxAfterScale;
                   aa.windowWidth = ia - Bi, aa.windowCenter = (ia + Bi) / 2;
                 }
-                Hn(aa);
+                Yn(aa);
               }), At);
             }));
           }, { ProgressiveIterator: $t } = A, { ImageQualityStatus: mt } = l, jt = /* @__PURE__ */ new Set([
@@ -280460,21 +280475,21 @@ Input: ` + this.err.str);
             const st = Ha.cornerstone.imageRetrievalPoolManager, ot = (/* @__PURE__ */ new Date()).getTime(), bt = new $t("decompress"), xt = Ze.requestType || "interaction", tn = Ze.additionalDetails || {
               imageId: _e
             }, St = Ze.priority === void 0 ? 5 : Ze.priority, Wt = Ze.addToBeginning || false, Ut = _e.substring(7);
-            return st.addRequest((async function(Tn, $n, Mn) {
-              bt.generate((async (Hn) => {
+            return st.addRequest((async function(Tn, Wn, Mn) {
+              bt.generate((async (Yn) => {
                 var _a2;
-                const At = $t.as(fe(Tn, $n, Mn, Ze));
+                const At = $t.as(fe(Tn, Wn, Mn, Ze));
                 let wt = 10;
                 for await (const sn of At) {
-                  const { pixelData: jn, imageQualityStatus: gr = mt.FULL_RESOLUTION, percentComplete: Qr, done: ti = true, extractDone: Ya = true } = sn, $r = An(sn.contentType);
-                  if (!Ya && !jt.has($r)) continue;
+                  const { pixelData: jn, imageQualityStatus: gr = mt.FULL_RESOLUTION, percentComplete: Qr, done: ti = true, extractDone: Ya = true } = sn, Zr = An(sn.contentType);
+                  if (!Ya && !jt.has(Zr)) continue;
                   const Ga = sn.decodeLevel ?? (gr === mt.FULL_RESOLUTION ? 0 : Ve(Qr, (_a2 = Ze.retrieveOptions) == null ? void 0 : _a2.decodeLevel));
                   if (ti || !(wt <= Ga)) try {
                     const aa = {
                       ...Ze,
                       decodeLevel: Ga
-                    }, da = await Ne($n, jn, $r, aa), Bi = (/* @__PURE__ */ new Date()).getTime();
-                    da.loadTimeInMS = Bi - ot, da.transferSyntaxUID = $r, da.imageQualityStatus = gr, Hn.add(da, ti), wt = Ga;
+                    }, da = await Ne(Wn, jn, Zr, aa), Bi = (/* @__PURE__ */ new Date()).getTime();
+                    da.loadTimeInMS = Bi - ot, da.transferSyntaxUID = Zr, da.imageQualityStatus = gr, Yn.add(da, ti), wt = Ga;
                   } catch (aa) {
                     if (Ya) throw console.warn("Couldn't decode", aa), aa;
                   }
@@ -280484,7 +280499,7 @@ Input: ` + this.err.str);
               promise: bt.getDonePromise(),
               cancelFn: void 0
             };
-          }, Ot = {
+          }, Pt = {
             metaData: {
               getNumberString: f,
               getNumberValue: p,
@@ -280500,7 +280515,7 @@ Input: ` + this.err.str);
               _e.registerImageLoader("wadors", Ft), _e.metaData.addProvider(he);
             }
           };
-          function Pt(_e, Ze) {
+          function Ht(_e, Ze) {
             if (_e.elements[Ze] && _e.elements[Ze].length === 6) return [
               _e.uint16(Ze, 0),
               _e.uint16(Ze, 1),
@@ -280528,7 +280543,7 @@ Input: ` + this.err.str);
             return (function(st, ot) {
               st.uint16("x00280103") === 0 ? (ot.smallestPixelValue = st.uint16("x00280106"), ot.largestPixelValue = st.uint16("x00280107")) : (ot.smallestPixelValue = st.int16("x00280106"), ot.largestPixelValue = st.int16("x00280107"));
             })(_e, Ze), Ze.photometricInterpretation === "PALETTE COLOR" && _e.elements.x00281101 && (function(st, ot) {
-              ot.redPaletteColorLookupTableDescriptor = Pt(st, "x00281101"), ot.greenPaletteColorLookupTableDescriptor = Pt(st, "x00281102"), ot.bluePaletteColorLookupTableDescriptor = Pt(st, "x00281103"), ot.redPaletteColorLookupTableDescriptor[0] === 0 && (ot.redPaletteColorLookupTableDescriptor[0] = 65536, ot.greenPaletteColorLookupTableDescriptor[0] = 65536, ot.bluePaletteColorLookupTableDescriptor[0] = 65536);
+              ot.redPaletteColorLookupTableDescriptor = Ht(st, "x00281101"), ot.greenPaletteColorLookupTableDescriptor = Ht(st, "x00281102"), ot.bluePaletteColorLookupTableDescriptor = Ht(st, "x00281103"), ot.redPaletteColorLookupTableDescriptor[0] === 0 && (ot.redPaletteColorLookupTableDescriptor[0] = 65536, ot.greenPaletteColorLookupTableDescriptor[0] = 65536, ot.bluePaletteColorLookupTableDescriptor[0] = 65536);
               const bt = ot.redPaletteColorLookupTableDescriptor[0], xt = st.elements.x00281201.length === bt ? 8 : 16;
               ot.redPaletteColorLookupTableDescriptor[2] !== xt && (ot.redPaletteColorLookupTableDescriptor[2] = xt, ot.greenPaletteColorLookupTableDescriptor[2] = xt, ot.bluePaletteColorLookupTableDescriptor[2] = xt), ot.redPaletteColorLookupTableData = Un(st, "x00281201", ot.redPaletteColorLookupTableDescriptor), ot.greenPaletteColorLookupTableData = Un(st, "x00281202", ot.greenPaletteColorLookupTableDescriptor), ot.bluePaletteColorLookupTableData = Un(st, "x00281203", ot.bluePaletteColorLookupTableDescriptor);
             })(_e, Ze), Ze;
@@ -280615,10 +280630,10 @@ Input: ` + this.err.str);
                 imageId: xt,
                 fetchedLength: _e.length,
                 lengthToFetch: tn - _e.length
-              }, St), { fetchedLength: Ut, lengthToFetch: Tn } = Wt, { arrayBuffer: $n } = await Ze(bt, xt, {
+              }, St), { fetchedLength: Ut, lengthToFetch: Tn } = Wt, { arrayBuffer: Wn } = await Ze(bt, xt, {
                 byteRange: `${Ut}-${Ut + Tn}`
-              }), Mn = new Uint8Array($n), Hn = new Uint8Array(ot.byteArray.length + Mn.length);
-              return Hn.set(ot.byteArray), Hn.set(Mn, ot.byteArray.length), Da(Hn, Ze, st);
+              }), Mn = new Uint8Array(Wn), Yn = new Uint8Array(ot.byteArray.length + Mn.length);
+              return Yn.set(ot.byteArray), Yn.set(Mn, ot.byteArray.length), Da(Yn, Ze, st);
             }, ot;
           }
           function zn(_e, Ze, st) {
@@ -280673,7 +280688,7 @@ Input: ` + this.err.str);
               return Kr(Sr(_e));
             }
           };
-          let Gr = 0, Qt = {}, _t = {};
+          let Gr = 0, Qt = {}, Ot = {};
           function en() {
             return {
               cacheSizeInBytes: Gr,
@@ -280689,7 +280704,7 @@ Input: ` + this.err.str);
               if (Qt[_e]) return new Promise(((St) => {
                 Qt[_e].cacheCount++, St(Qt[_e].dataSet);
               }));
-              if (_t[_e]) return _t[_e].cacheCount++, _t[_e];
+              if (Ot[_e]) return Ot[_e].cacheCount++, Ot[_e];
               const xt = Ze(_e, st), tn = new Promise(((St, Wt) => {
                 xt.then((async function(Ut) {
                   const Tn = {
@@ -280700,16 +280715,16 @@ Input: ` + this.err.str);
                     if (!Ut.arrayBuffer) return Wt(new Error("If not returning ArrayBuffer, must return object with `arrayBuffer` parameter"));
                     Tn.isPartialContent = Ut.flags.isPartialContent, Tn.fileTotalLength = Ut.flags.fileTotalLength, Ut = Ut.arrayBuffer;
                   }
-                  const $n = new Uint8Array(Ut);
+                  const Wn = new Uint8Array(Ut);
                   let Mn;
                   try {
-                    Mn = Tn.isPartialContent ? await Da($n, Ze, {
+                    Mn = Tn.isPartialContent ? await Da(Wn, Ze, {
                       uri: _e,
                       imageId: st,
                       fileTotalLength: Tn.fileTotalLength
-                    }) : bt.parseDicom($n);
-                  } catch (Hn) {
-                    return Wt(Hn);
+                    }) : bt.parseDicom(Wn);
+                  } catch (Yn) {
+                    return Wt(Yn);
                   }
                   Qt[_e] = {
                     dataSet: Mn,
@@ -280720,12 +280735,12 @@ Input: ` + this.err.str);
                     cacheInfo: en()
                   });
                 }), Wt).then((() => {
-                  delete _t[_e];
+                  delete Ot[_e];
                 }), (() => {
-                  delete _t[_e];
+                  delete Ot[_e];
                 }));
               }));
-              return tn.cacheCount = 1, _t[_e] = tn, tn;
+              return tn.cacheCount = 1, Ot[_e] = tn, tn;
             },
             unload: function(_e) {
               const { cornerstone: Ze } = Ha;
@@ -280737,7 +280752,7 @@ Input: ` + this.err.str);
             },
             getInfo: en,
             purge: function() {
-              Qt = {}, _t = {}, Gr = 0;
+              Qt = {}, Ot = {}, Gr = 0;
             },
             get: function(_e) {
               let Ze;
@@ -280747,14 +280762,14 @@ Input: ` + this.err.str);
                   if (!xt) return;
                   const { NumberOfFrames: tn, PerFrameFunctionalGroupsSequence: St, SharedFunctionalGroupsSequence: Wt, otherElements: Ut } = er(xt);
                   if (St || tn > 1) {
-                    const { shared: Tn, perFrame: $n } = zn(St, Wt, bt), Mn = {
+                    const { shared: Tn, perFrame: Wn } = zn(St, Wt, bt), Mn = {
                       elements: {
                         ...Ut,
                         ...Tn,
-                        ...$n
+                        ...Wn
                       }
-                    }, Hn = Object.create(xt);
-                    return Object.assign(Hn, Mn);
+                    }, Yn = Object.create(xt);
+                    return Object.assign(Yn, Mn);
                   }
                   return xt;
                 })(st, ot);
@@ -280770,7 +280785,7 @@ Input: ` + this.err.str);
               })) : console.error(`No loaded dataSet for uri ${_e}`);
             }
           };
-          function wn(_e, Ze) {
+          function vn(_e, Ze) {
             const st = _e.string("x00080008");
             if (st) {
               const ot = st.split("\\");
@@ -280783,7 +280798,7 @@ Input: ` + this.err.str);
               var _a2;
               let ot;
               if ((_a2 = st.string("x00080060")) == null ? void 0 : _a2.includes("NM")) {
-                const xt = wn(st, 2);
+                const xt = vn(st, 2);
                 xt && H(xt) && st.elements.x00540022 && (ot = Ir(st.elements.x00540022.items[0].dataSet, "x00200037", 6));
               }
               return ot;
@@ -280795,7 +280810,7 @@ Input: ` + this.err.str);
               var _a2;
               let ot;
               if ((_a2 = st.string("x00080060")) == null ? void 0 : _a2.includes("NM")) {
-                const xt = wn(st, 2);
+                const xt = vn(st, 2);
                 xt && H(xt) && st.elements.x00540022 && (ot = Ir(st.elements.x00540022.items[0].dataSet, "x00200032", 3));
               }
               return ot;
@@ -280839,11 +280854,11 @@ Input: ` + this.err.str);
             const xt = Pr(st);
             if (Ze === ot.MULTIFRAME) {
               const Wt = zr.retrieveMultiframeDataset(xt.url);
-              return Wt.dataSet ? (function(Tn, $n) {
+              return Wt.dataSet ? (function(Tn, Wn) {
                 if (!Tn) return;
-                const { NumberOfFrames: Mn, PerFrameFunctionalGroupsSequence: Hn, SharedFunctionalGroupsSequence: At } = er(Tn);
-                if (Hn || Mn > 1) {
-                  const { shared: wt, perFrame: sn } = zn(Hn, At, $n);
+                const { NumberOfFrames: Mn, PerFrameFunctionalGroupsSequence: Yn, SharedFunctionalGroupsSequence: At } = er(Tn);
+                if (Yn || Mn > 1) {
+                  const { shared: wt, perFrame: sn } = zn(Yn, At, Wn);
                   return {
                     NumberOfFrames: Mn,
                     PerFrameFunctionalInformation: sn,
@@ -280893,7 +280908,7 @@ Input: ` + this.err.str);
                 patientWeight: St.floatString("x00101030")
               };
               if (Ze === ot.NM_MULTIFRAME_GEOMETRY) {
-                const Wt = St.string("x00080060"), Ut = wn(St, 2);
+                const Wt = St.string("x00080060"), Ut = vn(St, 2);
                 return {
                   modality: Wt,
                   imageType: St.string("x00080008"),
@@ -280907,9 +280922,9 @@ Input: ` + this.err.str);
                 };
               }
               if (Ze === ot.IMAGE_PLANE) {
-                const Wt = fr(St), Ut = sa(St), Tn = ya(St), $n = Jn(St);
-                let Mn = null, Hn = null;
-                Tn && (Hn = Tn[0], Mn = Tn[1]);
+                const Wt = fr(St), Ut = sa(St), Tn = ya(St), Wn = Jn(St);
+                let Mn = null, Yn = null;
+                Tn && (Yn = Tn[0], Mn = Tn[1]);
                 let At = null, wt = null;
                 return Wt && (At = [
                   parseFloat(Wt[0]),
@@ -280927,10 +280942,10 @@ Input: ` + this.err.str);
                   rowCosines: At,
                   columnCosines: wt,
                   imagePositionPatient: Ut,
-                  sliceThickness: $n,
+                  sliceThickness: Wn,
                   sliceLocation: St.floatString("x00201041"),
                   pixelSpacing: Tn,
-                  rowPixelSpacing: Hn,
+                  rowPixelSpacing: Yn,
                   columnPixelSpacing: Mn
                 };
               }
@@ -280971,27 +280986,27 @@ Input: ` + this.err.str);
               if (Ze === ot.OVERLAY_PLANE) return (function(Wt) {
                 const Ut = [];
                 for (let Tn = 0; Tn <= 30; Tn += 2) {
-                  let $n = `x60${Tn.toString(16)}`;
-                  $n.length === 4 && ($n = `x600${Tn.toString(16)}`);
-                  const Mn = Wt.elements[`${$n}3000`];
+                  let Wn = `x60${Tn.toString(16)}`;
+                  Wn.length === 4 && (Wn = `x600${Tn.toString(16)}`);
+                  const Mn = Wt.elements[`${Wn}3000`];
                   if (!Mn) continue;
-                  const Hn = [];
+                  const Yn = [];
                   for (let At = 0; At < Mn.length; At++) for (let wt = 0; wt < 8; wt++) {
                     const sn = Wt.byteArray[Mn.dataOffset + At];
-                    Hn[8 * At + wt] = sn >> wt & 1;
+                    Yn[8 * At + wt] = sn >> wt & 1;
                   }
                   Ut.push({
-                    rows: Wt.uint16(`${$n}0010`),
-                    columns: Wt.uint16(`${$n}0011`),
-                    type: Wt.string(`${$n}0040`),
-                    x: Wt.int16(`${$n}0050`, 1) - 1,
-                    y: Wt.int16(`${$n}0050`, 0) - 1,
-                    pixelData: Hn,
-                    description: Wt.string(`${$n}0022`),
-                    label: Wt.string(`${$n}1500`),
-                    roiArea: Wt.string(`${$n}1301`),
-                    roiMean: Wt.string(`${$n}1302`),
-                    roiStandardDeviation: Wt.string(`${$n}1303`)
+                    rows: Wt.uint16(`${Wn}0010`),
+                    columns: Wt.uint16(`${Wn}0011`),
+                    type: Wt.string(`${Wn}0040`),
+                    x: Wt.int16(`${Wn}0050`, 1) - 1,
+                    y: Wt.int16(`${Wn}0050`, 0) - 1,
+                    pixelData: Yn,
+                    description: Wt.string(`${Wn}0022`),
+                    label: Wt.string(`${Wn}1500`),
+                    roiArea: Wt.string(`${Wn}1301`),
+                    roiMean: Wt.string(`${Wn}1302`),
+                    roiStandardDeviation: Wt.string(`${Wn}1303`)
                   });
                 }
                 return {
@@ -281107,7 +281122,7 @@ Input: ` + this.err.str);
             };
             return St.promise = new Promise(((Wt, Ut) => {
               _e.then(((Tn) => {
-                const $n = zt(Tn, st), Mn = Tn.string("x00020010"), Hn = (/* @__PURE__ */ new Date()).getTime(), At = Ne(Ze, $n, Mn, bt);
+                const Wn = zt(Tn, st), Mn = Tn.string("x00020010"), Yn = (/* @__PURE__ */ new Date()).getTime(), At = Ne(Ze, Wn, Mn, bt);
                 (function(wt, sn) {
                   wt.decache = function() {
                     const jn = Pr(sn);
@@ -281116,7 +281131,7 @@ Input: ` + this.err.str);
                 })(St, Ze), At.then(((wt) => {
                   wt.data = Tn, wt.sharedCacheKey = ot;
                   const sn = (/* @__PURE__ */ new Date()).getTime();
-                  wt.loadTimeInMS = Hn - tn, wt.totalTimeInMS = sn - tn, xt !== void 0 && xt.imageDoneCallback !== void 0 && xt.imageDoneCallback(wt), Wt(wt);
+                  wt.loadTimeInMS = Yn - tn, wt.totalTimeInMS = sn - tn, xt !== void 0 && xt.imageDoneCallback !== void 0 && xt.imageDoneCallback(wt), Wt(wt);
                 }), (function(wt) {
                   Ut({
                     error: wt,
@@ -281133,30 +281148,30 @@ Input: ` + this.err.str);
           function _n(_e) {
             return _e === "dicomweb" || _e === "wadouri" ? ze : _e === "dicomfile" ? at : void 0;
           }
-          function sr(_e, Ze = {}) {
+          function ar(_e, Ze = {}) {
             const st = Pr(_e);
             delete (Ze = Object.assign({}, Ze)).loader;
             const ot = _n(st.scheme);
             return Bn.isLoaded(st.url) ? (function(bt, xt, tn = 0, St, Wt) {
               const Ut = (/* @__PURE__ */ new Date()).getTime();
               return {
-                promise: new Promise(((Tn, $n) => {
+                promise: new Promise(((Tn, Wn) => {
                   const Mn = (/* @__PURE__ */ new Date()).getTime();
-                  let Hn;
+                  let Yn;
                   try {
                     const At = zt(bt, tn), wt = bt.string("x00020010");
-                    Hn = Ne(xt, At, wt, Wt);
+                    Yn = Ne(xt, At, wt, Wt);
                   } catch (At) {
-                    return void $n({
+                    return void Wn({
                       error: At,
                       dataSet: bt
                     });
                   }
-                  Hn.then(((At) => {
+                  Yn.then(((At) => {
                     At.data = bt, At.sharedCacheKey = St;
                     const wt = (/* @__PURE__ */ new Date()).getTime();
                     At.loadTimeInMS = Mn - Ut, At.totalTimeInMS = wt - Ut, Tn(At);
-                  }), $n);
+                  }), Wn);
                 })),
                 cancelFn: void 0
               };
@@ -281177,14 +281192,14 @@ Input: ` + this.err.str);
             loadFileRequest: at,
             loadImageFromPromise: fn,
             getLoaderForScheme: _n,
-            loadImage: sr,
+            loadImage: ar,
             parseImageId: Pr,
             unpackBinaryFrame: Kt,
             register: function(_e) {
-              _e.registerImageLoader("dicomweb", sr), _e.registerImageLoader("wadouri", sr), _e.registerImageLoader("dicomfile", sr), _e.metaData.addProvider(ka);
+              _e.registerImageLoader("dicomweb", ar), _e.registerImageLoader("wadouri", ar), _e.registerImageLoader("dicomfile", ar), _e.metaData.addProvider(ka);
             }
           }, Kn = function(_e) {
-            Ot.register(_e), In.register(_e);
+            Pt.register(_e), In.register(_e);
           };
           let Pn, Dr;
           const jr = {
@@ -281230,14 +281245,14 @@ Input: ` + this.err.str);
               if (!xt || !tn || !St) throw new Error("The image does not have a complete color palette. R, G, and B palette data are required.");
               const Wt = xt.length;
               let Ut = 0, Tn = 0;
-              const $n = _e.redPaletteColorLookupTableDescriptor[1], Mn = _e.redPaletteColorLookupTableDescriptor[2] === 8 ? 0 : 8, Hn = fi(xt, Mn), At = fi(tn, Mn), wt = fi(St, Mn);
+              const Wn = _e.redPaletteColorLookupTableDescriptor[1], Mn = _e.redPaletteColorLookupTableDescriptor[2] === 8 ? 0 : 8, Yn = fi(xt, Mn), At = fi(tn, Mn), wt = fi(St, Mn);
               if (st) for (let sn = 0; sn < ot; ++sn) {
                 let jn = bt[Ut++];
-                jn < $n ? jn = 0 : jn > $n + Wt - 1 ? jn = Wt - 1 : jn -= $n, Ze[Tn++] = Hn[jn], Ze[Tn++] = At[jn], Ze[Tn++] = wt[jn], Ze[Tn++] = 255;
+                jn < Wn ? jn = 0 : jn > Wn + Wt - 1 ? jn = Wt - 1 : jn -= Wn, Ze[Tn++] = Yn[jn], Ze[Tn++] = At[jn], Ze[Tn++] = wt[jn], Ze[Tn++] = 255;
               }
               else for (let sn = 0; sn < ot; ++sn) {
                 let jn = bt[Ut++];
-                jn < $n ? jn = 0 : jn > $n + Wt - 1 ? jn = Wt - 1 : jn -= $n, Ze[Tn++] = Hn[jn], Ze[Tn++] = At[jn], Ze[Tn++] = wt[jn];
+                jn < Wn ? jn = 0 : jn > Wn + Wt - 1 ? jn = Wt - 1 : jn -= Wn, Ze[Tn++] = Yn[jn], Ze[Tn++] = At[jn], Ze[Tn++] = wt[jn];
               }
             }));
           }
@@ -281252,7 +281267,7 @@ Input: ` + this.err.str);
             convertYBRFullByPlane: u,
             convertPALETTECOLOR: Hr,
             wadouri: In,
-            wadors: Ot,
+            wadors: Pt,
             configure: Qa,
             convertColorSpace: we,
             createImage: Ne,
@@ -282357,7 +282372,7 @@ Input: ` + this.err.str);
                   className: `flex flex-col items-center justify-center px-3 py-1 rounded-lg border text-xxs font-bold transition ${Ee ? "bg-amber-500 text-zinc-950 border-amber-400 font-extrabold shadow-sm" : "bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border-indigo-500/40"}`,
                   title: "Toggle 2D Multi-Planar Reconstruction (MPR)",
                   children: [
-                    Ee ? n.jsx(Yn, {
+                    Ee ? n.jsx(Hn, {
                       className: "w-4 h-4 mb-0.5 text-red-950 font-bold"
                     }) : n.jsx(FF, {
                       className: "w-4 h-4 mb-0.5"
@@ -283920,7 +283935,7 @@ Input: ` + this.err.str);
                                     },
                                     className: "p-1.5 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-xl transition",
                                     title: "Patient Scans History",
-                                    children: n.jsx(Fo, {
+                                    children: n.jsx(To, {
                                       className: "w-4 h-4 text-amber-600 dark:text-amber-400"
                                     })
                                   })
@@ -283959,7 +283974,7 @@ Input: ` + this.err.str);
                         onClick: () => M(null),
                         className: "p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition",
                         title: "Close Inspector",
-                        children: n.jsx(Yn, {
+                        children: n.jsx(Hn, {
                           className: "w-5 h-5"
                         })
                       })
@@ -284229,7 +284244,7 @@ Input: ` + this.err.str);
                     n.jsx("button", {
                       onClick: () => G(null),
                       className: "p-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg transition",
-                      children: n.jsx(Yn, {
+                      children: n.jsx(Hn, {
                         className: "w-5 h-5"
                       })
                     })
@@ -284334,7 +284349,7 @@ Input: ` + this.err.str);
                   }),
                   n.jsx("button", {
                     onClick: () => Re(null),
-                    children: n.jsx(Yn, {
+                    children: n.jsx(Hn, {
                       className: "w-5 h-5 text-zinc-400"
                     })
                   })
@@ -284450,7 +284465,7 @@ Input: ` + this.err.str);
                   }),
                   n.jsx("button", {
                     onClick: () => ae(false),
-                    children: n.jsx(Yn, {
+                    children: n.jsx(Hn, {
                       className: "w-4 h-4 text-slate-400"
                     })
                   })
@@ -284574,11 +284589,11 @@ Input: ` + this.err.str);
     const { user: t } = xa(), [e, r] = F.useState([]), [a, i] = F.useState(false), [s, o] = F.useState(null), [A, l] = F.useState(true), [c, g] = F.useState(false), [d, u] = F.useState(null), [h, f] = F.useState([]), p = (Qt) => {
       var _a3;
       if (!d) return;
-      const _t = (_a3 = d.series) == null ? void 0 : _a3.find((en) => en.seriesId === Qt);
-      if (_t && _t.instances) {
-        const en = _t.instances.map((Bn) => {
-          const wn = Bn.wadouri || `/api/v1/radiology/pacs/instances/${Bn.instanceId}/file`;
-          return wn.startsWith("wadouri:") ? wn : `wadouri:${wn}`;
+      const Ot = (_a3 = d.series) == null ? void 0 : _a3.find((en) => en.seriesId === Qt);
+      if (Ot && Ot.instances) {
+        const en = Ot.instances.map((Bn) => {
+          const vn = Bn.wadouri || `/api/v1/radiology/pacs/instances/${Bn.instanceId}/file`;
+          return vn.startsWith("wadouri:") ? vn : `wadouri:${vn}`;
         });
         f(en);
       }
@@ -284599,8 +284614,8 @@ Input: ` + this.err.str);
     ]);
     F.useEffect(() => {
       if (En.current) {
-        const Qt = En.current.clientWidth || C || 450, _t = Math.min(Math.max((Qt - 32) / 794, 0.3), 1.2);
-        Le(_t), it({
+        const Qt = En.current.clientWidth || C || 450, Ot = Math.min(Math.max((Qt - 32) / 794, 0.3), 1.2);
+        Le(Ot), it({
           x: 0,
           y: 0
         });
@@ -284612,17 +284627,17 @@ Input: ` + this.err.str);
     ]), F.useEffect(() => {
       const Qt = En.current;
       if (!Qt) return;
-      const _t = (en) => {
+      const Ot = (en) => {
         if (en.ctrlKey) {
           en.preventDefault();
-          const wn = -en.deltaY > 0 ? 1.05 : 0.95;
-          Le((fr) => Math.min(Math.max(fr * wn, 0.2), 3));
+          const vn = -en.deltaY > 0 ? 1.05 : 0.95;
+          Le((fr) => Math.min(Math.max(fr * vn, 0.2), 3));
         }
       };
-      return Qt.addEventListener("wheel", _t, {
+      return Qt.addEventListener("wheel", Ot, {
         passive: false
       }), () => {
-        Qt.removeEventListener("wheel", _t);
+        Qt.removeEventListener("wheel", Ot);
       };
     }, [
       we,
@@ -284650,23 +284665,23 @@ Input: ` + this.err.str);
         if (!Q.current) return;
         const Bn = Q.current.getBoundingClientRect();
         if (D.current) {
-          const wn = Math.max(220, Math.min(500, en.clientX - Bn.left));
-          x(wn), se.current && se.current.resize();
+          const vn = Math.max(220, Math.min(500, en.clientX - Bn.left));
+          x(vn), se.current && se.current.resize();
         } else if (v.current) {
-          const wn = Math.max(320, Math.min(650, Bn.right - en.clientX));
-          B(wn), se.current && se.current.resize();
+          const vn = Math.max(320, Math.min(650, Bn.right - en.clientX));
+          B(vn), se.current && se.current.resize();
         }
-      }, _t = () => {
+      }, Ot = () => {
         (D.current || v.current) && (D.current = false, v.current = false, document.body.style.cursor = "", document.body.style.userSelect = "", se.current && se.current.resize());
       };
-      return window.addEventListener("pointermove", Qt), window.addEventListener("pointerup", _t), () => {
-        window.removeEventListener("pointermove", Qt), window.removeEventListener("pointerup", _t);
+      return window.addEventListener("pointermove", Qt), window.addEventListener("pointerup", Ot), () => {
+        window.removeEventListener("pointermove", Qt), window.removeEventListener("pointerup", Ot);
       };
     }, []);
     const ht = async () => {
       l(true);
       try {
-        const _t = [
+        const Ot = [
           "PendingImaging",
           "Assigned",
           "ImagingCompleted",
@@ -284677,7 +284692,7 @@ Input: ` + this.err.str);
           "Signed",
           "ManualVerified",
           "Finalized"
-        ].map((Bn) => `status=${encodeURIComponent(Bn)}`).join("&"), en = await fetch(`/api/v1/radiology/studies/queue?includeHistory=${a}&${_t}`, {
+        ].map((Bn) => `status=${encodeURIComponent(Bn)}`).join("&"), en = await fetch(`/api/v1/radiology/studies/queue?includeHistory=${a}&${Ot}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("synos_jwt")}`
           }
@@ -284698,17 +284713,17 @@ Input: ` + this.err.str);
       a
     ]);
     const Et = async (Qt) => {
-      const _t = Qt.studyId || Qt.radiologyStudyId, en = (s == null ? void 0 : s.studyId) || (s == null ? void 0 : s.radiologyStudyId);
-      en && en !== _t && se.current && (se.current.destroy(), se.current = null), l(true);
+      const Ot = Qt.studyId || Qt.radiologyStudyId, en = (s == null ? void 0 : s.studyId) || (s == null ? void 0 : s.radiologyStudyId);
+      en && en !== Ot && se.current && (se.current.destroy(), se.current = null), l(true);
       try {
-        const Bn = await fetch(`/api/v1/radiology/reports/${_t}`, {
+        const Bn = await fetch(`/api/v1/radiology/reports/${Ot}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("synos_jwt")}`
           }
         });
         if (Bn.ok) {
-          const wn = await Bn.json();
-          o(wn);
+          const vn = await Bn.json();
+          o(vn);
         } else o(Qt);
       } catch (Bn) {
         console.error("Failed to load study details:", Bn), o(Qt);
@@ -284720,14 +284735,14 @@ Input: ` + this.err.str);
       g(true);
       const Qt = s.studyId || s.radiologyStudyId;
       try {
-        const _t = await fetch(`/api/v1/radiology/studies/${Qt}/claim`, {
+        const Ot = await fetch(`/api/v1/radiology/studies/${Qt}/claim`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("synos_jwt")}`,
             "Content-Type": "application/json"
           }
         });
-        if (_t.ok) {
+        if (Ot.ok) {
           Ne("assigned"), i(false);
           const en = await fetch(`/api/v1/radiology/studies/${Qt}/session/start`, {
             method: "POST",
@@ -284741,9 +284756,9 @@ Input: ` + this.err.str);
             }
           });
           if (Bn.ok) {
-            const wn = await Bn.json();
-            if (o(wn), se.current && wn.images && wn.images.length > 0) {
-              const fr = wn.images.map((sa) => sa.fileUrl);
+            const vn = await Bn.json();
+            if (o(vn), se.current && vn.images && vn.images.length > 0) {
+              const fr = vn.images.map((sa) => sa.fileUrl);
               se.current.setImages(fr).then(() => {
                 Re(0);
               });
@@ -284751,11 +284766,11 @@ Input: ` + this.err.str);
           }
           ht();
         } else {
-          const en = await _t.json();
+          const en = await Ot.json();
           throw new Error(en.message || "Failed to claim study");
         }
-      } catch (_t) {
-        console.error("Claim study error:", _t), alert(_t.message || "Failed to claim study");
+      } catch (Ot) {
+        console.error("Claim study error:", Ot), alert(Ot.message || "Failed to claim study");
       } finally {
         g(false);
       }
@@ -284764,22 +284779,22 @@ Input: ` + this.err.str);
       g(true);
       const Qt = s.studyId || s.radiologyStudyId;
       try {
-        const _t = await fetch(`/api/v1/radiology/studies/${Qt}/release`, {
+        const Ot = await fetch(`/api/v1/radiology/studies/${Qt}/release`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("synos_jwt")}`,
             "Content-Type": "application/json"
           }
         });
-        if (_t.ok) alert("Study successfully released."), await Et({
+        if (Ot.ok) alert("Study successfully released."), await Et({
           radiologyStudyId: Qt
         }), ht();
         else {
-          const en = await _t.json();
+          const en = await Ot.json();
           throw new Error(en.message || "Failed to release study");
         }
-      } catch (_t) {
-        alert(_t.message);
+      } catch (Ot) {
+        alert(Ot.message);
       } finally {
         g(false);
       }
@@ -284794,7 +284809,7 @@ Input: ` + this.err.str);
         } catch (lr) {
           console.error("Failed to parse live draft packet:", lr);
         }
-      }, _t = (Jn) => {
+      }, Ot = (Jn) => {
         _(true);
       }, en = (Jn) => {
         _(false);
@@ -284802,7 +284817,7 @@ Input: ` + this.err.str);
         $.current && Et({
           radiologyStudyId: $.current
         });
-      }, wn = () => {
+      }, vn = () => {
         $.current && Et({
           radiologyStudyId: $.current
         });
@@ -284811,9 +284826,9 @@ Input: ` + this.err.str);
           radiologyStudyId: $.current
         });
       }, sa = (Jn) => {
-        Jn.on("ReceiveDraftUpdate", Qt), Jn.on("UserJoined", _t), Jn.on("UserLeft", en), Jn.on("ReceiveDraftSaved", Bn), Jn.on("ReceiveDraftResumed", wn), Jn.on("ReceiveSignRequest", fr);
+        Jn.on("ReceiveDraftUpdate", Qt), Jn.on("UserJoined", Ot), Jn.on("UserLeft", en), Jn.on("ReceiveDraftSaved", Bn), Jn.on("ReceiveDraftResumed", vn), Jn.on("ReceiveSignRequest", fr);
       }, ya = (Jn) => {
-        Jn.off("ReceiveDraftUpdate", Qt), Jn.off("UserJoined", _t), Jn.off("UserLeft", en), Jn.off("ReceiveDraftSaved", Bn), Jn.off("ReceiveDraftResumed", wn), Jn.off("ReceiveSignRequest", fr);
+        Jn.off("ReceiveDraftUpdate", Qt), Jn.off("UserJoined", Ot), Jn.off("UserLeft", en), Jn.off("ReceiveDraftSaved", Bn), Jn.off("ReceiveDraftResumed", vn), Jn.off("ReceiveSignRequest", fr);
       };
       return _I ? (clearTimeout(_I), _I = null, Po && (J.current = Po, sa(Po), Po.state === Di.Connected ? (ee("Connected"), ne(true)) : Po.state === Di.Connecting ? (ee("Connecting"), ne(false)) : Po.state === Di.Reconnecting ? (ee("Reconnecting"), ne(false)) : (ee("Disconnected"), ne(false)))) : Ve(sa), () => {
         An.current = true;
@@ -284829,29 +284844,29 @@ Input: ` + this.err.str);
         if (Qt) {
           (async () => {
             let Bn = [];
-            if (s.images && s.images.length > 0 && (Bn = s.images.map((wn) => wn.fileUrl)), Bn.length === 0) try {
-              const wn = await fetch(`/api/v1/radiology/reports/${Qt}`, {
+            if (s.images && s.images.length > 0 && (Bn = s.images.map((vn) => vn.fileUrl)), Bn.length === 0) try {
+              const vn = await fetch(`/api/v1/radiology/reports/${Qt}`, {
                 headers: {
                   Authorization: `Bearer ${localStorage.getItem("synos_jwt")}`
                 }
               });
-              if (wn.ok) {
-                const fr = await wn.json();
+              if (vn.ok) {
+                const fr = await vn.json();
                 fr && fr.images && fr.images.length > 0 && (Bn = fr.images.map((sa) => sa.fileUrl));
               }
-            } catch (wn) {
-              console.warn("Failed to fetch study report details for PACS viewer:", wn);
+            } catch (vn) {
+              console.warn("Failed to fetch study report details for PACS viewer:", vn);
             }
             try {
-              const wn = await i0.getSeriesTree(Qt);
-              wn && wn.series && (u(wn), wn.series.forEach((fr) => {
+              const vn = await i0.getSeriesTree(Qt);
+              vn && vn.series && (u(vn), vn.series.forEach((fr) => {
                 fr.instances && fr.instances.forEach((sa) => {
                   const ya = `/api/v1/radiology/pacs/instances/${sa.instanceId}/file`;
                   Bn.includes(ya) || Bn.push(ya);
                 });
               }));
-            } catch (wn) {
-              console.warn("No PACS series tree found for study:", wn);
+            } catch (vn) {
+              console.warn("No PACS series tree found for study:", vn);
             }
             f(Bn);
           })();
@@ -284868,8 +284883,8 @@ Input: ` + this.err.str);
         const Qt = setTimeout(() => {
           try {
             se.current.resize();
-          } catch (_t) {
-            console.error("Layout transition resize failed:", _t);
+          } catch (Ot) {
+            console.error("Layout transition resize failed:", Ot);
           }
         }, 350);
         return () => clearTimeout(Qt);
@@ -284879,13 +284894,13 @@ Input: ` + this.err.str);
     ]);
     const jt = async (Qt) => {
       try {
-        const _t = await fetch(`/api/v1/radiology/reports/${Qt}`, {
+        const Ot = await fetch(`/api/v1/radiology/reports/${Qt}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("synos_jwt")}`
           }
         });
-        if (_t.ok) {
-          const Bn = await _t.json();
+        if (Ot.ok) {
+          const Bn = await Ot.json();
           Bn.report && (Oe(Bn.report.findings || ""), Xe(Bn.report.impression || ""), fe(Bn.report.additionalNotes || ""));
         }
         const en = await fetch(`/api/v1/reports/source/RadiologyStudy/${Qt}`, {
@@ -284897,25 +284912,25 @@ Input: ` + this.err.str);
           const Bn = await en.json();
           Ue(Bn.reportId);
         }
-      } catch (_t) {
-        console.error("Failed to load report draft:", _t);
+      } catch (Ot) {
+        console.error("Failed to load report draft:", Ot);
       }
     };
     F.useEffect(() => {
       s && De ? (async () => {
         Lt(true);
         try {
-          const _t = await fetch(`/api/v1/reports/${De}/data?forceLive=true`, {
+          const Ot = await fetch(`/api/v1/reports/${De}/data?forceLive=true`, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("synos_jwt")}`
             }
           });
-          if (_t.ok) {
-            const en = await _t.json();
+          if (Ot.ok) {
+            const en = await Ot.json();
             qe(en);
           }
-        } catch (_t) {
-          console.error("Failed to load report data for preview:", _t);
+        } catch (Ot) {
+          console.error("Failed to load report data for preview:", Ot);
         } finally {
           Lt(false);
         }
@@ -284934,7 +284949,7 @@ Input: ` + this.err.str);
         return;
       }
       ee("Connecting"), ne(false);
-      const _t = new lv().withUrl("/radiologyCollaborationHub", {
+      const Ot = new lv().withUrl("/radiologyCollaborationHub", {
         accessTokenFactory: () => localStorage.getItem("synos_jwt"),
         skipNegotiation: true,
         transport: Oo.WebSockets
@@ -284944,46 +284959,46 @@ Input: ` + this.err.str);
         5e3,
         1e4
       ]).build();
-      Po = _t, J.current = _t, _t.onreconnecting((en) => {
-        J.current === _t && (ee("Reconnecting"), ne(false));
-      }), _t.onreconnected((en) => {
-        J.current === _t && (ee("Connected"), ne(true), _t.invoke("RegisterPresence", "Radiologist").catch((Bn) => console.error(Bn)), $.current && (_t.invoke("JoinSession", $.current).catch((Bn) => console.error(Bn)), jt($.current)));
-      }), _t.onclose((en) => {
-        J.current === _t && (ee("Disconnected"), ne(false));
-      }), Qt(_t), _t.start().then(async () => {
-        if (J.current === _t) {
+      Po = Ot, J.current = Ot, Ot.onreconnecting((en) => {
+        J.current === Ot && (ee("Reconnecting"), ne(false));
+      }), Ot.onreconnected((en) => {
+        J.current === Ot && (ee("Connected"), ne(true), Ot.invoke("RegisterPresence", "Radiologist").catch((Bn) => console.error(Bn)), $.current && (Ot.invoke("JoinSession", $.current).catch((Bn) => console.error(Bn)), jt($.current)));
+      }), Ot.onclose((en) => {
+        J.current === Ot && (ee("Disconnected"), ne(false));
+      }), Qt(Ot), Ot.start().then(async () => {
+        if (J.current === Ot) {
           if (An.current) {
-            _t.stop().catch((en) => console.error("Error stopping connection on cleanup:", en)), Po === _t && (Po = null), J.current = null;
+            Ot.stop().catch((en) => console.error("Error stopping connection on cleanup:", en)), Po === Ot && (Po = null), J.current = null;
             return;
           }
-          ee("Connected"), ne(true), await _t.invoke("RegisterPresence", "Radiologist"), $.current && await _t.invoke("JoinSession", $.current);
+          ee("Connected"), ne(true), await Ot.invoke("RegisterPresence", "Radiologist"), $.current && await Ot.invoke("JoinSession", $.current);
         }
       }).catch((en) => {
-        if (J.current === _t) {
+        if (J.current === Ot) {
           if (An.current) {
-            Po === _t && (Po = null), J.current = null;
+            Po === Ot && (Po = null), J.current = null;
             return;
           }
           en && en.name === "AbortError" || (ee("Disconnected"), ne(false), console.error("Failed to connect to SignalR hub:", en));
         }
       });
-    }, Ft = async (Qt, _t) => {
+    }, Ft = async (Qt, Ot) => {
       let en = {};
       const Bn = s.radiologyStudyId || s.studyId;
-      if (Oe(_t), en = {
-        findings: _t,
+      if (Oe(Ot), en = {
+        findings: Ot,
         impression: ye,
         additionalNotes: ve
       }, J.current && J.current.state === "Connected" && s) try {
         await J.current.invoke("SendDraftUpdate", Bn, JSON.stringify(en));
       } catch {
       }
-    }, Ot = async () => {
+    }, Pt = async () => {
       if (!s) return;
       g(true);
       const Qt = s.radiologyStudyId || s.studyId;
       try {
-        const _t = {
+        const Ot = {
           studyId: Qt,
           findings: ue,
           impression: ye,
@@ -284995,16 +285010,16 @@ Input: ` + this.err.str);
             Authorization: `Bearer ${localStorage.getItem("synos_jwt")}`,
             "Content-Type": "application/json"
           },
-          body: JSON.stringify(_t)
+          body: JSON.stringify(Ot)
         })).ok && (await Et({
           radiologyStudyId: Qt
         }), J.current && await J.current.invoke("SendDraftSaved", Qt.toString()), alert("Draft Saved Successfully"));
-      } catch (_t) {
-        alert(_t.message);
+      } catch (Ot) {
+        alert(Ot.message);
       } finally {
         g(false);
       }
-    }, Pt = async () => {
+    }, Ht = async () => {
       if (!s) return;
       g(true);
       const Qt = s.radiologyStudyId || s.studyId;
@@ -285038,8 +285053,8 @@ Input: ` + this.err.str);
           })
         });
         if (!Bn.ok) {
-          const wn = await Bn.json();
-          throw new Error(wn.message || "Failed to digitally sign report");
+          const vn = await Bn.json();
+          throw new Error(vn.message || "Failed to digitally sign report");
         }
         rr("Clinical Report Digitally Signed and Released successfully"), await Et({
           radiologyStudyId: Qt
@@ -285057,10 +285072,10 @@ Input: ` + this.err.str);
       gender: s.patientGender || s.gender || s.sex || ((_e = s.patient) == null ? void 0 : _e.gender) || "",
       token: s.tokenNumber || s.token || ((_f = s.patient) == null ? void 0 : _f.mrn) || ""
     } : null, Kr = (Qt) => {
-      const _t = ((Qt == null ? void 0 : Qt.studyStatus) || (Qt == null ? void 0 : Qt.status) || "").toLowerCase();
-      return _t === "signed" || _t === "finalized" || _t === "manualverified";
+      const Ot = ((Qt == null ? void 0 : Qt.studyStatus) || (Qt == null ? void 0 : Qt.status) || "").toLowerCase();
+      return Ot === "signed" || Ot === "finalized" || Ot === "manualverified";
     }, zr = e.filter((Qt) => !Qt.claimedByUserId && !Kr(Qt)).length, Gr = e.filter((Qt) => {
-      const _t = Kr(Qt), en = !Qt.claimedByUserId && !_t;
+      const Ot = Kr(Qt), en = !Qt.claimedByUserId && !Ot;
       return un === "available" ? en : !en;
     });
     return n.jsxs("div", {
@@ -285155,10 +285170,10 @@ Input: ` + this.err.str);
                         })
                       ]
                     }) : Gr.map((Qt) => {
-                      const _t = (s == null ? void 0 : s.studyId) === Qt.radiologyStudyId || (s == null ? void 0 : s.radiologyStudyId) === Qt.radiologyStudyId, en = !!(Qt.claimedByUserId && ((t == null ? void 0 : t.id) && Qt.claimedByUserId.toLowerCase() === t.id.toLowerCase() || (t == null ? void 0 : t.resourceId) && Qt.claimedByUserId.toLowerCase() === t.resourceId.toLowerCase() || (t == null ? void 0 : t.name) && Qt.claimedByUserName && Qt.claimedByUserName.toLowerCase() === t.name.toLowerCase())), Bn = !!(Qt.claimedByUserId && !en), wn = Kr(Qt);
+                      const Ot = (s == null ? void 0 : s.studyId) === Qt.radiologyStudyId || (s == null ? void 0 : s.radiologyStudyId) === Qt.radiologyStudyId, en = !!(Qt.claimedByUserId && ((t == null ? void 0 : t.id) && Qt.claimedByUserId.toLowerCase() === t.id.toLowerCase() || (t == null ? void 0 : t.resourceId) && Qt.claimedByUserId.toLowerCase() === t.resourceId.toLowerCase() || (t == null ? void 0 : t.name) && Qt.claimedByUserName && Qt.claimedByUserName.toLowerCase() === t.name.toLowerCase())), Bn = !!(Qt.claimedByUserId && !en), vn = Kr(Qt);
                       return n.jsxs("div", {
                         onClick: () => Et(Qt),
-                        className: `p-3 rounded-lg border transition-all duration-260 ease-synos cursor-pointer ${_t ? "bg-synos-primary/10 dark:text-white text-synos-primary dark:border-synos-primary/20 border-synos-primary/30 shadow-sm" : "dark:bg-synos-surface bg-white dark:border-synos-border border-zinc-200 dark:hover:border-zinc-500 hover:border-zinc-400 hover:shadow-sm"}`,
+                        className: `p-3 rounded-lg border transition-all duration-260 ease-synos cursor-pointer ${Ot ? "bg-synos-primary/10 dark:text-white text-synos-primary dark:border-synos-primary/20 border-synos-primary/30 shadow-sm" : "dark:bg-synos-surface bg-white dark:border-synos-border border-zinc-200 dark:hover:border-zinc-500 hover:border-zinc-400 hover:shadow-sm"}`,
                         children: [
                           n.jsxs("div", {
                             className: "flex justify-between items-center mb-1",
@@ -285188,8 +285203,8 @@ Input: ` + this.err.str);
                             className: "mt-2 flex items-center justify-between text-[10px]",
                             children: [
                               n.jsx("span", {
-                                className: `px-1.5 py-0.5 rounded border text-[9px] font-bold uppercase tracking-tight ${wn || en ? "dark:bg-emerald-500/10 bg-emerald-50 text-emerald-600 dark:text-emerald-400 dark:border-emerald-500/20 border-emerald-200" : Bn ? "dark:bg-amber-500/10 bg-amber-50 text-amber-600 dark:text-amber-400 dark:border-amber-500/20 border-emerald-200" : "dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-400 text-zinc-500 dark:border-zinc-700 border-zinc-200"}`,
-                                children: wn ? "Signed" : en ? "Claimed by Me" : Bn ? `Locked (${Qt.claimedByUserName || "Other"})` : "Unclaimed"
+                                className: `px-1.5 py-0.5 rounded border text-[9px] font-bold uppercase tracking-tight ${vn || en ? "dark:bg-emerald-500/10 bg-emerald-50 text-emerald-600 dark:text-emerald-400 dark:border-emerald-500/20 border-emerald-200" : Bn ? "dark:bg-amber-500/10 bg-amber-50 text-amber-600 dark:text-amber-400 dark:border-amber-500/20 border-emerald-200" : "dark:bg-zinc-800 bg-zinc-100 dark:text-zinc-400 text-zinc-500 dark:border-zinc-700 border-zinc-200"}`,
+                                children: vn ? "Signed" : en ? "Claimed by Me" : Bn ? `Locked (${Qt.claimedByUserName || "Other"})` : "Unclaimed"
                               }),
                               Qt.status && n.jsx("span", {
                                 className: "dark:text-zinc-500 text-zinc-400 font-mono text-[9px]",
@@ -285252,7 +285267,7 @@ Input: ` + this.err.str);
                     title: M ? "Expand Patient Queue Cards" : "Collapse Patient Queue Cards",
                     children: M ? n.jsxs(n.Fragment, {
                       children: [
-                        n.jsx(jo, {
+                        n.jsx(Mo, {
                           className: "w-4 h-4 mb-0.5 text-white"
                         }),
                         n.jsx("span", {
@@ -285472,7 +285487,7 @@ Input: ` + this.err.str);
                           onChange: (Qt) => Ft("findings", Qt),
                           disabled: c || !Ir,
                           patientContext: Sr,
-                          onSaveDraft: Ot,
+                          onSaveDraft: Pt,
                           placeholder: "Type radiology findings, observations, and diagnostic impressions as you dictate...",
                           onOpenMacroManager: () => H(true),
                           className: "flex-1 h-full min-h-0 flex flex-col"
@@ -285484,13 +285499,13 @@ Input: ` + this.err.str);
                     className: "p-3 border-t dark:border-synos-border border-zinc-200 dark:bg-synos-surface bg-white flex items-center justify-between gap-3 shrink-0",
                     children: [
                       n.jsx("button", {
-                        onClick: Ot,
+                        onClick: Pt,
                         disabled: c,
                         className: "px-3.5 py-1.5 dark:bg-zinc-800 bg-zinc-100 hover:dark:bg-zinc-700 hover:bg-zinc-200/60 dark:text-zinc-200 text-zinc-750 rounded-lg font-bold border dark:border-zinc-700 border-zinc-200 text-xs uppercase transition-all shrink-0 active:scale-[0.98]",
                         children: "Save Draft"
                       }),
                       n.jsxs("button", {
-                        onClick: Pt,
+                        onClick: Ht,
                         disabled: c || on || !ue && s.studyStatus !== "Signed",
                         className: `flex-1 py-1.5 font-bold text-xs uppercase tracking-wider rounded-lg transition-all duration-260 ease-synos flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98] ${on ? "bg-emerald-600 text-white cursor-default opacity-90" : "bg-synos-emerald hover:opacity-90 disabled:opacity-40 disabled:pointer-events-none text-white"}`,
                         children: [
@@ -285633,7 +285648,7 @@ Input: ` + this.err.str);
                 n.jsx("button", {
                   onClick: () => U(false),
                   className: "p-1 hover:bg-zinc-800 rounded text-zinc-400 hover:text-white transition",
-                  children: n.jsx(Yn, {
+                  children: n.jsx(Hn, {
                     className: "w-5 h-5"
                   })
                 })

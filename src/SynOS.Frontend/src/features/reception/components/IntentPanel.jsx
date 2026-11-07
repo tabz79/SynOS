@@ -1607,75 +1607,91 @@ export function IntentPanel({ onVisitUpdated }) {
                 ui.panel
             )}
         >
-            {/* Header */}
-            <div className={cn("h-13 sm:h-14 flex items-center justify-between px-5 sm:px-7 shrink-0 border-b border-black/[0.06] dark:border-white/[0.06]", ui.header)}>
-                <div className="flex items-center gap-2.5">
-                    <h2 className={cn("text-lg sm:text-xl font-bold tracking-normal flex items-baseline gap-2", ui.title)}>
-                        {panelTitle}
-                        {(snapshot?.visit?.visitToken || snapshot?.visit?.token) && (
-                            <span className="text-xs font-mono font-bold text-slate-500 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800/80 px-2 py-0.5 rounded-full border border-slate-200/60 dark:border-zinc-700/60">
-                                #{snapshot?.visit?.visitToken || snapshot?.visit?.token}
-                            </span>
-                        )}
-                    </h2>
-                    {snapshot?.visit?.visitId && !isCorrectionIntent && !isPostProcessingView && (
-                        <button
-                            type="button"
-                            id="btn-header-visit-correction"
-                            onClick={() => openCorrectionIntent(snapshot.visit.visitId)}
-                            className="px-2.5 py-1 rounded-lg text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/50 border border-blue-200 dark:border-blue-800 flex items-center gap-1 transition-all active:scale-95 cursor-pointer shadow-2xs"
-                            title="Open Visit Correction to amend tests, tariffs, or discounts with full audit"
-                        >
-                            <Edit3 className="w-3.5 h-3.5" />
-                            <span>Visit Correction</span>
-                        </button>
-                    )}
-                    {isPostProcessingView && (
-                        <span className={cn(
-                            "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border",
-                            billingMode === 'PrepaidPartner'
-                                ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800"
-                                : isFullDueVisit
-                                    ? "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border-amber-200 dark:border-amber-800"
-                                    : actualBalanceDue > 0
-                                        ? "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border-amber-200 dark:border-amber-800"
-                                        : "bg-[#EDF7F2] text-[#245E49] dark:bg-emerald-950/40 dark:text-emerald-300 border-[#CBE5D7] dark:border-emerald-800"
-                        )}>
-                            {billingMode === 'PrepaidPartner' ? (
-                                <>
-                                    <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600" />
-                                    <span>Corporate B2B Registered</span>
-                                </>
-                            ) : isFullDueVisit ? (
-                                <>
-                                    <Clock className="w-3.5 h-3.5 text-amber-600" />
-                                    <span>Billed (Full Due)</span>
-                                </>
-                            ) : actualBalanceDue > 0 ? (
-                                <>
-                                    <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
-                                    <span>Billed (Partial Due)</span>
-                                </>
-                            ) : (
-                                <>
-                                    <CheckCircle2 className="w-3.5 h-3.5 text-[#245E49]" />
-                                    <span>Billed & Settled</span>
-                                </>
-                            )}
-                        </span>
-                    )}
-                </div>
+            {/* Top Close Button for 2-Column Workflow (Reclaims 56px vertical space, shifts entire modal up) */}
+            {(hasPatient || isCorrectionIntent) && !isPostProcessingView ? (
                 <button
-                    tabIndex={isPostProcessingView ? -1 : 0}
+                    type="button"
+                    tabIndex={0}
                     onClick={handleCloseAndReset}
                     className={cn(
-                        "p-2 rounded-full transition-all duration-200 active:scale-95 cursor-pointer",
+                        "absolute right-4 top-3.5 z-40 p-2 rounded-full transition-all duration-200 active:scale-95 cursor-pointer",
                         isDark ? "hover:bg-white/10 text-zinc-400 hover:text-white" : "hover:bg-slate-100 text-slate-400 hover:text-slate-700"
                     )}
+                    title="Close"
                 >
                     <X className="w-5 h-5" />
                 </button>
-            </div>
+            ) : (
+                /* Standard Header (Narrow Search/Intake state or PostProcessing Split View) */
+                <div className={cn("h-13 sm:h-14 flex items-center justify-between px-5 sm:px-7 shrink-0 border-b border-black/[0.06] dark:border-white/[0.06]", ui.header)}>
+                    <div className="flex items-center gap-2.5">
+                        <h2 className={cn("text-lg sm:text-xl font-bold tracking-normal flex items-baseline gap-2", ui.title)}>
+                            {panelTitle}
+                            {(snapshot?.visit?.visitToken || snapshot?.visit?.token) && (
+                                <span className="text-xs font-mono font-bold text-slate-500 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800/80 px-2 py-0.5 rounded-full border border-slate-200/60 dark:border-zinc-700/60">
+                                    #{snapshot?.visit?.visitToken || snapshot?.visit?.token}
+                                </span>
+                            )}
+                        </h2>
+                        {snapshot?.visit?.visitId && !isCorrectionIntent && !isPostProcessingView && (
+                            <button
+                                type="button"
+                                id="btn-header-visit-correction"
+                                onClick={() => openCorrectionIntent(snapshot.visit.visitId)}
+                                className="px-2.5 py-1 rounded-lg text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/50 border border-blue-200 dark:border-blue-800 flex items-center gap-1 transition-all active:scale-95 cursor-pointer shadow-2xs"
+                                title="Open Visit Correction to amend tests, tariffs, or discounts with full audit"
+                            >
+                                <Edit3 className="w-3.5 h-3.5" />
+                                <span>Visit Correction</span>
+                            </button>
+                        )}
+                        {isPostProcessingView && (
+                            <span className={cn(
+                                "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border",
+                                billingMode === 'PrepaidPartner'
+                                    ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800"
+                                    : isFullDueVisit
+                                        ? "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border-amber-200 dark:border-amber-800"
+                                        : actualBalanceDue > 0
+                                            ? "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border-amber-200 dark:border-amber-800"
+                                            : "bg-[#EDF7F2] text-[#245E49] dark:bg-emerald-950/40 dark:text-emerald-300 border-[#CBE5D7] dark:border-emerald-800"
+                            )}>
+                                {billingMode === 'PrepaidPartner' ? (
+                                    <>
+                                        <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600" />
+                                        <span>Corporate B2B Registered</span>
+                                    </>
+                                ) : isFullDueVisit ? (
+                                    <>
+                                        <Clock className="w-3.5 h-3.5 text-amber-600" />
+                                        <span>Billed (Full Due)</span>
+                                    </>
+                                ) : actualBalanceDue > 0 ? (
+                                    <>
+                                        <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
+                                        <span>Billed (Partial Due)</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <CheckCircle2 className="w-3.5 h-3.5 text-[#245E49]" />
+                                        <span>Billed & Settled</span>
+                                    </>
+                                )}
+                            </span>
+                        )}
+                    </div>
+                    <button
+                        tabIndex={isPostProcessingView ? -1 : 0}
+                        onClick={handleCloseAndReset}
+                        className={cn(
+                            "p-2 rounded-full transition-all duration-200 active:scale-95 cursor-pointer",
+                            isDark ? "hover:bg-white/10 text-zinc-400 hover:text-white" : "hover:bg-slate-100 text-slate-400 hover:text-slate-700"
+                        )}
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+            )}
 
             {/* PanelBody - REQUIRED ARCHITECTURE (Locked Chrome / Isolation - No Panel-Level Scroll) */}
             <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
@@ -2778,9 +2794,41 @@ export function IntentPanel({ onVisitUpdated }) {
 
             {/* Footer / Status Bar - UNIFIED BUTTON (Hidden during 50/50 Live Preview) */}
             {!isPostProcessingView && (
-                <div className={cn("py-2.5 px-4 flex justify-center shrink-0 border-t border-black/[0.06] dark:border-white/[0.06]", ui.footer)}>
+                <div className={cn(
+                    "py-2.5 px-5 sm:px-7 shrink-0 border-t border-black/[0.06] dark:border-white/[0.06] bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md",
+                    (hasPatient || isCorrectionIntent) ? "flex items-center justify-between" : "flex justify-center",
+                    ui.footer
+                )}>
+                    {/* Left Section: Contextual Title, Token & Visit Correction Link (Moved from top to reclaim vertical space) */}
+                    {(hasPatient || isCorrectionIntent) && (
+                        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+                            <h2 className="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+                                <span>{panelTitle}</span>
+                                {(snapshot?.visit?.visitToken || snapshot?.visit?.token) && (
+                                    <span className="text-xs font-mono font-bold text-slate-500 dark:text-zinc-400 bg-slate-100 dark:bg-zinc-800 px-2 py-0.5 rounded-full border border-slate-200/60 dark:border-zinc-700/60">
+                                        #{snapshot?.visit?.visitToken || snapshot?.visit?.token}
+                                    </span>
+                                )}
+                            </h2>
+                            {snapshot?.visit?.visitId && !isCorrectionIntent && (
+                                <button
+                                    type="button"
+                                    id="btn-footer-visit-correction"
+                                    onClick={() => openCorrectionIntent(snapshot.visit.visitId)}
+                                    className="px-2.5 py-1 rounded-lg text-xs font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/50 border border-blue-200 dark:border-blue-800 flex items-center gap-1 transition-all active:scale-95 cursor-pointer shadow-2xs"
+                                    title="Open Visit Correction to amend tests, tariffs, or discounts with audit trail"
+                                >
+                                    <Edit3 className="w-3.5 h-3.5" />
+                                    <span>Visit Correction</span>
+                                </button>
+                            )}
+                            <div className="h-5 w-px bg-slate-300 dark:bg-zinc-700 mx-1 hidden sm:block" />
+                        </div>
+                    )}
+
+                    {/* Right Section: Action Controls */}
                     {isCorrectionIntent ? (
-                        <div className="flex items-center gap-2 w-full max-w-2xl mx-auto">
+                        <div className="flex items-center gap-2 shrink-0">
                             <button
                                 type="button"
                                 onClick={() => setTaxInvoiceModal({ 
@@ -2844,7 +2892,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                     <button
                                         type="button"
                                         onClick={() => setIsBatchEditConfirmModalOpen(true)}
-                                        className="flex-1 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer bg-synos-primary text-white hover:bg-synos-primary/90 focus:outline-none focus:ring-2 focus:ring-synos-primary"
+                                        className="py-2.5 px-5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer bg-synos-primary text-white hover:bg-synos-primary/90 focus:outline-none focus:ring-2 focus:ring-synos-primary"
                                     >
                                         <span>Save Changes & Settle</span>
                                         <span className="px-2 py-0.5 rounded-full bg-white/20 text-xs font-mono font-bold">
@@ -2858,7 +2906,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                     <button
                                         type="button"
                                         onClick={() => setIsCancelModalOpen(true)}
-                                        className="py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 transition-all active:scale-95 shadow-2xs cursor-pointer shrink-0"
+                                        className="py-2.5 px-3.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 transition-all active:scale-95 shadow-2xs cursor-pointer shrink-0"
                                         title="Cancel this visit and issue automated refund"
                                     >
                                         <Ban className="w-4 h-4" />
@@ -2868,7 +2916,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                         type="button"
                                         onClick={() => openResumeIntent(currentVisitId || drawerState.visitId)}
                                         className={cn(
-                                            "flex-1 py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1",
+                                            "py-2.5 px-5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer focus:outline-none focus:ring-2 focus:ring-synos-primary focus:ring-offset-1",
                                             ui.actionBtn.enabled
                                         )}
                                     >
@@ -2878,7 +2926,7 @@ export function IntentPanel({ onVisitUpdated }) {
                             )}
                         </div>
                     ) : isVisitFinalized ? (
-                        <div className="flex items-center gap-2.5 w-full max-w-2xl mx-auto">
+                        <div className="flex items-center gap-2.5 shrink-0">
                             <button
                                 type="button"
                                 onClick={() => setTaxInvoiceModal({ 
@@ -2887,7 +2935,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                     data: buildTaxInvoiceData(), 
                                     title: isPrepaid ? 'Prepaid Patient Slip (A4)' : 'Patient Tax Invoice (A4)' 
                                 })}
-                                className="py-2.5 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 border border-sky-200 dark:border-sky-800 text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/30 hover:bg-sky-100 transition-all active:scale-95 shadow-2xs shrink-0 cursor-pointer"
+                                className="py-2.5 px-3.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-sky-200 dark:border-sky-800 text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/30 hover:bg-sky-100 transition-all active:scale-95 shadow-2xs shrink-0 cursor-pointer"
                                 title={isPrepaid ? "Preview & Print Prepaid Patient Slip (A4)" : "Preview & Print Full A4 Tax Invoice"}
                             >
                                 <FileText className="w-4 h-4" /> A4 Receipt
@@ -2901,7 +2949,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                     data: buildTaxInvoiceData(), 
                                     title: isPrepaid ? 'Prepaid Patient Slip (80mm)' : (billingMode === 'Insurance' ? 'Insurance Thermal Receipt (80mm)' : 'Thermal Slip (80mm)') 
                                 })}
-                                className="py-2.5 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 hover:bg-emerald-100 transition-all active:scale-95 shadow-2xs shrink-0 cursor-pointer"
+                                className="py-2.5 px-3.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 hover:bg-emerald-100 transition-all active:scale-95 shadow-2xs shrink-0 cursor-pointer"
                                 title="Preview & Print Thermal 80mm POS Slip"
                             >
                                 <Printer className="w-4 h-4" /> Thermal
@@ -2910,25 +2958,25 @@ export function IntentPanel({ onVisitUpdated }) {
                                 type="button"
                                 disabled={isGeneratingClaimDoc}
                                 onClick={handlePrintDoctorReceivable}
-                                className="py-2.5 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 hover:bg-indigo-100 transition-all active:scale-95 shadow-2xs shrink-0 cursor-pointer"
+                                className="py-2.5 px-3.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 hover:bg-indigo-100 transition-all active:scale-95 shadow-2xs shrink-0 cursor-pointer"
                                 title="Print Doctor's Receivable Statement for Safe Keeping & Claims"
                             >
-                                {isGeneratingClaimDoc ? <Loader2 className="w-4 h-4 animate-spin" /> : <Building2 className="w-4 h-4" />}
+                                {isGeneratingClaimDoc ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Building2 className="w-3.5 h-3.5" />}
                                 Doc Claim
                             </button>
                             <button
                                 type="button"
                                 onClick={() => openCorrectionIntent(currentVisitId || drawerState.visitId)}
-                                className="flex-1 py-3 px-5 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 border border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-all active:scale-95 shadow-2xs cursor-pointer"
+                                className="py-2.5 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-all active:scale-95 shadow-2xs cursor-pointer"
                                 title="Enter Full-Fledged Visit Correction Mode to Add/Remove Tests or Alter Billing"
                             >
-                                <Pencil className="w-4 h-4 text-synos-primary" />
+                                <Pencil className="w-3.5 h-3.5 text-synos-primary" />
                                 <span>Visit Correction</span>
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setIsCancelModalOpen(true)}
-                                className="py-3 px-4 rounded-xl font-bold text-sm flex items-center justify-center gap-1.5 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 transition-all active:scale-95 shadow-2xs cursor-pointer shrink-0"
+                                className="py-2.5 px-3.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 transition-all active:scale-95 shadow-2xs cursor-pointer shrink-0"
                                 title="Cancel this visit and issue automated refund"
                             >
                                 <Ban className="w-4 h-4" />
@@ -2937,87 +2985,72 @@ export function IntentPanel({ onVisitUpdated }) {
                             <button
                                 type="button"
                                 onClick={handleCloseAndReset}
-                                className="py-3 px-5 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-1.5 border border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 transition-all active:scale-95 shadow-2xs cursor-pointer shrink-0"
+                                className="py-2.5 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 transition-all active:scale-95 shadow-2xs cursor-pointer shrink-0"
                             >
                                 Close
                             </button>
                         </div>
                     ) : (
-                        hasVisit && (
-                            <div className="flex flex-col gap-2 w-full max-w-2xl mx-auto">
-                                <div className="flex items-center gap-2.5 w-full">
-                                    {snapshot?.visit?.visitId && (() => {
-                                        const isDraftVisit = (snapshot?.visit?.status || '').toLowerCase() === 'draft' || 
-                                                             (snapshot?.visit?.token || '').toUpperCase().startsWith('D-') || 
-                                                             (snapshot?.visit?.visitToken || '').toUpperCase().startsWith('D-') ||
-                                                             (snapshot?.visit?.token || '').toUpperCase().startsWith('DRAFT');
-                                        return isDraftVisit ? (
-                                            <button
-                                                type="button"
-                                                id="btn-delete-draft"
-                                                onClick={handleDeleteDraftVisit}
-                                                disabled={isDeletingDraft || isLoading || isActionSubmitting}
-                                                className="py-2.5 px-3.5 rounded-xl border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn disabled:opacity-50"
-                                                title="Permanently discard and delete this draft visit"
-                                            >
-                                                {isDeletingDraft ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
-                                                <span>Delete Draft</span>
-                                            </button>
-                                        ) : (
-                                            <>
-                                                <button
-                                                    type="button"
-                                                    id="btn-resume-visit-correction"
-                                                    onClick={() => openCorrectionIntent(snapshot.visit.visitId)}
-                                                    className="py-2.5 px-3.5 rounded-xl border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/30 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn"
-                                                    title="Open Visit Correction to amend tests, tariffs, or discounts with audit trail"
-                                                >
-                                                    <Edit3 className="w-3.5 h-3.5" />
-                                                    <span>Visit Correction</span>
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    id="btn-cancel-visit"
-                                                    onClick={() => setIsCancelModalOpen(true)}
-                                                    className="py-2.5 px-3.5 rounded-xl border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn"
-                                                    title="Cancel this visit with reason and process refund"
-                                                >
-                                                    <Ban className="w-3.5 h-3.5" />
-                                                    <span>Cancel Visit</span>
-                                                </button>
-                                            </>
-                                        );
-                                    })()}
-                                    <button
-                                        id="btn-unified-action"
-                                        data-action-submit="true"
-                                        onClick={handleUnifiedAction}
-                                        disabled={!isActionEnabled || isLoading || isActionSubmitting}
-                                        className={cn(
-                                            "w-full py-2.5 px-5 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition-all active:scale-[0.99] shadow-sm synos-focus-btn",
-                                            (isActionEnabled && !isActionSubmitting)
-                                                ? ui.actionBtn.enabled
-                                                : ui.actionBtn.disabled
-                                        )}
-                                    >
-                                        {(isLoading || isActionSubmitting) ? <Loader2 className="w-4 h-4 animate-spin" /> : (
-                                            <>
-                                                {mainActionLabel} <ArrowRight className="w-4 h-4" />
-                                            </>
-                                        )}
-                                    </button>
-                                </div>
-                                {canLockPrepaid && !(snapshot?.billing?.referral?.partner || snapshot?.billing?.referral?.draft) && (
-                                    <p className="text-xs text-amber-500 dark:text-amber-400 font-medium text-center">
-                                        * Please select a Referral Partner above (Who collected payment outside?)
-                                    </p>
-                                )}
+                        <div className="flex flex-col items-end gap-1 shrink-0">
+                            <div className="flex items-center gap-2.5">
+                                {snapshot?.visit?.visitId && (() => {
+                                    const isDraftVisit = (snapshot?.visit?.status || '').toLowerCase() === 'draft' || 
+                                                         (snapshot?.visit?.token || '').toUpperCase().startsWith('D-') || 
+                                                         (snapshot?.visit?.visitToken || '').toUpperCase().startsWith('D-') ||
+                                                         (snapshot?.visit?.token || '').toUpperCase().startsWith('DRAFT');
+                                    return isDraftVisit ? (
+                                        <button
+                                            type="button"
+                                            id="btn-delete-draft"
+                                            onClick={handleDeleteDraftVisit}
+                                            disabled={isDeletingDraft || isLoading || isActionSubmitting}
+                                            className="py-2.5 px-3.5 rounded-xl border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn disabled:opacity-50"
+                                            title="Permanently discard and delete this draft visit"
+                                        >
+                                            {isDeletingDraft ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                                            <span>Delete Draft</span>
+                                        </button>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            id="btn-cancel-visit"
+                                            onClick={() => setIsCancelModalOpen(true)}
+                                            className="py-2.5 px-3.5 rounded-xl border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn"
+                                            title="Cancel this visit with reason and process refund"
+                                        >
+                                            <Ban className="w-3.5 h-3.5" />
+                                            <span>Cancel Visit</span>
+                                        </button>
+                                    );
+                                })()}
+                                <button
+                                    id="btn-unified-action"
+                                    data-action-submit="true"
+                                    onClick={handleUnifiedAction}
+                                    disabled={!isActionEnabled || isLoading || isActionSubmitting}
+                                    className={cn(
+                                        "py-2.5 px-6 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.99] shadow-sm synos-focus-btn min-w-[200px]",
+                                        (isActionEnabled && !isActionSubmitting)
+                                            ? ui.actionBtn.enabled
+                                            : ui.actionBtn.disabled
+                                    )}
+                                >
+                                    {(isLoading || isActionSubmitting) ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                                        <>
+                                            {mainActionLabel} <ArrowRight className="w-4 h-4" />
+                                        </>
+                                    )}
+                                </button>
                             </div>
-                        )
+                            {canLockPrepaid && !(snapshot?.billing?.referral?.partner || snapshot?.billing?.referral?.draft) && (
+                                <p className="text-xs text-amber-500 dark:text-amber-400 font-medium text-right">
+                                    * Please select a Referral Partner above (Who collected payment outside?)
+                                </p>
+                            )}
+                        </div>
                     )}
                 </div>
             )}
-
             {/* Commercial Patient Tax Invoice Viewer */}
             {taxInvoiceModal.isOpen && taxInvoiceModal.data && (
                 <CommercialDocumentViewer
