@@ -2695,9 +2695,9 @@ export function IntentPanel({ onVisitUpdated }) {
                                                 </div>
                                             </div>
 
-                                            {/* The Patient Card (Recessed Pod - Compacted) */}
+                                            {/* The Patient Card (Recessed Pod - Spacious & Accessible) */}
                                             {!isPatientCardCollapsed && (
-                                                <div className="rounded-xl border border-[#CCDCE8] dark:border-zinc-800 bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] dark:bg-zinc-950/80 p-2.5 sm:p-3 shadow-[inset_0_1px_3px_rgba(15,35,60,0.06),0_1px_0_rgba(255,255,255,0.7)] animate-in fade-in duration-200">
+                                                <div className="rounded-2xl border border-[#CCDCE8] dark:border-zinc-800 bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] dark:bg-zinc-950/80 p-3.5 sm:p-4 min-h-[82px] flex items-center shadow-[inset_0_1px_3px_rgba(15,35,60,0.06),0_1px_0_rgba(255,255,255,0.7)] animate-in fade-in duration-200">
                                                     <RichPatientCard
                                                         patient={displayedPatient}
                                                         onAction={handleClearPatient}

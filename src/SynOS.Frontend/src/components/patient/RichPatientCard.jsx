@@ -129,18 +129,18 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
 
     if (isLocked) {
         return (
-            <div className="flex flex-col gap-2 transition-all">
+            <div className="w-full flex flex-col justify-center py-0.5">
                 {/* 3-COLUMN CLINICAL WORKSTATION GRID */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 w-full">
                     {/* COL 1: AVATAR & PROMINENT PATIENT NAME */}
-                    <div className="flex items-center gap-3 min-w-0 sm:max-w-[32%] shrink-0">
+                    <div className="flex items-center gap-3 min-w-0 shrink-0">
                         <div className={cn(
-                            "w-11 h-11 rounded-full flex items-center justify-center shrink-0 shadow-sm",
+                            "w-12 h-12 rounded-full flex items-center justify-center shrink-0 shadow-sm",
                             isDark 
                                 ? "bg-sky-950/60 text-sky-400 border-2 border-zinc-800 shadow-md" 
                                 : "bg-gradient-to-b from-[#E0F2FE] to-[#BAE6FD] text-[#0284C7] border-2 border-white shadow-[0_3px_10px_rgba(2,132,199,0.2)]"
                         )}>
-                            <User className="w-5 h-5 text-[#0284C7]" />
+                            <User className="w-6 h-6 text-[#0284C7]" />
                         </div>
                         <div className="min-w-0">
                             <span className="text-lg sm:text-xl font-black text-slate-900 dark:text-white truncate block tracking-tight leading-tight" title={name}>
@@ -149,34 +149,64 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
                         </div>
                     </div>
 
-                    {/* COL 2: STRUCTURED DEMOGRAPHICS & IDENTIFIERS (Spanning Center Width) */}
-                    <div className="flex flex-col justify-center flex-1 min-w-0 gap-1 sm:pl-2">
-                        {/* Row 1: Dominating Mobile Number */}
-                        <div className="flex items-center gap-2">
-                            <span className="text-xs uppercase font-bold text-slate-400 dark:text-zinc-500">Mobile:</span>
-                            <span className="font-mono font-black text-sm sm:text-base text-slate-900 dark:text-white tracking-normal">
-                                {mobile || "No Mobile"}
+                    {/* SUBTLE SEPARATOR 1 */}
+                    <div className="hidden sm:block h-10 w-[1px] bg-slate-300 dark:bg-zinc-700/80 mx-2 sm:mx-3 shrink-0 select-none" />
+
+                    {/* COL 2: DEMOGRAPHICS (Age, Sex, Mobile, Last Visit) */}
+                    <div className="flex flex-col justify-center gap-1.5 flex-1 min-w-0">
+                        {/* Row 1: Age & Sex Badges */}
+                        <div className="flex flex-wrap items-center gap-2">
+                            <span className={cn(
+                                "px-3 py-1 rounded-xl text-xs sm:text-sm font-bold shadow-2xs border inline-flex items-center gap-1",
+                                cardUi.badge
+                            )}>
+                                <span className="text-slate-500 dark:text-zinc-400 font-medium">Age:</span>
+                                <span className="font-bold text-slate-900 dark:text-white">{detailedAge.text}</span>
+                            </span>
+                            <span className={cn(
+                                "px-3 py-1 rounded-xl text-xs sm:text-sm font-bold shadow-2xs border inline-flex items-center",
+                                cardUi.badge
+                            )}>
+                                <span className="font-bold text-slate-900 dark:text-white">
+                                    {genderLabel !== '-' ? genderLabel : (genderInitial === 'M' ? 'Male' : 'Female')}
+                                </span>
                             </span>
                         </div>
 
-                        {/* Row 2: Demographics with subtle dot separators */}
-                        <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-600 dark:text-zinc-300">
-                            <span>Age: <strong className="text-slate-900 dark:text-white">{detailedAge.text}</strong></span>
-                            <span className="text-slate-300 dark:text-zinc-600 select-none">•</span>
-                            <span>{genderLabel !== '-' ? genderLabel : (genderInitial === 'M' ? 'Male' : 'Female')}</span>
-                            <span className="text-slate-300 dark:text-zinc-600 select-none">•</span>
-                            <span className="font-mono font-bold text-slate-800 dark:text-zinc-200">MRN: {mrn}</span>
+                        {/* Row 2: Mobile & Last Visit */}
+                        <div className="flex flex-wrap items-center gap-2">
+                            <span className={cn(
+                                "px-3 py-1 rounded-xl text-xs sm:text-sm font-bold shadow-2xs border inline-flex items-center gap-1.5",
+                                cardUi.badge
+                            )}>
+                                <span className="text-slate-500 dark:text-zinc-400 font-medium">Mobile:</span>
+                                <span className="font-mono font-bold text-slate-900 dark:text-white">
+                                    {mobile || "—"}
+                                </span>
+                            </span>
+                            <span className={cn(
+                                "px-3 py-1 rounded-xl text-xs sm:text-sm font-bold shadow-2xs border inline-flex items-center gap-1.5",
+                                cardUi.badge
+                            )}>
+                                <span className="text-slate-500 dark:text-zinc-400 font-medium">Last Visit:</span>
+                                <span className="font-mono font-bold text-slate-900 dark:text-white">
+                                    {lastVisitDate ? new Date(lastVisitDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' }) : 'New'}
+                                </span>
+                            </span>
                         </div>
                     </div>
 
-                    {/* COL 3: ACTIONS & LAST VISIT CONTEXT */}
+                    {/* SUBTLE SEPARATOR 2 */}
+                    <div className="hidden sm:block h-10 w-[1px] bg-slate-300 dark:bg-zinc-700/80 mx-2 sm:mx-3 shrink-0 select-none" />
+
+                    {/* COL 3: MRN & EDIT ACTION */}
                     <div className="flex items-center gap-3 sm:gap-4 shrink-0 justify-end">
-                        <div className="text-right leading-tight hidden lg:block">
-                            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-zinc-500 block">
-                                Last Visit
+                        <div className="text-right leading-tight">
+                            <span className="text-[10px] sm:text-xs uppercase font-bold tracking-wider text-slate-500 dark:text-zinc-400 block">
+                                MRN
                             </span>
-                            <span className="font-mono text-slate-800 dark:text-zinc-200 font-bold text-xs sm:text-sm block mt-0.5">
-                                {lastVisitDate ? new Date(lastVisitDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' }) : 'New'}
+                            <span className="font-mono text-slate-900 dark:text-white font-bold text-sm sm:text-base block mt-0.5">
+                                {mrn}
                             </span>
                         </div>
 
@@ -202,7 +232,7 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
                                         e.stopPropagation();
                                     }
                                 }}
-                                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-700 dark:text-zinc-200 bg-white/90 hover:bg-white dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-300/80 dark:border-zinc-700 shadow-2xs hover:shadow-xs transition-all cursor-pointer active:scale-95 synos-focus-btn"
+                                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-700 dark:text-zinc-200 bg-white hover:bg-slate-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-300/80 dark:border-zinc-700 shadow-xs hover:shadow transition-all cursor-pointer active:scale-95 synos-focus-btn"
                                 title="Edit Patient Demographics"
                             >
                                 <Pencil className="w-3.5 h-3.5 text-slate-500 dark:text-zinc-400" />
