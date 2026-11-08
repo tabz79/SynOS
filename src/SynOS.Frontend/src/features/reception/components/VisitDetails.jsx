@@ -1356,43 +1356,42 @@ export function VisitDetails({
                     <div className="pt-2 border-t border-slate-200 dark:border-zinc-800 space-y-3">
                         {/* 1. PRIMARY PRESCRIBING DOCTOR */}
                         <div className="space-y-1.5">
-                            <div className="flex justify-between items-center text-xs">
-                                <span className="flex items-center gap-1.5 font-bold text-slate-700 dark:text-zinc-300">
-                                    <span>Prescribing Doctor (Main Doctor on Reports)</span>
-                                </span>
-                                <button
-                                    id="btn-add-prescribing-doctor"
-                                    type="button"
-                                    onClick={() => onOpenModal && onOpenModal('referral')}
-                                    disabled={!canEditReferral}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Tab' && !e.shiftKey) {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            window.dispatchEvent(new CustomEvent('synos:collapse-doctor-section'));
-                                            const testSearch = document.getElementById('input-test-search') || testSearchInputRef?.current;
-                                            if (testSearch) {
-                                                testSearch.focus();
-                                                setIsSearchFocused(true);
+                            {!effectivePartner && (
+                                <div className="flex justify-end items-center">
+                                    <button
+                                        id="btn-add-prescribing-doctor"
+                                        type="button"
+                                        onClick={() => onOpenModal && onOpenModal('referral')}
+                                        disabled={!canEditReferral}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Tab' && !e.shiftKey) {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                window.dispatchEvent(new CustomEvent('synos:collapse-doctor-section'));
+                                                const testSearch = document.getElementById('input-test-search') || testSearchInputRef?.current;
+                                                if (testSearch) {
+                                                    testSearch.focus();
+                                                    setIsSearchFocused(true);
+                                                }
+                                            } else if (e.key === 'Tab' && e.shiftKey) {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                const removeBtn = document.getElementById('btn-remove-prepaid-doctor');
+                                                if (removeBtn) {
+                                                    removeBtn.focus();
+                                                } else {
+                                                    const docInput = document.getElementById('input-prescribing-doctor') ||
+                                                                     document.getElementById('card-prescribing-doctor');
+                                                    if (docInput) docInput.focus();
+                                                }
                                             }
-                                        } else if (e.key === 'Tab' && e.shiftKey) {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            const removeBtn = document.getElementById('btn-remove-prepaid-doctor');
-                                            if (removeBtn) {
-                                                removeBtn.focus();
-                                            } else {
-                                                const docInput = document.getElementById('input-prescribing-doctor') ||
-                                                                 document.getElementById('card-prescribing-doctor');
-                                                if (docInput) docInput.focus();
-                                            }
-                                        }
-                                    }}
-                                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-3 py-1.5 text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95 synos-focus-btn"
-                                >
-                                    <Plus className="w-3.5 h-3.5" /> Add Doctor
-                                </button>
-                            </div>
+                                        }}
+                                        className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 py-2 text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95 synos-focus-btn"
+                                    >
+                                        <Plus className="w-4 h-4" /> Add Doctor
+                                    </button>
+                                </div>
+                            )}
                             {effectivePartner ? (
                                 <div 
                                     id="card-prescribing-doctor"
@@ -1417,48 +1416,50 @@ export function VisitDetails({
                                             if (payerBtn) payerBtn.focus();
                                         }
                                     }}
-                                    className={cn("flex items-center gap-2 font-semibold p-3 rounded-xl border cursor-pointer synos-focus-card focus:outline-none",
+                                    className={cn("flex items-center justify-between gap-3 font-semibold p-3.5 sm:p-4 rounded-xl border cursor-pointer synos-focus-card focus:outline-none",
                                     isDark ? "bg-zinc-800/60 border-zinc-700/60 text-zinc-100" : "bg-white border border-[#D5E2EC] text-slate-900 shadow-[0_1px_3px_rgba(15,35,60,0.04)]")}
                                 >
-                                    <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></div>
-                                    <div className="flex-1 min-w-0">
-                                        <div className="truncate tracking-normal text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <div className="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)] shrink-0"></div>
+                                        <div className="truncate tracking-tight text-base sm:text-lg font-bold text-slate-900 dark:text-white">
                                             {effectivePartner.displayName || effectivePartner.name || "Partner"}
                                         </div>
-                                        <div className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 font-medium mt-0.5">
-                                            Primary Consultant • Name retained on all patient documents
-                                        </div>
                                     </div>
-                                    {canEditReferral && (
-                                        <button
-                                            type="button"
-                                            id="btn-remove-prepaid-doctor"
-                                            onClick={handleRemoveReferral}
-                                            disabled={isProcessing}
-                                            tabIndex={0}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Tab' && !e.shiftKey) {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    const addBtn = document.getElementById('btn-add-prescribing-doctor');
-                                                    if (addBtn) addBtn.focus();
-                                                } else if (e.key === 'Tab' && e.shiftKey) {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    const card = document.getElementById('card-prescribing-doctor');
-                                                    if (card) card.focus();
-                                                } else if (e.key === 'Enter' || e.key === ' ') {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    handleRemoveReferral();
-                                                }
-                                            }}
-                                            className="ml-auto text-zinc-400 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer synos-focus-btn"
-                                            title="Remove Doctor"
-                                        >
-                                            <X className="w-3.5 h-3.5" />
-                                        </button>
-                                    )}
+                                    <div className="flex items-center gap-2.5 shrink-0">
+                                        <span className="text-xs font-bold px-2.5 py-1 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                                            {effectivePartner.partnerType || 'Doctor'}
+                                        </span>
+                                        {canEditReferral && (
+                                            <button
+                                                type="button"
+                                                id="btn-remove-prepaid-doctor"
+                                                onClick={handleRemoveReferral}
+                                                disabled={isProcessing}
+                                                tabIndex={0}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Tab' && !e.shiftKey) {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        const addBtn = document.getElementById('btn-add-prescribing-doctor');
+                                                        if (addBtn) addBtn.focus();
+                                                    } else if (e.key === 'Tab' && e.shiftKey) {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        const card = document.getElementById('card-prescribing-doctor');
+                                                        if (card) card.focus();
+                                                    } else if (e.key === 'Enter' || e.key === ' ') {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        handleRemoveReferral();
+                                                    }
+                                                }}
+                                                className="text-zinc-400 hover:text-red-500 p-1.5 hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer synos-focus-btn"
+                                                title="Remove Doctor"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             ) : (
                                 <div className="space-y-2">
@@ -1794,32 +1795,35 @@ export function VisitDetails({
 
                                 return (
                                     <div key={test.testCode || test.code} className={cn(
-                                        "rounded-xl p-3 flex items-center justify-between group animate-in zoom-in-95 duration-200 border transition-all min-w-0",
+                                        "rounded-xl p-3 sm:p-3.5 flex items-center justify-between group animate-in zoom-in-95 duration-200 border transition-all min-w-0",
                                         isStagedRemoved 
                                             ? "opacity-50 bg-red-950/20 border-red-500/30 line-through" 
                                             : ui.testCard
                                     )}>
-                                        <div className="flex items-center gap-2.5 min-w-0">
-                                            <div className={cn("px-2.5 py-1 min-w-[32px] min-h-[28px] max-w-[120px] rounded-lg flex items-center justify-center border shrink-0 font-mono text-xs font-bold truncate", ui.testCode)}>
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <div className={cn("px-2.5 py-1 min-w-[36px] rounded-lg flex items-center justify-center border shrink-0 font-mono text-xs font-bold truncate", ui.testCode)}>
                                                 {test.testCode || test.code}
                                             </div>
-                                            <div className="min-w-0">
-                                                <div className="leading-tight truncate flex items-center gap-1.5">
-                                                    <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">
-                                                        {test.testName || test.name}
-                                                    </span>
-                                                    {isStagedRemoved && (
-                                                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-red-500/20 text-red-400 border border-red-500/30 no-underline not-italic shrink-0">
-                                                            Cancelled
+                                            <div className="flex items-center gap-2.5 min-w-0 truncate">
+                                                <span className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">
+                                                    {test.testName || test.name}
+                                                </span>
+                                                {(test.dept || test.category || test.department) && (
+                                                    <>
+                                                        <span className="text-slate-300 dark:text-zinc-700 select-none">|</span>
+                                                        <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 shrink-0">
+                                                            {test.dept || test.category || test.department}
                                                         </span>
-                                                    )}
-                                                </div>
-                                                <div className="text-[11px] font-semibold text-slate-500 dark:text-zinc-400 mt-0.5 uppercase tracking-wide truncate">
-                                                    {test.dept || test.category || test.department}
-                                                </div>
+                                                    </>
+                                                )}
+                                                {isStagedRemoved && (
+                                                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-red-500/20 text-red-400 border border-red-500/30 no-underline not-italic shrink-0">
+                                                        Cancelled
+                                                    </span>
+                                                )}
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-2.5 shrink-0 ml-2">
+                                        <div className="flex items-center gap-3 shrink-0 ml-3">
                                             <div className="text-sm sm:text-base font-bold font-mono text-slate-900 dark:text-white tabular-nums">
                                                 ₹{test.basePrice || test.price || test.Price}
                                             </div>
@@ -1861,26 +1865,29 @@ export function VisitDetails({
 
                             {/* STAGED ADD-ON TESTS IN EDIT MODE */}
                             {isCorrectionIntent && stagedAddedTests.length > 0 && stagedAddedTests.map((test, sIdx) => (
-                                <div key={`staged-add-${test.code || test.testCode}-${sIdx}`} className="rounded-xl p-3 flex items-center justify-between group border border-emerald-500/40 bg-emerald-500/10 animate-in zoom-in-95 duration-200 min-w-0">
-                                    <div className="flex items-center gap-2.5 min-w-0">
-                                        <div className="px-2.5 py-1 min-w-[32px] min-h-[28px] max-w-[120px] rounded-lg flex items-center justify-center border shrink-0 font-mono text-xs font-bold truncate bg-emerald-500/20 border-emerald-500/40 text-emerald-400">
+                                <div key={`staged-add-${test.code || test.testCode}-${sIdx}`} className="rounded-xl p-3 sm:p-3.5 flex items-center justify-between group border border-emerald-500/40 bg-emerald-500/10 animate-in zoom-in-95 duration-200 min-w-0">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <div className="px-2.5 py-1 min-w-[36px] rounded-lg flex items-center justify-center border shrink-0 font-mono text-xs font-bold truncate bg-emerald-500/20 border-emerald-500/40 text-emerald-400">
                                             {test.code || test.testCode}
                                         </div>
-                                        <div className="min-w-0">
-                                            <div className="leading-tight truncate flex items-center gap-1.5">
-                                                <span className="text-sm sm:text-base font-bold text-emerald-600 dark:text-emerald-400 truncate">
-                                                    {test.name || test.testName}
-                                                </span>
-                                                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 shrink-0">
-                                                    + Staged
-                                                </span>
-                                            </div>
-                                            <div className="text-[11px] font-semibold text-emerald-600/80 dark:text-emerald-500/80 mt-0.5 uppercase tracking-wide truncate">
-                                                {test.specimenTypeCode ? `Specimen: ${test.specimenTypeCode}` : (test.dept || test.department || "Add-On Test")}
-                                            </div>
+                                        <div className="flex items-center gap-2.5 min-w-0 truncate">
+                                            <span className="text-sm sm:text-base font-bold text-emerald-600 dark:text-emerald-400 truncate">
+                                                {test.name || test.testName}
+                                            </span>
+                                            {(test.dept || test.department || test.specimenTypeCode) && (
+                                                <>
+                                                    <span className="text-emerald-500/40 select-none">|</span>
+                                                    <span className="text-xs font-bold uppercase tracking-wider text-emerald-600/80 dark:text-emerald-500/80 shrink-0">
+                                                        {test.specimenTypeCode ? `Specimen: ${test.specimenTypeCode}` : (test.dept || test.department)}
+                                                    </span>
+                                                </>
+                                            )}
+                                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 shrink-0">
+                                                + Staged
+                                            </span>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2.5 shrink-0 ml-2">
+                                    <div className="flex items-center gap-3 shrink-0 ml-3">
                                         <div className="text-sm sm:text-base font-bold font-mono text-emerald-600 dark:text-emerald-400 tabular-nums">
                                             ₹{test.price || test.basePrice || 0}
                                         </div>

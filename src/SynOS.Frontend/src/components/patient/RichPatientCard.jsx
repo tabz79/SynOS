@@ -127,6 +127,106 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
             : "bg-slate-200/70 border border-slate-300/60 text-slate-800 font-semibold"
     };
 
+    if (isLocked) {
+        return (
+            <div className="flex flex-col gap-2 transition-all">
+                {/* 3-COLUMN CLINICAL WORKSTATION GRID */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-6">
+                    {/* COL 1: AVATAR & PROMINENT PATIENT NAME */}
+                    <div className="flex items-center gap-3 sm:gap-3.5 min-w-0 sm:max-w-[35%] shrink-0">
+                        <div className={cn(
+                            "w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shrink-0 shadow-sm",
+                            isDark 
+                                ? "bg-sky-950/60 text-sky-400 border-2 border-zinc-800 shadow-md" 
+                                : "bg-gradient-to-b from-[#E0F2FE] to-[#BAE6FD] text-[#0284C7] border-2 border-white shadow-[0_3px_10px_rgba(2,132,199,0.2)]"
+                        )}>
+                            <User className="w-5 h-5 sm:w-6 sm:h-6 text-[#0284C7]" />
+                        </div>
+                        <div className="min-w-0">
+                            <span className="text-base sm:text-xl font-black text-slate-900 dark:text-white truncate block tracking-tight leading-tight" title={name}>
+                                {name}
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* COL 2: DEMOGRAPHICS & IDENTIFIERS (Spanning Center Width) */}
+                    <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 flex-1 justify-start sm:justify-center">
+                        <span className={cn("px-2.5 py-1 rounded-lg font-semibold text-xs sm:text-sm", cardUi.badge)}>
+                            Age: <span className="font-bold text-slate-900 dark:text-white">{detailedAge.text}</span>
+                        </span>
+                        <span className={cn("px-2.5 py-1 rounded-lg font-bold text-xs sm:text-sm", cardUi.badge)}>
+                            {genderInitial === 'M' ? 'Male' : (genderInitial === 'F' ? 'Female' : (genderLabel !== '-' ? genderLabel : genderInitial))}
+                        </span>
+                        {mobile && (
+                            <span className={cn("px-2.5 py-1 rounded-lg font-mono text-xs sm:text-sm font-bold text-slate-900 dark:text-white", cardUi.badge)}>
+                                {mobile}
+                            </span>
+                        )}
+                        <span className={cn("px-2.5 py-1 rounded-lg text-xs sm:text-sm font-mono inline-flex items-center gap-1.5", cardUi.mrn)}>
+                            <span className="font-bold opacity-60">MRN:</span>
+                            <span className="font-bold text-slate-900 dark:text-white">{mrn}</span>
+                        </span>
+                    </div>
+
+                    {/* COL 3: ACTIONS & LAST VISIT CONTEXT */}
+                    <div className="flex items-center gap-3 sm:gap-4 shrink-0 justify-end">
+                        <div className="text-right leading-tight hidden lg:block">
+                            <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-zinc-500 block">
+                                Last Visit
+                            </span>
+                            <span className="font-mono text-slate-800 dark:text-zinc-200 font-bold text-xs sm:text-sm block mt-0.5">
+                                {lastVisitDate ? new Date(lastVisitDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' }) : 'New'}
+                            </span>
+                        </div>
+
+                        {secondaryActionLabel && (
+                            <button 
+                                id="btn-edit-demographics"
+                                data-initial-focus="true"
+                                type="button"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (onSecondaryAction) onSecondaryAction();
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Tab' && !e.shiftKey) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        const payerBtn = document.getElementById('btn-payer-mode-active') ||
+                                                         document.querySelector('[data-payer-mode-btn="true"][data-selected="true"]') ||
+                                                         document.querySelector('[data-payer-mode-btn="true"]');
+                                        if (payerBtn) payerBtn.focus();
+                                    } else if (e.key === 'Tab' && e.shiftKey) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                    }
+                                }}
+                                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-700 dark:text-zinc-200 bg-white/90 hover:bg-white dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-300/80 dark:border-zinc-700 shadow-2xs hover:shadow-xs transition-all cursor-pointer active:scale-95 synos-focus-btn"
+                                title="Edit Patient Demographics"
+                            >
+                                <Pencil className="w-3.5 h-3.5 text-slate-500 dark:text-zinc-400" />
+                                <span>{secondaryActionLabel}</span>
+                            </button>
+                        )}
+                        {actionLabel && (
+                            <button 
+                                id="btn-change-patient"
+                                type="button"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (onAction) onAction();
+                                }}
+                                className="text-[#0369A1] hover:text-[#0284C7] font-bold text-xs rounded px-2 py-1 cursor-pointer synos-focus-btn"
+                            >
+                                {actionLabel}
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div
             onClick={onAction}
