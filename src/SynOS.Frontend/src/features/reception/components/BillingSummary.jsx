@@ -1979,78 +1979,102 @@ export function BillingSummary({
                             {hasDiscountApplied && !isB2BExpanded ? (
                                 /* MINIMISED STATE */
                                 <div className={cn(
-                                    "p-4 rounded-2xl border flex items-center justify-between transition-all duration-200 shadow-2xs",
+                                    "p-4 sm:p-5 rounded-2xl border transition-all duration-200 shadow-2xs space-y-3.5",
                                     isDark ? "bg-zinc-900/80 border-zinc-800 text-zinc-200" : "bg-white border-[#CCDCE8]/80 text-zinc-900"
                                 )}>
-                                    <div className="flex items-center gap-3 min-w-0">
-                                        <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/80 flex items-center justify-center shrink-0">
-                                            <Tag className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                                        </div>
-                                        <div className="flex flex-col min-w-0">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-zinc-200">
-                                                    B2B Discount
-                                                </span>
-                                                <span className="font-mono font-bold text-xs sm:text-sm px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shrink-0">
-                                                    -₹{computedDiscountAmt.toLocaleString()} {b2bDiscountType === 'PERCENTAGE' ? `(${rawVal}%)` : ''}
-                                                </span>
+                                    {/* Header Row: Title & Edit Button */}
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2.5">
+                                            <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/80 flex items-center justify-center shrink-0">
+                                                <Tag className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                                             </div>
-                                            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
-                                                <span>Doctor Bill:</span>
-                                                <span className="font-mono font-black text-emerald-600 dark:text-emerald-400">
-                                                    ₹{computedNetClaim.toLocaleString()}
-                                                </span>
-                                                <span className="text-slate-300 dark:text-zinc-600">•</span>
-                                                <span>Tariff: ₹{grossTariff.toLocaleString()}</span>
-                                            </div>
+                                            <span className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-zinc-200">
+                                                B2B Discount
+                                            </span>
                                         </div>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        id="btn-edit-b2b-discount"
-                                        data-financials-focus="true"
-                                        tabIndex={0}
-                                        onClick={() => {
-                                            setIsB2BExpanded(true);
-                                            setIsB2BEditing(true);
-                                            setTimeout(() => {
-                                                document.getElementById('input-b2b-discount')?.focus();
-                                            }, 50);
-                                        }}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Tab') {
-                                                if (!e.shiftKey) {
-                                                    // Forward Tab: to Billed to Doctor Account
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    const docInput = document.getElementById('input-b2b-doctor-search') ||
-                                                                     document.getElementById('btn-unified-action') ||
-                                                                     document.getElementById('btn-confirm-visit');
-                                                    if (docInput) docInput.focus();
-                                                } else {
-                                                    // Backward Tab: to Outsource Test or last test remove button
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    const outsourceBtn = document.getElementById('btn-outsource-test');
-                                                    if (outsourceBtn && outsourceBtn.offsetParent !== null) {
-                                                        outsourceBtn.focus();
+                                        <button
+                                            type="button"
+                                            id="btn-edit-b2b-discount"
+                                            data-financials-focus="true"
+                                            tabIndex={0}
+                                            onClick={() => {
+                                                setIsB2BExpanded(true);
+                                                setIsB2BEditing(true);
+                                                setTimeout(() => {
+                                                    document.getElementById('input-b2b-discount')?.focus();
+                                                }, 50);
+                                            }}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Tab') {
+                                                    if (!e.shiftKey) {
+                                                        // Forward Tab: to Billed to Doctor Account
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        const docInput = document.getElementById('input-b2b-doctor-search') ||
+                                                                         document.getElementById('btn-unified-action') ||
+                                                                         document.getElementById('btn-confirm-visit');
+                                                        if (docInput) docInput.focus();
                                                     } else {
-                                                        const allTestButtons = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]'));
-                                                        if (allTestButtons.length > 0) {
-                                                            allTestButtons[allTestButtons.length - 1].focus();
+                                                        // Backward Tab: to Outsource Test or last test remove button
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        const outsourceBtn = document.getElementById('btn-outsource-test');
+                                                        if (outsourceBtn && outsourceBtn.offsetParent !== null) {
+                                                            outsourceBtn.focus();
                                                         } else {
-                                                            const testInput = document.getElementById('input-test-search');
-                                                            if (testInput) testInput.focus();
+                                                            const allTestButtons = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]'));
+                                                            if (allTestButtons.length > 0) {
+                                                                allTestButtons[allTestButtons.length - 1].focus();
+                                                            } else {
+                                                                const testInput = document.getElementById('input-test-search');
+                                                                if (testInput) testInput.focus();
+                                                            }
                                                         }
                                                     }
                                                 }
-                                            }
-                                        }}
-                                        className="px-3.5 py-1.5 rounded-xl text-xs font-bold border border-slate-300 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-200 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs active:scale-95 shrink-0 synos-focus-btn"
-                                    >
-                                        <span>Edit</span>
-                                        <ChevronDown className="w-3.5 h-3.5 text-slate-400 -rotate-90" />
-                                    </button>
+                                            }}
+                                            className="px-3.5 py-1.5 rounded-xl text-xs font-bold border border-slate-300 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-200 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs active:scale-95 shrink-0 synos-focus-btn"
+                                        >
+                                            <span>Edit</span>
+                                            <ChevronDown className="w-3.5 h-3.5 text-slate-400 -rotate-90" />
+                                        </button>
+                                    </div>
+
+                                    {/* Divider */}
+                                    <div className="border-t border-slate-100 dark:border-zinc-800" />
+
+                                    {/* 3 Columns: Total Amount, B2B Discount, Doctor Bill */}
+                                    <div className="grid grid-cols-3 gap-2 sm:gap-4 items-baseline">
+                                        <div>
+                                            <span className="text-[11px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">
+                                                Total Amount
+                                            </span>
+                                            <span className="font-mono font-bold text-base sm:text-lg text-slate-900 dark:text-zinc-100 block mt-0.5">
+                                                ₹{grossTariff.toLocaleString()}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span className="text-[11px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">
+                                                B2B Discount
+                                            </span>
+                                            <span className="font-mono font-bold text-base sm:text-lg text-emerald-600 dark:text-emerald-400 block mt-0.5">
+                                                -₹{computedDiscountAmt.toLocaleString()}
+                                                {b2bDiscountType === 'PERCENTAGE' && rawVal > 0 ? (
+                                                    <span className="text-xs font-semibold text-emerald-600/80 dark:text-emerald-400/80 ml-1">
+                                                        ({rawVal}%)
+                                                    </span>
+                                                ) : null}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span className="text-[11px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">
+                                                Doctor Bill
+                                            </span>
+                                            <span className="font-mono font-black text-base sm:text-lg text-emerald-700 dark:text-emerald-400 block mt-0.5">
+                                                ₹{computedNetClaim.toLocaleString()}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                             ) : (
                                 /* EXPANDED STATE */
@@ -2298,81 +2322,63 @@ export function BillingSummary({
                                                 <span className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
                                                     Billed to Doctor Account
                                                 </span>
-                                                {isOverridden ? (
+                                                {isOverridden && (
                                                     <span className="text-[10px] px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-700 dark:text-amber-300 font-extrabold border border-amber-500/30">
                                                         Overruled
-                                                    </span>
-                                                ) : (
-                                                    <span className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-extrabold border border-emerald-500/20">
-                                                        Default: Prescribing Doctor
                                                     </span>
                                                 )}
                                             </div>
                                             <button
                                                 type="button"
+                                                id="btn-add-b2b-doctor"
                                                 onClick={() => {
                                                     setShowB2BDoctorDropdown(false);
                                                     if (onOpenModal) onOpenModal('b2bBillingDoctor');
                                                 }}
                                                 disabled={!canPerformActions || isProcessing}
-                                                className="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95"
+                                                className="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center gap-1.5 cursor-pointer transition-all active:scale-95 synos-focus-btn"
                                                 title="Register & bill a new doctor profile"
                                             >
                                                 <Plus className="w-3.5 h-3.5" /> Add Doctor
                                             </button>
                                         </div>
 
-                                        {isOverridden ? (
-                                            <div className={cn(
-                                                "flex items-center justify-between gap-2 p-2.5 rounded-xl border text-xs font-semibold animate-in fade-in duration-200",
-                                                isDark ? "bg-zinc-900 border-amber-500/30 text-zinc-100" : "bg-white border-amber-300 text-zinc-900 shadow-xs"
-                                            )}>
-                                                <div className="flex items-center gap-2.5 min-w-0">
-                                                    <div className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0 animate-pulse" />
-                                                    <div className="truncate">
-                                                        <div className="font-bold text-xs truncate text-amber-900 dark:text-amber-200">
-                                                            {overriddenDoctor.displayName || overriddenDoctor.name}
-                                                        </div>
-                                                        <div className="text-[10px] text-zinc-500 dark:text-zinc-400 font-normal truncate">
-                                                            Receivables ledger will be billed to this doctor
-                                                        </div>
+                                        {isOverridden && (
+                                            <div 
+                                                id="card-overridden-b2b-doctor"
+                                                tabIndex={0}
+                                                className={cn(
+                                                    "flex items-center gap-2 font-semibold p-3 rounded-xl border cursor-pointer synos-focus-card focus:outline-none animate-in fade-in duration-200",
+                                                    isDark ? "bg-zinc-800/60 border-zinc-700/60 text-zinc-100" : "bg-white border border-[#D5E2EC] text-slate-900 shadow-[0_1px_3px_rgba(15,35,60,0.04)]"
+                                                )}
+                                            >
+                                                <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="truncate tracking-normal text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+                                                        {overriddenDoctor.displayName || overriddenDoctor.name}
+                                                    </div>
+                                                    <div className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 font-medium mt-0.5">
+                                                        Primary Consultant • Receivables ledger will be billed to this doctor
                                                     </div>
                                                 </div>
                                                 {canPerformActions && (
                                                     <button
                                                         type="button"
+                                                        id="btn-remove-overrule-doctor"
                                                         onClick={handleClearB2BOverrideDoctor}
                                                         disabled={isProcessing}
-                                                        className="px-2 py-1 rounded text-[11px] font-bold text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 cursor-pointer transition-colors shrink-0 flex items-center gap-1 synos-focus-btn"
-                                                        title="Revert billing back to prescribing doctor"
+                                                        tabIndex={0}
+                                                        className="ml-auto text-zinc-400 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors cursor-pointer synos-focus-btn"
+                                                        title="Remove Overrule Doctor"
                                                     >
-                                                        <X className="w-3 h-3" /> Revert
+                                                        <X className="w-3.5 h-3.5" />
                                                     </button>
                                                 )}
                                             </div>
-                                        ) : (
-                                            <div className="space-y-2">
-                                                {/* Default Active Indicator */}
-                                                <div className={cn(
-                                                    "flex items-center justify-between p-2 rounded-lg border text-xs font-medium",
-                                                    isDark ? "bg-zinc-900/40 border-zinc-700/60 text-zinc-300" : "bg-white/80 border-slate-200 text-slate-700 shadow-2xs"
-                                                )}>
-                                                    <div className="flex items-center gap-2 min-w-0">
-                                                        <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-                                                        <span className="font-semibold text-slate-900 dark:text-white truncate">
-                                                            {primaryDoctor?.displayName || primaryDoctor?.name || "Prescribing Doctor"}
-                                                        </span>
-                                                        <span className="text-[10px] text-zinc-400 dark:text-zinc-500 truncate hidden sm:inline">
-                                                            (Active Ledger Account)
-                                                        </span>
-                                                    </div>
-                                                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shrink-0">
-                                                        Active
-                                                    </span>
-                                                </div>
+                                        )}
 
-                                                {/* Overrule Search Input */}
-                                                <div className="relative">
+                                        {/* Overrule Search Input */}
+                                        <div className="relative">
                                                     <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-400 pointer-events-none" />
                                                     <input
                                                         id="input-b2b-doctor-search"
@@ -2467,8 +2473,6 @@ export function BillingSummary({
                                                     )}
                                                 </div>
                                             </div>
-                                        )}
-                                    </div>
                                 );
                             })()}
                         </div>
@@ -2699,33 +2703,25 @@ export function BillingSummary({
                     </div>
                 )}
 
-                {/* D. Settlement Status Indicator (Prominent in Visit Summary Mode) */}
-                {isLocked && (
+                {/* D. Settlement Status Indicator (Prominent in Visit Summary Mode - Direct / Standard only) */}
+                {isLocked && !isPrepaid && (
                     <div className={cn(
                         "p-4 rounded-xl border flex items-center justify-between shadow-xs",
-                        billing.paymentModel === 'PartnerCollects' || isPrepaid
-                            ? (isDark ? "bg-indigo-950/40 border-indigo-500/40 text-indigo-300" : "bg-indigo-50/80 border-indigo-200 text-indigo-900")
-                            : (isDark ? "bg-emerald-950/40 border-emerald-500/40 text-emerald-300" : "bg-emerald-50/80 border-emerald-200 text-emerald-900")
+                        isDark ? "bg-emerald-950/40 border-emerald-500/40 text-emerald-300" : "bg-emerald-50/80 border-emerald-200 text-emerald-900"
                     )}>
                         <div className="flex items-center gap-3">
-                            <CheckCircle2 className={cn("w-5 h-5 shrink-0", billing.paymentModel === 'PartnerCollects' || isPrepaid ? "text-indigo-600 dark:text-indigo-400" : "text-emerald-600 dark:text-emerald-400")} />
+                            <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
                             <div>
                                 <span className="text-base font-bold block leading-tight">
-                                    {billing.paymentModel === 'PartnerCollects' || isPrepaid
-                                        ? "Billed to Doctor Account"
-                                        : "Payment Settled & Complete"}
+                                    Payment Settled & Complete
                                 </span>
                                 <span className="text-sm opacity-80 font-medium mt-0.5 block">
-                                    {billing.paymentModel === 'PartnerCollects' || isPrepaid
-                                        ? "Doctor will settle via monthly account"
-                                        : `Paid via ${billing.paymentMethod || 'Counter Collection'}`}
+                                    Paid via {billing.paymentMethod || 'Counter Collection'}
                                 </span>
                             </div>
                         </div>
                         <span className="font-mono text-base font-bold px-3 py-1 rounded-full border bg-white/70 dark:bg-black/30 border-current/20">
-                            {billing.paymentModel === 'PartnerCollects' || isPrepaid
-                                ? "Doctor B2B"
-                                : `₹${(billing.totalPaid || billing.netAmount || 0).toLocaleString()}`}
+                            ₹{(billing.totalPaid || billing.netAmount || 0).toLocaleString()}
                         </span>
                     </div>
                 )}
