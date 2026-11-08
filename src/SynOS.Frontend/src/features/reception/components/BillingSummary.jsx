@@ -1014,89 +1014,62 @@ export function BillingSummary({
                                         )}
                                     </div>
 
-                                    {/* Concession / Discount Trigger Button */}
-                                    {canPerformActions && (
-                                        !isPrepaid ? (
-                                            <button
-                                                ref={concessionTriggerRef}
-                                                data-concession-trigger="true"
-                                                type="button"
-                                                disabled={!isInitialIntake}
-                                                onClick={() => {
-                                                    if (isInitialIntake) {
-                                                        setIsDiscountExpanded(prev => !prev);
-                                                    }
-                                                }}
-                                                onKeyDown={(e) => {
-                                                    if (!isInitialIntake) return;
-                                                    if (e.key === 'Tab') {
-                                                        if (!e.shiftKey) {
-                                                            if (hasDiscountApplied) {
-                                                                e.preventDefault();
-                                                                e.stopPropagation();
-                                                                document.getElementById('btn-remove-discount')?.focus();
-                                                            }
-                                                        } else {
+                                    {/* Concession / Discount Trigger Button (Direct / Standard only) */}
+                                    {canPerformActions && !isPrepaid && (
+                                        <button
+                                            ref={concessionTriggerRef}
+                                            data-concession-trigger="true"
+                                            type="button"
+                                            disabled={!isInitialIntake}
+                                            onClick={() => {
+                                                if (isInitialIntake) {
+                                                    setIsDiscountExpanded(prev => !prev);
+                                                }
+                                            }}
+                                            onKeyDown={(e) => {
+                                                if (!isInitialIntake) return;
+                                                if (e.key === 'Tab') {
+                                                    if (!e.shiftKey) {
+                                                        if (hasDiscountApplied) {
                                                             e.preventDefault();
                                                             e.stopPropagation();
-                                                            const outsourceBtn = document.getElementById('btn-outsource-test');
-                                                            if (outsourceBtn) outsourceBtn.focus();
-                                                            else {
-                                                                const allTestButtons = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]'));
-                                                                if (allTestButtons.length > 0) {
-                                                                    allTestButtons[allTestButtons.length - 1].focus();
-                                                                } else {
-                                                                    const testInput = document.getElementById('input-test-search');
-                                                                    if (testInput) testInput.focus();
-                                                                }
+                                                            document.getElementById('btn-remove-discount')?.focus();
+                                                        }
+                                                    } else {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        const outsourceBtn = document.getElementById('btn-outsource-test');
+                                                        if (outsourceBtn) outsourceBtn.focus();
+                                                        else {
+                                                            const allTestButtons = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]'));
+                                                            if (allTestButtons.length > 0) {
+                                                                allTestButtons[allTestButtons.length - 1].focus();
+                                                            } else {
+                                                                const testInput = document.getElementById('input-test-search');
+                                                                if (testInput) testInput.focus();
                                                             }
                                                         }
                                                     }
-                                                }}
-                                                className={cn(
-                                                    "px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1 transition-all border shadow-2xs shrink-0 synos-focus-btn",
-                                                    !isInitialIntake
-                                                        ? "opacity-45 cursor-not-allowed bg-slate-100 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500 border-slate-200 dark:border-zinc-700 select-none"
-                                                        : (isDiscountExpanded
-                                                            ? "bg-slate-900 text-white border-slate-900 dark:bg-zinc-700 dark:border-zinc-600 shadow-xs cursor-pointer"
-                                                            : (hasDiscountApplied
-                                                                ? "bg-[#EBF5EF] dark:bg-emerald-950/30 text-[#245E49] dark:text-emerald-300 border border-[#CCE8D8] dark:border-emerald-800 hover:bg-[#DFF0E6] cursor-pointer"
-                                                                : "bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 border-[#CCDCE8] dark:border-zinc-700 hover:bg-slate-50 cursor-pointer"))
-                                                )}
-                                                title={!isInitialIntake ? "Initial registration discount is locked." : (hasDiscountApplied ? "Edit Discount" : "+ Discount")}
-                                            >
-                                                <Tag className="w-3.5 h-3.5 text-slate-500 dark:text-zinc-400" />
-                                                <span>{hasDiscountApplied ? "Edit Discount" : "+ Discount"}</span>
-                                                {isInitialIntake && (
-                                                    <ChevronDown className={cn("w-3 h-3 transition-transform duration-200", isDiscountExpanded && "rotate-180")} />
-                                                )}
-                                            </button>
-                                        ) : (
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setIsB2BExpanded(prev => !prev);
-                                                    if (!isB2BExpanded) {
-                                                        setTimeout(() => {
-                                                            document.getElementById('input-b2b-discount')?.focus();
-                                                        }, 50);
-                                                    }
-                                                }}
-                                                className={cn(
-                                                    "px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1 transition-all border shadow-2xs shrink-0 cursor-pointer",
-                                                    isB2BExpanded
-                                                        ? "bg-slate-900 text-white border-slate-900 dark:bg-zinc-700 dark:border-zinc-600 shadow-xs"
-                                                        : (computedB2BDiscountAmt > 0
-                                                            ? "bg-[#EBF5EF] dark:bg-emerald-950/30 text-[#245E49] dark:text-emerald-300 border border-[#CCE8D8] dark:border-emerald-800 hover:bg-[#DFF0E6]"
-                                                            : "bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 border-[#CCDCE8] dark:border-zinc-700 hover:bg-slate-50")
-                                                )}
-                                                title={computedB2BDiscountAmt > 0 ? "Edit B2B Discount" : "+ B2B Discount"}
-                                            >
-                                                <Tag className="w-3.5 h-3.5 text-slate-500 dark:text-zinc-400" />
-                                                <span>{computedB2BDiscountAmt > 0 ? "Edit B2B Discount" : "+ B2B Discount"}</span>
-                                                <ChevronDown className={cn("w-3 h-3 transition-transform duration-200", isB2BExpanded && "rotate-180")} />
-                                            </button>
-                                        )
+                                                }
+                                            }}
+                                            className={cn(
+                                                "px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1 transition-all border shadow-2xs shrink-0 synos-focus-btn",
+                                                !isInitialIntake
+                                                    ? "opacity-45 cursor-not-allowed bg-slate-100 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500 border-slate-200 dark:border-zinc-700 select-none"
+                                                    : (isDiscountExpanded
+                                                        ? "bg-slate-900 text-white border-slate-900 dark:bg-zinc-700 dark:border-zinc-600 shadow-xs cursor-pointer"
+                                                        : (hasDiscountApplied
+                                                            ? "bg-[#EBF5EF] dark:bg-emerald-950/30 text-[#245E49] dark:text-emerald-300 border border-[#CCE8D8] dark:border-emerald-800 hover:bg-[#DFF0E6] cursor-pointer"
+                                                            : "bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 border-[#CCDCE8] dark:border-zinc-700 hover:bg-slate-50 cursor-pointer"))
+                                            )}
+                                            title={!isInitialIntake ? "Initial registration discount is locked." : (hasDiscountApplied ? "Edit Discount" : "+ Discount")}
+                                        >
+                                            <Tag className="w-3.5 h-3.5 text-slate-500 dark:text-zinc-400" />
+                                            <span>{hasDiscountApplied ? "Edit Discount" : "+ Discount"}</span>
+                                            {isInitialIntake && (
+                                                <ChevronDown className={cn("w-3 h-3 transition-transform duration-200", isDiscountExpanded && "rotate-180")} />
+                                            )}
+                                        </button>
                                     )}
                                 </div>
 
