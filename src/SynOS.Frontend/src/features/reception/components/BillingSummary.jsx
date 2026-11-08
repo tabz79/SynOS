@@ -128,11 +128,26 @@ export function BillingSummary({
                     submitBtn.focus();
                 }
             } else {
-                const discountInput = document.getElementById('input-b2b-discount');
-                if (discountInput) {
+                const discountTarget = document.getElementById('input-b2b-discount') || 
+                                       document.getElementById('btn-edit-b2b-discount');
+                if (discountTarget) {
                     e.preventDefault();
                     e.stopPropagation();
-                    discountInput.focus();
+                    discountTarget.focus();
+                } else {
+                    const outsourceBtn = document.getElementById('btn-outsource-test');
+                    if (outsourceBtn && outsourceBtn.offsetParent !== null) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        outsourceBtn.focus();
+                    } else {
+                        const allTestButtons = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]'));
+                        if (allTestButtons.length > 0) {
+                            allTestButtons[allTestButtons.length - 1].focus();
+                        } else {
+                            document.getElementById('input-test-search')?.focus();
+                        }
+                    }
                 }
             }
             return;
@@ -1112,7 +1127,7 @@ export function BillingSummary({
                                                             type="button"
                                                             id={isPrepaid ? "btn-remove-b2b-discount" : "btn-remove-discount"}
                                                             data-remove-discount="true"
-                                                            tabIndex={0}
+                                                            tabIndex={isPrepaid ? -1 : 0}
                                                             onClick={isPrepaid ? () => {
                                                                 handleSaveB2BDiscount(0, 'FLAT');
                                                                 setLocalB2BInput('');
@@ -1123,16 +1138,37 @@ export function BillingSummary({
                                                                     e.preventDefault();
                                                                     e.stopPropagation();
                                                                     if (e.shiftKey) {
-                                                                        const trigger = document.querySelector('[data-concession-trigger="true"]');
-                                                                        if (trigger) trigger.focus();
-                                                                    } else {
-                                                                        if (isDiscountExpanded) {
-                                                                            const drawerTarget = document.getElementById('input-flat-concession') ||
-                                                                                                 document.getElementById('btn-minimize-concession');
-                                                                            if (drawerTarget) drawerTarget.focus();
-                                                                            else document.getElementById('btn-settlement-full')?.focus();
+                                                                        if (isPrepaid) {
+                                                                            const outsourceBtn = document.getElementById('btn-outsource-test');
+                                                                            if (outsourceBtn && outsourceBtn.offsetParent !== null) {
+                                                                                outsourceBtn.focus();
+                                                                            } else {
+                                                                                const allTestButtons = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]'));
+                                                                                if (allTestButtons.length > 0) {
+                                                                                    allTestButtons[allTestButtons.length - 1].focus();
+                                                                                } else {
+                                                                                    document.getElementById('input-test-search')?.focus();
+                                                                                }
+                                                                            }
                                                                         } else {
-                                                                            document.getElementById('btn-settlement-full')?.focus();
+                                                                            const trigger = document.querySelector('[data-concession-trigger="true"]');
+                                                                            if (trigger) trigger.focus();
+                                                                        }
+                                                                    } else {
+                                                                        if (isPrepaid) {
+                                                                            const b2bTarget = document.getElementById('btn-edit-b2b-discount') ||
+                                                                                              document.getElementById('input-b2b-discount') ||
+                                                                                              document.getElementById('input-b2b-doctor-search');
+                                                                            if (b2bTarget) b2bTarget.focus();
+                                                                        } else {
+                                                                            if (isDiscountExpanded) {
+                                                                                const drawerTarget = document.getElementById('input-flat-concession') ||
+                                                                                                     document.getElementById('btn-minimize-concession');
+                                                                                if (drawerTarget) drawerTarget.focus();
+                                                                                else document.getElementById('btn-settlement-full')?.focus();
+                                                                            } else {
+                                                                                document.getElementById('btn-settlement-full')?.focus();
+                                                                            }
                                                                         }
                                                                     }
                                                                 }
@@ -1972,6 +2008,8 @@ export function BillingSummary({
                                     <button
                                         type="button"
                                         id="btn-edit-b2b-discount"
+                                        data-financials-focus="true"
+                                        tabIndex={0}
                                         onClick={() => {
                                             setIsB2BExpanded(true);
                                             setIsB2BEditing(true);
@@ -1979,7 +2017,36 @@ export function BillingSummary({
                                                 document.getElementById('input-b2b-discount')?.focus();
                                             }, 50);
                                         }}
-                                        className="px-3.5 py-1.5 rounded-xl text-xs font-bold border border-slate-300 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-200 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs active:scale-95 shrink-0"
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Tab') {
+                                                if (!e.shiftKey) {
+                                                    // Forward Tab: to Billed to Doctor Account
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    const docInput = document.getElementById('input-b2b-doctor-search') ||
+                                                                     document.getElementById('btn-unified-action') ||
+                                                                     document.getElementById('btn-confirm-visit');
+                                                    if (docInput) docInput.focus();
+                                                } else {
+                                                    // Backward Tab: to Outsource Test or last test remove button
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    const outsourceBtn = document.getElementById('btn-outsource-test');
+                                                    if (outsourceBtn && outsourceBtn.offsetParent !== null) {
+                                                        outsourceBtn.focus();
+                                                    } else {
+                                                        const allTestButtons = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]'));
+                                                        if (allTestButtons.length > 0) {
+                                                            allTestButtons[allTestButtons.length - 1].focus();
+                                                        } else {
+                                                            const testInput = document.getElementById('input-test-search');
+                                                            if (testInput) testInput.focus();
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }}
+                                        className="px-3.5 py-1.5 rounded-xl text-xs font-bold border border-slate-300 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-200 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs active:scale-95 shrink-0 synos-focus-btn"
                                     >
                                         <span>Edit</span>
                                         <ChevronDown className="w-3.5 h-3.5 text-slate-400 -rotate-90" />
@@ -1998,11 +2065,36 @@ export function BillingSummary({
                                         {hasDiscountApplied && (
                                             <button
                                                 type="button"
+                                                id="btn-minimize-b2b-discount"
                                                 onClick={() => {
                                                     setIsB2BExpanded(false);
                                                     setIsB2BEditing(false);
                                                 }}
-                                                className="text-xs font-bold text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-100 flex items-center gap-1 cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/5"
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Tab') {
+                                                        if (!e.shiftKey) {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            const flatBtn = document.getElementById('btn-b2b-type-flat') || document.getElementById('input-b2b-discount');
+                                                            if (flatBtn) flatBtn.focus();
+                                                        } else {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            const outsourceBtn = document.getElementById('btn-outsource-test');
+                                                            if (outsourceBtn && outsourceBtn.offsetParent !== null) {
+                                                                outsourceBtn.focus();
+                                                            } else {
+                                                                const allTestButtons = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]'));
+                                                                if (allTestButtons.length > 0) {
+                                                                    allTestButtons[allTestButtons.length - 1].focus();
+                                                                } else {
+                                                                    document.getElementById('input-test-search')?.focus();
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }}
+                                                className="text-xs font-bold text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-100 flex items-center gap-1 cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 synos-focus-btn"
                                             >
                                                 <span>Minimize</span>
                                                 <ChevronDown className="w-3.5 h-3.5 rotate-180" />
@@ -2041,7 +2133,7 @@ export function BillingSummary({
                                                             }
                                                         }}
                                                         className={cn(
-                                                            "px-4 py-2 rounded-lg text-xs sm:text-sm font-extrabold transition-all cursor-pointer shadow-xs",
+                                                            "px-4 py-2 rounded-lg text-xs sm:text-sm font-extrabold transition-all cursor-pointer shadow-xs synos-focus-btn",
                                                             b2bDiscountType === 'FLAT'
                                                                 ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10"
                                                                 : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"
@@ -2065,7 +2157,7 @@ export function BillingSummary({
                                                             }
                                                         }}
                                                         className={cn(
-                                                            "px-4 py-2 rounded-lg text-xs sm:text-sm font-extrabold transition-all cursor-pointer shadow-xs",
+                                                            "px-4 py-2 rounded-lg text-xs sm:text-sm font-extrabold transition-all cursor-pointer shadow-xs synos-focus-btn",
                                                             b2bDiscountType === 'PERCENTAGE'
                                                                 ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10"
                                                                 : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"
@@ -2119,6 +2211,30 @@ export function BillingSummary({
                                                             if (e.key === 'Enter') {
                                                                 e.preventDefault();
                                                                 handleSaveB2BDiscount(e.target.value, b2bDiscountType);
+                                                                setIsB2BExpanded(false);
+                                                                setIsB2BEditing(false);
+                                                                setTimeout(() => {
+                                                                    document.getElementById('btn-edit-b2b-discount')?.focus();
+                                                                }, 50);
+                                                            } else if (e.key === 'Tab') {
+                                                                if (isB2BEditing && !isProcessing) {
+                                                                    handleSaveB2BDiscount(e.target.value, b2bDiscountType);
+                                                                }
+                                                                if (!e.shiftKey) {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                    const docInput = document.getElementById('input-b2b-doctor-search') ||
+                                                                                     document.getElementById('btn-unified-action') ||
+                                                                                     document.getElementById('btn-confirm-visit');
+                                                                    if (docInput) docInput.focus();
+                                                                } else {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                    const toggleBtn = document.getElementById('btn-b2b-type-percent') ||
+                                                                                      document.getElementById('btn-b2b-type-flat') ||
+                                                                                      document.getElementById('btn-minimize-b2b-discount');
+                                                                    if (toggleBtn) toggleBtn.focus();
+                                                                }
                                                             }
                                                         }}
                                                         className={cn(

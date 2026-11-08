@@ -753,36 +753,40 @@ export function VisitDetails({
 
     // Enterprise Financials Focus Target Resolver
     const findFirstFinancialsTarget = () => {
-        // 1. Standard Concession Trigger or open Concession input
+        // 1. Standard Concession Trigger or open Concession input (Direct / Standard Mode)
         const standardConcession = document.querySelector('[data-concession-trigger="true"]') ||
                                    document.getElementById('input-flat-concession') ||
                                    document.querySelector('[data-financials-focus="true"]');
         if (standardConcession && standardConcession.offsetParent !== null) return standardConcession;
 
-        // 2. Standard Settlement Mode buttons (Full / Partial)
+        // 2. Corporate B2B Mode controls (B2B Discount Edit button if minimized, or Input if expanded)
+        const b2bEditDiscount = document.getElementById('btn-edit-b2b-discount');
+        if (b2bEditDiscount && b2bEditDiscount.offsetParent !== null) return b2bEditDiscount;
+        const b2bDiscount = document.getElementById('input-b2b-discount');
+        if (b2bDiscount && b2bDiscount.offsetParent !== null) return b2bDiscount;
+
+        // 3. Standard Settlement Mode buttons (Full / Partial)
         const settlementFull = document.getElementById('btn-settlement-full');
         if (settlementFull && settlementFull.offsetParent !== null) return settlementFull;
         const settlementPartial = document.getElementById('btn-settlement-partial');
         if (settlementPartial && settlementPartial.offsetParent !== null) return settlementPartial;
 
-        // 3. Corporate B2B Mode controls (Discount / Tariff input & Doctor search)
-        const b2bDiscount = document.getElementById('input-b2b-discount');
-        if (b2bDiscount && b2bDiscount.offsetParent !== null) return b2bDiscount;
+        // 4. Corporate B2B Mode controls (Doctor search)
         const b2bDoctor = document.getElementById('input-b2b-doctor-search');
         if (b2bDoctor && b2bDoctor.offsetParent !== null) return b2bDoctor;
 
-        // 4. Payment method selector (Cash/UPI/Card)
+        // 5. Payment method selector (Cash/UPI/Card)
         const paymentMethod = document.querySelector('[data-payment-method="true"]');
         if (paymentMethod && paymentMethod.offsetParent !== null) return paymentMethod;
 
-        // 5. Any active focusable inside the Financials container
+        // 6. Any active focusable inside the Financials container
         const finContainer = document.getElementById('synos-financials-container');
         if (finContainer) {
             const candidate = finContainer.querySelector('input:not([disabled]):not([type="hidden"]), button:not([disabled]), [tabindex="0"]');
             if (candidate && candidate.offsetParent !== null) return candidate;
         }
 
-        // 6. Action button at modal bottom (e.g. Confirm Corporate B2B Bill / Confirm Visit)
+        // 7. Action button at modal bottom (e.g. Confirm Corporate B2B Bill / Confirm Visit)
         const actionBtn = document.getElementById('btn-unified-action') || 
                           document.getElementById('btn-confirm-visit') ||
                           document.querySelector('[data-action-submit="true"]');
@@ -1641,18 +1645,25 @@ export function VisitDetails({
                                 } else if (e.key === 'Tab') {
                                     setIsSearchFocused(false);
                                     if (!e.shiftKey) {
-                                        // Forward Tab: When done entering tests, transition directly to Outsource Test or Financials
-                                        const outsourceBtn = document.getElementById('btn-outsource-test');
-                                        if (outsourceBtn && outsourceBtn.offsetParent !== null) {
+                                        // Forward Tab: Focus on first test remove button if tests exist, else Outsource Test or Financials
+                                        const allTestButtons = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]'));
+                                        if (allTestButtons.length > 0) {
                                             e.preventDefault();
                                             e.stopPropagation();
-                                            outsourceBtn.focus();
+                                            allTestButtons[0].focus();
                                         } else {
-                                            const finTarget = findFirstFinancialsTarget();
-                                            if (finTarget) {
+                                            const outsourceBtn = document.getElementById('btn-outsource-test');
+                                            if (outsourceBtn && outsourceBtn.offsetParent !== null) {
                                                 e.preventDefault();
                                                 e.stopPropagation();
-                                                finTarget.focus();
+                                                outsourceBtn.focus();
+                                            } else {
+                                                const finTarget = findFirstFinancialsTarget();
+                                                if (finTarget) {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    finTarget.focus();
+                                                }
                                             }
                                         }
                                     } else {
