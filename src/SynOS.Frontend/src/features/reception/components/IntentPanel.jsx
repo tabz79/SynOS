@@ -2760,8 +2760,8 @@ export function IntentPanel({ onVisitUpdated }) {
                                                 "rounded-2xl border transition-all flex flex-col justify-between shrink-0",
                                                 isPayerModeCollapsed ? "p-3 sm:p-3.5 space-y-2" : "p-3.5 sm:p-4 space-y-2.5",
                                                 isDark
-                                                    ? "bg-zinc-900/90 border-zinc-800 shadow-xl"
-                                                    : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"
+                                                    ? "bg-zinc-900 border-zinc-800 shadow-xl"
+                                                    : "bg-gradient-to-b from-[#DCE5EE] via-[#D2DFE9] to-[#C7D6E2] border border-[#B3C5D5] shadow-[0_8px_24px_rgba(15,35,60,0.08),inset_0_1px_0_rgba(255,255,255,0.7)]"
                                             )}
                                         >
                                             <div className="flex items-center justify-between">

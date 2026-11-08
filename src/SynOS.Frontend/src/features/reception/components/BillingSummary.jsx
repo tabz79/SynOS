@@ -316,7 +316,7 @@ export function BillingSummary({
     const ui = isDark ? {
         indicator: "bg-slate-600 text-white border-transparent",
         headerText: "text-base sm:text-lg font-bold text-white tracking-normal",
-        container: "rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-xl p-3.5 sm:p-4 space-y-2.5",
+        container: "rounded-2xl bg-zinc-900 border border-zinc-800 shadow-xl p-3.5 sm:p-4 space-y-2.5",
         rowLabel: "text-xs sm:text-sm font-medium text-zinc-400",
         rowValue: "text-xs sm:text-sm font-mono font-bold text-zinc-100",
         netLabel: "text-sm sm:text-base font-bold text-white",
@@ -329,7 +329,7 @@ export function BillingSummary({
     } : {
         indicator: "bg-slate-500 text-white border-transparent shadow-xs",
         headerText: "text-base sm:text-lg font-bold text-slate-900 tracking-normal",
-        container: "rounded-2xl bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF] p-3.5 sm:p-4 space-y-2.5",
+        container: "rounded-2xl bg-gradient-to-b from-[#DCE5EE] via-[#D2DFE9] to-[#C7D6E2] border border-[#B3C5D5] shadow-[0_8px_24px_rgba(15,35,60,0.08),inset_0_1px_0_rgba(255,255,255,0.7)] p-3.5 sm:p-4 space-y-2.5",
         rowLabel: "text-xs sm:text-sm font-medium text-slate-600",
         rowValue: "text-xs sm:text-sm font-mono font-bold text-slate-900",
         netLabel: "text-sm sm:text-base font-bold text-slate-900",
@@ -1027,7 +1027,10 @@ export function BillingSummary({
                     return (
                         <>
                             {/* Unified Financials Summary Card (Referral Header + 3-Column Ledger Grid) */}
-                            <div className="p-4 sm:p-5 rounded-2xl bg-slate-100/80 dark:bg-zinc-800/70 border border-slate-200/90 dark:border-zinc-700/80 shadow-2xs space-y-3.5">
+                            <div className={cn(
+                                "p-4 sm:p-5 rounded-2xl border space-y-3.5 shadow-xs transition-all",
+                                isDark ? "bg-zinc-850 border-zinc-700/80 text-zinc-100" : "bg-white border-slate-200/90 text-slate-900"
+                            )}>
                                 {/* Top Row: Referral Strip with Integrated Discount Button */}
                                 <div className="flex items-center justify-between gap-3 min-w-0">
                                     <div className="flex items-center gap-2 min-w-0">
@@ -1620,7 +1623,7 @@ export function BillingSummary({
                                 return (
                                     <div ref={concessionEditorRef} className={cn(
                                         "p-3.5 sm:p-4 rounded-2xl border space-y-3 shadow-xs transition-all duration-200 animate-in fade-in slide-in-from-top-2",
-                                        isDark ? "bg-zinc-800/70 border-zinc-700/80 text-zinc-100" : "bg-slate-100/80 border-slate-200/90 text-slate-900"
+                                        isDark ? "bg-zinc-850 border-zinc-700/80 text-zinc-100" : "bg-white border-slate-200/90 text-slate-900"
                                     )}>
                                         {/* Header: Tag Icon + Title + Mode Switcher + Minimize Button */}
                                         <div className="flex items-center justify-between pb-0.5">
@@ -1846,7 +1849,7 @@ export function BillingSummary({
                                                     </div>
 
                                                     {/* Tile 3 (Bottom-Left): Total Amount */}
-                                                    <div className="rounded-2xl border border-slate-200/90 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 p-3 sm:p-3.5 flex items-center gap-3.5 shadow-2xs h-16">
+                                                    <div className="rounded-2xl border border-blue-200/80 dark:border-blue-800/60 bg-blue-50/60 dark:bg-blue-950/30 p-3 sm:p-3.5 flex items-center gap-3.5 shadow-2xs h-16">
                                                         <div className="w-11 h-11 rounded-2xl bg-[#E8F1FC] dark:bg-blue-950/40 text-[#0D6EFD] dark:text-blue-400 border border-blue-100 dark:border-blue-900/40 flex items-center justify-center shrink-0 shadow-2xs">
                                                             <FlaskConical className="w-6 h-6 stroke-[2]" />
                                                         </div>
@@ -2227,7 +2230,7 @@ export function BillingSummary({
                             {isB2BExpanded && (
                                 <div className={cn(
                                     "p-3.5 sm:p-4 rounded-2xl border space-y-3 shadow-xs transition-all duration-200",
-                                    isDark ? "bg-zinc-800/70 border-zinc-700/80 text-zinc-100" : "bg-slate-100/80 border-slate-200/90 text-slate-900"
+                                    isDark ? "bg-zinc-850 border-zinc-700/80 text-zinc-100" : "bg-white border-slate-200/90 text-slate-900"
                                 )}>
                                     {/* Header: Tag Icon + Title + Minimize Button */}
                                     <div className="flex items-center justify-between pb-0.5">
@@ -2397,7 +2400,7 @@ export function BillingSummary({
                                         </div>
 
                                         {/* Tile 3 (Bottom-Left): Standard Lab Tariff */}
-                                        <div className="rounded-2xl border border-slate-200/90 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 p-3 sm:p-3.5 flex items-center gap-3.5 shadow-2xs h-16">
+                                        <div className="rounded-2xl border border-blue-200/80 dark:border-blue-800/60 bg-blue-50/60 dark:bg-blue-950/30 p-3 sm:p-3.5 flex items-center gap-3.5 shadow-2xs h-16">
                                             <div className="w-11 h-11 rounded-2xl bg-[#E8F1FC] dark:bg-blue-950/40 text-[#0D6EFD] dark:text-blue-400 border border-blue-100 dark:border-blue-900/40 flex items-center justify-center shrink-0 shadow-2xs">
                                                 <FlaskConical className="w-6 h-6 stroke-[2]" />
                                             </div>
@@ -2628,7 +2631,7 @@ export function BillingSummary({
                         </div>
                         
                         {/* Segmented control: Full Settlement vs Partial vs Full Due */}
-                        <div className="inline-flex w-full p-1 rounded-xl bg-[#DFEAF3] dark:bg-zinc-800 border border-slate-200/60 gap-1">
+                        <div className="inline-flex w-full p-1 rounded-xl bg-slate-300/60 dark:bg-zinc-800 border border-slate-300/80 dark:border-zinc-700 gap-1 shadow-2xs">
                             <button
                                 id="btn-settlement-full"
                                 type="button"

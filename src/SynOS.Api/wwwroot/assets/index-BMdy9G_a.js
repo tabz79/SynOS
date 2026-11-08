@@ -36601,14 +36601,14 @@ Minimum version required to store current data is: ` + P + `.
     }, [
       p
     ]), C = Math.max(0, I - p), B = s ? Number(a) || 0 : C, Q = Math.max(0, C - B), N = Number(c) || 0, v = Number(d) || 0, F = N + v, j = p - F, G = f ? {
-      pod: "bg-zinc-900/90 border-zinc-800",
-      recessed: "bg-zinc-950/80 border-zinc-800",
+      pod: "bg-zinc-850 border-zinc-750 shadow-xs",
+      recessed: "bg-zinc-900 border-zinc-800 shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]",
       input: "bg-zinc-900 border-zinc-700 text-white placeholder-zinc-500 focus:border-synos-primary",
       chipActive: "bg-white text-zinc-900 border-white shadow-xs font-bold",
       chipInactive: "bg-zinc-800 text-zinc-300 border-zinc-700 hover:bg-zinc-750"
     } : {
-      pod: "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border-white/90 shadow-[0_4px_16px_rgba(15,35,60,0.05)]",
-      recessed: "bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] border-[#CCDCE8] shadow-[inset_0_1px_3px_rgba(15,35,60,0.06),0_1px_0_rgba(255,255,255,0.7)]",
+      pod: "bg-white border-slate-200/90 shadow-xs",
+      recessed: "bg-gradient-to-b from-[#F2F7FA] to-[#E8F1F7] border-[#D0DFEB] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04)]",
       input: "bg-white border-[#CBD5E1] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04)] text-slate-900 placeholder-slate-400 focus:border-blue-500",
       chipActive: "bg-slate-900 text-white border-slate-900 shadow-xs font-bold",
       chipInactive: "bg-white/90 text-slate-700 border-slate-200/90 hover:bg-slate-100 shadow-2xs"
@@ -37230,7 +37230,7 @@ Minimum version required to store current data is: ` + P + `.
     const { theme: Nr } = Ki(), hr = Nr === "dark", Kr = hr ? {
       indicator: "bg-slate-600 text-white border-transparent",
       headerText: "text-base sm:text-lg font-bold text-white tracking-normal",
-      container: "rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-xl p-3.5 sm:p-4 space-y-2.5",
+      container: "rounded-2xl bg-zinc-900 border border-zinc-800 shadow-xl p-3.5 sm:p-4 space-y-2.5",
       rowLabel: "text-xs sm:text-sm font-medium text-zinc-400",
       input: "bg-zinc-950/70 border-zinc-800 text-xs sm:text-sm focus:border-synos-primary rounded-xl h-9 sm:h-10 px-3 tracking-normal",
       method: {
@@ -37240,7 +37240,7 @@ Minimum version required to store current data is: ` + P + `.
     } : {
       indicator: "bg-slate-500 text-white border-transparent shadow-xs",
       headerText: "text-base sm:text-lg font-bold text-slate-900 tracking-normal",
-      container: "rounded-2xl bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF] p-3.5 sm:p-4 space-y-2.5",
+      container: "rounded-2xl bg-gradient-to-b from-[#DCE5EE] via-[#D2DFE9] to-[#C7D6E2] border border-[#B3C5D5] shadow-[0_8px_24px_rgba(15,35,60,0.08),inset_0_1px_0_rgba(255,255,255,0.7)] p-3.5 sm:p-4 space-y-2.5",
       rowLabel: "text-xs sm:text-sm font-medium text-slate-600",
       input: "bg-white/90 border border-[#D5E2EC] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04)] text-xs sm:text-sm focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all rounded-xl h-9 sm:h-10 px-3 tracking-normal",
       method: {
@@ -37685,7 +37685,7 @@ Minimum version required to store current data is: ` + P + `.
               return n.jsxs(n.Fragment, {
                 children: [
                   n.jsxs("div", {
-                    className: "p-4 sm:p-5 rounded-2xl bg-slate-100/80 dark:bg-zinc-800/70 border border-slate-200/90 dark:border-zinc-700/80 shadow-2xs space-y-3.5",
+                    className: Ce("p-4 sm:p-5 rounded-2xl border space-y-3.5 shadow-xs transition-all", hr ? "bg-zinc-850 border-zinc-700/80 text-zinc-100" : "bg-white border-slate-200/90 text-slate-900"),
                     children: [
                       n.jsxs("div", {
                         className: "flex items-center justify-between gap-3 min-w-0",
@@ -38298,7 +38298,7 @@ Minimum version required to store current data is: ` + P + `.
                     const Dn = Math.max(0, It - Ft);
                     return n.jsxs("div", {
                       ref: se,
-                      className: Ce("p-3.5 sm:p-4 rounded-2xl border space-y-3 shadow-xs transition-all duration-200 animate-in fade-in slide-in-from-top-2", hr ? "bg-zinc-800/70 border-zinc-700/80 text-zinc-100" : "bg-slate-100/80 border-slate-200/90 text-slate-900"),
+                      className: Ce("p-3.5 sm:p-4 rounded-2xl border space-y-3 shadow-xs transition-all duration-200 animate-in fade-in slide-in-from-top-2", hr ? "bg-zinc-850 border-zinc-700/80 text-zinc-100" : "bg-white border-slate-200/90 text-slate-900"),
                       children: [
                         n.jsxs("div", {
                           className: "flex items-center justify-between pb-0.5",
@@ -38473,7 +38473,7 @@ Minimum version required to store current data is: ` + P + `.
                                   ]
                                 }),
                                 n.jsxs("div", {
-                                  className: "rounded-2xl border border-slate-200/90 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 p-3 sm:p-3.5 flex items-center gap-3.5 shadow-2xs h-16",
+                                  className: "rounded-2xl border border-blue-200/80 dark:border-blue-800/60 bg-blue-50/60 dark:bg-blue-950/30 p-3 sm:p-3.5 flex items-center gap-3.5 shadow-2xs h-16",
                                   children: [
                                     n.jsx("div", {
                                       className: "w-11 h-11 rounded-2xl bg-[#E8F1FC] dark:bg-blue-950/40 text-[#0D6EFD] dark:text-blue-400 border border-blue-100 dark:border-blue-900/40 flex items-center justify-center shrink-0 shadow-2xs",
@@ -38881,7 +38881,7 @@ Minimum version required to store current data is: ` + P + `.
                 className: "space-y-3",
                 children: [
                   Ar && n.jsxs("div", {
-                    className: Ce("p-3.5 sm:p-4 rounded-2xl border space-y-3 shadow-xs transition-all duration-200", hr ? "bg-zinc-800/70 border-zinc-700/80 text-zinc-100" : "bg-slate-100/80 border-slate-200/90 text-slate-900"),
+                    className: Ce("p-3.5 sm:p-4 rounded-2xl border space-y-3 shadow-xs transition-all duration-200", hr ? "bg-zinc-850 border-zinc-700/80 text-zinc-100" : "bg-white border-slate-200/90 text-slate-900"),
                     children: [
                       n.jsxs("div", {
                         className: "flex items-center justify-between pb-0.5",
@@ -39028,7 +39028,7 @@ Minimum version required to store current data is: ` + P + `.
                             ]
                           }),
                           n.jsxs("div", {
-                            className: "rounded-2xl border border-slate-200/90 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 p-3 sm:p-3.5 flex items-center gap-3.5 shadow-2xs h-16",
+                            className: "rounded-2xl border border-blue-200/80 dark:border-blue-800/60 bg-blue-50/60 dark:bg-blue-950/30 p-3 sm:p-3.5 flex items-center gap-3.5 shadow-2xs h-16",
                             children: [
                               n.jsx("div", {
                                 className: "w-11 h-11 rounded-2xl bg-[#E8F1FC] dark:bg-blue-950/40 text-[#0D6EFD] dark:text-blue-400 border border-blue-100 dark:border-blue-900/40 flex items-center justify-center shrink-0 shadow-2xs",
@@ -39260,7 +39260,7 @@ Minimum version required to store current data is: ` + P + `.
                   ]
                 }),
                 n.jsxs("div", {
-                  className: "inline-flex w-full p-1 rounded-xl bg-[#DFEAF3] dark:bg-zinc-800 border border-slate-200/60 gap-1",
+                  className: "inline-flex w-full p-1 rounded-xl bg-slate-300/60 dark:bg-zinc-800 border border-slate-300/80 dark:border-zinc-700 gap-1 shadow-2xs",
                   children: [
                     n.jsxs("button", {
                       id: "btn-settlement-full",
@@ -45949,7 +45949,7 @@ Minimum version required to store current data is: ` + P + `.
                           children: [
                             n.jsxs("div", {
                               ref: l,
-                              className: Ce("rounded-2xl border transition-all flex flex-col justify-between shrink-0", la ? "p-3 sm:p-3.5 space-y-2" : "p-3.5 sm:p-4 space-y-2.5", Vn ? "bg-zinc-900/90 border-zinc-800 shadow-xl" : "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border border-white/90 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.03),inset_0_1px_0_#FFFFFF]"),
+                              className: Ce("rounded-2xl border transition-all flex flex-col justify-between shrink-0", la ? "p-3 sm:p-3.5 space-y-2" : "p-3.5 sm:p-4 space-y-2.5", Vn ? "bg-zinc-900 border-zinc-800 shadow-xl" : "bg-gradient-to-b from-[#DCE5EE] via-[#D2DFE9] to-[#C7D6E2] border border-[#B3C5D5] shadow-[0_8px_24px_rgba(15,35,60,0.08),inset_0_1px_0_rgba(255,255,255,0.7)]"),
                               children: [
                                 n.jsxs("div", {
                                   className: "flex items-center justify-between",

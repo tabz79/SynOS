@@ -78,14 +78,14 @@ export function PosCashTenderModule({
     const splitDiff = netBill - splitTotal;
 
     const ui = isDark ? {
-        pod: "bg-zinc-900/90 border-zinc-800",
-        recessed: "bg-zinc-950/80 border-zinc-800",
+        pod: "bg-zinc-850 border-zinc-750 shadow-xs",
+        recessed: "bg-zinc-900 border-zinc-800 shadow-[inset_0_1px_2px_rgba(0,0,0,0.3)]",
         input: "bg-zinc-900 border-zinc-700 text-white placeholder-zinc-500 focus:border-synos-primary",
         chipActive: "bg-white text-zinc-900 border-white shadow-xs font-bold",
         chipInactive: "bg-zinc-800 text-zinc-300 border-zinc-700 hover:bg-zinc-750"
     } : {
-        pod: "bg-gradient-to-b from-[#F2F7FA] via-[#EEF5F9] to-[#E5EFF5] border-white/90 shadow-[0_4px_16px_rgba(15,35,60,0.05)]",
-        recessed: "bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] border-[#CCDCE8] shadow-[inset_0_1px_3px_rgba(15,35,60,0.06),0_1px_0_rgba(255,255,255,0.7)]",
+        pod: "bg-white border-slate-200/90 shadow-xs",
+        recessed: "bg-gradient-to-b from-[#F2F7FA] to-[#E8F1F7] border-[#D0DFEB] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04)]",
         input: "bg-white border-[#CBD5E1] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04)] text-slate-900 placeholder-slate-400 focus:border-blue-500",
         chipActive: "bg-slate-900 text-white border-slate-900 shadow-xs font-bold",
         chipInactive: "bg-white/90 text-slate-700 border-slate-200/90 hover:bg-slate-100 shadow-2xs"
