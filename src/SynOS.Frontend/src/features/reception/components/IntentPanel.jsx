@@ -5,6 +5,7 @@ import { PatientIdentification } from './PatientIdentification'
 import { RichPatientCard } from '@/components/patient/RichPatientCard'
 import { VisitDetails } from './VisitDetails'
 import { BillingSummary, extractB2BInfo } from './BillingSummary'
+import { ReceptionNotificationCenter } from './ReceptionNotificationCenter'
 import { cn } from '@/lib/utils'
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { ReceptionApi, fetchReferralPartnersCached, clearReceptionMasterCaches } from '@/api/reception'
@@ -934,6 +935,7 @@ export function IntentPanel({ onVisitUpdated }) {
             token: tokenToPrint,
             isPrepaid: isPrepaid || billingMode === 'PrepaidPartner',
             isInsurance: billingMode === 'Insurance',
+            paymentMethod: isPrepaid ? "Corporate B2B Prepaid" : (isSplitPayment ? "Split (Cash + UPI)" : (snapshot?.billing?.paymentMethod || paymentMethod || "Cash")),
             changeDue: finalChangeDue,
             tenderedAmount: Number(tenderedAmount || postProcessingSession?.tenderedAmount || 0),
             isChangeRetainedAsDue: Boolean(isChangeRetainedAsDue || postProcessingSession?.isChangeRetainedAsDue || finalChangeDue > 0),
@@ -1660,85 +1662,11 @@ export function IntentPanel({ onVisitUpdated }) {
 
     return (
         <>
-            {/* iOS Floating Notification & Audit Rail (Left 15% Viewport) */}
-            {(hasPatient || isCorrectionIntent) && (
-                <div className="fixed left-3.5 right-[85.5vw] top-[64px] bottom-4 hidden xl:flex flex-col gap-3 z-40 pointer-events-none select-none overflow-y-auto no-scrollbar">
-                    {/* Active Hints (Floating iOS style) */}
-                    {activeHints.map(hint => (
-                        <div 
-                            key={hint.id}
-                            className="pointer-events-auto rounded-2xl p-4 bg-slate-200/95 dark:bg-zinc-800/95 backdrop-blur-xl border border-slate-300 dark:border-zinc-700 shadow-[0_14px_36px_rgba(15,35,60,0.20)] space-y-2.5 animate-in fade-in slide-in-from-left-4 duration-300 relative group"
-                        >
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2.5 min-w-0">
-                                    <div className="w-7 h-7 rounded-lg bg-blue-600/15 text-blue-700 dark:text-blue-300 flex items-center justify-center font-bold text-sm shrink-0">
-                                        💡
-                                    </div>
-                                    <span className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white truncate">
-                                        {hint.title}
-                                    </span>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() => setActiveHints(prev => prev.filter(h => h.id !== hint.id))}
-                                    className="text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white p-1 rounded-lg hover:bg-slate-300/60 dark:hover:bg-zinc-700 cursor-pointer transition-colors shrink-0"
-                                    title="Dismiss"
-                                >
-                                    <X className="w-4 h-4" />
-                                </button>
-                            </div>
-                            <p className="text-xs sm:text-[14px] font-semibold text-slate-800 dark:text-zinc-100 leading-snug">
-                                {hint.message}
-                            </p>
-                            <div className="text-[11px] font-mono text-slate-500 dark:text-zinc-400 text-right">
-                                just now
-                            </div>
-                        </div>
-                    ))}
-
-                    {/* Audit History Stack */}
-                    {snapshot?.correctionHistory && snapshot.correctionHistory.length > 0 && (
-                        <div className="space-y-2 pointer-events-auto mt-1">
-                            <div className="flex items-center justify-between px-1.5 py-0.5 text-xs font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wider">
-                                <span className="flex items-center gap-1.5">
-                                    <History className="w-4 h-4 text-synos-primary" />
-                                    Audit History ({snapshot.correctionHistory.length})
-                                </span>
-                            </div>
-                            <div className="space-y-2">
-                                {snapshot.correctionHistory.map((h, idx) => (
-                                    <div 
-                                        key={h.correctionId || idx}
-                                        className="rounded-2xl p-3 bg-slate-200/90 dark:bg-zinc-800/90 backdrop-blur-xl border border-slate-300/80 dark:border-zinc-700 shadow-[0_8px_24px_rgba(15,35,60,0.12)] space-y-1.5 transition-all hover:bg-slate-200 dark:hover:bg-zinc-800"
-                                    >
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-1.5 min-w-0">
-                                                <div className="w-4 h-4 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-[9px] shrink-0">
-                                                    ✓
-                                                </div>
-                                                <span className="text-xs sm:text-[13px] font-bold text-slate-900 dark:text-white truncate">
-                                                    {h.createdByName || "Staff Desk"}
-                                                </span>
-                                            </div>
-                                            <span className="text-[10px] font-mono text-slate-400 dark:text-zinc-500 shrink-0">
-                                                {new Date(h.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-                                            </span>
-                                        </div>
-                                        <div className="text-xs font-semibold text-slate-800 dark:text-zinc-200 leading-snug">
-                                            {h.actionType ? String(h.actionType).replace(/([A-Z])/g, ' ').trim() : "Visit Amended"}
-                                        </div>
-                                        {h.reason && (
-                                            <p className="text-[11px] text-slate-500 dark:text-zinc-400 italic line-clamp-2">
-                                                "{h.reason}"
-                                            </p>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                </div>
-            )}
+            {/* Notification Center Rail (Left Viewport) */}
+            <ReceptionNotificationCenter
+                isOpen={hasPatient || isCorrectionIntent}
+                correctionHistory={snapshot?.correctionHistory}
+            />
 
         <div 
             ref={panelRef} 

@@ -13,6 +13,7 @@ import { IntentPanel } from '@/features/reception/components/IntentPanel'
 import { ReceptionExpenseDrawer } from '@/features/reception/components/ReceptionExpenseDrawer'
 import { ReceptionB2BReceivablesDrawer } from '@/features/reception/components/ReceptionB2BReceivablesDrawer'
 import { ReceptionOptionsPanel } from '@/features/reception/components/ReceptionOptionsPanel'
+import { ReceptionNotificationCenter } from '@/features/reception/components/ReceptionNotificationCenter'
 import { useReceptionDrawer } from '@/features/reception/hooks/useReceptionPanelUI'
 import { ReceptionApi, prewarmReceptionCatalogs } from '@/api/reception'
 import { FinanceApi } from '@/api/finance'
@@ -671,6 +672,11 @@ export function ReceptionScreen() {
                     )}>
                         <ActivityStream serverTime={serverTimeAnchor} />
                     </div>
+
+                    {/* Left Rail Notification Center when Options Panel is open */}
+                    <ReceptionNotificationCenter
+                        isOpen={isOptionsPanelOpen && !isIntentPanelOpen}
+                    />
 
                     {/* GPU-Accelerated Registration Panel Drawer */}
                     <IntentPanel onVisitUpdated={refreshDashboard} />

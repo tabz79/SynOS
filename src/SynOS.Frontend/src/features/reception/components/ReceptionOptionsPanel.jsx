@@ -530,7 +530,7 @@ export function ReceptionOptionsPanel({
                                         </div>
 
                                         {/* 2-Column Grid */}
-                                        <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
+                                        <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
                                             {section.items.map(item => {
                                                 const IconComponent = item.icon;
                                                 if (section.isFinance) {
@@ -540,18 +540,18 @@ export function ReceptionOptionsPanel({
                                                             href={item.path}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            className="text-left p-2.5 sm:p-3 rounded-2xl border border-slate-200/80 dark:border-zinc-800/80 bg-white/90 dark:bg-zinc-900/80 hover:bg-white dark:hover:bg-zinc-800/90 shadow-2xs hover:shadow-xs hover:border-slate-300 dark:hover:border-zinc-700 transition-all flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]"
+                                                            className="text-left p-3 sm:p-3.5 rounded-2xl border-2 border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-850 hover:bg-slate-50 dark:hover:bg-zinc-800 hover:border-slate-400 dark:hover:border-zinc-500 shadow-xs hover:shadow-sm transition-all flex items-center justify-between gap-2.5 group cursor-pointer active:scale-[0.99]"
                                                             title={`Open ${item.title} in new window`}
                                                         >
-                                                            <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                                                                <div className={cn("w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105", item.iconBg)}>
-                                                                    <IconComponent className="w-4 h-4" />
+                                                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                                                                <div className={cn("w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 border border-black/5 dark:border-white/5", item.iconBg)}>
+                                                                    <IconComponent className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
                                                                 </div>
-                                                                <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 truncate group-hover:text-synos-primary transition-colors">
+                                                                <span className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-zinc-100 truncate group-hover:text-synos-primary transition-colors tracking-tight">
                                                                     {item.title}
                                                                 </span>
                                                             </div>
-                                                            <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-700 dark:group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" />
+                                                            <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 dark:group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" />
                                                         </a>
                                                     );
                                                 }
@@ -561,24 +561,24 @@ export function ReceptionOptionsPanel({
                                                         key={item.id}
                                                         type="button"
                                                         onClick={item.onClick}
-                                                        className="text-left p-2.5 sm:p-3 rounded-2xl border border-slate-200/80 dark:border-zinc-800/80 bg-white/90 dark:bg-zinc-900/80 hover:bg-white dark:hover:bg-zinc-800/90 shadow-2xs hover:shadow-xs hover:border-slate-300 dark:hover:border-zinc-700 transition-all flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]"
+                                                        className="text-left p-3 sm:p-3.5 rounded-2xl border-2 border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-850 hover:bg-slate-50 dark:hover:bg-zinc-800 hover:border-slate-400 dark:hover:border-zinc-500 shadow-xs hover:shadow-sm transition-all flex items-center justify-between gap-2.5 group cursor-pointer active:scale-[0.99]"
                                                     >
-                                                        <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                                                            <div className={cn("w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105", item.iconBg)}>
-                                                                <IconComponent className="w-4 h-4" />
+                                                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                                                            <div className={cn("w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 border border-black/5 dark:border-white/5", item.iconBg)}>
+                                                                <IconComponent className="w-4.5 h-4.5 sm:w-5 sm:h-5" />
                                                             </div>
                                                             <div className="min-w-0 flex-1">
-                                                                <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 truncate block group-hover:text-synos-primary transition-colors">
+                                                                <span className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-zinc-100 truncate block group-hover:text-synos-primary transition-colors tracking-tight">
                                                                     {item.title}
                                                                 </span>
                                                                 {item.badge && (
-                                                                    <span className={cn("mt-0.5 inline-block px-1.5 py-0.2 rounded-full text-[9px] font-bold font-mono tracking-tight", item.badgeClass)}>
+                                                                    <span className={cn("mt-1 inline-block px-2 py-0.5 rounded-full text-[10px] font-bold font-mono tracking-tight", item.badgeClass)}>
                                                                         {item.badge}
                                                                     </span>
                                                                 )}
                                                             </div>
                                                         </div>
-                                                        <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-700 dark:group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" />
+                                                        <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 dark:group-hover:text-white group-hover:translate-x-0.5 transition-all shrink-0" />
                                                     </button>
                                                 );
                                             })}
@@ -593,13 +593,13 @@ export function ReceptionOptionsPanel({
                             <button
                                 type="button"
                                 onClick={() => setActiveView('end-shift')}
-                                className="w-full p-3.5 rounded-2xl bg-amber-500/10 hover:bg-amber-500/15 border border-amber-400/50 dark:border-amber-500/40 text-amber-950 dark:text-amber-100 transition-all flex items-center justify-between group cursor-pointer active:scale-[0.99] shadow-xs"
+                                className="w-full p-4 rounded-2xl bg-amber-500/10 hover:bg-amber-500/15 border-2 border-amber-400/80 dark:border-amber-500/70 text-amber-950 dark:text-amber-100 transition-all flex items-center justify-between group cursor-pointer active:scale-[0.99] shadow-xs"
                             >
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0 transition-transform group-hover:scale-105">
-                                        <UserCheck className="w-4 h-4" />
+                                <div className="flex items-center gap-3.5">
+                                    <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 border border-amber-500/30">
+                                        <UserCheck className="w-5 h-5" />
                                     </div>
-                                    <span className="text-xs sm:text-sm font-bold tracking-tight text-amber-950 dark:text-amber-100">
+                                    <span className="text-sm sm:text-base font-black tracking-tight text-amber-950 dark:text-amber-100">
                                         End Shift & Handover Cash
                                     </span>
                                 </div>

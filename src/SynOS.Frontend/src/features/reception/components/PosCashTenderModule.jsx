@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { 
     IndianRupee, 
     Coins, 
@@ -76,6 +76,24 @@ export function PosCashTenderModule({
     const splitUpi = Number(splitUpiAmount) || 0;
     const splitTotal = splitCash + splitUpi;
     const splitDiff = netBill - splitTotal;
+
+    // Contextual Drawer Shortage Notification Hint dispatched to Notification Center
+    useEffect(() => {
+        if (isChangeRetainedAsDue && nominalChange > 0) {
+            window.dispatchEvent(new CustomEvent('synos:notification-hint', {
+                detail: {
+                    id: 'drawer-shortage-alert',
+                    type: 'warning',
+                    title: 'Drawer Shortage & Change Liability',
+                    message: `Physical cash of ₹${tendered} will be deposited into your counter drawer. An official Change Due liability of ₹${remainingChangeDue || nominalChange} will be recorded for this patient and routed to the Change Due & Patient Refunds Terminal.`
+                }
+            }));
+        } else {
+            window.dispatchEvent(new CustomEvent('synos:dismiss-notification-hint', {
+                detail: { id: 'drawer-shortage-alert' }
+            }));
+        }
+    }, [isChangeRetainedAsDue, nominalChange, tendered, remainingChangeDue]);
 
     const ui = isDark ? {
         pod: "bg-zinc-850 border-zinc-750 shadow-xs",
@@ -401,13 +419,17 @@ export function PosCashTenderModule({
                                     Change to Return (₹)
                                 </span>
                                 <div className={cn(
-                                    "h-12 px-4 rounded-xl border flex items-center justify-between font-mono font-black",
+                                    "h-12 px-4 rounded-xl border flex items-center justify-between font-mono font-black transition-colors",
                                     nominalChange > 0 
-                                        ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
+                                        ? (isChangeRetainedAsDue
+                                            ? "bg-rose-600 text-white border-rose-600 shadow-sm"
+                                            : "bg-emerald-600 text-white border-emerald-600 shadow-sm")
                                         : "bg-white/80 dark:bg-zinc-800 border-slate-200 dark:border-zinc-700 text-slate-400 dark:text-zinc-500"
                                 )}>
                                     <span className="text-xs sm:text-sm font-bold tracking-tight">
-                                        {nominalChange > 0 ? "Return to Patient:" : "Exact Match:"}
+                                        {nominalChange > 0 
+                                            ? (isChangeRetainedAsDue ? "Change Due:" : "Return to Patient:") 
+                                            : "Exact Match:"}
                                     </span>
                                     <span className="text-lg sm:text-xl">
                                         ₹{nominalChange.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
@@ -464,26 +486,6 @@ export function PosCashTenderModule({
                                         </span>
                                     </label>
                                 </div>
-
-                                {isChangeRetainedAsDue && (
-                                    <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/25 space-y-2 text-xs animate-in fade-in">
-                                        <div className="flex items-start gap-1.5 text-rose-900 dark:text-rose-200">
-                                            <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-                                            <p className="leading-tight text-[11px]">
-                                                Physical cash of <strong>₹{tendered}</strong> will be deposited into your counter drawer. An official <strong>Change Due liability of ₹{remainingChangeDue}</strong> will be recorded for this patient and routed to the <strong>Change Due & Patient Refunds Terminal</strong>.
-                                            </p>
-                                        </div>
-
-                                        <div className="flex items-center justify-between pt-1 border-t border-rose-500/20 text-[11px] font-bold">
-                                            <span className="text-slate-700 dark:text-zinc-300">
-                                                Change Due (Collect Later):
-                                            </span>
-                                            <span className="font-mono text-sm font-black text-rose-600 dark:text-rose-400">
-                                                ₹{remainingChangeDue.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                                            </span>
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                         )}
                     </div>

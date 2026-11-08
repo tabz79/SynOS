@@ -160,6 +160,12 @@ export function generateThermalInvoiceHtml(payload = {}) {
     const excessOverpaid = Math.max(0, totalPaid - totalAmount);
     const finalChangeDue = Math.max(explicitChangeDue, excessOverpaid);
 
+    const rawPaymentMethod = payload.paymentMethod 
+        || billingObj.paymentMethod 
+        || payload.financial?.paymentMethod 
+        || payload.visit?.paymentMethod 
+        || 'Cash';
+
     const normalizedData = {
         receiptNumber: canonicalBillNo,
         billNumber: canonicalBillNo,
@@ -182,7 +188,8 @@ export function generateThermalInvoiceHtml(payload = {}) {
             balanceDue: dueVal,
             changeDue: finalChangeDue,
             tenderedAmount: Number(payload.tenderedAmount || billingObj.tenderedAmount || payload.financial?.tenderedAmount || 0),
-            discountReason
+            discountReason,
+            paymentMethod: rawPaymentMethod
         },
         biller: {
             billedBy: billerDisplay
@@ -231,7 +238,7 @@ export function generateThermalInvoiceHtml(payload = {}) {
         const df = boxes.docBadge.fields || {};
         const dueVal = Number(normalizedData.financial.balanceDue || 0);
         const paidVal = Number(normalizedData.financial.totalPaid || 0);
-        let defaultTitle = "CASH PAYMENT RECEIPT";
+        let defaultTitle = `${String(rawPaymentMethod || 'CASH').toUpperCase()} PAYMENT RECEIPT`;
         if (dueVal > 0 && paidVal > 0) {
             defaultTitle = "PARTIAL PAYMENT RECEIPT";
         } else if (dueVal > 0 && paidVal === 0) {
@@ -377,6 +384,10 @@ export function generateThermalInvoiceHtml(payload = {}) {
                     <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 10.5px; margin-bottom: 1px;">
                         <span>Amount Received:</span>
                         <span style="font-family: monospace; text-align: right;">${totalPaidStr}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 10px; margin-bottom: 1px; color: #000000;">
+                        <span>Payment Mode:</span>
+                        <span style="font-weight: 900; text-transform: uppercase; font-family: monospace; text-align: right;">${rawPaymentMethod}</span>
                     </div>
                 ` : ''}
                 ${ff.balanceDue?.enabled !== false ? `
@@ -524,10 +535,10 @@ export function generateThermalInvoiceHtml(payload = {}) {
         ${headerHtml}
         ${badgeHtml}
         ${patientHtml}
-        ${billerHtml}
         ${itemsTableHtml}
         ${finHtml}
         ${upiQrHtml}
+        ${billerHtml}
         ${termsHtml}
     </div>
 </body>
@@ -892,9 +903,9 @@ export function generateThermalPrepaidSlipHtml(payload = {}) {
         ${headerHtml}
         ${badgeHtml}
         ${patientHtml}
-        ${billerHtml}
         ${itemsTableHtml}
         ${prepaidNoticeHtml}
+        ${billerHtml}
         ${termsHtml}
     </div>
 </body>
@@ -1267,9 +1278,9 @@ export function generateThermalInsuranceReceiptHtml(payload = {}) {
         ${headerHtml}
         ${badgeHtml}
         ${patientHtml}
-        ${billerHtml}
         ${itemsTableHtml}
         ${financialHtml}
+        ${billerHtml}
         ${termsHtml}
     </div>
 </body>
