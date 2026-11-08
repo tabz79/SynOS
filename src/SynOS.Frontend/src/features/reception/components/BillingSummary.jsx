@@ -1174,9 +1174,9 @@ export function BillingSummary({
                                 {/* Divider */}
                                 <div className="border-t border-slate-200/70 dark:border-zinc-700/60" />
 
-                                {/* 3-Column Financial Metrics with High Legibility & Font Hierarchy */}
-                                <div className="grid grid-cols-3 gap-3 sm:gap-6 items-baseline">
-                                    <div>
+                                {/* 3-Column Financial Metrics with Subtle Vertical Separators */}
+                                <div className="grid grid-cols-3 divide-x divide-slate-200 dark:divide-zinc-700/60 items-center">
+                                    <div className="pr-3 sm:pr-5">
                                         <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 block">
                                             Total Amount
                                         </span>
@@ -1184,7 +1184,7 @@ export function BillingSummary({
                                             ₹{grossDisplay.toLocaleString()}
                                         </span>
                                     </div>
-                                    <div>
+                                    <div className="px-3 sm:px-5">
                                         <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 block">
                                             {discountLabel}
                                         </span>
@@ -1268,7 +1268,7 @@ export function BillingSummary({
                                             )}
                                         </div>
                                     </div>
-                                    <div>
+                                    <div className="pl-3 sm:pl-5">
                                         {isPrepaid ? (
                                             <>
                                                 <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 block">

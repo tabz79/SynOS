@@ -948,44 +948,46 @@ export function VisitDetails({
                             "pt-2 border-t border-slate-200/60 dark:border-zinc-800/60 items-stretch",
                             effectiveSecondaryPartner ? "grid grid-cols-1 sm:grid-cols-2 gap-3" : "w-full"
                         )}>
-                            {/* Doctor 1: Prescribing Doctor / Consultant */}
+                            {/* Doctor 1: Prescribing Doctor / Consultant - Unified Single-Row Card */}
                             <div 
                                 onClick={() => setUserDoctorExpandedState(true)}
                                 className={cn(
-                                    "flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer group",
+                                    "flex items-center justify-between gap-3 p-3.5 sm:p-4 rounded-xl border transition-all cursor-pointer group",
                                     isDark ? "bg-zinc-800/60 border-zinc-700/60 text-zinc-100 hover:border-zinc-600" : "bg-white border border-[#D5E2EC] text-slate-900 shadow-[0_1px_3px_rgba(15,35,60,0.04)] hover:border-blue-400"
                                 )}
                             >
-                                <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.4)] shrink-0"></div>
-                                <div className="flex-1 min-w-0">
-                                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 block leading-tight">
-                                        Prescribing Doctor
-                                    </span>
-                                    <div className="flex items-center gap-2 mt-0.5">
-                                        <span className="truncate tracking-normal text-sm sm:text-base font-bold text-slate-900 dark:text-white">
-                                            {effectivePartner ? (effectivePartner.displayName || effectivePartner.name) : (snapshot?.billing?.referral?.referrerText || "Self / No Doctor")}
-                                        </span>
-                                        {effectivePartner && effectiveSecondaryPartner && (
-                                            <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#FFF8EE] text-[#9A6B2F] dark:bg-amber-950/30 dark:text-amber-300 font-bold border border-[#F5E2C8] dark:border-amber-900/40 shrink-0">
-                                                Commission to RMP
-                                            </span>
-                                        )}
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <div className="w-3 h-3 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)] shrink-0"></div>
+                                    <div className="truncate tracking-tight text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                                        {effectivePartner ? (effectivePartner.displayName || effectivePartner.name) : (snapshot?.billing?.referral?.referrerText || "Self / No Doctor")}
                                     </div>
+                                    {effectivePartner && effectiveSecondaryPartner && (
+                                        <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#FFF8EE] text-[#9A6B2F] dark:bg-amber-950/30 dark:text-amber-300 font-bold border border-[#F5E2C8] dark:border-amber-900/40 shrink-0">
+                                            Commission to RMP
+                                        </span>
+                                    )}
                                 </div>
-                                {canEditReferral && effectivePartner && (
-                                    <button
-                                        type="button"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleRemoveReferral();
-                                        }}
-                                        disabled={isProcessing}
-                                        className="text-zinc-400 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors shrink-0"
-                                        title="Remove Primary Doctor"
-                                    >
-                                        <X className="w-3.5 h-3.5" />
-                                    </button>
-                                )}
+                                <div className="flex items-center gap-2.5 shrink-0">
+                                    {effectivePartner && (
+                                        <span className="text-xs font-bold px-2.5 py-1 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                                            {effectivePartner.partnerType || 'Doctor'}
+                                        </span>
+                                    )}
+                                    {canEditReferral && effectivePartner && (
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleRemoveReferral();
+                                            }}
+                                            disabled={isProcessing}
+                                            className="text-zinc-400 hover:text-red-500 p-1 hover:bg-red-500/10 rounded transition-colors shrink-0"
+                                            title="Remove Primary Doctor"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Doctor 2: RMP Doctor / Referrer (Only rendered if secondary partner exists) */}
@@ -1031,55 +1033,57 @@ export function VisitDetails({
                     ) : (
                         /* EXPANDED: FULL 2-TIER STACKED VIEW */
                         <div className="pt-2 border-t border-slate-200/60 dark:border-zinc-800/60 space-y-4">
-                            {/* 1. PRIMARY PRESCRIBING DOCTOR */}
+                            {/* 1. PRIMARY PRESCRIBING DOCTOR - Unified Single-Row Card */}
                             <div className="space-y-2">
-                                <div className="flex justify-between items-center">
-                                    <span className="flex items-center gap-2.5 text-base font-semibold text-slate-800 dark:text-zinc-200 tracking-normal">
-                                        <span>Prescribing Doctor / Referrer</span>
-                                        <span className="text-xs px-2.5 py-1 rounded-md bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 font-semibold border border-blue-200/60 dark:border-blue-900/60 tracking-normal">
-                                            Primary (On Reports & Bills)
+                                {!effectivePartner && (
+                                    <div className="flex justify-between items-center">
+                                        <span className="flex items-center gap-2.5 text-base font-semibold text-slate-800 dark:text-zinc-200 tracking-normal">
+                                            <span>Prescribing Doctor / Referrer</span>
+                                            <span className="text-xs px-2.5 py-1 rounded-md bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 font-semibold border border-blue-200/60 dark:border-blue-900/60 tracking-normal">
+                                                Primary (On Reports & Bills)
+                                            </span>
                                         </span>
-                                    </span>
-                                    <button
-                                        id="btn-add-prescribing-doctor"
-                                        type="button"
-                                        onClick={() => onOpenModal && onOpenModal('referral')}
-                                        disabled={!canEditReferral}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Tab' && !e.shiftKey) {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                const secInput = document.getElementById('input-secondary-doctor') ||
-                                                                 document.getElementById('card-secondary-doctor') ||
-                                                                 document.getElementById('btn-add-secondary-doctor');
-                                                if (secInput) {
-                                                    secInput.focus();
-                                                } else {
-                                                    window.dispatchEvent(new CustomEvent('synos:collapse-doctor-section'));
-                                                    const testSearch = document.getElementById('input-test-search') || testSearchInputRef?.current;
-                                                    if (testSearch) {
-                                                        testSearch.focus();
-                                                        setIsSearchFocused(true);
+                                        <button
+                                            id="btn-add-prescribing-doctor"
+                                            type="button"
+                                            onClick={() => onOpenModal && onOpenModal('referral')}
+                                            disabled={!canEditReferral}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Tab' && !e.shiftKey) {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    const secInput = document.getElementById('input-secondary-doctor') ||
+                                                                     document.getElementById('card-secondary-doctor') ||
+                                                                     document.getElementById('btn-add-secondary-doctor');
+                                                    if (secInput) {
+                                                        secInput.focus();
+                                                    } else {
+                                                        window.dispatchEvent(new CustomEvent('synos:collapse-doctor-section'));
+                                                        const testSearch = document.getElementById('input-test-search') || testSearchInputRef?.current;
+                                                        if (testSearch) {
+                                                            testSearch.focus();
+                                                            setIsSearchFocused(true);
+                                                        }
+                                                    }
+                                                } else if (e.key === 'Tab' && e.shiftKey) {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    const removeBtn = document.getElementById('btn-remove-prescribing-doctor');
+                                                    if (removeBtn) {
+                                                        removeBtn.focus();
+                                                    } else {
+                                                        const docInput = document.getElementById('input-prescribing-doctor') ||
+                                                                         document.getElementById('card-prescribing-doctor');
+                                                        if (docInput) docInput.focus();
                                                     }
                                                 }
-                                            } else if (e.key === 'Tab' && e.shiftKey) {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                const removeBtn = document.getElementById('btn-remove-prescribing-doctor');
-                                                if (removeBtn) {
-                                                    removeBtn.focus();
-                                                } else {
-                                                    const docInput = document.getElementById('input-prescribing-doctor') ||
-                                                                     document.getElementById('card-prescribing-doctor');
-                                                    if (docInput) docInput.focus();
-                                                }
-                                            }
-                                        }}
-                                        className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-3 py-1.5 text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95 synos-focus-btn"
-                                    >
-                                        <Plus className="w-4 h-4" /> Add Doctor
-                                    </button>
-                                </div>
+                                            }}
+                                            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-3 py-1.5 text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95 synos-focus-btn"
+                                        >
+                                            <Plus className="w-4 h-4" /> Add Doctor
+                                        </button>
+                                    </div>
+                                )}
                                 {effectivePartner ? (
                                     <div 
                                         id="card-prescribing-doctor"
@@ -1092,8 +1096,10 @@ export function VisitDetails({
                                                 if (removeBtn) {
                                                     removeBtn.focus();
                                                 } else {
-                                                    const addBtn = document.getElementById('btn-add-prescribing-doctor');
-                                                    if (addBtn) addBtn.focus();
+                                                    const secDoc = document.getElementById('btn-add-secondary-doctor') ||
+                                                                   document.getElementById('card-secondary-doctor') ||
+                                                                   document.getElementById('input-secondary-doctor');
+                                                    if (secDoc) secDoc.focus();
                                                 }
                                             } else if (e.key === 'Tab' && e.shiftKey) {
                                                 e.preventDefault();
@@ -1104,35 +1110,29 @@ export function VisitDetails({
                                                 if (payerBtn) payerBtn.focus();
                                             }
                                         }}
-                                        className={cn("flex items-center gap-3 font-bold p-3.5 rounded-xl border cursor-pointer synos-focus-card focus:outline-none",
+                                        className={cn("flex items-center justify-between gap-3 font-semibold p-3.5 sm:p-4 rounded-xl border cursor-pointer synos-focus-card focus:outline-none",
                                         isDark ? "bg-zinc-800/60 border-zinc-700/60 text-zinc-100" : "bg-white border border-[#D5E2EC] text-slate-900 shadow-[0_1px_3px_rgba(15,35,60,0.04)]")}
                                     >
-                                        <div className={cn("w-3 h-3 rounded-full", effectivePartner.isSelf ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" : "bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.4)]")}></div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2">
-                                                <span className="truncate tracking-normal text-base font-bold text-slate-900 dark:text-white">
-                                                    {effectivePartner.displayName || effectivePartner.name || "Partner"}
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <div className={cn("w-3 h-3 rounded-full shrink-0", effectivePartner.isSelf ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" : "bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]")}></div>
+                                            <div className="truncate tracking-tight text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                                                {effectivePartner.displayName || effectivePartner.name || "Partner"}
+                                            </div>
+                                            {effectiveSecondaryPartner && (
+                                                <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#FFF8EE] text-[#9A6B2F] dark:bg-amber-950/30 dark:text-amber-300 font-bold border border-[#F5E2C8] dark:border-amber-900/40 shrink-0">
+                                                    Commission to RMP
                                                 </span>
-                                                {effectiveSecondaryPartner && (
-                                                    <span className="text-xs px-2.5 py-0.5 rounded-md bg-[#FFF8EE] text-[#9A6B2F] dark:bg-amber-950/30 dark:text-amber-300 font-bold border border-[#F5E2C8] dark:border-amber-900/40">
-                                                        Commission Routed to RMP
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <div className="text-sm text-slate-500 dark:text-zinc-400 font-medium mt-0.5">
-                                                Type: {effectivePartner.partnerType || 'Doctor'}
-                                                {!effectiveSecondaryPartner && (
-                                                    effectivePartner.isSelf 
-                                                        ? ' • No Commission' 
-                                                        : ` • Comm: ${snapshot?.billing?.referral?.commissionCutPercentage || 0}%`
-                                                )}
-                                            </div>
+                                            )}
                                         </div>
-                                        {canEditReferral && (
-                                            <button
-                                                type="button"
-                                                id="btn-remove-prescribing-doctor"
-                                                onClick={handleRemoveReferral}
+                                        <div className="flex items-center gap-2.5 shrink-0">
+                                            <span className="text-xs font-bold px-2.5 py-1 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                                                {effectivePartner.partnerType || 'Doctor'}
+                                            </span>
+                                            {canEditReferral && (
+                                                <button
+                                                    type="button"
+                                                    id="btn-remove-prescribing-doctor"
+                                                    onClick={handleRemoveReferral}
                                                 disabled={isProcessing}
                                                 tabIndex={0}
                                                 onKeyDown={(e) => {
@@ -1159,7 +1159,8 @@ export function VisitDetails({
                                             </button>
                                         )}
                                     </div>
-                                ) : (
+                                </div>
+                            ) : (
                                     <div className="space-y-2">
                                         <ReferralCombinedInput
                                             inputId="input-prescribing-doctor"
@@ -1272,24 +1273,20 @@ export function VisitDetails({
                                                 if (addDoc) addDoc.focus();
                                             }
                                         }}
-                                        className={cn("flex items-center gap-3 font-bold p-3.5 rounded-xl border cursor-pointer synos-focus-card focus:outline-none",
+                                        className={cn("flex items-center justify-between gap-3 font-semibold p-3.5 sm:p-4 rounded-xl border cursor-pointer synos-focus-card focus:outline-none",
                                         isDark ? "bg-emerald-950/20 border-emerald-900/40 text-emerald-300" : "bg-[#F4F9F6] border-[#D3E8DD] text-slate-900 shadow-2xs")}
                                     >
-                                        <div className="w-3 h-3 rounded-full bg-[#3D9970] shadow-[0_0_6px_rgba(61,153,112,0.35)]"></div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2">
-                                                <span className="truncate tracking-normal text-base font-bold text-slate-900 dark:text-white">
-                                                    {effectiveSecondaryPartner.displayName || effectiveSecondaryPartner.name}
-                                                </span>
-                                                <span className="text-xs px-2.5 py-0.5 rounded-md bg-[#E1F1E8] text-[#245E49] dark:bg-emerald-950/40 dark:text-emerald-300 font-bold border border-[#BCE2CD] dark:border-emerald-800 uppercase">
-                                                    {effectiveSecondaryPartner.partnerType || 'RMP'}
-                                                </span>
-                                            </div>
-                                            <div className="text-sm text-[#3D705C] dark:text-emerald-400/90 font-medium mt-0.5">
-                                                Commission Cut: {effectiveSecondaryPartner.commissionCutPercentage || 0}% • All referral logic & payouts route exclusively to this doctor
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <div className="w-3 h-3 rounded-full bg-[#3D9970] shadow-[0_0_6px_rgba(61,153,112,0.35)] shrink-0"></div>
+                                            <div className="truncate tracking-tight text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                                                {effectiveSecondaryPartner.displayName || effectiveSecondaryPartner.name}
                                             </div>
                                         </div>
-                                        {canEditReferral && (
+                                        <div className="flex items-center gap-2.5 shrink-0">
+                                            <span className="text-xs font-bold px-2.5 py-1 rounded-md bg-[#E1F1E8] text-[#245E49] dark:bg-emerald-950/40 dark:text-emerald-300 border border-[#BCE2CD] dark:border-emerald-800 uppercase">
+                                                {effectiveSecondaryPartner.partnerType || 'RMP'}
+                                            </span>
+                                            {canEditReferral && (
                                             <button
                                                 type="button"
                                                 id="btn-remove-secondary-doctor"
@@ -1320,7 +1317,8 @@ export function VisitDetails({
                                             </button>
                                         )}
                                     </div>
-                                ) : (
+                                </div>
+                            ) : (
                                     <div className="space-y-2">
                                         <ReferralCombinedInput
                                             inputId="input-secondary-doctor"
