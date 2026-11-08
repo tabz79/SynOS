@@ -224,6 +224,7 @@ export function BillingSummary({
     const [b2bDiscountType, setB2BDiscountType] = useState(b2bInfo.rawType);
     const [localB2BInput, setLocalB2BInput] = useState(b2bInfo.rawVal && b2bInfo.rawVal > 0 ? String(b2bInfo.rawVal) : '');
     const [isB2BEditing, setIsB2BEditing] = useState(false);
+    const [isB2BExpanded, setIsB2BExpanded] = useState(false);
 
     useEffect(() => {
         if (!isB2BEditing) {
@@ -665,6 +666,7 @@ export function BillingSummary({
                 isB2B: true
             });
             setIsB2BEditing(false);
+            if (val > 0) setIsB2BExpanded(false);
             return;
         }
 
@@ -686,6 +688,7 @@ export function BillingSummary({
                 discountValue: val
             });
             setIsB2BEditing(false);
+            if (val > 0) setIsB2BExpanded(false);
             if (onVisitUpdated) onVisitUpdated();
 
             // Seamless focus forwarding: advance to primary confirm button or next input
@@ -803,7 +806,7 @@ export function BillingSummary({
 
     if (isPrepaid) {
         displayAmountToCollect = 0;
-        amountLabel = "Amount to Collect (Prepaid Partner)";
+        amountLabel = "Amount to Collect";
     } else if (isCorporate) {
         displayAmountToCollect = 0;
         amountLabel = "Billed to Corporate (₹0 at desk)";
@@ -919,23 +922,49 @@ export function BillingSummary({
 
                 {/* 1. TOP REFERRAL & CONCESSION ACTION BAR */}
                 {(() => {
-                    const hasDiscountApplied = isCorrectionIntent 
-                        ? (Boolean(stagedDiscount) && !stagedDiscount.remove)
-                        : (Boolean(billing.appliedDiscount) && (billing.discountAmount > 0));
-
-                    const discountDisplay = isCorrectionIntent && stagedDiscount
-                        ? (stagedDiscountAmt || 0)
-                        : (billing.discountAmount || 0);
-
                     const grossDisplay = isCorrectionIntent && stagedGross !== undefined
                         ? stagedGross
-                        : (billing.grossAmount || 0);
+                        : (billing?.grossAmount || 0);
+
+                    // Contextual B2B Discount Computation
+                    const b2bInfo = extractB2BInfo(snapshot);
+                    const effectiveB2BVal = isB2BEditing 
+                        ? (Number(localB2BInput) || 0) 
+                        : (stagedDiscount?.value !== undefined && stagedDiscount.isB2B 
+                            ? Number(stagedDiscount.value) 
+                            : (Number(localB2BInput) || b2bInfo.rawVal || 0));
+
+                    let computedB2BDiscountAmt = 0;
+                    if (b2bDiscountType === 'PERCENTAGE') {
+                        const pct = Math.min(100, Math.max(0, effectiveB2BVal));
+                        computedB2BDiscountAmt = Math.round((grossDisplay * (pct / 100)) * 100) / 100;
+                    } else {
+                        computedB2BDiscountAmt = Math.min(grossDisplay, Math.max(0, effectiveB2BVal));
+                    }
+                    const computedDoctorBill = Math.max(0, grossDisplay - computedB2BDiscountAmt);
+
+                    const hasDiscountApplied = isPrepaid
+                        ? computedB2BDiscountAmt > 0
+                        : (isCorrectionIntent 
+                            ? (Boolean(stagedDiscount) && !stagedDiscount.remove)
+                            : (Boolean(billing.appliedDiscount) && (billing.discountAmount > 0)));
+
+                    const discountDisplay = isPrepaid
+                        ? computedB2BDiscountAmt
+                        : (isCorrectionIntent && stagedDiscount
+                            ? (stagedDiscountAmt || 0)
+                            : (billing.discountAmount || 0));
 
                     const taxDisplay = billing.taxAmount || 0;
 
-                    const discountReasonText = isCorrectionIntent && stagedDiscount
+                    const discountReasonText = isCorrectionIntent && stagedDiscount && !stagedDiscount.isB2B
                         ? (stagedDiscount.reason || stagedDiscount.name || (stagedDiscount.type === 'Percentage' ? `${stagedDiscount.value}%` : `₹${stagedDiscount.value}`))
                         : (billing.appliedDiscount?.reason || billing.appliedDiscount?.name || '');
+
+                    // Contextual label: "B2B Discount" for Corporate B2B (Prepaid), "Patient Discount" for Direct/Standard
+                    const discountLabel = isPrepaid 
+                        ? "B2B Discount" 
+                        : (isDirectStandard ? "Patient Discount" : "Discount");
 
                     return (
                         <>
@@ -986,61 +1015,88 @@ export function BillingSummary({
                                     </div>
 
                                     {/* Concession / Discount Trigger Button */}
-                                    {canPerformActions && !isPrepaid && (
-                                        <button
-                                            ref={concessionTriggerRef}
-                                            data-concession-trigger="true"
-                                            type="button"
-                                            disabled={!isInitialIntake}
-                                            onClick={() => {
-                                                if (isInitialIntake) {
-                                                    setIsDiscountExpanded(prev => !prev);
-                                                }
-                                            }}
-                                            onKeyDown={(e) => {
-                                                if (!isInitialIntake) return;
-                                                if (e.key === 'Tab') {
-                                                    if (!e.shiftKey) {
-                                                        if (hasDiscountApplied) {
+                                    {canPerformActions && (
+                                        !isPrepaid ? (
+                                            <button
+                                                ref={concessionTriggerRef}
+                                                data-concession-trigger="true"
+                                                type="button"
+                                                disabled={!isInitialIntake}
+                                                onClick={() => {
+                                                    if (isInitialIntake) {
+                                                        setIsDiscountExpanded(prev => !prev);
+                                                    }
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    if (!isInitialIntake) return;
+                                                    if (e.key === 'Tab') {
+                                                        if (!e.shiftKey) {
+                                                            if (hasDiscountApplied) {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                document.getElementById('btn-remove-discount')?.focus();
+                                                            }
+                                                        } else {
                                                             e.preventDefault();
                                                             e.stopPropagation();
-                                                            document.getElementById('btn-remove-discount')?.focus();
-                                                        }
-                                                    } else {
-                                                        e.preventDefault();
-                                                        e.stopPropagation();
-                                                        const outsourceBtn = document.getElementById('btn-outsource-test');
-                                                        if (outsourceBtn) outsourceBtn.focus();
-                                                        else {
-                                                            const allTestButtons = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]'));
-                                                            if (allTestButtons.length > 0) {
-                                                                allTestButtons[allTestButtons.length - 1].focus();
-                                                            } else {
-                                                                const testInput = document.getElementById('input-test-search');
-                                                                if (testInput) testInput.focus();
+                                                            const outsourceBtn = document.getElementById('btn-outsource-test');
+                                                            if (outsourceBtn) outsourceBtn.focus();
+                                                            else {
+                                                                const allTestButtons = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]'));
+                                                                if (allTestButtons.length > 0) {
+                                                                    allTestButtons[allTestButtons.length - 1].focus();
+                                                                } else {
+                                                                    const testInput = document.getElementById('input-test-search');
+                                                                    if (testInput) testInput.focus();
+                                                                }
                                                             }
                                                         }
                                                     }
-                                                }
-                                            }}
-                                            className={cn(
-                                                "px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1 transition-all border shadow-2xs shrink-0 synos-focus-btn",
-                                                !isInitialIntake
-                                                    ? "opacity-45 cursor-not-allowed bg-slate-100 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500 border-slate-200 dark:border-zinc-700 select-none"
-                                                    : (isDiscountExpanded
-                                                        ? "bg-slate-900 text-white border-slate-900 dark:bg-zinc-700 dark:border-zinc-600 shadow-xs cursor-pointer"
-                                                        : (hasDiscountApplied
-                                                            ? "bg-[#EBF5EF] dark:bg-emerald-950/30 text-[#245E49] dark:text-emerald-300 border border-[#CCE8D8] dark:border-emerald-800 hover:bg-[#DFF0E6] cursor-pointer"
-                                                            : "bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 border-[#CCDCE8] dark:border-zinc-700 hover:bg-slate-50 cursor-pointer"))
-                                            )}
-                                            title={!isInitialIntake ? "Initial registration discount is locked." : (hasDiscountApplied ? "Edit Discount" : "+ Discount")}
-                                        >
-                                            <Tag className="w-3.5 h-3.5 text-slate-500 dark:text-zinc-400" />
-                                            <span>{hasDiscountApplied ? "Edit Discount" : "+ Discount"}</span>
-                                            {isInitialIntake && (
-                                                <ChevronDown className={cn("w-3 h-3 transition-transform duration-200", isDiscountExpanded && "rotate-180")} />
-                                            )}
-                                        </button>
+                                                }}
+                                                className={cn(
+                                                    "px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1 transition-all border shadow-2xs shrink-0 synos-focus-btn",
+                                                    !isInitialIntake
+                                                        ? "opacity-45 cursor-not-allowed bg-slate-100 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500 border-slate-200 dark:border-zinc-700 select-none"
+                                                        : (isDiscountExpanded
+                                                            ? "bg-slate-900 text-white border-slate-900 dark:bg-zinc-700 dark:border-zinc-600 shadow-xs cursor-pointer"
+                                                            : (hasDiscountApplied
+                                                                ? "bg-[#EBF5EF] dark:bg-emerald-950/30 text-[#245E49] dark:text-emerald-300 border border-[#CCE8D8] dark:border-emerald-800 hover:bg-[#DFF0E6] cursor-pointer"
+                                                                : "bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 border-[#CCDCE8] dark:border-zinc-700 hover:bg-slate-50 cursor-pointer"))
+                                                )}
+                                                title={!isInitialIntake ? "Initial registration discount is locked." : (hasDiscountApplied ? "Edit Discount" : "+ Discount")}
+                                            >
+                                                <Tag className="w-3.5 h-3.5 text-slate-500 dark:text-zinc-400" />
+                                                <span>{hasDiscountApplied ? "Edit Discount" : "+ Discount"}</span>
+                                                {isInitialIntake && (
+                                                    <ChevronDown className={cn("w-3 h-3 transition-transform duration-200", isDiscountExpanded && "rotate-180")} />
+                                                )}
+                                            </button>
+                                        ) : (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setIsB2BExpanded(prev => !prev);
+                                                    if (!isB2BExpanded) {
+                                                        setTimeout(() => {
+                                                            document.getElementById('input-b2b-discount')?.focus();
+                                                        }, 50);
+                                                    }
+                                                }}
+                                                className={cn(
+                                                    "px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1 transition-all border shadow-2xs shrink-0 cursor-pointer",
+                                                    isB2BExpanded
+                                                        ? "bg-slate-900 text-white border-slate-900 dark:bg-zinc-700 dark:border-zinc-600 shadow-xs"
+                                                        : (computedB2BDiscountAmt > 0
+                                                            ? "bg-[#EBF5EF] dark:bg-emerald-950/30 text-[#245E49] dark:text-emerald-300 border border-[#CCE8D8] dark:border-emerald-800 hover:bg-[#DFF0E6]"
+                                                            : "bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 border-[#CCDCE8] dark:border-zinc-700 hover:bg-slate-50")
+                                                )}
+                                                title={computedB2BDiscountAmt > 0 ? "Edit B2B Discount" : "+ B2B Discount"}
+                                            >
+                                                <Tag className="w-3.5 h-3.5 text-slate-500 dark:text-zinc-400" />
+                                                <span>{computedB2BDiscountAmt > 0 ? "Edit B2B Discount" : "+ B2B Discount"}</span>
+                                                <ChevronDown className={cn("w-3 h-3 transition-transform duration-200", isB2BExpanded && "rotate-180")} />
+                                            </button>
+                                        )
                                     )}
                                 </div>
 
@@ -1056,25 +1112,39 @@ export function BillingSummary({
                                         </span>
                                     </div>
                                     <div>
-                                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 block">Discount</span>
+                                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 block">
+                                            {discountLabel}
+                                        </span>
                                         <div className="mt-0.5">
                                             {hasDiscountApplied ? (
                                                 <div className="flex items-center gap-1.5 flex-wrap">
                                                     <span className={cn("font-mono font-bold text-base sm:text-lg", isDark ? "text-emerald-400" : "text-[#1F6E54]")}>
                                                         -₹{discountDisplay.toLocaleString()}
                                                     </span>
-                                                    {discountReasonText && (
-                                                        <span className="text-xs text-slate-500 dark:text-zinc-400 font-medium truncate max-w-[80px]" title={discountReasonText}>
-                                                            ({discountReasonText})
-                                                        </span>
+                                                    {isPrepaid ? (
+                                                        b2bDiscountType === 'PERCENTAGE' && effectiveB2BVal > 0 && (
+                                                            <span className="text-xs text-slate-500 dark:text-zinc-400 font-medium">
+                                                                ({effectiveB2BVal}%)
+                                                            </span>
+                                                        )
+                                                    ) : (
+                                                        discountReasonText && (
+                                                            <span className="text-xs text-slate-500 dark:text-zinc-400 font-medium truncate max-w-[80px]" title={discountReasonText}>
+                                                                ({discountReasonText})
+                                                            </span>
+                                                        )
                                                     )}
                                                     {canPerformActions && totalPaid === 0 && (
                                                         <button
                                                             type="button"
-                                                            id="btn-remove-discount"
+                                                            id={isPrepaid ? "btn-remove-b2b-discount" : "btn-remove-discount"}
                                                             data-remove-discount="true"
                                                             tabIndex={0}
-                                                            onClick={handleRemoveDiscount}
+                                                            onClick={isPrepaid ? () => {
+                                                                handleSaveB2BDiscount(0, 'FLAT');
+                                                                setLocalB2BInput('');
+                                                                setIsB2BExpanded(true);
+                                                            } : handleRemoveDiscount}
                                                             onKeyDown={(e) => {
                                                                 if (e.key === 'Tab') {
                                                                     e.preventDefault();
@@ -1101,7 +1171,7 @@ export function BillingSummary({
                                                                     ? "bg-zinc-800 border-zinc-700 hover:bg-rose-950/40 text-zinc-400 hover:text-rose-400 focus:ring-2 focus:ring-rose-500" 
                                                                     : "bg-white border-rose-200 hover:bg-rose-50 hover:border-rose-300 text-rose-500 hover:text-rose-600 shadow-2xs focus:ring-2 focus:ring-rose-500"
                                                             )}
-                                                            title="Remove Discount"
+                                                            title={isPrepaid ? "Remove B2B Discount" : "Remove Discount"}
                                                         >
                                                             <X className="w-3 h-3" />
                                                         </button>
@@ -1113,10 +1183,21 @@ export function BillingSummary({
                                         </div>
                                     </div>
                                     <div>
-                                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 block">GST / Tax</span>
-                                        <span className="font-mono font-bold text-base sm:text-lg text-slate-900 dark:text-white block mt-0.5">
-                                            ₹{taxDisplay.toLocaleString()}
-                                        </span>
+                                        {isPrepaid ? (
+                                            <>
+                                                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 block">Doctor Bill</span>
+                                                <span className="font-mono font-bold text-base sm:text-lg text-emerald-600 dark:text-emerald-400 block mt-0.5">
+                                                    ₹{computedDoctorBill.toLocaleString()}
+                                                </span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 block">GST / Tax</span>
+                                                <span className="font-mono font-bold text-base sm:text-lg text-slate-900 dark:text-white block mt-0.5">
+                                                    ₹{taxDisplay.toLocaleString()}
+                                                </span>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -1881,167 +1962,229 @@ export function BillingSummary({
                         computedDiscountAmt = Math.min(grossTariff, Math.max(0, rawVal));
                     }
                     const computedNetClaim = Math.max(0, grossTariff - computedDiscountAmt);
+                    const hasDiscountApplied = computedDiscountAmt > 0;
 
                     return (
                         <div className="space-y-3">
-                            {/* CARD 1: B2B DISCOUNT */}
-                            <div className={cn(
-                                "p-4 sm:p-5 rounded-2xl border space-y-4 shadow-sm",
-                                isDark ? "bg-zinc-900/80 border-zinc-800 text-zinc-200" : "bg-black/[0.04] border-black/5 text-zinc-900"
-                            )}>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
-                                        B2B Discount
-                                    </span>
-                                </div>
-
-                                <div className="space-y-3.5">
-                                    <div className="flex justify-between items-center text-sm font-semibold text-zinc-600 dark:text-zinc-400">
-                                        <span>Standard Lab Tariff:</span>
-                                        <span className="font-mono font-black text-base sm:text-lg text-zinc-900 dark:text-zinc-100">
-                                            ₹{grossTariff.toLocaleString()}
-                                        </span>
-                                    </div>
-
-                                    {/* Mode Toggle & Input */}
-                                    <div className="space-y-3 pt-3 border-t border-slate-200 dark:border-zinc-800">
-                                        <div className="flex items-center justify-between gap-3">
-                                            <span className="text-xs sm:text-sm font-bold text-zinc-700 dark:text-zinc-300">
-                                                Discount Type:
-                                            </span>
-                                            <div className="flex items-center rounded-xl p-1.5 bg-slate-200/90 dark:bg-zinc-800 border border-slate-300/80 dark:border-zinc-700 shadow-xs">
-                                                <button
-                                                    type="button"
-                                                    id="btn-b2b-type-flat"
-                                                    onClick={() => {
-                                                        setB2BDiscountType('FLAT');
-                                                        setIsB2BEditing(true);
-                                                        if (isCorrectionIntent && onStageDiscount) {
-                                                            onStageDiscount({
-                                                                type: 'Flat',
-                                                                value: Number(localB2BInput) || 0,
-                                                                reason: 'B2B Partner Concession',
-                                                                isB2B: true
-                                                            });
-                                                        }
-                                                    }}
-                                                    className={cn(
-                                                        "px-4 py-2 rounded-lg text-xs sm:text-sm font-extrabold transition-all cursor-pointer shadow-xs",
-                                                        b2bDiscountType === 'FLAT'
-                                                            ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10"
-                                                            : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"
-                                                    )}
-                                                >
-                                                    Flat (₹)
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    id="btn-b2b-type-percent"
-                                                    onClick={() => {
-                                                        setB2BDiscountType('PERCENTAGE');
-                                                        setIsB2BEditing(true);
-                                                        if (isCorrectionIntent && onStageDiscount) {
-                                                            onStageDiscount({
-                                                                type: 'Percentage',
-                                                                value: Number(localB2BInput) || 0,
-                                                                reason: 'B2B Partner Concession',
-                                                                isB2B: true
-                                                            });
-                                                        }
-                                                    }}
-                                                    className={cn(
-                                                        "px-4 py-2 rounded-lg text-xs sm:text-sm font-extrabold transition-all cursor-pointer shadow-xs",
-                                                        b2bDiscountType === 'PERCENTAGE'
-                                                            ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10"
-                                                            : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"
-                                                    )}
-                                                >
-                                                    % Off
-                                                </button>
-                                            </div>
+                            {/* CARD 1: B2B DISCOUNT (MINIMISED OR EXPANDED) */}
+                            {hasDiscountApplied && !isB2BExpanded ? (
+                                /* MINIMISED STATE */
+                                <div className={cn(
+                                    "p-4 rounded-2xl border flex items-center justify-between transition-all duration-200 shadow-2xs",
+                                    isDark ? "bg-zinc-900/80 border-zinc-800 text-zinc-200" : "bg-white border-[#CCDCE8]/80 text-zinc-900"
+                                )}>
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/80 flex items-center justify-center shrink-0">
+                                            <Tag className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                                         </div>
-
-                                        <div className="flex items-center justify-between gap-3">
-                                            <label htmlFor="input-b2b-discount" className="text-xs sm:text-sm font-bold text-zinc-700 dark:text-zinc-300">
-                                                {b2bDiscountType === 'PERCENTAGE' ? 'Discount Percentage:' : 'Flat Concession:'}
-                                            </label>
+                                        <div className="flex flex-col min-w-0">
                                             <div className="flex items-center gap-2">
-                                                <span className="text-base sm:text-lg font-black text-zinc-500 dark:text-zinc-400">
-                                                    {b2bDiscountType === 'FLAT' ? '₹' : '%'}
+                                                <span className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-zinc-200">
+                                                    B2B Discount
                                                 </span>
-                                                <input
-                                                    id="input-b2b-discount"
-                                                    data-financials-focus="true"
-                                                    type="number"
-                                                    min="0"
-                                                    max={b2bDiscountType === 'PERCENTAGE' ? 100 : (grossTariff || 100000)}
-                                                    value={isB2BEditing ? localB2BInput : (isCorrectionIntent && stagedDiscount?.value !== undefined && stagedDiscount.isB2B ? String(stagedDiscount.value) : localB2BInput)}
-                                                    readOnly={!canPerformActions || isProcessing}
-                                                    onFocus={(e) => {
-                                                        e.target.select();
-                                                        setIsB2BEditing(true);
-                                                    }}
-                                                    onBlur={(e) => {
-                                                        if (isB2BEditing && !isProcessing) {
-                                                            handleSaveB2BDiscount(e.target.value, b2bDiscountType);
-                                                        }
-                                                    }}
-                                                    onChange={(e) => {
-                                                        const raw = e.target.value;
-                                                        const clean = raw.startsWith('0') && raw.length > 1 && !raw.startsWith('0.') ? raw.replace(/^0+/, '') : raw;
-                                                        setLocalB2BInput(clean);
-                                                        setIsB2BEditing(true);
-                                                        if (isCorrectionIntent && onStageDiscount) {
-                                                            onStageDiscount({
-                                                                type: b2bDiscountType === 'PERCENTAGE' ? 'Percentage' : 'Flat',
-                                                                value: Number(clean) || 0,
-                                                                reason: 'B2B Partner Concession',
-                                                                isB2B: true
-                                                            });
-                                                        }
-                                                    }}
-                                                    onKeyDown={(e) => {
-                                                        if (e.key === 'Enter') {
-                                                            e.preventDefault();
-                                                            handleSaveB2BDiscount(e.target.value, b2bDiscountType);
-                                                        }
-                                                    }}
-                                                    className={cn(
-                                                        "w-28 sm:w-32 h-11 px-3 text-right text-base sm:text-lg font-mono font-black rounded-xl border outline-none synos-focus-input",
-                                                        isDark ? "bg-zinc-900 border-zinc-700 text-zinc-100 focus:border-synos-primary" : "bg-white border-zinc-300 text-zinc-900 focus:border-synos-primary shadow-xs"
-                                                    )}
-                                                    placeholder="0"
-                                                />
-                                                {isB2BEditing && (
-                                                    <button
-                                                        type="button"
-                                                        tabIndex={0}
-                                                        onClick={() => handleSaveB2BDiscount(localB2BInput, b2bDiscountType)}
-                                                        className="px-3.5 py-2 bg-synos-primary text-white rounded-xl text-xs font-bold hover:bg-synos-primary/90 cursor-pointer shadow-xs active:scale-95 synos-focus-btn"
-                                                    >
-                                                        Save
-                                                    </button>
-                                                )}
+                                                <span className="font-mono font-bold text-xs sm:text-sm px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 shrink-0">
+                                                    -₹{computedDiscountAmt.toLocaleString()} {b2bDiscountType === 'PERCENTAGE' ? `(${rawVal}%)` : ''}
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
+                                                <span>Doctor Bill:</span>
+                                                <span className="font-mono font-black text-emerald-600 dark:text-emerald-400">
+                                                    ₹{computedNetClaim.toLocaleString()}
+                                                </span>
+                                                <span className="text-slate-300 dark:text-zinc-600">•</span>
+                                                <span>Tariff: ₹{grossTariff.toLocaleString()}</span>
                                             </div>
                                         </div>
-
-                                        {b2bDiscountType === 'PERCENTAGE' && rawVal > 0 && (
-                                            <div className="flex justify-between items-center text-xs font-semibold text-zinc-500 dark:text-zinc-400">
-                                                <span>Calculated {rawVal}% Discount:</span>
-                                                <span className="font-mono font-bold text-zinc-700 dark:text-zinc-300">₹{computedDiscountAmt.toLocaleString()}</span>
-                                            </div>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        id="btn-edit-b2b-discount"
+                                        onClick={() => {
+                                            setIsB2BExpanded(true);
+                                            setIsB2BEditing(true);
+                                            setTimeout(() => {
+                                                document.getElementById('input-b2b-discount')?.focus();
+                                            }, 50);
+                                        }}
+                                        className="px-3.5 py-1.5 rounded-xl text-xs font-bold border border-slate-300 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-200 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs active:scale-95 shrink-0"
+                                    >
+                                        <span>Edit</span>
+                                        <ChevronDown className="w-3.5 h-3.5 text-slate-400 -rotate-90" />
+                                    </button>
+                                </div>
+                            ) : (
+                                /* EXPANDED STATE */
+                                <div className={cn(
+                                    "p-4 sm:p-5 rounded-2xl border space-y-4 shadow-sm transition-all duration-200",
+                                    isDark ? "bg-zinc-900/80 border-zinc-800 text-zinc-200" : "bg-black/[0.04] border-black/5 text-zinc-900"
+                                )}>
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
+                                            B2B Discount
+                                        </span>
+                                        {hasDiscountApplied && (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setIsB2BExpanded(false);
+                                                    setIsB2BEditing(false);
+                                                }}
+                                                className="text-xs font-bold text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-100 flex items-center gap-1 cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/5"
+                                            >
+                                                <span>Minimize</span>
+                                                <ChevronDown className="w-3.5 h-3.5 rotate-180" />
+                                            </button>
                                         )}
                                     </div>
 
-                                    {/* Final Doctor Bill Row */}
-                                    <div className="flex justify-between items-center pt-3 border-t border-slate-200 dark:border-zinc-800">
-                                        <span className="text-sm sm:text-base font-bold text-zinc-800 dark:text-zinc-200">Final Doctor Bill:</span>
-                                        <span className="font-mono text-emerald-600 dark:text-emerald-400 text-xl sm:text-2xl font-black">
-                                            ₹{computedNetClaim.toLocaleString()}
-                                        </span>
+                                    <div className="space-y-3.5">
+                                        <div className="flex justify-between items-center text-sm font-semibold text-zinc-600 dark:text-zinc-400">
+                                            <span>Standard Lab Tariff:</span>
+                                            <span className="font-mono font-black text-base sm:text-lg text-zinc-900 dark:text-zinc-100">
+                                                ₹{grossTariff.toLocaleString()}
+                                            </span>
+                                        </div>
+
+                                        {/* Mode Toggle & Input */}
+                                        <div className="space-y-3 pt-3 border-t border-slate-200 dark:border-zinc-800">
+                                            <div className="flex items-center justify-between gap-3">
+                                                <span className="text-xs sm:text-sm font-bold text-zinc-700 dark:text-zinc-300">
+                                                    Discount Type:
+                                                </span>
+                                                <div className="flex items-center rounded-xl p-1.5 bg-slate-200/90 dark:bg-zinc-800 border border-slate-300/80 dark:border-zinc-700 shadow-xs">
+                                                    <button
+                                                        type="button"
+                                                        id="btn-b2b-type-flat"
+                                                        onClick={() => {
+                                                            setB2BDiscountType('FLAT');
+                                                            setIsB2BEditing(true);
+                                                            if (isCorrectionIntent && onStageDiscount) {
+                                                                onStageDiscount({
+                                                                    type: 'Flat',
+                                                                    value: Number(localB2BInput) || 0,
+                                                                    reason: 'B2B Partner Concession',
+                                                                    isB2B: true
+                                                                });
+                                                            }
+                                                        }}
+                                                        className={cn(
+                                                            "px-4 py-2 rounded-lg text-xs sm:text-sm font-extrabold transition-all cursor-pointer shadow-xs",
+                                                            b2bDiscountType === 'FLAT'
+                                                                ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10"
+                                                                : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"
+                                                        )}
+                                                    >
+                                                        Flat (₹)
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        id="btn-b2b-type-percent"
+                                                        onClick={() => {
+                                                            setB2BDiscountType('PERCENTAGE');
+                                                            setIsB2BEditing(true);
+                                                            if (isCorrectionIntent && onStageDiscount) {
+                                                                onStageDiscount({
+                                                                    type: 'Percentage',
+                                                                    value: Number(localB2BInput) || 0,
+                                                                    reason: 'B2B Partner Concession',
+                                                                    isB2B: true
+                                                                });
+                                                            }
+                                                        }}
+                                                        className={cn(
+                                                            "px-4 py-2 rounded-lg text-xs sm:text-sm font-extrabold transition-all cursor-pointer shadow-xs",
+                                                            b2bDiscountType === 'PERCENTAGE'
+                                                                ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10"
+                                                                : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"
+                                                        )}
+                                                    >
+                                                        % Off
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center justify-between gap-3">
+                                                <label htmlFor="input-b2b-discount" className="text-xs sm:text-sm font-bold text-zinc-700 dark:text-zinc-300">
+                                                    {b2bDiscountType === 'PERCENTAGE' ? 'Discount Percentage:' : 'Flat Concession:'}
+                                                </label>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-base sm:text-lg font-black text-zinc-500 dark:text-zinc-400">
+                                                        {b2bDiscountType === 'FLAT' ? '₹' : '%'}
+                                                    </span>
+                                                    <input
+                                                        id="input-b2b-discount"
+                                                        data-financials-focus="true"
+                                                        type="number"
+                                                        min="0"
+                                                        max={b2bDiscountType === 'PERCENTAGE' ? 100 : (grossTariff || 100000)}
+                                                        value={isB2BEditing ? localB2BInput : (isCorrectionIntent && stagedDiscount?.value !== undefined && stagedDiscount.isB2B ? String(stagedDiscount.value) : localB2BInput)}
+                                                        readOnly={!canPerformActions || isProcessing}
+                                                        onFocus={(e) => {
+                                                            e.target.select();
+                                                            setIsB2BEditing(true);
+                                                        }}
+                                                        onBlur={(e) => {
+                                                            if (isB2BEditing && !isProcessing) {
+                                                                handleSaveB2BDiscount(e.target.value, b2bDiscountType);
+                                                            }
+                                                        }}
+                                                        onChange={(e) => {
+                                                            const raw = e.target.value;
+                                                            const clean = raw.startsWith('0') && raw.length > 1 && !raw.startsWith('0.') ? raw.replace(/^0+/, '') : raw;
+                                                            setLocalB2BInput(clean);
+                                                            setIsB2BEditing(true);
+                                                            if (isCorrectionIntent && onStageDiscount) {
+                                                                onStageDiscount({
+                                                                    type: b2bDiscountType === 'PERCENTAGE' ? 'Percentage' : 'Flat',
+                                                                    value: Number(clean) || 0,
+                                                                    reason: 'B2B Partner Concession',
+                                                                    isB2B: true
+                                                                });
+                                                            }
+                                                        }}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Enter') {
+                                                                e.preventDefault();
+                                                                handleSaveB2BDiscount(e.target.value, b2bDiscountType);
+                                                            }
+                                                        }}
+                                                        className={cn(
+                                                            "w-28 sm:w-32 h-11 px-3 text-right text-base sm:text-lg font-mono font-black rounded-xl border outline-none synos-focus-input",
+                                                            isDark ? "bg-zinc-900 border-zinc-700 text-zinc-100 focus:border-synos-primary" : "bg-white border-zinc-300 text-zinc-900 focus:border-synos-primary shadow-xs"
+                                                        )}
+                                                        placeholder="0"
+                                                    />
+                                                    {isB2BEditing && (
+                                                        <button
+                                                            type="button"
+                                                            tabIndex={0}
+                                                            onClick={() => handleSaveB2BDiscount(localB2BInput, b2bDiscountType)}
+                                                            className="px-3.5 py-2 bg-synos-primary text-white rounded-xl text-xs font-bold hover:bg-synos-primary/90 cursor-pointer shadow-xs active:scale-95 synos-focus-btn"
+                                                        >
+                                                            Save
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {b2bDiscountType === 'PERCENTAGE' && rawVal > 0 && (
+                                                <div className="flex justify-between items-center text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                                                    <span>Calculated {rawVal}% Discount:</span>
+                                                    <span className="font-mono font-bold text-zinc-700 dark:text-zinc-300">₹{computedDiscountAmt.toLocaleString()}</span>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Final Doctor Bill Row */}
+                                        <div className="flex justify-between items-center pt-3 border-t border-slate-200 dark:border-zinc-800">
+                                            <span className="text-sm sm:text-base font-bold text-zinc-800 dark:text-zinc-200">Final Doctor Bill:</span>
+                                            <span className="font-mono text-emerald-600 dark:text-emerald-400 text-xl sm:text-2xl font-black">
+                                                ₹{computedNetClaim.toLocaleString()}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* CARD 2: BILLED TO DOCTOR / CLINIC ACCOUNT (Standalone Overrule Card) */}
                             {(() => {
