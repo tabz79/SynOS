@@ -801,12 +801,12 @@ namespace SynOS.Services
 
             // ENRICHED METADATA
             string actorName = await GetActorNameAsync(actorUserId);
-            string patientName = $"{visit.Patient.FirstName} {visit.Patient.LastName}";
+            string patientName = visit.Patient != null ? $"{visit.Patient.FirstName} {visit.Patient.LastName}".Trim() : "Patient";
 
             var referralMetadata = JsonSerializer.Serialize(new 
             { 
                 PatientName = patientName,
-                TokenId = visit.Token,
+                TokenId = visit.Token ?? "DRAFT",
                 ActorName = actorName,
                 PartnerName = partnerName, 
                 PartnerId = referralPartnerId, 
@@ -817,7 +817,7 @@ namespace SynOS.Services
                 BranchEventType.VISIT_UPDATED,
                 _userContext.CurrentBranchId.ToString(),
                 visitId.ToString(),
-                visit.Token,
+                visit.Token ?? "DRAFT",
                 $"Referral Partner updated to {partnerName}",
                 actorName,
                 actorUserId.ToString(),
