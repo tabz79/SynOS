@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { PatientApi } from '@/api/patient';
 import { Search, Users, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
@@ -16,6 +16,7 @@ function formatDate(dateStr) {
 export function PatientSearchScreen() {
   const { theme } = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
   const [query, setQuery] = useState('');
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -175,7 +176,10 @@ export function PatientSearchScreen() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button
-                        onClick={() => navigate(`/admin/patients/${p.patientId}`)}
+                        onClick={() => {
+                          const basePath = location.pathname.startsWith('/admin') ? '/admin/patients' : '/patients';
+                          navigate(`${basePath}/${p.patientId}${location.search ? location.search : ''}`);
+                        }}
                         className="bg-synos-primary text-white hover:bg-opacity-95 px-3.5 py-1.5 rounded-xl text-xs font-medium transition-colors shadow-sm shadow-synos-primary/5 active:scale-95"
                       >
                         View File

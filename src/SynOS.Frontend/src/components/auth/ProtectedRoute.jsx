@@ -14,6 +14,14 @@ export function ProtectedRoute({ allowedRoles = [] }) {
     }
 
     const isAdmin = Array.isArray(user?.role) ? user.role.includes('Admin') : user?.role === 'Admin';
+    const isReceptionRole = user?.role === 'Receptionist' || (Array.isArray(user?.role) && user.role.includes('Receptionist'));
+    const cleanPath = location.pathname.replace(/\/$/, "");
+
+    // Gracefully redirect Receptionists accessing admin patient routes to the public/desk patient route
+    if (!isAdmin && cleanPath.startsWith('/admin/patients') && isReceptionRole) {
+        const targetPath = cleanPath.replace('/admin/patients', '/patients');
+        return <Navigate to={targetPath + (location.search || '')} replace />;
+    }
 
     const hasRole = Array.isArray(user?.role)
         ? user.role.some(r => allowedRoles.includes(r))
@@ -33,8 +41,6 @@ export function ProtectedRoute({ allowedRoles = [] }) {
 
     // Check workspace-based access (Admins bypass all workspace restrictions)
     if (!isAdmin) {
-        const currentPath = location.pathname;
-        const cleanPath = currentPath.replace(/\/$/, "");
         const hasWorkspaceAccess = user?.workspaces?.some(wsRoute => {
             const cleanWs = wsRoute.replace(/\/$/, "");
             return cleanPath === cleanWs || cleanPath.startsWith(cleanWs + '/');
@@ -44,7 +50,6 @@ export function ProtectedRoute({ allowedRoles = [] }) {
         const isGlobalRoute = cleanPath === "/my-hr" || cleanPath.startsWith("/my-hr/");
 
         // Operational finance and patient directory routes accessible to receptionists
-        const isReceptionRole = user?.role === 'Receptionist' || (Array.isArray(user?.role) && user.role.includes('Receptionist'));
         const isReceptionOperationalRoute = isReceptionRole && (
             cleanPath.startsWith('/finance/revenue') || 
             cleanPath.startsWith('/finance/expenses') || 

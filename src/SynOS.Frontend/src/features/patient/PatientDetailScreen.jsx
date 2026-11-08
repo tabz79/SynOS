@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { PatientApi } from '@/api/patient';
 import { 
   ArrowLeft, 
@@ -61,6 +61,7 @@ function dateToISOString(dateStr) {
 export function PatientDetailScreen() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { theme } = useTheme();
 
   const [activeTab, setActiveTab] = useState('profile');
@@ -246,7 +247,10 @@ export function PatientDetailScreen() {
       {/* Back button & Title Header */}
       <div className="flex items-center gap-4 mb-6 border-b dark:border-zinc-800 border-zinc-200 pb-5">
         <button
-          onClick={() => navigate('/admin/patients')}
+          onClick={() => {
+            const basePath = location.pathname.startsWith('/admin') ? '/admin/patients' : '/patients';
+            navigate(`${basePath}${location.search ? location.search : ''}`);
+          }}
           className="p-2 border border-zinc-250 dark:border-zinc-850 bg-white dark:bg-zinc-900 hover:bg-zinc-50 dark:hover:bg-zinc-800 rounded-xl transition-all shadow-sm shadow-black/5 active:scale-95"
         >
           <ArrowLeft className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
