@@ -786,9 +786,19 @@ app.UseStaticFiles(new StaticFileOptions
 {
     OnPrepareResponse = ctx =>
     {
-        ctx.Context.Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
-        ctx.Context.Response.Headers["Pragma"] = "no-cache";
-        ctx.Context.Response.Headers["Expires"] = "0";
+        // Immutable long-term caching for hashed bundle assets (/assets/index-xxx.js, /assets/index-xxx.css)
+        var path = ctx.Context.Request.Path.Value;
+        if (ctx.File.Name != "index.html" && path != null && path.StartsWith("/assets", StringComparison.OrdinalIgnoreCase))
+        {
+            ctx.Context.Response.Headers["Cache-Control"] = "public, max-age=31536000, immutable";
+        }
+        else
+        {
+            // index.html and root entry points must never be cached so updates are instant
+            ctx.Context.Response.Headers["Cache-Control"] = "no-cache, no-store, must-revalidate";
+            ctx.Context.Response.Headers["Pragma"] = "no-cache";
+            ctx.Context.Response.Headers["Expires"] = "0";
+        }
     }
 });
 
