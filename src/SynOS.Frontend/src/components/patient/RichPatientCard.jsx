@@ -133,39 +133,40 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
                 {/* 3-COLUMN CLINICAL WORKSTATION GRID */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-6">
                     {/* COL 1: AVATAR & PROMINENT PATIENT NAME */}
-                    <div className="flex items-center gap-3 sm:gap-3.5 min-w-0 sm:max-w-[35%] shrink-0">
+                    <div className="flex items-center gap-3 min-w-0 sm:max-w-[32%] shrink-0">
                         <div className={cn(
-                            "w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center shrink-0 shadow-sm",
+                            "w-11 h-11 rounded-full flex items-center justify-center shrink-0 shadow-sm",
                             isDark 
                                 ? "bg-sky-950/60 text-sky-400 border-2 border-zinc-800 shadow-md" 
                                 : "bg-gradient-to-b from-[#E0F2FE] to-[#BAE6FD] text-[#0284C7] border-2 border-white shadow-[0_3px_10px_rgba(2,132,199,0.2)]"
                         )}>
-                            <User className="w-5 h-5 sm:w-6 sm:h-6 text-[#0284C7]" />
+                            <User className="w-5 h-5 text-[#0284C7]" />
                         </div>
                         <div className="min-w-0">
-                            <span className="text-base sm:text-xl font-black text-slate-900 dark:text-white truncate block tracking-tight leading-tight" title={name}>
+                            <span className="text-lg sm:text-xl font-black text-slate-900 dark:text-white truncate block tracking-tight leading-tight" title={name}>
                                 {name}
                             </span>
                         </div>
                     </div>
 
-                    {/* COL 2: DEMOGRAPHICS & IDENTIFIERS (Spanning Center Width) */}
-                    <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 flex-1 justify-start sm:justify-center">
-                        <span className={cn("px-2.5 py-1 rounded-lg font-semibold text-xs sm:text-sm", cardUi.badge)}>
-                            Age: <span className="font-bold text-slate-900 dark:text-white">{detailedAge.text}</span>
-                        </span>
-                        <span className={cn("px-2.5 py-1 rounded-lg font-bold text-xs sm:text-sm", cardUi.badge)}>
-                            {genderInitial === 'M' ? 'Male' : (genderInitial === 'F' ? 'Female' : (genderLabel !== '-' ? genderLabel : genderInitial))}
-                        </span>
-                        {mobile && (
-                            <span className={cn("px-2.5 py-1 rounded-lg font-mono text-xs sm:text-sm font-bold text-slate-900 dark:text-white", cardUi.badge)}>
-                                {mobile}
+                    {/* COL 2: STRUCTURED DEMOGRAPHICS & IDENTIFIERS (Spanning Center Width) */}
+                    <div className="flex flex-col justify-center flex-1 min-w-0 gap-1 sm:pl-2">
+                        {/* Row 1: Dominating Mobile Number */}
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs uppercase font-bold text-slate-400 dark:text-zinc-500">Mobile:</span>
+                            <span className="font-mono font-black text-sm sm:text-base text-slate-900 dark:text-white tracking-normal">
+                                {mobile || "No Mobile"}
                             </span>
-                        )}
-                        <span className={cn("px-2.5 py-1 rounded-lg text-xs sm:text-sm font-mono inline-flex items-center gap-1.5", cardUi.mrn)}>
-                            <span className="font-bold opacity-60">MRN:</span>
-                            <span className="font-bold text-slate-900 dark:text-white">{mrn}</span>
-                        </span>
+                        </div>
+
+                        {/* Row 2: Demographics with subtle dot separators */}
+                        <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-600 dark:text-zinc-300">
+                            <span>Age: <strong className="text-slate-900 dark:text-white">{detailedAge.text}</strong></span>
+                            <span className="text-slate-300 dark:text-zinc-600 select-none">•</span>
+                            <span>{genderLabel !== '-' ? genderLabel : (genderInitial === 'M' ? 'Male' : 'Female')}</span>
+                            <span className="text-slate-300 dark:text-zinc-600 select-none">•</span>
+                            <span className="font-mono font-bold text-slate-800 dark:text-zinc-200">MRN: {mrn}</span>
+                        </div>
                     </div>
 
                     {/* COL 3: ACTIONS & LAST VISIT CONTEXT */}
