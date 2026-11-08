@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
-import { Tag, X, Loader2, IndianRupee, Lock, AlertCircle, Smartphone, CreditCard, Plus, ShieldCheck, Search, ChevronDown, CheckCircle2, Clock, ShieldAlert, Building2 } from 'lucide-react'
+import { Tag, X, Loader2, IndianRupee, Lock, AlertCircle, Smartphone, CreditCard, Plus, ShieldCheck, Search, ChevronDown, CheckCircle2, Clock, ShieldAlert, Building2, Coins, FlaskConical, Stethoscope } from 'lucide-react'
 import { ReceptionApi } from '@/api/reception'
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/context/ThemeContext'
@@ -2059,16 +2059,22 @@ export function BillingSummary({
 
                     return (
                         <div className="space-y-3">
-                            {/* B2B DISCOUNT (EXPANDED EDIT STATE ONLY) */}
+                            {/* B2B DISCOUNT (EXPANDED EDIT STATE - 2x2 GRID DESIGN) */}
                             {isB2BExpanded && (
                                 <div className={cn(
-                                    "p-4 sm:p-5 rounded-2xl border space-y-4 shadow-sm transition-all duration-200",
-                                    isDark ? "bg-zinc-900/80 border-zinc-800 text-zinc-200" : "bg-black/[0.04] border-black/5 text-zinc-900"
+                                    "p-4 sm:p-5 rounded-2xl border space-y-3.5 shadow-sm transition-all duration-200",
+                                    isDark ? "bg-zinc-900/90 border-zinc-800 text-zinc-100" : "bg-white border-[#D0E2EE] text-zinc-900"
                                 )}>
-                                    <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-zinc-800">
-                                        <span className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
-                                            B2B Discount
-                                        </span>
+                                    {/* Header: Tag Icon + Title + Minimize Button */}
+                                    <div className="flex items-center justify-between pb-1">
+                                        <div className="flex items-center gap-2.5">
+                                            <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-100 dark:border-blue-900/40 shrink-0 shadow-2xs">
+                                                <Tag className="w-4 h-4" />
+                                            </div>
+                                            <span className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                                                B2B Discount
+                                            </span>
+                                        </div>
                                         <button
                                             type="button"
                                             id="btn-minimize-b2b-discount"
@@ -2100,151 +2106,194 @@ export function BillingSummary({
                                                     }
                                                 }
                                             }}
-                                            className="text-xs font-bold text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-100 flex items-center gap-1 cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 synos-focus-btn"
+                                            className="text-xs font-semibold text-slate-600 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 shadow-2xs hover:bg-slate-50 dark:hover:bg-zinc-700/60 cursor-pointer transition-all synos-focus-btn"
                                         >
                                             <span>Minimize</span>
                                             <ChevronDown className="w-3.5 h-3.5 rotate-180" />
                                         </button>
                                     </div>
 
-                                    <div className="space-y-4">
-                                        {/* Row 1: Standard Lab Tariff */}
-                                        <div className="flex justify-between items-center text-sm sm:text-base font-bold text-zinc-700 dark:text-zinc-300">
-                                            <span>Standard Lab Tariff:</span>
-                                            <span className="font-mono font-black text-xl sm:text-2xl text-zinc-900 dark:text-zinc-100">
-                                                ₹{grossTariff.toLocaleString()}
-                                            </span>
-                                        </div>
-
-                                        {/* Row 2: Discount Type */}
-                                        <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-200 dark:border-zinc-800">
-                                            <span className="text-sm sm:text-base font-bold text-zinc-700 dark:text-zinc-300">
-                                                Discount Type:
-                                            </span>
-                                            <div className="flex items-center rounded-xl p-1 bg-slate-200/90 dark:bg-zinc-800 border border-slate-300/80 dark:border-zinc-700 shadow-xs">
-                                                <button
-                                                    type="button"
-                                                    id="btn-b2b-type-flat"
-                                                    onClick={() => handleSwitchDiscountType('FLAT')}
-                                                    className={cn(
-                                                        "px-4 py-2 rounded-lg text-xs sm:text-sm font-extrabold transition-all cursor-pointer shadow-xs synos-focus-btn",
-                                                        b2bDiscountType === 'FLAT'
-                                                            ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10"
-                                                            : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"
-                                                    )}
-                                                >
-                                                    Flat (₹)
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    id="btn-b2b-type-percent"
-                                                    onClick={() => handleSwitchDiscountType('PERCENTAGE')}
-                                                    className={cn(
-                                                        "px-4 py-2 rounded-lg text-xs sm:text-sm font-extrabold transition-all cursor-pointer shadow-xs synos-focus-btn",
-                                                        b2bDiscountType === 'PERCENTAGE'
-                                                            ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-sm ring-1 ring-black/5 dark:ring-white/10"
-                                                            : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white"
-                                                    )}
-                                                >
-                                                    % Off
-                                                </button>
+                                    {/* 2x2 Grid Layout */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        {/* Tile 1 (Top-Left): Discount Switcher */}
+                                        <div className={cn(
+                                            "rounded-xl border p-3 sm:p-3.5 flex items-center gap-3.5 shadow-2xs transition-all",
+                                            isDark ? "bg-zinc-800/40 border-zinc-800" : "bg-slate-50/70 border-slate-200/90"
+                                        )}>
+                                            <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 border border-purple-100 dark:border-purple-900/40 flex items-center justify-center shrink-0 shadow-2xs">
+                                                <Tag className="w-5 h-5" />
                                             </div>
-                                        </div>
-
-                                        {/* Row 3: Concession Rate Input */}
-                                        <div className="flex items-center justify-between gap-3">
-                                            <label htmlFor="input-b2b-discount" className="text-sm sm:text-base font-bold text-zinc-700 dark:text-zinc-300">
-                                                {b2bDiscountType === 'PERCENTAGE' ? 'Discount Percentage:' : 'Flat Concession:'}
-                                            </label>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-base sm:text-lg font-black text-zinc-500 dark:text-zinc-400">
-                                                    {b2bDiscountType === 'FLAT' ? '₹' : '%'}
+                                            <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+                                                <span className="text-xs font-bold text-slate-700 dark:text-zinc-300">
+                                                    Discount
                                                 </span>
-                                                <input
-                                                    id="input-b2b-discount"
-                                                    data-financials-focus="true"
-                                                    type="number"
-                                                    min="0"
-                                                    max={b2bDiscountType === 'PERCENTAGE' ? 100 : (grossTariff || 100000)}
-                                                    value={isB2BEditing ? localB2BInput : (isCorrectionIntent && stagedDiscount?.value !== undefined && stagedDiscount.isB2B ? String(stagedDiscount.value) : localB2BInput)}
-                                                    readOnly={!canPerformActions || isProcessing}
-                                                    onFocus={(e) => {
-                                                        e.target.select();
-                                                        setIsB2BEditing(true);
-                                                    }}
-                                                    onChange={(e) => {
-                                                        const raw = e.target.value;
-                                                        const clean = raw.startsWith('0') && raw.length > 1 && !raw.startsWith('0.') ? raw.replace(/^0+/, '') : raw;
-                                                        setLocalB2BInput(clean);
-                                                        setIsB2BEditing(true);
-                                                        if (isCorrectionIntent && onStageDiscount) {
-                                                            onStageDiscount({
-                                                                type: b2bDiscountType === 'PERCENTAGE' ? 'Percentage' : 'Flat',
-                                                                value: Number(clean) || 0,
-                                                                reason: 'B2B Partner Concession',
-                                                                isB2B: true
-                                                            });
-                                                        }
-                                                    }}
-                                                    onKeyDown={(e) => {
-                                                        if (e.key === 'Enter') {
-                                                            e.preventDefault();
-                                                            handleSaveB2BDiscount(e.target.value, b2bDiscountType, true);
-                                                            setIsB2BEditing(false);
-                                                            setTimeout(() => {
-                                                                document.getElementById('btn-edit-b2b-discount')?.focus();
-                                                            }, 50);
-                                                        } else if (e.key === 'Tab') {
-                                                            if (!e.shiftKey) {
-                                                                e.preventDefault();
-                                                                e.stopPropagation();
-                                                                const docInput = document.getElementById('input-b2b-doctor-search') ||
-                                                                                 document.getElementById('btn-unified-action') ||
-                                                                                 document.getElementById('btn-confirm-visit');
-                                                                if (docInput) docInput.focus();
-                                                            } else {
-                                                                e.preventDefault();
-                                                                e.stopPropagation();
-                                                                const toggleBtn = document.getElementById('btn-b2b-type-percent') ||
-                                                                                  document.getElementById('btn-b2b-type-flat') ||
-                                                                                  document.getElementById('btn-minimize-b2b-discount');
-                                                                if (toggleBtn) toggleBtn.focus();
-                                                            }
-                                                        }
-                                                    }}
-                                                    className={cn(
-                                                        "w-28 sm:w-32 h-11 px-3 text-right text-base sm:text-lg font-mono font-black rounded-xl border outline-none synos-focus-input",
-                                                        isDark ? "bg-zinc-900 border-zinc-700 text-zinc-100 focus:border-synos-primary" : "bg-white border-zinc-300 text-zinc-900 focus:border-synos-primary shadow-xs"
-                                                    )}
-                                                    placeholder="0"
-                                                />
-                                                <button
-                                                    type="button"
-                                                    tabIndex={0}
-                                                    id="btn-save-b2b-discount"
-                                                    onClick={() => handleSaveB2BDiscount(localB2BInput, b2bDiscountType, false)}
-                                                    className="px-4 py-2.5 bg-synos-primary text-white rounded-xl text-xs sm:text-sm font-bold hover:bg-synos-primary/90 cursor-pointer shadow-xs active:scale-95 synos-focus-btn"
-                                                >
-                                                    Save
-                                                </button>
+                                                <div className="inline-flex items-center rounded-xl p-1 bg-slate-200/80 dark:bg-zinc-800 border border-slate-300/70 dark:border-zinc-700 shadow-2xs w-fit">
+                                                    <button
+                                                        type="button"
+                                                        id="btn-b2b-type-flat"
+                                                        onClick={() => handleSwitchDiscountType('FLAT')}
+                                                        className={cn(
+                                                            "px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer synos-focus-btn",
+                                                            b2bDiscountType === 'FLAT'
+                                                                ? "bg-blue-100/90 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 shadow-2xs border border-blue-200/60 dark:border-blue-800/60 font-black"
+                                                                : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200 font-bold"
+                                                        )}
+                                                    >
+                                                        Flat (₹)
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        id="btn-b2b-type-percent"
+                                                        onClick={() => handleSwitchDiscountType('PERCENTAGE')}
+                                                        className={cn(
+                                                            "px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer synos-focus-btn",
+                                                            b2bDiscountType === 'PERCENTAGE'
+                                                                ? "bg-blue-100/90 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 shadow-2xs border border-blue-200/60 dark:border-blue-800/60 font-black"
+                                                                : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200 font-bold"
+                                                        )}
+                                                    >
+                                                        % Off
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
 
-                                        {b2bDiscountType === 'PERCENTAGE' && rawVal > 0 && (
-                                            <div className="flex justify-between items-center text-xs sm:text-sm font-semibold text-zinc-500 dark:text-zinc-400">
-                                                <span>Calculated {rawVal}% Discount:</span>
-                                                <span className="font-mono font-bold text-zinc-800 dark:text-zinc-200">₹{computedDiscountAmt.toLocaleString()}</span>
+                                        {/* Tile 2 (Top-Right): Flat/Percent Concession Input + Save */}
+                                        <div className={cn(
+                                            "rounded-xl border p-3 sm:p-3.5 flex items-center gap-3.5 shadow-2xs transition-all",
+                                            isDark ? "bg-zinc-800/40 border-zinc-800" : "bg-slate-50/70 border-slate-200/90"
+                                        )}>
+                                            <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/40 flex items-center justify-center shrink-0 shadow-2xs">
+                                                <Coins className="w-5 h-5" />
                                             </div>
-                                        )}
+                                            <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+                                                <span className="text-xs font-bold text-slate-700 dark:text-zinc-300">
+                                                    {b2bDiscountType === 'PERCENTAGE' ? 'Percent' : 'Flat'}
+                                                </span>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="relative flex items-center flex-1 max-w-[130px]">
+                                                        <span className="absolute left-3 text-slate-500 dark:text-zinc-400 font-bold text-sm pointer-events-none select-none">
+                                                            {b2bDiscountType === 'FLAT' ? '₹' : '%'}
+                                                        </span>
+                                                        <input
+                                                            id="input-b2b-discount"
+                                                            data-financials-focus="true"
+                                                            type="number"
+                                                            min="0"
+                                                            max={b2bDiscountType === 'PERCENTAGE' ? 100 : (grossTariff || 100000)}
+                                                            value={isB2BEditing ? localB2BInput : (isCorrectionIntent && stagedDiscount?.value !== undefined && stagedDiscount.isB2B ? String(stagedDiscount.value) : localB2BInput)}
+                                                            readOnly={!canPerformActions || isProcessing}
+                                                            onFocus={(e) => {
+                                                                e.target.select();
+                                                                setIsB2BEditing(true);
+                                                            }}
+                                                            onChange={(e) => {
+                                                                const raw = e.target.value;
+                                                                const clean = raw.startsWith('0') && raw.length > 1 && !raw.startsWith('0.') ? raw.replace(/^0+/, '') : raw;
+                                                                setLocalB2BInput(clean);
+                                                                setIsB2BEditing(true);
+                                                                if (isCorrectionIntent && onStageDiscount) {
+                                                                    onStageDiscount({
+                                                                        type: b2bDiscountType === 'PERCENTAGE' ? 'Percentage' : 'Flat',
+                                                                        value: Number(clean) || 0,
+                                                                        reason: 'B2B Partner Concession',
+                                                                        isB2B: true
+                                                                    });
+                                                                }
+                                                            }}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter') {
+                                                                    e.preventDefault();
+                                                                    handleSaveB2BDiscount(e.target.value, b2bDiscountType, true);
+                                                                    setIsB2BEditing(false);
+                                                                    setTimeout(() => {
+                                                                        document.getElementById('btn-edit-b2b-discount')?.focus();
+                                                                    }, 50);
+                                                                } else if (e.key === 'Tab') {
+                                                                    if (!e.shiftKey) {
+                                                                        e.preventDefault();
+                                                                        e.stopPropagation();
+                                                                        document.getElementById('btn-save-b2b-discount')?.focus();
+                                                                    } else {
+                                                                        e.preventDefault();
+                                                                        e.stopPropagation();
+                                                                        const toggleBtn = document.getElementById('btn-b2b-type-percent') ||
+                                                                                          document.getElementById('btn-b2b-type-flat') ||
+                                                                                          document.getElementById('btn-minimize-b2b-discount');
+                                                                        if (toggleBtn) toggleBtn.focus();
+                                                                    }
+                                                                }
+                                                            }}
+                                                            className={cn(
+                                                                "w-full h-9 pl-7 pr-3 text-right font-mono font-bold text-sm rounded-lg border outline-none synos-focus-input shadow-2xs",
+                                                                isDark ? "bg-zinc-900 border-zinc-700 text-zinc-100 focus:border-blue-500" : "bg-white border-slate-300 text-slate-900 focus:border-blue-500"
+                                                            )}
+                                                            placeholder="0"
+                                                        />
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        tabIndex={0}
+                                                        id="btn-save-b2b-discount"
+                                                        onClick={() => handleSaveB2BDiscount(localB2BInput, b2bDiscountType, false)}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Tab') {
+                                                                if (!e.shiftKey) {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                    const docInput = document.getElementById('input-b2b-doctor-search') ||
+                                                                                    document.getElementById('btn-unified-action') ||
+                                                                                    document.getElementById('btn-confirm-visit');
+                                                                    if (docInput) docInput.focus();
+                                                                } else {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                    document.getElementById('input-b2b-discount')?.focus();
+                                                                }
+                                                            }
+                                                        }}
+                                                        className="h-9 px-4 bg-[#0D6EFD] hover:bg-blue-600 text-white rounded-lg text-xs font-bold cursor-pointer shadow-xs active:scale-95 transition-all synos-focus-btn flex items-center justify-center shrink-0"
+                                                    >
+                                                        Save
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
 
-                                        {/* Row 4: Final Doctor Bill */}
-                                        <div className="flex justify-between items-center pt-3 border-t border-slate-200 dark:border-zinc-800">
-                                            <span className="text-sm sm:text-base font-bold text-zinc-800 dark:text-zinc-200">
-                                                Final Doctor Bill:
-                                            </span>
-                                            <span className="font-mono text-emerald-600 dark:text-emerald-400 text-2xl sm:text-3xl font-black">
-                                                ₹{computedNetClaim.toLocaleString()}
-                                            </span>
+                                        {/* Tile 3 (Bottom-Left): Standard Lab Tariff */}
+                                        <div className={cn(
+                                            "rounded-xl border p-3 sm:p-3.5 flex items-center gap-3.5 shadow-2xs transition-all",
+                                            isDark ? "bg-zinc-800/40 border-zinc-800" : "bg-slate-50/70 border-slate-200/90"
+                                        )}>
+                                            <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/40 flex items-center justify-center shrink-0 shadow-2xs">
+                                                <FlaskConical className="w-5 h-5" />
+                                            </div>
+                                            <div className="flex flex-col min-w-0">
+                                                <span className="text-xs font-bold text-slate-600 dark:text-zinc-400">
+                                                    Lab Tariff
+                                                </span>
+                                                <span className="font-mono font-black text-2xl sm:text-3xl text-slate-900 dark:text-white mt-0.5 tracking-tight">
+                                                    ₹{grossTariff.toLocaleString()}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* Tile 4 (Bottom-Right): Doctor Bill (Net Claim) */}
+                                        <div className={cn(
+                                            "rounded-xl border p-3 sm:p-3.5 flex items-center gap-3.5 shadow-2xs transition-all",
+                                            isDark ? "bg-emerald-950/30 border-emerald-800/60" : "bg-emerald-50/50 border-emerald-200/90"
+                                        )}>
+                                            <div className="w-10 h-10 rounded-xl bg-emerald-100/80 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 flex items-center justify-center shrink-0 shadow-2xs">
+                                                <Stethoscope className="w-5 h-5" />
+                                            </div>
+                                            <div className="flex flex-col min-w-0">
+                                                <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                                                    Doctor Bill
+                                                </span>
+                                                <span className="font-mono font-black text-2xl sm:text-3xl text-[#00A859] dark:text-emerald-400 mt-0.5 tracking-tight">
+                                                    ₹{computedNetClaim.toLocaleString()}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
