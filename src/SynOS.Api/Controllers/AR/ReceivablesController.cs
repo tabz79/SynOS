@@ -108,76 +108,6 @@ namespace SynOS.Api.Controllers.AR
             [FromQuery] DateTime? startDate = null,
             [FromQuery] DateTime? endDate = null)
         {
-            // Auto-Healing: Ensure all active Prepaid/B2B visits have a corresponding ReceivableFact
-            var missingVisits = await _context.Visits
-                .Include(v => v.Invoices).ThenInclude(i => i.Payments)
-                .Include(v => v.ReferralPartner)
-                .Include(v => v.SecondaryReferralPartner)
-                .Include(v => v.ReferralDraft)
-                .Where(v => v.Status != VisitStatus.Draft && 
-                            v.Status != VisitStatus.Cancelled &&
-                            (v.Token == null || !v.Token.StartsWith("D-")) &&
-                            (v.PaymentCollectionModel == "PartnerCollects" || v.BillingType == BillingType.PrepaidPartner) &&
-                            !_context.ReceivableFacts.Any(r => r.SourceVisitId == v.VisitId))
-                .ToListAsync();
-
-            if (missingVisits.Any())
-            {
-                foreach (var v in missingVisits)
-                {
-                    var inv = v.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
-                    if (inv == null) continue;
-
-                    var effectivePartnerId = v.SecondaryReferralPartnerId ?? v.ReferralPartnerId;
-                    var pName = v.SecondaryReferralPartner?.Name ?? v.ReferralPartner?.Name ?? v.ReferralDraft?.ClinicName ?? v.ReferralDraft?.ProviderName ?? v.ReferrerText ?? "Referral Partner";
-                    var debtorId = effectivePartnerId ?? (v.ReferralDraft?.ReferralDraftId ?? Guid.NewGuid());
-
-                    decimal gross = inv.GrossAmount > 0 ? inv.GrossAmount : inv.Total;
-                    decimal disc = (v.B2BDiscountAmount.HasValue && v.B2BDiscountAmount.Value > 0) ? v.B2BDiscountAmount.Value : inv.DiscountAmount;
-                    decimal netB2B = Math.Max(0m, gross - disc);
-
-                    var newFact = new ReceivableFact
-                    {
-                        ReceivableFactId = Guid.NewGuid(),
-                        SourceVisitId = v.VisitId,
-                        DebtorType = DebtorType.Partner,
-                        DebtorId = debtorId,
-                        DebtorName = pName,
-                        ClaimReference = $"Prepaid Partner Bill: {pName}",
-                        ReferralPartnerId = effectivePartnerId,
-                        Amount = netB2B,
-                        Currency = inv.Currency ?? "INR",
-                        OccurredAt = v.CreatedAt,
-                        RecordedAt = DateTimeOffset.UtcNow
-                    };
-                    _context.ReceivableFacts.Add(newFact);
-
-                    // Clean up any stray counter payments (like mistaken Cash payments) on this prepaid visit
-                    var strayCounterPayments = inv.Payments.Where(p => 
-                        p.Method != "PartnerAccount" && 
-                        (p.ReceiptNo == null || (!p.ReceiptNo.StartsWith("RCP-B2B") && !p.ReceiptNo.StartsWith("REC-B2B")))).ToList();
-                    if (strayCounterPayments.Any())
-                    {
-                        _context.Payments.RemoveRange(strayCounterPayments);
-                    }
-
-                    if (!inv.Payments.Any(p => p.Method == "PartnerAccount"))
-                    {
-                        _context.Payments.Add(new Payment
-                        {
-                            PaymentId = Guid.NewGuid(),
-                            InvoiceId = inv.InvoiceId,
-                            Amount = inv.Total,
-                            Method = "PartnerAccount",
-                            ReceiptNo = $"SYS-{v.Token}",
-                            ReceivedAt = DateTime.UtcNow,
-                            ReceivedByUserId = v.CreatedByUserId ?? Guid.Empty
-                        });
-                    }
-                }
-                await _context.SaveChangesAsync();
-            }
-
             var baseQuery = _context.ReceivableFacts.AsNoTracking();
 
             if (!string.IsNullOrWhiteSpace(type))
@@ -370,7 +300,155 @@ namespace SynOS.Api.Controllers.AR
                     testNames = testList,
                     testsSummary = testsSummary
                 };
-            }).ToList();
+            }).ToList<object>();
+
+            // Include any active Prepaid/B2B visits that may not have a persisted ReceivableFact yet
+            var existingFactVisitIds = raw.Select(x => x.SourceVisitId).ToHashSet();
+            var includePartnerVisits = string.IsNullOrWhiteSpace(type) || type.Trim().ToLowerInvariant() == "partner";
+
+            if (includePartnerVisits)
+            {
+                var missingVisitQuery = _context.Visits.AsNoTracking()
+                    .Include(v => v.Patient)
+                    .Include(v => v.Invoices).ThenInclude(i => i.Payments)
+                    .Include(v => v.ReferralPartner)
+                    .Include(v => v.SecondaryReferralPartner)
+                    .Include(v => v.ReferralDraft)
+                    .Include(v => v.Orders).ThenInclude(o => o.Test)
+                    .Where(v => v.Status != VisitStatus.Draft && 
+                                v.Status != VisitStatus.Cancelled &&
+                                (v.Token == null || !v.Token.StartsWith("D-")) &&
+                                (v.PaymentCollectionModel == "PartnerCollects" || v.BillingType == BillingType.PrepaidPartner) &&
+                                (!branchId.HasValue || branchId == Guid.Empty || v.BranchId == branchId.Value));
+
+                if (startUtc.HasValue)
+                {
+                    missingVisitQuery = missingVisitQuery.Where(v => v.CreatedAt >= startUtc.Value.UtcDateTime);
+                }
+                if (endUtc.HasValue)
+                {
+                    missingVisitQuery = missingVisitQuery.Where(v => v.CreatedAt <= endUtc.Value.UtcDateTime);
+                }
+
+                var missingVisits = await missingVisitQuery
+                    .Where(v => !existingFactVisitIds.Contains(v.VisitId))
+                    .ToListAsync();
+
+                if (missingVisits.Any())
+                {
+                    foreach (var v in missingVisits)
+                    {
+                        var inv = v.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
+                        var effectivePartnerId = v.SecondaryReferralPartnerId ?? v.ReferralPartnerId;
+                        var pName = v.SecondaryReferralPartner?.Name ?? v.ReferralPartner?.Name ?? v.ReferralDraft?.ClinicName ?? v.ReferralDraft?.ProviderName ?? v.ReferrerText ?? "Referral Partner";
+                        var debtorId = effectivePartnerId ?? (v.ReferralDraft?.ReferralDraftId ?? Guid.NewGuid());
+
+                        decimal gross = (inv != null && inv.GrossAmount > 0) ? inv.GrossAmount : (inv?.Total ?? 0m);
+                        decimal disc = (v.B2BDiscountAmount.HasValue && v.B2BDiscountAmount.Value > 0) ? v.B2BDiscountAmount.Value : (inv?.DiscountAmount ?? 0m);
+                        decimal netB2B = Math.Max(0m, gross - disc);
+
+                        var testList = v.Orders.Where(o => o.Status != OrderStatus.Cancelled && o.Test != null).Select(o => o.Test.TestName).Where(t => !string.IsNullOrEmpty(t)).ToList();
+                        var testsSummary = string.Join(", ", testList);
+                        var cleanToken = !string.IsNullOrEmpty(v.Token) ? System.Text.RegularExpressions.Regex.Replace(v.Token, "[^a-zA-Z0-9]", "").ToUpper() : "MAI000";
+                        var canonicalBillNo = $"{cleanToken}-{v.CreatedAt:yyMMdd}";
+                        var patientName = v.Patient != null ? (v.Patient.FirstName + " " + v.Patient.LastName).Trim() : "Patient";
+
+                        receivables.Add(new
+                        {
+                            receivableFactId = Guid.NewGuid(),
+                            sourceVisitId = v.VisitId,
+                            billNumber = canonicalBillNo,
+                            canonicalBillNo = canonicalBillNo,
+                            debtorType = "Partner",
+                            debtorId = debtorId,
+                            debtorName = pName,
+                            claimReference = $"Prepaid Partner Bill: {pName}",
+                            referralPartnerId = effectivePartnerId,
+                            partnerName = pName,
+                            primaryDoctorId = v.ReferralPartnerId,
+                            primaryDoctorName = v.ReferralPartner?.Name,
+                            secondaryDoctorId = v.SecondaryReferralPartnerId,
+                            secondaryDoctorName = v.SecondaryReferralPartner?.Name,
+                            hasReferralChain = v.SecondaryReferralPartnerId.HasValue && v.ReferralPartnerId.HasValue,
+                            corporateName = "",
+                            insuranceName = "",
+                            amount = netB2B,
+                            totalAmount = netB2B,
+                            amountReceived = 0m,
+                            paidAmount = 0m,
+                            pendingAmount = netB2B,
+                            balanceDue = netB2B,
+                            currency = inv?.Currency ?? "INR",
+                            occurredAt = new DateTimeOffset(v.CreatedAt, TimeSpan.Zero),
+                            settledAt = (DateTimeOffset?)null,
+                            settlementReceiptNo = (string?)null,
+                            settlementMethod = (string?)null,
+                            isSettled = false,
+                            status = "Pending",
+                            patientName = patientName,
+                            patientMrn = v.Patient?.MRN ?? "",
+                            token = v.Token,
+                            visitToken = v.Token,
+                            invoiceNumber = inv != null ? $"INV-{inv.InvoiceId.ToString().Substring(0, 8).ToUpper()}" : v.Token,
+                            tests = testList,
+                            testNames = testList,
+                            testsSummary = testsSummary
+                        });
+                    }
+
+                    // Background safe asynchronous healing
+                    var missingIds = missingVisits.Select(v => v.VisitId).ToList();
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            using var scope = HttpContext.RequestServices.CreateScope();
+                            var db = scope.ServiceProvider.GetRequiredService<SynOSDbContext>();
+                            var visitsToHeal = await db.Visits
+                                .Include(v => v.Invoices)
+                                .Include(v => v.ReferralPartner)
+                                .Include(v => v.SecondaryReferralPartner)
+                                .Include(v => v.ReferralDraft)
+                                .Where(v => missingIds.Contains(v.VisitId))
+                                .ToListAsync();
+
+                            foreach (var v in visitsToHeal)
+                            {
+                                if (await db.ReceivableFacts.AnyAsync(r => r.SourceVisitId == v.VisitId)) continue;
+                                var inv = v.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
+                                if (inv == null) continue;
+
+                                var effectivePartnerId = v.SecondaryReferralPartnerId ?? v.ReferralPartnerId;
+                                var partner = effectivePartnerId.HasValue ? await db.ReferralPartners.FindAsync(effectivePartnerId.Value) : null;
+                                var validPartnerId = partner != null ? effectivePartnerId : null;
+                                var pName = partner?.Name ?? v.ReferralDraft?.ClinicName ?? v.ReferralDraft?.ProviderName ?? v.ReferrerText ?? "Referral Partner";
+                                var debtorId = effectivePartnerId ?? (v.ReferralDraft?.ReferralDraftId ?? Guid.NewGuid());
+
+                                decimal gross = inv.GrossAmount > 0 ? inv.GrossAmount : inv.Total;
+                                decimal disc = (v.B2BDiscountAmount.HasValue && v.B2BDiscountAmount.Value > 0) ? v.B2BDiscountAmount.Value : inv.DiscountAmount;
+                                decimal netB2B = Math.Max(0m, gross - disc);
+
+                                db.ReceivableFacts.Add(new ReceivableFact
+                                {
+                                    ReceivableFactId = Guid.NewGuid(),
+                                    SourceVisitId = v.VisitId,
+                                    DebtorType = DebtorType.Partner,
+                                    DebtorId = debtorId,
+                                    DebtorName = pName,
+                                    ClaimReference = $"Prepaid Partner Bill: {pName}",
+                                    ReferralPartnerId = validPartnerId,
+                                    Amount = netB2B,
+                                    Currency = inv.Currency ?? "INR",
+                                    OccurredAt = new DateTimeOffset(v.CreatedAt, TimeSpan.Zero),
+                                    RecordedAt = DateTimeOffset.UtcNow
+                                });
+                            }
+                            await db.SaveChangesAsync();
+                        }
+                        catch { /* non-fatal background self-healing */ }
+                    });
+                }
+            }
 
             return Ok(receivables);
         }

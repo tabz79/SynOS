@@ -1151,6 +1151,7 @@ namespace SynOS.Services
         {
             var effectivePartnerId = visit.SecondaryReferralPartnerId ?? visit.ReferralPartnerId;
             var partner = effectivePartnerId.HasValue ? await _context.ReferralPartners.FindAsync(effectivePartnerId.Value) : null;
+            var validReferralPartnerId = partner != null ? effectivePartnerId : null;
             var pName = partner?.Name ?? visit.ReferralDraft?.ClinicName ?? visit.ReferralDraft?.ProviderName ?? visit.ReferrerText ?? "Referral Partner";
             var debtorId = effectivePartnerId ?? (visit.ReferralDraft?.ReferralDraftId ?? Guid.NewGuid());
 
@@ -1167,7 +1168,7 @@ namespace SynOS.Services
                 existingReceivable.DebtorId = debtorId;
                 existingReceivable.DebtorName = pName;
                 existingReceivable.ClaimReference = $"Prepaid Partner Bill: {pName}";
-                existingReceivable.ReferralPartnerId = effectivePartnerId;
+                existingReceivable.ReferralPartnerId = validReferralPartnerId;
                 existingReceivable.RecordedAt = DateTimeOffset.UtcNow;
                 _context.ReceivableFacts.Update(existingReceivable);
             }
@@ -1181,7 +1182,7 @@ namespace SynOS.Services
                     DebtorId = debtorId,
                     DebtorName = pName,
                     ClaimReference = $"Prepaid Partner Bill: {pName}",
-                    ReferralPartnerId = effectivePartnerId,
+                    ReferralPartnerId = validReferralPartnerId,
                     Amount = netB2BAmount,
                     Currency = invoice.Currency ?? "INR",
                     OccurredAt = DateTimeOffset.UtcNow,
