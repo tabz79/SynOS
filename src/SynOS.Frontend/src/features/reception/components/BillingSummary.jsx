@@ -1765,6 +1765,8 @@ export function BillingSummary({
                         );
                     }
 
+                    if (Math.abs(settlementDiff) < 0.01) return null;
+
                     return (
                         <div className={cn(
                             "p-3.5 rounded-xl border space-y-2.5 transition-all shadow-xs animate-in fade-in duration-200",

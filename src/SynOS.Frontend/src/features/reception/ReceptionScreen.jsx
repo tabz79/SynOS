@@ -269,11 +269,12 @@ export function ReceptionScreen() {
             try {
                 const res = await fetch('/health', { method: 'GET', cache: 'no-store' });
                 if (res.ok && !isCancelled) {
-                    console.log("Server came back online from update!");
+                    console.log("Server came back online from update! Reloading to apply fresh assets...");
                     setIsServerUpdating(false);
                     setConnectionStatus("Synced");
-                    refreshDashboard();
-                    SignalRService.startConnection();
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 500);
                 }
             } catch (_) {
                 // Server still installing/updating, wait for next tick

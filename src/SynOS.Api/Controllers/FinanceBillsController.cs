@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SynOS.Data;
 using SynOS.Models.Entities;
+using SynOS.Models.Entities.AR;
 using SynOS.Models.Entities.Payments;
 using SynOS.Models.Entities.Revenue;
 using SynOS.Models.Entities.SpendEngine;
@@ -379,6 +380,71 @@ namespace SynOS.Api.Controllers
                 .Take(500)
                 .ToListAsync();
 
+            // Auto-heal missing B2B ReceivableFacts for matched visits
+            var missingB2BVisits = rawInvoices
+                .Where(i => i.Visit != null && 
+                            (i.Visit.PaymentCollectionModel == "PartnerCollects" || i.Visit.BillingType == BillingType.PrepaidPartner) &&
+                            !_context.ReceivableFacts.Any(r => r.SourceVisitId == i.VisitId))
+                .Select(i => i.Visit!)
+                .Distinct()
+                .ToList();
+
+            if (missingB2BVisits.Any())
+            {
+                foreach (var v in missingB2BVisits)
+                {
+                    var inv = v.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
+                    if (inv == null) continue;
+
+                    var effectivePartnerId = v.SecondaryReferralPartnerId ?? v.ReferralPartnerId;
+                    var pName = v.SecondaryReferralPartner?.Name ?? v.ReferralPartner?.Name ?? v.ReferralDraft?.ClinicName ?? v.ReferralDraft?.ProviderName ?? v.ReferrerText ?? "Referral Partner";
+                    var debtorId = effectivePartnerId ?? (v.ReferralDraft?.ReferralDraftId ?? Guid.NewGuid());
+
+                    decimal gross = inv.GrossAmount > 0 ? inv.GrossAmount : inv.Total;
+                    decimal disc = (v.B2BDiscountAmount.HasValue && v.B2BDiscountAmount.Value > 0) ? v.B2BDiscountAmount.Value : inv.DiscountAmount;
+                    decimal netB2B = Math.Max(0m, gross - disc);
+
+                    var newFact = new ReceivableFact
+                    {
+                        ReceivableFactId = Guid.NewGuid(),
+                        SourceVisitId = v.VisitId,
+                        DebtorType = DebtorType.Partner,
+                        DebtorId = debtorId,
+                        DebtorName = pName,
+                        ClaimReference = $"Prepaid Partner Bill: {pName}",
+                        ReferralPartnerId = effectivePartnerId,
+                        Amount = netB2B,
+                        Currency = inv.Currency ?? "INR",
+                        OccurredAt = v.CreatedAt,
+                        RecordedAt = DateTimeOffset.UtcNow
+                    };
+                    _context.ReceivableFacts.Add(newFact);
+
+                    var strayCounterPayments = inv.Payments.Where(p => 
+                        p.Method != "PartnerAccount" && 
+                        (p.ReceiptNo == null || (!p.ReceiptNo.StartsWith("RCP-B2B") && !p.ReceiptNo.StartsWith("REC-B2B")))).ToList();
+                    if (strayCounterPayments.Any())
+                    {
+                        _context.Payments.RemoveRange(strayCounterPayments);
+                    }
+
+                    if (!inv.Payments.Any(p => p.Method == "PartnerAccount"))
+                    {
+                        _context.Payments.Add(new Payment
+                        {
+                            PaymentId = Guid.NewGuid(),
+                            InvoiceId = inv.InvoiceId,
+                            Amount = inv.Total,
+                            Method = "PartnerAccount",
+                            ReceiptNo = $"SYS-{v.Token}",
+                            ReceivedAt = DateTime.UtcNow,
+                            ReceivedByUserId = v.CreatedByUserId ?? Guid.Empty
+                        });
+                    }
+                }
+                await _context.SaveChangesAsync();
+            }
+
             // Fetch referral commission facts for matched visits
             var visitIds = rawInvoices.Select(i => i.VisitId).Distinct().ToList();
             var referralFacts = await _context.ReferralPayableFacts
@@ -452,9 +518,18 @@ namespace SynOS.Api.Controllers
                 var genuinePayments = allPayments.Where(p =>
                 {
                     var m = (p.Method ?? "").Trim();
-                    return !string.Equals(m, "PartnerAccount", StringComparison.OrdinalIgnoreCase) &&
-                           !string.Equals(m, "PartnerCollects", StringComparison.OrdinalIgnoreCase) &&
-                           !string.Equals(m, "DoctorAccount", StringComparison.OrdinalIgnoreCase);
+                    if (string.Equals(m, "PartnerAccount", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(m, "PartnerCollects", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(m, "DoctorAccount", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+                    if (isCorporateB2B)
+                    {
+                        // For Corporate B2B bills, counter payments are not B2B collections unless they are genuine B2B settlement vouchers
+                        return p.ReceiptNo != null && (p.ReceiptNo.StartsWith("RCP-B2B") || p.ReceiptNo.StartsWith("REC-B2B"));
+                    }
+                    return true;
                 }).ToList();
 
                 decimal billTotal;
@@ -628,9 +703,7 @@ namespace SynOS.Api.Controllers
                 }
                 else if (isCorporateB2B)
                 {
-                    bool isSettled = recFact != null 
-                        ? (recFact.SettledAt.HasValue || (recFact.AmountReceived >= recFact.Amount && recFact.Amount > 0))
-                        : (totalDue <= 0 && totalCollected > 0);
+                    bool isSettled = recFact != null && (recFact.SettledAt.HasValue || (recFact.AmountReceived >= recFact.Amount && recFact.Amount > 0));
 
                     if (isSettled) normalizedStatus = "PAID";
                     else if (totalCollected > 0) normalizedStatus = "PARTIALLYPAID";

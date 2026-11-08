@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SynOS.Data;
+using SynOS.Models.Entities;
+using SynOS.Models.Entities.AR;
 using SynOS.Models.Enums;
 using SynOS.Services.Time;
 using System;
@@ -106,6 +108,76 @@ namespace SynOS.Api.Controllers.AR
             [FromQuery] DateTime? startDate = null,
             [FromQuery] DateTime? endDate = null)
         {
+            // Auto-Healing: Ensure all active Prepaid/B2B visits have a corresponding ReceivableFact
+            var missingVisits = await _context.Visits
+                .Include(v => v.Invoices).ThenInclude(i => i.Payments)
+                .Include(v => v.ReferralPartner)
+                .Include(v => v.SecondaryReferralPartner)
+                .Include(v => v.ReferralDraft)
+                .Where(v => v.Status != VisitStatus.Draft && 
+                            v.Status != VisitStatus.Cancelled &&
+                            (v.Token == null || !v.Token.StartsWith("D-")) &&
+                            (v.PaymentCollectionModel == "PartnerCollects" || v.BillingType == BillingType.PrepaidPartner) &&
+                            !_context.ReceivableFacts.Any(r => r.SourceVisitId == v.VisitId))
+                .ToListAsync();
+
+            if (missingVisits.Any())
+            {
+                foreach (var v in missingVisits)
+                {
+                    var inv = v.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
+                    if (inv == null) continue;
+
+                    var effectivePartnerId = v.SecondaryReferralPartnerId ?? v.ReferralPartnerId;
+                    var pName = v.SecondaryReferralPartner?.Name ?? v.ReferralPartner?.Name ?? v.ReferralDraft?.ClinicName ?? v.ReferralDraft?.ProviderName ?? v.ReferrerText ?? "Referral Partner";
+                    var debtorId = effectivePartnerId ?? (v.ReferralDraft?.ReferralDraftId ?? Guid.NewGuid());
+
+                    decimal gross = inv.GrossAmount > 0 ? inv.GrossAmount : inv.Total;
+                    decimal disc = (v.B2BDiscountAmount.HasValue && v.B2BDiscountAmount.Value > 0) ? v.B2BDiscountAmount.Value : inv.DiscountAmount;
+                    decimal netB2B = Math.Max(0m, gross - disc);
+
+                    var newFact = new ReceivableFact
+                    {
+                        ReceivableFactId = Guid.NewGuid(),
+                        SourceVisitId = v.VisitId,
+                        DebtorType = DebtorType.Partner,
+                        DebtorId = debtorId,
+                        DebtorName = pName,
+                        ClaimReference = $"Prepaid Partner Bill: {pName}",
+                        ReferralPartnerId = effectivePartnerId,
+                        Amount = netB2B,
+                        Currency = inv.Currency ?? "INR",
+                        OccurredAt = v.CreatedAt,
+                        RecordedAt = DateTimeOffset.UtcNow
+                    };
+                    _context.ReceivableFacts.Add(newFact);
+
+                    // Clean up any stray counter payments (like mistaken Cash payments) on this prepaid visit
+                    var strayCounterPayments = inv.Payments.Where(p => 
+                        p.Method != "PartnerAccount" && 
+                        (p.ReceiptNo == null || (!p.ReceiptNo.StartsWith("RCP-B2B") && !p.ReceiptNo.StartsWith("REC-B2B")))).ToList();
+                    if (strayCounterPayments.Any())
+                    {
+                        _context.Payments.RemoveRange(strayCounterPayments);
+                    }
+
+                    if (!inv.Payments.Any(p => p.Method == "PartnerAccount"))
+                    {
+                        _context.Payments.Add(new Payment
+                        {
+                            PaymentId = Guid.NewGuid(),
+                            InvoiceId = inv.InvoiceId,
+                            Amount = inv.Total,
+                            Method = "PartnerAccount",
+                            ReceiptNo = $"SYS-{v.Token}",
+                            ReceivedAt = DateTime.UtcNow,
+                            ReceivedByUserId = v.CreatedByUserId ?? Guid.Empty
+                        });
+                    }
+                }
+                await _context.SaveChangesAsync();
+            }
+
             var baseQuery = _context.ReceivableFacts.AsNoTracking();
 
             if (!string.IsNullOrWhiteSpace(type))

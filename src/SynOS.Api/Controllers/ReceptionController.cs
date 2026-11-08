@@ -257,7 +257,7 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpPut("visit/referral")]
-
+        [HttpPost("visit/referral")]
         public async Task<IActionResult> SetReferral([FromBody] ReceptionUpdateReferralRequest request)
         {
             try

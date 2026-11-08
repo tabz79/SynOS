@@ -3390,6 +3390,8 @@ export function IntentPanel({ onVisitUpdated }) {
                                     newName = 'Self / Direct (Removed)';
                                 }
 
+                                if (Math.abs(settlementDiff) < 0.01) return null;
+
                                 return (
                                     <div className="p-3 rounded-xl border border-indigo-500/30 bg-indigo-50/70 dark:bg-indigo-950/30 space-y-1">
                                         <div className="font-bold text-xs sm:text-sm tracking-normal text-indigo-600 dark:text-indigo-400 flex items-center gap-1.5">
@@ -3592,6 +3594,8 @@ export function IntentPanel({ onVisitUpdated }) {
                                         </div>
                                     );
                                 }
+
+                                if (Math.abs(settlementDiff) < 0.01) return null;
 
                                 return (
                                     <div className={cn(

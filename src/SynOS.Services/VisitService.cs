@@ -1150,9 +1150,9 @@ namespace SynOS.Services
         private async Task EnsurePrepaidReceivableFactAsync(Visit visit, Invoice invoice, Guid actorUserId)
         {
             var effectivePartnerId = visit.SecondaryReferralPartnerId ?? visit.ReferralPartnerId;
-            if (!effectivePartnerId.HasValue || effectivePartnerId.Value == Guid.Empty) return;
-
-            var partner = await _context.ReferralPartners.FindAsync(effectivePartnerId.Value);
+            var partner = effectivePartnerId.HasValue ? await _context.ReferralPartners.FindAsync(effectivePartnerId.Value) : null;
+            var pName = partner?.Name ?? visit.ReferralDraft?.ClinicName ?? visit.ReferralDraft?.ProviderName ?? visit.ReferrerText ?? "Referral Partner";
+            var debtorId = effectivePartnerId ?? (visit.ReferralDraft?.ReferralDraftId ?? Guid.NewGuid());
 
             decimal grossAmount = invoice.GrossAmount > 0 ? invoice.GrossAmount : invoice.Total;
             decimal b2bDiscount = visit.B2BDiscountAmount ?? 0m;
@@ -1164,10 +1164,10 @@ namespace SynOS.Services
             {
                 existingReceivable.Amount = netB2BAmount;
                 existingReceivable.DebtorType = DebtorType.Partner;
-                existingReceivable.DebtorId = effectivePartnerId.Value;
-                existingReceivable.DebtorName = partner?.Name ?? (!string.IsNullOrEmpty(existingReceivable.DebtorName) ? existingReceivable.DebtorName : "Referral Partner");
-                existingReceivable.ClaimReference = $"Prepaid Partner Bill: {existingReceivable.DebtorName}";
-                existingReceivable.ReferralPartnerId = effectivePartnerId.Value;
+                existingReceivable.DebtorId = debtorId;
+                existingReceivable.DebtorName = pName;
+                existingReceivable.ClaimReference = $"Prepaid Partner Bill: {pName}";
+                existingReceivable.ReferralPartnerId = effectivePartnerId;
                 existingReceivable.RecordedAt = DateTimeOffset.UtcNow;
                 _context.ReceivableFacts.Update(existingReceivable);
             }
@@ -1178,10 +1178,10 @@ namespace SynOS.Services
                     ReceivableFactId = Guid.NewGuid(),
                     SourceVisitId = visit.VisitId,
                     DebtorType = DebtorType.Partner,
-                    DebtorId = effectivePartnerId.Value,
-                    DebtorName = partner?.Name ?? "Referral Partner",
-                    ClaimReference = $"Prepaid Partner Bill: {partner?.Name ?? "Partner"}",
-                    ReferralPartnerId = effectivePartnerId.Value,
+                    DebtorId = debtorId,
+                    DebtorName = pName,
+                    ClaimReference = $"Prepaid Partner Bill: {pName}",
+                    ReferralPartnerId = effectivePartnerId,
                     Amount = netB2BAmount,
                     Currency = invoice.Currency ?? "INR",
                     OccurredAt = DateTimeOffset.UtcNow,
@@ -1200,6 +1200,7 @@ namespace SynOS.Services
                     .ThenInclude(o => o.Test)
                 .Include(v => v.ReferralPartner)
                 .Include(v => v.SecondaryReferralPartner)
+                .Include(v => v.ReferralDraft)
                 .FirstOrDefaultAsync(v => v.VisitId == visitId);
 
             if (visit == null) throw new KeyNotFoundException($"Visit {visitId} not found");
@@ -1207,6 +1208,7 @@ namespace SynOS.Services
             CheckVisitOwnership(visit);
 
             visit.PaymentCollectionModel = "PartnerCollects";
+            visit.BillingType = BillingType.PrepaidPartner;
             visit.Status = VisitStatus.Paid;
             if (visit.Token.StartsWith("DRAFT", StringComparison.OrdinalIgnoreCase) || visit.Token.StartsWith("D-", StringComparison.OrdinalIgnoreCase))
             {
@@ -1216,8 +1218,19 @@ namespace SynOS.Services
             var invoice = visit.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
             if (invoice != null)
             {
-                var existingPayment = await _context.Payments.FirstOrDefaultAsync(p => p.InvoiceId == invoice.InvoiceId);
-                if (existingPayment == null)
+                // Purge any accidental counter cash/UPI payments that may have been recorded when visit was drafted/standard
+                var strayPayments = await _context.Payments
+                    .Where(p => p.InvoiceId == invoice.InvoiceId && 
+                                p.Method != "PartnerAccount" && 
+                                (p.ReceiptNo == null || (!p.ReceiptNo.StartsWith("RCP-B2B") && !p.ReceiptNo.StartsWith("REC-B2B"))))
+                    .ToListAsync();
+                if (strayPayments.Any())
+                {
+                    _context.Payments.RemoveRange(strayPayments);
+                }
+
+                var existingPartnerPayment = await _context.Payments.FirstOrDefaultAsync(p => p.InvoiceId == invoice.InvoiceId && p.Method == "PartnerAccount");
+                if (existingPartnerPayment == null)
                 {
                     var receiptNo = await GenerateUniqueReceiptNoAsync("SYS", visit.Token);
                     var payment = new Payment
@@ -1232,12 +1245,13 @@ namespace SynOS.Services
                     };
                     _context.Payments.Add(payment);
                 }
+                else
+                {
+                    existingPartnerPayment.Amount = invoice.Total;
+                }
                 invoice.Status = "Paid";
 
-                if (visit.ReferralPartnerId.HasValue && visit.ReferralPartnerId.Value != Guid.Empty)
-                {
-                    await EnsurePrepaidReceivableFactAsync(visit, invoice, actorUserId);
-                }
+                await EnsurePrepaidReceivableFactAsync(visit, invoice, actorUserId);
             }
 
             await _context.SaveChangesAsync();
@@ -2344,13 +2358,22 @@ namespace SynOS.Services
 
                 if (visit.PaymentCollectionModel == "PartnerCollects" || visit.BillingType == BillingType.PrepaidPartner)
                 {
+                    // Clean up any non-settlement counter payments that were placed on this visit when it was thought to be a desk payment
+                    var counterPayments = invoice.Payments.Where(p => 
+                        p.Method != "PartnerAccount" && 
+                        (p.ReceiptNo == null || (!p.ReceiptNo.StartsWith("RCP-B2B") && !p.ReceiptNo.StartsWith("REC-B2B")))).ToList();
+                    if (counterPayments.Any())
+                    {
+                        _context.Payments.RemoveRange(counterPayments);
+                    }
+
                     // Adjust system payment for PartnerAccount to align with revised invoice total
                     var partnerPayment = invoice.Payments.FirstOrDefault(p => p.Method == "PartnerAccount");
                     if (partnerPayment != null)
                     {
                         partnerPayment.Amount = invoice.Total;
                     }
-                    else if (invoice.Payments.Count == 0 || invoice.Payments.All(p => p.Method == "PartnerAccount"))
+                    else
                     {
                         var partnerReceiptNo = await GenerateUniqueReceiptNoAsync("SYS", visit.Token);
                         var newPartnerPayment = new Payment
@@ -2366,10 +2389,7 @@ namespace SynOS.Services
                         _context.Payments.Add(newPartnerPayment);
                     }
 
-                    if (effectivePartnerId.HasValue)
-                    {
-                        await EnsurePrepaidReceivableFactAsync(visit, invoice, actorUserId);
-                    }
+                    await EnsurePrepaidReceivableFactAsync(visit, invoice, actorUserId);
                     await _context.SaveChangesAsync();
                     await _revenueEngine.ApplySnapshotAsync(visitId, actorUserId);
                 }
