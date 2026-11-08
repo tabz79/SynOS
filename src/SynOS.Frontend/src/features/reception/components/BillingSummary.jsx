@@ -984,11 +984,11 @@ export function BillingSummary({
                     return (
                         <>
                             {/* Unified Financials Summary Card (Referral Header + 3-Column Ledger Grid) */}
-                            <div className="p-3 sm:p-3.5 rounded-2xl bg-white/75 dark:bg-zinc-800/60 border border-[#CCDCE8]/80 dark:border-zinc-700/70 shadow-[0_1px_3px_rgba(15,35,60,0.03)] space-y-2.5">
+                            <div className="p-4 sm:p-5 rounded-2xl bg-white/85 dark:bg-zinc-800/70 border border-[#CCDCE8]/90 dark:border-zinc-700/80 shadow-[0_2px_8px_rgba(15,35,60,0.04)] space-y-3.5">
                                 {/* Top Row: Referral Strip with Integrated Discount Button */}
                                 <div className="flex items-center justify-between gap-3 min-w-0">
                                     <div className="flex items-center gap-2 min-w-0">
-                                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 shrink-0">Referral:</span>
+                                        <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 shrink-0">Referral:</span>
                                         {snapshot?.billing?.referral?.secondaryPartner ? (
                                             <div className="flex items-center gap-1.5 min-w-0">
                                                 <span className="w-2.5 h-2.5 rounded-full bg-[#3D9970] shadow-[0_0_6px_rgba(61,153,112,0.35)] shrink-0" />
@@ -1029,62 +1029,127 @@ export function BillingSummary({
                                         )}
                                     </div>
 
-                                    {/* Concession / Discount Trigger Button (Direct / Standard only) */}
-                                    {canPerformActions && !isPrepaid && (
-                                        <button
-                                            ref={concessionTriggerRef}
-                                            data-concession-trigger="true"
-                                            type="button"
-                                            disabled={!isInitialIntake}
-                                            onClick={() => {
-                                                if (isInitialIntake) {
-                                                    setIsDiscountExpanded(prev => !prev);
-                                                }
-                                            }}
-                                            onKeyDown={(e) => {
-                                                if (!isInitialIntake) return;
-                                                if (e.key === 'Tab') {
-                                                    if (!e.shiftKey) {
-                                                        if (hasDiscountApplied) {
+                                    {/* Concession / Discount Trigger Button */}
+                                    {canPerformActions && (
+                                        isPrepaid ? (
+                                            <button
+                                                type="button"
+                                                id="btn-edit-b2b-discount"
+                                                data-financials-focus="true"
+                                                tabIndex={0}
+                                                onClick={() => {
+                                                    setIsB2BExpanded(prev => !prev);
+                                                    setIsB2BEditing(true);
+                                                    if (!isB2BExpanded) {
+                                                        setTimeout(() => {
+                                                            document.getElementById('input-b2b-discount')?.focus();
+                                                        }, 50);
+                                                    }
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Tab') {
+                                                        if (!e.shiftKey) {
+                                                            if (hasDiscountApplied) {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                document.getElementById('btn-remove-b2b-discount')?.focus();
+                                                            } else {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                const nextEl = isB2BExpanded
+                                                                    ? (document.getElementById('btn-b2b-type-flat') || document.getElementById('input-b2b-discount'))
+                                                                    : (document.getElementById('input-b2b-doctor-search') ||
+                                                                       document.getElementById('btn-unified-action') ||
+                                                                       document.getElementById('btn-confirm-visit'));
+                                                                if (nextEl) nextEl.focus();
+                                                            }
+                                                        } else {
                                                             e.preventDefault();
                                                             e.stopPropagation();
-                                                            document.getElementById('btn-remove-discount')?.focus();
-                                                        }
-                                                    } else {
-                                                        e.preventDefault();
-                                                        e.stopPropagation();
-                                                        const outsourceBtn = document.getElementById('btn-outsource-test');
-                                                        if (outsourceBtn) outsourceBtn.focus();
-                                                        else {
-                                                            const allTestButtons = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]'));
-                                                            if (allTestButtons.length > 0) {
-                                                                allTestButtons[allTestButtons.length - 1].focus();
-                                                            } else {
-                                                                const testInput = document.getElementById('input-test-search');
-                                                                if (testInput) testInput.focus();
+                                                            const outsourceBtn = document.getElementById('btn-outsource-test');
+                                                            if (outsourceBtn && outsourceBtn.offsetParent !== null) outsourceBtn.focus();
+                                                            else {
+                                                                const allTestButtons = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]'));
+                                                                if (allTestButtons.length > 0) {
+                                                                    allTestButtons[allTestButtons.length - 1].focus();
+                                                                } else {
+                                                                    const testInput = document.getElementById('input-test-search');
+                                                                    if (testInput) testInput.focus();
+                                                                }
                                                             }
                                                         }
                                                     }
-                                                }
-                                            }}
-                                            className={cn(
-                                                "px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1 transition-all border shadow-2xs shrink-0 synos-focus-btn",
-                                                !isInitialIntake
-                                                    ? "opacity-45 cursor-not-allowed bg-slate-100 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500 border-slate-200 dark:border-zinc-700 select-none"
-                                                    : (isDiscountExpanded
-                                                        ? "bg-slate-900 text-white border-slate-900 dark:bg-zinc-700 dark:border-zinc-600 shadow-xs cursor-pointer"
+                                                }}
+                                                className={cn(
+                                                    "px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all border shadow-2xs shrink-0 synos-focus-btn cursor-pointer",
+                                                    isB2BExpanded
+                                                        ? "bg-slate-900 text-white border-slate-900 dark:bg-zinc-700 dark:border-zinc-600 shadow-xs"
                                                         : (hasDiscountApplied
-                                                            ? "bg-[#EBF5EF] dark:bg-emerald-950/30 text-[#245E49] dark:text-emerald-300 border border-[#CCE8D8] dark:border-emerald-800 hover:bg-[#DFF0E6] cursor-pointer"
-                                                            : "bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 border-[#CCDCE8] dark:border-zinc-700 hover:bg-slate-50 cursor-pointer"))
-                                            )}
-                                            title={!isInitialIntake ? "Initial registration discount is locked." : (hasDiscountApplied ? "Edit Discount" : "+ Discount")}
-                                        >
-                                            <Tag className="w-3.5 h-3.5 text-slate-500 dark:text-zinc-400" />
-                                            <span>{hasDiscountApplied ? "Edit Discount" : "+ Discount"}</span>
-                                            {isInitialIntake && (
-                                                <ChevronDown className={cn("w-3 h-3 transition-transform duration-200", isDiscountExpanded && "rotate-180")} />
-                                            )}
-                                        </button>
+                                                            ? "bg-[#EBF5EF] dark:bg-emerald-950/30 text-[#245E49] dark:text-emerald-300 border border-[#CCE8D8] dark:border-emerald-800 hover:bg-[#DFF0E6]"
+                                                            : "bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 border-[#CCDCE8] dark:border-zinc-700 hover:bg-slate-50")
+                                                )}
+                                                title={hasDiscountApplied ? "Edit B2B Discount" : "+ B2B Discount"}
+                                            >
+                                                <Tag className="w-3.5 h-3.5 text-slate-500 dark:text-zinc-400" />
+                                                <span>{hasDiscountApplied ? "Edit B2B Discount" : "+ B2B Discount"}</span>
+                                                <ChevronDown className={cn("w-3 h-3 transition-transform duration-200", isB2BExpanded && "rotate-180")} />
+                                            </button>
+                                        ) : (
+                                            <button
+                                                ref={concessionTriggerRef}
+                                                data-concession-trigger="true"
+                                                type="button"
+                                                disabled={!isInitialIntake}
+                                                onClick={() => {
+                                                    if (isInitialIntake) {
+                                                        setIsDiscountExpanded(prev => !prev);
+                                                    }
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    if (!isInitialIntake) return;
+                                                    if (e.key === 'Tab') {
+                                                        if (!e.shiftKey) {
+                                                            if (hasDiscountApplied) {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                document.getElementById('btn-remove-discount')?.focus();
+                                                            }
+                                                        } else {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            const outsourceBtn = document.getElementById('btn-outsource-test');
+                                                            if (outsourceBtn) outsourceBtn.focus();
+                                                            else {
+                                                                const allTestButtons = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]'));
+                                                                if (allTestButtons.length > 0) {
+                                                                    allTestButtons[allTestButtons.length - 1].focus();
+                                                                } else {
+                                                                    const testInput = document.getElementById('input-test-search');
+                                                                    if (testInput) testInput.focus();
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }}
+                                                className={cn(
+                                                    "px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1 transition-all border shadow-2xs shrink-0 synos-focus-btn",
+                                                    !isInitialIntake
+                                                        ? "opacity-45 cursor-not-allowed bg-slate-100 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500 border-slate-200 dark:border-zinc-700 select-none"
+                                                        : (isDiscountExpanded
+                                                            ? "bg-slate-900 text-white border-slate-900 dark:bg-zinc-700 dark:border-zinc-600 shadow-xs cursor-pointer"
+                                                            : (hasDiscountApplied
+                                                                ? "bg-[#EBF5EF] dark:bg-emerald-950/30 text-[#245E49] dark:text-emerald-300 border border-[#CCE8D8] dark:border-emerald-800 hover:bg-[#DFF0E6] cursor-pointer"
+                                                                : "bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 border-[#CCDCE8] dark:border-zinc-700 hover:bg-slate-50 cursor-pointer"))
+                                                )}
+                                                title={!isInitialIntake ? "Initial registration discount is locked." : (hasDiscountApplied ? "Edit Discount" : "+ Discount")}
+                                            >
+                                                <Tag className="w-3.5 h-3.5 text-slate-500 dark:text-zinc-400" />
+                                                <span>{hasDiscountApplied ? "Edit Discount" : "+ Discount"}</span>
+                                                {isInitialIntake && (
+                                                    <ChevronDown className={cn("w-3 h-3 transition-transform duration-200", isDiscountExpanded && "rotate-180")} />
+                                                )}
+                                            </button>
+                                        )
                                     )}
                                 </div>
 
@@ -1094,19 +1159,19 @@ export function BillingSummary({
                                 {/* Bottom Row: 3-Column Financial Metrics */}
                                 <div className="grid grid-cols-3 gap-2 sm:gap-4 items-baseline">
                                     <div>
-                                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 block">Total Amount</span>
-                                        <span className="font-mono font-bold text-base sm:text-lg text-slate-900 dark:text-white block mt-0.5">
+                                        <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 block">Total Amount</span>
+                                        <span className="font-mono font-bold text-lg sm:text-xl text-slate-900 dark:text-white block mt-0.5">
                                             ₹{grossDisplay.toLocaleString()}
                                         </span>
                                     </div>
                                     <div>
-                                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 block">
+                                        <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 block">
                                             {discountLabel}
                                         </span>
                                         <div className="mt-0.5">
                                             {hasDiscountApplied ? (
                                                 <div className="flex items-center gap-1.5 flex-wrap">
-                                                    <span className={cn("font-mono font-bold text-base sm:text-lg", isDark ? "text-emerald-400" : "text-[#1F6E54]")}>
+                                                    <span className={cn("font-mono font-bold text-lg sm:text-xl", isDark ? "text-emerald-400" : "text-[#1F6E54]")}>
                                                         -₹{discountDisplay.toLocaleString()}
                                                     </span>
                                                     {isPrepaid ? (
@@ -1127,11 +1192,11 @@ export function BillingSummary({
                                                             type="button"
                                                             id={isPrepaid ? "btn-remove-b2b-discount" : "btn-remove-discount"}
                                                             data-remove-discount="true"
-                                                            tabIndex={isPrepaid ? -1 : 0}
+                                                            tabIndex={0}
                                                             onClick={isPrepaid ? () => {
                                                                 handleSaveB2BDiscount(0, 'FLAT');
                                                                 setLocalB2BInput('');
-                                                                setIsB2BExpanded(true);
+                                                                setIsB2BExpanded(false);
                                                             } : handleRemoveDiscount}
                                                             onKeyDown={(e) => {
                                                                 if (e.key === 'Tab') {
@@ -1139,26 +1204,18 @@ export function BillingSummary({
                                                                     e.stopPropagation();
                                                                     if (e.shiftKey) {
                                                                         if (isPrepaid) {
-                                                                            const outsourceBtn = document.getElementById('btn-outsource-test');
-                                                                            if (outsourceBtn && outsourceBtn.offsetParent !== null) {
-                                                                                outsourceBtn.focus();
-                                                                            } else {
-                                                                                const allTestButtons = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]'));
-                                                                                if (allTestButtons.length > 0) {
-                                                                                    allTestButtons[allTestButtons.length - 1].focus();
-                                                                                } else {
-                                                                                    document.getElementById('input-test-search')?.focus();
-                                                                                }
-                                                                            }
+                                                                            document.getElementById('btn-edit-b2b-discount')?.focus();
                                                                         } else {
                                                                             const trigger = document.querySelector('[data-concession-trigger="true"]');
                                                                             if (trigger) trigger.focus();
                                                                         }
                                                                     } else {
                                                                         if (isPrepaid) {
-                                                                            const b2bTarget = document.getElementById('btn-edit-b2b-discount') ||
-                                                                                              document.getElementById('input-b2b-discount') ||
-                                                                                              document.getElementById('input-b2b-doctor-search');
+                                                                            const b2bTarget = isB2BExpanded
+                                                                                ? (document.getElementById('btn-b2b-type-flat') || document.getElementById('input-b2b-discount'))
+                                                                                : (document.getElementById('input-b2b-doctor-search') ||
+                                                                                   document.getElementById('btn-unified-action') ||
+                                                                                   document.getElementById('btn-confirm-visit'));
                                                                             if (b2bTarget) b2bTarget.focus();
                                                                         } else {
                                                                             if (isDiscountExpanded) {
@@ -1187,22 +1244,22 @@ export function BillingSummary({
                                                     )}
                                                 </div>
                                             ) : (
-                                                <span className="font-mono font-bold text-base sm:text-lg text-slate-400 dark:text-zinc-500 block mt-0.5">—</span>
+                                                <span className="font-mono font-bold text-lg sm:text-xl text-slate-400 dark:text-zinc-500 block mt-0.5">—</span>
                                             )}
                                         </div>
                                     </div>
                                     <div>
                                         {isPrepaid ? (
                                             <>
-                                                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 block">Doctor Bill</span>
-                                                <span className="font-mono font-bold text-base sm:text-lg text-emerald-600 dark:text-emerald-400 block mt-0.5">
+                                                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 block">Doctor Bill</span>
+                                                <span className="font-mono font-bold text-lg sm:text-xl text-emerald-600 dark:text-emerald-400 block mt-0.5">
                                                     ₹{computedDoctorBill.toLocaleString()}
                                                 </span>
                                             </>
                                         ) : (
                                             <>
-                                                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 block">GST / Tax</span>
-                                                <span className="font-mono font-bold text-base sm:text-lg text-slate-900 dark:text-white block mt-0.5">
+                                                <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 block">GST / Tax</span>
+                                                <span className="font-mono font-bold text-lg sm:text-xl text-slate-900 dark:text-white block mt-0.5">
                                                     ₹{taxDisplay.toLocaleString()}
                                                 </span>
                                             </>
@@ -1975,47 +2032,31 @@ export function BillingSummary({
 
                     return (
                         <div className="space-y-3">
-                            {/* CARD 1: B2B DISCOUNT (MINIMISED OR EXPANDED) */}
-                            {hasDiscountApplied && !isB2BExpanded ? (
-                                /* MINIMISED STATE */
+                            {/* B2B DISCOUNT (EXPANDED EDIT STATE ONLY - CONSOLIDATED IN TOP CARD WHEN MINIMIZED) */}
+                            {isB2BExpanded && (
                                 <div className={cn(
-                                    "p-4 sm:p-5 rounded-2xl border transition-all duration-200 shadow-2xs space-y-3.5",
-                                    isDark ? "bg-zinc-900/80 border-zinc-800 text-zinc-200" : "bg-white border-[#CCDCE8]/80 text-zinc-900"
+                                    "p-4 sm:p-5 rounded-2xl border space-y-4 shadow-sm transition-all duration-200",
+                                    isDark ? "bg-zinc-900/80 border-zinc-800 text-zinc-200" : "bg-black/[0.04] border-black/5 text-zinc-900"
                                 )}>
-                                    {/* Header Row: Title & Edit Button */}
                                     <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2.5">
-                                            <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800/80 flex items-center justify-center shrink-0">
-                                                <Tag className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                                            </div>
-                                            <span className="text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-zinc-200">
-                                                B2B Discount
-                                            </span>
-                                        </div>
+                                        <span className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
+                                            B2B Discount
+                                        </span>
                                         <button
                                             type="button"
-                                            id="btn-edit-b2b-discount"
-                                            data-financials-focus="true"
-                                            tabIndex={0}
+                                            id="btn-minimize-b2b-discount"
                                             onClick={() => {
-                                                setIsB2BExpanded(true);
-                                                setIsB2BEditing(true);
-                                                setTimeout(() => {
-                                                    document.getElementById('input-b2b-discount')?.focus();
-                                                }, 50);
+                                                setIsB2BExpanded(false);
+                                                setIsB2BEditing(false);
                                             }}
                                             onKeyDown={(e) => {
                                                 if (e.key === 'Tab') {
                                                     if (!e.shiftKey) {
-                                                        // Forward Tab: to Billed to Doctor Account
                                                         e.preventDefault();
                                                         e.stopPropagation();
-                                                        const docInput = document.getElementById('input-b2b-doctor-search') ||
-                                                                         document.getElementById('btn-unified-action') ||
-                                                                         document.getElementById('btn-confirm-visit');
-                                                        if (docInput) docInput.focus();
+                                                        const flatBtn = document.getElementById('btn-b2b-type-flat') || document.getElementById('input-b2b-discount');
+                                                        if (flatBtn) flatBtn.focus();
                                                     } else {
-                                                        // Backward Tab: to Outsource Test or last test remove button
                                                         e.preventDefault();
                                                         e.stopPropagation();
                                                         const outsourceBtn = document.getElementById('btn-outsource-test');
@@ -2026,104 +2067,17 @@ export function BillingSummary({
                                                             if (allTestButtons.length > 0) {
                                                                 allTestButtons[allTestButtons.length - 1].focus();
                                                             } else {
-                                                                const testInput = document.getElementById('input-test-search');
-                                                                if (testInput) testInput.focus();
+                                                                document.getElementById('input-test-search')?.focus();
                                                             }
                                                         }
                                                     }
                                                 }
                                             }}
-                                            className="px-3.5 py-1.5 rounded-xl text-xs font-bold border border-slate-300 dark:border-zinc-700 hover:bg-slate-50 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-200 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs active:scale-95 shrink-0 synos-focus-btn"
+                                            className="text-xs font-bold text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-100 flex items-center gap-1 cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 synos-focus-btn"
                                         >
-                                            <span>Edit</span>
-                                            <ChevronDown className="w-3.5 h-3.5 text-slate-400 -rotate-90" />
+                                            <span>Minimize</span>
+                                            <ChevronDown className="w-3.5 h-3.5 rotate-180" />
                                         </button>
-                                    </div>
-
-                                    {/* Divider */}
-                                    <div className="border-t border-slate-100 dark:border-zinc-800" />
-
-                                    {/* 3 Columns: Total Amount, B2B Discount, Doctor Bill */}
-                                    <div className="grid grid-cols-3 gap-2 sm:gap-4 items-baseline">
-                                        <div>
-                                            <span className="text-[11px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">
-                                                Total Amount
-                                            </span>
-                                            <span className="font-mono font-bold text-base sm:text-lg text-slate-900 dark:text-zinc-100 block mt-0.5">
-                                                ₹{grossTariff.toLocaleString()}
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <span className="text-[11px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">
-                                                B2B Discount
-                                            </span>
-                                            <span className="font-mono font-bold text-base sm:text-lg text-emerald-600 dark:text-emerald-400 block mt-0.5">
-                                                -₹{computedDiscountAmt.toLocaleString()}
-                                                {b2bDiscountType === 'PERCENTAGE' && rawVal > 0 ? (
-                                                    <span className="text-xs font-semibold text-emerald-600/80 dark:text-emerald-400/80 ml-1">
-                                                        ({rawVal}%)
-                                                    </span>
-                                                ) : null}
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <span className="text-[11px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider block">
-                                                Doctor Bill
-                                            </span>
-                                            <span className="font-mono font-black text-base sm:text-lg text-emerald-700 dark:text-emerald-400 block mt-0.5">
-                                                ₹{computedNetClaim.toLocaleString()}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            ) : (
-                                /* EXPANDED STATE */
-                                <div className={cn(
-                                    "p-4 sm:p-5 rounded-2xl border space-y-4 shadow-sm transition-all duration-200",
-                                    isDark ? "bg-zinc-900/80 border-zinc-800 text-zinc-200" : "bg-black/[0.04] border-black/5 text-zinc-900"
-                                )}>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
-                                            B2B Discount
-                                        </span>
-                                        {hasDiscountApplied && (
-                                            <button
-                                                type="button"
-                                                id="btn-minimize-b2b-discount"
-                                                onClick={() => {
-                                                    setIsB2BExpanded(false);
-                                                    setIsB2BEditing(false);
-                                                }}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === 'Tab') {
-                                                        if (!e.shiftKey) {
-                                                            e.preventDefault();
-                                                            e.stopPropagation();
-                                                            const flatBtn = document.getElementById('btn-b2b-type-flat') || document.getElementById('input-b2b-discount');
-                                                            if (flatBtn) flatBtn.focus();
-                                                        } else {
-                                                            e.preventDefault();
-                                                            e.stopPropagation();
-                                                            const outsourceBtn = document.getElementById('btn-outsource-test');
-                                                            if (outsourceBtn && outsourceBtn.offsetParent !== null) {
-                                                                outsourceBtn.focus();
-                                                            } else {
-                                                                const allTestButtons = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]'));
-                                                                if (allTestButtons.length > 0) {
-                                                                    allTestButtons[allTestButtons.length - 1].focus();
-                                                                } else {
-                                                                    document.getElementById('input-test-search')?.focus();
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }}
-                                                className="text-xs font-bold text-slate-500 hover:text-slate-800 dark:text-zinc-400 dark:hover:text-zinc-100 flex items-center gap-1 cursor-pointer transition-colors px-2 py-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 synos-focus-btn"
-                                            >
-                                                <span>Minimize</span>
-                                                <ChevronDown className="w-3.5 h-3.5 rotate-180" />
-                                            </button>
-                                        )}
                                     </div>
 
                                     <div className="space-y-3.5">
