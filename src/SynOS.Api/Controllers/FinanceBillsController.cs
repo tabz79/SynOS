@@ -389,28 +389,112 @@ namespace SynOS.Api.Controllers
                 .ToDictionaryAsync(x => x.VisitId, x => x.Commission);
 
             // Fetch B2B partner receivables for matched visits (SSOT authority)
-            var receivableVisitIds = await _context.ReceivableFacts
+            var receivableFacts = await _context.ReceivableFacts
                 .AsNoTracking()
                 .Where(r => visitIds.Contains(r.SourceVisitId))
-                .Select(r => r.SourceVisitId)
-                .Distinct()
                 .ToListAsync();
-            var receivableVisitSet = new HashSet<Guid>(receivableVisitIds);
+            var receivablesByVisit = receivableFacts
+                .GroupBy(r => r.SourceVisitId)
+                .ToDictionary(g => g.Key, g => g.ToList());
+            var receivableVisitSet = new HashSet<Guid>(receivableFacts.Select(r => r.SourceVisitId));
 
             var result = new List<object>();
 
             foreach (var inv in rawInvoices)
             {
-                var payments = inv.Payments ?? new List<SynOS.Models.Entities.Payment>();
-                var totalCollected = payments.Sum(p => p.Amount);
-                var totalDue = Math.Max(0, inv.Total - totalCollected);
+                // Canonical Bill Type / Payer Classification (SSOT Authority)
+                var v = inv.Visit;
+                var rp = v?.ReferralPartner;
+                var pcm = v?.PaymentCollectionModel ?? "";
+                var bt = v?.BillingType;
+                var partnerName = rp != null 
+                    ? rp.Name 
+                    : (!string.IsNullOrWhiteSpace(v?.ReferrerText) ? v.ReferrerText : "Direct Patient");
 
-                // Payment mode breakdown
+                receivablesByVisit.TryGetValue(inv.VisitId, out var visitReceivables);
+                var recFact = visitReceivables?.FirstOrDefault();
+
+                bool isInsurance = false;
+                bool isCorporateB2B = false;
+
+                if (bt == BillingType.Insurance || 
+                    pcm.Contains("Insurance", StringComparison.OrdinalIgnoreCase) || 
+                    partnerName.Contains("Insur", StringComparison.OrdinalIgnoreCase))
+                {
+                    isInsurance = true;
+                }
+                else if (!string.Equals(partnerName, "SELF", StringComparison.OrdinalIgnoreCase) &&
+                         (bt == BillingType.PrepaidPartner || 
+                          bt == BillingType.Corporate || 
+                          pcm.Equals("PartnerCollects", StringComparison.OrdinalIgnoreCase) || 
+                          pcm.Equals("CorporateB2B", StringComparison.OrdinalIgnoreCase) || 
+                          pcm.Equals("PartnerMonthlyBilling", StringComparison.OrdinalIgnoreCase) ||
+                          receivableVisitSet.Contains(inv.VisitId) ||
+                          (v?.B2BDiscountAmount != null && v.B2BDiscountAmount > 0 && v.ReferralPartnerId != null) ||
+                          (rp != null && (rp.PartnerType == SynOS.Models.Enums.Referral.PartnerType.Hospital || 
+                                          rp.PartnerType == SynOS.Models.Enums.Referral.PartnerType.Clinic || 
+                                          string.Equals(rp.PaymentCollectionModel, "PartnerCollects", StringComparison.OrdinalIgnoreCase) ||
+                                          rp.Name.Contains("Hospital", StringComparison.OrdinalIgnoreCase) ||
+                                          rp.Name.Contains("Clinic", StringComparison.OrdinalIgnoreCase)))))
+                {
+                    isCorporateB2B = true;
+                }
+
+                string partnerCategory = isCorporateB2B ? "Corporate" : (isInsurance ? "Insurance" : "Direct");
+                string canonicalPayerMode = isCorporateB2B ? "Corporate B2B" : (isInsurance ? "Insurance" : "Standard / Direct");
+
+                // Cancellation check: In ERP standards, a cancelled visit has strictly zero outstanding claim.
+                bool isCancelled = string.Equals(inv.Status, "Cancelled", StringComparison.OrdinalIgnoreCase) || 
+                                   (inv.Visit != null && inv.Visit.Status == VisitStatus.Cancelled);
+
+                // Filter out synthetic internal desk vouchers (e.g. "PartnerAccount", "PartnerCollects", "DoctorAccount")
+                var allPayments = inv.Payments ?? new List<SynOS.Models.Entities.Payment>();
+                var genuinePayments = allPayments.Where(p =>
+                {
+                    var m = (p.Method ?? "").Trim();
+                    return !string.Equals(m, "PartnerAccount", StringComparison.OrdinalIgnoreCase) &&
+                           !string.Equals(m, "PartnerCollects", StringComparison.OrdinalIgnoreCase) &&
+                           !string.Equals(m, "DoctorAccount", StringComparison.OrdinalIgnoreCase);
+                }).ToList();
+
+                decimal billTotal;
+                decimal totalCollected;
+                decimal totalDue;
+
+                if (isCorporateB2B)
+                {
+                    // AR Subledger (ReceivableFacts) is SSOT for B2B billing
+                    var effectiveGross = (inv.GrossAmount > 0) ? inv.GrossAmount : inv.Total;
+                    var effectiveConcession = (v != null && v.B2BDiscountAmount.HasValue && v.B2BDiscountAmount.Value > 0)
+                        ? v.B2BDiscountAmount.Value
+                        : inv.DiscountAmount;
+                    var canonicalContractedAmount = Math.Max(0m, effectiveGross - effectiveConcession);
+
+                    billTotal = (recFact != null && recFact.Amount > 0) ? recFact.Amount : canonicalContractedAmount;
+                    
+                    var arReceived = recFact?.AmountReceived ?? 0m;
+                    var genuineSum = genuinePayments.Sum(p => p.Amount);
+                    totalCollected = Math.Max(arReceived, genuineSum);
+                    totalDue = Math.Max(0, billTotal - totalCollected);
+                }
+                else
+                {
+                    billTotal = inv.Total;
+                    totalCollected = genuinePayments.Sum(p => p.Amount);
+                    totalDue = Math.Max(0, billTotal - totalCollected);
+                }
+
+                if (isCancelled)
+                {
+                    totalDue = 0m;
+                }
+
+                // Payment mode breakdown (strictly from genuine collections)
                 decimal cashAmount = 0;
                 decimal onlineAmount = 0;
                 decimal prepaidAmount = 0;
 
-                foreach (var p in payments)
+                foreach (var p in genuinePayments)
                 {
                     var method = (p.Method ?? "").ToLower().Trim();
                     if (method.Contains("cash"))
@@ -427,11 +511,18 @@ namespace SynOS.Api.Controllers
                     }
                 }
 
-                // Payment method residual classification
-                if (totalCollected > (cashAmount + onlineAmount + prepaidAmount))
+                // If B2B AR received money via settlement that wasn't itemized into payments:
+                if (isCorporateB2B && totalCollected > (cashAmount + onlineAmount + prepaidAmount))
                 {
-                    var residual = totalCollected - (cashAmount + onlineAmount + prepaidAmount);
-                    onlineAmount += residual;
+                    var settlementMethod = recFact?.ClaimReference?.ToLower() ?? "";
+                    if (settlementMethod.Contains("cash"))
+                    {
+                        cashAmount += (totalCollected - (cashAmount + onlineAmount + prepaidAmount));
+                    }
+                    else
+                    {
+                        onlineAmount += (totalCollected - (cashAmount + onlineAmount + prepaidAmount));
+                    }
                 }
 
                 // Determine orders and classify each test with relational authority
@@ -497,55 +588,6 @@ namespace SynOS.Api.Controllers
                     if (!matchesMod) continue;
                 }
 
-                // Canonical Bill Type / Payer Classification (SSOT Authority)
-                var v = inv.Visit;
-                var rp = v?.ReferralPartner;
-                var pcm = v?.PaymentCollectionModel ?? "";
-                var bt = v?.BillingType;
-                var partnerName = rp != null 
-                    ? rp.Name 
-                    : (!string.IsNullOrWhiteSpace(v?.ReferrerText) ? v.ReferrerText : "Direct Patient");
-                bool hasCounterDeskPayment = totalCollected > 0;
-
-                bool isInsurance = false;
-                bool isCorporateB2B = false;
-
-                if (bt == BillingType.Insurance || 
-                    pcm.Contains("Insurance", StringComparison.OrdinalIgnoreCase) || 
-                    partnerName.Contains("Insur", StringComparison.OrdinalIgnoreCase))
-                {
-                    isInsurance = true;
-                }
-                else if (!hasCounterDeskPayment && 
-                         !string.Equals(partnerName, "SELF", StringComparison.OrdinalIgnoreCase) &&
-                         (bt == BillingType.PrepaidPartner || 
-                          bt == BillingType.Corporate || 
-                          pcm.Equals("PartnerCollects", StringComparison.OrdinalIgnoreCase) || 
-                          pcm.Equals("CorporateB2B", StringComparison.OrdinalIgnoreCase) || 
-                          pcm.Equals("PartnerMonthlyBilling", StringComparison.OrdinalIgnoreCase) ||
-                          receivableVisitSet.Contains(inv.VisitId) ||
-                          (v?.B2BDiscountAmount != null && v.B2BDiscountAmount > 0 && v.ReferralPartnerId != null) ||
-                          (rp != null && (rp.PartnerType == SynOS.Models.Enums.Referral.PartnerType.Hospital || 
-                                          rp.PartnerType == SynOS.Models.Enums.Referral.PartnerType.Clinic || 
-                                          string.Equals(rp.PaymentCollectionModel, "PartnerCollects", StringComparison.OrdinalIgnoreCase) ||
-                                          rp.Name.Contains("Hospital", StringComparison.OrdinalIgnoreCase) ||
-                                          rp.Name.Contains("Clinic", StringComparison.OrdinalIgnoreCase)))))
-                {
-                    isCorporateB2B = true;
-                }
-
-                string partnerCategory = isCorporateB2B ? "Corporate" : (isInsurance ? "Insurance" : "Direct");
-                string canonicalPayerMode = isCorporateB2B ? "Corporate B2B" : (isInsurance ? "Insurance" : "Standard / Direct");
-
-                // Cancellation check: In ERP standards, a cancelled visit has strictly zero outstanding claim.
-                bool isCancelled = string.Equals(inv.Status, "Cancelled", StringComparison.OrdinalIgnoreCase) || 
-                                   (inv.Visit != null && inv.Visit.Status == VisitStatus.Cancelled);
-
-                if (isCancelled)
-                {
-                    totalDue = 0m;
-                }
-
                 // Strict invariant: Referral cut applies ONLY to Standard / Direct bills where patient pays at counter.
                 // Corporate B2B, Insurance, Cancelled, and SELF bills have strictly ₹0 referral cut.
                 decimal referralCut = 0;
@@ -580,10 +622,26 @@ namespace SynOS.Api.Controllers
 
                 // Status classification
                 var normalizedStatus = "PENDINGPAYMENT";
-                if (isCancelled) normalizedStatus = "CANCELLED";
-                else if (totalDue <= 0) normalizedStatus = "PAID";
-                else if (totalCollected > 0) normalizedStatus = "PARTIALLYPAID";
-                else normalizedStatus = "PENDINGPAYMENT";
+                if (isCancelled)
+                {
+                    normalizedStatus = "CANCELLED";
+                }
+                else if (isCorporateB2B)
+                {
+                    bool isSettled = recFact != null 
+                        ? (recFact.SettledAt.HasValue || (recFact.AmountReceived >= recFact.Amount && recFact.Amount > 0))
+                        : (totalDue <= 0 && totalCollected > 0);
+
+                    if (isSettled) normalizedStatus = "PAID";
+                    else if (totalCollected > 0) normalizedStatus = "PARTIALLYPAID";
+                    else normalizedStatus = "PENDINGPAYMENT";
+                }
+                else
+                {
+                    if (totalDue <= 0) normalizedStatus = "PAID";
+                    else if (totalCollected > 0) normalizedStatus = "PARTIALLYPAID";
+                    else normalizedStatus = "PENDINGPAYMENT";
+                }
 
                 if (!string.IsNullOrEmpty(status) && !status.Equals("All", StringComparison.OrdinalIgnoreCase))
                 {
@@ -622,7 +680,7 @@ namespace SynOS.Api.Controllers
                     Modality = modalityClass,
                     Departments = departments,
                     Modalities = modalities,
-                    TotalAmount = inv.Total,
+                    TotalAmount = billTotal,
                     CollectedAmount = totalCollected,
                     PendingAmount = totalDue,
                     CashAmount = cashAmount,
@@ -2703,9 +2761,38 @@ namespace SynOS.Api.Controllers
             var lab = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
             var settings = await GetStationerySettingsInternalAsync(lab);
 
+            var visit = inv.Visit;
+            var isCorporate = visit?.BillingType == SynOS.Models.Enums.BillingType.Corporate || visit?.CorporateAccountId != null;
+            var isInsurance = visit?.BillingType == SynOS.Models.Enums.BillingType.Insurance || visit?.InsuranceCompanyId != null;
+            var isPartner = visit?.BillingType == SynOS.Models.Enums.BillingType.PrepaidPartner || visit?.PaymentCollectionModel == "PartnerCollects" || visit?.ReferralPartnerId != null;
+
+            var recFact = await _context.ReceivableFacts.AsNoTracking().FirstOrDefaultAsync(r => r.SourceVisitId == inv.VisitId);
+
             var payments = inv.Payments ?? new List<SynOS.Models.Entities.Payment>();
-            var totalCollected = payments.Sum(p => p.Amount);
-            var balanceDue = Math.Max(0, inv.Total - totalCollected);
+            var genuinePayments = payments.Where(p =>
+                !string.Equals(p.Method, "PartnerAccount", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(p.Method, "PartnerCollects", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(p.Method, "DoctorAccount", StringComparison.OrdinalIgnoreCase)).ToList();
+
+            decimal totalCollected;
+            decimal balanceDue;
+            decimal effectiveBillTotal = inv.Total;
+
+            if (recFact != null || isCorporate || (isPartner && visit?.PaymentCollectionModel == "PartnerCollects"))
+            {
+                var effectiveGross = (inv.GrossAmount > 0) ? inv.GrossAmount : inv.Total;
+                var effectiveConcession = (visit != null && visit.B2BDiscountAmount.HasValue && visit.B2BDiscountAmount.Value > 0)
+                    ? visit.B2BDiscountAmount.Value
+                    : inv.DiscountAmount;
+                effectiveBillTotal = (recFact != null && recFact.Amount > 0) ? recFact.Amount : Math.Max(0m, effectiveGross - effectiveConcession);
+                totalCollected = Math.Max(recFact?.AmountReceived ?? 0m, genuinePayments.Sum(p => p.Amount));
+                balanceDue = Math.Max(0, effectiveBillTotal - totalCollected);
+            }
+            else
+            {
+                totalCollected = genuinePayments.Sum(p => p.Amount);
+                balanceDue = Math.Max(0, inv.Total - totalCollected);
+            }
 
             var orders = inv.Visit?.Orders ?? new List<SynOS.Models.Entities.Order>();
             var lineItems = new List<object>();
@@ -2755,18 +2842,13 @@ namespace SynOS.Api.Controllers
             var billNo = $"{cleanToken}-{inv.CreatedAt:yyMMdd}";
             var upiPayload = $"upi://pay?pa={settings.UpiId}&pn={Uri.EscapeDataString(settings.LabLegalName)}&am={balanceDue:F2}&cu=INR&tn={billNo}";
 
-            var visit = inv.Visit;
-            var isCorporate = visit?.BillingType == SynOS.Models.Enums.BillingType.Corporate || visit?.CorporateAccountId != null;
-            var isInsurance = visit?.BillingType == SynOS.Models.Enums.BillingType.Insurance || visit?.InsuranceCompanyId != null;
-            var isPartner = visit?.BillingType == SynOS.Models.Enums.BillingType.PrepaidPartner || visit?.PaymentCollectionModel == "PartnerCollects" || visit?.ReferralPartnerId != null;
-
             return Ok(new
             {
                 InvoiceId = inv.InvoiceId,
                 BillNumber = billNo,
                 Date = inv.CreatedAt,
                 DueDate = inv.DueDate != default ? inv.DueDate : inv.CreatedAt.AddDays(15),
-                Status = balanceDue <= 0 ? "Paid" : (totalCollected > 0 ? "Partial" : "Pending"),
+                Status = balanceDue <= 0 && (totalCollected > 0 || recFact?.SettledAt != null) ? "Paid" : (totalCollected > 0 ? "Partial" : "Pending"),
                 Currency = "INR",
                 
                 // Stationery & Lab Profile
@@ -2827,22 +2909,22 @@ namespace SynOS.Api.Controllers
                 // Financial Totals
                 Financial = new
                 {
-                    GrossSubtotal = inv.GrossAmount > 0 ? inv.GrossAmount : inv.Total,
+                    GrossSubtotal = inv.GrossAmount > 0 ? inv.GrossAmount : effectiveBillTotal,
                     DiscountAmount = inv.DiscountAmount,
-                    TaxableAmount = inv.NetAmount > 0 ? inv.NetAmount : inv.Total,
+                    TaxableAmount = effectiveBillTotal,
                     CgstPercent = 0m,
                     SgstPercent = 0m,
                     CgstAmount = 0m,
                     SgstAmount = 0m,
-                    TotalAmount = inv.Total,
+                    TotalAmount = effectiveBillTotal,
                     TotalCollected = totalCollected,
                     BalanceDue = balanceDue,
-                    AmountInWords = NumberToIndianWords(inv.Total),
+                    AmountInWords = NumberToIndianWords(effectiveBillTotal),
                     BalanceInWords = NumberToIndianWords(balanceDue)
                 },
 
                 // Recorded Payments Breakdown
-                Payments = payments.Select(p => new
+                Payments = genuinePayments.Select(p => new
                 {
                     PaymentId = p.PaymentId,
                     Amount = p.Amount,
