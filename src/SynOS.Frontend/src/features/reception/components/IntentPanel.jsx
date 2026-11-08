@@ -1753,9 +1753,17 @@ export function IntentPanel({ onVisitUpdated }) {
             {/* Top Close Button for 2-Column Workflow (Reclaims 56px vertical space, shifts entire modal up) */}
             {(hasPatient || isCorrectionIntent) && !isPostProcessingView ? (
                 <button
+                    id="btn-close-intent-panel"
                     type="button"
                     tabIndex={0}
                     onClick={handleCloseAndReset}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Tab' && e.shiftKey) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            document.getElementById('btn-unified-action')?.focus();
+                        }
+                    }}
                     className={cn(
                         "absolute right-4 top-3.5 z-40 p-2 rounded-full transition-all duration-200 active:scale-95 cursor-pointer",
                         isDark ? "hover:bg-white/10 text-zinc-400 hover:text-white" : "hover:bg-slate-100 text-slate-400 hover:text-slate-700"
@@ -3059,12 +3067,52 @@ export function IntentPanel({ onVisitUpdated }) {
                                                          (snapshot?.visit?.token || '').toUpperCase().startsWith('D-') || 
                                                          (snapshot?.visit?.visitToken || '').toUpperCase().startsWith('D-') ||
                                                          (snapshot?.visit?.token || '').toUpperCase().startsWith('DRAFT');
+                                    const focusPreviousActionTarget = () => {
+                                        const candidates = [
+                                            'checkbox-change-retained',
+                                            'input-cash-tendered',
+                                            'input-split-upi',
+                                            'btn-payment-card',
+                                            'input-b2b-doctor-search',
+                                            'btn-add-b2b-doctor',
+                                            'btn-save-b2b-discount',
+                                            'input-partial-amount',
+                                            'btn-settlement-fulldue',
+                                            'btn-settlement-full',
+                                            'btn-remove-discount',
+                                            'btn-remove-b2b-discount',
+                                            'btn-discount-header-toggle',
+                                            'btn-edit-b2b-discount',
+                                            'btn-outsource-test'
+                                        ];
+                                        for (const id of candidates) {
+                                            const el = document.getElementById(id);
+                                            if (el && el.offsetParent !== null) {
+                                                el.focus();
+                                                return;
+                                            }
+                                        }
+                                    };
+
                                     return isDraftVisit ? (
                                         <button
                                             type="button"
                                             id="btn-delete-draft"
                                             onClick={handleDeleteDraftVisit}
                                             disabled={isDeletingDraft || isLoading || isActionSubmitting}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Tab') {
+                                                    if (e.shiftKey) {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        focusPreviousActionTarget();
+                                                    } else {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        document.getElementById('btn-unified-action')?.focus();
+                                                    }
+                                                }
+                                            }}
                                             className="py-2.5 px-3.5 rounded-xl border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn disabled:opacity-50"
                                             title="Permanently discard and delete this draft visit"
                                         >
@@ -3076,6 +3124,19 @@ export function IntentPanel({ onVisitUpdated }) {
                                             type="button"
                                             id="btn-cancel-visit"
                                             onClick={() => setIsCancelModalOpen(true)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Tab') {
+                                                    if (e.shiftKey) {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        focusPreviousActionTarget();
+                                                    } else {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        document.getElementById('btn-unified-action')?.focus();
+                                                    }
+                                                }
+                                            }}
                                             className="py-2.5 px-3.5 rounded-xl border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0 shadow-2xs synos-focus-btn"
                                             title="Cancel this visit with reason and process refund"
                                         >
@@ -3089,6 +3150,60 @@ export function IntentPanel({ onVisitUpdated }) {
                                     data-action-submit="true"
                                     onClick={handleUnifiedAction}
                                     disabled={!isActionEnabled || isLoading || isActionSubmitting}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Tab') {
+                                            if (e.shiftKey) {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                const delDraft = document.getElementById('btn-delete-draft');
+                                                const cancelVisit = document.getElementById('btn-cancel-visit');
+                                                if (delDraft && delDraft.offsetParent !== null) {
+                                                    delDraft.focus();
+                                                } else if (cancelVisit && cancelVisit.offsetParent !== null) {
+                                                    cancelVisit.focus();
+                                                } else {
+                                                    const candidates = [
+                                                        'checkbox-change-retained',
+                                                        'input-cash-tendered',
+                                                        'input-split-upi',
+                                                        'btn-payment-card',
+                                                        'input-b2b-doctor-search',
+                                                        'btn-add-b2b-doctor',
+                                                        'btn-save-b2b-discount',
+                                                        'input-partial-amount',
+                                                        'btn-settlement-fulldue',
+                                                        'btn-settlement-full',
+                                                        'btn-remove-discount',
+                                                        'btn-remove-b2b-discount',
+                                                        'btn-discount-header-toggle',
+                                                        'btn-edit-b2b-discount',
+                                                        'btn-outsource-test'
+                                                    ];
+                                                    for (const id of candidates) {
+                                                        const el = document.getElementById(id);
+                                                        if (el && el.offsetParent !== null) {
+                                                            el.focus();
+                                                            return;
+                                                        }
+                                                    }
+                                                }
+                                            } else {
+                                                // TAB LOOPS BACK TO TOP!
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                const editDemographics = document.getElementById('btn-edit-demographics');
+                                                const patientSearch = document.getElementById('input-patient-search');
+                                                const closeBtn = document.getElementById('btn-close-intent-panel');
+                                                if (editDemographics && editDemographics.offsetParent !== null) {
+                                                    editDemographics.focus();
+                                                } else if (patientSearch && patientSearch.offsetParent !== null) {
+                                                    patientSearch.focus();
+                                                } else if (closeBtn && closeBtn.offsetParent !== null) {
+                                                    closeBtn.focus();
+                                                }
+                                            }
+                                        }
+                                    }}
                                     className={cn(
                                         "py-2.5 px-6 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.99] shadow-sm synos-focus-btn min-w-[200px]",
                                         (isActionEnabled && !isActionSubmitting)

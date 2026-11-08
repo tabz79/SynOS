@@ -105,9 +105,36 @@ export function PosCashTenderModule({
                 </div>
 
                 <button
+                    id="btn-toggle-split-cash"
                     type="button"
                     onClick={onToggleSplitPayment}
                     disabled={disabled}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Tab') {
+                            if (e.shiftKey) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                const payCard = document.getElementById('btn-payment-card') ||
+                                                document.getElementById('btn-payment-cash');
+                                if (payCard) payCard.focus();
+                            } else {
+                                if (isSplitPayment) {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    document.getElementById('input-split-cash')?.focus();
+                                } else {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    const firstDenom = document.getElementById('btn-denom-0');
+                                    if (firstDenom) {
+                                        firstDenom.focus();
+                                    } else {
+                                        document.getElementById('input-cash-tendered')?.focus();
+                                    }
+                                }
+                            }
+                        }
+                    }}
                     className="px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center gap-1.5 synos-focus-btn active:scale-95 bg-purple-600 hover:bg-purple-700 text-white border-purple-600 shadow-sm"
                 >
                     <Split className="w-3.5 h-3.5" />
@@ -131,6 +158,7 @@ export function PosCashTenderModule({
                             <div className="relative">
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base font-bold text-slate-400">₹</span>
                                 <input
+                                    id="input-split-cash"
                                     type="number"
                                     min="0"
                                     max={netBill}
@@ -144,6 +172,24 @@ export function PosCashTenderModule({
                                         const num = Number(val) || 0;
                                         if (num <= netBill) {
                                             onSplitUpiChange(String(netBill - num));
+                                        }
+                                    }}
+                                    onFocus={(e) => e.target.select()}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            document.getElementById('btn-unified-action')?.click();
+                                        } else if (e.key === 'Tab') {
+                                            if (e.shiftKey) {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                document.getElementById('btn-toggle-split-cash')?.focus();
+                                            } else {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                document.getElementById('input-split-upi')?.focus();
+                                            }
                                         }
                                     }}
                                     placeholder="0"
@@ -164,6 +210,7 @@ export function PosCashTenderModule({
                             <div className="relative">
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base font-bold text-slate-400">₹</span>
                                 <input
+                                    id="input-split-upi"
                                     type="number"
                                     min="0"
                                     max={netBill}
@@ -176,6 +223,27 @@ export function PosCashTenderModule({
                                         const num = Number(val) || 0;
                                         if (num <= netBill) {
                                             onSplitCashChange(String(netBill - num));
+                                        }
+                                    }}
+                                    onFocus={(e) => e.target.select()}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            document.getElementById('btn-unified-action')?.click();
+                                        } else if (e.key === 'Tab') {
+                                            if (e.shiftKey) {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                document.getElementById('input-split-cash')?.focus();
+                                            } else {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                const actionBtn = document.getElementById('btn-delete-draft') ||
+                                                                  document.getElementById('btn-cancel-visit') ||
+                                                                  document.getElementById('btn-unified-action');
+                                                if (actionBtn) actionBtn.focus();
+                                            }
                                         }
                                     }}
                                     placeholder="0"
@@ -211,14 +279,46 @@ export function PosCashTenderModule({
                         </div>
 
                         <div className="flex flex-wrap items-center gap-2">
-                            {suggestedDenominations.map(amount => {
+                            {suggestedDenominations.map((amount, idx) => {
                                 const isSelected = tendered === amount;
                                 return (
                                     <button
                                         key={amount}
+                                        id={`btn-denom-${idx}`}
                                         type="button"
                                         disabled={disabled}
                                         onClick={() => onTenderChange(String(amount))}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Tab') {
+                                                if (e.shiftKey) {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    if (idx === 0) {
+                                                        document.getElementById('btn-toggle-split-cash')?.focus();
+                                                    } else {
+                                                        document.getElementById(`btn-denom-${idx - 1}`)?.focus();
+                                                    }
+                                                } else {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    if (idx < suggestedDenominations.length - 1) {
+                                                        document.getElementById(`btn-denom-${idx + 1}`)?.focus();
+                                                    } else {
+                                                        document.getElementById('input-cash-tendered')?.focus();
+                                                    }
+                                                }
+                                            } else if (e.key === 'ArrowRight') {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                const next = document.getElementById(`btn-denom-${idx + 1}`);
+                                                if (next) next.focus();
+                                            } else if (e.key === 'ArrowLeft') {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                const prev = document.getElementById(`btn-denom-${idx - 1}`);
+                                                if (prev) prev.focus();
+                                            }
+                                        }}
                                         className={cn(
                                             "px-4 py-2 rounded-xl text-sm font-extrabold border transition-all cursor-pointer synos-focus-btn active:scale-95 shadow-2xs",
                                             isSelected ? ui.chipActive : ui.chipInactive
@@ -245,6 +345,7 @@ export function PosCashTenderModule({
                                 <div className="relative">
                                     <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xl font-black text-slate-400">₹</span>
                                     <input
+                                        id="input-cash-tendered"
                                         type="number"
                                         min="0"
                                         step="1"
@@ -252,6 +353,37 @@ export function PosCashTenderModule({
                                         disabled={disabled}
                                         value={tenderedAmount}
                                         onChange={(e) => onTenderChange(e.target.value)}
+                                        onFocus={(e) => e.target.select()}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                document.getElementById('btn-unified-action')?.click();
+                                            } else if (e.key === 'Tab') {
+                                                if (e.shiftKey) {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    const lastDenomIdx = suggestedDenominations.length - 1;
+                                                    if (lastDenomIdx >= 0) {
+                                                        document.getElementById(`btn-denom-${lastDenomIdx}`)?.focus();
+                                                    } else {
+                                                        document.getElementById('btn-toggle-split-cash')?.focus();
+                                                    }
+                                                } else {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    const checkbox = document.getElementById('checkbox-change-retained');
+                                                    if (checkbox && nominalChange > 0) {
+                                                        checkbox.focus();
+                                                    } else {
+                                                        const actionBtn = document.getElementById('btn-delete-draft') ||
+                                                                          document.getElementById('btn-cancel-visit') ||
+                                                                          document.getElementById('btn-unified-action');
+                                                        if (actionBtn) actionBtn.focus();
+                                                    }
+                                                }
+                                            }
+                                        }}
                                         placeholder={String(netBill)}
                                         className={cn("w-full h-12 pl-9 pr-3 rounded-xl text-lg sm:text-xl font-black font-mono outline-none", ui.input)}
                                     />
@@ -296,10 +428,27 @@ export function PosCashTenderModule({
                                 <div className="flex items-center justify-between">
                                     <label className="flex items-center gap-2 cursor-pointer select-none">
                                         <input
+                                            id="checkbox-change-retained"
                                             type="checkbox"
                                             checked={isChangeRetainedAsDue}
                                             onChange={onToggleChangeRetained}
                                             disabled={disabled}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Tab') {
+                                                    if (e.shiftKey) {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        document.getElementById('input-cash-tendered')?.focus();
+                                                    } else {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        const actionBtn = document.getElementById('btn-delete-draft') ||
+                                                                          document.getElementById('btn-cancel-visit') ||
+                                                                          document.getElementById('btn-unified-action');
+                                                        if (actionBtn) actionBtn.focus();
+                                                    }
+                                                }
+                                            }}
                                             className="w-4 h-4 rounded text-rose-600 focus:ring-0 cursor-pointer"
                                         />
                                         <span className={cn(

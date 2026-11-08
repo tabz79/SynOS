@@ -1027,7 +1027,7 @@ export function BillingSummary({
                     return (
                         <>
                             {/* Unified Financials Summary Card (Referral Header + 3-Column Ledger Grid) */}
-                            <div className="p-4 sm:p-5 rounded-2xl bg-white/85 dark:bg-zinc-800/70 border border-[#CCDCE8]/90 dark:border-zinc-700/80 shadow-[0_2px_8px_rgba(15,35,60,0.04)] space-y-3.5">
+                            <div className="p-4 sm:p-5 rounded-2xl bg-slate-100/80 dark:bg-zinc-800/70 border border-slate-200/90 dark:border-zinc-700/80 shadow-2xs space-y-3.5">
                                 {/* Top Row: Referral Strip with Integrated Discount Button */}
                                 <div className="flex items-center justify-between gap-3 min-w-0">
                                     <div className="flex items-center gap-2 min-w-0">
@@ -1152,16 +1152,29 @@ export function BillingSummary({
                                                     if (!isInitialIntake) return;
                                                     if (e.key === 'Tab') {
                                                         if (!e.shiftKey) {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
                                                             if (hasDiscountApplied) {
-                                                                e.preventDefault();
-                                                                e.stopPropagation();
-                                                                document.getElementById('btn-remove-discount')?.focus();
+                                                                const removeBtn = document.getElementById('btn-remove-discount');
+                                                                if (removeBtn) {
+                                                                    removeBtn.focus();
+                                                                    return;
+                                                                }
                                                             }
+                                                            if (isDiscountExpanded) {
+                                                                const flatToggle = document.getElementById('btn-std-type-flat') ||
+                                                                                   document.getElementById('input-flat-concession');
+                                                                if (flatToggle) {
+                                                                    flatToggle.focus();
+                                                                    return;
+                                                                }
+                                                            }
+                                                            document.getElementById('btn-settlement-full')?.focus();
                                                         } else {
                                                             e.preventDefault();
                                                             e.stopPropagation();
                                                             const outsourceBtn = document.getElementById('btn-outsource-test');
-                                                            if (outsourceBtn) outsourceBtn.focus();
+                                                            if (outsourceBtn && outsourceBtn.offsetParent !== null) outsourceBtn.focus();
                                                             else {
                                                                 const allTestButtons = Array.from(document.querySelectorAll('[data-test-remove-btn="true"]'));
                                                                 if (allTestButtons.length > 0) {
@@ -1264,7 +1277,8 @@ export function BillingSummary({
                                                                             if (b2bTarget) b2bTarget.focus();
                                                                         } else {
                                                                             if (isDiscountExpanded) {
-                                                                                const drawerTarget = document.getElementById('input-flat-concession') ||
+                                                                                const drawerTarget = document.getElementById('btn-std-type-flat') ||
+                                                                                                     document.getElementById('input-flat-concession') ||
                                                                                                      document.getElementById('btn-minimize-concession');
                                                                                 if (drawerTarget) drawerTarget.focus();
                                                                                 else document.getElementById('btn-settlement-full')?.focus();
@@ -1606,7 +1620,7 @@ export function BillingSummary({
                                 return (
                                     <div ref={concessionEditorRef} className={cn(
                                         "p-3.5 sm:p-4 rounded-2xl border space-y-3 shadow-xs transition-all duration-200 animate-in fade-in slide-in-from-top-2",
-                                        isDark ? "bg-zinc-900/95 border-zinc-800 text-zinc-100" : "bg-white border-[#D0E2EE] text-zinc-900"
+                                        isDark ? "bg-zinc-800/70 border-zinc-700/80 text-zinc-100" : "bg-slate-100/80 border-slate-200/90 text-slate-900"
                                     )}>
                                         {/* Header: Tag Icon + Title + Mode Switcher + Minimize Button */}
                                         <div className="flex items-center justify-between pb-0.5">
@@ -1625,6 +1639,19 @@ export function BillingSummary({
                                                         type="button"
                                                         id="btn-discount-mode-preset"
                                                         onClick={() => setDiscountInputMode('catalog')}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Tab') {
+                                                                if (!e.shiftKey) {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                    document.getElementById('btn-discount-mode-custom')?.focus();
+                                                                } else {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                    document.getElementById('btn-minimize-concession')?.focus();
+                                                                }
+                                                            }
+                                                        }}
                                                         className={cn(
                                                             "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer synos-focus-btn",
                                                             discountInputMode === 'catalog'
@@ -1638,6 +1665,19 @@ export function BillingSummary({
                                                         type="button"
                                                         id="btn-discount-mode-custom"
                                                         onClick={() => setDiscountInputMode('custom')}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Tab') {
+                                                                if (!e.shiftKey) {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                    document.getElementById('btn-std-type-flat')?.focus();
+                                                                } else {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                    document.getElementById('btn-discount-mode-preset')?.focus();
+                                                                }
+                                                            }
+                                                        }}
                                                         className={cn(
                                                             "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer synos-focus-btn",
                                                             discountInputMode === 'custom'
@@ -1654,13 +1694,20 @@ export function BillingSummary({
                                                     id="btn-minimize-concession"
                                                     onClick={() => setIsDiscountExpanded(false)}
                                                     onKeyDown={(e) => {
-                                                        if (e.key === 'Tab' && e.shiftKey) {
-                                                            e.preventDefault();
-                                                            e.stopPropagation();
-                                                            if (hasDiscountApplied) {
-                                                                document.getElementById('btn-remove-discount')?.focus();
+                                                        if (e.key === 'Tab') {
+                                                            if (e.shiftKey) {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                if (hasDiscountApplied) {
+                                                                    document.getElementById('btn-remove-discount')?.focus();
+                                                                } else {
+                                                                    const trigger = document.getElementById('btn-discount-header-toggle') || document.querySelector('[data-concession-trigger="true"]');
+                                                                    if (trigger) trigger.focus();
+                                                                }
                                                             } else {
-                                                                document.querySelector('[data-concession-trigger="true"]')?.focus();
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                document.getElementById('btn-discount-mode-preset')?.focus();
                                                             }
                                                         }
                                                     }}
@@ -2180,7 +2227,7 @@ export function BillingSummary({
                             {isB2BExpanded && (
                                 <div className={cn(
                                     "p-3.5 sm:p-4 rounded-2xl border space-y-3 shadow-xs transition-all duration-200",
-                                    isDark ? "bg-zinc-900/95 border-zinc-800 text-zinc-100" : "bg-white border-[#D0E2EE] text-zinc-900"
+                                    isDark ? "bg-zinc-800/70 border-zinc-700/80 text-zinc-100" : "bg-slate-100/80 border-slate-200/90 text-slate-900"
                                 )}>
                                     {/* Header: Tag Icon + Title + Minimize Button */}
                                     <div className="flex items-center justify-between pb-0.5">
@@ -2590,19 +2637,27 @@ export function BillingSummary({
                                     setCustomPaymentAmount?.('');
                                 }}
                                 onKeyDown={(e) => {
-                                    if (e.key === 'Tab' && e.shiftKey) {
-                                        if (!isDiscountExpanded) {
+                                    if (e.key === 'Tab') {
+                                        if (e.shiftKey) {
                                             e.preventDefault();
                                             e.stopPropagation();
-                                            if (hasDiscountApplied) {
+                                            if (isDiscountExpanded) {
+                                                document.getElementById('btn-apply-custom-discount')?.focus();
+                                            } else if (hasDiscountApplied) {
                                                 const removeBtn = document.getElementById('btn-remove-discount');
-                                                if (removeBtn) {
-                                                    removeBtn.focus();
-                                                    return;
+                                                if (removeBtn) removeBtn.focus();
+                                                else {
+                                                    const trigger = document.getElementById('btn-discount-header-toggle') || document.querySelector('[data-concession-trigger="true"]');
+                                                    if (trigger) trigger.focus();
                                                 }
+                                            } else {
+                                                const trigger = document.getElementById('btn-discount-header-toggle') || document.querySelector('[data-concession-trigger="true"]');
+                                                if (trigger) trigger.focus();
                                             }
-                                            const trigger = document.querySelector('[data-concession-trigger="true"]');
-                                            if (trigger) trigger.focus();
+                                        } else {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            document.getElementById('btn-settlement-partial')?.focus();
                                         }
                                     }
                                 }}
@@ -2626,6 +2681,19 @@ export function BillingSummary({
                                         setCustomPaymentAmount?.(String(Math.round(displayAmountToCollect * 0.5)));
                                     }
                                 }}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Tab') {
+                                        if (e.shiftKey) {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            document.getElementById('btn-settlement-full')?.focus();
+                                        } else {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            document.getElementById('btn-settlement-fulldue')?.focus();
+                                        }
+                                    }
+                                }}
                                 className={cn(
                                     "flex-1 py-2 px-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 synos-focus-btn",
                                     isPartialPayment && Number(customPaymentAmount) > 0
@@ -2643,6 +2711,31 @@ export function BillingSummary({
                                 onClick={() => {
                                     setIsPartialPayment?.(true);
                                     setCustomPaymentAmount?.('0');
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Tab') {
+                                        if (e.shiftKey) {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            document.getElementById('btn-settlement-partial')?.focus();
+                                        } else {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            const partialInput = document.getElementById('input-partial-amount');
+                                            if (partialInput && partialInput.offsetParent !== null) {
+                                                partialInput.focus();
+                                            } else {
+                                                const payCash = document.getElementById('btn-payment-cash') ||
+                                                                document.querySelector('[data-payment-method="true"]');
+                                                if (payCash) payCash.focus();
+                                                else {
+                                                    const actionBtn = document.getElementById('btn-delete-draft') ||
+                                                                      document.getElementById('btn-unified-action');
+                                                    if (actionBtn) actionBtn.focus();
+                                                }
+                                            }
+                                        }
+                                    }
                                 }}
                                 className={cn(
                                     "flex-1 py-2 px-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 synos-focus-btn",
@@ -2671,6 +2764,7 @@ export function BillingSummary({
                                 <div className="relative">
                                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-base font-bold text-slate-400">₹</span>
                                     <input
+                                        id="input-partial-amount"
                                         type="number"
                                         min="1"
                                         max={displayAmountToCollect}
@@ -2680,9 +2774,29 @@ export function BillingSummary({
                                             setCustomPaymentAmount?.(e.target.value === '' ? '' : String(val));
                                         }}
                                         onFocus={(e) => e.target.select()}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Tab') {
+                                                if (e.shiftKey) {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    document.getElementById('btn-settlement-fulldue')?.focus();
+                                                } else {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    const payCash = document.getElementById('btn-payment-cash') ||
+                                                                    document.querySelector('[data-payment-method="true"]');
+                                                    if (payCash) payCash.focus();
+                                                    else {
+                                                        const actionBtn = document.getElementById('btn-delete-draft') ||
+                                                                          document.getElementById('btn-unified-action');
+                                                        if (actionBtn) actionBtn.focus();
+                                                    }
+                                                }
+                                            }
+                                        }}
                                         placeholder={`1 - ${displayAmountToCollect}`}
                                         className={cn(
-                                            "w-full h-12 !pl-9 !pr-4 rounded-xl text-base font-mono font-bold outline-none border transition-all",
+                                            "w-full h-12 !pl-9 !pr-4 rounded-xl text-base font-mono font-bold outline-none border transition-all synos-focus-input",
                                             ui.input
                                         )}
                                     />
@@ -2743,10 +2857,88 @@ export function BillingSummary({
                             {['Cash', 'UPI', 'Card'].map(method => (
                                 <button
                                     key={method}
+                                    id={`btn-payment-${method.toLowerCase()}`}
+                                    data-payment-method="true"
+                                    data-active={(!isSplitPayment && paymentMethod === method) ? "true" : "false"}
                                     type="button"
                                     onClick={() => {
                                         if (setPaymentMethod) setPaymentMethod(method);
                                         if (setIsSplitPayment) setIsSplitPayment(false);
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Tab') {
+                                            if (e.shiftKey) {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                if (method === 'UPI') {
+                                                    document.getElementById('btn-payment-cash')?.focus();
+                                                } else if (method === 'Card') {
+                                                    document.getElementById('btn-payment-upi')?.focus();
+                                                } else { // Cash
+                                                    if (isPartialPayment && Number(customPaymentAmount) > 0) {
+                                                        const partialInput = document.getElementById('input-partial-amount');
+                                                        if (partialInput && partialInput.offsetParent !== null) partialInput.focus();
+                                                        else document.getElementById('btn-settlement-fulldue')?.focus();
+                                                    } else {
+                                                        const fulldue = document.getElementById('btn-settlement-fulldue');
+                                                        const full = document.getElementById('btn-settlement-full');
+                                                        if (fulldue && fulldue.offsetParent !== null) fulldue.focus();
+                                                        else if (full && full.offsetParent !== null) full.focus();
+                                                    }
+                                                }
+                                            } else {
+                                                if (method === 'Cash') {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    document.getElementById('btn-payment-upi')?.focus();
+                                                } else if (method === 'UPI') {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    document.getElementById('btn-payment-card')?.focus();
+                                                } else if (method === 'Card') {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    if (paymentMethod === 'Cash' || isSplitPayment) {
+                                                        const tenderTarget = document.getElementById('btn-toggle-split-cash') ||
+                                                                             document.getElementById('btn-denom-0') ||
+                                                                             document.getElementById('input-cash-tendered') ||
+                                                                             document.getElementById('input-split-cash');
+                                                        if (tenderTarget) {
+                                                            tenderTarget.focus();
+                                                            return;
+                                                        }
+                                                    }
+                                                    const actionBtn = document.getElementById('btn-delete-draft') ||
+                                                                      document.getElementById('btn-cancel-visit') ||
+                                                                      document.getElementById('btn-unified-action');
+                                                    if (actionBtn) actionBtn.focus();
+                                                }
+                                            }
+                                        } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            if (method === 'Cash') {
+                                                setPaymentMethod?.('UPI');
+                                                setIsSplitPayment?.(false);
+                                                document.getElementById('btn-payment-upi')?.focus();
+                                            } else if (method === 'UPI') {
+                                                setPaymentMethod?.('Card');
+                                                setIsSplitPayment?.(false);
+                                                document.getElementById('btn-payment-card')?.focus();
+                                            }
+                                        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            if (method === 'Card') {
+                                                setPaymentMethod?.('UPI');
+                                                setIsSplitPayment?.(false);
+                                                document.getElementById('btn-payment-upi')?.focus();
+                                            } else if (method === 'UPI') {
+                                                setPaymentMethod?.('Cash');
+                                                setIsSplitPayment?.(false);
+                                                document.getElementById('btn-payment-cash')?.focus();
+                                            }
+                                        }
                                     }}
                                     className={cn(
                                         "flex flex-col items-center justify-center py-2.5 rounded-xl border text-sm font-bold tracking-normal transition-all active:scale-95 cursor-pointer synos-focus-btn",

@@ -230,6 +230,10 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
                                     } else if (e.key === 'Tab' && e.shiftKey) {
                                         e.preventDefault();
                                         e.stopPropagation();
+                                        const bottomAction = document.getElementById('btn-unified-action') ||
+                                                             document.getElementById('btn-delete-draft') ||
+                                                             document.getElementById('btn-cancel-visit');
+                                        if (bottomAction) bottomAction.focus();
                                     }
                                 }}
                                 className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold text-slate-700 dark:text-zinc-200 bg-white hover:bg-slate-50 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-300/80 dark:border-zinc-700 shadow-xs hover:shadow transition-all cursor-pointer active:scale-95 synos-focus-btn"
@@ -316,6 +320,10 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
                                 } else if (e.key === 'Tab' && e.shiftKey) {
                                     e.preventDefault();
                                     e.stopPropagation();
+                                    const bottomAction = document.getElementById('btn-unified-action') ||
+                                                         document.getElementById('btn-delete-draft') ||
+                                                         document.getElementById('btn-cancel-visit');
+                                    if (bottomAction) bottomAction.focus();
                                 }
                             }}
                             className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-slate-700 dark:text-zinc-200 bg-white/90 hover:bg-white dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-slate-300/80 dark:border-zinc-700 shadow-2xs hover:shadow-xs transition-all cursor-pointer active:scale-95 synos-focus-btn"
