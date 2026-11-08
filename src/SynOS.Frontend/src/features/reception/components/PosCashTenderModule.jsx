@@ -96,13 +96,10 @@ export function PosCashTenderModule({
     return (
         <div className={cn("p-4 sm:p-5 rounded-2xl border space-y-4 transition-all animate-in fade-in duration-200 shadow-sm", ui.pod)}>
             {/* Header: Mode Switcher (Cash Tender vs Split Payment) */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <Coins className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                    <span className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-slate-800 dark:text-zinc-200">
-                        {isSplitPayment ? "Split / Multi-Channel Payment" : "Counter Cash Tender Calculator"}
-                    </span>
-                </div>
+            <div className="flex items-center justify-between gap-3">
+                <h3 className="text-lg sm:text-xl font-black text-slate-900 dark:text-zinc-100 tracking-tight">
+                    {isSplitPayment ? "Split / Multi-Channel Payment" : "Counter Cash Calculator"}
+                </h3>
 
                 <button
                     id="btn-toggle-split-cash"
@@ -135,9 +132,9 @@ export function PosCashTenderModule({
                             }
                         }
                     }}
-                    className="px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center gap-1.5 synos-focus-btn active:scale-95 bg-purple-600 hover:bg-purple-700 text-white border-purple-600 shadow-sm"
+                    className="h-11 sm:h-12 px-5 rounded-2xl text-sm sm:text-base font-extrabold border transition-all cursor-pointer flex items-center justify-center gap-2 synos-focus-btn active:scale-95 bg-purple-600 hover:bg-purple-700 text-white border-purple-500 shadow-sm"
                 >
-                    <Split className="w-3.5 h-3.5" />
+                    <Split className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" strokeWidth={2.5} />
                     <span>{isSplitPayment ? "Switch to Pure Cash" : "Split Cash + Online"}</span>
                 </button>
             </div>
@@ -271,67 +268,75 @@ export function PosCashTenderModule({
                 </div>
             ) : (
                 /* B. PURE CASH TENDER CALCULATOR */
-                <div className="space-y-3.5">
-                    {/* Quick Tender Currency Chips */}
-                    <div className="space-y-2">
-                        <div className="flex items-center justify-end text-xs font-bold text-slate-500 dark:text-zinc-400">
-                            <span className="font-mono text-xs sm:text-sm font-semibold">Bill Target: ₹{netBill.toLocaleString()}</span>
-                        </div>
-
-                        <div className="flex flex-wrap items-center gap-2">
-                            {suggestedDenominations.map((amount, idx) => {
-                                const isSelected = tendered === amount;
-                                return (
-                                    <button
-                                        key={amount}
-                                        id={`btn-denom-${idx}`}
-                                        type="button"
-                                        disabled={disabled}
-                                        onClick={() => onTenderChange(String(amount))}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Tab') {
-                                                if (e.shiftKey) {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    if (idx === 0) {
-                                                        document.getElementById('btn-toggle-split-cash')?.focus();
-                                                    } else {
-                                                        document.getElementById(`btn-denom-${idx - 1}`)?.focus();
-                                                    }
+                <div className="space-y-4">
+                    {/* Quick Tender Currency Chips (Prominent Badges) */}
+                    <div className="flex flex-wrap items-center gap-3">
+                        {suggestedDenominations.map((amount, idx) => {
+                            const isSelected = tendered === amount;
+                            const isExact = amount === netBill;
+                            return (
+                                <button
+                                    key={amount}
+                                    id={`btn-denom-${idx}`}
+                                    type="button"
+                                    disabled={disabled}
+                                    onClick={() => onTenderChange(String(amount))}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Tab') {
+                                            if (e.shiftKey) {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                if (idx === 0) {
+                                                    document.getElementById('btn-toggle-split-cash')?.focus();
                                                 } else {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    if (idx < suggestedDenominations.length - 1) {
-                                                        document.getElementById(`btn-denom-${idx + 1}`)?.focus();
-                                                    } else {
-                                                        document.getElementById('input-cash-tendered')?.focus();
-                                                    }
+                                                    document.getElementById(`btn-denom-${idx - 1}`)?.focus();
                                                 }
-                                            } else if (e.key === 'ArrowRight') {
+                                            } else {
                                                 e.preventDefault();
                                                 e.stopPropagation();
-                                                const next = document.getElementById(`btn-denom-${idx + 1}`);
-                                                if (next) next.focus();
-                                            } else if (e.key === 'ArrowLeft') {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                const prev = document.getElementById(`btn-denom-${idx - 1}`);
-                                                if (prev) prev.focus();
+                                                if (idx < suggestedDenominations.length - 1) {
+                                                    document.getElementById(`btn-denom-${idx + 1}`)?.focus();
+                                                } else {
+                                                    document.getElementById('input-cash-tendered')?.focus();
+                                                }
                                             }
-                                        }}
-                                        className={cn(
-                                            "px-4 py-2 rounded-xl text-sm font-extrabold border transition-all cursor-pointer synos-focus-btn active:scale-95 shadow-2xs",
-                                            isSelected ? ui.chipActive : ui.chipInactive
-                                        )}
-                                    >
-                                        ₹{amount.toLocaleString()}
-                                        {amount === netBill && (
-                                            <span className="ml-1.5 text-[10px] uppercase font-bold opacity-80">Exact</span>
-                                        )}
-                                    </button>
-                                );
-                            })}
-                        </div>
+                                        } else if (e.key === 'ArrowRight') {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            const next = document.getElementById(`btn-denom-${idx + 1}`);
+                                            if (next) next.focus();
+                                        } else if (e.key === 'ArrowLeft') {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            const prev = document.getElementById(`btn-denom-${idx - 1}`);
+                                            if (prev) prev.focus();
+                                        }
+                                    }}
+                                    className={cn(
+                                        "h-12 sm:h-13 px-5 sm:px-6 rounded-2xl text-base sm:text-lg font-black border-2 transition-all cursor-pointer synos-focus-btn active:scale-95 flex items-center gap-2.5 shadow-xs",
+                                        isSelected 
+                                            ? (isDark 
+                                                ? "bg-blue-600 text-white border-blue-400 shadow-md" 
+                                                : "bg-[#E1EFF9] text-blue-950 border-[#B9D8F0] shadow-sm")
+                                            : (isDark 
+                                                ? "bg-zinc-800 text-zinc-200 border-zinc-700 hover:bg-zinc-750" 
+                                                : "bg-white text-slate-900 border-slate-200/90 hover:bg-slate-50 shadow-2xs")
+                                    )}
+                                >
+                                    <span className="font-mono">₹{amount.toLocaleString()}</span>
+                                    {isExact && (
+                                        <span className={cn(
+                                            "text-xs sm:text-sm font-black uppercase tracking-wider",
+                                            isSelected 
+                                                ? (isDark ? "text-blue-100" : "text-blue-700") 
+                                                : "text-slate-500"
+                                        )}>
+                                            EXACT
+                                        </span>
+                                    )}
+                                </button>
+                            );
+                        })}
                     </div>
 
                     {/* Tendered Input & Change Output */}

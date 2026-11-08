@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
-import { Tag, X, Loader2, IndianRupee, Lock, AlertCircle, Smartphone, CreditCard, Plus, ShieldCheck, Search, ChevronDown, CheckCircle2, Clock, ShieldAlert, Building2, Coins, FlaskConical, Stethoscope } from 'lucide-react'
+import { Tag, X, Loader2, IndianRupee, Lock, AlertCircle, Smartphone, CreditCard, Plus, ShieldCheck, Search, ChevronDown, CheckCircle2, Clock, ShieldAlert, Building2, Coins, FlaskConical, Stethoscope, Circle, CircleDot } from 'lucide-react'
 import { ReceptionApi } from '@/api/reception'
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/context/ThemeContext'
@@ -2638,8 +2638,8 @@ export function BillingSummary({
                             )}
                         </div>
                         
-                        {/* Segmented control: Full Settlement vs Partial vs Full Due */}
-                        <div className="inline-flex w-full p-1 rounded-xl bg-slate-300/60 dark:bg-zinc-800 border border-slate-300/80 dark:border-zinc-700 gap-1 shadow-2xs">
+                        {/* Prominent segmented options: Full Settlement vs Partial vs Full Due */}
+                        <div className="grid grid-cols-3 gap-3">
                             <button
                                 id="btn-settlement-full"
                                 type="button"
@@ -2673,13 +2673,17 @@ export function BillingSummary({
                                     }
                                 }}
                                 className={cn(
-                                    "flex-1 py-2 px-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 synos-focus-btn",
+                                    "flex-1 h-12 sm:h-13 px-3 rounded-2xl text-sm sm:text-base font-bold transition-all cursor-pointer flex items-center justify-center gap-2 border synos-focus-btn active:scale-95",
                                     !isPartialPayment
-                                        ? "bg-[#506A85] text-white shadow-xs"
-                                        : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
+                                        ? "bg-[#39495E] text-white border-[#2F3D4E] shadow-sm"
+                                        : "bg-[#EBF2F7] dark:bg-zinc-850 text-slate-800 dark:text-zinc-200 border-[#C5D8E6] dark:border-zinc-700 hover:bg-[#E2EDF4] shadow-2xs"
                                 )}
                             >
-                                <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                                {!isPartialPayment ? (
+                                    <CircleDot className="w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 text-white" strokeWidth={2.5} />
+                                ) : (
+                                    <Circle className="w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 text-slate-500 dark:text-zinc-400" strokeWidth={2} />
+                                )}
                                 <span className="truncate">Full (₹{displayAmountToCollect.toLocaleString()})</span>
                             </button>
 
@@ -2706,13 +2710,17 @@ export function BillingSummary({
                                     }
                                 }}
                                 className={cn(
-                                    "flex-1 py-2 px-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 synos-focus-btn",
+                                    "flex-1 h-12 sm:h-13 px-3 rounded-2xl text-sm sm:text-base font-bold transition-all cursor-pointer flex items-center justify-center gap-2 border synos-focus-btn active:scale-95",
                                     isPartialPayment && Number(customPaymentAmount) > 0
-                                        ? "bg-[#506A85] text-white shadow-xs"
-                                        : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
+                                        ? "bg-[#39495E] text-white border-[#2F3D4E] shadow-sm"
+                                        : "bg-[#EBF2F7] dark:bg-zinc-850 text-slate-800 dark:text-zinc-200 border-[#C5D8E6] dark:border-zinc-700 hover:bg-[#E2EDF4] shadow-2xs"
                                 )}
                             >
-                                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                                {isPartialPayment && Number(customPaymentAmount) > 0 ? (
+                                    <CircleDot className="w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 text-white" strokeWidth={2.5} />
+                                ) : (
+                                    <Circle className="w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 text-slate-500 dark:text-zinc-400" strokeWidth={2} />
+                                )}
                                 <span>Partial Due</span>
                             </button>
 
@@ -2749,13 +2757,17 @@ export function BillingSummary({
                                     }
                                 }}
                                 className={cn(
-                                    "flex-1 py-2 px-2.5 rounded-lg text-xs sm:text-sm font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 synos-focus-btn",
+                                    "flex-1 h-12 sm:h-13 px-3 rounded-2xl text-sm sm:text-base font-bold transition-all cursor-pointer flex items-center justify-center gap-2 border synos-focus-btn active:scale-95",
                                     isPartialPayment && Number(customPaymentAmount) === 0
-                                        ? "bg-amber-700 text-white shadow-xs"
-                                        : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
+                                        ? "bg-[#39495E] text-white border-[#2F3D4E] shadow-sm"
+                                        : "bg-[#EBF2F7] dark:bg-zinc-850 text-slate-800 dark:text-zinc-200 border-[#C5D8E6] dark:border-zinc-700 hover:bg-[#E2EDF4] shadow-2xs"
                                 )}
                             >
-                                <Clock className="w-3.5 h-3.5 shrink-0" />
+                                {isPartialPayment && Number(customPaymentAmount) === 0 ? (
+                                    <CircleDot className="w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 text-white" strokeWidth={2.5} />
+                                ) : (
+                                    <Circle className="w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 text-slate-500 dark:text-zinc-400" strokeWidth={2} />
+                                )}
                                 <span>Full Due</span>
                             </button>
                         </div>
@@ -2864,106 +2876,109 @@ export function BillingSummary({
                         onPointerDownCapture={() => { if (isDiscountExpanded) setIsDiscountExpanded(false); }}
                     >
                         <label className="text-base font-bold text-slate-800 dark:text-zinc-200 tracking-normal">Payment Method</label>
-                        <div className="grid grid-cols-3 gap-2">
-                            {['Cash', 'UPI', 'Card'].map(method => (
-                                <button
-                                    key={method}
-                                    id={`btn-payment-${method.toLowerCase()}`}
-                                    data-payment-method="true"
-                                    data-active={(!isSplitPayment && paymentMethod === method) ? "true" : "false"}
-                                    type="button"
-                                    onClick={() => {
-                                        if (setPaymentMethod) setPaymentMethod(method);
-                                        if (setIsSplitPayment) setIsSplitPayment(false);
-                                    }}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Tab') {
-                                            if (e.shiftKey) {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                if (method === 'UPI') {
-                                                    document.getElementById('btn-payment-cash')?.focus();
-                                                } else if (method === 'Card') {
-                                                    document.getElementById('btn-payment-upi')?.focus();
-                                                } else { // Cash
-                                                    if (isPartialPayment && Number(customPaymentAmount) > 0) {
-                                                        const partialInput = document.getElementById('input-partial-amount');
-                                                        if (partialInput && partialInput.offsetParent !== null) partialInput.focus();
-                                                        else document.getElementById('btn-settlement-fulldue')?.focus();
-                                                    } else {
-                                                        const fulldue = document.getElementById('btn-settlement-fulldue');
-                                                        const full = document.getElementById('btn-settlement-full');
-                                                        if (fulldue && fulldue.offsetParent !== null) fulldue.focus();
-                                                        else if (full && full.offsetParent !== null) full.focus();
-                                                    }
-                                                }
-                                            } else {
-                                                if (method === 'Cash') {
+                        <div className="grid grid-cols-3 gap-3">
+                            {['Cash', 'UPI', 'Card'].map(method => {
+                                const isActive = !isSplitPayment && paymentMethod === method;
+                                return (
+                                    <button
+                                        key={method}
+                                        id={`btn-payment-${method.toLowerCase()}`}
+                                        data-payment-method="true"
+                                        data-active={isActive ? "true" : "false"}
+                                        type="button"
+                                        onClick={() => {
+                                            if (setPaymentMethod) setPaymentMethod(method);
+                                            if (setIsSplitPayment) setIsSplitPayment(false);
+                                        }}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Tab') {
+                                                if (e.shiftKey) {
                                                     e.preventDefault();
                                                     e.stopPropagation();
-                                                    document.getElementById('btn-payment-upi')?.focus();
-                                                } else if (method === 'UPI') {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    document.getElementById('btn-payment-card')?.focus();
-                                                } else if (method === 'Card') {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    if (paymentMethod === 'Cash' || isSplitPayment) {
-                                                        const tenderTarget = document.getElementById('btn-toggle-split-cash') ||
-                                                                             document.getElementById('btn-denom-0') ||
-                                                                             document.getElementById('input-cash-tendered') ||
-                                                                             document.getElementById('input-split-cash');
-                                                        if (tenderTarget) {
-                                                            tenderTarget.focus();
-                                                            return;
+                                                    if (method === 'UPI') {
+                                                        document.getElementById('btn-payment-cash')?.focus();
+                                                    } else if (method === 'Card') {
+                                                        document.getElementById('btn-payment-upi')?.focus();
+                                                    } else { // Cash
+                                                        if (isPartialPayment && Number(customPaymentAmount) > 0) {
+                                                            const partialInput = document.getElementById('input-partial-amount');
+                                                            if (partialInput && partialInput.offsetParent !== null) partialInput.focus();
+                                                            else document.getElementById('btn-settlement-fulldue')?.focus();
+                                                        } else {
+                                                            const fulldue = document.getElementById('btn-settlement-fulldue');
+                                                            const full = document.getElementById('btn-settlement-full');
+                                                            if (fulldue && fulldue.offsetParent !== null) fulldue.focus();
+                                                            else if (full && full.offsetParent !== null) full.focus();
                                                         }
                                                     }
-                                                    const actionBtn = document.getElementById('btn-delete-draft') ||
-                                                                      document.getElementById('btn-cancel-visit') ||
-                                                                      document.getElementById('btn-unified-action');
-                                                    if (actionBtn) actionBtn.focus();
+                                                } else {
+                                                    if (method === 'Cash') {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        document.getElementById('btn-payment-upi')?.focus();
+                                                    } else if (method === 'UPI') {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        document.getElementById('btn-payment-card')?.focus();
+                                                    } else if (method === 'Card') {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        if (paymentMethod === 'Cash' || isSplitPayment) {
+                                                            const tenderTarget = document.getElementById('btn-toggle-split-cash') ||
+                                                                                 document.getElementById('btn-denom-0') ||
+                                                                                 document.getElementById('input-cash-tendered') ||
+                                                                                 document.getElementById('input-split-cash');
+                                                            if (tenderTarget) {
+                                                                tenderTarget.focus();
+                                                                return;
+                                                            }
+                                                        }
+                                                        const actionBtn = document.getElementById('btn-delete-draft') ||
+                                                                          document.getElementById('btn-cancel-visit') ||
+                                                                          document.getElementById('btn-unified-action');
+                                                        if (actionBtn) actionBtn.focus();
+                                                    }
+                                                }
+                                            } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                if (method === 'Cash') {
+                                                    setPaymentMethod?.('UPI');
+                                                    setIsSplitPayment?.(false);
+                                                    document.getElementById('btn-payment-upi')?.focus();
+                                                } else if (method === 'UPI') {
+                                                    setPaymentMethod?.('Card');
+                                                    setIsSplitPayment?.(false);
+                                                    document.getElementById('btn-payment-card')?.focus();
+                                                }
+                                            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                if (method === 'Card') {
+                                                    setPaymentMethod?.('UPI');
+                                                    setIsSplitPayment?.(false);
+                                                    document.getElementById('btn-payment-upi')?.focus();
+                                                } else if (method === 'UPI') {
+                                                    setPaymentMethod?.('Cash');
+                                                    setIsSplitPayment?.(false);
+                                                    document.getElementById('btn-payment-cash')?.focus();
                                                 }
                                             }
-                                        } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            if (method === 'Cash') {
-                                                setPaymentMethod?.('UPI');
-                                                setIsSplitPayment?.(false);
-                                                document.getElementById('btn-payment-upi')?.focus();
-                                            } else if (method === 'UPI') {
-                                                setPaymentMethod?.('Card');
-                                                setIsSplitPayment?.(false);
-                                                document.getElementById('btn-payment-card')?.focus();
-                                            }
-                                        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            if (method === 'Card') {
-                                                setPaymentMethod?.('UPI');
-                                                setIsSplitPayment?.(false);
-                                                document.getElementById('btn-payment-upi')?.focus();
-                                            } else if (method === 'UPI') {
-                                                setPaymentMethod?.('Cash');
-                                                setIsSplitPayment?.(false);
-                                                document.getElementById('btn-payment-cash')?.focus();
-                                            }
-                                        }
-                                    }}
-                                    className={cn(
-                                        "flex flex-col items-center justify-center py-2.5 rounded-xl border text-sm font-bold tracking-normal transition-all active:scale-95 cursor-pointer synos-focus-btn",
-                                        (!isSplitPayment && paymentMethod === method)
-                                            ? ui.method.active
-                                            : ui.method.inactive
-                                    )}
-                                >
-                                    {method === 'Cash' && <IndianRupee className="w-3 h-3 mb-1" />}
-                                    {method === 'UPI' && <Smartphone className="w-3 h-3 mb-1" />}
-                                    {method === 'Card' && <CreditCard className="w-3 h-3 mb-1" />}
-                                    {method}
-                                </button>
-                            ))}
+                                        }}
+                                        className={cn(
+                                            "flex flex-row items-center justify-center gap-2.5 h-13 sm:h-14 rounded-2xl border text-base sm:text-lg font-black tracking-tight transition-all active:scale-95 cursor-pointer synos-focus-btn shadow-xs",
+                                            isActive
+                                                ? "bg-[#18202F] text-white border-[#18202F] shadow-sm"
+                                                : "bg-white dark:bg-zinc-850 text-slate-800 dark:text-zinc-100 border-[#CBD5E1] dark:border-zinc-700 shadow-2xs hover:bg-slate-50"
+                                        )}
+                                    >
+                                        {method === 'Cash' && <IndianRupee className="w-5 h-5 shrink-0" strokeWidth={2.5} />}
+                                        {method === 'UPI' && <Smartphone className="w-5 h-5 shrink-0" strokeWidth={2.5} />}
+                                        {method === 'Card' && <CreditCard className="w-5 h-5 shrink-0" strokeWidth={2.5} />}
+                                        <span>{method}</span>
+                                    </button>
+                                );
+                            })}
                         </div>
 
                         {/* POS Cash Tender & Split Calculator (Native Cashier Module) */}
