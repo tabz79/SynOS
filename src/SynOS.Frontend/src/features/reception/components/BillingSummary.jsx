@@ -431,6 +431,21 @@ export function BillingSummary({
     };
 
     const handleReasonKeyDown = (e) => {
+        if (e.key === 'Tab') {
+            if (!e.shiftKey) {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowReasonDropdown(false);
+                document.getElementById('btn-add-discount-reason')?.focus();
+            } else {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowReasonDropdown(false);
+                document.getElementById('input-flat-concession')?.focus();
+            }
+            return;
+        }
+
         if (!showReasonDropdown) {
             if (e.key === 'ArrowDown' || e.key === 'Enter') {
                 setShowReasonDropdown(true);
@@ -448,6 +463,12 @@ export function BillingSummary({
             if (reasonSelectedIndex >= 0 && reasonSelectedIndex < filteredReasonSuggestions.length) {
                 e.preventDefault();
                 setCustomDiscountReason(filteredReasonSuggestions[reasonSelectedIndex].reasonText);
+                setShowReasonDropdown(false);
+                setTimeout(() => {
+                    document.getElementById('btn-apply-custom-discount')?.focus();
+                }, 40);
+            } else if (customDiscountReason && customDiscountReason.trim()) {
+                e.preventDefault();
                 setShowReasonDropdown(false);
                 setTimeout(() => {
                     document.getElementById('btn-apply-custom-discount')?.focus();
@@ -593,7 +614,11 @@ export function BillingSummary({
             alert("Percentage discount cannot exceed 100%.");
             return;
         }
-        const effectiveReason = (customDiscountReason && customDiscountReason.trim()) || 'Doctor Recommendation';
+        if (!customDiscountReason || !customDiscountReason.trim()) {
+            alert("Please select or enter an authorized discount reason from the dropdown.");
+            return;
+        }
+        const effectiveReason = customDiscountReason.trim();
         if (!canPerformActions || !visitId) return;
 
         // CORRECTION INTENT (Staged Batch Edit)
@@ -1676,6 +1701,19 @@ export function BillingSummary({
                                                             type="button"
                                                             id="btn-std-type-flat"
                                                             onClick={() => setCustomDiscountType('FLAT')}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Tab') {
+                                                                    if (!e.shiftKey) {
+                                                                        e.preventDefault();
+                                                                        e.stopPropagation();
+                                                                        document.getElementById('btn-std-type-percent')?.focus();
+                                                                    } else {
+                                                                        e.preventDefault();
+                                                                        e.stopPropagation();
+                                                                        document.getElementById('btn-discount-mode-custom')?.focus();
+                                                                    }
+                                                                }
+                                                            }}
                                                             className={cn(
                                                                 "rounded-xl font-black text-base sm:text-lg flex items-center justify-center flex-1 cursor-pointer transition-all synos-focus-btn",
                                                                 customDiscountType === 'FLAT'
@@ -1689,6 +1727,19 @@ export function BillingSummary({
                                                             type="button"
                                                             id="btn-std-type-percent"
                                                             onClick={() => setCustomDiscountType('PERCENTAGE')}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Tab') {
+                                                                    if (!e.shiftKey) {
+                                                                        e.preventDefault();
+                                                                        e.stopPropagation();
+                                                                        document.getElementById('input-flat-concession')?.focus();
+                                                                    } else {
+                                                                        e.preventDefault();
+                                                                        e.stopPropagation();
+                                                                        document.getElementById('btn-std-type-flat')?.focus();
+                                                                    }
+                                                                }
+                                                            }}
                                                             className={cn(
                                                                 "rounded-xl font-black text-base sm:text-lg flex items-center justify-center flex-1 cursor-pointer transition-all synos-focus-btn",
                                                                 customDiscountType === 'PERCENTAGE'
@@ -1700,57 +1751,34 @@ export function BillingSummary({
                                                         </button>
                                                     </div>
 
-                                                    {/* Tile 2 (Top-Right): Full-width Input Box + Save Button */}
-                                                    <div className="flex items-center gap-2.5 h-14">
-                                                        <div className="flex-1 h-14 rounded-2xl border border-slate-200/90 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center px-4 shadow-2xs focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
-                                                            <span className="text-xl font-bold text-slate-500 dark:text-zinc-400 select-none">
-                                                                {customDiscountType === 'FLAT' ? '₹' : '%'}
-                                                            </span>
-                                                            <div className="w-[1.5px] h-6 bg-slate-200 dark:bg-zinc-700 mx-3.5 shrink-0" />
-                                                            <input
-                                                                id="input-flat-concession"
-                                                                data-financials-focus="true"
-                                                                type="number"
-                                                                min="0"
-                                                                max={customDiscountType === 'PERCENTAGE' ? 100 : (gross || 100000)}
-                                                                value={customDiscountValue}
-                                                                onFocus={(e) => e.target.select()}
-                                                                onChange={(e) => {
-                                                                    const raw = e.target.value;
-                                                                    const clean = raw.startsWith('0') && raw.length > 1 && !raw.startsWith('0.') ? raw.replace(/^0+/, '') : raw;
-                                                                    setCustomDiscountValue(clean);
-                                                                }}
-                                                                onKeyDown={(e) => {
-                                                                    if (e.key === 'Enter') {
-                                                                        e.preventDefault();
-                                                                        handleApplyCustomDiscount();
-                                                                    } else if (e.key === 'Tab') {
-                                                                        if (!e.shiftKey) {
-                                                                            e.preventDefault();
-                                                                            e.stopPropagation();
-                                                                            document.getElementById('btn-apply-custom-discount')?.focus();
-                                                                        } else {
-                                                                            e.preventDefault();
-                                                                            e.stopPropagation();
-                                                                            const toggleBtn = document.getElementById('btn-std-type-percent') ||
-                                                                                              document.getElementById('btn-std-type-flat') ||
-                                                                                              document.getElementById('btn-minimize-concession');
-                                                                            if (toggleBtn) toggleBtn.focus();
-                                                                        }
-                                                                    }
-                                                                }}
-                                                                className="w-full h-full bg-transparent border-0 outline-none font-mono font-black text-2xl text-slate-900 dark:text-white text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none synos-focus-input"
-                                                                placeholder="0"
-                                                            />
-                                                        </div>
-                                                        <button
-                                                            type="button"
-                                                            tabIndex={0}
-                                                            id="btn-apply-custom-discount"
-                                                            disabled={!customDiscountValue || Number(customDiscountValue) <= 0 || isProcessing}
-                                                            onClick={handleApplyCustomDiscount}
+                                                    {/* Tile 2 (Top-Right): Full-width Input Box */}
+                                                    <div className="h-14 rounded-2xl border border-slate-200/90 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center px-4 shadow-2xs focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all">
+                                                        <span className="text-xl font-bold text-slate-500 dark:text-zinc-400 select-none">
+                                                            {customDiscountType === 'FLAT' ? '₹' : '%'}
+                                                        </span>
+                                                        <div className="w-[1.5px] h-6 bg-slate-200 dark:bg-zinc-700 mx-3.5 shrink-0" />
+                                                        <input
+                                                            id="input-flat-concession"
+                                                            data-financials-focus="true"
+                                                            type="number"
+                                                            min="0"
+                                                            max={customDiscountType === 'PERCENTAGE' ? 100 : (gross || 100000)}
+                                                            value={customDiscountValue}
+                                                            onFocus={(e) => e.target.select()}
+                                                            onChange={(e) => {
+                                                                const raw = e.target.value;
+                                                                const clean = raw.startsWith('0') && raw.length > 1 && !raw.startsWith('0.') ? raw.replace(/^0+/, '') : raw;
+                                                                setCustomDiscountValue(clean);
+                                                            }}
                                                             onKeyDown={(e) => {
-                                                                if (e.key === 'Tab') {
+                                                                if (e.key === 'Enter') {
+                                                                    e.preventDefault();
+                                                                    if (customDiscountReason && customDiscountReason.trim()) {
+                                                                        handleApplyCustomDiscount();
+                                                                    } else {
+                                                                        document.getElementById('input-discount-reason')?.focus();
+                                                                    }
+                                                                } else if (e.key === 'Tab') {
                                                                     if (!e.shiftKey) {
                                                                         e.preventDefault();
                                                                         e.stopPropagation();
@@ -1758,24 +1786,26 @@ export function BillingSummary({
                                                                     } else {
                                                                         e.preventDefault();
                                                                         e.stopPropagation();
-                                                                        document.getElementById('input-flat-concession')?.focus();
+                                                                        const toggleBtn = document.getElementById('btn-std-type-percent') ||
+                                                                                          document.getElementById('btn-std-type-flat') ||
+                                                                                          document.getElementById('btn-minimize-concession');
+                                                                        if (toggleBtn) toggleBtn.focus();
                                                                     }
                                                                 }
                                                             }}
-                                                            className="h-14 px-6 sm:px-7 rounded-2xl bg-[#0D6EFD] hover:bg-blue-600 disabled:opacity-50 text-white font-black text-base sm:text-lg flex items-center justify-center shadow-xs cursor-pointer active:scale-95 transition-all synos-focus-btn shrink-0"
-                                                        >
-                                                            {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : "Save"}
-                                                        </button>
+                                                            className="w-full h-full bg-transparent border-0 outline-none font-mono font-black text-2xl text-slate-900 dark:text-white text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none synos-focus-input"
+                                                            placeholder="0"
+                                                        />
                                                     </div>
 
-                                                    {/* Tile 3 (Bottom-Left): Standard Lab Tariff */}
+                                                    {/* Tile 3 (Bottom-Left): Total Amount */}
                                                     <div className="rounded-2xl border border-slate-200/90 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 p-3 sm:p-3.5 flex items-center gap-3.5 shadow-2xs h-16">
                                                         <div className="w-11 h-11 rounded-2xl bg-[#E8F1FC] dark:bg-blue-950/40 text-[#0D6EFD] dark:text-blue-400 border border-blue-100 dark:border-blue-900/40 flex items-center justify-center shrink-0 shadow-2xs">
                                                             <FlaskConical className="w-6 h-6 stroke-[2]" />
                                                         </div>
                                                         <div className="flex flex-col min-w-0">
                                                             <span className="text-xs font-bold text-slate-600 dark:text-zinc-400 leading-tight">
-                                                                Lab Tariff
+                                                                Total Amount
                                                             </span>
                                                             <span className="font-mono font-black text-2xl sm:text-3xl text-slate-900 dark:text-white tracking-tight leading-tight mt-0.5">
                                                                 ₹{gross.toLocaleString()}
@@ -1783,14 +1813,14 @@ export function BillingSummary({
                                                         </div>
                                                     </div>
 
-                                                    {/* Tile 4 (Bottom-Right): Doctor / Net Bill */}
+                                                    {/* Tile 4 (Bottom-Right): Patient Bill */}
                                                     <div className="rounded-2xl border border-[#CDEED9] dark:border-emerald-800/60 bg-[#F2FAF5] dark:bg-emerald-950/30 p-3 sm:p-3.5 flex items-center gap-3.5 shadow-2xs h-16">
                                                         <div className="w-11 h-11 rounded-2xl bg-[#DDF4E6] dark:bg-emerald-900/40 text-[#00A859] dark:text-emerald-400 border border-[#C6ECD2] dark:border-emerald-800 flex items-center justify-center shrink-0 shadow-2xs">
                                                             <Stethoscope className="w-6 h-6 stroke-[2]" />
                                                         </div>
                                                         <div className="flex flex-col min-w-0">
                                                             <span className="text-xs font-bold text-[#008744] dark:text-emerald-300 leading-tight">
-                                                                Doctor Bill
+                                                                Patient Bill
                                                             </span>
                                                             <span className="font-mono font-black text-2xl sm:text-3xl text-[#00A859] dark:text-emerald-400 tracking-tight leading-tight mt-0.5">
                                                                 ₹{calculatedNet.toLocaleString()}
@@ -1807,20 +1837,34 @@ export function BillingSummary({
                                                         </label>
                                                         <button
                                                             type="button"
+                                                            id="btn-add-discount-reason"
                                                             onClick={() => {
                                                                 setShowReasonDropdown(false);
                                                                 if (onOpenModal) onOpenModal('discountReason');
                                                             }}
-                                                            className="text-xs font-bold text-sky-600 hover:text-sky-700 flex items-center gap-1 cursor-pointer transition-colors"
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Tab') {
+                                                                    if (!e.shiftKey) {
+                                                                        e.preventDefault();
+                                                                        e.stopPropagation();
+                                                                        document.getElementById('btn-apply-custom-discount')?.focus();
+                                                                    } else {
+                                                                        e.preventDefault();
+                                                                        e.stopPropagation();
+                                                                        document.getElementById('input-discount-reason')?.focus();
+                                                                    }
+                                                                }
+                                                            }}
+                                                            className="text-xs font-bold text-sky-600 hover:text-sky-700 flex items-center gap-1 cursor-pointer transition-colors synos-focus-btn"
                                                             title="Add new standard preset reason to master"
                                                         >
                                                             <Plus className="w-3.5 h-3.5" /> Add Reason
                                                         </button>
                                                     </div>
 
-                                                    {/* Native System Searchable Dropdown Combobox */}
-                                                    <div className="flex items-center gap-2.5">
-                                                        <div className="relative flex-1">
+                                                    {/* 70/30 Split Row: Left 70% Reason Dropdown, Right 30% Save Button */}
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="relative w-[70%] shrink-0">
                                                             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                                                             <input
                                                                 id="input-discount-reason"
@@ -1839,7 +1883,7 @@ export function BillingSummary({
                                                                     }, 200);
                                                                 }}
                                                                 style={{ paddingLeft: '2.5rem', paddingRight: '2.25rem' }}
-                                                                className={cn(ui.input, "w-full h-11 rounded-xl text-sm font-medium outline-none border transition-all")}
+                                                                className={cn(ui.input, "w-full h-12 rounded-xl text-sm font-medium outline-none border transition-all")}
                                                             />
                                                             {customDiscountReason ? (
                                                                 <button
@@ -1892,6 +1936,9 @@ export function BillingSummary({
                                                                                         e.preventDefault();
                                                                                         setCustomDiscountReason(r.reasonText);
                                                                                         setShowReasonDropdown(false);
+                                                                                        setTimeout(() => {
+                                                                                            document.getElementById('btn-apply-custom-discount')?.focus();
+                                                                                        }, 40);
                                                                                     }}
                                                                                     className={cn(
                                                                                         "w-full text-left px-3 py-2 rounded-lg transition-all duration-150 text-xs flex items-center justify-between cursor-pointer",
@@ -1935,6 +1982,33 @@ export function BillingSummary({
                                                                     </button>
                                                                 </div>
                                                             )}
+                                                        </div>
+
+                                                        {/* Right 30%: Solid Blue Save Button */}
+                                                        <div className="w-[30%] shrink-0">
+                                                            <button
+                                                                type="button"
+                                                                tabIndex={0}
+                                                                id="btn-apply-custom-discount"
+                                                                disabled={!customDiscountValue || Number(customDiscountValue) <= 0 || !customDiscountReason?.trim() || isProcessing}
+                                                                onClick={handleApplyCustomDiscount}
+                                                                onKeyDown={(e) => {
+                                                                    if (e.key === 'Tab') {
+                                                                        if (!e.shiftKey) {
+                                                                            e.preventDefault();
+                                                                            e.stopPropagation();
+                                                                            advanceFocusToSettlementOrPayment();
+                                                                        } else {
+                                                                            e.preventDefault();
+                                                                            e.stopPropagation();
+                                                                            document.getElementById('btn-add-discount-reason')?.focus();
+                                                                        }
+                                                                    }
+                                                                }}
+                                                                className="h-12 w-full rounded-xl bg-[#0D6EFD] hover:bg-blue-600 disabled:opacity-50 text-white font-black text-base sm:text-lg flex items-center justify-center shadow-xs cursor-pointer active:scale-95 transition-all synos-focus-btn"
+                                                            >
+                                                                {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : "Save"}
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 </div>
