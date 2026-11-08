@@ -1029,7 +1029,9 @@ export function BillingSummary({
                             {/* Unified Financials Summary Card (Referral Header + 3-Column Ledger Grid) */}
                             <div className={cn(
                                 "p-4 sm:p-5 rounded-2xl border space-y-3.5 shadow-xs transition-all",
-                                isDark ? "bg-zinc-850 border-zinc-700/80 text-zinc-100" : "bg-white border-slate-200/90 text-slate-900"
+                                isDark 
+                                    ? "bg-zinc-850/90 border-zinc-750 text-zinc-100" 
+                                    : "bg-gradient-to-b from-[#EDF4F9] via-[#E7F0F6] to-[#DEEBF3] border-[#C5D8E6] text-slate-900 shadow-[0_2px_8px_rgba(15,35,60,0.04),inset_0_1px_0_rgba(255,255,255,0.8)]"
                             )}>
                                 {/* Top Row: Referral Strip with Integrated Discount Button */}
                                 <div className="flex items-center justify-between gap-3 min-w-0">
@@ -1623,7 +1625,9 @@ export function BillingSummary({
                                 return (
                                     <div ref={concessionEditorRef} className={cn(
                                         "p-3.5 sm:p-4 rounded-2xl border space-y-3 shadow-xs transition-all duration-200 animate-in fade-in slide-in-from-top-2",
-                                        isDark ? "bg-zinc-850 border-zinc-700/80 text-zinc-100" : "bg-white border-slate-200/90 text-slate-900"
+                                        isDark 
+                                            ? "bg-zinc-850/90 border-zinc-750 text-zinc-100" 
+                                            : "bg-gradient-to-b from-[#EDF4F9] via-[#E7F0F6] to-[#DEEBF3] border-[#C5D8E6] text-slate-900 shadow-[0_2px_8px_rgba(15,35,60,0.04),inset_0_1px_0_rgba(255,255,255,0.8)]"
                                     )}>
                                         {/* Header: Tag Icon + Title + Mode Switcher + Minimize Button */}
                                         <div className="flex items-center justify-between pb-0.5">
@@ -2230,7 +2234,9 @@ export function BillingSummary({
                             {isB2BExpanded && (
                                 <div className={cn(
                                     "p-3.5 sm:p-4 rounded-2xl border space-y-3 shadow-xs transition-all duration-200",
-                                    isDark ? "bg-zinc-850 border-zinc-700/80 text-zinc-100" : "bg-white border-slate-200/90 text-slate-900"
+                                    isDark 
+                                        ? "bg-zinc-850/90 border-zinc-750 text-zinc-100" 
+                                        : "bg-gradient-to-b from-[#EDF4F9] via-[#E7F0F6] to-[#DEEBF3] border-[#C5D8E6] text-slate-900 shadow-[0_2px_8px_rgba(15,35,60,0.04),inset_0_1px_0_rgba(255,255,255,0.8)]"
                                 )}>
                                     {/* Header: Tag Icon + Title + Minimize Button */}
                                     <div className="flex items-center justify-between pb-0.5">
@@ -2448,7 +2454,9 @@ export function BillingSummary({
                                         "p-4 sm:p-5 rounded-2xl border space-y-3.5 transition-all shadow-sm",
                                         isOverridden
                                             ? (isDark ? "bg-amber-950/20 border-amber-500/40" : "bg-amber-50/70 border-amber-200")
-                                            : (isDark ? "bg-zinc-900/80 border-zinc-800 text-zinc-200" : "bg-black/[0.04] border-black/5 text-zinc-900")
+                                            : (isDark 
+                                                ? "bg-zinc-850/90 border-zinc-750 text-zinc-100" 
+                                                : "bg-gradient-to-b from-[#EDF4F9] via-[#E7F0F6] to-[#DEEBF3] border-[#C5D8E6] text-slate-900 shadow-[0_2px_8px_rgba(15,35,60,0.04),inset_0_1px_0_rgba(255,255,255,0.8)]")
                                     )}>
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">

@@ -754,7 +754,8 @@ export function VisitDetails({
     // Enterprise Financials Focus Target Resolver
     const findFirstFinancialsTarget = () => {
         // 1. Standard Concession Trigger or open Concession input (Direct / Standard Mode)
-        const standardConcession = document.querySelector('[data-concession-trigger="true"]') ||
+        const standardConcession = document.getElementById('btn-discount-header-toggle') ||
+                                   document.querySelector('[data-concession-trigger="true"]') ||
                                    document.getElementById('input-flat-concession') ||
                                    document.querySelector('[data-financials-focus="true"]');
         if (standardConcession && standardConcession.offsetParent !== null) return standardConcession;
@@ -1052,11 +1053,11 @@ export function VisitDetails({
                                                 if (e.key === 'Tab' && !e.shiftKey) {
                                                     e.preventDefault();
                                                     e.stopPropagation();
-                                                    const secInput = document.getElementById('input-secondary-doctor') ||
-                                                                     document.getElementById('card-secondary-doctor') ||
-                                                                     document.getElementById('btn-add-secondary-doctor');
-                                                    if (secInput) {
-                                                        secInput.focus();
+                                                    const rmpTarget = document.getElementById('card-secondary-doctor') ||
+                                                                      document.getElementById('input-secondary-doctor') ||
+                                                                      document.getElementById('btn-add-secondary-doctor');
+                                                    if (rmpTarget) {
+                                                        rmpTarget.focus();
                                                     } else {
                                                         window.dispatchEvent(new CustomEvent('synos:collapse-doctor-section'));
                                                         const testSearch = document.getElementById('input-test-search') || testSearchInputRef?.current;
@@ -1069,13 +1070,10 @@ export function VisitDetails({
                                                     e.preventDefault();
                                                     e.stopPropagation();
                                                     const removeBtn = document.getElementById('btn-remove-prescribing-doctor');
-                                                    if (removeBtn) {
-                                                        removeBtn.focus();
-                                                    } else {
-                                                        const docInput = document.getElementById('input-prescribing-doctor') ||
-                                                                         document.getElementById('card-prescribing-doctor');
-                                                        if (docInput) docInput.focus();
-                                                    }
+                                                    const docCard = document.getElementById('card-prescribing-doctor');
+                                                    const docInput = document.getElementById('input-prescribing-doctor');
+                                                    const prev = removeBtn || docCard || docInput;
+                                                    if (prev) prev.focus();
                                                 }
                                             }}
                                             className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-3 py-1.5 text-xs sm:text-sm font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95 synos-focus-btn"
@@ -1093,13 +1091,22 @@ export function VisitDetails({
                                                 e.preventDefault();
                                                 e.stopPropagation();
                                                 const removeBtn = document.getElementById('btn-remove-prescribing-doctor');
-                                                if (removeBtn) {
+                                                if (removeBtn && removeBtn.offsetParent !== null) {
                                                     removeBtn.focus();
                                                 } else {
-                                                    const secDoc = document.getElementById('btn-add-secondary-doctor') ||
-                                                                   document.getElementById('card-secondary-doctor') ||
-                                                                   document.getElementById('input-secondary-doctor');
-                                                    if (secDoc) secDoc.focus();
+                                                    const rmpTarget = document.getElementById('card-secondary-doctor') ||
+                                                                      document.getElementById('input-secondary-doctor') ||
+                                                                      document.getElementById('btn-add-secondary-doctor');
+                                                    if (rmpTarget) {
+                                                        rmpTarget.focus();
+                                                    } else {
+                                                        window.dispatchEvent(new CustomEvent('synos:collapse-doctor-section'));
+                                                        const testSearch = document.getElementById('input-test-search') || testSearchInputRef?.current;
+                                                        if (testSearch) {
+                                                            testSearch.focus();
+                                                            setIsSearchFocused(true);
+                                                        }
+                                                    }
                                                 }
                                             } else if (e.key === 'Tab' && e.shiftKey) {
                                                 e.preventDefault();
@@ -1133,34 +1140,45 @@ export function VisitDetails({
                                                     type="button"
                                                     id="btn-remove-prescribing-doctor"
                                                     onClick={handleRemoveReferral}
-                                                disabled={isProcessing}
-                                                tabIndex={0}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === 'Tab' && !e.shiftKey) {
-                                                        e.preventDefault();
-                                                        e.stopPropagation();
-                                                        const addBtn = document.getElementById('btn-add-prescribing-doctor');
-                                                        if (addBtn) addBtn.focus();
-                                                    } else if (e.key === 'Tab' && e.shiftKey) {
-                                                        e.preventDefault();
-                                                        e.stopPropagation();
-                                                        const card = document.getElementById('card-prescribing-doctor');
-                                                        if (card) card.focus();
-                                                    } else if (e.key === 'Enter' || e.key === ' ') {
-                                                        e.preventDefault();
-                                                        e.stopPropagation();
-                                                        handleRemoveReferral();
-                                                    }
-                                                }}
-                                                className="ml-auto text-zinc-500 hover:text-red-400 p-1 hover:bg-red-400/10 rounded transition-colors cursor-pointer synos-focus-btn"
-                                                title="Remove Primary Doctor"
-                                            >
-                                                <X className="w-4 h-4" />
-                                            </button>
-                                        )}
+                                                    disabled={isProcessing}
+                                                    tabIndex={0}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Tab' && !e.shiftKey) {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            const rmpTarget = document.getElementById('card-secondary-doctor') ||
+                                                                              document.getElementById('input-secondary-doctor') ||
+                                                                              document.getElementById('btn-add-secondary-doctor');
+                                                            if (rmpTarget) {
+                                                                rmpTarget.focus();
+                                                            } else {
+                                                                window.dispatchEvent(new CustomEvent('synos:collapse-doctor-section'));
+                                                                const testSearch = document.getElementById('input-test-search') || testSearchInputRef?.current;
+                                                                if (testSearch) {
+                                                                    testSearch.focus();
+                                                                    setIsSearchFocused(true);
+                                                                }
+                                                            }
+                                                        } else if (e.key === 'Tab' && e.shiftKey) {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            const card = document.getElementById('card-prescribing-doctor');
+                                                            if (card) card.focus();
+                                                        } else if (e.key === 'Enter' || e.key === ' ') {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            handleRemoveReferral();
+                                                        }
+                                                    }}
+                                                    className="ml-auto text-zinc-500 hover:text-red-400 p-1 hover:bg-red-400/10 rounded transition-colors cursor-pointer synos-focus-btn"
+                                                    title="Remove Primary Doctor"
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            ) : (
+                                ) : (
                                     <div className="space-y-2">
                                         <ReferralCombinedInput
                                             inputId="input-prescribing-doctor"
@@ -1269,8 +1287,11 @@ export function VisitDetails({
                                             } else if (e.key === 'Tab' && e.shiftKey) {
                                                 e.preventDefault();
                                                 e.stopPropagation();
-                                                const addDoc = document.getElementById('btn-add-prescribing-doctor');
-                                                if (addDoc) addDoc.focus();
+                                                const prevDoc = document.getElementById('btn-remove-prescribing-doctor') ||
+                                                                document.getElementById('btn-add-prescribing-doctor') ||
+                                                                document.getElementById('card-prescribing-doctor') ||
+                                                                document.getElementById('input-prescribing-doctor');
+                                                if (prevDoc) prevDoc.focus();
                                             }
                                         }}
                                         className={cn("flex items-center justify-between gap-3 font-semibold p-3.5 sm:p-4 rounded-xl border cursor-pointer synos-focus-card focus:outline-none",
@@ -1338,8 +1359,11 @@ export function VisitDetails({
                                                 if (addRmp) addRmp.focus();
                                             }}
                                             onAdvanceBackward={() => {
-                                                const addDoc = document.getElementById('btn-add-prescribing-doctor');
-                                                if (addDoc) addDoc.focus();
+                                                const prevDoc = document.getElementById('btn-remove-prescribing-doctor') ||
+                                                                document.getElementById('btn-add-prescribing-doctor') ||
+                                                                document.getElementById('card-prescribing-doctor') ||
+                                                                document.getElementById('input-prescribing-doctor');
+                                                if (prevDoc) prevDoc.focus();
                                             }}
                                         />
                                     </div>
@@ -1399,11 +1423,12 @@ export function VisitDetails({
                                             e.preventDefault();
                                             e.stopPropagation();
                                             const removeBtn = document.getElementById('btn-remove-prepaid-doctor');
-                                            if (removeBtn) {
+                                            if (removeBtn && removeBtn.offsetParent !== null) {
                                                 removeBtn.focus();
                                             } else {
-                                                const addBtn = document.getElementById('btn-add-prescribing-doctor');
-                                                if (addBtn) addBtn.focus();
+                                                window.dispatchEvent(new CustomEvent('synos:collapse-doctor-section'));
+                                                const testSearch = document.getElementById('input-test-search') || testSearchInputRef?.current;
+                                                if (testSearch) testSearch.focus();
                                             }
                                         } else if (e.key === 'Tab' && e.shiftKey) {
                                             e.preventDefault();
@@ -1438,8 +1463,9 @@ export function VisitDetails({
                                                     if (e.key === 'Tab' && !e.shiftKey) {
                                                         e.preventDefault();
                                                         e.stopPropagation();
-                                                        const addBtn = document.getElementById('btn-add-prescribing-doctor');
-                                                        if (addBtn) addBtn.focus();
+                                                        window.dispatchEvent(new CustomEvent('synos:collapse-doctor-section'));
+                                                        const testSearch = document.getElementById('input-test-search') || testSearchInputRef?.current;
+                                                        if (testSearch) testSearch.focus();
                                                     } else if (e.key === 'Tab' && e.shiftKey) {
                                                         e.preventDefault();
                                                         e.stopPropagation();

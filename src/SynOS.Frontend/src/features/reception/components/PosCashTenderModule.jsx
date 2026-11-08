@@ -84,11 +84,11 @@ export function PosCashTenderModule({
         chipActive: "bg-white text-zinc-900 border-white shadow-xs font-bold",
         chipInactive: "bg-zinc-800 text-zinc-300 border-zinc-700 hover:bg-zinc-750"
     } : {
-        pod: "bg-white border-slate-200/90 shadow-xs",
-        recessed: "bg-gradient-to-b from-[#F2F7FA] to-[#E8F1F7] border-[#D0DFEB] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04)]",
+        pod: "bg-gradient-to-b from-[#EDF4F9] via-[#E7F0F6] to-[#DEEBF3] border-[#C5D8E6] text-slate-900 shadow-[0_2px_8px_rgba(15,35,60,0.04),inset_0_1px_0_rgba(255,255,255,0.8)]",
+        recessed: "bg-gradient-to-b from-[#DCE7F0] to-[#D2E0EB] border-[#BED2E0] shadow-[inset_0_1px_3px_rgba(15,35,60,0.06),0_1px_0_rgba(255,255,255,0.7)]",
         input: "bg-white border-[#CBD5E1] shadow-[inset_0_1px_2px_rgba(15,35,60,0.04)] text-slate-900 placeholder-slate-400 focus:border-blue-500",
         chipActive: "bg-slate-900 text-white border-slate-900 shadow-xs font-bold",
-        chipInactive: "bg-white/90 text-slate-700 border-slate-200/90 hover:bg-slate-100 shadow-2xs"
+        chipInactive: "bg-white text-slate-800 border-slate-300 hover:bg-slate-50 shadow-2xs font-bold"
     };
 
     if (netBill <= 0) return null;
