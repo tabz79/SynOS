@@ -201,8 +201,8 @@ export function BillingSummary({
             window.dispatchEvent(new CustomEvent('synos:notification-hint', {
                 detail: {
                     id: 'dup-b2b-doc',
-                    title: 'Doctor Selection Hint',
-                    message: 'Same doctor already selected above. In B2B bills, primary doctor gets billed automatically — no need to select again here.'
+                    title: 'Doctor Already Selected',
+                    message: 'Same doctor selected above. B2B bills go to this doctor automatically.'
                 }
             }));
             return;

@@ -84,8 +84,8 @@ export function PosCashTenderModule({
                 detail: {
                     id: 'drawer-shortage-alert',
                     type: 'warning',
-                    title: 'Drawer Shortage & Change Liability',
-                    message: `Physical cash of ₹${tendered} will be deposited into your counter drawer. An official Change Due liability of ₹${remainingChangeDue || nominalChange} will be recorded for this patient and routed to the Change Due & Patient Refunds Terminal.`
+                    title: `₹${remainingChangeDue || nominalChange} Change Due`,
+                    message: `Cash taken ₹${tendered}. Change ₹${remainingChangeDue || nominalChange} pending to patient. Saved to Refund counter.`
                 }
             }));
         } else {

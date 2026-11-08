@@ -466,8 +466,8 @@ export function VisitDetails({
             window.dispatchEvent(new CustomEvent('synos:notification-hint', {
                 detail: {
                     id: 'dup-rmp-doc',
-                    title: 'Referral Doctor Hint',
-                    message: 'Same doctor already added as primary. RMP is only needed if a second doctor or clinic is involved.'
+                    title: 'Doctor Already Added',
+                    message: 'Doctor already added above. Add RMP only if another clinic is involved.'
                 }
             }));
             return;

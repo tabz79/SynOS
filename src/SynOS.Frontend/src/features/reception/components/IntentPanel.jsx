@@ -135,10 +135,10 @@ export function IntentPanel({ onVisitUpdated }) {
                 window.dispatchEvent(new CustomEvent('synos:notification-hint', {
                     detail: {
                         id: isB2B ? 'dup-b2b-doc' : 'dup-rmp-doc',
-                        title: isB2B ? 'Doctor Selection Hint' : 'Referral Doctor Hint',
+                        title: isB2B ? 'Doctor Already Selected' : 'Doctor Already Added',
                         message: isB2B
-                            ? 'Same doctor already selected above. In B2B bills, primary doctor gets billed automatically — no need to select again here.'
-                            : 'Same doctor already added as primary. RMP is only needed if a second doctor or clinic is involved.'
+                            ? 'Same doctor selected above. B2B bills go to this doctor automatically.'
+                            : 'Doctor already added above. Add RMP only if another clinic is involved.'
                     }
                 }));
             }
@@ -1664,7 +1664,7 @@ export function IntentPanel({ onVisitUpdated }) {
         <>
             {/* Notification Center Rail (Left Viewport) */}
             <ReceptionNotificationCenter
-                isOpen={hasPatient || isCorrectionIntent}
+                isOpen={hasPatient || isCorrectionIntent || isPostProcessingView}
                 correctionHistory={snapshot?.correctionHistory}
             />
 
@@ -1672,8 +1672,8 @@ export function IntentPanel({ onVisitUpdated }) {
             ref={panelRef} 
             className={cn(
                 "flex flex-col h-full overflow-hidden rounded-[24px] transition-[width,transform,opacity] duration-300 ease-out z-30 shadow-2xl", 
-                (hasPatient || isCorrectionIntent) 
-                    ? "absolute right-0 top-0 bottom-0 w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[86vw] xl:w-[85vw] 2xl:w-[85vw] max-w-[85vw]" 
+                (hasPatient || isCorrectionIntent || isPostProcessingView) 
+                    ? "absolute right-0 top-0 bottom-0 w-full xl:left-[268px] 2xl:left-[288px] xl:w-auto" 
                     : "absolute right-0 top-0 bottom-0 w-[96vw] sm:w-[92vw] md:w-[75vw] lg:w-[50vw] xl:w-[44vw] 2xl:w-[40vw] min-w-[580px] max-w-[880px]",
                 ui.panel
             )}

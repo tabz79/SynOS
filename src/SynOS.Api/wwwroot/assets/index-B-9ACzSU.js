@@ -1304,7 +1304,7 @@ Error generating stack: ` + K.message + `
     }
     function qe() {
       var b = ae.p;
-      return b !== 0 ? b : (b = window.event, b === void 0 ? 32 : Ha(b.type));
+      return b !== 0 ? b : (b = window.event, b === void 0 ? 32 : Ya(b.type));
     }
     function wt(b, D) {
       var L = ae.p;
@@ -1553,7 +1553,7 @@ Error generating stack: ` + K.message + `
       var K = D.indexOf("--") === 0;
       L == null || typeof L == "boolean" || L === "" ? K ? b.setProperty(D, "") : D === "float" ? b.cssFloat = "" : b[D] = "" : K ? b.setProperty(D, L) : typeof L != "number" || L === 0 || Gi.has(D) ? D === "float" ? b.cssFloat = L : b[D] = ("" + L).trim() : b[D] = L + "px";
     }
-    function Za(b, D, L) {
+    function Xa(b, D, L) {
       if (D != null && typeof D != "object") throw Error(a(62));
       if (b = b.style, L != null) {
         for (var K in L) !L.hasOwnProperty(K) || D != null && D.hasOwnProperty(K) || (K.indexOf("--") === 0 ? b.setProperty(K, "") : K === "float" ? b.cssFloat = "" : b[K] = "");
@@ -2028,7 +2028,7 @@ Error generating stack: ` + K.message + `
     }, Sr = jn(fr), vi = d({}, fr, {
       view: 0,
       detail: 0
-    }), wa = jn(vi), ha, Ka, fa, Sa = d({}, vi, {
+    }), wa = jn(vi), ha, Va, fa, Sa = d({}, vi, {
       screenX: 0,
       screenY: 0,
       clientX: 0,
@@ -2046,14 +2046,14 @@ Error generating stack: ` + K.message + `
         return b.relatedTarget === void 0 ? b.fromElement === b.srcElement ? b.toElement : b.fromElement : b.relatedTarget;
       },
       movementX: function(b) {
-        return "movementX" in b ? b.movementX : (b !== fa && (fa && b.type === "mousemove" ? (ha = b.screenX - fa.screenX, Ka = b.screenY - fa.screenY) : Ka = ha = 0, fa = b), ha);
+        return "movementX" in b ? b.movementX : (b !== fa && (fa && b.type === "mousemove" ? (ha = b.screenX - fa.screenX, Va = b.screenY - fa.screenY) : Va = ha = 0, fa = b), ha);
       },
       movementY: function(b) {
-        return "movementY" in b ? b.movementY : Ka;
+        return "movementY" in b ? b.movementY : Va;
       }
     }), _a = jn(Sa), la = d({}, Sa, {
       dataTransfer: 0
-    }), Xa = jn(la), Yr = d({}, vi, {
+    }), Ha = jn(la), Yr = d({}, vi, {
       relatedTarget: 0
     }), Cr = jn(Yr), ai = d({}, fr, {
       animationName: 0,
@@ -2666,7 +2666,7 @@ Error generating stack: ` + K.message + `
       if (b !== ss) return false;
       if (!Di) return Tb(b), Di = true, false;
       var D = b.tag, L;
-      if ((L = D !== 3 && D !== 27) && ((L = D === 5) && (L = b.type, L = !(L !== "form" && L !== "button") || Va(b.type, b.memoizedProps)), L = !L), L && di && Qg(b), Tb(b), D === 13) {
+      if ((L = D !== 3 && D !== 27) && ((L = D === 5) && (L = b.type, L = !(L !== "form" && L !== "button") || Wa(b.type, b.memoizedProps)), L = !L), L && di && Qg(b), Tb(b), D === 13) {
         if (b = b.memoizedState, b = b !== null ? b.dehydrated : null, !b) throw Error(a(317));
         di = rQ(b);
       } else if (D === 31) {
@@ -4869,7 +4869,7 @@ Error generating stack: ` + K.message + `
         case 27:
           return Ae(D), b === null && Di && (K = D.stateNode = IB(D.type, D.pendingProps, Se.current), ss = D, tl = true, ge = di, cd(D.type) ? (pB = ge, di = Rl(K.firstChild)) : di = ge), BA(b, D, D.pendingProps.children, L), Om(b, D), b === null && (D.flags |= 4194304), D.child;
         case 5:
-          return b === null && Di && ((ge = K = di) && (K = S2(K, D.type, D.pendingProps, tl), K !== null ? (D.stateNode = K, ss = D, di = Rl(K.firstChild), tl = false, ge = true) : ge = false), ge || Qg(D)), Ae(D), ge = D.type, xe = D.pendingProps, Ke = b !== null ? b.memoizedProps : null, K = xe.children, Va(ge, xe) ? K = null : Ke !== null && Va(ge, Ke) && (D.flags |= 32), D.memoizedState !== null && (ge = km(b, D, Vv, null, null, L), Jg._currentValue = ge), Om(b, D), BA(b, D, K, L), D.child;
+          return b === null && Di && ((ge = K = di) && (K = S2(K, D.type, D.pendingProps, tl), K !== null ? (D.stateNode = K, ss = D, di = Rl(K.firstChild), tl = false, ge = true) : ge = false), ge || Qg(D)), Ae(D), ge = D.type, xe = D.pendingProps, Ke = b !== null ? b.memoizedProps : null, K = xe.children, Wa(ge, xe) ? K = null : Ke !== null && Wa(ge, Ke) && (D.flags |= 32), D.memoizedState !== null && (ge = km(b, D, Vv, null, null, L), Jg._currentValue = ge), Om(b, D), BA(b, D, K, L), D.child;
         case 6:
           return b === null && Di && ((b = L = di) && (L = eQ(L, D.pendingProps, tl), L !== null ? (D.stateNode = L, ss = D, di = null, b = true) : b = false), b || Qg(D)), null;
         case 13:
@@ -6935,7 +6935,7 @@ Error generating stack: ` + K.message + `
       }
     }
     function Ky(b, D, L, K) {
-      switch (Ha(D)) {
+      switch (Ya(D)) {
         case 2:
           var ge = QB;
           break;
@@ -7019,7 +7019,7 @@ Error generating stack: ` + K.message + `
               case "dragover":
               case "dragstart":
               case "drop":
-                Cn = Xa;
+                Cn = Ha;
                 break;
               case "touchcancel":
               case "touchend":
@@ -7219,7 +7219,7 @@ Error generating stack: ` + K.message + `
           Fr(b, L, K);
           break;
         case "style":
-          Za(b, K, xe);
+          Xa(b, K, xe);
           break;
         case "data":
           if (D !== "object") {
@@ -7382,7 +7382,7 @@ Error generating stack: ` + K.message + `
     function Wy(b, D, L, K, ge, xe) {
       switch (L) {
         case "style":
-          Za(b, K, xe);
+          Xa(b, K, xe);
           break;
         case "dangerouslySetInnerHTML":
           if (K != null) {
@@ -7780,7 +7780,7 @@ Error generating stack: ` + K.message + `
       }
       return b === 1 && D === "foreignObject" ? 0 : b;
     }
-    function Va(b, D) {
+    function Wa(b, D) {
       return b === "textarea" || b === "noscript" || typeof D.children == "string" || typeof D.children == "number" || typeof D.children == "bigint" || typeof D.dangerouslySetInnerHTML == "object" && D.dangerouslySetInnerHTML !== null && D.dangerouslySetInnerHTML.__html != null;
     }
     var sI = null;
@@ -8500,7 +8500,7 @@ Error generating stack: ` + K.message + `
       }
       return uI = b, null;
     }
-    function Ha(b) {
+    function Ya(b) {
       switch (b) {
         case "beforetoggle":
         case "cancel":
@@ -14864,7 +14864,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
         key: "e791ji"
       }
     ]
-  ], qa = tn("trash-2", iIe);
+  ], Za = tn("trash-2", iIe);
   const sIe = [
     [
       "path",
@@ -29913,7 +29913,7 @@ Minimum version required to store current data is: ` + O + `.
       });
       return MQ(r);
     }
-  }, QA = "/api/v1/inventory", Ya = {
+  }, QA = "/api/v1/inventory", Ja = {
     getHeaders: () => {
       const t = localStorage.getItem("synos_jwt"), e = {
         "Content-Type": "application/json"
@@ -30094,8 +30094,8 @@ Minimum version required to store current data is: ` + O + `.
       l(true), U(null);
       try {
         const [me, Re] = await Promise.all([
-          Ya.getAllowedItems(),
-          Ya.getAllActiveItems()
+          Ja.getAllowedItems(),
+          Ja.getAllActiveItems()
         ]);
         u(me || []), f(Re || []), (me || []).length > 0 ? I("role") : I("catalog");
       } catch (me) {
@@ -30108,7 +30108,7 @@ Minimum version required to store current data is: ` + O + `.
       g(true), U(null);
       const Re = B.unitOfMeasure || "units", Ue = DE(N, F, Re), Se = te(), Le = (i == null ? void 0 : i.role) || (i == null ? void 0 : i.designation) || "Admin";
       try {
-        await Ya.createRequest(B.consumableId, Ue, i == null ? void 0 : i.branchId, Se, Le), Y(true), setTimeout(() => {
+        await Ja.createRequest(B.consumableId, Ue, i == null ? void 0 : i.branchId, Se, Le), Y(true), setTimeout(() => {
           e();
         }, 1500);
       } catch (Je) {
@@ -34778,8 +34778,8 @@ Minimum version required to store current data is: ` + O + `.
         window.dispatchEvent(new CustomEvent("synos:notification-hint", {
           detail: {
             id: "dup-rmp-doc",
-            title: "Referral Doctor Hint",
-            message: "Same doctor already added as primary. RMP is only needed if a second doctor or clinic is involved."
+            title: "Doctor Already Added",
+            message: "Doctor already added above. Add RMP only if another clinic is involved."
           }
         }));
         return;
@@ -36657,8 +36657,8 @@ Minimum version required to store current data is: ` + O + `.
         detail: {
           id: "drawer-shortage-alert",
           type: "warning",
-          title: "Drawer Shortage & Change Liability",
-          message: `Physical cash of \u20B9${I} will be deposited into your counter drawer. An official Change Due liability of \u20B9${Q || C} will be recorded for this patient and routed to the Change Due & Patient Refunds Terminal.`
+          title: `\u20B9${Q || C} Change Due`,
+          message: `Cash taken \u20B9${I}. Change \u20B9${Q || C} pending to patient. Saved to Refund counter.`
         }
       })) : window.dispatchEvent(new CustomEvent("synos:dismiss-notification-hint", {
         detail: {
@@ -37145,8 +37145,8 @@ Minimum version required to store current data is: ` + O + `.
         window.dispatchEvent(new CustomEvent("synos:notification-hint", {
           detail: {
             id: "dup-b2b-doc",
-            title: "Doctor Selection Hint",
-            message: "Same doctor already selected above. In B2B bills, primary doctor gets billed automatically \u2014 no need to select again here."
+            title: "Doctor Already Selected",
+            message: "Same doctor selected above. B2B bills go to this doctor automatically."
           }
         }));
         return;
@@ -37568,7 +37568,7 @@ Minimum version required to store current data is: ` + O + `.
     }, Ir = a || i === "PrepaidPartner" || (jt == null ? void 0 : jt.paymentModel) === "PartnerCollects", Ai = i === "Insurance", Dr = i === "Corporate", Ds = !Ir && !Dr && !Ai, ts = ((_m = t == null ? void 0 : t.visit) == null ? void 0 : _m.token) || ((_n2 = t == null ? void 0 : t.visit) == null ? void 0 : _n2.visitToken) || "", Wt = !ts || ts.toUpperCase().startsWith("D-") || (((_o2 = t == null ? void 0 : t.visit) == null ? void 0 : _o2.status) || "").toLowerCase() === "draft", pi = Ir ? 0 : x || jt.totalPaid || 0, Ot = p !== void 0 ? p : jt.netAmount || 0, vn = I !== void 0 ? I : Ot - pi, Zn = r && pi > 0 && Math.abs(vn) > 0.01, gr = p !== void 0 ? p : (jt == null ? void 0 : jt.netAmount) || (jt == null ? void 0 : jt.totalAmount) || 0, Br = Math.max(0, gr - pi), Xr = Ds && !Wt && Br > 0 && (r || (jt == null ? void 0 : jt.paymentStatus) === "PartialPayment" || (jt == null ? void 0 : jt.paymentStatus) === "PartialDue" || pi > 0 && Br > 0 || ((_p2 = t == null ? void 0 : t.billing) == null ? void 0 : _p2.isLocked)), zi = r ? f > 0 || ((_q2 = t == null ? void 0 : t.billing) == null ? void 0 : _q2.discountAmount) > 0 && !(d == null ? void 0 : d.remove) : (jt == null ? void 0 : jt.discountAmount) > 0 || f > 0;
     let lr = Br, Gi = (jt == null ? void 0 : jt.paymentStatus) === "Paid" ? "Total Bill Amount" : pi > 0 ? "Remaining Due to Collect" : "Amount to Collect";
     Ir ? (lr = 0, Gi = "Amount to Collect") : Dr ? (lr = 0, Gi = "Billed to Corporate (\u20B90 at desk)") : Ai && (lr = ((_r = t == null ? void 0 : t.visit) == null ? void 0 : _r.insuranceCoPayAmount) || 0, Gi = lr > 0 ? "Patient Co-Pay to Collect" : "Cashless Claim (\u20B90 at desk)");
-    const Za = (r && h !== void 0 ? h : (jt == null ? void 0 : jt.grossAmount) || 0) > 0 || (((_s2 = t == null ? void 0 : t.tests) == null ? void 0 : _s2.length) || 0) > 0, qi = Wt || r, Qr = qi && (q !== null ? !!q : !!(Za && kr && !Ir && !Dr && ((jt == null ? void 0 : jt.paymentStatus) === "PendingPayment" || !(jt == null ? void 0 : jt.paymentStatus)))), cr = (bt) => {
+    const Xa = (r && h !== void 0 ? h : (jt == null ? void 0 : jt.grossAmount) || 0) > 0 || (((_s2 = t == null ? void 0 : t.tests) == null ? void 0 : _s2.length) || 0) > 0, qi = Wt || r, Qr = qi && (q !== null ? !!q : !!(Xa && kr && !Ir && !Dr && ((jt == null ? void 0 : jt.paymentStatus) === "PendingPayment" || !(jt == null ? void 0 : jt.paymentStatus)))), cr = (bt) => {
       qi && pe(typeof bt == "function" ? bt(Qr) : bt);
     };
     return n.jsxs("div", {
@@ -39668,132 +39668,132 @@ Minimum version required to store current data is: ` + O + `.
   const MO = [
     {
       id: "reconciliation",
-      title: "Shift Milestone",
-      description: "You finalized 18 bills yesterday with 100% counter reconciliation.",
+      title: "Yesterday's Bills",
+      description: "18 bills finalized yesterday. Cash tally matched 100%.",
       icon: lW,
-      tip: "Tariff engine & doctor commission rules active."
+      tip: "Doctor cuts auto-calculated"
     },
     {
       id: "speed",
-      title: "Intake Velocity",
-      description: "Counter turn-around speed is averaging under 42s per registration today.",
+      title: "Counter Speed",
+      description: "Avg under 45s per patient. Quick billing active today.",
       icon: Eo,
-      tip: "Keyboard focus loop enabled for rapid tab workflow."
+      tip: "Tab key navigation active"
     },
     {
       id: "accuracy",
-      title: "Clinical Accuracy",
-      description: "Zero duplicate registrations or unverified doctor codes this week.",
+      title: "Zero Errors",
+      description: "No duplicate bills or wrong doctor codes this week.",
       icon: Pa,
-      tip: "Real-time duplicate detection active across all desks."
+      tip: "Doctor name check active"
     },
     {
       id: "treasury",
-      title: "Treasury Sync",
-      description: "Cash drawer ledger reconciled and balanced with Central Lab Treasury.",
+      title: "Cash Drawer",
+      description: "Cash drawer tally matched with central lab accounts.",
       icon: Xc,
-      tip: "Drawer shortage auto-records Change Due liabilities."
+      tip: "Change due tracked auto"
     }
   ];
   function eq({ isOpen: t = false, correctionHistory: e = null }) {
-    const { user: r } = Aa(), [a, i] = M.useState([]), [s, o] = M.useState(0), A = M.useMemo(() => (r == null ? void 0 : r.name) && r.name.trim().split(" ")[0] || "Desk Officer", [
+    const { user: r } = Aa(), [a, i] = M.useState([]), s = M.useMemo(() => {
+      if (!(r == null ? void 0 : r.name)) return "Staff";
+      const c = r.name.trim(), g = c.match(/^(Dr\.?|Doctor|Mr\.?|Mrs\.?|Ms\.?)\s+([A-Za-z]+)/i);
+      return g ? `${g[1]} ${g[2]}` : c.split(/\s+/)[0] || "Staff";
+    }, [
       r == null ? void 0 : r.name
-    ]), l = M.useMemo(() => {
-      const d = (/* @__PURE__ */ new Date()).getHours();
-      return d < 12 ? "Good morning" : d < 17 ? "Good afternoon" : "Good evening";
-    }, []);
-    M.useEffect(() => {
-      const d = setInterval(() => {
-        o((u) => (u + 1) % MO.length);
-      }, 12e3);
-      return () => clearInterval(d);
-    }, []);
-    const c = MO[s], g = c.icon;
+    ]), o = M.useMemo(() => {
+      const c = (/* @__PURE__ */ new Date()).getHours();
+      return c < 12 ? "Good morning" : c < 17 ? "Good afternoon" : "Good evening";
+    }, []), A = M.useMemo(() => {
+      const c = /* @__PURE__ */ new Date(), g = Math.floor((c - new Date(c.getFullYear(), 0, 0)) / (1e3 * 60 * 60 * 24));
+      return MO[g % MO.length];
+    }, []), l = A.icon;
     return M.useEffect(() => {
-      const d = (h) => {
-        const { id: f, title: p, message: I, type: x } = h.detail || {};
-        I && i((C) => {
-          const B = C.filter((Q) => Q.id !== f);
+      const c = (d) => {
+        const { id: u, title: h, message: f, type: p } = d.detail || {};
+        f && i((I) => {
+          const x = I.filter((C) => C.id !== u);
           return [
             {
-              id: f || String(Date.now()),
-              title: p || "SynOS Hint",
-              message: I,
-              type: x || "info",
+              id: u || String(Date.now()),
+              title: h || "SynOS Hint",
+              message: f,
+              type: p || "info",
               timestamp: /* @__PURE__ */ new Date()
             },
-            ...B
+            ...x
           ].slice(0, 5);
         });
-      }, u = (h) => {
-        const { id: f } = h.detail || {};
-        f && i((p) => p.filter((I) => I.id !== f));
+      }, g = (d) => {
+        const { id: u } = d.detail || {};
+        u && i((h) => h.filter((f) => f.id !== u));
       };
-      return window.addEventListener("synos:notification-hint", d), window.addEventListener("synos:dismiss-notification-hint", u), () => {
-        window.removeEventListener("synos:notification-hint", d), window.removeEventListener("synos:dismiss-notification-hint", u);
+      return window.addEventListener("synos:notification-hint", c), window.addEventListener("synos:dismiss-notification-hint", g), () => {
+        window.removeEventListener("synos:notification-hint", c), window.removeEventListener("synos:dismiss-notification-hint", g);
       };
     }, []), t ? n.jsxs("aside", {
       "aria-label": "Notification Center",
-      className: "fixed left-3.5 top-[64px] bottom-4 w-[280px] sm:w-[310px] xl:w-[330px] hidden xl:flex flex-col gap-3 z-40 select-none overflow-y-auto no-scrollbar pointer-events-none animate-in fade-in slide-in-from-left-4 duration-300",
+      className: "fixed left-3 top-[64px] bottom-4 w-[244px] 2xl:w-[264px] hidden xl:flex flex-col gap-2.5 z-40 select-none overflow-y-auto no-scrollbar pointer-events-none animate-in fade-in slide-in-from-left-4 duration-300",
       children: [
         n.jsxs("div", {
-          className: "pointer-events-auto flex items-center justify-between px-2 py-1 rounded-xl bg-slate-200/60 dark:bg-zinc-800/60 backdrop-blur-md border border-slate-300/80 dark:border-zinc-700/80 shadow-2xs",
+          className: "pointer-events-auto flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-slate-200/70 dark:bg-zinc-800/70 backdrop-blur-md border border-slate-300/80 dark:border-zinc-700/80 shadow-2xs",
           children: [
             n.jsxs("div", {
-              className: "flex items-center gap-2",
+              className: "flex items-center gap-1.5 min-w-0",
               children: [
                 n.jsx("div", {
-                  className: "w-6 h-6 rounded-lg bg-blue-600/15 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs shrink-0",
+                  className: "w-5 h-5 rounded-md bg-blue-600/15 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs shrink-0",
                   children: n.jsx(jhe, {
-                    className: "w-3.5 h-3.5"
+                    className: "w-3 h-3"
                   })
                 }),
                 n.jsx("span", {
-                  className: "text-xs font-black text-slate-800 dark:text-zinc-100 uppercase tracking-wider",
+                  className: "text-[11px] font-black text-slate-800 dark:text-zinc-100 uppercase tracking-wider truncate",
                   children: "Notification Center"
                 })
               ]
             }),
             n.jsxs("div", {
-              className: "flex items-center gap-1.5",
+              className: "flex items-center gap-1 shrink-0",
               children: [
                 n.jsx("span", {
-                  className: "w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"
+                  className: "w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0"
                 }),
                 n.jsx("span", {
-                  className: "text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-400",
-                  children: "Live Desk"
+                  className: "text-[9px] font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-400",
+                  children: "Live"
                 })
               ]
             })
           ]
         }),
         n.jsxs("div", {
-          className: "pointer-events-auto rounded-2xl p-4 bg-gradient-to-br from-white/95 via-white/90 to-slate-100/95 dark:from-zinc-850/95 dark:via-zinc-850/90 dark:to-zinc-900/95 backdrop-blur-xl border-2 border-slate-300/90 dark:border-zinc-700/90 shadow-[0_8px_24px_rgba(15,35,60,0.08)] space-y-3",
+          className: "pointer-events-auto rounded-2xl p-3 bg-gradient-to-br from-white/95 via-white/90 to-slate-100/95 dark:from-zinc-850/95 dark:via-zinc-850/90 dark:to-zinc-900/95 backdrop-blur-xl border-2 border-slate-300/90 dark:border-zinc-700/90 shadow-[0_8px_24px_rgba(15,35,60,0.08)] space-y-2.5",
           children: [
             n.jsxs("div", {
               className: "flex items-center justify-between",
               children: [
                 n.jsxs("div", {
-                  className: "flex items-center gap-2 min-w-0",
+                  className: "flex items-center gap-1.5 min-w-0",
                   children: [
                     n.jsx("span", {
-                      className: "text-base select-none",
+                      className: "text-sm select-none",
                       children: "\u{1F44B}"
                     }),
                     n.jsxs("h4", {
-                      className: "text-sm sm:text-base font-black text-slate-900 dark:text-white truncate",
+                      className: "text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate",
                       children: [
-                        l,
+                        o,
                         ", ",
-                        A,
+                        s,
                         "!"
                       ]
                     })
                   ]
                 }),
                 n.jsx("span", {
-                  className: "text-[10px] font-mono font-bold text-slate-400 dark:text-zinc-500 shrink-0",
+                  className: "text-[9px] font-mono font-bold text-slate-400 dark:text-zinc-500 shrink-0",
                   children: (/* @__PURE__ */ new Date()).toLocaleTimeString("en-IN", {
                     hour: "2-digit",
                     minute: "2-digit"
@@ -39802,115 +39802,115 @@ Minimum version required to store current data is: ` + O + `.
               ]
             }),
             n.jsxs("div", {
-              className: "p-3 rounded-xl bg-gradient-to-br from-[#EAF2F8] to-[#DFEDF7] dark:from-blue-950/40 dark:to-blue-900/20 border border-[#BED6E9] dark:border-blue-800/60 flex items-start gap-2.5",
+              className: "p-2.5 rounded-xl bg-gradient-to-br from-[#EAF2F8] to-[#DFEDF7] dark:from-blue-950/40 dark:to-blue-900/20 border border-[#BED6E9] dark:border-blue-800/60 flex items-start gap-2",
               children: [
                 n.jsx("div", {
-                  className: "w-7 h-7 rounded-lg bg-blue-600/15 text-blue-700 dark:text-blue-300 flex items-center justify-center shrink-0 mt-0.5",
-                  children: n.jsx(g, {
-                    className: "w-4 h-4"
+                  className: "w-6 h-6 rounded-lg bg-blue-600/15 text-blue-700 dark:text-blue-300 flex items-center justify-center shrink-0 mt-0.5",
+                  children: n.jsx(l, {
+                    className: "w-3.5 h-3.5"
                   })
                 }),
                 n.jsxs("div", {
                   className: "space-y-0.5 min-w-0 flex-1",
                   children: [
                     n.jsxs("div", {
-                      className: "text-[11px] font-extrabold uppercase tracking-wider text-blue-900 dark:text-blue-300 flex items-center justify-between",
+                      className: "text-[10px] font-extrabold uppercase tracking-wider text-blue-900 dark:text-blue-300 flex items-center justify-between",
                       children: [
                         n.jsx("span", {
-                          children: c.title
+                          children: A.title
                         }),
                         n.jsx("span", {
-                          className: "text-[9px] text-blue-700/70 font-mono",
-                          children: "Synced"
+                          className: "text-[8px] text-blue-700/70 font-mono",
+                          children: "Today"
                         })
                       ]
                     }),
                     n.jsx("p", {
-                      className: "text-xs font-semibold text-slate-800 dark:text-zinc-200 leading-snug",
-                      children: c.description
+                      className: "text-[11px] font-semibold text-slate-800 dark:text-zinc-200 leading-snug",
+                      children: A.description
                     })
                   ]
                 })
               ]
             }),
             n.jsxs("div", {
-              className: "pt-1 border-t border-slate-200 dark:border-zinc-750 flex items-center gap-2 text-[11px] font-medium text-slate-500 dark:text-zinc-400",
+              className: "pt-1 border-t border-slate-200 dark:border-zinc-750 flex items-center gap-1.5 text-[10px] font-medium text-slate-500 dark:text-zinc-400",
               children: [
                 n.jsx(nA, {
-                  className: "w-3.5 h-3.5 text-amber-500 shrink-0"
+                  className: "w-3 h-3 text-amber-500 shrink-0"
                 }),
                 n.jsx("span", {
                   className: "truncate",
-                  children: c.tip
+                  children: A.tip
                 })
               ]
             })
           ]
         }),
-        a.map((d) => {
-          const u = d.type === "warning" || d.id === "drawer-shortage-alert";
+        a.map((c) => {
+          const g = c.type === "warning" || c.id === "drawer-shortage-alert";
           return n.jsxs("div", {
-            className: Ce("pointer-events-auto rounded-2xl p-4 backdrop-blur-xl shadow-[0_12px_32px_rgba(15,35,60,0.14)] space-y-2 animate-in fade-in slide-in-from-left-4 duration-300 border-2", u ? "bg-rose-50/95 dark:bg-rose-950/90 border-rose-300 dark:border-rose-800 text-rose-950 dark:text-rose-100" : "bg-white/95 dark:bg-zinc-850/95 border-slate-300 dark:border-zinc-700 text-slate-900 dark:text-white"),
+            className: Ce("pointer-events-auto rounded-2xl p-3 backdrop-blur-xl shadow-[0_8px_24px_rgba(15,35,60,0.12)] space-y-1.5 animate-in fade-in slide-in-from-left-4 duration-300 border-2", g ? "bg-rose-50/95 dark:bg-rose-950/90 border-rose-300 dark:border-rose-800 text-rose-950 dark:text-rose-100" : "bg-white/95 dark:bg-zinc-850/95 border-slate-300 dark:border-zinc-700 text-slate-900 dark:text-white"),
             children: [
               n.jsxs("div", {
-                className: "flex items-center justify-between",
+                className: "flex items-center justify-between gap-1",
                 children: [
                   n.jsxs("div", {
-                    className: "flex items-center gap-2 min-w-0",
+                    className: "flex items-center gap-1.5 min-w-0",
                     children: [
                       n.jsx("div", {
-                        className: Ce("w-6 h-6 rounded-lg flex items-center justify-center font-bold text-xs shrink-0", u ? "bg-rose-500/20 text-rose-700 dark:text-rose-300" : "bg-blue-600/15 text-blue-700 dark:text-blue-300"),
-                        children: u ? n.jsx(SC, {
-                          className: "w-3.5 h-3.5 text-rose-600"
+                        className: Ce("w-5 h-5 rounded-md flex items-center justify-center font-bold text-xs shrink-0", g ? "bg-rose-500/20 text-rose-700 dark:text-rose-300" : "bg-blue-600/15 text-blue-700 dark:text-blue-300"),
+                        children: g ? n.jsx(SC, {
+                          className: "w-3 h-3 text-rose-600"
                         }) : n.jsx(hpe, {
-                          className: "w-3.5 h-3.5 text-blue-600"
+                          className: "w-3 h-3 text-blue-600"
                         })
                       }),
                       n.jsx("span", {
-                        className: Ce("text-xs sm:text-sm font-black truncate", u ? "text-rose-900 dark:text-rose-200" : "text-slate-900 dark:text-white"),
-                        children: d.title
+                        className: Ce("text-xs font-black truncate", g ? "text-rose-900 dark:text-rose-200" : "text-slate-900 dark:text-white"),
+                        children: c.title
                       })
                     ]
                   }),
                   n.jsx("button", {
                     type: "button",
-                    onClick: () => i((h) => h.filter((f) => f.id !== d.id)),
-                    className: "text-slate-400 hover:text-slate-800 dark:hover:text-white p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer transition-colors shrink-0",
+                    onClick: () => i((d) => d.filter((u) => u.id !== c.id)),
+                    className: "text-slate-400 hover:text-slate-800 dark:hover:text-white p-0.5 rounded-md hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer transition-colors shrink-0",
                     title: "Dismiss",
                     children: n.jsx(On, {
-                      className: "w-4 h-4"
+                      className: "w-3.5 h-3.5"
                     })
                   })
                 ]
               }),
               n.jsx("p", {
-                className: Ce("text-xs sm:text-[13px] font-semibold leading-snug", u ? "text-rose-800 dark:text-rose-200" : "text-slate-700 dark:text-zinc-200"),
-                children: d.message
+                className: Ce("text-[11px] font-semibold leading-snug", g ? "text-rose-800 dark:text-rose-200" : "text-slate-700 dark:text-zinc-200"),
+                children: c.message
               }),
               n.jsxs("div", {
-                className: "flex items-center justify-between pt-1 border-t border-black/5 dark:border-white/5 text-[10px] font-mono text-slate-400 dark:text-zinc-500",
+                className: "flex items-center justify-between pt-1 border-t border-black/5 dark:border-white/5 text-[9px] font-mono text-slate-400 dark:text-zinc-500",
                 children: [
                   n.jsx("span", {
                     children: "Desk Alert"
                   }),
                   n.jsx("span", {
-                    children: "just now"
+                    children: "Active"
                   })
                 ]
               })
             ]
-          }, d.id);
+          }, c.id);
         }),
         e && e.length > 0 && n.jsxs("div", {
-          className: "space-y-2 pointer-events-auto mt-1",
+          className: "space-y-1.5 pointer-events-auto mt-1",
           children: [
             n.jsx("div", {
-              className: "flex items-center justify-between px-1.5 py-0.5 text-xs font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wider",
+              className: "flex items-center justify-between px-1 py-0.5 text-[11px] font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wider",
               children: n.jsxs("span", {
-                className: "flex items-center gap-1.5",
+                className: "flex items-center gap-1",
                 children: [
                   n.jsx(Mo, {
-                    className: "w-4 h-4 text-synos-primary"
+                    className: "w-3.5 h-3.5 text-synos-primary"
                   }),
                   "Audit History (",
                   e.length,
@@ -39919,29 +39919,29 @@ Minimum version required to store current data is: ` + O + `.
               })
             }),
             n.jsx("div", {
-              className: "space-y-2",
-              children: e.map((d, u) => n.jsxs("div", {
-                className: "rounded-2xl p-3 bg-white/90 dark:bg-zinc-850/90 backdrop-blur-xl border-2 border-slate-300/80 dark:border-zinc-700 shadow-sm space-y-1.5 transition-all",
+              className: "space-y-1.5",
+              children: e.map((c, g) => n.jsxs("div", {
+                className: "rounded-xl p-2.5 bg-white/90 dark:bg-zinc-850/90 backdrop-blur-xl border-2 border-slate-300/80 dark:border-zinc-700 shadow-xs space-y-1 transition-all",
                 children: [
                   n.jsxs("div", {
                     className: "flex items-center justify-between",
                     children: [
                       n.jsxs("div", {
-                        className: "flex items-center gap-1.5 min-w-0",
+                        className: "flex items-center gap-1 min-w-0",
                         children: [
                           n.jsx("div", {
-                            className: "w-4 h-4 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-[9px] shrink-0",
+                            className: "w-3.5 h-3.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-[8px] shrink-0",
                             children: "\u2713"
                           }),
                           n.jsx("span", {
-                            className: "text-xs font-bold text-slate-900 dark:text-white truncate",
-                            children: d.createdByName || "Staff Desk"
+                            className: "text-[11px] font-bold text-slate-900 dark:text-white truncate",
+                            children: c.createdByName || "Staff Desk"
                           })
                         ]
                       }),
                       n.jsx("span", {
-                        className: "text-[10px] font-mono text-slate-400 dark:text-zinc-500 shrink-0",
-                        children: new Date(d.createdAt).toLocaleTimeString("en-IN", {
+                        className: "text-[9px] font-mono text-slate-400 dark:text-zinc-500 shrink-0",
+                        children: new Date(c.createdAt).toLocaleTimeString("en-IN", {
                           hour: "2-digit",
                           minute: "2-digit"
                         })
@@ -39949,19 +39949,19 @@ Minimum version required to store current data is: ` + O + `.
                     ]
                   }),
                   n.jsx("div", {
-                    className: "text-xs font-semibold text-slate-800 dark:text-zinc-200 leading-snug",
-                    children: d.actionType ? String(d.actionType).replace(/([A-Z])/g, " ").trim() : "Visit Amended"
+                    className: "text-[11px] font-semibold text-slate-800 dark:text-zinc-200 leading-snug",
+                    children: c.actionType ? String(c.actionType).replace(/([A-Z])/g, " ").trim() : "Visit Amended"
                   }),
-                  d.reason && n.jsxs("p", {
+                  c.reason && n.jsxs("p", {
                     className: "text-[11px] text-slate-500 dark:text-zinc-400 italic line-clamp-2",
                     children: [
                       '"',
-                      d.reason,
+                      c.reason,
                       '"'
                     ]
                   })
                 ]
-              }, d.correctionId || u))
+              }, c.correctionId || g))
             })
           ]
         })
@@ -41551,7 +41551,7 @@ Minimum version required to store current data is: ` + O + `.
     return l9.createPortal(Q, document.body);
   }, k9 = M.createContext({
     readOnly: false
-  }), Wa = ({ label: t, value: e, onSave: r, onDelete: a, canDelete: i = true, canEdit: s = true, readOnly: o, className: A = "", labelClassName: l = "text-zinc-500", valueClassName: c = "font-bold text-zinc-900", isBlock: g = false }) => {
+  }), qa = ({ label: t, value: e, onSave: r, onDelete: a, canDelete: i = true, canEdit: s = true, readOnly: o, className: A = "", labelClassName: l = "text-zinc-500", valueClassName: c = "font-bold text-zinc-900", isBlock: g = false }) => {
     const d = M.useContext(k9), u = o !== void 0 ? o : d.readOnly, [h, f] = M.useState(false), [p, I] = M.useState(e || ""), [x, C] = M.useState(t || "");
     M.useEffect(() => {
       I(e || "");
@@ -41628,7 +41628,7 @@ Minimum version required to store current data is: ` + O + `.
           },
           className: "p-1 text-rose-600 hover:bg-rose-100 dark:text-rose-400 dark:hover:bg-rose-950/60 rounded cursor-pointer shrink-0",
           title: "Delete (Remove)",
-          children: n.jsx(qa, {
+          children: n.jsx(Za, {
             size: 12
           })
         })
@@ -41673,7 +41673,7 @@ Minimum version required to store current data is: ` + O + `.
               },
               className: "p-0.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/60 rounded cursor-pointer",
               title: "Delete this text/field",
-              children: n.jsx(qa, {
+              children: n.jsx(Za, {
                 size: 11
               })
             })
@@ -41724,7 +41724,7 @@ Minimum version required to store current data is: ` + O + `.
               onClick: r,
               className: "px-1.5 py-0.5 rounded bg-rose-50 dark:bg-rose-950/60 hover:bg-rose-100 text-rose-600 font-bold flex items-center gap-0.5 cursor-pointer ml-1",
               children: [
-                n.jsx(qa, {
+                n.jsx(Za, {
                   size: 10
                 }),
                 " Delete Box"
@@ -42068,7 +42068,7 @@ Minimum version required to store current data is: ` + O + `.
                 }),
                 ((_f = (_e = x.header.fields) == null ? void 0 : _e.legalName) == null ? void 0 : _f.enabled) && n.jsx("div", {
                   className: "block",
-                  children: n.jsx(Wa, {
+                  children: n.jsx(qa, {
                     value: x.header.fields.legalName.value || i.labLegalName,
                     onSave: (Z, J) => j("header", "legalName", void 0, J),
                     onDelete: () => G("header", "legalName"),
@@ -42077,7 +42077,7 @@ Minimum version required to store current data is: ` + O + `.
                 }),
                 ((_h2 = (_g = x.header.fields) == null ? void 0 : _g.tagline) == null ? void 0 : _h2.enabled) && n.jsx("div", {
                   className: "block mt-0.5",
-                  children: n.jsx(Wa, {
+                  children: n.jsx(qa, {
                     value: x.header.fields.tagline.value || i.labTradeName,
                     onSave: (Z, J) => j("header", "tagline", void 0, J),
                     onDelete: () => G("header", "tagline"),
@@ -42086,7 +42086,7 @@ Minimum version required to store current data is: ` + O + `.
                 }),
                 ((_j2 = (_i = x.header.fields) == null ? void 0 : _i.address) == null ? void 0 : _j2.enabled) && n.jsx("div", {
                   className: "block mt-0.5",
-                  children: n.jsx(Wa, {
+                  children: n.jsx(qa, {
                     value: x.header.fields.address.value || i.address,
                     onSave: (Z, J) => j("header", "address", void 0, J),
                     onDelete: () => G("header", "address"),
@@ -42096,7 +42096,7 @@ Minimum version required to store current data is: ` + O + `.
                 n.jsxs("div", {
                   className: "flex justify-center flex-wrap items-center gap-x-1.5 text-[9.5px] text-black font-bold mt-0.5",
                   children: [
-                    ((_l2 = (_k2 = x.header.fields) == null ? void 0 : _k2.gstin) == null ? void 0 : _l2.enabled) && n.jsx(Wa, {
+                    ((_l2 = (_k2 = x.header.fields) == null ? void 0 : _k2.gstin) == null ? void 0 : _l2.enabled) && n.jsx(qa, {
                       label: "GSTIN:",
                       value: x.header.fields.gstin.value || i.gstin,
                       onSave: (Z, J) => j("header", "gstin", Z, J),
@@ -42104,7 +42104,7 @@ Minimum version required to store current data is: ` + O + `.
                       labelClassName: "text-black font-bold",
                       valueClassName: "font-mono font-bold text-black"
                     }),
-                    ((_n = (_m = x.header.fields) == null ? void 0 : _m.phone) == null ? void 0 : _n.enabled) && n.jsx(Wa, {
+                    ((_n = (_m = x.header.fields) == null ? void 0 : _m.phone) == null ? void 0 : _n.enabled) && n.jsx(qa, {
                       label: " | Ph:",
                       value: x.header.fields.phone.value || i.phone,
                       onSave: (Z, J) => j("header", "phone", Z, J),
@@ -42149,7 +42149,7 @@ Minimum version required to store current data is: ` + O + `.
                     children: [
                       ((_p2 = (_o2 = x.header.fields) == null ? void 0 : _o2.legalName) == null ? void 0 : _p2.enabled) && n.jsx("div", {
                         className: "block",
-                        children: n.jsx(Wa, {
+                        children: n.jsx(qa, {
                           value: x.header.fields.legalName.value || i.labLegalName,
                           onSave: (Z, J) => j("header", "legalName", void 0, J),
                           onDelete: () => G("header", "legalName"),
@@ -42158,7 +42158,7 @@ Minimum version required to store current data is: ` + O + `.
                       }),
                       ((_r = (_q2 = x.header.fields) == null ? void 0 : _q2.tagline) == null ? void 0 : _r.enabled) && n.jsx("div", {
                         className: "block",
-                        children: n.jsx(Wa, {
+                        children: n.jsx(qa, {
                           value: x.header.fields.tagline.value || i.labTradeName,
                           onSave: (Z, J) => j("header", "tagline", void 0, J),
                           onDelete: () => G("header", "tagline"),
@@ -42167,7 +42167,7 @@ Minimum version required to store current data is: ` + O + `.
                       }),
                       ((_t2 = (_s2 = x.header.fields) == null ? void 0 : _s2.address) == null ? void 0 : _t2.enabled) && n.jsx("div", {
                         className: "block",
-                        children: n.jsx(Wa, {
+                        children: n.jsx(qa, {
                           value: x.header.fields.address.value || i.address,
                           onSave: (Z, J) => j("header", "address", void 0, J),
                           onDelete: () => G("header", "address"),
@@ -42177,28 +42177,28 @@ Minimum version required to store current data is: ` + O + `.
                       n.jsxs("div", {
                         className: "flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] text-zinc-600 font-semibold pt-0.5",
                         children: [
-                          ((_v = (_u = x.header.fields) == null ? void 0 : _u.phone) == null ? void 0 : _v.enabled) && n.jsx(Wa, {
+                          ((_v = (_u = x.header.fields) == null ? void 0 : _u.phone) == null ? void 0 : _v.enabled) && n.jsx(qa, {
                             label: "Phone:",
                             value: x.header.fields.phone.value || i.phone,
                             onSave: (Z, J) => j("header", "phone", Z, J),
                             onDelete: () => G("header", "phone"),
                             valueClassName: "font-mono text-zinc-800"
                           }),
-                          ((_x = (_w2 = x.header.fields) == null ? void 0 : _w2.email) == null ? void 0 : _x.enabled) && n.jsx(Wa, {
+                          ((_x = (_w2 = x.header.fields) == null ? void 0 : _w2.email) == null ? void 0 : _x.enabled) && n.jsx(qa, {
                             label: "Email:",
                             value: x.header.fields.email.value || i.email,
                             onSave: (Z, J) => j("header", "email", Z, J),
                             onDelete: () => G("header", "email"),
                             valueClassName: "text-zinc-800"
                           }),
-                          ((_z2 = (_y = x.header.fields) == null ? void 0 : _y.gstin) == null ? void 0 : _z2.enabled) && n.jsx(Wa, {
+                          ((_z2 = (_y = x.header.fields) == null ? void 0 : _y.gstin) == null ? void 0 : _z2.enabled) && n.jsx(qa, {
                             label: "GSTIN:",
                             value: x.header.fields.gstin.value || i.gstin,
                             onSave: (Z, J) => j("header", "gstin", Z, J),
                             onDelete: () => G("header", "gstin"),
                             valueClassName: "font-mono font-bold text-zinc-900"
                           }),
-                          ((_B2 = (_A2 = x.header.fields) == null ? void 0 : _A2.pan) == null ? void 0 : _B2.enabled) && n.jsx(Wa, {
+                          ((_B2 = (_A2 = x.header.fields) == null ? void 0 : _A2.pan) == null ? void 0 : _B2.enabled) && n.jsx(qa, {
                             label: "PAN:",
                             value: x.header.fields.pan.value || i.pan,
                             onSave: (Z, J) => j("header", "pan", Z, J),
@@ -42209,7 +42209,7 @@ Minimum version required to store current data is: ` + O + `.
                       }),
                       (_C2 = x.header.customLines) == null ? void 0 : _C2.map((Z) => n.jsx("div", {
                         className: "pt-0.5",
-                        children: n.jsx(Wa, {
+                        children: n.jsx(qa, {
                           label: Z.label ? `${Z.label}:` : "",
                           value: Z.value,
                           onSave: (J, ie) => {
@@ -42249,7 +42249,7 @@ Minimum version required to store current data is: ` + O + `.
               children: [
                 ((_F2 = (_E2 = x.docBadge.fields) == null ? void 0 : _E2.badgeTitle) == null ? void 0 : _F2.enabled) && n.jsx("div", {
                   className: "mb-1",
-                  children: n.jsx(Wa, {
+                  children: n.jsx(qa, {
                     value: x.docBadge.fields.badgeTitle.value,
                     onSave: (Z, J) => j("docBadge", "badgeTitle", void 0, J),
                     onDelete: () => G("docBadge", "badgeTitle"),
@@ -42259,7 +42259,7 @@ Minimum version required to store current data is: ` + O + `.
                 n.jsxs("div", {
                   className: "flex justify-between items-center text-[9.5px] font-bold text-black px-0.5",
                   children: [
-                    ((_H2 = (_G2 = x.docBadge.fields) == null ? void 0 : _G2.date) == null ? void 0 : _H2.enabled) && n.jsx(Wa, {
+                    ((_H2 = (_G2 = x.docBadge.fields) == null ? void 0 : _G2.date) == null ? void 0 : _H2.enabled) && n.jsx(qa, {
                       label: "Date:",
                       value: x.docBadge.fields.date.value,
                       onSave: (Z, J) => j("docBadge", "date", Z, J),
@@ -42267,7 +42267,7 @@ Minimum version required to store current data is: ` + O + `.
                       labelClassName: "text-black font-normal",
                       valueClassName: "font-bold text-black"
                     }),
-                    ((_J2 = (_I2 = x.docBadge.fields) == null ? void 0 : _I2.receiptNumber) == null ? void 0 : _J2.enabled) && n.jsx(Wa, {
+                    ((_J2 = (_I2 = x.docBadge.fields) == null ? void 0 : _I2.receiptNumber) == null ? void 0 : _J2.enabled) && n.jsx(qa, {
                       label: "Rcpt:",
                       value: x.docBadge.fields.receiptNumber.value,
                       onSave: (Z, J) => j("docBadge", "receiptNumber", Z, J),
@@ -42286,7 +42286,7 @@ Minimum version required to store current data is: ` + O + `.
                     }),
                     n.jsx("div", {
                       className: "text-2xl font-black font-mono leading-none mt-0.5 text-black",
-                      children: n.jsx(Wa, {
+                      children: n.jsx(qa, {
                         value: ((_M2 = x.docBadge.fields.tokenNumber.value) == null ? void 0 : _M2.replace(/^TOKEN\s*#\s*/i, "")) || "T-0142",
                         onSave: (Z, J) => j("docBadge", "tokenNumber", void 0, `TOKEN # ${J}`),
                         onDelete: () => G("docBadge", "tokenNumber"),
@@ -42302,13 +42302,13 @@ Minimum version required to store current data is: ` + O + `.
                 n.jsxs("div", {
                   className: "flex items-center gap-2",
                   children: [
-                    ((_O2 = (_N2 = x.docBadge.fields) == null ? void 0 : _N2.badgeTitle) == null ? void 0 : _O2.enabled) && n.jsx(Wa, {
+                    ((_O2 = (_N2 = x.docBadge.fields) == null ? void 0 : _N2.badgeTitle) == null ? void 0 : _O2.enabled) && n.jsx(qa, {
                       value: x.docBadge.fields.badgeTitle.value,
                       onSave: (Z, J) => j("docBadge", "badgeTitle", void 0, J),
                       onDelete: () => G("docBadge", "badgeTitle"),
                       valueClassName: "inline-block px-3 py-1 bg-zinc-900 text-white rounded font-black text-[11px] tracking-wider uppercase"
                     }),
-                    ((_Q2 = (_P2 = x.docBadge.fields) == null ? void 0 : _P2.subBadge) == null ? void 0 : _Q2.enabled) && n.jsx(Wa, {
+                    ((_Q2 = (_P2 = x.docBadge.fields) == null ? void 0 : _P2.subBadge) == null ? void 0 : _Q2.enabled) && n.jsx(qa, {
                       value: x.docBadge.fields.subBadge.value,
                       onSave: (Z, J) => j("docBadge", "subBadge", void 0, J),
                       onDelete: () => G("docBadge", "subBadge"),
@@ -42321,7 +42321,7 @@ Minimum version required to store current data is: ` + O + `.
                   children: Object.entries(x.docBadge.fields || {}).map(([Z, J]) => {
                     if (Z === "badgeTitle" || Z === "subBadge" || !J || !J.enabled) return null;
                     const ie = Z === "paymentStatus" || Z === "status";
-                    return n.jsx(Wa, {
+                    return n.jsx(qa, {
                       label: !ie && J.label ? `${J.label}:` : "",
                       value: J.value,
                       onSave: (he, me) => j("docBadge", Z, he, me),
@@ -42333,7 +42333,7 @@ Minimum version required to store current data is: ` + O + `.
                 }),
                 (_R = x.docBadge.customLines) == null ? void 0 : _R.map((Z) => n.jsx("div", {
                   className: "w-full text-right",
-                  children: n.jsx(Wa, {
+                  children: n.jsx(qa, {
                     label: Z.label ? `${Z.label}:` : "",
                     value: Z.value,
                     onSave: (J, ie) => {
@@ -42383,7 +42383,7 @@ Minimum version required to store current data is: ` + O + `.
                       const ie = Z === "fullName", he = Z === "uhid" || Z === "mrn", me = he && (!J.label || J.label === "UHID") ? "MRN" : J.label;
                       return n.jsx("div", {
                         className: C ? ie || he ? "py-0.5" : "py-0" : "py-0.5",
-                        children: n.jsx(Wa, {
+                        children: n.jsx(qa, {
                           label: me ? `${me}:` : "",
                           value: J.value,
                           isBlock: !C,
@@ -42396,7 +42396,7 @@ Minimum version required to store current data is: ` + O + `.
                     }),
                     (_T2 = x.partyDetails.customLines) == null ? void 0 : _T2.map((Z) => n.jsx("div", {
                       className: `py-0.5 ${C ? "" : "sm:col-span-2"}`,
-                      children: n.jsx(Wa, {
+                      children: n.jsx(qa, {
                         label: Z.label ? `${Z.label}:` : "",
                         value: Z.value,
                         isBlock: true,
@@ -42447,7 +42447,7 @@ Minimum version required to store current data is: ` + O + `.
                   children: [
                     Object.entries(x.billerDetails.fields || {}).map(([Z, J]) => J.enabled ? n.jsx("div", {
                       className: C ? "py-0" : "py-0.5",
-                      children: n.jsx(Wa, {
+                      children: n.jsx(qa, {
                         label: J.label ? `${J.label}:` : "",
                         value: J.value,
                         isBlock: !C,
@@ -42459,7 +42459,7 @@ Minimum version required to store current data is: ` + O + `.
                     }, Z) : null),
                     (_V2 = x.billerDetails.customLines) == null ? void 0 : _V2.map((Z) => n.jsx("div", {
                       className: `py-0.5 ${C ? "" : "sm:col-span-2"}`,
-                      children: n.jsx(Wa, {
+                      children: n.jsx(qa, {
                         label: Z.label ? `${Z.label}:` : "",
                         value: Z.value,
                         isBlock: true,
@@ -42695,7 +42695,7 @@ Minimum version required to store current data is: ` + O + `.
                                 onClick: () => U("itemsTable", Re),
                                 className: "text-zinc-400 hover:text-rose-600 p-0.5 cursor-pointer shrink-0 ml-1",
                                 title: "Delete column",
-                                children: n.jsx(qa, {
+                                children: n.jsx(Za, {
                                   size: 11
                                 })
                               })
@@ -42844,7 +42844,7 @@ Minimum version required to store current data is: ` + O + `.
                                         },
                                         className: "p-1 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 rounded cursor-pointer transition-colors",
                                         title: `Delete column "${Ue.label || Re}"`,
-                                        children: n.jsx(qa, {
+                                        children: n.jsx(Za, {
                                           size: 10
                                         })
                                       })
@@ -42947,7 +42947,7 @@ Minimum version required to store current data is: ` + O + `.
                                   className: C ? `py-0.5 px-0.5 align-top ${Ie ? "text-right font-mono font-bold" : "font-bold"}` : `${ie ? "px-1.5 py-1 text-[9px]" : "p-2 text-[10px]"} border-r last:border-r-0 border-zinc-200 align-top overflow-hidden box-border ${Ie ? "text-right font-mono font-semibold" : ""}`,
                                   children: n.jsx("div", {
                                     className: "min-w-0 overflow-hidden",
-                                    children: n.jsx(Wa, {
+                                    children: n.jsx(qa, {
                                       value: String(Je),
                                       onSave: (Ae, q) => ae("itemsTable", Re.id, Se, q),
                                       canDelete: false,
@@ -42967,7 +42967,7 @@ Minimum version required to store current data is: ` + O + `.
                                   onClick: () => te("itemsTable", Re.id),
                                   className: "opacity-0 group-hover/row:opacity-100 p-0.5 text-rose-500 hover:text-rose-700 rounded cursor-pointer",
                                   title: "Delete line item row",
-                                  children: n.jsx(qa, {
+                                  children: n.jsx(Za, {
                                     size: 11
                                   })
                                 })
@@ -42993,7 +42993,7 @@ Minimum version required to store current data is: ` + O + `.
               children: [
                 n.jsx("div", {
                   className: "text-[10px] font-black uppercase tracking-wider text-black",
-                  children: n.jsx(Wa, {
+                  children: n.jsx(qa, {
                     value: x.financialSummary.title || "BILLED TO REFERRAL PARTNER ACCOUNT",
                     onSave: (Z, J) => I({
                       ...t,
@@ -43011,7 +43011,7 @@ Minimum version required to store current data is: ` + O + `.
                 }),
                 ((_$2 = (__2 = x.financialSummary.fields) == null ? void 0 : __2.counterPayable) == null ? void 0 : _$2.enabled) !== false && n.jsx("div", {
                   className: "text-[9.5px] font-bold text-black mt-0.5",
-                  children: n.jsx(Wa, {
+                  children: n.jsx(qa, {
                     label: ((_ba = (_aa = x.financialSummary.fields) == null ? void 0 : _aa.counterPayable) == null ? void 0 : _ba.label) ? `${x.financialSummary.fields.counterPayable.label}:` : "Amount Payable at Counter:",
                     value: ((_da = (_ca = x.financialSummary.fields) == null ? void 0 : _ca.counterPayable) == null ? void 0 : _da.value) || "\u20B90.00 (Prepaid)",
                     onSave: (Z, J) => j("financialSummary", "counterPayable", Z, J),
@@ -43028,7 +43028,7 @@ Minimum version required to store current data is: ` + O + `.
                   const ie = Z === "totalAmount" || Z === "netSalary", he = Z === "balanceDue";
                   return n.jsx("div", {
                     className: `flex justify-between items-center ${C ? ie ? "border-y border-dashed border-black py-0.5 my-0.5 font-black text-[13.5px]" : "py-0 font-bold text-[10.5px]" : ie ? "border-t-2 border-zinc-900 pt-1.5 font-black text-sm" : "py-0.5"} ${!C && he ? "border-t border-zinc-200 pt-1 font-black text-rose-600" : ""}`,
-                    children: n.jsx(Wa, {
+                    children: n.jsx(qa, {
                       label: J.label ? `${J.label}:` : "",
                       value: J.value,
                       isBlock: true,
@@ -43041,7 +43041,7 @@ Minimum version required to store current data is: ` + O + `.
                 }),
                 (_ea = x.financialSummary.customLines) == null ? void 0 : _ea.map((Z) => n.jsx("div", {
                   className: "flex justify-between items-center py-0.5 border-t border-dashed border-zinc-200",
-                  children: n.jsx(Wa, {
+                  children: n.jsx(qa, {
                     label: Z.label ? `${Z.label}:` : "",
                     value: Z.value,
                     isBlock: true,
@@ -43081,7 +43081,7 @@ Minimum version required to store current data is: ` + O + `.
                   className: "text-[10px] font-bold uppercase text-zinc-400 block tracking-wider",
                   children: x.amountInWords.label || "Amount in Words"
                 }),
-                n.jsx(Wa, {
+                n.jsx(qa, {
                   value: x.amountInWords.value,
                   onSave: (Z, J) => {
                     const ie = {
@@ -43229,7 +43229,7 @@ Minimum version required to store current data is: ` + O + `.
                   n.jsxs("div", {
                     className: "text-left text-black space-y-0.5 flex-1 min-w-0",
                     children: [
-                      n.jsx(Wa, {
+                      n.jsx(qa, {
                         value: x.bankAndUpi.title || "SCAN QR TO PAY",
                         onSave: (Z, J) => {
                           const ie = {
@@ -43247,7 +43247,7 @@ Minimum version required to store current data is: ` + O + `.
                         onDelete: () => F("bankAndUpi"),
                         valueClassName: "text-[9.5px] font-black uppercase tracking-wider text-black block leading-tight"
                       }),
-                      n.jsx(Wa, {
+                      n.jsx(qa, {
                         value: ((_na = (_ma = x.bankAndUpi.fields) == null ? void 0 : _ma.upiId) == null ? void 0 : _na.value) || i.upiId || "synoslab@hdfcbank",
                         onSave: (Z, J) => {
                           j("bankAndUpi", "upiId", void 0, J), s && s("upiId", J);
@@ -43255,7 +43255,7 @@ Minimum version required to store current data is: ` + O + `.
                         onDelete: () => G("bankAndUpi", "upiId"),
                         valueClassName: "text-[8.5px] font-mono font-bold text-black block break-all leading-tight"
                       }),
-                      n.jsx(Wa, {
+                      n.jsx(qa, {
                         value: x.bankAndUpi.subtitle || "Instant Bharat UPI",
                         onSave: (Z, J) => {
                           const ie = {
@@ -43327,7 +43327,7 @@ Minimum version required to store current data is: ` + O + `.
                 n.jsxs("div", {
                   className: "space-y-0.5 text-[10px] text-zinc-600 flex-1 min-w-0",
                   children: [
-                    n.jsx(Wa, {
+                    n.jsx(qa, {
                       value: x.bankAndUpi.title || "Bank Transfer Details",
                       onSave: (Z, J) => {
                         const ie = {
@@ -43344,28 +43344,28 @@ Minimum version required to store current data is: ` + O + `.
                       },
                       valueClassName: "font-bold text-zinc-900 uppercase block tracking-wider text-[10px]"
                     }),
-                    ((_ta = (_sa = x.bankAndUpi.fields) == null ? void 0 : _sa.bankName) == null ? void 0 : _ta.enabled) && n.jsx(Wa, {
+                    ((_ta = (_sa = x.bankAndUpi.fields) == null ? void 0 : _sa.bankName) == null ? void 0 : _ta.enabled) && n.jsx(qa, {
                       label: "Bank:",
                       value: x.bankAndUpi.fields.bankName.value || i.bankName,
                       onSave: (Z, J) => j("bankAndUpi", "bankName", Z, J),
                       onDelete: () => G("bankAndUpi", "bankName"),
                       valueClassName: "font-bold text-zinc-800"
                     }),
-                    ((_va = (_ua = x.bankAndUpi.fields) == null ? void 0 : _ua.accountNumber) == null ? void 0 : _va.enabled) && n.jsx(Wa, {
+                    ((_va = (_ua = x.bankAndUpi.fields) == null ? void 0 : _ua.accountNumber) == null ? void 0 : _va.enabled) && n.jsx(qa, {
                       label: "A/C No:",
                       value: x.bankAndUpi.fields.accountNumber.value || i.accountNumber,
                       onSave: (Z, J) => j("bankAndUpi", "accountNumber", Z, J),
                       onDelete: () => G("bankAndUpi", "accountNumber"),
                       valueClassName: "font-mono font-bold text-zinc-900"
                     }),
-                    ((_xa = (_wa = x.bankAndUpi.fields) == null ? void 0 : _wa.ifsc) == null ? void 0 : _xa.enabled) && n.jsx(Wa, {
+                    ((_xa = (_wa = x.bankAndUpi.fields) == null ? void 0 : _wa.ifsc) == null ? void 0 : _xa.enabled) && n.jsx(qa, {
                       label: "IFSC:",
                       value: x.bankAndUpi.fields.ifsc.value || i.ifscCode,
                       onSave: (Z, J) => j("bankAndUpi", "ifsc", Z, J),
                       onDelete: () => G("bankAndUpi", "ifsc"),
                       valueClassName: "font-mono font-bold text-zinc-900"
                     }),
-                    ((_za = (_ya = x.bankAndUpi.fields) == null ? void 0 : _ya.upiId) == null ? void 0 : _za.enabled) && n.jsx(Wa, {
+                    ((_za = (_ya = x.bankAndUpi.fields) == null ? void 0 : _ya.upiId) == null ? void 0 : _za.enabled) && n.jsx(qa, {
                       label: "UPI ID:",
                       value: x.bankAndUpi.fields.upiId.value || i.upiId,
                       onSave: (Z, J) => j("bankAndUpi", "upiId", Z, J),
@@ -43374,7 +43374,7 @@ Minimum version required to store current data is: ` + O + `.
                     }),
                     (_Aa = x.bankAndUpi.customLines) == null ? void 0 : _Aa.map((Z) => n.jsx("div", {
                       className: "pt-0.5",
-                      children: n.jsx(Wa, {
+                      children: n.jsx(qa, {
                         label: Z.label ? `${Z.label}:` : "",
                         value: Z.value,
                         onSave: (J, ie) => {
@@ -43410,7 +43410,7 @@ Minimum version required to store current data is: ` + O + `.
             children: C ? n.jsxs("div", {
               className: "text-center text-[9px] font-bold text-black leading-tight mt-1 space-y-0.5",
               children: [
-                x.termsAndConditions.text && n.jsx(Wa, {
+                x.termsAndConditions.text && n.jsx(qa, {
                   value: x.termsAndConditions.text,
                   onSave: (Z, J) => {
                     const ie = {
@@ -43430,7 +43430,7 @@ Minimum version required to store current data is: ` + O + `.
                 }),
                 x.termsAndConditions.systemNote && n.jsx("div", {
                   className: "pt-0.5",
-                  children: n.jsx(Wa, {
+                  children: n.jsx(qa, {
                     value: x.termsAndConditions.systemNote,
                     onSave: (Z, J) => {
                       const ie = {
@@ -43469,7 +43469,7 @@ Minimum version required to store current data is: ` + O + `.
                   className: "text-[10px] font-bold uppercase text-zinc-700 block tracking-wider mb-1",
                   children: x.termsAndConditions.title || "Terms & Conditions"
                 }),
-                n.jsx(Wa, {
+                n.jsx(qa, {
                   value: x.termsAndConditions.text,
                   onSave: (Z, J) => {
                     const ie = {
@@ -43489,7 +43489,7 @@ Minimum version required to store current data is: ` + O + `.
                 }),
                 x.termsAndConditions.systemNote ? n.jsx("div", {
                   className: "pt-1",
-                  children: n.jsx(Wa, {
+                  children: n.jsx(qa, {
                     value: x.termsAndConditions.systemNote,
                     onSave: (Z, J) => {
                       const ie = {
@@ -43558,7 +43558,7 @@ Minimum version required to store current data is: ` + O + `.
                 n.jsxs("div", {
                   className: "border-t border-zinc-400 pt-1 inline-block text-center min-w-[160px]",
                   children: [
-                    n.jsx(Wa, {
+                    n.jsx(qa, {
                       value: ((_Da = x.signatory) == null ? void 0 : _Da.title) || i.signatoryTitle || "Authorised Signatory",
                       onSave: (Z, J) => {
                         s && s("signatoryTitle", J);
@@ -43612,7 +43612,7 @@ Minimum version required to store current data is: ` + O + `.
                     className: "text-[10px] font-bold uppercase text-zinc-700 tracking-wider block",
                     children: J.name
                   }),
-                  J.content && n.jsx(Wa, {
+                  J.content && n.jsx(qa, {
                     value: J.content,
                     onSave: (he, me) => {
                       const Re = {
@@ -43632,7 +43632,7 @@ Minimum version required to store current data is: ` + O + `.
                   }),
                   (_a2 = J.customLines) == null ? void 0 : _a2.map((he) => n.jsx("div", {
                     className: "py-0.5",
-                    children: n.jsx(Wa, {
+                    children: n.jsx(qa, {
                       label: he.label ? `${he.label}:` : "",
                       value: he.value,
                       onSave: (me, Re) => {
@@ -43739,7 +43739,7 @@ Minimum version required to store current data is: ` + O + `.
                           },
                           className: "px-3.5 py-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-600 dark:text-rose-400 font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-colors",
                           children: [
-                            n.jsx(qa, {
+                            n.jsx(Za, {
                               size: 14
                             }),
                             " Delete Column"
@@ -43878,8 +43878,8 @@ Minimum version required to store current data is: ` + O + `.
           window.dispatchEvent(new CustomEvent("synos:notification-hint", {
             detail: {
               id: Ca ? "dup-b2b-doc" : "dup-rmp-doc",
-              title: Ca ? "Doctor Selection Hint" : "Referral Doctor Hint",
-              message: Ca ? "Same doctor already selected above. In B2B bills, primary doctor gets billed automatically \u2014 no need to select again here." : "Same doctor already added as primary. RMP is only needed if a second doctor or clinic is involved."
+              title: Ca ? "Doctor Already Selected" : "Doctor Already Added",
+              message: Ca ? "Same doctor selected above. B2B bills go to this doctor automatically." : "Doctor already added above. Add RMP only if another clinic is involved."
             }
           }));
         }
@@ -44277,7 +44277,7 @@ Minimum version required to store current data is: ` + O + `.
         return;
       }
       Lr(), t && t(At, Lt);
-    }, Ei = ((_f = J == null ? void 0 : J.visit) == null ? void 0 : _f.tests) || [], Za = Ei.filter((At) => !At.parentOrderId && !(At.price === 0 && !At.isProfile && Ei.some((Lt) => Lt.isProfile)) && !pe.includes(At.orderId || At.OrderId || At.TestId || At.testId)), qi = Za.reduce((At, Lt) => At + (Number(Lt.basePrice || Lt.price || Lt.Price) || 0), 0), Qr = Ae.reduce((At, Lt) => At + (Number(Lt.basePrice || Lt.price || Lt.Price) || 0), 0), cr = qi + Qr;
+    }, Ei = ((_f = J == null ? void 0 : J.visit) == null ? void 0 : _f.tests) || [], Xa = Ei.filter((At) => !At.parentOrderId && !(At.price === 0 && !At.isProfile && Ei.some((Lt) => Lt.isProfile)) && !pe.includes(At.orderId || At.OrderId || At.TestId || At.testId)), qi = Xa.reduce((At, Lt) => At + (Number(Lt.basePrice || Lt.price || Lt.Price) || 0), 0), Qr = Ae.reduce((At, Lt) => At + (Number(Lt.basePrice || Lt.price || Lt.Price) || 0), 0), cr = qi + Qr;
     let bt = 0;
     if (Be == null ? void 0 : Be.remove) bt = 0;
     else if (Be) {
@@ -44290,7 +44290,7 @@ Minimum version required to store current data is: ` + O + `.
     const on = Math.max(0, cr - bt), Un = I ? 0 : Number(((_i = J == null ? void 0 : J.billing) == null ? void 0 : _i.totalPaid) ?? ((_j2 = J == null ? void 0 : J.billing) == null ? void 0 : _j2.netAmount) ?? 0), je = I ? 0 : on - Un, Ye = Ae.length + pe.length + (Be ? 1 : 0) + (ce ? 1 : 0) + (be !== void 0 ? 1 : 0) + (we !== void 0 ? 1 : 0), it = () => {
       var _a3, _b2, _c3, _d2, _e2, _f2, _g2, _h3, _i2;
       const At = J == null ? void 0 : J.visit, Lt = lr || (J == null ? void 0 : J.patient), sn = J == null ? void 0 : J.billing, bn = cr !== void 0 ? cr : (sn == null ? void 0 : sn.grossAmount) || (sn == null ? void 0 : sn.netAmount) || 0, ra = bt !== void 0 ? bt : (sn == null ? void 0 : sn.discountAmount) || 0, aa = on !== void 0 ? on : (sn == null ? void 0 : sn.netAmount) || 0, Ca = I ? 0 : (sn == null ? void 0 : sn.totalPaid) !== void 0 ? Number(sn.totalPaid) : 0, $a = I ? 0 : Math.max(0, aa - Ca), gs = f === "Corporate" || (At == null ? void 0 : At.billingType) === "Corporate" || !!(At == null ? void 0 : At.corporateAccountId), ci = f === "Insurance" || (At == null ? void 0 : At.billingType) === "Insurance" || !!(At == null ? void 0 : At.insuranceCompanyId), Fs = I || !!(At == null ? void 0 : At.referralPartnerId) || be !== void 0, so = ((_a3 = At == null ? void 0 : At.corporateAccount) == null ? void 0 : _a3.companyName) || ((_b2 = At == null ? void 0 : At.corporateAccount) == null ? void 0 : _b2.name) || (gs ? "Corporate Client" : ""), Me = ((_c3 = At == null ? void 0 : At.corporateAccount) == null ? void 0 : _c3.corporateCode) || "", Qn = (At == null ? void 0 : At.employeeId) || "", va = ((_d2 = At == null ? void 0 : At.insuranceCompany) == null ? void 0 : _d2.name) || (ci ? "Insurance Provider" : ""), ei = ((_e2 = At == null ? void 0 : At.insuranceCompany) == null ? void 0 : _e2.tpaName) || "", Ts = (At == null ? void 0 : At.policyNumber) || "", _r2 = (At == null ? void 0 : At.preAuthApprovalNumber) || "", Ra = (At == null ? void 0 : At.insuranceCoPayAmount) || 0, sA = be !== void 0 ? be ? De.find((bi) => (bi.referralPartnerId || bi.id) === be) || (At == null ? void 0 : At.referralPartner) || ((_f2 = sn == null ? void 0 : sn.referral) == null ? void 0 : _f2.partner) : null : (At == null ? void 0 : At.referralPartner) || ((_g2 = sn == null ? void 0 : sn.referral) == null ? void 0 : _g2.partner), ql = (sA == null ? void 0 : sA.name) || (sA == null ? void 0 : sA.displayName) || (Fs ? "Referral Partner" : "Self / Direct"), ju = (sA == null ? void 0 : sA.clinicName) || "", Dd = (sA == null ? void 0 : sA.code) || "", CA = [
-        ...Za,
+        ...Xa,
         ...Ae.map((bi) => ({
           ...bi,
           testCode: bi.testCode || bi.code,
@@ -44366,7 +44366,7 @@ Minimum version required to store current data is: ` + O + `.
     }, tt = (At, Lt) => {
       var _a3, _b2, _c3, _d2, _e2, _f2, _g2, _h3, _i2, _j3, _k3, _l3, _m2, _n3, _o3, _p3;
       const sn = J == null ? void 0 : J.visit, bn = lr || (J == null ? void 0 : J.patient), ra = (fn == null ? void 0 : fn.token) || (sn == null ? void 0 : sn.visitToken) || (sn == null ? void 0 : sn.token), Ca = !ra || ra.startsWith("DRAFT") || ra.startsWith("D-") ? (sn == null ? void 0 : sn.visitToken) || "REC-2026" : ra, $a = cr !== void 0 ? cr : ((_a3 = J == null ? void 0 : J.billing) == null ? void 0 : _a3.grossAmount) || 0, gs = bt !== void 0 ? bt : ((_b2 = J == null ? void 0 : J.billing) == null ? void 0 : _b2.discountAmount) || 0, ci = on !== void 0 ? on : ((_c3 = J == null ? void 0 : J.billing) == null ? void 0 : _c3.netAmount) || 0, Fs = (fn == null ? void 0 : fn.paidAmount) !== void 0 ? fn.paidAmount : I ? 0 : ((_d2 = J == null ? void 0 : J.billing) == null ? void 0 : _d2.totalPaid) !== void 0 ? Number(J.billing.totalPaid) : ci, so = (Be == null ? void 0 : Be.remove) ? "" : (Be == null ? void 0 : Be.reason) || (Be == null ? void 0 : Be.name) || ((_f2 = (_e2 = J == null ? void 0 : J.billing) == null ? void 0 : _e2.appliedDiscount) == null ? void 0 : _f2.reason) || ((_h3 = (_g2 = J == null ? void 0 : J.billing) == null ? void 0 : _g2.appliedDiscount) == null ? void 0 : _h3.name) || "", Me = (sn == null ? void 0 : sn.billedBy) || ((_i2 = J == null ? void 0 : J.billing) == null ? void 0 : _i2.billedBy) || ((e == null ? void 0 : e.name) ? `${e.name}` : "Staff Desk"), Qn = [
-        ...Za,
+        ...Xa,
         ...Ae.map((Ra) => ({
           ...Ra,
           testCode: Ra.testCode || Ra.code,
@@ -44431,7 +44431,7 @@ Minimum version required to store current data is: ` + O + `.
       C,
       I,
       f,
-      Za,
+      Xa,
       Ae,
       lr
     ]);
@@ -44795,9 +44795,9 @@ Minimum version required to store current data is: ` + O + `.
       }
     }, jn = !!(J == null ? void 0 : J.patient), fr = !!(J == null ? void 0 : J.visit), Sr = ((_k2 = J == null ? void 0 : J.billing) == null ? void 0 : _k2.netAmount) || 0, vi = ((_l2 = J == null ? void 0 : J.billing) == null ? void 0 : _l2.totalPaid) || 0, wa = Math.max(0, Sr - vi), ha = !!(((_m = J == null ? void 0 : J.visit) == null ? void 0 : _m.tests) && ((_n2 = J == null ? void 0 : J.visit) == null ? void 0 : _n2.tests.length) > 0 || ((_o2 = J == null ? void 0 : J.billing) == null ? void 0 : _o2.items) && ((_p2 = J == null ? void 0 : J.billing) == null ? void 0 : _p2.items.length) > 0 || ((_q2 = J == null ? void 0 : J.billing) == null ? void 0 : _q2.grossAmount) > 0 || Ae && Ae.length > 0);
     ha || Ae && Ae.length > 0 || be !== void 0 || ((_r = J == null ? void 0 : J.visit) == null ? void 0 : _r.referralPartnerId) || ((_s2 = J == null ? void 0 : J.visit) == null ? void 0 : _s2.id) || ((_t2 = J == null ? void 0 : J.visit) == null ? void 0 : _t2.visitId);
-    const Ka = ha && wa === 0, fa = (((_u = J == null ? void 0 : J.billing) == null ? void 0 : _u.paymentStatus) === "PendingPayment" || ((_v = J == null ? void 0 : J.billing) == null ? void 0 : _v.paymentStatus) === "PartialPayment") && (wa > 0 || Ka), Sa = (u || f === "PrepaidPartner") && !((_w2 = J == null ? void 0 : J.billing) == null ? void 0 : _w2.isLocked), _a = ((_x = J == null ? void 0 : J.billing) == null ? void 0 : _x.paymentStatus) === "Paid" || wa <= 0 && Sr > 0 || !!((_y = J == null ? void 0 : J.billing) == null ? void 0 : _y.isLocked), la = Sn !== null ? !Sn : !!_a, Xa = !!fn || _a && !g, Yr = on !== void 0 ? on : ((_z2 = J == null ? void 0 : J.billing) == null ? void 0 : _z2.netAmount) || ((_A2 = J == null ? void 0 : J.billing) == null ? void 0 : _A2.totalAmount) || 0, Cr = (fn == null ? void 0 : fn.paidAmount) !== void 0 ? fn.paidAmount : I ? 0 : ((_B2 = J == null ? void 0 : J.billing) == null ? void 0 : _B2.totalPaid) !== void 0 ? Number(J.billing.totalPaid) : _a ? Yr : 0, ai = Math.max(0, Yr - Cr), Cs = Math.max(0, Cr - Yr), Ni = Math.max(0, Number((fn == null ? void 0 : fn.changeDue) || ((_C2 = J == null ? void 0 : J.billing) == null ? void 0 : _C2.changeDue) || 0), Cs), Fo = Cr === 0 && ai > 0, XA = c === "create" || !((_D2 = J == null ? void 0 : J.billing) == null ? void 0 : _D2.isLocked) && !_a && (((_E2 = J == null ? void 0 : J.visit) == null ? void 0 : _E2.operationalStatus) === "Draft" || ((_F2 = J == null ? void 0 : J.visit) == null ? void 0 : _F2.status) === "Draft" || String(((_G2 = J == null ? void 0 : J.visit) == null ? void 0 : _G2.token) || ((_H2 = J == null ? void 0 : J.visit) == null ? void 0 : _H2.visitToken) || "").toUpperCase().startsWith("D-")), Ql = !!(((_I2 = J == null ? void 0 : J.visit) == null ? void 0 : _I2.visitId) && !g && !XA && (_a || ((_J2 = J == null ? void 0 : J.billing) == null ? void 0 : _J2.isLocked) || ((_K2 = J == null ? void 0 : J.visit) == null ? void 0 : _K2.isFinalized)));
+    const Va = ha && wa === 0, fa = (((_u = J == null ? void 0 : J.billing) == null ? void 0 : _u.paymentStatus) === "PendingPayment" || ((_v = J == null ? void 0 : J.billing) == null ? void 0 : _v.paymentStatus) === "PartialPayment") && (wa > 0 || Va), Sa = (u || f === "PrepaidPartner") && !((_w2 = J == null ? void 0 : J.billing) == null ? void 0 : _w2.isLocked), _a = ((_x = J == null ? void 0 : J.billing) == null ? void 0 : _x.paymentStatus) === "Paid" || wa <= 0 && Sr > 0 || !!((_y = J == null ? void 0 : J.billing) == null ? void 0 : _y.isLocked), la = Sn !== null ? !Sn : !!_a, Ha = !!fn || _a && !g, Yr = on !== void 0 ? on : ((_z2 = J == null ? void 0 : J.billing) == null ? void 0 : _z2.netAmount) || ((_A2 = J == null ? void 0 : J.billing) == null ? void 0 : _A2.totalAmount) || 0, Cr = (fn == null ? void 0 : fn.paidAmount) !== void 0 ? fn.paidAmount : I ? 0 : ((_B2 = J == null ? void 0 : J.billing) == null ? void 0 : _B2.totalPaid) !== void 0 ? Number(J.billing.totalPaid) : _a ? Yr : 0, ai = Math.max(0, Yr - Cr), Cs = Math.max(0, Cr - Yr), Ni = Math.max(0, Number((fn == null ? void 0 : fn.changeDue) || ((_C2 = J == null ? void 0 : J.billing) == null ? void 0 : _C2.changeDue) || 0), Cs), Fo = Cr === 0 && ai > 0, XA = c === "create" || !((_D2 = J == null ? void 0 : J.billing) == null ? void 0 : _D2.isLocked) && !_a && (((_E2 = J == null ? void 0 : J.visit) == null ? void 0 : _E2.operationalStatus) === "Draft" || ((_F2 = J == null ? void 0 : J.visit) == null ? void 0 : _F2.status) === "Draft" || String(((_G2 = J == null ? void 0 : J.visit) == null ? void 0 : _G2.token) || ((_H2 = J == null ? void 0 : J.visit) == null ? void 0 : _H2.visitToken) || "").toUpperCase().startsWith("D-")), Ql = !!(((_I2 = J == null ? void 0 : J.visit) == null ? void 0 : _I2.visitId) && !g && !XA && (_a || ((_J2 = J == null ? void 0 : J.billing) == null ? void 0 : _J2.isLocked) || ((_K2 = J == null ? void 0 : J.visit) == null ? void 0 : _K2.isFinalized)));
     M.useEffect(() => {
-      if (!r || !Xa) return;
+      if (!r || !Ha) return;
       const At = setTimeout(() => {
         const Lt = document.getElementById("btn-doc-format-thermal");
         Lt && Lt.focus();
@@ -44805,7 +44805,7 @@ Minimum version required to store current data is: ` + O + `.
       return () => clearTimeout(At);
     }, [
       r,
-      Xa
+      Ha
     ]);
     const To = be !== void 0 ? be ? De.find((At) => (At.referralPartnerId || At.id) === be) || ((_L2 = J == null ? void 0 : J.visit) == null ? void 0 : _L2.referralPartner) || ((_N2 = (_M2 = J == null ? void 0 : J.billing) == null ? void 0 : _M2.referral) == null ? void 0 : _N2.partner) : null : ((_O2 = J == null ? void 0 : J.visit) == null ? void 0 : _O2.referralPartner) || ((_Q2 = (_P2 = J == null ? void 0 : J.billing) == null ? void 0 : _P2.referral) == null ? void 0 : _Q2.partner), wl = we !== void 0 ? we ? De.find((At) => (At.referralPartnerId || At.id) === we) || ((_R = J == null ? void 0 : J.visit) == null ? void 0 : _R.secondaryReferralPartner) || ((_T2 = (_S2 = J == null ? void 0 : J.billing) == null ? void 0 : _S2.referral) == null ? void 0 : _T2.secondaryPartner) : null : ((_U = J == null ? void 0 : J.visit) == null ? void 0 : _U.secondaryReferralPartner) || ((_W2 = (_V2 = J == null ? void 0 : J.billing) == null ? void 0 : _V2.referral) == null ? void 0 : _W2.secondaryPartner), Qc = To ? To.displayName || To.name : ((_Y2 = (_X2 = J == null ? void 0 : J.billing) == null ? void 0 : _X2.referral) == null ? void 0 : _Y2.referrerText) || ((_Z2 = J == null ? void 0 : J.visit) == null ? void 0 : _Z2.referringDoctorName) || "Direct / Self", Nd = wl ? wl.displayName || wl.name : null, ao = M.useRef(null), [vl, wc] = M.useState(1.35), [Vl, Nl] = M.useState(1);
     M.useEffect(() => {
@@ -44818,7 +44818,7 @@ Minimum version required to store current data is: ` + O + `.
       };
       return At(), window.addEventListener("resize", At), () => window.removeEventListener("resize", At);
     }, []), M.useEffect(() => {
-      if (!r || !Xa) return;
+      if (!r || !Ha) return;
       const At = () => {
         if (!ao.current) return;
         const bn = ao.current.clientWidth, ra = ao.current.clientHeight, aa = Math.max(200, bn - 24), Ca = Math.max(200, ra - 32), $a = aa / 794, gs = Ca / 1123, ci = Math.max(0.42, Math.min($a, gs));
@@ -44831,12 +44831,12 @@ Minimum version required to store current data is: ` + O + `.
       };
     }, [
       r,
-      Xa,
+      Ha,
       zt
     ]);
     const Wl = (Be == null ? void 0 : Be.remove) ? "" : (Be == null ? void 0 : Be.reason) || (Be == null ? void 0 : Be.name) || ((_$2 = (__2 = J == null ? void 0 : J.billing) == null ? void 0 : __2.appliedDiscount) == null ? void 0 : _$2.reason) || ((_ba = (_aa = J == null ? void 0 : J.billing) == null ? void 0 : _aa.appliedDiscount) == null ? void 0 : _ba.name) || ((_ca = J == null ? void 0 : J.billing) == null ? void 0 : _ca.discountReason) || ((_da = J == null ? void 0 : J.billing) == null ? void 0 : _da.DiscountReason) || "";
     if (M.useEffect(() => {
-      if (!r || !Xa) return;
+      if (!r || !Ha) return;
       const At = (Lt) => {
         var _a3;
         if (Lt.key === "Enter" && !Lt.shiftKey && !Lt.ctrlKey && !Lt.metaKey) {
@@ -44852,7 +44852,7 @@ Minimum version required to store current data is: ` + O + `.
       return window.addEventListener("keydown", At), () => window.removeEventListener("keydown", At);
     }, [
       r,
-      Xa,
+      Ha,
       zt,
       cn,
       ht
@@ -44865,7 +44865,7 @@ Minimum version required to store current data is: ` + O + `.
       io = At > 0 ? `Collect Co-Pay (\u20B9${At}) & Authorize Claim` : "Authorize Cashless Claim (\u20B90)", Ms = ha;
     } else if (f === "Corporate") io = "Authorize Corporate B2B Bill (\u20B90)", Ms = ha;
     else if (Sa) io = "Confirm Corporate B2B Bill (\u20B90)", Ms = ha;
-    else if (fa) if (Ka) io = "Confirm & Complete Visit (\u20B90)", Ms = true;
+    else if (fa) if (Va) io = "Confirm & Complete Visit (\u20B90)", Ms = true;
     else {
       const At = xt && Number(Jt) === 0, Lt = Number(Jt), sn = xt && Lt > 0 && Lt < wa, bn = sn ? Lt : wa, ra = wa - bn;
       if (At) io = `Confirm Visit (Full Due \u20B9${wa.toLocaleString()})`;
@@ -44883,17 +44883,17 @@ Minimum version required to store current data is: ` + O + `.
     }
     else io = ha ? "Visit Complete (Close)" : "Add Tests to Proceed", Ms = ha;
     let iA = "Registration";
-    return d && (iA = _a ? "Visit Finalized & Print Dispatch" : "Resume Visit"), g && (iA = "Visit Correction"), Xa && (iA = "Visit Finalized & Print Dispatch"), n.jsxs(n.Fragment, {
+    return d && (iA = _a ? "Visit Finalized & Print Dispatch" : "Resume Visit"), g && (iA = "Visit Correction"), Ha && (iA = "Visit Finalized & Print Dispatch"), n.jsxs(n.Fragment, {
       children: [
         n.jsx(eq, {
-          isOpen: jn || g,
+          isOpen: jn || g || Ha,
           correctionHistory: J == null ? void 0 : J.correctionHistory
         }),
         n.jsxs("div", {
           ref: A,
-          className: Ce("flex flex-col h-full overflow-hidden rounded-[24px] transition-[width,transform,opacity] duration-300 ease-out z-30 shadow-2xl", jn || g ? "absolute right-0 top-0 bottom-0 w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[86vw] xl:w-[85vw] 2xl:w-[85vw] max-w-[85vw]" : "absolute right-0 top-0 bottom-0 w-[96vw] sm:w-[92vw] md:w-[75vw] lg:w-[50vw] xl:w-[44vw] 2xl:w-[40vw] min-w-[580px] max-w-[880px]", kr.panel),
+          className: Ce("flex flex-col h-full overflow-hidden rounded-[24px] transition-[width,transform,opacity] duration-300 ease-out z-30 shadow-2xl", jn || g || Ha ? "absolute right-0 top-0 bottom-0 w-full xl:left-[268px] 2xl:left-[288px] xl:w-auto" : "absolute right-0 top-0 bottom-0 w-[96vw] sm:w-[92vw] md:w-[75vw] lg:w-[50vw] xl:w-[44vw] 2xl:w-[40vw] min-w-[580px] max-w-[880px]", kr.panel),
           children: [
-            (jn || g) && !Xa ? n.jsx("button", {
+            (jn || g) && !Ha ? n.jsx("button", {
               id: "btn-close-intent-panel",
               type: "button",
               tabIndex: 0,
@@ -44926,7 +44926,7 @@ Minimum version required to store current data is: ` + O + `.
                         })
                       ]
                     }),
-                    Ql && !Xa && n.jsxs("button", {
+                    Ql && !Ha && n.jsxs("button", {
                       type: "button",
                       id: "btn-header-visit-correction",
                       onClick: () => o(J.visit.visitId),
@@ -44941,7 +44941,7 @@ Minimum version required to store current data is: ` + O + `.
                         })
                       ]
                     }),
-                    Xa && n.jsx("span", {
+                    Ha && n.jsx("span", {
                       className: Ce("inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border", f === "PrepaidPartner" ? "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800" : Fo || ai > 0 ? "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300 border-amber-200 dark:border-amber-800" : "bg-[#EDF7F2] text-[#245E49] dark:bg-emerald-950/40 dark:text-emerald-300 border-[#CBE5D7] dark:border-emerald-800"),
                       children: f === "PrepaidPartner" ? n.jsxs(n.Fragment, {
                         children: [
@@ -44984,7 +44984,7 @@ Minimum version required to store current data is: ` + O + `.
                   ]
                 }),
                 n.jsx("button", {
-                  tabIndex: Xa ? -1 : 0,
+                  tabIndex: Ha ? -1 : 0,
                   onClick: Zt,
                   className: Ce("p-2 rounded-full transition-all duration-200 active:scale-95 cursor-pointer", Wn ? "hover:bg-white/10 text-zinc-400 hover:text-white" : "hover:bg-slate-100 text-slate-400 hover:text-slate-700"),
                   children: n.jsx(On, {
@@ -45044,7 +45044,7 @@ Minimum version required to store current data is: ` + O + `.
                       onEditPatient: ot,
                       isCorrectionIntent: g
                     })
-                  }) : Xa ? n.jsxs("div", {
+                  }) : Ha ? n.jsxs("div", {
                     className: "p-3.5 sm:p-5 max-w-full mx-auto w-full flex-1 min-h-0 flex flex-col overflow-hidden animate-in fade-in duration-300",
                     style: Vl < 1 ? {
                       zoom: Vl
@@ -45092,7 +45092,7 @@ Minimum version required to store current data is: ` + O + `.
                                         n.jsxs("button", {
                                           id: "btn-doc-format-thermal",
                                           "data-summary-nav": "true",
-                                          "data-initial-focus": Xa ? "true" : void 0,
+                                          "data-initial-focus": Ha ? "true" : void 0,
                                           type: "button",
                                           onClick: () => an("thermal"),
                                           onKeyDown: (At) => {
@@ -45622,7 +45622,7 @@ Minimum version required to store current data is: ` + O + `.
                                         }),
                                         (() => {
                                           const At = [
-                                            ...Za,
+                                            ...Xa,
                                             ...Ae
                                           ], Lt = At.length > 2, sn = At.length > 6;
                                           return n.jsxs("div", {
@@ -46259,7 +46259,7 @@ Minimum version required to store current data is: ` + O + `.
                 })
               ]
             }),
-            !Xa && n.jsxs("div", {
+            !Ha && n.jsxs("div", {
               className: Ce("py-2.5 px-5 sm:px-7 shrink-0 border-t border-black/[0.06] dark:border-white/[0.06] bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md", jn || g ? "flex items-center justify-between" : "flex justify-center", kr.footer),
               children: [
                 (jn || g) && n.jsxs("div", {
@@ -46560,7 +46560,7 @@ Minimum version required to store current data is: ` + O + `.
                             children: [
                               Zn ? n.jsx(Kn, {
                                 className: "w-3.5 h-3.5 animate-spin"
-                              }) : n.jsx(qa, {
+                              }) : n.jsx(Za, {
                                 className: "w-3.5 h-3.5"
                               }),
                               n.jsx("span", {
@@ -48853,7 +48853,7 @@ Minimum version required to store current data is: ` + O + `.
                     onClick: Ae,
                     className: "py-2.5 px-3 rounded-xl border border-rose-500/30 text-rose-500 hover:bg-rose-500/10 font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs",
                     children: [
-                      n.jsx(qa, {
+                      n.jsx(Za, {
                         className: "w-3.5 h-3.5"
                       }),
                       n.jsx("span", {
@@ -49700,7 +49700,7 @@ Minimum version required to store current data is: ` + O + `.
                     children: [
                       n.jsx("div", {
                         className: "p-2 rounded-xl bg-rose-500/20 text-rose-500",
-                        children: n.jsx(qa, {
+                        children: n.jsx(Za, {
                           className: "w-4 h-4"
                         })
                       }),
@@ -63969,7 +63969,7 @@ Minimum version required to store current data is: ` + O + `.
                     onClick: r,
                     className: "w-full flex items-center gap-3 p-4 rounded-xl dark:bg-white/5 bg-zinc-50 border dark:border-white/5 border-zinc-200 dark:text-zinc-300 text-zinc-700 hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/20 transition-all font-bold",
                     children: [
-                      n.jsx(qa, {
+                      n.jsx(Za, {
                         className: "w-5 h-5"
                       }),
                       "Discard Changes"
@@ -65821,7 +65821,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
     asap: C1e,
     isIterable: x1e
   };
-  let Ja = class XZ extends Error {
+  let Ka = class XZ extends Error {
     static from(e, r, a, i, s, o) {
       const A = new XZ(e.message, r || e.code, a, i, s);
       return A.cause = e, A.name = e.name, e.status != null && A.status == null && (A.status = e.status), o && Object.assign(A, o), A;
@@ -65850,18 +65850,18 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
       };
     }
   };
-  Ja.ERR_BAD_OPTION_VALUE = "ERR_BAD_OPTION_VALUE";
-  Ja.ERR_BAD_OPTION = "ERR_BAD_OPTION";
-  Ja.ECONNABORTED = "ECONNABORTED";
-  Ja.ETIMEDOUT = "ETIMEDOUT";
-  Ja.ERR_NETWORK = "ERR_NETWORK";
-  Ja.ERR_FR_TOO_MANY_REDIRECTS = "ERR_FR_TOO_MANY_REDIRECTS";
-  Ja.ERR_DEPRECATED = "ERR_DEPRECATED";
-  Ja.ERR_BAD_RESPONSE = "ERR_BAD_RESPONSE";
-  Ja.ERR_BAD_REQUEST = "ERR_BAD_REQUEST";
-  Ja.ERR_CANCELED = "ERR_CANCELED";
-  Ja.ERR_NOT_SUPPORT = "ERR_NOT_SUPPORT";
-  Ja.ERR_INVALID_URL = "ERR_INVALID_URL";
+  Ka.ERR_BAD_OPTION_VALUE = "ERR_BAD_OPTION_VALUE";
+  Ka.ERR_BAD_OPTION = "ERR_BAD_OPTION";
+  Ka.ECONNABORTED = "ECONNABORTED";
+  Ka.ETIMEDOUT = "ETIMEDOUT";
+  Ka.ERR_NETWORK = "ERR_NETWORK";
+  Ka.ERR_FR_TOO_MANY_REDIRECTS = "ERR_FR_TOO_MANY_REDIRECTS";
+  Ka.ERR_DEPRECATED = "ERR_DEPRECATED";
+  Ka.ERR_BAD_RESPONSE = "ERR_BAD_RESPONSE";
+  Ka.ERR_BAD_REQUEST = "ERR_BAD_REQUEST";
+  Ka.ERR_CANCELED = "ERR_CANCELED";
+  Ka.ERR_NOT_SUPPORT = "ERR_NOT_SUPPORT";
+  Ka.ERR_INVALID_URL = "ERR_INVALID_URL";
   const B1e = null;
   function fT(t) {
     return mn.isPlainObject(t) || mn.isArray(t);
@@ -65895,7 +65895,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
       if (f === null) return "";
       if (mn.isDate(f)) return f.toISOString();
       if (mn.isBoolean(f)) return f.toString();
-      if (!l && mn.isBlob(f)) throw new Ja("Blob is not supported. Use a Buffer instead.");
+      if (!l && mn.isBlob(f)) throw new Ka("Blob is not supported. Use a Buffer instead.");
       return mn.isArrayBuffer(f) || mn.isTypedArray(f) ? l && typeof Blob == "function" ? new Blob([
         f
       ]) : Buffer.from(f) : f;
@@ -66120,7 +66120,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
           try {
             return JSON.parse(e, this.parseReviver);
           } catch (A) {
-            if (o) throw A.name === "SyntaxError" ? Ja.from(A, Ja.ERR_BAD_RESPONSE, this, null, this.response) : A;
+            if (o) throw A.name === "SyntaxError" ? Ka.from(A, Ka.ERR_BAD_RESPONSE, this, null, this.response) : A;
           }
         }
         return e;
@@ -66390,16 +66390,16 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
   function aX(t) {
     return !!(t && t.__CANCEL__);
   }
-  let Bv = class extends Ja {
+  let Bv = class extends Ka {
     constructor(e, r, a) {
-      super(e ?? "canceled", Ja.ERR_CANCELED, r, a), this.name = "CanceledError", this.__CANCEL__ = true;
+      super(e ?? "canceled", Ka.ERR_CANCELED, r, a), this.name = "CanceledError", this.__CANCEL__ = true;
     }
   };
   function iX(t, e, r) {
     const a = r.config.validateStatus;
-    !r.status || !a || a(r.status) ? t(r) : e(new Ja("Request failed with status code " + r.status, [
-      Ja.ERR_BAD_REQUEST,
-      Ja.ERR_BAD_RESPONSE
+    !r.status || !a || a(r.status) ? t(r) : e(new Ka("Request failed with status code " + r.status, [
+      Ka.ERR_BAD_REQUEST,
+      Ka.ERR_BAD_RESPONSE
     ][Math.floor(r.status / 100) - 4], r.config, r.request, r));
   }
   function Y1e(t) {
@@ -66617,14 +66617,14 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
       "onloadend" in I ? I.onloadend = x : I.onreadystatechange = function() {
         !I || I.readyState !== 4 || I.status === 0 && !(I.responseURL && I.responseURL.indexOf("file:") === 0) || setTimeout(x);
       }, I.onabort = function() {
-        I && (a(new Ja("Request aborted", Ja.ECONNABORTED, t, I)), I = null);
+        I && (a(new Ka("Request aborted", Ka.ECONNABORTED, t, I)), I = null);
       }, I.onerror = function(Q) {
-        const N = Q && Q.message ? Q.message : "Network Error", w = new Ja(N, Ja.ERR_NETWORK, t, I);
+        const N = Q && Q.message ? Q.message : "Network Error", w = new Ka(N, Ka.ERR_NETWORK, t, I);
         w.event = Q || null, a(w), I = null;
       }, I.ontimeout = function() {
         let Q = i.timeout ? "timeout of " + i.timeout + "ms exceeded" : "timeout exceeded";
         const N = i.transitional || dL;
-        i.timeoutErrorMessage && (Q = i.timeoutErrorMessage), a(new Ja(Q, N.clarifyTimeoutError ? Ja.ETIMEDOUT : Ja.ECONNABORTED, t, I)), I = null;
+        i.timeoutErrorMessage && (Q = i.timeoutErrorMessage), a(new Ka(Q, N.clarifyTimeoutError ? Ka.ETIMEDOUT : Ka.ECONNABORTED, t, I)), I = null;
       }, s === void 0 && o.setContentType(null), "setRequestHeader" in I && mn.forEach(o.toJSON(), function(Q, N) {
         I.setRequestHeader(N, Q);
       }), mn.isUndefined(i.withCredentials) || (I.withCredentials = !!i.withCredentials), A && A !== "json" && (I.responseType = i.responseType), c && ([u, f] = o5(c, true), I.addEventListener("progress", u)), l && I.upload && ([d, h] = o5(l), I.upload.addEventListener("progress", d), I.upload.addEventListener("loadend", h)), (i.cancelToken || i.signal) && (g = (B) => {
@@ -66632,7 +66632,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
       }, i.cancelToken && i.cancelToken.subscribe(g), i.signal && (i.signal.aborted ? g() : i.signal.addEventListener("abort", g)));
       const C = Y1e(i.url);
       if (C && Gl.protocols.indexOf(C) === -1) {
-        a(new Ja("Unsupported protocol " + C + ":", Ja.ERR_BAD_REQUEST, t));
+        a(new Ka("Unsupported protocol " + C + ":", Ka.ERR_BAD_REQUEST, t));
         return;
       }
       I.send(s || null);
@@ -66645,11 +66645,11 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
         if (!i) {
           i = true, A();
           const g = c instanceof Error ? c : this.reason;
-          a.abort(g instanceof Ja ? g : new Bv(g instanceof Error ? g.message : g));
+          a.abort(g instanceof Ka ? g : new Bv(g instanceof Error ? g.message : g));
         }
       };
       let o = e && setTimeout(() => {
-        o = null, s(new Ja(`timeout of ${e}ms exceeded`, Ja.ETIMEDOUT));
+        o = null, s(new Ka(`timeout of ${e}ms exceeded`, Ka.ETIMEDOUT));
       }, e);
       const A = () => {
         t && (o && clearTimeout(o), o = null, t.forEach((c) => {
@@ -66752,7 +66752,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
       !d[f] && (d[f] = (p, I) => {
         let x = p && p[f];
         if (x) return x.call(p);
-        throw new Ja(`Response type '${f}' is not supported`, Ja.ERR_NOT_SUPPORT, I);
+        throw new Ka(`Response type '${f}' is not supported`, Ka.ERR_NOT_SUPPORT, I);
       });
     });
     const u = async (f) => {
@@ -66831,9 +66831,9 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
           });
         });
       } catch (te) {
-        throw Y && Y(), te && te.name === "TypeError" && /Load failed|fetch/i.test(te.message) ? Object.assign(new Ja("Network Error", Ja.ERR_NETWORK, f, _, te && te.response), {
+        throw Y && Y(), te && te.name === "TypeError" && /Load failed|fetch/i.test(te.message) ? Object.assign(new Ka("Network Error", Ka.ERR_NETWORK, f, _, te && te.response), {
           cause: te.cause || te
-        }) : Ja.from(te, te && te.code, f, _, te && te.response);
+        }) : Ka.from(te, te && te.code, f, _, te && te.response);
       }
     };
   }, sve = /* @__PURE__ */ new Map(), AX = (t) => {
@@ -66879,7 +66879,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
     for (let o = 0; o < r; o++) {
       a = t[o];
       let A;
-      if (i = a, !ove(a) && (i = uL[(A = String(a)).toLowerCase()], i === void 0)) throw new Ja(`Unknown adapter '${A}'`);
+      if (i = a, !ove(a) && (i = uL[(A = String(a)).toLowerCase()], i === void 0)) throw new Ka(`Unknown adapter '${A}'`);
       if (i && (mn.isFunction(i) || (i = i.get(e)))) break;
       s[A || "#" + o] = i;
     }
@@ -66888,7 +66888,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
       let A = r ? o.length > 1 ? `since :
 ` + o.map(d7).join(`
 `) : " " + d7(o[0]) : "as no adapter specified";
-      throw new Ja("There is no suitable adapter to dispatch the request " + A, "ERR_NOT_SUPPORT");
+      throw new Ka("There is no suitable adapter to dispatch the request " + A, "ERR_NOT_SUPPORT");
     }
     return i;
   }
@@ -66929,7 +66929,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
       return "[Axios v" + cX + "] Transitional option '" + s + "'" + o + (a ? ". " + a : "");
     }
     return (s, o, A) => {
-      if (e === false) throw new Ja(i(o, " has been removed" + (r ? " in " + r : "")), Ja.ERR_DEPRECATED);
+      if (e === false) throw new Ka(i(o, " has been removed" + (r ? " in " + r : "")), Ka.ERR_DEPRECATED);
       return r && !u7[o] && (u7[o] = true, console.warn(i(o, " has been deprecated since v" + r + " and will be removed in the near future"))), e ? e(s, o, A) : true;
     };
   };
@@ -66937,17 +66937,17 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
     return (r, a) => (console.warn(`${a} is likely a misspelling of ${e}`), true);
   };
   function lve(t, e, r) {
-    if (typeof t != "object") throw new Ja("options must be an object", Ja.ERR_BAD_OPTION_VALUE);
+    if (typeof t != "object") throw new Ka("options must be an object", Ka.ERR_BAD_OPTION_VALUE);
     const a = Object.keys(t);
     let i = a.length;
     for (; i-- > 0; ) {
       const s = a[i], o = e[s];
       if (o) {
         const A = t[s], l = A === void 0 || o(A, s, t);
-        if (l !== true) throw new Ja("option " + s + " must be " + l, Ja.ERR_BAD_OPTION_VALUE);
+        if (l !== true) throw new Ka("option " + s + " must be " + l, Ka.ERR_BAD_OPTION_VALUE);
         continue;
       }
-      if (r !== true) throw new Ja("Unknown option " + s, Ja.ERR_BAD_OPTION);
+      if (r !== true) throw new Ka("Unknown option " + s, Ka.ERR_BAD_OPTION);
     }
   }
   const ok = {
@@ -67254,7 +67254,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
   jo.isCancel = aX;
   jo.VERSION = cX;
   jo.toFormData = i3;
-  jo.AxiosError = Ja;
+  jo.AxiosError = Ka;
   jo.Cancel = jo.CanceledError;
   jo.all = function(e) {
     return Promise.all(e);
@@ -86735,7 +86735,7 @@ ${r}
                 disabled: a,
                 className: "p-1.5 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-colors active:scale-95 ml-1",
                 title: "Delete Table",
-                children: n.jsx(qa, {
+                children: n.jsx(Za, {
                   className: "w-4 h-4"
                 })
               })
@@ -87153,7 +87153,7 @@ ${r}
                               onClick: () => F(U.macroId, U.shortcut),
                               className: "p-1 hover:bg-red-500/15 rounded text-zinc-400 hover:text-red-500 transition-colors",
                               title: "Delete macro",
-                              children: n.jsx(qa, {
+                              children: n.jsx(Za, {
                                 className: "w-3.5 h-3.5"
                               })
                             })
@@ -94228,7 +94228,7 @@ ${r}
     const c = async () => {
       i(true);
       try {
-        const u = await Ya.getPendingRequests(t.branchId);
+        const u = await Ja.getPendingRequests(t.branchId);
         r(u);
       } catch (u) {
         console.error("Failed to load requests", u);
@@ -94240,7 +94240,7 @@ ${r}
       if (confirm("Are you sure you want to fulfill this request? This will deduct stock from the oldest lots.")) {
         o(true);
         try {
-          await Ya.fulfillRequest(u), await c();
+          await Ja.fulfillRequest(u), await c();
         } catch (h) {
           alert(((_b = (_a = h.response) == null ? void 0 : _a.data) == null ? void 0 : _b.message) || "Fulfillment failed.");
         } finally {
@@ -94249,7 +94249,7 @@ ${r}
       }
     }, d = async (u) => {
       if (confirm("Ignore this request?")) try {
-        await Ya.ignoreRequest(u), await c();
+        await Ja.ignoreRequest(u), await c();
       } catch (h) {
         console.error(h);
       }
@@ -94573,9 +94573,9 @@ ${r}
       try {
         const [Pe, st, xt, Kt] = await Promise.all([
           pr.getRoles(),
-          Ya.getAllActiveItems(),
+          Ja.getAllActiveItems(),
           pr.getTests(),
-          Ya.getTubes()
+          Ja.getTubes()
         ]);
         u(Pe || []), o(st || []), g(xt || []), l(Kt || []), Pe && Pe.length > 0 && f(Pe[0].roleId), xt && xt.length > 0 && Y(xt[0].testId);
       } catch (Pe) {
@@ -94586,7 +94586,7 @@ ${r}
     }, Ae = async (Pe) => {
       C(true);
       try {
-        const st = await Ya.getMappings(Pe);
+        const st = await Ja.getMappings(Pe);
         I(st || []);
       } catch (st) {
         console.error("Failed to load role mappings", st);
@@ -94597,10 +94597,10 @@ ${r}
       J(true);
       try {
         if (e === "test-consumables") {
-          const st = await Ya.getTestConsumables(Pe);
+          const st = await Ja.getTestConsumables(Pe);
           te(st || []);
         } else if (e === "test-tubes") {
-          const st = await Ya.getTestTubes(Pe);
+          const st = await Ja.getTestTubes(Pe);
           ee(st || []);
         }
       } catch (st) {
@@ -94610,19 +94610,19 @@ ${r}
       }
     }, pe = async (Pe) => {
       try {
-        await Ya.addMapping(h, Pe), await Ae(h);
+        await Ja.addMapping(h, Pe), await Ae(h);
       } catch (st) {
         console.error(st);
       }
     }, se = async (Pe) => {
       try {
-        await Ya.removeMapping(h, Pe), await Ae(h);
+        await Ja.removeMapping(h, Pe), await Ae(h);
       } catch (st) {
         console.error(st);
       }
     }, Be = async (Pe) => {
       try {
-        await Ya.addTestConsumable(_, {
+        await Ja.addTestConsumable(_, {
           consumableId: Pe,
           quantityPerTest: parseFloat(Ue) || 1,
           usageType: parseInt(Le) || 0
@@ -94632,13 +94632,13 @@ ${r}
       }
     }, ye = async (Pe) => {
       try {
-        await Ya.removeTestConsumable(_, Pe), await q(_);
+        await Ja.removeTestConsumable(_, Pe), await q(_);
       } catch (st) {
         console.error(st);
       }
     }, ce = async (Pe) => {
       try {
-        await Ya.addTestTube({
+        await Ja.addTestTube({
           testId: _,
           tubeId: Pe,
           quantityPerSample: parseFloat(Ue) || 1
@@ -94653,7 +94653,7 @@ ${r}
       if (!xt || xt <= 0) return;
       const Kt = DE(xt, fe, st);
       try {
-        await Ya.updateTestConsumable(_, Pe, {
+        await Ja.updateTestConsumable(_, Pe, {
           quantityPerTest: Kt,
           displayQuantity: xt,
           displayUnit: fe
@@ -94664,7 +94664,7 @@ ${r}
     }, Ze = async (Pe) => {
       const st = parseFloat($e);
       if (!(!st || st <= 0)) try {
-        await Ya.updateTestTube(_, Pe, {
+        await Ja.updateTestTube(_, Pe, {
           quantityPerSample: st
         }), be(null), await q(_);
       } catch (xt) {
@@ -94672,7 +94672,7 @@ ${r}
       }
     }, et = async (Pe) => {
       try {
-        await Ya.removeTestTube(Pe), await q(_);
+        await Ja.removeTestTube(Pe), await q(_);
       } catch (st) {
         console.error(st);
       }
@@ -94683,7 +94683,7 @@ ${r}
       let xt = "";
       st.includes("xray") || st.includes("x-ray") ? xt = "X-Ray" : st.includes("mri") ? xt = "MRI" : st.includes("ct") ? xt = "CT" : (st.includes("us") || st.includes("ultrasound")) && (xt = "Ultrasound");
       const Kt = s.filter((Jt) => Jt.serviceArea === "Radiology" && (xt ? Jt.modality === xt : true) || Jt.serviceArea === "General Supplies");
-      for (const Jt of Kt) p.some((xn) => xn.consumableId === Jt.consumableId) || await Ya.addMapping(h, Jt.consumableId).catch(() => {
+      for (const Jt of Kt) p.some((xn) => xn.consumableId === Jt.consumableId) || await Ja.addMapping(h, Jt.consumableId).catch(() => {
       });
       await Ae(h);
     }, St = (Pe) => {
@@ -95247,7 +95247,7 @@ ${r}
                               onClick: () => se(Pe.consumableId),
                               className: "p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all",
                               title: "Remove custom mapping",
-                              children: n.jsx(qa, {
+                              children: n.jsx(Za, {
                                 className: "h-4 w-4"
                               })
                             })
@@ -95370,7 +95370,7 @@ ${r}
                                   onClick: () => ye(Pe.mapId),
                                   className: "p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all",
                                   title: "Remove mapping",
-                                  children: n.jsx(qa, {
+                                  children: n.jsx(Za, {
                                     className: "h-4 w-4"
                                   })
                                 })
@@ -95459,7 +95459,7 @@ ${r}
                                 n.jsx("button", {
                                   onClick: () => et(Pe.mapId),
                                   className: "p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all",
-                                  children: n.jsx(qa, {
+                                  children: n.jsx(Za, {
                                     className: "h-4 w-4"
                                   })
                                 })
@@ -96985,10 +96985,10 @@ ${r}
           const sr = Xe.testId || Xe.id;
           dt(sr);
           const [Rr, Ta, ss, di, Di] = await Promise.all([
-            Ya.getTestConsumables(sr).catch(() => []),
-            Ya.getTestTubes(sr).catch(() => []),
-            Ya.getAllActiveItems().catch(() => []),
-            Ya.getTubes().catch(() => []),
+            Ja.getTestConsumables(sr).catch(() => []),
+            Ja.getTestTubes(sr).catch(() => []),
+            Ja.getAllActiveItems().catch(() => []),
+            Ja.getTubes().catch(() => []),
             pr.getRoles().catch(() => [])
           ]);
           rr(Array.isArray(Rr) ? Rr : []), xa(Array.isArray(Ta) ? Ta : []), ja(Array.isArray(ss) ? ss : []), Ma(Array.isArray(di) ? di : []), ti(Array.isArray(Di) ? Di : []);
@@ -97001,7 +97001,7 @@ ${r}
         if (!mi || !Tt) return;
         const sr = (Ao == null ? void 0 : Ao.unitOfMeasure) || "units", Rr = parseFloat(Jr) || 1, Ta = DE(Rr, Hs, sr);
         try {
-          await Ya.addTestConsumable(Tt, {
+          await Ja.addTestConsumable(Tt, {
             consumableId: mi,
             quantityPerTest: Ta,
             displayQuantity: Rr,
@@ -97013,13 +97013,13 @@ ${r}
         }
       }, nd = async (sr) => {
         try {
-          await Ya.removeTestConsumable(Tt, sr), await mr();
+          await Ja.removeTestConsumable(Tt, sr), await mr();
         } catch (Rr) {
           console.error(Rr);
         }
       }, Fu = async () => {
         if (!(!oo || !Tt)) try {
-          await Ya.addTestTube({
+          await Ja.addTestTube({
             testId: Tt,
             tubeId: oo,
             quantityPerSample: parseFloat(Jr) || 1
@@ -97029,7 +97029,7 @@ ${r}
         }
       }, jd = async (sr) => {
         try {
-          await Ya.removeTestTube(sr), await mr();
+          await Ja.removeTestTube(sr), await mr();
         } catch (Rr) {
           console.error(Rr);
         }
@@ -97040,7 +97040,7 @@ ${r}
         if (!Ta || Ta <= 0) return;
         const ss = DE(Ta, RA, Rr);
         try {
-          await Ya.updateTestConsumable(Tt, sr, {
+          await Ja.updateTestConsumable(Tt, sr, {
             quantityPerTest: ss,
             displayQuantity: Ta,
             displayUnit: RA
@@ -97051,7 +97051,7 @@ ${r}
       }, yg = async (sr) => {
         const Rr = parseFloat(Eg);
         if (!(!Rr || Rr <= 0)) try {
-          await Ya.updateTestTube(Tt, sr, {
+          await Ja.updateTestTube(Tt, sr, {
             quantityPerSample: Rr
           }), Lu(null), await mr();
         } catch (Ta) {
@@ -97060,7 +97060,7 @@ ${r}
       }, [jA, MA] = M.useState(false), ad = async () => {
         MA(true);
         try {
-          const sr = await Ya.autoMapAllTests();
+          const sr = await Ja.autoMapAllTests();
           alert(sr.message || "Successfully auto-mapped inventory consumables for all tests!"), await mr();
         } catch (sr) {
           console.error(sr), alert("Auto-mapping completed."), await mr();
@@ -97472,7 +97472,7 @@ ${r}
                                   onClick: () => nd(sr.mapId),
                                   className: "p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-all",
                                   title: "Remove mapping",
-                                  children: n.jsx(qa, {
+                                  children: n.jsx(Za, {
                                     className: "w-4 h-4"
                                   })
                                 })
@@ -97551,7 +97551,7 @@ ${r}
                                 n.jsx("button", {
                                   onClick: () => jd(sr.mapId),
                                   className: "p-1 text-zinc-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-all",
-                                  children: n.jsx(qa, {
+                                  children: n.jsx(Za, {
                                     className: "w-3.5 h-3.5"
                                   })
                                 })
@@ -97790,7 +97790,7 @@ ${r}
         });
       };
       document.addEventListener("pointermove", ur), document.addEventListener("pointerup", Ma);
-    }, [un, Nr] = M.useState((a == null ? void 0 : a.name) || ""), [hr, Vr] = M.useState((a == null ? void 0 : a.code) || ""), [zn, nr] = M.useState((a == null ? void 0 : a.department) || ""), [Wn, kr] = M.useState((a == null ? void 0 : a.isProfile) || false), [Lr, Hr] = M.useState((a == null ? void 0 : a.specimenTypeCode) || "SERUM"), [Qt, Ht] = M.useState((a == null ? void 0 : a.category) || "General"), [Zt, yn] = M.useState((a == null ? void 0 : a.modalityId) || ""), [Rn, dr] = M.useState(false), [na, ua] = M.useState("formula"), [qn, Fr] = M.useState(""), [Oa, Ir] = M.useState(""), [Ai, Dr] = M.useState(false), [Ds, ts] = M.useState(""), [Wt, pi] = M.useState(false), [Ot, vn] = M.useState(""), [Zn, gr] = M.useState(""), [Br, Xr] = M.useState(false), [zi, lr] = M.useState(""), [Gi, Ei] = M.useState(""), [Za, qi] = M.useState(false), [Qr, cr] = M.useState(""), [bt, on] = M.useState(""), [Un, je] = M.useState(false), [Ye, it] = M.useState(""), [tt, ht] = M.useState(""), [Ct, Xt] = M.useState(false), [It, Mt] = M.useState(""), [Ft, Dn] = M.useState(""), [Vt, En] = M.useState(""), [Hn, ot] = M.useState(""), [Nt, dn] = M.useState(""), [jn, fr] = M.useState(false), [Sr, vi] = M.useState(""), [wa, ha] = M.useState(""), [Ka, fa] = M.useState(""), [Sa, _a] = M.useState(false), [la, Xa] = M.useState(""), [Yr, Cr] = M.useState(""), [ai, Cs] = M.useState(""), [Ni, Fo] = M.useState(false), [XA, Ql] = M.useState(""), [To, wl] = M.useState(""), [Qc, Nd] = M.useState(""), [ao, vl] = M.useState(false), [wc, Vl] = M.useState(""), [Nl, Wl] = M.useState(""), [io, Ms] = M.useState(""), [iA, At] = M.useState(false), [Lt, sn] = M.useState(""), [bn, ra] = M.useState(""), [aa, Ca] = M.useState(""), [$a, gs] = M.useState(false), [ci, Fs] = M.useState(""), [so, Me] = M.useState(""), [Qn, va] = M.useState(""), [ei, Ts] = M.useState(false), [_r, Ra] = M.useState(""), [sA, ql] = M.useState(""), [ju, Dd] = M.useState(""), [CA, kd] = M.useState(false), [Zl, vc] = M.useState(""), [Xo, ed] = M.useState(""), [xg, Mu] = M.useState(""), bi = (Xe) => {
+    }, [un, Nr] = M.useState((a == null ? void 0 : a.name) || ""), [hr, Vr] = M.useState((a == null ? void 0 : a.code) || ""), [zn, nr] = M.useState((a == null ? void 0 : a.department) || ""), [Wn, kr] = M.useState((a == null ? void 0 : a.isProfile) || false), [Lr, Hr] = M.useState((a == null ? void 0 : a.specimenTypeCode) || "SERUM"), [Qt, Ht] = M.useState((a == null ? void 0 : a.category) || "General"), [Zt, yn] = M.useState((a == null ? void 0 : a.modalityId) || ""), [Rn, dr] = M.useState(false), [na, ua] = M.useState("formula"), [qn, Fr] = M.useState(""), [Oa, Ir] = M.useState(""), [Ai, Dr] = M.useState(false), [Ds, ts] = M.useState(""), [Wt, pi] = M.useState(false), [Ot, vn] = M.useState(""), [Zn, gr] = M.useState(""), [Br, Xr] = M.useState(false), [zi, lr] = M.useState(""), [Gi, Ei] = M.useState(""), [Xa, qi] = M.useState(false), [Qr, cr] = M.useState(""), [bt, on] = M.useState(""), [Un, je] = M.useState(false), [Ye, it] = M.useState(""), [tt, ht] = M.useState(""), [Ct, Xt] = M.useState(false), [It, Mt] = M.useState(""), [Ft, Dn] = M.useState(""), [Vt, En] = M.useState(""), [Hn, ot] = M.useState(""), [Nt, dn] = M.useState(""), [jn, fr] = M.useState(false), [Sr, vi] = M.useState(""), [wa, ha] = M.useState(""), [Va, fa] = M.useState(""), [Sa, _a] = M.useState(false), [la, Ha] = M.useState(""), [Yr, Cr] = M.useState(""), [ai, Cs] = M.useState(""), [Ni, Fo] = M.useState(false), [XA, Ql] = M.useState(""), [To, wl] = M.useState(""), [Qc, Nd] = M.useState(""), [ao, vl] = M.useState(false), [wc, Vl] = M.useState(""), [Nl, Wl] = M.useState(""), [io, Ms] = M.useState(""), [iA, At] = M.useState(false), [Lt, sn] = M.useState(""), [bn, ra] = M.useState(""), [aa, Ca] = M.useState(""), [$a, gs] = M.useState(false), [ci, Fs] = M.useState(""), [so, Me] = M.useState(""), [Qn, va] = M.useState(""), [ei, Ts] = M.useState(false), [_r, Ra] = M.useState(""), [sA, ql] = M.useState(""), [ju, Dd] = M.useState(""), [CA, kd] = M.useState(false), [Zl, vc] = M.useState(""), [Xo, ed] = M.useState(""), [xg, Mu] = M.useState(""), bi = (Xe) => {
       i(Xe), localStorage.setItem("synos_selected_test_id", Xe.id), Nr(Xe.name), Vr(Xe.code), nr(Xe.department), kr(Xe.isProfile), Hr(Xe.specimenTypeCode || "SERUM"), Ht(Xe.category || "General"), yn(Xe.modalityId || ""), Jn(false), dr(false), !Xe.isProfile && Dt === "profile-builder" && hn("parameters");
     }, lf = () => {
       const Xe = te.find((Nn) => Nn.name === zn), Tt = Xe ? Xe.macroDepartment === "Radiology" : zn === "Radiology" || zn === "RAD";
@@ -98020,7 +98020,7 @@ IMPRESSION:`,
       const ur = dt.childMin !== void 0 && dt.childMin !== null ? dt.childMin : "", Ma = dt.childMax !== void 0 && dt.childMax !== null ? dt.childMax : "";
       dt.useAdult;
       const yi = dt.adultMin !== void 0 && dt.adultMin !== null ? dt.adultMin : "", ti = dt.adultMax !== void 0 && dt.adultMax !== null ? dt.adultMax : "";
-      fr(dt.useNewbornMale ?? false), vi(dt.newbornMaleMin !== void 0 && dt.newbornMaleMin !== null ? dt.newbornMaleMin : ""), ha(dt.newbornMaleMax !== void 0 && dt.newbornMaleMax !== null ? dt.newbornMaleMax : ""), fa(dt.newbornMaleText || ""), _a(dt.useNewbornFemale ?? false), Xa(dt.newbornFemaleMin !== void 0 && dt.newbornFemaleMin !== null ? dt.newbornFemaleMin : ""), Cr(dt.newbornFemaleMax !== void 0 && dt.newbornFemaleMax !== null ? dt.newbornFemaleMax : ""), Cs(dt.newbornFemaleText || ""), Fo(dt.useInfantMale ?? (dt.useInfant ? true : Yn)), Ql(dt.infantMaleMin !== void 0 && dt.infantMaleMin !== null ? dt.infantMaleMin : ya || Nn), wl(dt.infantMaleMax !== void 0 && dt.infantMaleMax !== null ? dt.infantMaleMax : ja || kn), Nd(dt.infantMaleText || ""), vl(dt.useInfantFemale ?? (dt.useInfant ? true : rr)), Vl(dt.infantFemaleMin !== void 0 && dt.infantFemaleMin !== null ? dt.infantFemaleMin : ya || Tn), Wl(dt.infantFemaleMax !== void 0 && dt.infantFemaleMax !== null ? dt.infantFemaleMax : ja || xa), Ms(dt.infantFemaleText || ""), At(dt.useChildMale ?? (dt.useChild ? true : Yn)), sn(dt.childMaleMin !== void 0 && dt.childMaleMin !== null ? dt.childMaleMin : ur || Nn), ra(dt.childMaleMax !== void 0 && dt.childMaleMax !== null ? dt.childMaleMax : Ma || kn), Ca(dt.childMaleText || ""), gs(dt.useChildFemale ?? (dt.useChild ? true : rr)), Fs(dt.childFemaleMin !== void 0 && dt.childFemaleMin !== null ? dt.childFemaleMin : ur || Tn), Me(dt.childFemaleMax !== void 0 && dt.childFemaleMax !== null ? dt.childFemaleMax : Ma || xa), va(dt.childFemaleText || ""), Ts(dt.useAdultMale ?? (dt.useAdult ? true : Yn)), Ra(dt.adultMaleMin !== void 0 && dt.adultMaleMin !== null ? dt.adultMaleMin : yi || Nn), ql(dt.adultMaleMax !== void 0 && dt.adultMaleMax !== null ? dt.adultMaleMax : ti || kn), Dd(dt.adultMaleText || ""), kd(dt.useAdultFemale ?? (dt.useAdult ? true : rr)), vc(dt.adultFemaleMin !== void 0 && dt.adultFemaleMin !== null ? dt.adultFemaleMin : yi || Tn), ed(dt.adultFemaleMax !== void 0 && dt.adultFemaleMax !== null ? dt.adultFemaleMax : ti || xa), Mu(dt.adultFemaleText || ""), dr(true);
+      fr(dt.useNewbornMale ?? false), vi(dt.newbornMaleMin !== void 0 && dt.newbornMaleMin !== null ? dt.newbornMaleMin : ""), ha(dt.newbornMaleMax !== void 0 && dt.newbornMaleMax !== null ? dt.newbornMaleMax : ""), fa(dt.newbornMaleText || ""), _a(dt.useNewbornFemale ?? false), Ha(dt.newbornFemaleMin !== void 0 && dt.newbornFemaleMin !== null ? dt.newbornFemaleMin : ""), Cr(dt.newbornFemaleMax !== void 0 && dt.newbornFemaleMax !== null ? dt.newbornFemaleMax : ""), Cs(dt.newbornFemaleText || ""), Fo(dt.useInfantMale ?? (dt.useInfant ? true : Yn)), Ql(dt.infantMaleMin !== void 0 && dt.infantMaleMin !== null ? dt.infantMaleMin : ya || Nn), wl(dt.infantMaleMax !== void 0 && dt.infantMaleMax !== null ? dt.infantMaleMax : ja || kn), Nd(dt.infantMaleText || ""), vl(dt.useInfantFemale ?? (dt.useInfant ? true : rr)), Vl(dt.infantFemaleMin !== void 0 && dt.infantFemaleMin !== null ? dt.infantFemaleMin : ya || Tn), Wl(dt.infantFemaleMax !== void 0 && dt.infantFemaleMax !== null ? dt.infantFemaleMax : ja || xa), Ms(dt.infantFemaleText || ""), At(dt.useChildMale ?? (dt.useChild ? true : Yn)), sn(dt.childMaleMin !== void 0 && dt.childMaleMin !== null ? dt.childMaleMin : ur || Nn), ra(dt.childMaleMax !== void 0 && dt.childMaleMax !== null ? dt.childMaleMax : Ma || kn), Ca(dt.childMaleText || ""), gs(dt.useChildFemale ?? (dt.useChild ? true : rr)), Fs(dt.childFemaleMin !== void 0 && dt.childFemaleMin !== null ? dt.childFemaleMin : ur || Tn), Me(dt.childFemaleMax !== void 0 && dt.childFemaleMax !== null ? dt.childFemaleMax : Ma || xa), va(dt.childFemaleText || ""), Ts(dt.useAdultMale ?? (dt.useAdult ? true : Yn)), Ra(dt.adultMaleMin !== void 0 && dt.adultMaleMin !== null ? dt.adultMaleMin : yi || Nn), ql(dt.adultMaleMax !== void 0 && dt.adultMaleMax !== null ? dt.adultMaleMax : ti || kn), Dd(dt.adultMaleText || ""), kd(dt.useAdultFemale ?? (dt.useAdult ? true : rr)), vc(dt.adultFemaleMin !== void 0 && dt.adultFemaleMin !== null ? dt.adultFemaleMin : yi || Tn), ed(dt.adultFemaleMax !== void 0 && dt.adultFemaleMax !== null ? dt.adultFemaleMax : ti || xa), Mu(dt.adultFemaleText || ""), dr(true);
     }, uf = () => {
       const Xe = a.parameters.map((Yn) => Yn.code === qn ? {
         ...Yn,
@@ -98049,7 +98049,7 @@ IMPRESSION:`,
         useNewbornMale: jn,
         newbornMaleMin: jn && Sr !== "" ? Number(Sr) : null,
         newbornMaleMax: jn && wa !== "" ? Number(wa) : null,
-        newbornMaleText: jn ? Ka : null,
+        newbornMaleText: jn ? Va : null,
         useNewbornFemale: Sa,
         newbornFemaleMin: Sa && la !== "" ? Number(la) : null,
         newbornFemaleMax: Sa && Yr !== "" ? Number(Yr) : null,
@@ -99298,7 +99298,7 @@ ${Jr}`);
                               onClick: (Tt) => cx(Xe.id, Tt),
                               className: "p-0.5 hover:bg-rose-500/10 text-zinc-400 dark:text-zinc-500 hover:text-rose-500 rounded transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-center",
                               title: "Delete test",
-                              children: n.jsx(qa, {
+                              children: n.jsx(Za, {
                                 className: "w-3.5 h-3.5"
                               })
                             }),
@@ -100077,7 +100077,7 @@ Would you like to switch to "${kn.childTestName}" now?`) && bi(ya) : alert(`Chil
                                               onClick: () => gf(xa),
                                               className: "p-1 hover:bg-rose-500/10 text-zinc-500 dark:text-zinc-400 hover:text-rose-500 rounded transition-colors opacity-0 group-hover:opacity-100 flex items-center justify-center mx-auto",
                                               title: "Delete parameter",
-                                              children: n.jsx(qa, {
+                                              children: n.jsx(Za, {
                                                 className: "w-3.5 h-3.5"
                                               })
                                             })
@@ -101099,12 +101099,12 @@ Would you like to switch to "${kn.childTestName}" now?`) && bi(ya) : alert(`Chil
                         setMaleMin: vi,
                         maleMax: wa,
                         setMaleMax: ha,
-                        maleText: Ka,
+                        maleText: Va,
                         setMaleText: fa,
                         useFemale: Sa,
                         setUseFemale: _a,
                         femaleMin: la,
-                        setFemaleMin: Xa,
+                        setFemaleMin: Ha,
                         femaleMax: Yr,
                         setFemaleMax: Cr,
                         femaleText: ai,
@@ -102622,7 +102622,7 @@ Would you like to switch to "${kn.childTestName}" now?`) && bi(ya) : alert(`Chil
                                         },
                                         className: "p-1.5 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white rounded-lg transition-colors border border-rose-500/20",
                                         title: "Delete Column",
-                                        children: n.jsx(qa, {
+                                        children: n.jsx(Za, {
                                           className: "w-4 h-4"
                                         })
                                       })
@@ -102976,7 +102976,7 @@ Would you like to switch to "${kn.childTestName}" now?`) && bi(ya) : alert(`Chil
                                     }) : n.jsx("button", {
                                       onClick: () => ye(be.slotId),
                                       className: "p-1.5 hover:bg-rose-500/10 hover:text-rose-500 rounded-lg text-zinc-600 dark:text-zinc-400 transition-colors",
-                                      children: n.jsx(qa, {
+                                      children: n.jsx(Za, {
                                         className: "w-4 h-4"
                                       })
                                     })
@@ -105680,7 +105680,7 @@ Would you like to switch to "${kn.childTestName}" now?`) && bi(ya) : alert(`Chil
                               onClick: () => se(we.analyzerId),
                               className: "p-1.5 text-zinc-500 hover:text-red-500 transition-colors",
                               title: "Remove Analyzer",
-                              children: n.jsx(qa, {
+                              children: n.jsx(Za, {
                                 className: "w-4 h-4"
                               })
                             })
@@ -106771,7 +106771,7 @@ Would you like to switch to "${kn.childTestName}" now?`) && bi(ya) : alert(`Chil
                             onClick: () => ye(we.modalityId),
                             className: "p-1.5 text-zinc-500 hover:text-red-500 transition-colors",
                             title: "Delete Modality",
-                            children: n.jsx(qa, {
+                            children: n.jsx(Za, {
                               className: "w-4 h-4"
                             })
                           })
@@ -108519,7 +108519,7 @@ Would you like to switch to "${kn.childTestName}" now?`) && bi(ya) : alert(`Chil
                                               onClick: O,
                                               className: "p-1 rounded-md text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer",
                                               title: "Remove Logo",
-                                              children: n.jsx(qa, {
+                                              children: n.jsx(Za, {
                                                 size: 12
                                               })
                                             })
@@ -108583,7 +108583,7 @@ Would you like to switch to "${kn.childTestName}" now?`) && bi(ya) : alert(`Chil
                                               onClick: _,
                                               className: "p-1 rounded-md text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 cursor-pointer",
                                               title: "Reset to dynamic QR",
-                                              children: n.jsx(qa, {
+                                              children: n.jsx(Za, {
                                                 size: 12
                                               })
                                             })
@@ -108894,7 +108894,7 @@ Would you like to switch to "${kn.childTestName}" now?`) && bi(ya) : alert(`Chil
                                           onClick: O,
                                           className: "flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-xs cursor-pointer active:scale-95 transition-all",
                                           children: [
-                                            n.jsx(qa, {
+                                            n.jsx(Za, {
                                               size: 13
                                             }),
                                             n.jsx("span", {
@@ -109214,7 +109214,7 @@ Would you like to switch to "${kn.childTestName}" now?`) && bi(ya) : alert(`Chil
                                           onClick: _,
                                           className: "flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-xs cursor-pointer active:scale-95 transition-all",
                                           children: [
-                                            n.jsx(qa, {
+                                            n.jsx(Za, {
                                               size: 13
                                             }),
                                             n.jsx("span", {
@@ -109474,7 +109474,7 @@ Would you like to switch to "${kn.childTestName}" now?`) && bi(ya) : alert(`Chil
       zn.current && Vr.current && (zn.current.scrollLeft = Vr.current.scrollLeft);
     }, Hr = () => {
       zn.current && Vr.current && (Vr.current.scrollLeft = zn.current.scrollLeft);
-    }, [Qt, Ht] = M.useState([]), [Zt, yn] = M.useState([]), [Rn, dr] = M.useState(null), [na, ua] = M.useState(false), [qn, Fr] = M.useState(null), [Oa, Ir] = M.useState(false), [Ai, Dr] = M.useState([]), [Ds, ts] = M.useState([]), [Wt, pi] = M.useState(null), [Ot, vn] = M.useState(false), [Zn, gr] = M.useState(null), [Br, Xr] = M.useState(false), [zi, lr] = M.useState([]), [Gi, Ei] = M.useState(0), [Za] = M.useState(15), [qi, Qr] = M.useState(0), [cr, bt] = M.useState([]), [on, Un] = M.useState(""), [je, Ye] = M.useState(""), [it, tt] = M.useState(""), [ht, Ct] = M.useState(""), [Xt, It] = M.useState(""), [Mt, Ft] = M.useState(null), [Dn, Vt] = M.useState([]), [En, Hn] = M.useState([]), [ot, Nt] = M.useState(null), [dn, jn] = M.useState(false), [fr, Sr] = M.useState(null), [vi, wa] = M.useState(false), ha = async () => {
+    }, [Qt, Ht] = M.useState([]), [Zt, yn] = M.useState([]), [Rn, dr] = M.useState(null), [na, ua] = M.useState(false), [qn, Fr] = M.useState(null), [Oa, Ir] = M.useState(false), [Ai, Dr] = M.useState([]), [Ds, ts] = M.useState([]), [Wt, pi] = M.useState(null), [Ot, vn] = M.useState(false), [Zn, gr] = M.useState(null), [Br, Xr] = M.useState(false), [zi, lr] = M.useState([]), [Gi, Ei] = M.useState(0), [Xa] = M.useState(15), [qi, Qr] = M.useState(0), [cr, bt] = M.useState([]), [on, Un] = M.useState(""), [je, Ye] = M.useState(""), [it, tt] = M.useState(""), [ht, Ct] = M.useState(""), [Xt, It] = M.useState(""), [Mt, Ft] = M.useState(null), [Dn, Vt] = M.useState([]), [En, Hn] = M.useState([]), [ot, Nt] = M.useState(null), [dn, jn] = M.useState(false), [fr, Sr] = M.useState(null), [vi, wa] = M.useState(false), ha = async () => {
       h(true);
       try {
         const [Me, Qn, va] = await Promise.all([
@@ -109488,7 +109488,7 @@ Would you like to switch to "${kn.childTestName}" now?`) && bi(ya) : alert(`Chil
       } finally {
         h(false);
       }
-    }, Ka = async (Me) => {
+    }, Va = async (Me) => {
       var _a3;
       if (Me.preventDefault(), !((_a3 = ot.printerName) == null ? void 0 : _a3.trim())) return x("Printer Name cannot be empty.");
       if (!ot.branchId) return x("Please select a branch.");
@@ -109560,7 +109560,7 @@ Would you like to switch to "${kn.childTestName}" now?`) && bi(ya) : alert(`Chil
       } finally {
         h(false);
       }
-    }, Xa = async () => {
+    }, Ha = async () => {
       h(true);
       try {
         const Me = await pr.getAdvancedSettings();
@@ -109609,7 +109609,7 @@ Would you like to switch to "${kn.childTestName}" now?`) && bi(ya) : alert(`Chil
     }, Cs = async () => {
       h(true);
       try {
-        let Me = `?limit=${Za}&offset=${qi}`;
+        let Me = `?limit=${Xa}&offset=${qi}`;
         on && (Me += `&actorUserId=${on}`), je && (Me += `&resourceType=${je}`), it && (Me += `&action=${it}`), ht && (Me += `&startDate=${XN(ht)}`), Xt && (Me += `&endDate=${XN(Xt)}`);
         const Qn = await pr.getAuditLogs(Me);
         if (lr((Qn == null ? void 0 : Qn.logs) || []), Ei((Qn == null ? void 0 : Qn.totalCount) || 0), cr.length === 0) {
@@ -109892,7 +109892,7 @@ Backup ID: ${va == null ? void 0 : va.backupId}`);
       }
     };
     M.useEffect(() => {
-      x(null), p(null), o === "settings" && la(), o === "permissions" && Yr(), o === "departments" && Cr(), o === "pricing" && ai(), o === "branches" && Ni(), o === "workspaces" && Ql(), o === "printing" && ha(), o === "audit" && Cs(), o === "backup" && Qc(), o === "advanced" && Xa(), o === "about" && (Wl(), la());
+      x(null), p(null), o === "settings" && la(), o === "permissions" && Yr(), o === "departments" && Cr(), o === "pricing" && ai(), o === "branches" && Ni(), o === "workspaces" && Ql(), o === "printing" && ha(), o === "audit" && Cs(), o === "backup" && Qc(), o === "advanced" && Ha(), o === "about" && (Wl(), la());
     }, [
       o,
       qi
@@ -109934,7 +109934,7 @@ Backup ID: ${va == null ? void 0 : va.backupId}`);
         x(null), p(null);
         try {
           const va = await pr.rotateSecret(Me);
-          va.success && (p(`${Me.toUpperCase()} secret rotated successfully.`), Me === "middleware" && va.key && (pt(va.key), an(true)), Xa());
+          va.success && (p(`${Me.toUpperCase()} secret rotated successfully.`), Me === "middleware" && va.key && (pt(va.key), an(true)), Ha());
         } catch (va) {
           x(va.message || "Secret rotation failed.");
         }
@@ -111414,7 +111414,7 @@ Backup ID: ${va == null ? void 0 : va.backupId}`);
                                       onClick: () => gs(Me.departmentId),
                                       className: "p-1.5 bg-red-500/10 text-red-400 hover:bg-red-500/25 border border-red-500/20 rounded-lg transition-colors disabled:opacity-40 disabled:pointer-events-none",
                                       title: "Delete",
-                                      children: n.jsx(qa, {
+                                      children: n.jsx(Za, {
                                         className: "w-3.5 h-3.5"
                                       })
                                     })
@@ -111542,7 +111542,7 @@ Backup ID: ${va == null ? void 0 : va.backupId}`);
                                       onClick: () => Ca(Me.configId),
                                       className: "p-1.5 bg-red-500/10 text-red-400 hover:bg-red-500/25 border border-red-500/20 rounded-lg transition-colors",
                                       title: "Delete",
-                                      children: n.jsx(qa, {
+                                      children: n.jsx(Za, {
                                         className: "w-3.5 h-3.5"
                                       })
                                     })
@@ -112117,7 +112117,7 @@ Backup ID: ${va == null ? void 0 : va.backupId}`);
                                     onClick: () => so(Me.referralPartnerId),
                                     className: "p-1.5 bg-red-500/10 text-red-400 hover:bg-red-500/25 border border-red-500/20 rounded-lg transition-colors flex items-center justify-center",
                                     title: "Deactivate",
-                                    children: n.jsx(qa, {
+                                    children: n.jsx(Za, {
                                       className: "w-3.5 h-3.5"
                                     })
                                   })
@@ -112804,7 +112804,7 @@ Backup ID: ${va == null ? void 0 : va.backupId}`);
                         ]
                       })
                     }),
-                    Gi > Za && n.jsxs("div", {
+                    Gi > Xa && n.jsxs("div", {
                       className: "flex justify-between items-center pt-4",
                       children: [
                         n.jsxs("span", {
@@ -112813,7 +112813,7 @@ Backup ID: ${va == null ? void 0 : va.backupId}`);
                             "Showing ",
                             qi + 1,
                             " to ",
-                            Math.min(qi + Za, Gi),
+                            Math.min(qi + Xa, Gi),
                             " of ",
                             Gi,
                             " logs"
@@ -112824,13 +112824,13 @@ Backup ID: ${va == null ? void 0 : va.backupId}`);
                           children: [
                             n.jsx("button", {
                               disabled: qi === 0,
-                              onClick: () => Qr((Me) => Math.max(0, Me - Za)),
+                              onClick: () => Qr((Me) => Math.max(0, Me - Xa)),
                               className: "px-4 py-2 border border-zinc-800 hover:bg-zinc-800 rounded-xl text-xxs font-bold uppercase tracking-wider disabled:opacity-40 disabled:cursor-not-allowed transition-all",
                               children: "Prev"
                             }),
                             n.jsx("button", {
-                              disabled: qi + Za >= Gi,
-                              onClick: () => Qr((Me) => Me + Za),
+                              disabled: qi + Xa >= Gi,
+                              onClick: () => Qr((Me) => Me + Xa),
                               className: "px-4 py-2 border border-zinc-800 hover:bg-zinc-800 rounded-xl text-xxs font-bold uppercase tracking-wider disabled:opacity-40 disabled:cursor-not-allowed transition-all",
                               children: "Next"
                             })
@@ -113003,7 +113003,7 @@ Backup ID: ${va == null ? void 0 : va.backupId}`);
                                         onClick: () => XA(Me.branchId),
                                         className: "p-1.5 bg-red-500/10 text-red-400 hover:bg-red-500/25 border border-red-500/20 rounded-lg transition-colors",
                                         title: "Delete",
-                                        children: n.jsx(qa, {
+                                        children: n.jsx(Za, {
                                           className: "w-3.5 h-3.5"
                                         })
                                       })
@@ -113283,7 +113283,7 @@ Backup ID: ${va == null ? void 0 : va.backupId}`);
                                       onClick: () => wl(Me.workspaceId),
                                       className: "p-1.5 bg-red-500/10 text-red-400 hover:bg-red-500/25 border border-red-500/20 rounded-lg transition-colors",
                                       title: "Delete Screen",
-                                      children: n.jsx(qa, {
+                                      children: n.jsx(Za, {
                                         className: "w-3.5 h-3.5"
                                       })
                                     })
@@ -113549,7 +113549,7 @@ Backup ID: ${va == null ? void 0 : va.backupId}`);
                                                 onClick: () => fa(Me.printerId),
                                                 className: "p-1.5 bg-red-500/10 text-red-400 hover:bg-red-500/25 border border-red-500/20 rounded-lg transition-colors",
                                                 title: "Delete",
-                                                children: n.jsx(qa, {
+                                                children: n.jsx(Za, {
                                                   className: "w-3.5 h-3.5"
                                                 })
                                               })
@@ -113701,7 +113701,7 @@ Backup ID: ${va == null ? void 0 : va.backupId}`);
                                                 onClick: () => _a(Me.terminalIdentifier),
                                                 className: "p-1.5 bg-red-500/10 text-red-400 hover:bg-red-500/25 border border-red-500/20 rounded-lg transition-colors",
                                                 title: "Delete",
-                                                children: n.jsx(qa, {
+                                                children: n.jsx(Za, {
                                                   className: "w-3.5 h-3.5"
                                                 })
                                               })
@@ -113764,7 +113764,7 @@ Backup ID: ${va == null ? void 0 : va.backupId}`);
                             children: ot.printerId ? "Edit Branch Printer" : "Register New Branch Printer"
                           }),
                           n.jsxs("form", {
-                            onSubmit: Ka,
+                            onSubmit: Va,
                             className: "space-y-4",
                             children: [
                               n.jsxs("div", {
@@ -116146,7 +116146,7 @@ Please verify or update your License Key in System Settings.`);
     const P = async (_) => {
       _.preventDefault(), F(true);
       try {
-        const Y = await Ya.createInventoryItem({
+        const Y = await Ja.createInventoryItem({
           name: f.name,
           itemCode: f.code,
           unitOfMeasure: f.unit,
@@ -116461,7 +116461,7 @@ Please verify or update your License Key in System Settings.`);
     const O = async () => {
       try {
         const [ee, Z] = await Promise.all([
-          Ya.getInventoryItems(),
+          Ja.getInventoryItems(),
           pr.getBranches()
         ]);
         i(ee), o(Z), (t == null ? void 0 : t.branchId) && l(t.branchId);
@@ -116475,7 +116475,7 @@ Please verify or update your License Key in System Settings.`);
       }
       g(true), f(null);
       try {
-        await Ya.createOpeningStockSingle({
+        await Ja.createOpeningStockSingle({
           ...p,
           branchId: A
         }), u(true), I({
@@ -116508,7 +116508,7 @@ Please verify or update your License Key in System Settings.`);
           expiryDate: J.expiryDate || null,
           branchId: A
         }));
-        await Ya.createOpeningStockBulk(Z), u(true), C([]), setTimeout(() => u(false), 3e3);
+        await Ja.createOpeningStockBulk(Z), u(true), C([]), setTimeout(() => u(false), 3e3);
       } catch (Z) {
         f(Z.message);
       } finally {
@@ -116914,7 +116914,7 @@ Please verify or update your License Key in System Settings.`);
                               children: n.jsx("button", {
                                 onClick: () => C(x.filter((J, ie) => ie !== Z)),
                                 className: "p-2 text-zinc-400 hover:text-red-500",
-                                children: n.jsx(qa, {
+                                children: n.jsx(Za, {
                                   className: "w-4 h-4"
                                 })
                               })
@@ -117065,7 +117065,7 @@ Please verify or update your License Key in System Settings.`);
         const [Q, N, w] = await Promise.all([
           fc.getPurchaseOrder(t),
           fc.getPOItems(t),
-          Ya.getInventoryItems()
+          Ja.getInventoryItems()
         ]);
         a(Q), s(N), c(w);
       } catch (Q) {
@@ -117956,7 +117956,7 @@ Inventory Dept.`, F = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
     const c = async (g) => {
       g.preventDefault(), o(true), l(null);
       try {
-        const d = await Ya.createInventoryItem(a);
+        const d = await Ja.createInventoryItem(a);
         r(d), e();
       } catch (d) {
         l(d.message);
@@ -118175,7 +118175,7 @@ Inventory Dept.`, F = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
     const [o, A] = M.useState(null), [l, c] = M.useState(true), g = async () => {
       try {
         c(true);
-        const d = t && s ? null : r, u = t && s, h = await Ya.getDashboardMetrics(d, u);
+        const d = t && s ? null : r, u = t && s, h = await Ja.getDashboardMetrics(d, u);
         A(h);
       } catch (d) {
         console.error(d);
@@ -118370,7 +118370,7 @@ Inventory Dept.`, F = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
     ], re = async () => {
       try {
         d(true);
-        const ie = e && o ? null : a, he = e && o, me = await Ya.getStockLedger(ie, he);
+        const ie = e && o ? null : a, he = e && o, me = await Ja.getStockLedger(ie, he);
         c(me || []);
       } catch (ie) {
         console.error("Failed to load stock", ie);
@@ -118392,7 +118392,7 @@ Inventory Dept.`, F = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
       }
       p(ie), B(true);
       try {
-        const he = await Ya.getItemLots(ie.itemId, ie.branchId);
+        const he = await Ja.getItemLots(ie.itemId, ie.branchId);
         x(he);
       } catch (he) {
         console.error(he);
@@ -118406,7 +118406,7 @@ Inventory Dept.`, F = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
       if (window.confirm("Purge all legacy dummy inventory items and initialize the clean master catalog for all 1,151 tests?")) {
         Z(true);
         try {
-          const ie = await Ya.autoMapAllTests();
+          const ie = await Ja.autoMapAllTests();
           alert(ie.message || "Clean master catalog initialized and all 1,151 tests mapped successfully!"), await re();
         } catch (ie) {
           console.error(ie), alert("Master catalog clean & sync completed."), await re();
@@ -118848,8 +118848,8 @@ Inventory Dept.`, F = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
       u(true);
       try {
         const [N, w, F] = await Promise.all([
-          Ya.getInventoryItems(),
-          Ya.getSuppliers(),
+          Ja.getInventoryItems(),
+          Ja.getSuppliers(),
           fc.getPurchaseOrders().catch(() => [])
         ]);
         r(N || []), i(w || []), o(F || []);
@@ -118920,7 +118920,7 @@ Inventory Dept.`, F = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
     }, Q = async (N) => {
       N.preventDefault(), f(true);
       try {
-        await Ya.receiveStock({
+        await Ja.receiveStock({
           ...p,
           quantity: parseFloat(p.quantity),
           unitCost: parseFloat(p.unitCost),
@@ -119220,7 +119220,7 @@ Inventory Dept.`, F = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
     const [t, e] = M.useState([]), [r, a] = M.useState(true), [i, s] = M.useState(null), o = async () => {
       a(true);
       try {
-        const c = await Ya.getPendingRequests();
+        const c = await Ja.getPendingRequests();
         e(c);
       } catch (c) {
         console.error(c);
@@ -119234,7 +119234,7 @@ Inventory Dept.`, F = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
     const A = async (c) => {
       s(c);
       try {
-        await Ya.fulfillRequest(c), await o();
+        await Ja.fulfillRequest(c), await o();
       } catch (g) {
         alert(g.message);
       } finally {
@@ -119244,7 +119244,7 @@ Inventory Dept.`, F = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
       if (confirm("Are you sure you want to ignore this request?")) {
         s(c);
         try {
-          await Ya.ignoreRequest(c), await o();
+          await Ja.ignoreRequest(c), await o();
         } catch (g) {
           alert(g.message);
         } finally {
@@ -119436,7 +119436,7 @@ Inventory Dept.`, F = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
     const [t, e] = M.useState([]), [r, a] = M.useState(true), [i, s] = M.useState(null), o = async () => {
       a(true);
       try {
-        const l = await Ya.getMovementHistory();
+        const l = await Ja.getMovementHistory();
         e(l);
       } catch (l) {
         console.error(l);
@@ -133376,7 +133376,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                                       type: "button",
                                       onClick: () => B(N.id),
                                       className: "p-1.5 text-zinc-400 hover:text-rose-500 rounded-lg hover:bg-rose-500/10 transition-all",
-                                      children: n.jsx(qa, {
+                                      children: n.jsx(Za, {
                                         className: "w-3.5 h-3.5"
                                       })
                                     })
@@ -139768,7 +139768,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                       g ? n.jsx(Kn, {
                         size: 13,
                         className: "animate-spin"
-                      }) : n.jsx(qa, {
+                      }) : n.jsx(Za, {
                         size: 13
                       }),
                       n.jsx("span", {
@@ -140534,7 +140534,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                                                   onClick: () => Be(ce.ruleId),
                                                   className: "p-1.5 text-zinc-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors",
                                                   title: "Delete Rule",
-                                                  children: n.jsx(qa, {
+                                                  children: n.jsx(Za, {
                                                     size: 14
                                                   })
                                                 })
@@ -143096,7 +143096,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
         children: n.jsx("button", {
           onClick: () => e(t.ruleId),
           className: "p-2 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-zinc-400 hover:text-rose-500 rounded-xl transition-all",
-          children: n.jsx(qa, {
+          children: n.jsx(Za, {
             size: 16
           })
         })
@@ -144166,7 +144166,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                   onClick: () => g(j.ruleId),
                                   className: "p-1.5 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-zinc-400 hover:text-rose-600 rounded-xl transition-colors cursor-pointer",
                                   title: "Unlink rate card",
-                                  children: n.jsx(qa, {
+                                  children: n.jsx(Za, {
                                     size: 14
                                   })
                                 })
@@ -147476,7 +147476,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                           },
                                           className: "p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:bg-rose-500/10 hover:border-rose-500/30 text-zinc-400 hover:text-rose-500 transition-colors cursor-pointer",
                                           title: "Delete Package",
-                                          children: n.jsx(qa, {
+                                          children: n.jsx(Za, {
                                             size: 13
                                           })
                                         })
@@ -153920,7 +153920,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                   onClick: () => mt(pt.discountReasonId),
                                   className: "px-2 py-1.5 rounded-lg border border-slate-200 dark:border-zinc-800 text-rose-500 hover:text-rose-600 hover:border-rose-500/40 text-xs font-semibold inline-flex items-center transition-all cursor-pointer",
                                   title: "Delete reason",
-                                  children: n.jsx(qa, {
+                                  children: n.jsx(Za, {
                                     className: "w-3.5 h-3.5"
                                   })
                                 })
@@ -159336,7 +159336,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                   },
                   className: "w-full px-4 py-2 text-left text-xs font-bold text-rose-500 hover:bg-rose-500/10 transition-colors flex items-center gap-2",
                   children: [
-                    n.jsx(qa, {
+                    n.jsx(Za, {
                       className: "w-3.5 h-3.5"
                     }),
                     " Delete Member"
@@ -160482,7 +160482,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                       onClick: () => et(ze),
                                       className: "p-1 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-rose-400 hover:text-rose-600 rounded transition-colors",
                                       title: "Delete Department",
-                                      children: n.jsx(qa, {
+                                      children: n.jsx(Za, {
                                         className: "w-3.5 h-3.5"
                                       })
                                     })
@@ -160736,7 +160736,7 @@ Payment details and remittance UPI QR are attached in the statement. Please veri
                                       onClick: () => fe(ze),
                                       className: "p-1 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-rose-400 hover:text-rose-600 rounded transition-colors",
                                       title: "Delete Workspace",
-                                      children: n.jsx(qa, {
+                                      children: n.jsx(Za, {
                                         className: "w-3.5 h-3.5"
                                       })
                                     })
@@ -202803,22 +202803,22 @@ fn main(
         if (ha) {
           if (wa = Ei(ot), !Nt) return vn(ot, wa);
         } else {
-          var Ka = Gi(ot), fa = Ka == g || Ka == d;
+          var Va = Gi(ot), fa = Va == g || Va == d;
           if (Xt(ot)) return Ir(ot, Nt);
-          if (Ka == f || Ka == s || fa && !Sr) {
+          if (Va == f || Va == s || fa && !Sr) {
             if (Be(ot)) return Sr ? ot : {};
-            if (wa = Za(fa ? {} : ot), !Nt) return gr(ot, Rn(wa, ot));
+            if (wa = Xa(fa ? {} : ot), !Nt) return gr(ot, Rn(wa, ot));
           } else {
-            if (!J[Ka]) return Sr ? ot : {};
-            wa = qi(ot, Ka, dr, Nt);
+            if (!J[Va]) return Sr ? ot : {};
+            wa = qi(ot, Va, dr, Nt);
           }
         }
         vi || (vi = new nr());
         var Sa = vi.get(ot);
         if (Sa) return Sa;
         if (vi.set(ot, wa), !ha) var _a = dn ? Br(ot) : Vt(ot);
-        return Ie(_a || ot, function(la, Xa) {
-          _a && (Xa = la, la = ot[Xa]), Zt(wa, Xa, dr(la, Nt, dn, jn, Xa, ot, vi));
+        return Ie(_a || ot, function(la, Ha) {
+          _a && (Ha = la, la = ot[Ha]), Zt(wa, Ha, dr(la, Nt, dn, jn, Ha, ot, vi));
         }), wa;
       }
       function na(ot) {
@@ -202922,7 +202922,7 @@ fn main(
         var Nt = ot.length, dn = ot.constructor(Nt);
         return Nt && typeof ot[0] == "string" && ve.call(ot, "index") && (dn.index = ot.index, dn.input = ot.input), dn;
       }
-      function Za(ot) {
+      function Xa(ot) {
         return typeof ot.constructor == "function" && !on(ot) ? na(kt(ot)) : {};
       }
       function qi(ot, Nt, dn, jn) {
@@ -251939,18 +251939,18 @@ Input: ` + this.err.str);
                   return bt;
                 })(Ot, lr);
               } else {
-                var Ei = ua(Ot), Za = Ei == te || Ei == ae;
+                var Ei = ua(Ot), Xa = Ei == te || Ei == ae;
                 if (Ds(Ot)) return (function(cr, bt) {
                   if (bt) return cr.slice();
                   var on = new cr.constructor(cr.length);
                   return cr.copy(on), on;
                 })(Ot, vn);
-                if (Ei == J || Ei == _ || Za && !Xr) {
+                if (Ei == J || Ei == _ || Xa && !Xr) {
                   if (ft(Ot)) return Xr ? Ot : {};
                   if (lr = (function(cr) {
                     return typeof cr.constructor != "function" || Fr(cr) ? {} : Wt(bt = hn(cr)) ? Ne(bt) : {};
                     var bt;
-                  })(Za ? {} : Ot), !vn) return (function(cr, bt) {
+                  })(Xa ? {} : Ot), !vn) return (function(cr, bt) {
                     return yn(cr, na(cr), bt);
                   })(Ot, (function(cr, bt) {
                     return cr && yn(bt, pi(bt), cr);
@@ -252184,8 +252184,8 @@ Input: ` + this.err.str);
                     })(Gi) && Dr(Gi);
                   })(lr) && ir.call(lr, "callee") && (!fn.call(lr, "callee") || de.call(lr) == _);
                 })(vn) ? (function(lr, Gi) {
-                  for (var Ei = -1, Za = Array(lr); ++Ei < lr; ) Za[Ei] = Gi(Ei);
-                  return Za;
+                  for (var Ei = -1, Xa = Array(lr); ++Ei < lr; ) Xa[Ei] = Gi(Ei);
+                  return Xa;
                 })(vn.length, String) : [], Br = gr.length, Xr = !!Br;
                 for (var zi in vn) !ir.call(vn, zi) || Xr && (zi == "length" || qn(zi, Br)) || gr.push(zi);
                 return gr;
@@ -252583,13 +252583,13 @@ Input: ` + this.err.str);
             removeAnnotation: () => tt,
             removeAnnotations: () => Xt,
             resetAnnotationManager: () => qi,
-            setAnnotationManager: () => Za
+            setAnnotationManager: () => Xa
           });
           var U = {};
           w.r(U), w.d(U, {
             triggerSegmentationDataModified: () => la,
             triggerSegmentationModified: () => _a,
-            triggerSegmentationRemoved: () => Ka,
+            triggerSegmentationRemoved: () => Va,
             triggerSegmentationRepresentationModified: () => Sa,
             triggerSegmentationRepresentationRemoved: () => fa
           });
@@ -252924,7 +252924,7 @@ Input: ` + this.err.str);
             pointToString: () => Ub,
             polyDataUtils: () => Ge,
             rectangleROITool: () => we,
-            roundNumber: () => Ha,
+            roundNumber: () => Ya,
             scroll: () => jg,
             segmentation: () => me,
             stackContextPrefetch: () => pR,
@@ -253436,7 +253436,7 @@ Input: ` + this.err.str);
           function Ei() {
             return Gi;
           }
-          function Za(S) {
+          function Xa(S) {
             Gi = S;
           }
           function qi() {
@@ -253763,7 +253763,7 @@ Input: ` + this.err.str);
               isDirty: false
             }), y;
           }
-          function Ka(S) {
+          function Va(S) {
             const m = {
               segmentationId: S
             };
@@ -253810,7 +253810,7 @@ Input: ` + this.err.str);
             };
             wa(S), (0, de.triggerEvent)(de.eventTarget, Ne.SEGMENTATION_DATA_MODIFIED, E);
           }
-          const Xa = function(S) {
+          const Ha = function(S) {
             const { segmentationId: m, representation: E } = S, y = E.type === Ft.Contour;
             let v = E.data ? {
               ...E.data
@@ -253846,7 +253846,7 @@ Input: ` + this.err.str);
             return Yr().getState().segmentations;
           }
           function Cs(S, m) {
-            const E = Yr(), y = Xa(S);
+            const E = Yr(), y = Ha(S);
             E.addSegmentation(y), m || _a(y.segmentationId);
           }
           function Ni(S) {
@@ -253919,7 +253919,7 @@ Input: ` + this.err.str);
             return Yr().getSegmentationRepresentationByUID(S, m);
           }
           function iA(S) {
-            Yr().removeSegmentation(S), Ka(S);
+            Yr().removeSegmentation(S), Va(S);
           }
           function At(S, m) {
             Yr().removeSegmentationRepresentation(S, m), fa(S, m);
@@ -261651,7 +261651,7 @@ Input: ` + this.err.str);
             const E = S.cachedStats[m], { area: y, mean: v, max: k, stdDev: R, areaUnit: T, modalityUnit: z } = E;
             if (v === void 0) return;
             const H = [];
-            return H.push("Area: ".concat(Ha(y), " ").concat(T)), H.push("Mean: ".concat(Ha(v), " ").concat(z)), H.push("Max: ".concat(Ha(k), " ").concat(z)), H.push("Std Dev: ".concat(Ha(R), " ").concat(z)), H;
+            return H.push("Area: ".concat(Ya(y), " ").concat(T)), H.push("Mean: ".concat(Ya(v), " ").concat(z)), H.push("Max: ".concat(Ya(k), " ").concat(z)), H.push("Std Dev: ".concat(Ya(R), " ").concat(z)), H;
           }
           oe(rB, "toolName", void 0), rB.toolName = "RectangleROI";
           const aB = rB;
@@ -262074,7 +262074,7 @@ Input: ` + this.err.str);
             const m = S.cachedStats.statistics, { area: E, mean: y, max: v, stdDev: k, areaUnit: R, modalityUnit: T } = m;
             if (y === void 0) return;
             const z = [];
-            return z.push("Area: ".concat(Ha(E), " ").concat(R)), z.push("Mean: ".concat(Ha(y), " ").concat(T)), z.push("Max: ".concat(Ha(v), " ").concat(T)), z.push("Std Dev: ".concat(Ha(k), " ").concat(T)), z;
+            return z.push("Area: ".concat(Ya(E), " ").concat(R)), z.push("Mean: ".concat(Ya(y), " ").concat(T)), z.push("Max: ".concat(Ya(v), " ").concat(T)), z.push("Std Dev: ".concat(Ya(k), " ").concat(T)), z;
           }
           oe(Py, "toolName", void 0), Py.toolName = "RectangleROIStartEndThreshold";
           const C2 = Py, x2 = function(S, m) {
@@ -262949,7 +262949,7 @@ Input: ` + this.err.str);
           }
           function AR(S, m) {
             const { cachedStats: E, label: y } = S, { length: v, width: k, unit: R, lengthUnit: T, widthUnit: z } = E[m], H = [];
-            return y && H.push(y), v === void 0 || H.push("L: ".concat(Ha(v), " ").concat(T || R), "W: ".concat(Ha(k), " ").concat(z || R)), H;
+            return y && H.push(y), v === void 0 || H.push("L: ".concat(Ya(v), " ").concat(T || R), "W: ".concat(Ya(k), " ").concat(z || R)), H;
           }
           oe(nI, "toolName", void 0), nI.toolName = "Bidirectional";
           const y2 = nI;
@@ -263310,7 +263310,7 @@ Input: ` + this.err.str);
             }
             return Zy;
           }
-          var N2 = w(807), Va = w.n(N2);
+          var N2 = w(807), Wa = w.n(N2);
           function sI(S, m, E, y) {
             let v = arguments.length > 4 && arguments[4] !== void 0 ? arguments[4] : 0.25;
             const k = S.getCamera(), { position: R } = k, { spacingInNormalDirection: T } = de.utilities.getTargetVolumeAndSpacingInNormalDir(S, k, E), z = T * v, H = S.getBounds(), V = H[0], W = H[1], $ = [
@@ -263323,7 +263323,7 @@ Input: ` + this.err.str);
               0,
               0
             ];
-            Va().subtract(m, R, $);
+            Wa().subtract(m, R, $);
             for (let ue = V; ue <= W; ue += z) {
               le = [
                 ue,
@@ -263898,7 +263898,7 @@ Input: ` + this.err.str);
                   if (ke.imageIds.size) {
                     ke.fillTime = Date.now() - ke.start;
                     const { size: at } = ke.imageIds;
-                    ke.fillSize = at, console.log("Done cache fill", ke.fillTime, "ms", at, "items", "average total time", Ha(ke.fillTime / at), "ms", "average load", Ha(ke.loadTimeInMS / at), "ms", "average decode", Ha(ke.decodeTimeInMS / at), "ms");
+                    ke.fillSize = at, console.log("Done cache fill", ke.fillTime, "ms", at, "items", "average total time", Ya(ke.fillTime / at), "ms", "average load", Ya(ke.loadTimeInMS / at), "ms", "average decode", Ya(ke.decodeTimeInMS / at), "ms");
                   }
                 } else ke.initialTime = Date.now() - ke.start, ke.initialSize = ke.imageIds.size, EB(S, nt), Vf(S);
               }
@@ -264846,7 +264846,7 @@ Input: ` + this.err.str);
             })(S);
             throw new Error("Viewport not supported");
           }
-          const Ha = de.utilities.roundNumber;
+          const Ya = de.utilities.roundNumber;
           function qf(S, m) {
             var E, y;
             return (m == null || !m.autoGenerated) && ((S == null || (E = S.smoothing) === null || E === void 0 ? void 0 : E.smoothOnAdd) === true || (S == null || (y = S.smoothing) === null || y === void 0 ? void 0 : y.smoothOnEdit) === true);
@@ -266239,10 +266239,10 @@ Input: ` + this.err.str);
           function Gce(S, m) {
             const E = S.cachedStats[m], { area: y, mean: v, stdDev: k, length: R, perimeter: T, max: z, isEmptyArea: H, areaUnit: V, modalityUnit: W, unit: $ } = E || {}, ne = [];
             if (y) {
-              const le = H ? "Area: Oblique not supported" : "Area: ".concat(Ha(y), " ").concat(V);
+              const le = H ? "Area: Oblique not supported" : "Area: ".concat(Ya(y), " ").concat(V);
               ne.push(le);
             }
-            return v && ne.push("Mean: ".concat(Ha(v), " ").concat(W)), Number.isFinite(z) && ne.push("Max: ".concat(Ha(z), " ").concat(W)), k && ne.push("Std Dev: ".concat(Ha(k), " ").concat(W)), T && ne.push("Perimeter: ".concat(Ha(T), " ").concat($)), R && ne.push("".concat(Ha(R), " ").concat($)), ne;
+            return v && ne.push("Mean: ".concat(Ya(v), " ").concat(W)), Number.isFinite(z) && ne.push("Max: ".concat(Ya(z), " ").concat(W)), k && ne.push("Std Dev: ".concat(Ya(k), " ").concat(W)), T && ne.push("Perimeter: ".concat(Ya(T), " ").concat($)), R && ne.push("".concat(Ya(R), " ").concat($)), ne;
           }
           oe(ER, "toolName", void 0), ER.toolName = "PlanarFreehandROI";
           const LU = ER;
@@ -268656,16 +268656,16 @@ Input: ` + this.err.str);
                 0,
                 nt
               ];
-              Va().normalize(gt);
+              Wa().normalize(gt);
               const Bt = [
                 Te[0],
                 0,
                 at
               ];
-              Va().normalize(Bt);
-              const vt = Va().dot(gt, Bt);
+              Wa().normalize(Bt);
+              const vt = Wa().dot(gt, Bt);
               if (Math.abs(vt) > 1e-4) {
-                const yt = -2 * Math.acos(Va().clampValue(vt, -1, 1)) * Math.sign(ne[0] - le[0]) * T, Pt = V.viewUp, Et = V.viewPlaneNormal, Rt = [
+                const yt = -2 * Math.acos(Wa().clampValue(vt, -1, 1)) * Math.sign(ne[0] - le[0]) * T, Pt = V.viewUp, Et = V.viewPlaneNormal, Rt = [
                   0,
                   0,
                   0
@@ -268674,7 +268674,7 @@ Input: ` + this.err.str);
                   0,
                   0
                 ];
-                Va().cross(Pt, Et, Rt), Va().normalize(Rt), Va().cross(Et, Rt, qt), Va().normalize(qt), Va().normalize(Pt), this.rotateCamera(H, Ee, qt, yt);
+                Wa().cross(Pt, Et, Rt), Wa().normalize(Rt), Wa().cross(Et, Rt, qt), Wa().normalize(qt), Wa().normalize(Pt), this.rotateCamera(H, Ee, qt, yt);
                 const Bn = (le[1] - ne[1]) * T;
                 this.rotateCamera(H, Ee, Rt, Bn), H.render();
               }
@@ -268878,8 +268878,8 @@ Input: ` + this.err.str);
             const E = S.cachedStats[m], { index: y, value: v, modalityUnit: k } = E;
             if (v === void 0) return;
             const R = [];
-            if (R.push("(".concat(y[0], ", ").concat(y[1], ", ").concat(y[2], ")")), v instanceof Array && k instanceof Array) for (let T = 0; T < v.length; T++) R.push("".concat(Ha(v[T]), " ").concat(k[T]));
-            else R.push("".concat(Ha(v), " ").concat(k));
+            if (R.push("(".concat(y[0], ", ").concat(y[1], ", ").concat(y[2], ")")), v instanceof Array && k instanceof Array) for (let T = 0; T < v.length; T++) R.push("".concat(Ya(v[T]), " ").concat(k[T]));
+            else R.push("".concat(Ya(v), " ").concat(k));
             return R;
           }
           oe(LR, "toolName", void 0), LR.toolName = "Probe";
@@ -269268,7 +269268,7 @@ Input: ` + this.err.str);
                 const { element: R, deltaPoints: T } = E.detail, z = k ? E.detail.deltaDistance.canvas : T.canvas[1], H = [
                   R.clientWidth,
                   R.clientHeight
-                ], { position: V, focalPoint: W, viewPlaneNormal: $ } = v, ne = Va().distance2BetweenPoints(V, W), le = Math.sqrt(ne) / H[1], ue = [
+                ], { position: V, focalPoint: W, viewPlaneNormal: $ } = v, ne = Wa().distance2BetweenPoints(V, W), le = Math.sqrt(ne) / H[1], ue = [
                   -$[0],
                   -$[1],
                   -$[2]
@@ -269832,7 +269832,7 @@ Input: ` + this.err.str);
           function fge(S, m) {
             const E = S.cachedStats[m], { length: y, unit: v } = E;
             if (y != null && !isNaN(y)) return [
-              "".concat(Ha(y), " ").concat(v)
+              "".concat(Ya(y), " ").concat(v)
             ];
           }
           oe(KR, "toolName", void 0), KR.toolName = "Length";
@@ -270135,7 +270135,7 @@ Input: ` + this.err.str);
           function mge(S, m) {
             const E = S.cachedStats[m], { height: y, unit: v } = E;
             if (y != null && !isNaN(y)) return [
-              "".concat(Ha(y), " ").concat(v)
+              "".concat(Ya(y), " ").concat(v)
             ];
           }
           oe(VR, "toolName", void 0), VR.toolName = "Height";
@@ -270274,13 +270274,13 @@ Input: ` + this.err.str);
                   0,
                   0
                 ];
-                Va().subtract(ue.position, Ee, Qe);
+                Wa().subtract(ue.position, Ee, Qe);
                 const ke = le.metadata.cameraFocalPoint, Te = [
                   0,
                   0,
                   0
                 ];
-                Va().subtract(ue.focalPoint, ke, Te), le.metadata.cameraPosition = [
+                Wa().subtract(ue.focalPoint, ke, Te), le.metadata.cameraPosition = [
                   ...ue.position
                 ], le.metadata.cameraFocalPoint = [
                   ...ue.focalPoint
@@ -270289,7 +270289,7 @@ Input: ` + this.err.str);
                 if (!de.utilities.isEqual(ue.position, Ee, 1e-3) && _e && Ve) {
                   let at = false;
                   de.utilities.isEqual(Qe, Te, 1e-3) || (at = true);
-                  const gt = Math.abs(Va().dot(Qe, ue.viewPlaneNormal)) < 0.01;
+                  const gt = Math.abs(Wa().dot(Qe, ue.viewPlaneNormal)) < 0.01;
                   at || gt || (this.toolCenter[0] += Qe[0], this.toolCenter[1] += Qe[1], this.toolCenter[2] += Qe[2]);
                 }
                 (T = this.configuration.autoPan) !== null && T !== void 0 && T.enabled && Rr($.id, W.id).getViewportIds().filter(((at) => at !== $.id)).forEach(((at) => {
@@ -270340,19 +270340,19 @@ Input: ` + this.err.str);
                     0,
                     0
                   ];
-                  Va().cross(ne.viewPlaneNormal, Bn.viewPlaneNormal, Er), Va().normalize(Er), Va().multiplyScalar(Er, zr);
+                  Wa().cross(ne.viewPlaneNormal, Bn.viewPlaneNormal, Er), Wa().normalize(Er), Wa().multiplyScalar(Er, zr);
                   const Pr = [
                     0,
                     0,
                     0
                   ];
-                  Va().add(Mr, Er, Pr);
+                  Wa().add(Mr, Er, Pr);
                   const za = [
                     0,
                     0,
                     0
                   ];
-                  Va().subtract(Mr, Er, za);
+                  Wa().subtract(Mr, Er, za);
                   const Ba = H.worldToCanvas(Pr), Ci = H.worldToCanvas(Mr), Qi = He.vec2.create();
                   He.vec2.subtract(Qi, Ba, Ci), He.vec2.normalize(Qi, Qi);
                   const No = He.vec2.create();
@@ -270383,7 +270383,7 @@ Input: ` + this.err.str);
                     0,
                     0
                   ];
-                  Va().subtract(Pr, za, bI), Va().normalize(bI);
+                  Wa().subtract(Pr, za, bI), Wa().normalize(bI);
                   const { viewPlaneNormal: b4 } = ne, { matrix: y4 } = q6().buildFromDegree().rotate(90, b4), yI = [
                     0,
                     0,
@@ -270393,13 +270393,13 @@ Input: ` + this.err.str);
                   const bQ = qt.getSlabThickness(), lN = [
                     ...yI
                   ];
-                  Va().multiplyScalar(lN, bQ);
+                  Wa().multiplyScalar(lN, bQ);
                   const cN = [
                     0,
                     0,
                     0
                   ];
-                  Va().add(Ch, lN, cN);
+                  Wa().add(Ch, lN, cN);
                   const Q4 = H.worldToCanvas(cN), Vg = He.vec2.create();
                   He.vec2.subtract(Vg, Gc, Q4);
                   const dc = He.vec2.create();
@@ -270597,20 +270597,20 @@ Input: ` + this.err.str);
                 }));
                 if (!$ || !$.length) return [];
                 const ne = W.getCamera(), le = ne.viewPlaneNormal;
-                return Va().normalize(le), $.filter(((ue) => {
+                return Wa().normalize(le), $.filter(((ue) => {
                   const { viewportId: Ee } = ue.data, Qe = H.getViewport(Ee).getCamera(), ke = Qe.viewPlaneNormal;
-                  return Va().normalize(ke), de.utilities.isEqual(le, ke, 0.01) && de.utilities.isEqual(ne.viewUp, Qe.viewUp, 0.01);
+                  return Wa().normalize(ke), de.utilities.isEqual(le, ke, 0.01) && de.utilities.isEqual(ne.viewUp, Qe.viewUp, 0.01);
                 }));
               })), oe(this, "_filterAnnotationsByUniqueViewportOrientations", ((R, T) => {
                 const { renderingEngine: z, viewport: H } = R, V = H.getCamera().viewPlaneNormal;
-                Va().normalize(V);
+                Wa().normalize(V);
                 const W = T.filter(((ue) => {
                   const { data: Ee } = ue, Qe = z.getViewport(Ee.viewportId), ke = this._getReferenceLineControllable(Qe.id);
                   return H !== Qe && ke === true;
                 })), $ = [];
                 for (let ue = 0; ue < W.length; ++ue) {
                   const Ee = W[ue], { viewportId: Qe } = Ee.data, ke = z.getViewport(Qe).getCamera(), Te = ke.viewPlaneNormal;
-                  if (Va().normalize(Te), de.utilities.isEqual(V, Te, 0.01) || de.utilities.isOpposite(V, Te, 0.01)) continue;
+                  if (Wa().normalize(Te), de.utilities.isEqual(V, Te, 0.01) || de.utilities.isOpposite(V, Te, 0.01)) continue;
                   let _e = false;
                   for (let Ve = 0; Ve < $.length; ++Ve) {
                     const nt = $[Ve], { viewportId: at } = nt.data, gt = z.getViewport(at).getCamera();
@@ -270624,7 +270624,7 @@ Input: ` + this.err.str);
                 }));
                 for (let ue = 0; ue < ne.length; ++ue) {
                   const Ee = ne[ue], { viewportId: Qe } = Ee.data, ke = z.getViewport(Qe).getCamera(), Te = ke.viewPlaneNormal;
-                  if (Va().normalize(Te), de.utilities.isEqual(V, Te, 0.01) || de.utilities.isOpposite(V, Te, 0.01)) continue;
+                  if (Wa().normalize(Te), de.utilities.isEqual(V, Te, 0.01) || de.utilities.isOpposite(V, Te, 0.01)) continue;
                   let _e = false;
                   for (let Ve = 0; Ve < $.length; ++Ve) {
                     const nt = $[Ve], { viewportId: at } = nt.data, gt = z.getViewport(at).getCamera();
@@ -270637,7 +270637,7 @@ Input: ` + this.err.str);
                   const Ee = le[ue];
                   if ($.some(((Ve) => Ve === Ee))) continue;
                   const { viewportId: Qe } = Ee.data, ke = z.getViewport(Qe).getCamera(), Te = ke.viewPlaneNormal;
-                  if (Va().normalize(Te), de.utilities.isEqual(V, Te, 0.01) || de.utilities.isOpposite(V, Te, 0.01)) continue;
+                  if (Wa().normalize(Te), de.utilities.isEqual(V, Te, 0.01) || de.utilities.isOpposite(V, Te, 0.01)) continue;
                   let _e = false;
                   for (let Ve = 0; Ve < $.length; ++Ve) {
                     const nt = $[Ve], { viewportId: at } = nt.data, gt = z.getViewport(at).getCamera();
@@ -270662,7 +270662,7 @@ Input: ` + this.err.str);
                   0,
                   0
                 ];
-                Va().subtract(T, this.toolCenter, W);
+                Wa().subtract(T, this.toolCenter, W);
                 const $ = this._getAnnotationsForViewportsWithDifferentCameras(R, V).filter(((ne) => {
                   const { data: le } = ne, ue = H.getViewport(le.viewportId), Ee = this._checkIfViewportsRenderingSameScene(z, ue);
                   return this._getReferenceLineControllable(ue.id) && this._getReferenceLineDraggableRotatable(ue.id) && Ee;
@@ -270721,10 +270721,10 @@ Input: ` + this.err.str);
                   if (ke.length === 0) return;
                   const Te = this._filterViewportWithSameOrientation(V, ke[0], ne), _e = [];
                   _e.push($.id), Te.forEach(((Ve) => {
-                    const { data: nt } = Ve, at = W.getViewport(nt.viewportId), gt = at.getCamera().viewPlaneNormal, Bt = Va().dot(z, gt), vt = [
+                    const { data: nt } = Ve, at = W.getViewport(nt.viewportId), gt = at.getCamera().viewPlaneNormal, Bt = Wa().dot(z, gt), vt = [
                       ...gt
                     ];
-                    if (Va().multiplyScalar(vt, Bt), Math.abs(vt[0]) > 1e-3 || Math.abs(vt[1]) > 1e-3 || Math.abs(vt[2]) > 1e-3) {
+                    if (Wa().multiplyScalar(vt, Bt), Math.abs(vt[0]) > 1e-3 || Math.abs(vt[1]) > 1e-3 || Math.abs(vt[2]) > 1e-3) {
                       const yt = Math.sqrt(vt[0] * vt[0] + vt[1] * vt[1] + vt[2] * vt[2]), Pt = T.lastPoints.world, Et = [
                         0,
                         0,
@@ -270738,14 +270738,14 @@ Input: ` + this.err.str);
                         const { rotationPoints: er } = this.editData.annotation.data.handles, ar = er.filter(((zr) => zr[1].uid === at.id));
                         if (ar.length === 2) {
                           const zr = $.canvasToWorld(ar[0][3]), vr = $.canvasToWorld(ar[1][3]);
-                          Va().add(zr, vr, Rt), Va().multiplyScalar(Rt, 0.5);
+                          Wa().add(zr, vr, Rt), Wa().multiplyScalar(Rt, 0.5);
                         }
                       }
-                      Va().subtract(Pt, Rt, Et);
-                      const qt = Va().dot(Et, gt), Bn = [
+                      Wa().subtract(Pt, Rt, Et);
+                      const qt = Wa().dot(Et, gt), Bn = [
                         ...gt
                       ];
-                      Va().multiplyScalar(Bn, qt);
+                      Wa().multiplyScalar(Bn, qt);
                       const pn = [
                         Bn[0],
                         Bn[1],
@@ -270894,10 +270894,10 @@ Input: ` + this.err.str);
               }));
             }
             _applyDeltaShiftToViewportCamera(m, E, y) {
-              const { data: v } = E, k = m.getViewport(v.viewportId), R = k.getCamera(), T = R.viewPlaneNormal, z = Va().dot(y, T), H = [
+              const { data: v } = E, k = m.getViewport(v.viewportId), R = k.getCamera(), T = R.viewPlaneNormal, z = Wa().dot(y, T), H = [
                 ...T
               ];
-              if (Va().multiplyScalar(H, z), Math.abs(H[0]) > 1e-3 || Math.abs(H[1]) > 1e-3 || Math.abs(H[2]) > 1e-3) {
+              if (Wa().multiplyScalar(H, z), Math.abs(H[0]) > 1e-3 || Math.abs(H[1]) > 1e-3 || Math.abs(H[2]) > 1e-3) {
                 const V = [
                   0,
                   0,
@@ -270907,7 +270907,7 @@ Input: ` + this.err.str);
                   0,
                   0
                 ];
-                Va().add(R.focalPoint, H, V), Va().add(R.position, H, W), k.setCamera({
+                Wa().add(R.focalPoint, H, V), Wa().add(R.position, H, W), k.setCamera({
                   focalPoint: V,
                   position: W
                 }), k.render();
@@ -271905,10 +271905,10 @@ Input: ` + this.err.str);
           function vge(S, m) {
             const E = S.cachedStats[m], { area: y, mean: v, stdDev: k, max: R, isEmptyArea: T, areaUnit: z, modalityUnit: H } = E, V = [];
             if (y) {
-              const W = T ? "Area: Oblique not supported" : "Area: ".concat(Ha(y), " ").concat(z);
+              const W = T ? "Area: Oblique not supported" : "Area: ".concat(Ya(y), " ").concat(z);
               V.push(W);
             }
-            return v && V.push("Mean: ".concat(Ha(v), " ").concat(H)), R && V.push("Max: ".concat(Ha(R), " ").concat(H)), k && V.push("Std Dev: ".concat(Ha(k), " ").concat(H)), V;
+            return v && V.push("Mean: ".concat(Ya(v), " ").concat(H)), R && V.push("Max: ".concat(Ya(R), " ").concat(H)), k && V.push("Std Dev: ".concat(Ya(k), " ").concat(H)), V;
           }
           oe(t4, "toolName", void 0), t4.toolName = "EllipticalROI";
           const Nge = t4;
@@ -272290,14 +272290,14 @@ Input: ` + this.err.str);
           function Dge(S, m) {
             const E = S.cachedStats[m], { radius: y, radiusUnit: v, area: k, mean: R, stdDev: T, max: z, isEmptyArea: H, areaUnit: V, modalityUnit: W } = E, $ = [];
             if (y) {
-              const ne = H ? "Radius: Oblique not supported" : "Radius: ".concat(Ha(y), " ").concat(v);
+              const ne = H ? "Radius: Oblique not supported" : "Radius: ".concat(Ya(y), " ").concat(v);
               $.push(ne);
             }
             if (k) {
-              const ne = H ? "Area: Oblique not supported" : "Area: ".concat(Ha(k), " ").concat(V);
+              const ne = H ? "Area: Oblique not supported" : "Area: ".concat(Ya(k), " ").concat(V);
               $.push(ne);
             }
-            return R && $.push("Mean: ".concat(Ha(R), " ").concat(W)), z && $.push("Max: ".concat(Ha(z), " ").concat(W)), T && $.push("Std Dev: ".concat(Ha(T), " ").concat(W)), $;
+            return R && $.push("Mean: ".concat(Ya(R), " ").concat(W)), z && $.push("Max: ".concat(Ya(z), " ").concat(W)), T && $.push("Std Dev: ".concat(Ya(T), " ").concat(W)), $;
           }
           oe(n4, "toolName", void 0), n4.toolName = "CircleROI";
           const rP = n4;
@@ -273149,7 +273149,7 @@ Input: ` + this.err.str);
           function Tge(S, m) {
             const E = S.cachedStats[m], { area: y, isEmptyArea: v, areaUnit: k } = E, R = [];
             if (y) {
-              const T = v ? "Area: Oblique not supported" : "Area: ".concat(Ha(y), " ").concat(k);
+              const T = v ? "Area: Oblique not supported" : "Area: ".concat(Ya(y), " ").concat(k);
               R.push(T);
             }
             return R;
@@ -273787,7 +273787,7 @@ Input: ` + this.err.str);
           function Uge(S, m) {
             const E = S.cachedStats[m], { area: y, areaUnit: v } = E, k = [];
             if (y) {
-              const R = "Area: ".concat(Ha(y), " ").concat(v);
+              const R = "Area: ".concat(Ya(y), " ").concat(v);
               k.push(R);
             }
             return k;
@@ -274488,7 +274488,7 @@ Input: ` + this.err.str);
             if (y !== void 0) return isNaN(y) ? [
               "".concat(y)
             ] : [
-              "".concat(Ha(y), " ").concat("\xB0")
+              "".concat(Ya(y), " ").concat("\xB0")
             ];
           }
           oe(A4, "toolName", void 0), A4.toolName = "Angle";
@@ -275337,25 +275337,25 @@ Input: ` + this.err.str);
           function Wge(S, m, E) {
             const y = S.cachedStats[m], { xValues: v, yValues: k, units: R, isUnitless: T, isHorizontal: z } = y;
             if (T) return [
-              "".concat(Ha(v[0]), " px")
+              "".concat(Ya(v[0]), " px")
             ];
             if (E.displayBothAxesDistances) {
               const H = Math.abs(v[1] - v[0]), V = Math.abs(k[1] - k[0]);
               return [
-                "".concat(Ha(H), " ").concat(R[0]),
-                "".concat(Ha(V), " ").concat(R[1])
+                "".concat(Ya(H), " ").concat(R[0]),
+                "".concat(Ya(V), " ").concat(R[1])
               ];
             }
             if (z) {
               const H = Math.abs(v[1] - v[0]);
               return [
-                "".concat(Ha(H), " ").concat(R[0])
+                "".concat(Ya(H), " ").concat(R[0])
               ];
             }
             {
               const H = Math.abs(k[1] - k[0]);
               return [
-                "".concat(Ha(H), " ").concat(R[1])
+                "".concat(Ya(H), " ").concat(R[1])
               ];
             }
           }
@@ -276241,8 +276241,8 @@ Input: ` + this.err.str);
                   0,
                   0
                 ];
-                if (Va().subtract(H, T, V), V.reduce(((ne, le) => ne + le), 0) === 0) return;
-                const W = Va().dot(V, z);
+                if (Wa().subtract(H, T, V), V.reduce(((ne, le) => ne + le), 0) === 0) return;
+                const W = Wa().dot(V, z);
                 if (Math.abs(W) < 0.01 || !this._currentCanvasPosition) return;
                 const $ = R.canvasToWorld(this._currentCanvasPosition);
                 this._currentCursorWorldPosition = $, this.updateAnnotationPosition(y, this.getActiveAnnotation(y));
@@ -277808,7 +277808,7 @@ Input: ` + this.err.str);
             const m = S.cachedStats.statistics, { area: E, mean: y, max: v, stdDev: k, areaUnit: R, modalityUnit: T } = m;
             if (y === void 0) return;
             const z = [];
-            return z.push("Area: ".concat(Ha(E), " ").concat(R)), z.push("Mean: ".concat(Ha(y), " ").concat(T)), z.push("Max: ".concat(Ha(v), " ").concat(T)), z.push("Std Dev: ".concat(Ha(k), " ").concat(T)), z;
+            return z.push("Area: ".concat(Ya(E), " ").concat(R)), z.push("Mean: ".concat(Ya(y), " ").concat(T)), z.push("Max: ".concat(Ya(v), " ").concat(T)), z.push("Std Dev: ".concat(Ya(k), " ").concat(T)), z;
           }
           oe(x4, "toolName", void 0), x4.toolName = "CircleROIStartEndThreshold";
           const h0e = x4;
@@ -280314,7 +280314,7 @@ Input: ` + this.err.str);
             decodeImageFrame: () => rt,
             decodeJPEGBaseline8BitColor: () => et,
             default: () => Un,
-            external: () => Za,
+            external: () => Xa,
             getImageFrame: () => oe,
             getMinMax: () => De,
             getPixelData: () => fe,
@@ -280582,7 +280582,7 @@ Input: ` + this.err.str);
             };
           }
           const he = function je(Ye, it) {
-            const { MetadataModules: tt } = Za.cornerstone.Enums, { dicomParser: ht } = Za;
+            const { MetadataModules: tt } = Xa.cornerstone.Enums, { dicomParser: ht } = Xa;
             if (Ye === tt.MULTIFRAME) {
               const { metadata: Xt, frame: It } = w.retrieveMultiframeMetadata(it);
               if (!Xt) return;
@@ -280682,7 +280682,7 @@ Input: ` + this.err.str);
                 sequenceOfUltrasoundRegions: J(Ct)
               };
               if (Ye === tt.IMAGE_URL) return (function(Xt, It) {
-                const { transferSyntaxUID: Mt } = ie(Xt, It), Ft = Za.cornerstone.utilities.isVideoTransferSyntax(Mt), Dn = Xt.substring(7), Vt = Dn.replace("/frames/", "/thumbnail/");
+                const { transferSyntaxUID: Mt } = ie(Xt, It), Ft = Xa.cornerstone.utilities.isVideoTransferSyntax(Mt), Dn = Xt.substring(7), Vt = Dn.replace("/frames/", "/thumbnail/");
                 let En = Dn.replace("/frames/", "/rendered/");
                 return Ft && (En = En.replace("/rendered/1", "/rendered")), {
                   isVideo: Ft,
@@ -280817,7 +280817,7 @@ Input: ` + this.err.str);
             return Ue;
           }
           const Je = function(je, Ye, it = {}, tt = {}) {
-            const { cornerstone: ht } = Za, Ct = Le(), Xt = (Ft) => {
+            const { cornerstone: ht } = Xa, Ct = Le(), Xt = (Ft) => {
               if (typeof Ct.errorInterceptor == "function") {
                 const Dn = new Error("request failed");
                 Dn.request = Ft, Dn.response = Ft.response, Dn.status = Ft.status, Ct.errorInterceptor(Dn);
@@ -281019,11 +281019,11 @@ Input: ` + this.err.str);
                   }
                   if (fr = wa || Sr.byteLength === jn, !fr && Sr.length < vi + It) continue;
                   vi = Sr.length, Xt.isPartial = !wa;
-                  const Ka = Be(dn, Sr, Xt), fa = ce(Ct, fr), Sa = {
+                  const Va = Be(dn, Sr, Xt), fa = ce(Ct, fr), Sa = {
                     url: je,
                     imageId: Ye,
-                    ...Ka,
-                    percentComplete: wa ? 100 : 100 * ((_b = Ka.pixelData) == null ? void 0 : _b.length) / jn,
+                    ...Va,
+                    percentComplete: wa ? 100 : 100 * ((_b = Va.pixelData) == null ? void 0 : _b.length) / jn,
                     imageQualityStatus: fa,
                     done: fr
                   };
@@ -281060,31 +281060,31 @@ Input: ` + this.err.str);
               try {
                 Xt.encodedData || (Xt.chunkSize = It, Xt.rangesFetched = 0);
                 const En = (function(vi, wa) {
-                  const { totalBytes: ha, encodedData: Ka, chunkSize: fa = 65536 } = vi, { rangeIndex: Sa = 0 } = wa;
-                  return Sa !== -1 || ha && Ka ? Sa === -1 || (Ka == null ? void 0 : Ka.byteLength) > ha - fa ? [
-                    (Ka == null ? void 0 : Ka.byteLength) || 0,
+                  const { totalBytes: ha, encodedData: Va, chunkSize: fa = 65536 } = vi, { rangeIndex: Sa = 0 } = wa;
+                  return Sa !== -1 || ha && Va ? Sa === -1 || (Va == null ? void 0 : Va.byteLength) > ha - fa ? [
+                    (Va == null ? void 0 : Va.byteLength) || 0,
                     ""
                   ] : [
-                    (Ka == null ? void 0 : Ka.byteLength) || 0,
+                    (Va == null ? void 0 : Va.byteLength) || 0,
                     fa * (Sa + 1) - 1
                   ] : [
                     0,
                     ""
                   ];
-                })(Xt, Ct), { encodedData: Hn, responseHeaders: ot } = await (async function(vi, wa, ha, Ka) {
+                })(Xt, Ct), { encodedData: Hn, responseHeaders: ot } = await (async function(vi, wa, ha, Va) {
                   ha && (wa = Object.assign(wa, {
                     Range: `bytes=${ha[0]}-${ha[1]}`
                   }));
-                  let { encodedData: fa } = Ka;
-                  if (ha[1] && (fa == null ? void 0 : fa.byteLength) > ha[1]) return Ka;
+                  let { encodedData: fa } = Va;
+                  if (ha[1] && (fa == null ? void 0 : fa.byteLength) > ha[1]) return Va;
                   const Sa = await fetch(vi, {
                     headers: wa,
                     signal: void 0
-                  }), _a = await Sa.arrayBuffer(), la = new Uint8Array(_a), { status: Xa } = Sa;
+                  }), _a = await Sa.arrayBuffer(), la = new Uint8Array(_a), { status: Ha } = Sa;
                   let Yr;
-                  fa ? (Yr = new Uint8Array(fa.length + la.length), Yr.set(fa, 0), Yr.set(la, fa.length), Ka.rangesFetched = 1) : (Yr = new Uint8Array(la.length), Yr.set(la, 0), Ka.rangesFetched++), Ka.encodedData = fa = Yr, Ka.responseHeaders = Sa.headers;
+                  fa ? (Yr = new Uint8Array(fa.length + la.length), Yr.set(fa, 0), Yr.set(la, fa.length), Va.rangesFetched = 1) : (Yr = new Uint8Array(la.length), Yr.set(la, 0), Va.rangesFetched++), Va.encodedData = fa = Yr, Va.responseHeaders = Sa.headers;
                   const Cr = Sa.headers.get("Content-Range");
-                  return Cr ? Ka.totalBytes = Number(Cr.split("/")[1]) : Xa === 206 && ha ? ha[1] === "" || (fa == null ? void 0 : fa.length) < ha[1] ? Ka.totalBytes = fa.byteLength : Ka.totalBytes = Number.MAX_SAFE_INTEGER : Ka.totalBytes = fa == null ? void 0 : fa.byteLength, Ka;
+                  return Cr ? Va.totalBytes = Number(Cr.split("/")[1]) : Ha === 206 && ha ? ha[1] === "" || (fa == null ? void 0 : fa.length) < ha[1] ? Va.totalBytes = fa.byteLength : Va.totalBytes = Number.MAX_SAFE_INTEGER : Va.totalBytes = fa == null ? void 0 : fa.byteLength, Va;
                 })(je, Vt, En, Xt), Nt = ot.get("content-type"), { totalBytes: dn } = Xt, jn = dn === Hn.byteLength, fr = Be(Nt, Hn, {
                   isPartial: true
                 }), Sr = ce(Ct, jn || fr.extractDone);
@@ -281369,7 +281369,7 @@ Input: ` + this.err.str);
             }
             return Promise.reject(new Error(`No decoder for transfer syntax ${Ye}`));
           }, oe = function(je) {
-            const { cornerstone: Ye } = Za, it = Ye.metaData.get("imagePixelModule", je);
+            const { cornerstone: Ye } = Xa, it = Ye.metaData.get("imagePixelModule", je);
             return {
               samplesPerPixel: it.samplesPerPixel,
               photometricInterpretation: it.photometricInterpretation,
@@ -281412,7 +281412,7 @@ Input: ` + this.err.str);
             if (tt.preScale = {
               enabled: !(!tt.preScale || tt.preScale.enabled === void 0) && tt.preScale.enabled
             }, !(Ye == null ? void 0 : Ye.length)) return Promise.reject(new Error("The pixel data is missing"));
-            const { cornerstone: Ct } = Za, { MetadataModules: Xt } = Ct.Enums, It = document.createElement("canvas"), Mt = oe(je);
+            const { cornerstone: Ct } = Xa, { MetadataModules: Xt } = Ct.Enums, It = document.createElement("canvas"), Mt = oe(je);
             if (Mt.decodeLevel = tt.decodeLevel, tt.allowFloatRendering = Ct.canRenderFloatTextures(), tt.preScale.enabled) {
               const Hn = (function(ot, Nt) {
                 const dn = ot.get("modalityLutModule", Nt) || {}, jn = ot.get("generalSeriesModule", Nt) || {}, { modality: fr } = jn, Sr = {
@@ -281443,7 +281443,7 @@ Input: ` + this.err.str);
                 if (tt.skipCreateImage) return Hn(Nt);
                 let dn = false;
                 if (tt.targetBuffer && tt.targetBuffer.type && !En) {
-                  const { arrayBuffer: _a2, type: la, offset: Xa = 0, length: Yr } = tt.targetBuffer, Cr = Nt.pixelDataLength, ai = Xa, Cs = Yr ?? Cr - ai, Ni = {
+                  const { arrayBuffer: _a2, type: la, offset: Ha = 0, length: Yr } = tt.targetBuffer, Cr = Nt.pixelDataLength, ai = Ha, Cs = Yr ?? Cr - ai, Ni = {
                     Uint8Array,
                     Uint16Array: Vt ? Uint16Array : void 0,
                     Int16Array: Vt ? Int16Array : void 0,
@@ -281455,12 +281455,12 @@ Input: ` + this.err.str);
                   Nt.pixelData = XA, dn = true;
                 }
                 dn || hn(Nt);
-                const jn = Ct.metaData.get(Xt.IMAGE_PLANE, je) || {}, fr = Ct.metaData.get(Xt.VOI_LUT, je) || {}, Sr = Ct.metaData.get(Xt.MODALITY_LUT, je) || {}, vi = Ct.metaData.get(Xt.SOP_COMMON, je) || {}, wa = Ct.metaData.get(Xt.CALIBRATION, je) || {}, { rows: ha, columns: Ka } = Nt;
+                const jn = Ct.metaData.get(Xt.IMAGE_PLANE, je) || {}, fr = Ct.metaData.get(Xt.VOI_LUT, je) || {}, Sr = Ct.metaData.get(Xt.MODALITY_LUT, je) || {}, vi = Ct.metaData.get(Xt.SOP_COMMON, je) || {}, wa = Ct.metaData.get(Xt.CALIBRATION, je) || {}, { rows: ha, columns: Va } = Nt;
                 if (En) {
                   if ((function(la) {
                     if (la === void 0) return false;
-                    const { rows: Xa, columns: Yr, photometricInterpretation: Cr, pixelDataLength: ai, planarConfiguration: Cs } = la;
-                    return ai !== 4 * Yr * Xa && (Cr.endsWith("420") ? ai === (3 * Math.ceil(Yr / 2) + Math.floor(Yr / 2)) * Xa : Cr.endsWith("422") ? ai === (3 * Math.ceil(Yr / 2) + Math.floor(Yr / 2)) * Math.ceil(Xa / 2) + Math.floor(Xa / 2) * Yr : Cr !== "RGB" || Cs === 1);
+                    const { rows: Ha, columns: Yr, photometricInterpretation: Cr, pixelDataLength: ai, planarConfiguration: Cs } = la;
+                    return ai !== 4 * Yr * Ha && (Cr.endsWith("420") ? ai === (3 * Math.ceil(Yr / 2) + Math.floor(Yr / 2)) * Ha : Cr.endsWith("422") ? ai === (3 * Math.ceil(Yr / 2) + Math.floor(Yr / 2)) * Math.ceil(Ha / 2) + Math.floor(Ha / 2) * Yr : Cr !== "RGB" || Cs === 1);
                   })(Nt)) {
                     It.height = Nt.rows, It.width = Nt.columns;
                     let la = It.getContext("2d").createImageData(Nt.columns, Nt.rows);
@@ -281468,12 +281468,12 @@ Input: ` + this.err.str);
                       ...la,
                       data: new Uint8ClampedArray(3 * Nt.columns * Nt.rows)
                     }), ve(Nt, la.data, ht), Nt.imageData = la, Nt.pixelData = la.data, Nt.pixelDataLength = la.data.length;
-                  } else if (!ht && Nt.pixelDataLength === 4 * ha * Ka) {
+                  } else if (!ht && Nt.pixelDataLength === 4 * ha * Va) {
                     const la = new Uint8Array(Nt.pixelData.length / 4 * 3);
-                    Nt.pixelData = (function(Xa, Yr) {
-                      const Cr = Xa.length / 4;
+                    Nt.pixelData = (function(Ha, Yr) {
+                      const Cr = Ha.length / 4;
                       let ai = 0, Cs = 0;
-                      for (let Ni = 0; Ni < Cr; Ni++) Yr[Cs++] = Xa[ai++], Yr[Cs++] = Xa[ai++], Yr[Cs++] = Xa[ai++], ai++;
+                      for (let Ni = 0; Ni < Cr; Ni++) Yr[Cs++] = Ha[ai++], Yr[Cs++] = Ha[ai++], Yr[Cs++] = Ha[ai++], ai++;
                       return Yr;
                     })(Nt.pixelData, la), Nt.pixelDataLength = Nt.pixelData.length;
                   }
@@ -281513,13 +281513,13 @@ Input: ` + this.err.str);
                   if (Dt === je) return It;
                   const _a2 = fa.columns, la = fa.rows;
                   It.height = la, It.width = _a2;
-                  const Xa = It.getContext("2d"), Yr = Xa.createImageData(_a2, la), Cr = Nt.pixelData;
+                  const Ha = It.getContext("2d"), Yr = Ha.createImageData(_a2, la), Cr = Nt.pixelData;
                   if (Cr.length === _a2 * la * 4) for (let ai = 0; ai < Cr.length; ai++) Yr.data[ai] = Cr[ai];
                   else if (Cr.length === _a2 * la * 3) {
                     let ai = 0;
                     for (let Cs = 0; Cs < Cr.length; Cs += 3) Yr.data[ai++] = Cr[Cs], Yr.data[ai++] = Cr[Cs + 1], Yr.data[ai++] = Cr[Cs + 2], Yr.data[ai++] = 255;
                   }
-                  return Nt.pixelData = Yr.data, Nt.pixelDataLength = Yr.data.length, Nt.imageData = Yr, Xa.putImageData(Nt.imageData, 0, 0), Dt = je, It;
+                  return Nt.pixelData = Yr.data, Nt.pixelDataLength = Yr.data.length, Nt.imageData = Yr, Ha.putImageData(Nt.imageData, 0, 0), Dt = je, It;
                 }), Sr.modalityLUTSequence && Sr.modalityLUTSequence.length > 0 && (Sa = vi.sopClassUID) !== "1.2.840.10008.5.1.4.1.1.12.1" && Sa !== "1.2.840.10008.5.1.4.1.1.12.2.1" && (fa.modalityLUT = Sr.modalityLUTSequence[0]), fr.voiLUTSequence && fr.voiLUTSequence.length > 0 && (fa.voiLUT = fr.voiLUTSequence[0]), fa.color && (fa.windowWidth = 256, fa.windowCenter = 128), fa.windowCenter === void 0 || fa.windowWidth === void 0) {
                   const _a2 = fa.imageFrame.minAfterScale, la = fa.imageFrame.maxAfterScale;
                   fa.windowWidth = la - _a2, fa.windowCenter = (la + _a2) / 2;
@@ -281560,7 +281560,7 @@ Input: ` + this.err.str);
             return it > 1 / 4 ? Math.min(Ye, 0) : it > 1 / 16 ? Math.min(Ye, 1) : it > 1 / 64 ? Math.min(Ye, 2) : Math.min(Ye, 3);
           }
           const Ar = function(je, Ye = {}) {
-            const it = Za.cornerstone.imageRetrievalPoolManager, tt = (/* @__PURE__ */ new Date()).getTime(), ht = new fn("decompress"), Ct = Ye.requestType || "interaction", Xt = Ye.additionalDetails || {
+            const it = Xa.cornerstone.imageRetrievalPoolManager, tt = (/* @__PURE__ */ new Date()).getTime(), ht = new fn("decompress"), Ct = Ye.requestType || "interaction", Xt = Ye.additionalDetails || {
               imageId: je
             }, It = Ye.priority === void 0 ? 5 : Ye.priority, Mt = Ye.addToBeginning || false, Ft = je.substring(7);
             return it.addRequest((async function(Dn, Vt, En) {
@@ -281571,13 +281571,13 @@ Input: ` + this.err.str);
                 for await (const dn of ot) {
                   const { pixelData: jn, imageQualityStatus: fr = pt.FULL_RESOLUTION, percentComplete: Sr, done: vi = true, extractDone: wa = true } = dn, ha = an(dn.contentType);
                   if (!wa && !zt.has(ha)) continue;
-                  const Ka = dn.decodeLevel ?? (fr === pt.FULL_RESOLUTION ? 0 : cn(Sr, (_a = Ye.retrieveOptions) == null ? void 0 : _a.decodeLevel));
-                  if (vi || !(Nt <= Ka)) try {
+                  const Va = dn.decodeLevel ?? (fr === pt.FULL_RESOLUTION ? 0 : cn(Sr, (_a = Ye.retrieveOptions) == null ? void 0 : _a.decodeLevel));
+                  if (vi || !(Nt <= Va)) try {
                     const fa = {
                       ...Ye,
-                      decodeLevel: Ka
+                      decodeLevel: Va
                     }, Sa = await Ne(Vt, jn, ha, fa), _a2 = (/* @__PURE__ */ new Date()).getTime();
-                    Sa.loadTimeInMS = _a2 - tt, Sa.transferSyntaxUID = ha, Sa.imageQualityStatus = fr, Hn.add(Sa, vi), Nt = Ka;
+                    Sa.loadTimeInMS = _a2 - tt, Sa.transferSyntaxUID = ha, Sa.imageQualityStatus = fr, Hn.add(Sa, vi), Nt = Va;
                   } catch (fa) {
                     if (wa) throw console.warn("Couldn't decode", fa), fa;
                   }
@@ -281691,7 +281691,7 @@ Input: ` + this.err.str);
             };
           };
           function hr(je) {
-            const { dicomParser: Ye } = Za;
+            const { dicomParser: Ye } = Xa;
             let it, tt = Ye.parseDicom(je, {
               untilTag: "x7fe00010"
             });
@@ -281788,7 +281788,7 @@ Input: ` + this.err.str);
               return Qt[je] !== void 0;
             },
             load: function(je, Ye = Je, it) {
-              const { cornerstone: tt, dicomParser: ht } = Za;
+              const { cornerstone: tt, dicomParser: ht } = Xa;
               if (Qt[je]) return new Promise(((It) => {
                 Qt[je].cacheCount++, It(Qt[je].dataSet);
               }));
@@ -281831,7 +281831,7 @@ Input: ` + this.err.str);
               return Xt.cacheCount = 1, Ht[je] = Xt, Xt;
             },
             unload: function(je) {
-              const { cornerstone: Ye } = Za;
+              const { cornerstone: Ye } = Xa;
               Qt[je] && (Qt[je].cacheCount--, Qt[je].cacheCount === 0 && (Hr -= Qt[je].dataSet.byteArray.length, delete Qt[je], Ye.triggerEvent(Ye.events, "datasetscachechanged", {
                 uri: je,
                 action: "unloaded",
@@ -281866,7 +281866,7 @@ Input: ` + this.err.str);
             },
             update: function(je, Ye) {
               const it = Qt[je];
-              it ? (Hr -= it.dataSet.byteArray.length, it.dataSet = Ye, Hr += Ye.byteArray.length, Za.cornerstone.triggerEvent(Za.cornerstone.events, "datasetscachechanged", {
+              it ? (Hr -= it.dataSet.byteArray.length, it.dataSet = Ye, Hr += Ye.byteArray.length, Xa.cornerstone.triggerEvent(Xa.cornerstone.events, "datasetscachechanged", {
                 uri: je,
                 action: "updated",
                 cacheInfo: Zt()
@@ -281937,7 +281937,7 @@ Input: ` + this.err.str);
             }));
           }
           const Oa = function je(Ye, it) {
-            const { MetadataModules: tt } = Za.cornerstone.Enums, { dicomParser: ht } = Za;
+            const { MetadataModules: tt } = Xa.cornerstone.Enums, { dicomParser: ht } = Xa;
             if (Array.isArray(it)) return;
             const Ct = Nr(it);
             if (Ye === tt.MULTIFRAME) {
@@ -282140,7 +282140,7 @@ Input: ` + this.err.str);
           };
           var Dr = s(713);
           function Ds(je, Ye) {
-            const { dicomParser: it } = Za;
+            const { dicomParser: it } = Xa;
             if (je.elements.x7fe00010 && je.elements.x7fe00010.basicOffsetTable.length) return it.readEncapsulatedImageFrame(je, je.elements.x7fe00010, Ye);
             if ((function(Ft) {
               return Ft.intString("x00280008") !== Ft.elements.x7fe00010.fragments.length;
@@ -282311,7 +282311,7 @@ Input: ` + this.err.str);
               }
               return Gi;
             }
-          }, Za = Ei;
+          }, Xa = Ei;
           function qi(je, Ye) {
             const it = je.length, tt = new Uint8ClampedArray(it);
             for (let ht = 0; ht < it; ++ht) tt[ht] = je[ht] >> Ye;
@@ -282320,7 +282320,7 @@ Input: ` + this.err.str);
           function Qr(je, Ye, it) {
             const tt = je[`${Ye}PaletteColorLookupTableData`];
             if (tt) return Promise.resolve(tt);
-            const ht = Za.cornerstone.metaData.get("imagePixelModule", je.imageId);
+            const ht = Xa.cornerstone.metaData.get("imagePixelModule", je.imageId);
             return ht && typeof ht.then == "function" ? ht.then(((Ct) => Ct ? Ct[`${Ye}PaletteColorLookupTableData`] : it)) : Promise.resolve(ht ? ht[`${Ye}PaletteColorLookupTableData`] : it);
           }
           function cr(je, Ye, it) {
@@ -283796,7 +283796,7 @@ Input: ` + this.err.str);
                           onClick: ir,
                           className: "w-full text-left px-3 py-1.5 hover:bg-zinc-800 rounded-lg flex items-center text-red-400",
                           children: [
-                            n.jsx(qa, {
+                            n.jsx(Za, {
                               className: "w-3.5 h-3.5 mr-2"
                             }),
                             " Clear Annotations"
