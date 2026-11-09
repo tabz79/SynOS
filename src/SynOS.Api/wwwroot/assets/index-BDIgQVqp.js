@@ -44625,32 +44625,6 @@ Minimum version required to store current data is: ` + U + `.
     }, []);
     const [pt, Ut] = M.useState(null);
     M.useEffect(() => {
-      const At = Aa || (J == null ? void 0 : J.patient), St = Se || (At == null ? void 0 : At.id) || (At == null ? void 0 : At.Id) || (At == null ? void 0 : At.patientId), Ot = (At == null ? void 0 : At.mobile) || (At == null ? void 0 : At.Mobile) || (At == null ? void 0 : At.phoneNumber) || (At == null ? void 0 : At.currentPhoneNumber) || (At == null ? void 0 : At.CurrentPhoneNumber);
-      if (!St && !Ot) {
-        Ut(null);
-        return;
-      }
-      let kn = true;
-      return cg.checkEligibility(St, Ot).then(($n) => {
-        if (kn && (Ut($n), ($n == null ? void 0 : $n.hasActiveCard) && ($n == null ? void 0 : $n.isPatientEnrolledBeneficiary) && ($n == null ? void 0 : $n.card))) {
-          const br = $n.card;
-          Qe((Or) => Or && !Or.isHealthCard && !Or.remove ? Or : {
-            type: br.configuredDiscountType === "Flat" ? "Flat" : "Percentage",
-            value: br.configuredDiscountValue,
-            reason: `Health Card (${br.cardNumber})`,
-            cardId: br.cardId,
-            cardNumber: br.cardNumber,
-            isHealthCard: true
-          });
-        }
-      }).catch(($n) => console.error("HealthCard check failed in IntentPanel", $n)), () => {
-        kn = false;
-      };
-    }, [
-      Se,
-      Aa,
-      J == null ? void 0 : J.patient
-    ]), M.useEffect(() => {
       const At = (St) => {
         const Ot = St.detail;
         if (Ot && Ut(Ot), (Ot == null ? void 0 : Ot.hasActiveCard) && (Ot == null ? void 0 : Ot.isPatientEnrolledBeneficiary) && (Ot == null ? void 0 : Ot.card)) {
@@ -45074,6 +45048,32 @@ Minimum version required to store current data is: ` + U + `.
       ce
     ]);
     M.useEffect(() => {
+      const At = Aa || (J == null ? void 0 : J.patient), St = Se || (At == null ? void 0 : At.id) || (At == null ? void 0 : At.Id) || (At == null ? void 0 : At.patientId), Ot = (At == null ? void 0 : At.mobile) || (At == null ? void 0 : At.Mobile) || (At == null ? void 0 : At.phoneNumber) || (At == null ? void 0 : At.currentPhoneNumber) || (At == null ? void 0 : At.CurrentPhoneNumber);
+      if (!St && !Ot) {
+        Ut(null);
+        return;
+      }
+      let kn = true;
+      return cg.checkEligibility(St, Ot).then(($n) => {
+        if (kn && (Ut($n), ($n == null ? void 0 : $n.hasActiveCard) && ($n == null ? void 0 : $n.isPatientEnrolledBeneficiary) && ($n == null ? void 0 : $n.card))) {
+          const br = $n.card;
+          Qe((Or) => Or && !Or.isHealthCard && !Or.remove ? Or : {
+            type: br.configuredDiscountType === "Flat" ? "Flat" : "Percentage",
+            value: br.configuredDiscountValue,
+            reason: `Health Card (${br.cardNumber})`,
+            cardId: br.cardId,
+            cardNumber: br.cardNumber,
+            isHealthCard: true
+          });
+        }
+      }).catch(($n) => console.error("HealthCard check failed in IntentPanel", $n)), () => {
+        kn = false;
+      };
+    }, [
+      Se,
+      Aa,
+      J == null ? void 0 : J.patient
+    ]), M.useEffect(() => {
       var _a2, _b2, _c3, _d2;
       if (!r) return;
       if (!!((Aa == null ? void 0 : Aa.id) || (Aa == null ? void 0 : Aa.patientId) || (Aa == null ? void 0 : Aa.fullName) || (Aa == null ? void 0 : Aa.name) || Se || ((_a2 = J == null ? void 0 : J.patient) == null ? void 0 : _a2.id) || ((_b2 = J == null ? void 0 : J.patient) == null ? void 0 : _b2.patientId) || ((_c3 = J == null ? void 0 : J.patient) == null ? void 0 : _c3.fullName) || ((_d2 = J == null ? void 0 : J.patient) == null ? void 0 : _d2.name))) {

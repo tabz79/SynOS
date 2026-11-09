@@ -125,42 +125,7 @@ export function IntentPanel({ onVisitUpdated }) {
     // Active Health Card state in IntentPanel
     const [healthCardEligibility, setHealthCardEligibility] = useState(null);
 
-    // Auto-apply Health Card discount when an active enrolled member is identified
-    useEffect(() => {
-        const p = displayedPatient || snapshot?.patient;
-        const pId = currentPatientId || p?.id || p?.Id || p?.patientId;
-        const phone = p?.mobile || p?.Mobile || p?.phoneNumber || p?.currentPhoneNumber || p?.CurrentPhoneNumber;
-
-        if (!pId && !phone) {
-            setHealthCardEligibility(null);
-            return;
-        }
-
-        let isMounted = true;
-        HealthCardApi.checkEligibility(pId, phone).then(elig => {
-            if (!isMounted) return;
-            setHealthCardEligibility(elig);
-            if (elig?.hasActiveCard && elig?.isPatientEnrolledBeneficiary && elig?.card) {
-                const card = elig.card;
-                setStagedDiscount(prev => {
-                    // Do not override if user already entered an explicit non-HC discount
-                    if (prev && !prev.isHealthCard && !prev.remove) return prev;
-                    return {
-                        type: card.configuredDiscountType === 'Flat' ? 'Flat' : 'Percentage',
-                        value: card.configuredDiscountValue,
-                        reason: `Health Card (${card.cardNumber})`,
-                        cardId: card.cardId,
-                        cardNumber: card.cardNumber,
-                        isHealthCard: true
-                    };
-                });
-            }
-        }).catch(err => console.error('HealthCard check failed in IntentPanel', err));
-
-        return () => { isMounted = false; };
-    }, [currentPatientId, displayedPatient, snapshot?.patient]);
-
-    // Also support custom event listener for immediate inter-component updates
+    // Support custom event listener for immediate inter-component updates
     useEffect(() => {
         const handleHealthCardEligibility = (e) => {
             const elig = e.detail;
@@ -759,6 +724,41 @@ export function IntentPanel({ onVisitUpdated }) {
             isModified: true
         };
     }, [snapshot?.patient, stagedDemographics]);
+
+    // Auto-apply Health Card discount when an active enrolled member is identified
+    useEffect(() => {
+        const p = displayedPatient || snapshot?.patient;
+        const pId = currentPatientId || p?.id || p?.Id || p?.patientId;
+        const phone = p?.mobile || p?.Mobile || p?.phoneNumber || p?.currentPhoneNumber || p?.CurrentPhoneNumber;
+
+        if (!pId && !phone) {
+            setHealthCardEligibility(null);
+            return;
+        }
+
+        let isMounted = true;
+        HealthCardApi.checkEligibility(pId, phone).then(elig => {
+            if (!isMounted) return;
+            setHealthCardEligibility(elig);
+            if (elig?.hasActiveCard && elig?.isPatientEnrolledBeneficiary && elig?.card) {
+                const card = elig.card;
+                setStagedDiscount(prev => {
+                    // Do not override if user already entered an explicit non-HC discount
+                    if (prev && !prev.isHealthCard && !prev.remove) return prev;
+                    return {
+                        type: card.configuredDiscountType === 'Flat' ? 'Flat' : 'Percentage',
+                        value: card.configuredDiscountValue,
+                        reason: `Health Card (${card.cardNumber})`,
+                        cardId: card.cardId,
+                        cardNumber: card.cardNumber,
+                        isHealthCard: true
+                    };
+                });
+            }
+        }).catch(err => console.error('HealthCard check failed in IntentPanel', err));
+
+        return () => { isMounted = false; };
+    }, [currentPatientId, displayedPatient, snapshot?.patient]);
 
     // Auto-focus Edit Demographics button after adding/selecting/resuming a patient
     useEffect(() => {
