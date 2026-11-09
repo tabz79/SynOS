@@ -1851,11 +1851,13 @@ export function IntentPanel({ onVisitUpdated }) {
     if (isCorrectionIntent) { panelTitle = "Visit Correction"; }
     if (isPostProcessingView) { panelTitle = "Visit Finalized & Print Dispatch"; }
 
+    const isWideBillingLayout = Boolean(hasPatient || isCorrectionIntent || isPostProcessingView);
+
     return (
         <>
-            {/* Notification Center Rail (Left Viewport) - Kept active during intake/registration/billing for live hints */}
+            {/* Notification Center Rail (Left Viewport) - Active during 2-column billing & intake workflows */}
             <ReceptionNotificationCenter
-                isOpen={!isNotificationCenterDismissed}
+                isOpen={isWideBillingLayout && !isNotificationCenterDismissed}
                 correctionHistory={snapshot?.correctionHistory}
                 onClose={() => setIsNotificationCenterDismissed(true)}
             />
@@ -1864,8 +1866,10 @@ export function IntentPanel({ onVisitUpdated }) {
             ref={panelRef} 
             className={cn(
                 "flex flex-col h-full overflow-hidden rounded-[24px] transition-[width,transform,opacity] duration-300 ease-out z-30 shadow-2xl", 
-                (!isNotificationCenterDismissed) 
-                    ? "absolute right-0 top-0 bottom-0 w-full xl:left-[314px] 2xl:left-[334px] xl:w-auto" 
+                isWideBillingLayout 
+                    ? (!isNotificationCenterDismissed 
+                        ? "absolute right-0 top-0 bottom-0 w-full xl:left-[314px] 2xl:left-[334px] xl:w-auto" 
+                        : "absolute right-0 top-0 bottom-0 w-full")
                     : "absolute right-0 top-0 bottom-0 w-[96vw] sm:w-[92vw] md:w-[75vw] lg:w-[50vw] xl:w-[44vw] 2xl:w-[40vw] min-w-[580px] max-w-[880px]",
                 ui.panel
             )}
