@@ -2676,6 +2676,7 @@ export function BillingSummary({
                                     setSettlementTerm?.('FULL');
                                     setIsPartialPayment?.(false);
                                     setCustomPaymentAmount?.('');
+                                    setTenderedAmount?.(String(displayAmountToCollect));
                                 }}
                                 onKeyDown={(e) => {
                                     if (e.key === 'Tab') {
@@ -2736,9 +2737,13 @@ export function BillingSummary({
                                 onClick={() => {
                                     setSettlementTerm?.('PARTIAL');
                                     setIsPartialPayment?.(true);
+                                    const targetAmt = (!customPaymentAmount || Number(customPaymentAmount) === 0)
+                                        ? String(Math.round(displayAmountToCollect * 0.5))
+                                        : customPaymentAmount;
                                     if (!customPaymentAmount || Number(customPaymentAmount) === 0) {
-                                        setCustomPaymentAmount?.(String(Math.round(displayAmountToCollect * 0.5)));
+                                        setCustomPaymentAmount?.(targetAmt);
                                     }
+                                    setTenderedAmount?.(targetAmt);
                                     setTimeout(() => {
                                         const inp = document.getElementById('input-partial-amount');
                                         if (inp) {
@@ -2782,6 +2787,7 @@ export function BillingSummary({
                                     setSettlementTerm?.('FULL_DUE');
                                     setIsPartialPayment?.(true);
                                     setCustomPaymentAmount?.('0');
+                                    setTenderedAmount?.('0');
                                 }}
                                 onKeyDown={(e) => {
                                     if (e.key === 'Tab') {
@@ -2853,10 +2859,12 @@ export function BillingSummary({
                                             const raw = e.target.value;
                                             if (raw === '') {
                                                 setCustomPaymentAmount?.('');
+                                                setTenderedAmount?.('');
                                                 return;
                                             }
                                             const val = Math.min(displayAmountToCollect, Math.max(0, Number(raw)));
                                             setCustomPaymentAmount?.(String(val));
+                                            setTenderedAmount?.(String(val));
                                         }}
                                         onFocus={(e) => e.target.select()}
                                         onKeyDown={(e) => {
@@ -2899,7 +2907,10 @@ export function BillingSummary({
                                             <button
                                                 key={idx}
                                                 type="button"
-                                                onClick={() => setCustomPaymentAmount?.(String(chip.val))}
+                                                onClick={() => {
+                                                    setCustomPaymentAmount?.(String(chip.val));
+                                                    setTenderedAmount?.(String(chip.val));
+                                                }}
                                                 className={cn(
                                                     "px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer border shadow-2xs",
                                                     isSelected
@@ -3047,7 +3058,11 @@ export function BillingSummary({
                         {(paymentMethod === 'Cash' || isSplitPayment) && (
                             <div className="pt-1.5">
                                 <PosCashTenderModule
-                                    billAmount={displayAmountToCollect}
+                                    billAmount={
+                                        (effectiveSettlementTerm === 'PARTIAL' && Number(customPaymentAmount) > 0)
+                                            ? Number(customPaymentAmount)
+                                            : displayAmountToCollect
+                                    }
                                     tenderedAmount={tenderedAmount}
                                     onTenderChange={(val) => setTenderedAmount && setTenderedAmount(val)}
                                     changeReturnedNow={changeReturnedNow}
@@ -3060,6 +3075,7 @@ export function BillingSummary({
                                     onSplitCashChange={(val) => setSplitCashAmount && setSplitCashAmount(val)}
                                     splitUpiAmount={splitUpiAmount}
                                     onSplitUpiChange={(val) => setSplitUpiAmount && setSplitUpiAmount(val)}
+                                    isPartialPayment={effectiveSettlementTerm === 'PARTIAL'}
                                 />
                             </div>
                         )}

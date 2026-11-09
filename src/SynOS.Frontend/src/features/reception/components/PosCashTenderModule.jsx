@@ -32,6 +32,7 @@ export function PosCashTenderModule({
     onSplitCashChange,
     splitUpiAmount = '',
     onSplitUpiChange,
+    isPartialPayment = false,
     disabled = false
 }) {
     const { isDark } = useTheme();
@@ -443,9 +444,11 @@ export function PosCashTenderModule({
                             <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs sm:text-sm font-bold flex items-center justify-between">
                                 <span className="flex items-center gap-1.5">
                                     <AlertTriangle className="w-4 h-4 text-amber-600" />
-                                    ₹{(netBill - tendered).toLocaleString()} Short of Total Bill
+                                    ₹{(netBill - tendered).toLocaleString()} Short of {isPartialPayment ? "Partial Collection Target" : "Total Bill"}
                                 </span>
-                                <span className="text-xs opacity-80">Use "Partial Due" tab if booking on credit</span>
+                                <span className="text-xs opacity-80">
+                                    {isPartialPayment ? "Adjust partial amount or tender balance" : 'Use "Partial Due" tab if booking on credit'}
+                                </span>
                             </div>
                         )}
 

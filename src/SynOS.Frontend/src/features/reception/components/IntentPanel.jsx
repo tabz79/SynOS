@@ -1643,29 +1643,33 @@ export function IntentPanel({ onVisitUpdated }) {
                 if (isFullDueSelected) {
                     mainActionLabel = `Confirm Visit (Full Due ₹${remainingDue.toLocaleString()})`;
                     isActionEnabled = true;
-                } else if (isPartialSelected) {
-                    if (!customPaymentAmount || numCustom <= 0) {
-                        mainActionLabel = "Enter Partial Amount to Collect";
-                        isActionEnabled = false;
-                    } else if (numCustom >= remainingDue) {
-                        mainActionLabel = `Partial must be less than ₹${remainingDue.toLocaleString()}`;
-                        isActionEnabled = false;
-                    } else {
-                        mainActionLabel = `Accept Partial (₹${payNowAmount.toLocaleString()}) • Due ₹${balanceRemaining.toLocaleString()}`;
-                        isActionEnabled = true;
-                    }
+                } else if (isPartialSelected && (!customPaymentAmount || numCustom <= 0)) {
+                    mainActionLabel = "Enter Partial Amount to Collect";
+                    isActionEnabled = false;
+                } else if (isPartialSelected && numCustom >= remainingDue) {
+                    mainActionLabel = `Partial must be less than ₹${remainingDue.toLocaleString()}`;
+                    isActionEnabled = false;
                 } else if (isSplitPayment && (Number(splitCashAmount) + Number(splitUpiAmount) === payNowAmount)) {
-                    mainActionLabel = `Accept Split Payment (₹${Number(splitCashAmount).toLocaleString()} Cash + ₹${Number(splitUpiAmount).toLocaleString()} UPI)`;
+                    mainActionLabel = isPartialSelected
+                        ? `Accept Split (₹${Number(splitCashAmount).toLocaleString()} Cash + ₹${Number(splitUpiAmount).toLocaleString()} UPI) • Due ₹${balanceRemaining.toLocaleString()}`
+                        : `Accept Split Payment (₹${Number(splitCashAmount).toLocaleString()} Cash + ₹${Number(splitUpiAmount).toLocaleString()} UPI)`;
                     isActionEnabled = true;
                 } else if (paymentMethod === 'Cash' && Number(tenderedAmount) > payNowAmount) {
                     if (isChangeRetainedAsDue) {
                         const retNow = Number(changeReturnedNow) || 0;
                         const changeDueVal = Math.max(0, Number(tenderedAmount) - payNowAmount - retNow);
-                        mainActionLabel = `Accept ₹${Number(tenderedAmount).toLocaleString()} Cash • ₹${changeDueVal.toLocaleString()} Change Due to Patient`;
+                        mainActionLabel = isPartialSelected
+                            ? `Accept ₹${Number(tenderedAmount).toLocaleString()} Cash • ₹${changeDueVal.toLocaleString()} Change Due • Due ₹${balanceRemaining.toLocaleString()}`
+                            : `Accept ₹${Number(tenderedAmount).toLocaleString()} Cash • ₹${changeDueVal.toLocaleString()} Change Due to Patient`;
                     } else {
                         const changeToReturn = Number(tenderedAmount) - payNowAmount;
-                        mainActionLabel = `Accept ₹${Number(tenderedAmount).toLocaleString()} and Return ₹${changeToReturn.toLocaleString()}`;
+                        mainActionLabel = isPartialSelected
+                            ? `Accept ₹${Number(tenderedAmount).toLocaleString()} & Return ₹${changeToReturn.toLocaleString()} • Due ₹${balanceRemaining.toLocaleString()}`
+                            : `Accept ₹${Number(tenderedAmount).toLocaleString()} and Return ₹${changeToReturn.toLocaleString()}`;
                     }
+                    isActionEnabled = true;
+                } else if (isPartialSelected) {
+                    mainActionLabel = `Accept Partial (₹${payNowAmount.toLocaleString()}) • Due ₹${balanceRemaining.toLocaleString()}`;
                     isActionEnabled = true;
                 } else {
                     mainActionLabel = `Accept Payment (₹${payNowAmount.toLocaleString()})`;
