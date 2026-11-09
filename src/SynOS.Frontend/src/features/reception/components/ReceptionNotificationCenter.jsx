@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
     Bell, 
     Sparkles, 
@@ -10,50 +10,38 @@ import {
     X, 
     History, 
     CheckCircle2, 
-    Lightbulb 
+    Lightbulb,
+    Trash2,
+    ChevronDown,
+    ChevronRight,
+    Clock,
+    Wallet,
+    Receipt,
+    ExternalLink
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
+import { useNotifications } from '@/context/NotificationContext';
 
-/**
- * Contextual desk assistant milestones - short Indian English phrases
- */
-const DESK_MILESTONES = [
-    {
-        id: 'reconciliation',
-        title: "Yesterday's Bills",
-        description: '18 bills finalized yesterday. Cash tally matched 100%.',
-        icon: Award,
-        tip: 'Doctor cuts auto-calculated'
-    },
-    {
-        id: 'speed',
-        title: 'Counter Speed',
-        description: 'Avg under 45s per patient. Quick billing active today.',
-        icon: Zap,
-        tip: 'Tab key navigation active'
-    },
-    {
-        id: 'accuracy',
-        title: 'Zero Errors',
-        description: 'No duplicate bills or wrong doctor codes this week.',
-        icon: ShieldCheck,
-        tip: 'Doctor name check active'
-    },
-    {
-        id: 'treasury',
-        title: 'Cash Drawer',
-        description: 'Cash drawer tally matched with central lab accounts.',
-        icon: TrendingUp,
-        tip: 'Change due tracked auto'
-    }
-];
-
-export function ReceptionNotificationCenter({ isOpen = false, correctionHistory = null }) {
+export function ReceptionNotificationCenter({ 
+    isOpen = false, 
+    correctionHistory = null, 
+    realitySummary = null,
+    onClose = null 
+}) {
     const { user } = useAuth();
-    const [activeHints, setActiveHints] = useState([]);
+    const { 
+        notifications, 
+        dismiss, 
+        clearAll, 
+        executeAction,
+        isCenterOpen,
+        closeCenter 
+    } = useNotifications();
 
-    // Personalized User Greeting (e.g. "Dr. Vasudeva" or "Uzma")
+    const [isAuditExpanded, setIsAuditExpanded] = useState(false);
+
+    // Personalized User Greeting (e.g. "Dr. Vasudeva" or "Tabrez")
     const userName = useMemo(() => {
         if (!user?.name) return 'Staff';
         const clean = user.name.trim();
@@ -72,207 +60,280 @@ export function ReceptionNotificationCenter({ isOpen = false, correctionHistory 
         return 'Good evening';
     }, []);
 
-    // Stable milestone for the current day - no annoying auto-looping
-    const currentMilestone = useMemo(() => {
-        const today = new Date();
-        const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
-        return DESK_MILESTONES[dayOfYear % DESK_MILESTONES.length];
-    }, []);
+    // Dynamic Real Milestone derived from live Reality Summary / Local storage
+    const dynamicMilestone = useMemo(() => {
+        let summary = realitySummary;
+        if (!summary) {
+            try {
+                const cached = localStorage.getItem('synos_cached_reality_summary');
+                if (cached) summary = JSON.parse(cached);
+            } catch (_) {}
+        }
 
-    const MilestoneIcon = currentMilestone.icon;
+        const cashCollected = Number(summary?.paymentsCashTotal || 0);
+        const drawerCash = Number(summary?.cashDrawerBalancePool ?? summary?.cashDrawerBalance ?? summary?.paymentsCashTotal ?? 0);
+        const walkIns = Number(summary?.walkInsToday || 0);
+        const onlineTotal = Number(summary?.paymentsOnlineTotal || 0);
 
-    // Listen for custom notification hints & dismissals
-    useEffect(() => {
-        const handleHint = (e) => {
-            const { id, title, message, type } = e.detail || {};
-            if (!message) return;
-            setActiveHints(prev => {
-                const filtered = prev.filter(h => h.id !== id);
-                return [
-                    { 
-                        id: id || String(Date.now()), 
-                        title: title || 'SynOS Hint', 
-                        message, 
-                        type: type || 'info',
-                        timestamp: new Date() 
-                    }, 
-                    ...filtered
-                ].slice(0, 5);
-            });
+        if (drawerCash > 0 || cashCollected > 0 || walkIns > 0) {
+            return {
+                title: `₹${drawerCash.toLocaleString('en-IN')} Cash in Counter`,
+                description: `${walkIns > 0 ? `${walkIns} bills completed.` : 'Ready for billing.'} ₹${cashCollected.toLocaleString('en-IN')} cash collected today.`,
+                tip: onlineTotal > 0 ? `+₹${onlineTotal.toLocaleString('en-IN')} received via UPI/Cards` : 'Cash tally matching 100%'
+            };
+        }
+
+        return {
+            title: "Live Shift Ready",
+            description: "Opening shift active. Tariff & doctor commission rules ready.",
+            tip: "Use Tab key for rapid check-in"
         };
+    }, [realitySummary]);
 
-        const handleDismiss = (e) => {
-            const { id } = e.detail || {};
-            if (!id) return;
-            setActiveHints(prev => prev.filter(h => h.id !== id));
-        };
-
-        window.addEventListener('synos:notification-hint', handleHint);
-        window.addEventListener('synos:dismiss-notification-hint', handleDismiss);
-        return () => {
-            window.removeEventListener('synos:notification-hint', handleHint);
-            window.removeEventListener('synos:dismiss-notification-hint', handleDismiss);
-        };
-    }, []);
-
-    if (!isOpen) return null;
+    // Effective visibility: explicitly passed or globally toggled via toolbar button
+    const shouldShow = isOpen || isCenterOpen;
+    if (!shouldShow) return null;
 
     return (
         <aside 
             aria-label="Notification Center"
             className="fixed left-3 top-[64px] bottom-4 w-[244px] 2xl:w-[264px] hidden xl:flex flex-col gap-2.5 z-40 select-none overflow-y-auto no-scrollbar pointer-events-none animate-in fade-in slide-in-from-left-4 duration-300"
         >
-            {/* Header: Designated Title */}
-            <div className="pointer-events-auto flex items-center justify-between px-2.5 py-1.5 rounded-xl bg-slate-200/70 dark:bg-zinc-800/70 backdrop-blur-md border border-slate-300/80 dark:border-zinc-700/80 shadow-2xs">
+            {/* Header: Designated Title + Live Pulse + Clear All Button */}
+            <div className="pointer-events-auto flex items-center justify-between px-3 py-2 rounded-xl bg-slate-900/95 dark:bg-zinc-900/95 text-white backdrop-blur-md border border-slate-700/80 dark:border-zinc-700/80 shadow-md">
                 <div className="flex items-center gap-1.5 min-w-0">
-                    <div className="w-5 h-5 rounded-md bg-blue-600/15 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs shrink-0">
+                    <div className="w-5 h-5 rounded-md bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xs shrink-0 border border-blue-500/30">
                         <Bell className="w-3 h-3" />
                     </div>
-                    <span className="text-[11px] font-black text-slate-800 dark:text-zinc-100 uppercase tracking-wider truncate">
+                    <span className="text-[11px] font-black text-slate-100 uppercase tracking-wider truncate">
                         Notification Center
                     </span>
                 </div>
-                <div className="flex items-center gap-1 shrink-0">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                    <span className="text-[9px] font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+
+                <div className="flex items-center gap-1.5 shrink-0">
+                    {notifications.length > 0 && (
+                        <button
+                            type="button"
+                            onClick={clearAll}
+                            className="text-slate-400 hover:text-rose-400 p-1 rounded-md hover:bg-white/10 transition-colors cursor-pointer"
+                            title="Clear all dismissible notifications"
+                        >
+                            <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                    )}
+                    {(onClose || (isCenterOpen && !isOpen)) && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                if (onClose) onClose();
+                                else closeCenter();
+                            }}
+                            className="text-slate-400 hover:text-white p-1 rounded-md hover:bg-white/10 transition-colors cursor-pointer"
+                            title="Close"
+                        >
+                            <X className="w-3.5 h-3.5" />
+                        </button>
+                    )}
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+                    <span className="text-[9px] font-extrabold uppercase tracking-wider text-emerald-400">
                         Live
                     </span>
                 </div>
             </div>
 
-            {/* Personalized Contextual Greeting & Smart Milestone Card */}
-            <div className="pointer-events-auto rounded-2xl p-3 bg-gradient-to-br from-white/95 via-white/90 to-slate-100/95 dark:from-zinc-850/95 dark:via-zinc-850/90 dark:to-zinc-900/95 backdrop-blur-xl border-2 border-slate-300/90 dark:border-zinc-700/90 shadow-[0_8px_24px_rgba(15,35,60,0.08)] space-y-2.5">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1.5 min-w-0">
-                        <span className="text-sm select-none">👋</span>
-                        <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white truncate">
-                            {greeting}, {userName}!
-                        </h4>
-                    </div>
-                    <span className="text-[9px] font-mono font-bold text-slate-400 dark:text-zinc-500 shrink-0">
-                        {new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                </div>
-
-                {/* Milestone / Live Update */}
-                <div className="p-2.5 rounded-xl bg-gradient-to-br from-[#EAF2F8] to-[#DFEDF7] dark:from-blue-950/40 dark:to-blue-900/20 border border-[#BED6E9] dark:border-blue-800/60 flex items-start gap-2">
-                    <div className="w-6 h-6 rounded-lg bg-blue-600/15 text-blue-700 dark:text-blue-300 flex items-center justify-center shrink-0 mt-0.5">
-                        <MilestoneIcon className="w-3.5 h-3.5" />
-                    </div>
-                    <div className="space-y-0.5 min-w-0 flex-1">
-                        <div className="text-[10px] font-extrabold uppercase tracking-wider text-blue-900 dark:text-blue-300 flex items-center justify-between">
-                            <span>{currentMilestone.title}</span>
-                            <span className="text-[8px] text-blue-700/70 font-mono">Today</span>
+            {/* Scrollable Container with its own internal scroll */}
+            <div className="flex-1 min-h-0 flex flex-col gap-2.5 overflow-y-auto no-scrollbar pointer-events-auto pr-0.5">
+                {/* Personalized Contextual Greeting & Dynamic Real Milestone Card */}
+                <div className="rounded-2xl p-3 bg-slate-900/95 dark:bg-zinc-900/95 text-white backdrop-blur-xl border border-slate-700/80 dark:border-zinc-700/80 shadow-xl space-y-2.5">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                            <span className="text-sm select-none">👋</span>
+                            <h4 className="text-xs sm:text-sm font-black text-white truncate">
+                                {greeting}, {userName}!
+                            </h4>
                         </div>
-                        <p className="text-[11px] font-semibold text-slate-800 dark:text-zinc-200 leading-snug">
-                            {currentMilestone.description}
-                        </p>
-                    </div>
-                </div>
-
-                {/* Machine Awareness Context Tip */}
-                <div className="pt-1 border-t border-slate-200 dark:border-zinc-750 flex items-center gap-1.5 text-[10px] font-medium text-slate-500 dark:text-zinc-400">
-                    <Sparkles className="w-3 h-3 text-amber-500 shrink-0" />
-                    <span className="truncate">{currentMilestone.tip}</span>
-                </div>
-            </div>
-
-            {/* Active Contextual Notifications & Hints Stack */}
-            {activeHints.map(hint => {
-                const isWarning = hint.type === 'warning' || hint.id === 'drawer-shortage-alert';
-                return (
-                    <div 
-                        key={hint.id}
-                        className={cn(
-                            "pointer-events-auto rounded-2xl p-3 backdrop-blur-xl shadow-[0_8px_24px_rgba(15,35,60,0.12)] space-y-1.5 animate-in fade-in slide-in-from-left-4 duration-300 border-2",
-                            isWarning 
-                                ? "bg-rose-50/95 dark:bg-rose-950/90 border-rose-300 dark:border-rose-800 text-rose-950 dark:text-rose-100"
-                                : "bg-white/95 dark:bg-zinc-850/95 border-slate-300 dark:border-zinc-700 text-slate-900 dark:text-white"
-                        )}
-                    >
-                        <div className="flex items-center justify-between gap-1">
-                            <div className="flex items-center gap-1.5 min-w-0">
-                                <div className={cn(
-                                    "w-5 h-5 rounded-md flex items-center justify-center font-bold text-xs shrink-0",
-                                    isWarning 
-                                        ? "bg-rose-500/20 text-rose-700 dark:text-rose-300"
-                                        : "bg-blue-600/15 text-blue-700 dark:text-blue-300"
-                                )}>
-                                    {isWarning ? <AlertTriangle className="w-3 h-3 text-rose-600" /> : <Lightbulb className="w-3 h-3 text-blue-600" />}
-                                </div>
-                                <span className={cn(
-                                    "text-xs font-black truncate",
-                                    isWarning ? "text-rose-900 dark:text-rose-200" : "text-slate-900 dark:text-white"
-                                )}>
-                                    {hint.title}
-                                </span>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={() => setActiveHints(prev => prev.filter(h => h.id !== hint.id))}
-                                className="text-slate-400 hover:text-slate-800 dark:hover:text-white p-0.5 rounded-md hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer transition-colors shrink-0"
-                                title="Dismiss"
-                            >
-                                <X className="w-3.5 h-3.5" />
-                            </button>
-                        </div>
-
-                        <p className={cn(
-                            "text-[11px] font-semibold leading-snug",
-                            isWarning ? "text-rose-800 dark:text-rose-200" : "text-slate-700 dark:text-zinc-200"
-                        )}>
-                            {hint.message}
-                        </p>
-
-                        <div className="flex items-center justify-between pt-1 border-t border-black/5 dark:border-white/5 text-[9px] font-mono text-slate-400 dark:text-zinc-500">
-                            <span>Desk Alert</span>
-                            <span>Active</span>
-                        </div>
-                    </div>
-                );
-            })}
-
-            {/* Audit History Stack (if amending/correcting a visit) */}
-            {correctionHistory && correctionHistory.length > 0 && (
-                <div className="space-y-1.5 pointer-events-auto mt-1">
-                    <div className="flex items-center justify-between px-1 py-0.5 text-[11px] font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wider">
-                        <span className="flex items-center gap-1">
-                            <History className="w-3.5 h-3.5 text-synos-primary" />
-                            Audit History ({correctionHistory.length})
+                        <span className="text-[9px] font-mono font-bold text-slate-400 dark:text-zinc-400 shrink-0">
+                            {new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                         </span>
                     </div>
-                    <div className="space-y-1.5">
-                        {correctionHistory.map((h, idx) => (
-                            <div 
-                                key={h.correctionId || idx}
-                                className="rounded-xl p-2.5 bg-white/90 dark:bg-zinc-850/90 backdrop-blur-xl border-2 border-slate-300/80 dark:border-zinc-700 shadow-xs space-y-1 transition-all"
-                            >
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-1 min-w-0">
-                                        <div className="w-3.5 h-3.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-[8px] shrink-0">
-                                            ✓
-                                        </div>
-                                        <span className="text-[11px] font-bold text-slate-900 dark:text-white truncate">
-                                            {h.createdByName || "Staff Desk"}
-                                        </span>
-                                    </div>
-                                    <span className="text-[9px] font-mono text-slate-400 dark:text-zinc-500 shrink-0">
-                                        {new Date(h.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
-                                    </span>
-                                </div>
-                                <div className="text-[11px] font-semibold text-slate-800 dark:text-zinc-200 leading-snug">
-                                    {h.actionType ? String(h.actionType).replace(/([A-Z])/g, ' ').trim() : "Visit Amended"}
-                                </div>
-                                {h.reason && (
-                                    <p className="text-[11px] text-slate-500 dark:text-zinc-400 italic line-clamp-2">
-                                        "{h.reason}"
-                                    </p>
-                                )}
+
+                    {/* Dynamic Live Real Shift Update */}
+                    <div className="p-2.5 rounded-xl bg-slate-800/90 dark:bg-zinc-800/90 border border-slate-700 dark:border-zinc-700 flex items-start gap-2 shadow-inner">
+                        <div className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5 border border-emerald-500/30">
+                            <Wallet className="w-3.5 h-3.5" />
+                        </div>
+                        <div className="space-y-0.5 min-w-0 flex-1">
+                            <div className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-400 flex items-center justify-between">
+                                <span className="truncate">{dynamicMilestone.title}</span>
+                                <span className="text-[8px] text-slate-400 font-mono">Today</span>
                             </div>
-                        ))}
+                            <p className="text-[11px] font-semibold text-slate-200 dark:text-zinc-200 leading-snug">
+                                {dynamicMilestone.description}
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Context Tip */}
+                    <div className="pt-1 border-t border-slate-800 dark:border-zinc-800 flex items-center gap-1.5 text-[10px] font-medium text-slate-400 dark:text-zinc-400">
+                        <Sparkles className="w-3 h-3 text-amber-400 shrink-0" />
+                        <span className="truncate">{dynamicMilestone.tip}</span>
                     </div>
                 </div>
-            )}
+
+                {/* Collapsed Audit History Card (ss-2 fix: collapses multi-amendments into 1 expandable card) */}
+                {correctionHistory && correctionHistory.length > 0 && (
+                    <div className="rounded-2xl p-3 bg-slate-900/95 dark:bg-zinc-900/95 text-white backdrop-blur-xl border border-slate-700/80 dark:border-zinc-700/80 shadow-xl space-y-2 transition-all">
+                        <div 
+                            onClick={() => setIsAuditExpanded(prev => !prev)}
+                            className="flex items-center justify-between cursor-pointer group select-none"
+                        >
+                            <div className="flex items-center gap-1.5 min-w-0">
+                                <div className="w-5 h-5 rounded-md bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xs shrink-0 border border-blue-500/30">
+                                    <History className="w-3 h-3" />
+                                </div>
+                                <div className="min-w-0">
+                                    <span className="text-xs font-black text-white block truncate">
+                                        Audit History ({correctionHistory.length})
+                                    </span>
+                                    <span className="text-[10px] text-slate-400 block truncate">
+                                        Latest by {correctionHistory[0]?.createdByName || "Desk"}
+                                    </span>
+                                </div>
+                            </div>
+                            <div className="p-1 rounded-md text-slate-400 group-hover:text-white transition-colors">
+                                <ChevronDown className={cn("w-4 h-4 transition-transform duration-200", isAuditExpanded && "rotate-180")} />
+                            </div>
+                        </div>
+
+                        {/* Collapsible details */}
+                        {isAuditExpanded && (
+                            <div className="pt-2 border-t border-slate-800 dark:border-zinc-800 space-y-2 max-h-56 overflow-y-auto no-scrollbar pr-0.5 animate-in fade-in duration-200">
+                                {correctionHistory.map((h, idx) => (
+                                    <div 
+                                        key={h.correctionId || idx}
+                                        className="rounded-xl p-2 bg-slate-800/80 dark:bg-zinc-800/80 border border-slate-700/60 dark:border-zinc-700/60 space-y-1"
+                                    >
+                                        <div className="flex items-center justify-between text-[10px]">
+                                            <span className="font-bold text-slate-200 truncate">
+                                                {h.createdByName || "Staff Desk"}
+                                            </span>
+                                            <span className="font-mono text-slate-400 shrink-0">
+                                                {new Date(h.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
+                                            </span>
+                                        </div>
+                                        <div className="text-[11px] font-semibold text-slate-300 leading-tight">
+                                            {h.actionType ? String(h.actionType).replace(/([A-Z])/g, ' ').trim() : "Visit Amended"}
+                                        </div>
+                                        {h.reason && (
+                                            <p className="text-[10px] text-amber-300/90 italic truncate">
+                                                "{h.reason}"
+                                            </p>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Active Notifications & Reminders Stack */}
+                {notifications.map(notif => {
+                    const isAlert = notif.type === 'alert' || notif.priority === 'high' || notif.id === 'drawer-shortage-alert';
+                    const isFeature = notif.type === 'feature';
+                    const isReminder = notif.type === 'reminder';
+
+                    return (
+                        <div 
+                            key={notif.id}
+                            className={cn(
+                                "rounded-2xl p-3 backdrop-blur-xl shadow-xl space-y-2 border transition-all animate-in fade-in slide-in-from-left-4 duration-300",
+                                isAlert 
+                                    ? "bg-rose-950/95 dark:bg-rose-950/95 border-rose-800 text-rose-50 shadow-rose-950/30"
+                                    : "bg-slate-900/95 dark:bg-zinc-900/95 border-slate-700/80 dark:border-zinc-700/80 text-white"
+                            )}
+                        >
+                            {/* Card Header: Icon + Title + Category Pill + Dismiss (X) */}
+                            <div className="flex items-center justify-between gap-1.5">
+                                <div className="flex items-center gap-1.5 min-w-0">
+                                    <div className={cn(
+                                        "w-5 h-5 rounded-md flex items-center justify-center font-bold text-xs shrink-0 border",
+                                        isAlert 
+                                            ? "bg-rose-500/20 text-rose-300 border-rose-500/40"
+                                            : isFeature
+                                                ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                                                : isReminder
+                                                    ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                                                    : "bg-blue-500/20 text-blue-300 border-blue-500/40"
+                                    )}>
+                                        {isAlert && <AlertTriangle className="w-3 h-3 text-rose-400" />}
+                                        {isFeature && <Sparkles className="w-3 h-3 text-amber-400" />}
+                                        {isReminder && <Clock className="w-3 h-3 text-emerald-400" />}
+                                        {!isAlert && !isFeature && !isReminder && <Receipt className="w-3 h-3 text-cyan-400" />}
+                                    </div>
+                                    <span className="text-xs font-black truncate text-white">
+                                        {notif.title}
+                                    </span>
+                                </div>
+
+                                <div className="flex items-center gap-1 shrink-0">
+                                    <span className={cn(
+                                        "text-[9px] font-mono font-extrabold uppercase px-1.5 py-0.2 rounded-full border",
+                                        isAlert 
+                                            ? "bg-rose-900/60 border-rose-700 text-rose-200" 
+                                            : isFeature 
+                                                ? "bg-amber-900/40 border-amber-700/60 text-amber-200"
+                                                : isReminder 
+                                                    ? "bg-emerald-900/40 border-emerald-700/60 text-emerald-200"
+                                                    : "bg-slate-800 border-slate-700 text-slate-300"
+                                    )}>
+                                        {isAlert ? 'Alert' : isFeature ? 'New' : isReminder ? 'Shift' : 'Live'}
+                                    </span>
+                                    {notif.dismissible && (
+                                        <button
+                                            type="button"
+                                            onClick={() => dismiss(notif.id)}
+                                            className="text-slate-400 hover:text-white p-0.5 rounded-md hover:bg-white/10 cursor-pointer transition-colors"
+                                            title="Dismiss"
+                                        >
+                                            <X className="w-3.5 h-3.5" />
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Message Body */}
+                            <p className={cn(
+                                "text-[11px] font-semibold leading-snug",
+                                isAlert ? "text-rose-100/90" : "text-slate-300 dark:text-zinc-300"
+                            )}>
+                                {notif.message}
+                            </p>
+
+                            {/* Action Button (e.g. Open Options, Open Drawer, End Shift) */}
+                            {notif.action && (
+                                <div className="pt-1.5 border-t border-white/10 flex items-center justify-between">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            executeAction(notif);
+                                            dismiss(notif.id);
+                                        }}
+                                        className={cn(
+                                            "w-full py-1 px-2 rounded-lg font-bold text-[11px] flex items-center justify-center gap-1 transition-all cursor-pointer shadow-xs active:scale-95",
+                                            isAlert 
+                                                ? "bg-rose-600 hover:bg-rose-500 text-white" 
+                                                : "bg-blue-600 hover:bg-blue-500 text-white"
+                                        )}
+                                    >
+                                        <span>{notif.action.label}</span>
+                                        <ChevronRight className="w-3 h-3" />
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    );
+                })}
+            </div>
         </aside>
     );
 }

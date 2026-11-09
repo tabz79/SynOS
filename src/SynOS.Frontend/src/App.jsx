@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { SystemBar } from '@/components/layout/SystemBar'
 import { AuthProvider, useAuth } from '@/context/AuthContext'
+import { NotificationProvider } from '@/context/NotificationContext'
 import { PrintOrchestratorProvider } from '@/context/PrintOrchestratorContext'
 import { GlobalFilterProvider } from '@/context/GlobalFilterContext'
 import { ReceptionProvider } from '@/features/reception/hooks/useReceptionPanelUI'
@@ -115,9 +116,10 @@ function AdminProtectedWrapper({ children, roleName }) {
 function App() {
   return (
     <AuthProvider>
-      <PrintOrchestratorProvider>
-        <GlobalFilterProvider>
-          <BrowserRouter>
+      <NotificationProvider>
+        <PrintOrchestratorProvider>
+          <GlobalFilterProvider>
+            <BrowserRouter>
           <Routes>
             {/* Public Routes */}
             <Route path="/login" element={<LoginPage />} />
@@ -345,7 +347,8 @@ function App() {
         </BrowserRouter>
       </GlobalFilterProvider>
     </PrintOrchestratorProvider>
-  </AuthProvider>
+  </NotificationProvider>
+</AuthProvider>
   )
 }
 

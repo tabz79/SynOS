@@ -55,18 +55,26 @@ export function ReceptionOptionsPanel({
     onOpenPatientDirectory,
     onOpenMyHr,
     pendingB2BCount = 0,
-    onDataUpdated = null
+    onDataUpdated = null,
+    initialView = 'menu'
 }) {
     const { isDark } = useTheme();
     const { user } = useAuth();
     const panelRef = useRef(null);
 
     // Active View inside the single sliding panel canvas:
-    // 'menu' | 'expense' | 'b2b' | 'stock' | 'leave' | 'attendance' | 'requests'
-    const [activeView, setActiveView] = useState('menu');
+    // 'menu' | 'expense' | 'b2b' | 'stock' | 'leave' | 'attendance' | 'requests' | 'ledger' | 'end-shift'
+    const [activeView, setActiveView] = useState(initialView || 'menu');
     const [expandedFinanceDept, setExpandedFinanceDept] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const searchInputRef = useRef(null);
+
+    // Sync initial view when opening
+    useEffect(() => {
+        if (isOpen) {
+            setActiveView(initialView || 'menu');
+        }
+    }, [isOpen, initialView]);
 
     // Keyboard shortcut for Cmd+K / Ctrl+K search
     useEffect(() => {

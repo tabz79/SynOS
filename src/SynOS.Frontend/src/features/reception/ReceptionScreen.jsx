@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { cn } from "@/lib/utils"
 import { useFlipGroup } from "@/hooks/useSynOSMotion"
-import { Plus, Users, ClipboardList, Bed, Clock, Loader2, ChevronDown, Package, Receipt, Wallet, TrendingDown, ArrowDownLeft, SlidersHorizontal, RefreshCw } from 'lucide-react'
+import { Plus, Users, ClipboardList, Bed, Clock, Loader2, ChevronDown, Package, Receipt, Wallet, TrendingDown, ArrowDownLeft, SlidersHorizontal, RefreshCw, Bell } from 'lucide-react'
 import { StockRequestPanel } from '../inventory/StockRequestPanel'
 import { SystemBar } from '@/components/layout/SystemBar'
 import { RealitySummary } from '@/components/layout/RealitySummary'
@@ -14,7 +14,9 @@ import { ReceptionExpenseDrawer } from '@/features/reception/components/Receptio
 import { ReceptionB2BReceivablesDrawer } from '@/features/reception/components/ReceptionB2BReceivablesDrawer'
 import { ReceptionOptionsPanel } from '@/features/reception/components/ReceptionOptionsPanel'
 import { ReceptionNotificationCenter } from '@/features/reception/components/ReceptionNotificationCenter'
+import { FloatingToastStack } from '@/components/notifications/FloatingToastStack'
 import { useReceptionDrawer } from '@/features/reception/hooks/useReceptionPanelUI'
+import { useNotifications } from '@/context/NotificationContext'
 import { ReceptionApi, prewarmReceptionCatalogs } from '@/api/reception'
 import { FinanceApi } from '@/api/finance'
 import { SignalRService } from '@/lib/signalr'
@@ -59,8 +61,12 @@ export function ReceptionScreen() {
     const [isExpenseDrawerOpen, setIsExpenseDrawerOpen] = useState(false);
     const [isB2BReceivablesOpen, setIsB2BReceivablesOpen] = useState(false);
     const [isOptionsPanelOpen, setIsOptionsPanelOpen] = useState(false);
+    const [optionsInitialView, setOptionsInitialView] = useState('menu');
     const [todayB2BPendingCount, setTodayB2BPendingCount] = useState(0);
     const [isServerUpdating, setIsServerUpdating] = useState(false);
+
+    // Global Notification Center integration
+    const { isCenterOpen, toggleCenter, closeCenter, unreadCount, notify } = useNotifications();
 
     // History State (Phase 5)
     // We use a Ref for SignalR callback access, and State for Render.
@@ -69,6 +75,30 @@ export function ReceptionScreen() {
 
     // Sync Ref
     useEffect(() => { showHistoryRef.current = showHistory; }, [showHistory]);
+
+    // Action router listener from Notifications
+    useEffect(() => {
+        const handleAction = (e) => {
+            const { type, payload } = e.detail || {};
+            if (type === 'OPEN_OPTIONS') {
+                setOptionsInitialView('menu');
+                setIsOptionsPanelOpen(true);
+            } else if (type === 'OPEN_DRAWER') {
+                setOptionsInitialView('ledger');
+                setIsOptionsPanelOpen(true);
+            } else if (type === 'OPEN_END_SHIFT') {
+                setOptionsInitialView('end-shift');
+                setIsOptionsPanelOpen(true);
+            } else if (type === 'OPEN_PATIENTS') {
+                navigate('/patients?source=reception');
+            } else if (type === 'ROUTE_TO_VISIT' && payload?.visitId) {
+                openResumeIntent(payload.visitId);
+            }
+        };
+
+        window.addEventListener('synos:trigger-action', handleAction);
+        return () => window.removeEventListener('synos:trigger-action', handleAction);
+    }, [navigate, openResumeIntent]);
 
     // New Header State
     const [serverTimeAnchor, setServerTimeAnchor] = useState(null);
@@ -175,6 +205,19 @@ export function ReceptionScreen() {
                 if (isDraft && draftOwnerId && currentUserId && String(draftOwnerId).toLowerCase() !== String(currentUserId).toLowerCase()) {
                     console.log("ReceptionScreen: Discarded foreign draft delta from desk", draftOwnerId);
                     return;
+                }
+
+                // OS-Level Dynamic Notification for finalized/billed visits
+                if (normalized.isFinalized || normalized.operationalStatus === 'Paid') {
+                    const paidAmt = Number(normalized.totalPaid || normalized.amount || normalized.netAmount || 0);
+                    notify({
+                        id: `bill_${normalized.visitId || normalized.token}`,
+                        type: 'activity',
+                        category: 'billing',
+                        title: paidAmt > 0 ? `₹${paidAmt.toLocaleString('en-IN')} Billed` : 'Visit Finalized',
+                        message: `Visit ${normalized.token || ''} (${normalized.patientName || 'Patient'}) finalized by ${normalized.createdByName || 'Desk'}.`,
+                        action: { label: 'View Visit', type: 'ROUTE_TO_VISIT', payload: { visitId: normalized.visitId } }
+                    });
                 }
 
                 setActionQueue(prev => {
@@ -616,7 +659,30 @@ export function ReceptionScreen() {
 
                                     <div className="flex items-center gap-2">
                                         <button
-                                            onClick={() => setIsOptionsPanelOpen(true)}
+                                            id="btn-reception-notifications"
+                                            onClick={toggleCenter}
+                                            className={cn(
+                                                "px-3 py-2 rounded-lg text-sm font-bold shadow-lg transition-all duration-200 flex items-center gap-1.5 pointer-events-auto active:scale-95 border cursor-pointer",
+                                                isCenterOpen
+                                                    ? (theme === 'dark' ? "bg-zinc-800 text-white border-zinc-700" : "bg-slate-900 text-white border-slate-800 shadow-md")
+                                                    : (theme === 'dark' ? "bg-zinc-900 text-zinc-300 border-white/10 hover:text-white hover:bg-zinc-800" : "bg-white text-zinc-700 border-zinc-200 hover:text-zinc-900 hover:bg-zinc-50")
+                                            )}
+                                            title="Open Notifications & System Alerts Center"
+                                        >
+                                            <Bell className="w-4 h-4 text-synos-primary" />
+                                            <span>Notifications</span>
+                                            {unreadCount > 0 && (
+                                                <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-blue-600 text-white animate-pulse">
+                                                    {unreadCount}
+                                                </span>
+                                            )}
+                                        </button>
+
+                                        <button
+                                            onClick={() => {
+                                                setOptionsInitialView('menu');
+                                                setIsOptionsPanelOpen(true);
+                                            }}
                                             className={cn(
                                                 "px-3.5 py-2 rounded-lg text-sm font-bold shadow-lg transition-all duration-200 flex items-center gap-2 pointer-events-auto active:scale-95 border cursor-pointer",
                                                 isOptionsPanelOpen
@@ -673,17 +739,21 @@ export function ReceptionScreen() {
                         <ActivityStream serverTime={serverTimeAnchor} />
                     </div>
 
-                    {/* Left Rail Notification Center when Options Panel is open */}
+                    {/* Left Rail Notification Center when Options Panel is open or toggled from Notifications button */}
                     <ReceptionNotificationCenter
-                        isOpen={isOptionsPanelOpen && !isIntentPanelOpen}
+                        isOpen={(isOptionsPanelOpen || isCenterOpen) && !isIntentPanelOpen}
+                        realitySummary={summary}
+                        onClose={closeCenter}
                     />
 
                     {/* GPU-Accelerated Registration Panel Drawer */}
                     <IntentPanel onVisitUpdated={refreshDashboard} />
                     <ReceptionOptionsPanel
                         isOpen={isOptionsPanelOpen}
+                        initialView={optionsInitialView}
                         onClose={() => {
                             setIsOptionsPanelOpen(false);
+                            setOptionsInitialView('menu');
                             refreshDashboard();
                         }}
                         onOpenPatientDirectory={() => {
@@ -717,6 +787,9 @@ export function ReceptionScreen() {
                     />
                 </div>
             </div>
+
+            {/* Floating 3-Toast Stack (Bottom-Right HUD) */}
+            <FloatingToastStack />
         </div>
     )
 }
