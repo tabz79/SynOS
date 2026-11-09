@@ -130,10 +130,10 @@ export function IntentPanel({ onVisitUpdated }) {
         const handleHealthCardEligibility = (e) => {
             const elig = e.detail;
             if (elig) setHealthCardEligibility(elig);
-            if (elig?.hasActiveCard && elig?.isPatientEnrolledBeneficiary && elig?.card) {
+            if ((elig?.hasActiveCard || elig?.isPendingPayment) && elig?.isPatientEnrolledBeneficiary && elig?.card) {
                 const card = elig.card;
                 setStagedDiscount(prev => {
-                    if (prev && !prev.isHealthCard && !prev.remove) return prev;
+                    if (prev?.userDismissed || prev?.remove || (prev && !prev.isHealthCard)) return prev;
                     return {
                         type: card.configuredDiscountType === 'Flat' ? 'Flat' : 'Percentage',
                         value: card.configuredDiscountValue,
@@ -478,7 +478,7 @@ export function IntentPanel({ onVisitUpdated }) {
         if (hcToBill?.card || hcToBill?.discountValue) {
             const cardObj = hcToBill.card;
             setStagedDiscount(prev => {
-                if (prev && !prev.isHealthCard && !prev.remove) return prev;
+                if (prev?.userDismissed || prev?.remove || (prev && !prev.isHealthCard)) return prev;
                 return {
                     type: (cardObj?.configuredDiscountType || hcToBill.discountType) === 'Flat' ? 'Flat' : 'Percentage',
                     value: Number(cardObj?.configuredDiscountValue ?? hcToBill.discountValue ?? 30),
@@ -776,11 +776,11 @@ export function IntentPanel({ onVisitUpdated }) {
         HealthCardApi.checkEligibility(pId, phone).then(elig => {
             if (!isMounted) return;
             setHealthCardEligibility(elig);
-            if (elig?.hasActiveCard && elig?.isPatientEnrolledBeneficiary && elig?.card) {
+            if ((elig?.hasActiveCard || elig?.isPendingPayment) && elig?.isPatientEnrolledBeneficiary && elig?.card) {
                 const card = elig.card;
                 setStagedDiscount(prev => {
-                    // Do not override if user already entered an explicit non-HC discount
-                    if (prev && !prev.isHealthCard && !prev.remove) return prev;
+                    // Do not override if user already entered an explicit non-HC discount or dismissed/removed it
+                    if (prev?.userDismissed || prev?.remove || (prev && !prev.isHealthCard)) return prev;
                     return {
                         type: card.configuredDiscountType === 'Flat' ? 'Flat' : 'Percentage',
                         value: card.configuredDiscountValue,
@@ -1615,8 +1615,8 @@ export function IntentPanel({ onVisitUpdated }) {
     const hasVisit = !!snapshot?.visit;
     
     // Derived Financial Logic
-    const totalDue = snapshot?.billing?.netAmount || 0;
-    const totalPaid = snapshot?.billing?.totalPaid || 0;
+    const totalDue = (stagedNet !== undefined && stagedNet !== null) ? stagedNet : (snapshot?.billing?.netAmount || 0);
+    const totalPaid = isPrepaid ? 0 : (snapshot?.billing?.totalPaid || 0);
     const remainingDue = Math.max(0, totalDue - totalPaid);
     
     const hasTests = Boolean(
@@ -2838,29 +2838,55 @@ export function IntentPanel({ onVisitUpdated }) {
                                             {healthCardEligibility?.hasActiveCard && (
                                                 <div className="pt-1 animate-in fade-in duration-200">
                                                     {healthCardEligibility.isPatientEnrolledBeneficiary ? (
-                                                        <div className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-950/40 dark:to-blue-950/30 border border-indigo-200 dark:border-indigo-800/80 flex items-center justify-between shadow-2xs">
-                                                            <div className="flex items-center gap-2.5 min-w-0">
-                                                                <div className="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold shrink-0 shadow-xs text-xs">
-                                                                    💎
-                                                                </div>
-                                                                <div className="min-w-0">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <span className="text-xs sm:text-sm font-black text-indigo-950 dark:text-indigo-200 truncate">
-                                                                            Active Health Card (#{healthCardEligibility.card?.cardNumber})
-                                                                        </span>
-                                                                        <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-indigo-200 dark:bg-indigo-900 text-indigo-900 dark:text-indigo-200 shrink-0">
-                                                                            {healthCardEligibility.card?.configuredDiscountValue}% Discount Tier
-                                                                        </span>
+                                                        (healthCardEligibility.isPendingPayment || healthCardEligibility.card?.status === 'PendingPayment') ? (
+                                                            <div className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 to-amber-100/60 dark:from-amber-950/40 dark:to-amber-900/30 border border-amber-300 dark:border-amber-700/80 flex items-center justify-between shadow-2xs">
+                                                                <div className="flex items-center gap-2.5 min-w-0">
+                                                                    <div className="w-7 h-7 rounded-lg bg-amber-500 text-white flex items-center justify-center font-bold shrink-0 shadow-xs text-xs">
+                                                                        💳
                                                                     </div>
-                                                                    <p className="text-[11px] text-indigo-700 dark:text-indigo-300 mt-0.5 truncate">
-                                                                        {healthCardEligibility.card?.plan?.planName || 'Membership'} • Valid until {new Date(healthCardEligibility.card?.validUntil).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-                                                                    </p>
+                                                                    <div className="min-w-0">
+                                                                        <div className="flex items-center gap-2">
+                                                                            <span className="text-xs sm:text-sm font-black text-amber-950 dark:text-amber-200 truncate">
+                                                                                Health Card (#{healthCardEligibility.card?.cardNumber}) • Pending Settlement
+                                                                            </span>
+                                                                            <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200 shrink-0">
+                                                                                {healthCardEligibility.card?.configuredDiscountValue}% Discount Tier
+                                                                            </span>
+                                                                        </div>
+                                                                        <p className="text-[11px] text-amber-800 dark:text-amber-300 mt-0.5 truncate">
+                                                                            Card subscription fee added to this bill • Activates automatically upon bill settlement
+                                                                        </p>
+                                                                    </div>
                                                                 </div>
+                                                                <span className="px-2.5 py-1 rounded-xl text-xs font-black bg-amber-500 text-white shadow-xs shrink-0 ml-2">
+                                                                    Pending Payment
+                                                                </span>
                                                             </div>
-                                                            <span className="px-2.5 py-1 rounded-xl text-xs font-black bg-indigo-600 text-white shadow-xs shrink-0 ml-2">
-                                                                {healthCardEligibility.card?.configuredDiscountValue}% Applied
-                                                            </span>
-                                                        </div>
+                                                        ) : (
+                                                            <div className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-950/40 dark:to-blue-950/30 border border-indigo-200 dark:border-indigo-800/80 flex items-center justify-between shadow-2xs">
+                                                                <div className="flex items-center gap-2.5 min-w-0">
+                                                                    <div className="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold shrink-0 shadow-xs text-xs">
+                                                                        💎
+                                                                    </div>
+                                                                    <div className="min-w-0">
+                                                                        <div className="flex items-center gap-2">
+                                                                            <span className="text-xs sm:text-sm font-black text-indigo-950 dark:text-indigo-200 truncate">
+                                                                                Active Health Card (#{healthCardEligibility.card?.cardNumber})
+                                                                            </span>
+                                                                            <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-indigo-200 dark:bg-indigo-900 text-indigo-900 dark:text-indigo-200 shrink-0">
+                                                                                {healthCardEligibility.card?.configuredDiscountValue}% Discount Tier
+                                                                            </span>
+                                                                        </div>
+                                                                        <p className="text-[11px] text-indigo-700 dark:text-indigo-300 mt-0.5 truncate">
+                                                                            {healthCardEligibility.card?.plan?.planName || 'Membership'} • Valid until {new Date(healthCardEligibility.card?.validUntil).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                                <span className="px-2.5 py-1 rounded-xl text-xs font-black bg-indigo-600 text-white shadow-xs shrink-0 ml-2">
+                                                                    {healthCardEligibility.card?.configuredDiscountValue}% Applied
+                                                                </span>
+                                                            </div>
+                                                        )
                                                     ) : healthCardEligibility.hasOpenSlots ? (
                                                         <div className="p-3 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/30 border border-amber-300 dark:border-amber-800/80 flex items-center justify-between shadow-2xs">
                                                             <div className="flex items-center gap-2.5 min-w-0">

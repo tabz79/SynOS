@@ -173,29 +173,55 @@ export function PatientIdentification({
                     {selectedPatient && healthCardEligibility && healthCardEligibility.hasActiveCard && (
                         <div className="pt-1 animate-in fade-in duration-200">
                             {healthCardEligibility.isPatientEnrolledBeneficiary ? (
-                                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-950/40 dark:to-blue-950/30 border border-indigo-200 dark:border-indigo-800/80 flex items-center justify-between shadow-2xs">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold shrink-0 shadow-xs text-sm">
-                                            💎
-                                        </div>
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xs sm:text-sm font-black text-indigo-950 dark:text-indigo-200">
-                                                    Active Health Card Member
-                                                </span>
-                                                <span className="font-mono text-xs font-black text-indigo-700 dark:text-indigo-400 bg-white/80 dark:bg-zinc-800 px-2 py-0.5 rounded-md border border-indigo-200 dark:border-indigo-700">
-                                                    {healthCardEligibility.card?.cardNumber}
-                                                </span>
+                                (healthCardEligibility.isPendingPayment || healthCardEligibility.card?.status === 'PendingPayment') ? (
+                                    <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50/60 dark:from-amber-950/40 dark:to-orange-950/30 border border-amber-300 dark:border-amber-700/80 flex items-center justify-between shadow-2xs">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold shrink-0 shadow-xs text-sm">
+                                                💳
                                             </div>
-                                            <p className="text-[11px] text-slate-600 dark:text-zinc-400 mt-0.5">
-                                                {healthCardEligibility.card?.configuredDiscountValue}{healthCardEligibility.card?.configuredDiscountType === 'Percentage' ? '%' : '₹'} Flat Discount active • Valid till {new Date(healthCardEligibility.card?.validUntil).toLocaleDateString()}
-                                            </p>
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs sm:text-sm font-black text-amber-950 dark:text-amber-200">
+                                                        Health Card • Pending Settlement
+                                                    </span>
+                                                    <span className="font-mono text-xs font-black text-amber-800 dark:text-amber-300 bg-white/80 dark:bg-zinc-800 px-2 py-0.5 rounded-md border border-amber-300 dark:border-amber-700">
+                                                        {healthCardEligibility.card?.cardNumber}
+                                                    </span>
+                                                </div>
+                                                <p className="text-[11px] text-amber-800 dark:text-amber-300 mt-0.5">
+                                                    Card fee added to current bill • Activates automatically upon bill settlement
+                                                </p>
+                                            </div>
                                         </div>
+                                        <span className="px-3 py-1 rounded-xl text-xs font-black bg-amber-500 text-white shadow-xs shrink-0">
+                                            Pending Payment
+                                        </span>
                                     </div>
-                                    <span className="px-3 py-1 rounded-xl text-xs font-black bg-indigo-600 text-white shadow-xs shrink-0">
-                                        {healthCardEligibility.card?.configuredDiscountValue}% Applied
-                                    </span>
-                                </div>
+                                ) : (
+                                    <div className="p-3.5 rounded-2xl bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-950/40 dark:to-blue-950/30 border border-indigo-200 dark:border-indigo-800/80 flex items-center justify-between shadow-2xs">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold shrink-0 shadow-xs text-sm">
+                                                💎
+                                            </div>
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs sm:text-sm font-black text-indigo-950 dark:text-indigo-200">
+                                                        Active Health Card Member
+                                                    </span>
+                                                    <span className="font-mono text-xs font-black text-indigo-700 dark:text-indigo-400 bg-white/80 dark:bg-zinc-800 px-2 py-0.5 rounded-md border border-indigo-200 dark:border-indigo-700">
+                                                        {healthCardEligibility.card?.cardNumber}
+                                                    </span>
+                                                </div>
+                                                <p className="text-[11px] text-slate-600 dark:text-zinc-400 mt-0.5">
+                                                    {healthCardEligibility.card?.configuredDiscountValue}{healthCardEligibility.card?.configuredDiscountType === 'Percentage' ? '%' : '₹'} Flat Discount active • Valid till {new Date(healthCardEligibility.card?.validUntil).toLocaleDateString()}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <span className="px-3 py-1 rounded-xl text-xs font-black bg-indigo-600 text-white shadow-xs shrink-0">
+                                            {healthCardEligibility.card?.configuredDiscountValue}% Applied
+                                        </span>
+                                    </div>
+                                )
                             ) : healthCardEligibility.hasOpenSlots ? (
                                 <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/30 border border-amber-300 dark:border-amber-800/80 flex items-center justify-between shadow-2xs">
                                     <div className="flex items-center gap-3">
@@ -675,7 +701,8 @@ function RegisterFormInline({ onSuccess, onCancel, initialMobile = '', initialNo
                             paymentMode: hcPaymentMode,
                             discountType: hcDiscountType,
                             discountValue: parseFloat(hcDiscountValue) || 30,
-                            validityDays: 365
+                            validityDays: 365,
+                            isPendingPayment: true
                         });
                         window.dispatchEvent(new CustomEvent('synos:healthcard-issued', { detail: cardRes }));
                     } catch (cardErr) {

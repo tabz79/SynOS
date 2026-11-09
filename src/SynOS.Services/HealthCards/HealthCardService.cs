@@ -132,7 +132,8 @@ namespace SynOS.Services.HealthCards
                 ConfiguredDiscountValue = discountValue,
                 EffectiveFrom = effectiveFrom,
                 ValidUntil = validUntil,
-                Status = "Active",
+                Status = request.IsPendingPayment ? "PendingPayment" : "Active",
+                AssociatedVisitId = request.AssociatedVisitId,
                 IssuedAtBranchId = branchId,
                 IssuedByUserId = cashierUserId,
                 IssuedByUserName = cashierUserName,
@@ -207,27 +208,30 @@ namespace SynOS.Services.HealthCards
                 }
             }
 
-            // 7. ERP Ledger Integration: Record Financial Inflow in Revenue Engine
-            try
+            // 7. ERP Ledger Integration: Record Financial Inflow in Revenue Engine ONLY if fully settled upfront
+            if (!request.IsPendingPayment)
             {
-                var paymentModeEnum = ParsePaymentMode(request.PaymentMode);
-                var revenueFactId = await _revenueFactWriter.DeclareRevenueFactAsync(new DeclareRevenueFactCommand
+                try
                 {
-                    OccurredAt = DateTimeOffset.UtcNow,
-                    Amount = pricePaid,
-                    Currency = "INR",
-                    Direction = RevenueDirection.Inflow,
-                    SourceType = RevenueSourceType.Patient,
-                    SourceReferenceId = card.CardId.ToString(),
-                    PaymentMode = paymentModeEnum,
-                    DeclaredByUserId = cashierUserId,
-                    Notes = $"Health Card Sale: {plan.PlanName} ({cardNumber} - {primaryName})"
-                });
-                card.RevenueFactId = revenueFactId;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[HealthCardService] Note: RevenueFact declaration failed: {ex.Message}");
+                    var paymentModeEnum = ParsePaymentMode(request.PaymentMode);
+                    var revenueFactId = await _revenueFactWriter.DeclareRevenueFactAsync(new DeclareRevenueFactCommand
+                    {
+                        OccurredAt = DateTimeOffset.UtcNow,
+                        Amount = pricePaid,
+                        Currency = "INR",
+                        Direction = RevenueDirection.Inflow,
+                        SourceType = RevenueSourceType.Patient,
+                        SourceReferenceId = card.CardId.ToString(),
+                        PaymentMode = paymentModeEnum,
+                        DeclaredByUserId = cashierUserId,
+                        Notes = $"Health Card Sale: {plan.PlanName} ({cardNumber} - {primaryName})"
+                    });
+                    card.RevenueFactId = revenueFactId;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[HealthCardService] Note: RevenueFact declaration failed: {ex.Message}");
+                }
             }
 
             _context.PatientHealthCards.Add(card);
@@ -304,9 +308,69 @@ namespace SynOS.Services.HealthCards
                 }
             }
 
+            // Scenario 3: Check for PendingPayment Card (issued in draft / awaiting settlement)
+            if (patientId.HasValue && patientId.Value != Guid.Empty)
+            {
+                var pendingCard = await _context.PatientHealthCards
+                    .Include(c => c.Plan)
+                    .Include(c => c.PrimaryPatient)
+                    .Include(c => c.Beneficiaries).ThenInclude(b => b.Patient)
+                    .Include(c => c.Usages)
+                    .Where(c => c.Status == "PendingPayment" &&
+                                c.Beneficiaries.Any(b => b.PatientId == patientId.Value))
+                    .OrderByDescending(c => c.CreatedAt)
+                    .FirstOrDefaultAsync();
+
+                if (pendingCard != null)
+                {
+                    var summary = MapToSummary(pendingCard);
+                    return new HealthCardEligibilityCheckDto
+                    {
+                        HasActiveCard = false,
+                        IsPendingPayment = true,
+                        IsPatientEnrolledBeneficiary = true,
+                        HasOpenSlots = summary.AvailableSlots > 0,
+                        AvailableSlots = summary.AvailableSlots,
+                        Card = summary,
+                        Message = $"Health Card ({pendingCard.CardNumber}) • Pending Bill Settlement"
+                    };
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(phoneNumber))
+            {
+                var cleanPhone = phoneNumber.Trim();
+                var pendingCard = await _context.PatientHealthCards
+                    .Include(c => c.Plan)
+                    .Include(c => c.PrimaryPatient)
+                    .Include(c => c.Beneficiaries).ThenInclude(b => b.Patient)
+                    .Include(c => c.Usages)
+                    .Where(c => c.Status == "PendingPayment" &&
+                                c.PrimaryPhoneNumber == cleanPhone)
+                    .OrderByDescending(c => c.CreatedAt)
+                    .FirstOrDefaultAsync();
+
+                if (pendingCard != null)
+                {
+                    var summary = MapToSummary(pendingCard);
+                    var isEnrolled = patientId.HasValue && pendingCard.Beneficiaries.Any(b => b.PatientId == patientId.Value);
+                    return new HealthCardEligibilityCheckDto
+                    {
+                        HasActiveCard = false,
+                        IsPendingPayment = true,
+                        IsPatientEnrolledBeneficiary = isEnrolled,
+                        HasOpenSlots = summary.AvailableSlots > 0,
+                        AvailableSlots = summary.AvailableSlots,
+                        Card = summary,
+                        Message = $"Health Card ({pendingCard.CardNumber}) • Pending Bill Settlement"
+                    };
+                }
+            }
+
             return new HealthCardEligibilityCheckDto
             {
                 HasActiveCard = false,
+                IsPendingPayment = false,
                 IsPatientEnrolledBeneficiary = false,
                 HasOpenSlots = false,
                 AvailableSlots = 0,
@@ -513,6 +577,7 @@ namespace SynOS.Services.HealthCards
                 ValidUntil = card.ValidUntil,
                 IsExpired = card.ValidUntil < DateTime.UtcNow,
                 Status = card.ValidUntil < DateTime.UtcNow ? "Expired" : card.Status,
+                AssociatedVisitId = card.AssociatedVisitId,
                 TotalSavedToDate = totalSaved,
                 TotalVisitsBilled = totalVisits,
                 Beneficiaries = card.Beneficiaries?.Select(b => new HealthCardBeneficiaryDto
@@ -592,10 +657,109 @@ namespace SynOS.Services.HealthCards
             };
 
             _context.Orders.Add(order);
+
+            // Associate any pending health card for this patient to this visit
+            var pendingCard = await _context.PatientHealthCards
+                .OrderByDescending(c => c.CreatedAt)
+                .FirstOrDefaultAsync(c => c.PrimaryPatientId == visit.PatientId && c.PlanId == planId && c.Status == "PendingPayment");
+            if (pendingCard != null)
+            {
+                pendingCard.AssociatedVisitId = visitId;
+            }
+
             await _context.SaveChangesAsync();
 
             await _revenueEngine.ApplySnapshotAsync(visitId, cashierUserId);
             return true;
+        }
+
+        public async Task<HealthCardSummaryDto> ActivatePendingCardAsync(Guid cardId, string paymentMode, Guid cashierUserId)
+        {
+            var card = await _context.PatientHealthCards
+                .Include(c => c.Plan)
+                .Include(c => c.PrimaryPatient)
+                .Include(c => c.Beneficiaries).ThenInclude(b => b.Patient)
+                .Include(c => c.Usages)
+                .FirstOrDefaultAsync(c => c.CardId == cardId);
+
+            if (card == null) throw new KeyNotFoundException($"Health card with ID {cardId} not found.");
+
+            if (card.Status == "PendingPayment")
+            {
+                var validityDays = card.Plan?.DefaultValidityDays ?? 365;
+                card.Status = "Active";
+                card.EffectiveFrom = DateTime.UtcNow;
+                card.ValidUntil = DateTime.UtcNow.AddDays(validityDays);
+                if (!string.IsNullOrWhiteSpace(paymentMode))
+                {
+                    card.PaymentMode = paymentMode;
+                }
+                card.UpdatedAt = DateTime.UtcNow;
+
+                if (!card.RevenueFactId.HasValue && card.PricePaid > 0)
+                {
+                    try
+                    {
+                        var paymentModeEnum = ParsePaymentMode(card.PaymentMode);
+                        var primaryName = card.PrimaryPatient?.DisplayName ?? "Patient";
+                        var planName = card.Plan?.PlanName ?? "Health Card";
+                        var revenueFactId = await _revenueFactWriter.DeclareRevenueFactAsync(new DeclareRevenueFactCommand
+                        {
+                            OccurredAt = DateTimeOffset.UtcNow,
+                            Amount = card.PricePaid,
+                            Currency = "INR",
+                            Direction = RevenueDirection.Inflow,
+                            SourceType = RevenueSourceType.Patient,
+                            SourceReferenceId = card.CardId.ToString(),
+                            PaymentMode = paymentModeEnum,
+                            DeclaredByUserId = cashierUserId,
+                            Notes = $"Health Card Sale: {planName} ({card.CardNumber} - {primaryName})"
+                        });
+                        card.RevenueFactId = revenueFactId;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"[HealthCardService] Note: RevenueFact declaration failed: {ex.Message}");
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+            }
+
+            return await GetCardByIdAsync(card.CardId) ?? throw new InvalidOperationException("Failed to retrieve activated card.");
+        }
+
+        public async Task<HealthCardSummaryDto?> ActivateCardForVisitAsync(Guid visitId, string paymentMode, Guid cashierUserId)
+        {
+            var card = await _context.PatientHealthCards
+                .FirstOrDefaultAsync(c => c.AssociatedVisitId == visitId && c.Status == "PendingPayment");
+
+            if (card == null)
+            {
+                var visit = await _context.Visits
+                    .Include(v => v.Orders)
+                    .FirstOrDefaultAsync(v => v.VisitId == visitId);
+
+                if (visit != null)
+                {
+                    var planCodes = await _context.HealthCardPlanMasters.Select(p => p.PlanCode).ToListAsync();
+                    var hasPlanOrder = visit.Orders.Any(o => planCodes.Contains(o.TestCode));
+                    if (hasPlanOrder)
+                    {
+                        card = await _context.PatientHealthCards
+                            .OrderByDescending(c => c.CreatedAt)
+                            .FirstOrDefaultAsync(c => c.PrimaryPatientId == visit.PatientId && c.Status == "PendingPayment");
+                    }
+                }
+            }
+
+            if (card != null)
+            {
+                card.AssociatedVisitId = visitId;
+                return await ActivatePendingCardAsync(card.CardId, paymentMode, cashierUserId);
+            }
+
+            return null;
         }
 
         private async Task<string> GenerateCardNumberAsync()

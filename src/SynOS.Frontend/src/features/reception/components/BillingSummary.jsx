@@ -390,6 +390,31 @@ export function BillingSummary({
         }
     }, [createdDiscountReason]);
 
+    // Auto populate custom discount input when drawer opens with an existing staged or applied discount
+    useEffect(() => {
+        if (isDiscountExpanded) {
+            if (stagedDiscount && !stagedDiscount.remove) {
+                setCustomDiscountType(stagedDiscount.type === 'Flat' ? 'FLAT' : 'PERCENTAGE');
+                if (stagedDiscount.value !== undefined && stagedDiscount.value !== null) {
+                    setCustomDiscountValue(String(stagedDiscount.value));
+                }
+                if (stagedDiscount.reason) {
+                    setCustomDiscountReason(stagedDiscount.reason);
+                }
+                setDiscountInputMode('custom');
+            } else if (billing?.appliedDiscount && !customDiscountValue) {
+                const isPct = billing.appliedDiscount.type === 0 || billing.appliedDiscount.type === 'Percentage';
+                setCustomDiscountType(isPct ? 'PERCENTAGE' : 'FLAT');
+                if (billing.appliedDiscount.value !== undefined && billing.appliedDiscount.value !== null) {
+                    setCustomDiscountValue(String(billing.appliedDiscount.value));
+                }
+                if (billing.appliedDiscount.reason || billing.appliedDiscount.name) {
+                    setCustomDiscountReason(billing.appliedDiscount.reason || billing.appliedDiscount.name);
+                }
+            }
+        }
+    }, [isDiscountExpanded, stagedDiscount]);
+
     // Derived filtered suggestions for Reason Autocomplete
     const filteredReasonSuggestions = useMemo(() => {
         const query = (customDiscountReason || '').trim().toLowerCase();
@@ -623,14 +648,19 @@ export function BillingSummary({
         const effectiveReason = customDiscountReason.trim();
         if (!canPerformActions || !visitId) return;
 
-        // CORRECTION INTENT (Staged Batch Edit)
-        if (isCorrectionIntent && onStageDiscount) {
+        // Stage discount locally for instant reactive updates in UI & IntentPanel
+        if (onStageDiscount) {
             onStageDiscount({
                 mode: 'custom',
                 type: customDiscountType === 'PERCENTAGE' ? 'Percentage' : 'Flat',
                 value: val,
-                reason: effectiveReason
+                reason: effectiveReason,
+                userDismissed: true
             });
+        }
+
+        // If in draft visit or correction intent, state update is complete
+        if (isDraftVisit || isCorrectionIntent) {
             setIsDiscountExpanded(false);
             advanceFocusToSettlementOrPayment();
             return;
@@ -777,21 +807,30 @@ export function BillingSummary({
             }, 60);
         };
 
+        // Stage removal locally for instant reactive updates in UI & IntentPanel
+        if (onStageDiscount) {
+            onStageDiscount({ mode: 'remove', remove: true, userDismissed: true });
+            setCustomDiscountReason('');
+            setCustomDiscountValue('');
+        }
+
         // CORRECTION INTENT (Staged Batch Edit)
         if (isCorrectionIntent) {
-            if (onStageDiscount) {
-                onStageDiscount({ mode: 'remove', remove: true });
-                setCustomDiscountReason('');
-                setCustomDiscountValue('');
-                refocusTrigger();
-                return;
+            if (!onStageDiscount) {
+                setCorrectionState({
+                    isOpen: true,
+                    type: 'ChangeDiscount',
+                    payload: { discountMasterId: null, code: "REMOVE" }, // Null implies remove
+                    reason: ""
+                });
             }
-            setCorrectionState({
-                isOpen: true,
-                type: 'ChangeDiscount',
-                payload: { discountMasterId: null, code: "REMOVE" }, // Null implies remove
-                reason: ""
-            });
+            refocusTrigger();
+            return;
+        }
+
+        // Draft visits don't have persisted discount on server to delete
+        if (isDraftVisit) {
+            refocusTrigger();
             return;
         }
 

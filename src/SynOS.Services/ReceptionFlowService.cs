@@ -1000,6 +1000,69 @@ namespace SynOS.Services
             }
             // ------------------------------------------------------------
 
+            // --- STAGE 1 HEALTH CARD ACTIVATION UPON PAYMENT SETTLEMENT ---
+            if (payment.Amount > 0)
+            {
+                try
+                {
+                    var pendingCards = await _context.PatientHealthCards
+                        .Include(c => c.Plan)
+                        .Include(c => c.PrimaryPatient)
+                        .Where(c => (c.AssociatedVisitId == visit.VisitId || c.PrimaryPatientId == visit.PatientId) && c.Status == "PendingPayment")
+                        .ToListAsync();
+
+                    foreach (var card in pendingCards)
+                    {
+                        var validityDays = card.Plan?.DefaultValidityDays ?? 365;
+                        card.Status = "Active";
+                        card.EffectiveFrom = DateTime.UtcNow;
+                        card.ValidUntil = DateTime.UtcNow.AddDays(validityDays);
+                        card.PaymentMode = payment.Method;
+                        card.AssociatedVisitId = visit.VisitId;
+                        card.UpdatedAt = DateTime.UtcNow;
+
+                        if (!card.RevenueFactId.HasValue && card.PricePaid > 0)
+                        {
+                            var pModeEnum = payment.Method.Equals("UPI", StringComparison.OrdinalIgnoreCase) 
+                                ? SynOS.Models.Entities.Revenue.PaymentMode.UPI 
+                                : (payment.Method.Equals("Card", StringComparison.OrdinalIgnoreCase) 
+                                    ? SynOS.Models.Entities.Revenue.PaymentMode.Card 
+                                    : SynOS.Models.Entities.Revenue.PaymentMode.Cash);
+                            var primaryName = card.PrimaryPatient?.DisplayName ?? "Patient";
+                            var planName = card.Plan?.PlanName ?? "Health Card";
+
+                            var revFact = new SynOS.Models.Entities.Revenue.RevenueFact
+                            {
+                                RevenueFactId = Guid.NewGuid(),
+                                OccurredAt = DateTimeOffset.UtcNow,
+                                DeclaredAt = DateTimeOffset.UtcNow,
+                                Amount = card.PricePaid,
+                                Currency = "INR",
+                                Direction = SynOS.Models.Entities.Revenue.RevenueDirection.Inflow,
+                                SourceType = SynOS.Models.Entities.Revenue.RevenueSourceType.Patient,
+                                SourceReferenceId = card.CardId.ToString(),
+                                PaymentMode = pModeEnum,
+                                DeclaredByUserId = userId,
+                                Notes = $"Health Card Sale: {planName} ({card.CardNumber} - {primaryName})"
+                            };
+                            _context.RevenueFacts.Add(revFact);
+                            card.RevenueFactId = revFact.RevenueFactId;
+                        }
+                    }
+
+                    if (pendingCards.Any())
+                    {
+                        await _context.SaveChangesAsync();
+                        _logger.LogInformation("Activated {Count} pending health card(s) for Visit {VisitId}", pendingCards.Count, visit.VisitId);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to activate pending health card for Visit {VisitId}", visit.VisitId);
+                }
+            }
+            // ------------------------------------------------------------
+
             // If payment is complete, partial payment accepted, or registered as Full Due, trigger creation of lab work items
             if (string.Equals(updatedInvoice.Status, "Paid", StringComparison.OrdinalIgnoreCase) ||
                 string.Equals(updatedInvoice.Status, "PartialPayment", StringComparison.OrdinalIgnoreCase) ||
@@ -2016,6 +2079,15 @@ namespace SynOS.Services
             if (opEvents.Any())
             {
                 _context.BranchOperationalEvents.RemoveRange(opEvents);
+            }
+
+            // Delete pending health cards issued for this draft visit
+            var pendingCards = await _context.PatientHealthCards
+                .Where(c => c.AssociatedVisitId == visitId && c.Status == "PendingPayment")
+                .ToListAsync();
+            if (pendingCards.Any())
+            {
+                _context.PatientHealthCards.RemoveRange(pendingCards);
             }
 
             // Delete visit

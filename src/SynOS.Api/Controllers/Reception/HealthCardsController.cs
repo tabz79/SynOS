@@ -110,6 +110,25 @@ namespace SynOS.Api.Controllers.Reception
             }
         }
 
+        [HttpPost("{cardId:guid}/activate")]
+        public async Task<IActionResult> ActivateCard(Guid cardId, [FromQuery] string? paymentMode)
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                var card = await _healthCardService.ActivatePendingCardAsync(cardId, paymentMode ?? "Cash", userId);
+                return Ok(card);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Failed to activate health card.", details = ex.Message });
+            }
+        }
+
         [HttpPost("attach-to-visit")]
         public async Task<IActionResult> AttachToVisit([FromBody] AttachCardToVisitRequestDto request)
         {

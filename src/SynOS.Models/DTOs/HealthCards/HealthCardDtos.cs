@@ -46,6 +46,8 @@ namespace SynOS.Models.DTOs.HealthCards
 
         public int ValidityDays { get; set; } = 365;
         public DateTime? CustomExpiryDate { get; set; }
+        public bool IsPendingPayment { get; set; } = false;
+        public Guid? AssociatedVisitId { get; set; }
 
         public List<HealthCardBeneficiaryInputDto> Beneficiaries { get; set; } = new();
     }
@@ -86,6 +88,7 @@ namespace SynOS.Models.DTOs.HealthCards
         public DateTime ValidUntil { get; set; }
         public bool IsExpired { get; set; }
         public string Status { get; set; } = "Active";
+        public Guid? AssociatedVisitId { get; set; }
         public decimal TotalSavedToDate { get; set; }
         public int TotalVisitsBilled { get; set; }
         public List<HealthCardBeneficiaryDto> Beneficiaries { get; set; } = new();
@@ -97,6 +100,7 @@ namespace SynOS.Models.DTOs.HealthCards
         public bool IsPatientEnrolledBeneficiary { get; set; }
         public bool HasOpenSlots { get; set; }
         public int AvailableSlots { get; set; }
+        public bool IsPendingPayment { get; set; } = false;
         public HealthCardSummaryDto? Card { get; set; }
         public string Message { get; set; } = string.Empty;
     }

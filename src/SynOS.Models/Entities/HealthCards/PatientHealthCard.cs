@@ -47,7 +47,9 @@ namespace SynOS.Models.Entities.HealthCards
         public DateTime ValidUntil { get; set; } = DateTime.UtcNow.AddYears(1);
 
         [StringLength(20)]
-        public string Status { get; set; } = "Active"; // "Active" | "Expired" | "Suspended" | "Cancelled"
+        public string Status { get; set; } = "Active"; // "Active" | "PendingPayment" | "Expired" | "Suspended" | "Cancelled"
+
+        public Guid? AssociatedVisitId { get; set; }
 
         public Guid? RevenueFactId { get; set; }
 
