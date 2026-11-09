@@ -18,6 +18,7 @@ using SynOS.Models.Entities.Leave;
 using SynOS.Models.Entities.Compliance;
 using SynOS.Models.Entities.Governance;
 using SynOS.Models.Entities.Operations;
+using SynOS.Models.Entities.HealthCards;
 using SynOS.Models.ReadModels; // ADDED
 
 namespace SynOS.Data
@@ -197,6 +198,12 @@ namespace SynOS.Data
         public DbSet<PatientPhoneHistory> PatientPhoneHistories { get; set; } = null!;
         public DbSet<PatientAlias> PatientAliases { get; set; } = null!;
         public DbSet<PatientReferrerLink> PatientReferrerLinks { get; set; } = null!;
+
+        // DbSets for Health Card & Membership entities
+        public DbSet<HealthCardPlanMaster> HealthCardPlanMasters { get; set; } = null!;
+        public DbSet<PatientHealthCard> PatientHealthCards { get; set; } = null!;
+        public DbSet<HealthCardBeneficiary> HealthCardBeneficiaries { get; set; } = null!;
+        public DbSet<HealthCardUsageLedger> HealthCardUsageLedgers { get; set; } = null!;
 
         // DbSets for Appointment entities
         public DbSet<Appointment> Appointments { get; set; } = null!;
@@ -414,6 +421,38 @@ namespace SynOS.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // Health Card Engine
+            modelBuilder.Entity<HealthCardPlanMaster>(entity =>
+            {
+                entity.HasIndex(e => e.PlanCode).IsUnique();
+            });
+
+            modelBuilder.Entity<PatientHealthCard>(entity =>
+            {
+                entity.HasIndex(e => e.CardNumber).IsUnique();
+                entity.HasIndex(e => e.PrimaryPhoneNumber);
+                entity.HasIndex(e => e.PrimaryPatientId);
+                entity.HasOne(e => e.Plan).WithMany().HasForeignKey(e => e.PlanId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.PrimaryPatient).WithMany().HasForeignKey(e => e.PrimaryPatientId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<HealthCardBeneficiary>(entity =>
+            {
+                entity.HasIndex(e => new { e.CardId, e.PatientId }).IsUnique();
+                entity.HasOne(e => e.Card).WithMany(c => c.Beneficiaries).HasForeignKey(e => e.CardId).OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Patient).WithMany().HasForeignKey(e => e.PatientId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<HealthCardUsageLedger>(entity =>
+            {
+                entity.HasIndex(e => e.CardId);
+                entity.HasIndex(e => e.VisitId);
+                entity.HasIndex(e => e.PatientId);
+                entity.HasOne(e => e.Card).WithMany(c => c.Usages).HasForeignKey(e => e.CardId).OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Visit).WithMany().HasForeignKey(e => e.VisitId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.Patient).WithMany().HasForeignKey(e => e.PatientId).OnDelete(DeleteBehavior.Restrict);
+            });
 
             // Medical Macros
             modelBuilder.Entity<MedicalMacro>(entity =>

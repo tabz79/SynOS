@@ -9,6 +9,7 @@ import { ReceptionNotificationCenter } from './ReceptionNotificationCenter'
 import { cn } from '@/lib/utils'
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { ReceptionApi, fetchReferralPartnersCached, clearReceptionMasterCaches } from '@/api/reception'
+import { HealthCardApi } from '@/api/healthCards'
 import { PatientApi } from '@/api/patient'
 import { FinanceApi } from '@/api/finance'
 import { SignalRService } from '@/lib/signalr'
@@ -119,6 +120,30 @@ export function IntentPanel({ onVisitUpdated }) {
         };
         window.addEventListener('synos:notification-hint', handleHint);
         return () => window.removeEventListener('synos:notification-hint', handleHint);
+    }, []);
+
+    // Auto-apply Health Card discount when an active enrolled member is identified
+    useEffect(() => {
+        const handleHealthCardEligibility = (e) => {
+            const elig = e.detail;
+            if (elig?.hasActiveCard && elig?.isPatientEnrolledBeneficiary && elig?.card) {
+                const card = elig.card;
+                setStagedDiscount(prev => {
+                    // Do not override if user already entered a custom discount
+                    if (prev && !prev.isHealthCard && !prev.remove) return prev;
+                    return {
+                        type: card.configuredDiscountType === 'Flat' ? 'Flat' : 'Percentage',
+                        value: card.configuredDiscountValue,
+                        reason: `Health Card (${card.cardNumber})`,
+                        cardId: card.cardId,
+                        cardNumber: card.cardNumber,
+                        isHealthCard: true
+                    };
+                });
+            }
+        };
+        window.addEventListener('synos:healthcard-eligibility', handleHealthCardEligibility);
+        return () => window.removeEventListener('synos:healthcard-eligibility', handleHealthCardEligibility);
     }, []);
 
     // Check on snapshot load if duplicate doctor is already present
@@ -1253,6 +1278,20 @@ export function IntentPanel({ onVisitUpdated }) {
 
                 const res = await ReceptionApi.collectPayment(paymentPayload);
                 if (onVisitUpdated) onVisitUpdated();
+
+                // Log Health Card usage in ledger if visit had an active health card discount
+                if (stagedDiscount?.isHealthCard && stagedDiscount?.cardId && snapshot?.visit?.visitId) {
+                    HealthCardApi.recordUsage({
+                        cardId: stagedDiscount.cardId,
+                        visitId: snapshot.visit.visitId,
+                        patientId: snapshot.patient?.patientId || snapshot.patient?.id,
+                        grossAmount: stagedGross,
+                        discountType: stagedDiscount.type,
+                        discountValue: stagedDiscount.value,
+                        discountAmount: stagedDiscountAmt,
+                        netAmount: stagedNet
+                    }).catch(err => console.error("HealthCard usage log failed:", err));
+                }
 
                 const currentPaid = snapshot?.billing?.totalPaid || 0;
                 await loadSnapshot();

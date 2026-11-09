@@ -35,7 +35,8 @@ import {
     UserCheck,
     FileText,
     Bell,
-    BellOff
+    BellOff,
+    CreditCard
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/context/ThemeContext';
@@ -51,6 +52,7 @@ import { StockRequestPanel } from '@/features/inventory/StockRequestPanel';
 import { ReceptionRefundTerminal } from './ReceptionRefundTerminal';
 import { ReceptionCashDrawerLedger } from './ReceptionCashDrawerLedger';
 import { ReceptionShiftClosingDrawer } from './ReceptionShiftClosingDrawer';
+import { HealthCardDeskDrawer } from './HealthCardDeskDrawer';
 
 export function ReceptionOptionsPanel({
     isOpen,
@@ -163,6 +165,15 @@ export function ReceptionOptionsPanel({
 
     // 1. Group 1: Desk Operations & Counter Settlements
     const operationsActions = [
+        {
+            id: 'health-card-desk',
+            title: 'Health Card Membership Desk',
+            icon: CreditCard,
+            iconBg: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400',
+            badge: 'Direct OS',
+            badgeClass: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300 border border-indigo-300/60 dark:border-indigo-700/60',
+            onClick: () => setActiveView('healthcard')
+        },
         {
             id: 'b2b-receivables',
             title: 'Record B2B Receivables',
@@ -357,6 +368,20 @@ export function ReceptionOptionsPanel({
                 ui.panel
             )}
         >
+            {/* VIEW: HEALTH CARD DESK */}
+            {activeView === 'healthcard' && (
+                <HealthCardDeskDrawer
+                    isOpen={true}
+                    onClose={() => {
+                        setActiveView('menu');
+                        onDataUpdated?.();
+                    }}
+                    onCardIssued={() => {
+                        onDataUpdated?.();
+                    }}
+                />
+            )}
+
             {/* VIEW 1: RECORD EXPENSE EMBEDDED */}
             {activeView === 'expense' && (
                 <ReceptionExpenseDrawer

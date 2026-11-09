@@ -594,6 +594,7 @@ builder.Services.AddScoped<IBranchTimeProvider, BranchTimeProvider>();
 builder.Services.AddScoped<IProcessingService, ProcessingService>();
 builder.Services.AddScoped<SynOS.Services.Reception.IReceptionSnapshotService, SynOS.Services.Reception.ReceptionSnapshotService>();
 builder.Services.AddScoped<SynOS.Services.Reception.IReceptionPatientService, SynOS.Services.Reception.ReceptionPatientService>(); // ADDED
+builder.Services.AddScoped<SynOS.Services.HealthCards.IHealthCardService, SynOS.Services.HealthCards.HealthCardService>(); // ADDED: Health Card Engine
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IDiagnosticsService, DiagnosticsService>();
 builder.Services.AddSingleton<ITrustedKeyStore, TrustedKeyStore>();

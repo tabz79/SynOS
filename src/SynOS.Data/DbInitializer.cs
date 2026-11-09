@@ -7,6 +7,7 @@ using SynOS.Models.Entities.Operations;
 using SynOS.Models.Entities.IMS;
 using SynOS.Models.Enums.IMS;
 using SynOS.Models.Entities.HR;
+using SynOS.Models.Entities.HealthCards;
 
 namespace SynOS.Data
 {
@@ -774,6 +775,89 @@ IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('VisitCance
 BEGIN
     ALTER TABLE [VisitCancellations] ADD [SettlementNotes] nvarchar(max) NULL;
 END
+
+-- Health Card & Membership Schema
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'HealthCardPlanMasters' AND type = 'U')
+BEGIN
+    CREATE TABLE [HealthCardPlanMasters] (
+        [PlanId] uniqueidentifier NOT NULL PRIMARY KEY,
+        [PlanCode] nvarchar(50) NOT NULL,
+        [PlanName] nvarchar(100) NOT NULL,
+        [Description] nvarchar(250) NULL,
+        [MaxMembers] int NOT NULL DEFAULT 1,
+        [Price] decimal(18,2) NOT NULL DEFAULT 0,
+        [DefaultDiscountPercentage] decimal(5,2) NOT NULL DEFAULT 30.00,
+        [DefaultValidityDays] int NOT NULL DEFAULT 365,
+        [AllowOutsourceDiscounts] bit NOT NULL DEFAULT 0,
+        [IsActive] bit NOT NULL DEFAULT 1,
+        [CreatedAt] datetime2 NOT NULL DEFAULT GETUTCDATE(),
+        [UpdatedAt] datetime2 NOT NULL DEFAULT GETUTCDATE()
+    );
+    CREATE UNIQUE INDEX [IX_HealthCardPlanMasters_PlanCode] ON [HealthCardPlanMasters]([PlanCode]);
+END
+
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'PatientHealthCards' AND type = 'U')
+BEGIN
+    CREATE TABLE [PatientHealthCards] (
+        [CardId] uniqueidentifier NOT NULL PRIMARY KEY,
+        [CardNumber] nvarchar(50) NOT NULL,
+        [PlanId] uniqueidentifier NOT NULL,
+        [PrimaryPatientId] uniqueidentifier NOT NULL,
+        [PrimaryPhoneNumber] nvarchar(20) NOT NULL,
+        [PricePaid] decimal(18,2) NOT NULL DEFAULT 0,
+        [PaymentMode] nvarchar(50) NOT NULL DEFAULT 'Cash',
+        [ConfiguredDiscountType] nvarchar(20) NOT NULL DEFAULT 'Percentage',
+        [ConfiguredDiscountValue] decimal(18,2) NOT NULL DEFAULT 30.00,
+        [EffectiveFrom] datetime2 NOT NULL DEFAULT GETUTCDATE(),
+        [ValidUntil] datetime2 NOT NULL,
+        [Status] nvarchar(20) NOT NULL DEFAULT 'Active',
+        [RevenueFactId] uniqueidentifier NULL,
+        [IssuedAtBranchId] uniqueidentifier NULL,
+        [IssuedByUserId] uniqueidentifier NULL,
+        [IssuedByUserName] nvarchar(100) NULL,
+        [CreatedAt] datetime2 NOT NULL DEFAULT GETUTCDATE(),
+        [UpdatedAt] datetime2 NOT NULL DEFAULT GETUTCDATE()
+    );
+    CREATE UNIQUE INDEX [IX_PatientHealthCards_CardNumber] ON [PatientHealthCards]([CardNumber]);
+    CREATE INDEX [IX_PatientHealthCards_PrimaryPhoneNumber] ON [PatientHealthCards]([PrimaryPhoneNumber]);
+    CREATE INDEX [IX_PatientHealthCards_PrimaryPatientId] ON [PatientHealthCards]([PrimaryPatientId]);
+END
+
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'HealthCardBeneficiaries' AND type = 'U')
+BEGIN
+    CREATE TABLE [HealthCardBeneficiaries] (
+        [BeneficiaryId] uniqueidentifier NOT NULL PRIMARY KEY,
+        [CardId] uniqueidentifier NOT NULL,
+        [PatientId] uniqueidentifier NOT NULL,
+        [Relationship] nvarchar(50) NOT NULL DEFAULT 'Self',
+        [EnrolledAt] datetime2 NOT NULL DEFAULT GETUTCDATE(),
+        [EnrolledByUserId] uniqueidentifier NULL,
+        [IsSlotLocked] bit NOT NULL DEFAULT 0,
+        [FirstUsedAt] datetime2 NULL
+    );
+    CREATE UNIQUE INDEX [IX_HealthCardBeneficiaries_CardId_PatientId] ON [HealthCardBeneficiaries]([CardId], [PatientId]);
+END
+
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'HealthCardUsageLedgers' AND type = 'U')
+BEGIN
+    CREATE TABLE [HealthCardUsageLedgers] (
+        [UsageId] uniqueidentifier NOT NULL PRIMARY KEY,
+        [CardId] uniqueidentifier NOT NULL,
+        [VisitId] uniqueidentifier NOT NULL,
+        [PatientId] uniqueidentifier NOT NULL,
+        [GrossAmount] decimal(18,2) NOT NULL DEFAULT 0,
+        [DiscountType] nvarchar(20) NOT NULL DEFAULT 'Percentage',
+        [DiscountValue] decimal(18,2) NOT NULL DEFAULT 0,
+        [DiscountAmount] decimal(18,2) NOT NULL DEFAULT 0,
+        [NetAmount] decimal(18,2) NOT NULL DEFAULT 0,
+        [BilledAt] datetime2 NOT NULL DEFAULT GETUTCDATE(),
+        [BilledByUserId] uniqueidentifier NULL,
+        [BilledByUserName] nvarchar(100) NULL
+    );
+    CREATE INDEX [IX_HealthCardUsageLedgers_CardId] ON [HealthCardUsageLedgers]([CardId]);
+    CREATE INDEX [IX_HealthCardUsageLedgers_VisitId] ON [HealthCardUsageLedgers]([VisitId]);
+    CREATE INDEX [IX_HealthCardUsageLedgers_PatientId] ON [HealthCardUsageLedgers]([PatientId]);
+END
 ";
             context.Database.ExecuteSqlRaw(sql);
         }
@@ -791,6 +875,7 @@ END
 
             SeedSpecimenTypes(context);
             SeedTubes(context);
+            SeedHealthCardPlans(context);
             
             // The following seeding methods for TestDefinitions, etc. are now obsolete
             // and should be removed or updated to use the new Test entity structure.
@@ -2185,6 +2270,76 @@ END
                             Console.WriteLine($"[DbInitializer] SEEDED USER ACCESS: {user.Username} -> {ws.Name}");
                         }
                     }
+                }
+            }
+            context.SaveChanges();
+        }
+
+        private static void SeedHealthCardPlans(SynOSDbContext context)
+        {
+            var defaultPlans = new[]
+            {
+                new HealthCardPlanMaster
+                {
+                    PlanId = Guid.Parse("C0000000-0000-0000-0000-000000000001"),
+                    PlanCode = "HC-INDIVIDUAL",
+                    PlanName = "Individual Care (1 Person)",
+                    Description = "Covers 1 individual member with 30% flat discount on diagnostic investigations.",
+                    MaxMembers = 1,
+                    Price = 500m,
+                    DefaultDiscountPercentage = 30.00m,
+                    DefaultValidityDays = 365,
+                    AllowOutsourceDiscounts = false,
+                    IsActive = true
+                },
+                new HealthCardPlanMaster
+                {
+                    PlanId = Guid.Parse("C0000000-0000-0000-0000-000000000002"),
+                    PlanCode = "HC-COUPLE-2",
+                    PlanName = "Couple Care (2 Persons)",
+                    Description = "Covers up to 2 family members with 30% flat discount on diagnostic investigations.",
+                    MaxMembers = 2,
+                    Price = 1000m,
+                    DefaultDiscountPercentage = 30.00m,
+                    DefaultValidityDays = 365,
+                    AllowOutsourceDiscounts = false,
+                    IsActive = true
+                },
+                new HealthCardPlanMaster
+                {
+                    PlanId = Guid.Parse("C0000000-0000-0000-0000-000000000003"),
+                    PlanCode = "HC-FAMILY-3",
+                    PlanName = "Family of 3",
+                    Description = "Covers up to 3 family members with 30% flat discount on diagnostic investigations.",
+                    MaxMembers = 3,
+                    Price = 1500m,
+                    DefaultDiscountPercentage = 30.00m,
+                    DefaultValidityDays = 365,
+                    AllowOutsourceDiscounts = false,
+                    IsActive = true
+                },
+                new HealthCardPlanMaster
+                {
+                    PlanId = Guid.Parse("C0000000-0000-0000-0000-000000000004"),
+                    PlanCode = "HC-FAMILY-4",
+                    PlanName = "Family of 4",
+                    Description = "Covers up to 4 family members with 30% flat discount on diagnostic investigations.",
+                    MaxMembers = 4,
+                    Price = 2000m,
+                    DefaultDiscountPercentage = 30.00m,
+                    DefaultValidityDays = 365,
+                    AllowOutsourceDiscounts = false,
+                    IsActive = true
+                }
+            };
+
+            foreach (var plan in defaultPlans)
+            {
+                var existing = context.HealthCardPlanMasters.FirstOrDefault(p => p.PlanCode == plan.PlanCode);
+                if (existing == null)
+                {
+                    context.HealthCardPlanMasters.Add(plan);
+                    Console.WriteLine($"[DbInitializer] SEEDED HEALTH CARD PLAN: {plan.PlanName} (Max {plan.MaxMembers} members, ₹{plan.Price})");
                 }
             }
             context.SaveChanges();

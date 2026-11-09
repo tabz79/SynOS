@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
-import { Search, X, Loader2, UserPlus, Phone, Fingerprint, ArrowRight, User, AlertCircle, Zap, Check } from 'lucide-react'
+import { Search, X, Loader2, UserPlus, Phone, Fingerprint, ArrowRight, User, AlertCircle, Zap, Check, CreditCard, Lock, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ReceptionApi } from '@/api/reception'
+import { HealthCardApi } from '@/api/healthCards'
 import { useTheme } from '@/context/ThemeContext'
 import { RichPatientCard, calculateDetailedAge } from '@/components/patient/RichPatientCard'
 
@@ -40,6 +41,46 @@ export function PatientIdentification({
 
     // Derived from Snapshot
     const selectedPatient = snapshot?.patient;
+
+    const [healthCardEligibility, setHealthCardEligibility] = useState(null);
+    const [isQuickEnrolling, setIsQuickEnrolling] = useState(false);
+
+    const checkHealthCard = async (patient) => {
+        if (!patient) {
+            setHealthCardEligibility(null);
+            return;
+        }
+        const pId = patient.id || patient.Id || patient.patientId;
+        const phone = patient.mobile || patient.Mobile || patient.phoneNumber || patient.currentPhoneNumber || patient.CurrentPhoneNumber;
+        try {
+            const res = await HealthCardApi.checkEligibility(pId, phone);
+            setHealthCardEligibility(res);
+            window.dispatchEvent(new CustomEvent('synos:healthcard-eligibility', { detail: res }));
+        } catch (e) {
+            console.error('HealthCard check failed', e);
+        }
+    };
+
+    useEffect(() => {
+        checkHealthCard(selectedPatient);
+    }, [selectedPatient]);
+
+    const handleQuickEnrollBeneficiary = async () => {
+        if (!healthCardEligibility?.card?.cardId || !selectedPatient) return;
+        setIsQuickEnrolling(true);
+        try {
+            const pId = selectedPatient.id || selectedPatient.Id || selectedPatient.patientId;
+            await HealthCardApi.enrollBeneficiary(healthCardEligibility.card.cardId, {
+                existingPatientId: pId,
+                relationship: 'Family'
+            });
+            await checkHealthCard(selectedPatient);
+        } catch (err) {
+            alert(err.message || 'Failed to enroll');
+        } finally {
+            setIsQuickEnrolling(false);
+        }
+    };
 
     const { theme } = useTheme();
     const isDark = theme === 'dark';
@@ -127,6 +168,74 @@ export function PatientIdentification({
                         onSecondaryAction={onEditPatient}
                         isLocked={true}
                     />
+
+                    {/* Health Card Membership Banner */}
+                    {selectedPatient && healthCardEligibility && healthCardEligibility.hasActiveCard && (
+                        <div className="pt-1 animate-in fade-in duration-200">
+                            {healthCardEligibility.isPatientEnrolledBeneficiary ? (
+                                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-950/40 dark:to-blue-950/30 border border-indigo-200 dark:border-indigo-800/80 flex items-center justify-between shadow-2xs">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold shrink-0 shadow-xs text-sm">
+                                            💎
+                                        </div>
+                                        <div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs sm:text-sm font-black text-indigo-950 dark:text-indigo-200">
+                                                    Active Health Card Member
+                                                </span>
+                                                <span className="font-mono text-xs font-black text-indigo-700 dark:text-indigo-400 bg-white/80 dark:bg-zinc-800 px-2 py-0.5 rounded-md border border-indigo-200 dark:border-indigo-700">
+                                                    {healthCardEligibility.card?.cardNumber}
+                                                </span>
+                                            </div>
+                                            <p className="text-[11px] text-slate-600 dark:text-zinc-400 mt-0.5">
+                                                {healthCardEligibility.card?.configuredDiscountValue}{healthCardEligibility.card?.configuredDiscountType === 'Percentage' ? '%' : '₹'} Flat Discount active • Valid till {new Date(healthCardEligibility.card?.validUntil).toLocaleDateString()}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <span className="px-3 py-1 rounded-xl text-xs font-black bg-indigo-600 text-white shadow-xs shrink-0">
+                                        {healthCardEligibility.card?.configuredDiscountValue}% Applied
+                                    </span>
+                                </div>
+                            ) : healthCardEligibility.hasOpenSlots ? (
+                                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/30 border border-amber-300 dark:border-amber-800/80 flex items-center justify-between shadow-2xs">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-xl bg-amber-600 text-white flex items-center justify-center font-bold shrink-0 shadow-xs text-sm">
+                                            👨‍👩‍👧
+                                        </div>
+                                        <div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs sm:text-sm font-black text-amber-950 dark:text-amber-200">
+                                                    Family Card Found ({healthCardEligibility.card?.cardNumber})
+                                                </span>
+                                                <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200">
+                                                    {healthCardEligibility.availableSlots} Slot(s) Open
+                                                </span>
+                                            </div>
+                                            <p className="text-[11px] text-amber-800 dark:text-amber-300 mt-0.5">
+                                                Patient not enrolled yet. Click to enroll as family beneficiary & grant discount.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={handleQuickEnrollBeneficiary}
+                                        disabled={isQuickEnrolling}
+                                        className="px-3.5 py-2 rounded-xl text-xs font-black bg-amber-600 hover:bg-amber-700 text-white shadow-xs flex items-center gap-1.5 cursor-pointer shrink-0 transition-transform active:scale-95"
+                                    >
+                                        {isQuickEnrolling ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <UserPlus className="w-3.5 h-3.5" />}
+                                        <span>Enroll into Card</span>
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="p-3 rounded-2xl bg-slate-100 dark:bg-zinc-800/90 border border-slate-200 dark:border-zinc-700 flex items-center justify-between text-xs text-slate-700 dark:text-zinc-300">
+                                    <div className="flex items-center gap-2">
+                                        <Lock className="w-4 h-4 text-slate-400 shrink-0" />
+                                        <span>Card #{healthCardEligibility.card?.cardNumber} is at full capacity ({healthCardEligibility.card?.maxMembers}/{healthCardEligibility.card?.maxMembers} members: {healthCardEligibility.card?.beneficiaries?.map(b => b.displayName).join(', ')}). Standard tariff applies.</span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -355,12 +464,38 @@ function RegisterFormInline({ onSuccess, onCancel, initialMobile = '', initialNo
     const [error, setError] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Health Card Instant Subscription State
+    const [issueHealthCard, setIssueHealthCard] = useState(false);
+    const [healthCardPlans, setHealthCardPlans] = useState([]);
+    const [selectedPlanId, setSelectedPlanId] = useState(null);
+    const [hcDiscountType, setHcDiscountType] = useState('Percentage'); // 'Percentage' | 'Flat'
+    const [hcDiscountValue, setHcDiscountValue] = useState('30');
+    const [hcPaymentMode, setHcPaymentMode] = useState('Cash'); // Cash, UPI, Card
+
     // Fuzzy matching state for duplicate MRN prevention
     const [fuzzyMatches, setFuzzyMatches] = useState([]);
     const [isSearchingFuzzy, setIsSearchingFuzzy] = useState(false);
 
     const { theme } = useTheme();
     const isDark = theme === 'dark';
+
+    // Fetch Health Card plans
+    useEffect(() => {
+        HealthCardApi.getPlans().then(plans => {
+            if (plans && plans.length > 0) {
+                setHealthCardPlans(plans);
+                setSelectedPlanId(plans[0].planId);
+                setHcDiscountValue(String(plans[0].defaultDiscountPercentage || 30));
+            }
+        }).catch(err => console.error('Failed to load health card plans', err));
+    }, []);
+
+    const handleSelectPlan = (plan) => {
+        setSelectedPlanId(plan.planId);
+        if (hcDiscountType === 'Percentage') {
+            setHcDiscountValue(String(plan.defaultDiscountPercentage || 30));
+        }
+    };
 
     const reasons = [
         'Elderly / Senior',
@@ -520,6 +655,23 @@ function RegisterFormInline({ onSuccess, onCancel, initialMobile = '', initialNo
             };
             const result = await ReceptionApi.registerPatient(apiPayload);
             if (result && result.patientId) {
+                if (issueHealthCard && selectedPlanId) {
+                    try {
+                        const plan = healthCardPlans.find(p => p.planId === selectedPlanId);
+                        const cardRes = await HealthCardApi.issueCard({
+                            planId: selectedPlanId,
+                            primaryPatientId: result.patientId,
+                            pricePaid: plan?.price || 500,
+                            paymentMode: hcPaymentMode,
+                            discountType: hcDiscountType,
+                            discountValue: parseFloat(hcDiscountValue) || 30,
+                            validityDays: 365
+                        });
+                        window.dispatchEvent(new CustomEvent('synos:healthcard-issued', { detail: cardRes }));
+                    } catch (cardErr) {
+                        console.error('Health card issuance failed during registration', cardErr);
+                    }
+                }
                 onSuccess(result, { 
                     ...formData, 
                     currentPhoneNumber: hasNoMobile ? '' : cleanMobile,
@@ -730,6 +882,148 @@ function RegisterFormInline({ onSuccess, onCancel, initialMobile = '', initialNo
                                 {g}
                             </button>
                         ))}
+                    </div>
+                </div>
+
+                {/* 5. OPTIONAL HEALTH CARD MEMBERSHIP ISSUANCE */}
+                <div className="pt-1">
+                    <div className={cn(
+                        "rounded-xl border transition-all p-3 space-y-3",
+                        issueHealthCard 
+                            ? (isDark ? "bg-blue-950/20 border-blue-850" : "bg-gradient-to-r from-blue-50/80 to-indigo-50/50 border-blue-200/80 shadow-xs")
+                            : (isDark ? "bg-zinc-800/20 border-zinc-800" : "bg-black/[0.015] border-black/5 hover:border-black/10")
+                    )}>
+                        <div className="flex items-center justify-between">
+                            <label className="flex items-center gap-2 cursor-pointer select-none">
+                                <input
+                                    type="checkbox"
+                                    checked={issueHealthCard}
+                                    onChange={e => setIssueHealthCard(e.target.checked)}
+                                    className="w-4 h-4 rounded border-blue-400 text-blue-600 focus:ring-blue-500 accent-blue-600 cursor-pointer"
+                                />
+                                <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 flex items-center gap-1.5">
+                                    <CreditCard className="w-3.5 h-3.5 text-blue-600" />
+                                    Issue Health Card Subscription (Instant Membership)
+                                </span>
+                            </label>
+                            <span className={cn(
+                                "text-[10px] uppercase font-bold px-2 py-0.5 rounded-md",
+                                issueHealthCard 
+                                    ? "text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/60" 
+                                    : "text-zinc-500 bg-zinc-100 dark:bg-zinc-800"
+                            )}>
+                                {issueHealthCard ? "Active Add-on" : "Optional"}
+                            </span>
+                        </div>
+
+                        {issueHealthCard && (
+                            <div className="space-y-3 pt-2 border-t border-blue-100 dark:border-blue-900/40 animate-in fade-in duration-200">
+                                {/* TIER SELECTION */}
+                                <div>
+                                    <label className={cn("text-[11px] font-bold block mb-1.5", isDark ? "text-zinc-300" : "text-slate-700")}>
+                                        Select Subscription Tier
+                                    </label>
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                                        {healthCardPlans.map(plan => {
+                                            const isSelected = selectedPlanId === plan.planId;
+                                            return (
+                                                <button
+                                                    key={plan.planId}
+                                                    type="button"
+                                                    onClick={() => handleSelectPlan(plan)}
+                                                    className={cn(
+                                                        "p-2 rounded-lg text-left transition-all border cursor-pointer",
+                                                        isSelected
+                                                            ? "bg-blue-600 text-white border-blue-600 shadow-xs font-bold"
+                                                            : (isDark ? "bg-zinc-850 hover:bg-zinc-800 border-zinc-700 text-zinc-300" : "bg-white hover:bg-slate-50 border-slate-200 text-slate-800")
+                                                    )}
+                                                >
+                                                    <div className="text-xs font-bold truncate">{plan.planName}</div>
+                                                    <div className={cn("text-[11px] font-mono mt-0.5", isSelected ? "text-blue-100" : "text-blue-600 dark:text-blue-400 font-bold")}>
+                                                        ₹{plan.price.toLocaleString()}
+                                                    </div>
+                                                    <div className={cn("text-[10px]", isSelected ? "text-blue-200" : "text-zinc-500")}>
+                                                        {plan.maxMembers} Member{plan.maxMembers > 1 ? 's' : ''}
+                                                    </div>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                {/* DUAL-POINT FREEDOM DISCOUNT EDITING */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                                    <div>
+                                        <div className="flex items-center justify-between mb-1">
+                                            <label className={cn("text-[11px] font-bold", isDark ? "text-zinc-300" : "text-slate-700")}>
+                                                Card Discount Rate
+                                            </label>
+                                            <span className="text-[10px] text-zinc-500">Dual-Point Freedom</span>
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
+                                            <div className="flex rounded-lg border border-slate-200 dark:border-zinc-700 p-0.5 bg-slate-100 dark:bg-zinc-800 shrink-0">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setHcDiscountType('Percentage')}
+                                                    className={cn(
+                                                        "px-2 py-1 text-xs rounded font-bold transition-all",
+                                                        hcDiscountType === 'Percentage' ? "bg-white dark:bg-zinc-700 text-blue-600 shadow-2xs" : "text-zinc-500"
+                                                    )}
+                                                >
+                                                    %
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setHcDiscountType('Flat')}
+                                                    className={cn(
+                                                        "px-2 py-1 text-xs rounded font-bold transition-all",
+                                                        hcDiscountType === 'Flat' ? "bg-white dark:bg-zinc-700 text-blue-600 shadow-2xs" : "text-zinc-500"
+                                                    )}
+                                                >
+                                                    ₹ Flat
+                                                </button>
+                                            </div>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                max={hcDiscountType === 'Percentage' ? 100 : 10000}
+                                                value={hcDiscountValue}
+                                                onChange={e => setHcDiscountValue(e.target.value)}
+                                                className={cn("h-8 rounded-lg px-2 text-xs font-bold outline-none flex-1 border", ui.input)}
+                                                placeholder={hcDiscountType === 'Percentage' ? 'e.g. 30' : 'e.g. 200'}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className={cn("text-[11px] font-bold block mb-1", isDark ? "text-zinc-300" : "text-slate-700")}>
+                                            Card Payment Mode (Cashier POS)
+                                        </label>
+                                        <div className="flex items-center gap-1">
+                                            {['Cash', 'UPI', 'Card'].map(mode => (
+                                                <button
+                                                    key={mode}
+                                                    type="button"
+                                                    onClick={() => setHcPaymentMode(mode)}
+                                                    className={cn(
+                                                        "flex-1 py-1 text-xs font-bold rounded-lg border transition-all",
+                                                        hcPaymentMode === mode
+                                                            ? "bg-slate-900 dark:bg-white text-white dark:text-zinc-900 border-transparent shadow-xs"
+                                                            : "bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border-slate-200 dark:border-zinc-700 hover:bg-slate-50"
+                                                    )}
+                                                >
+                                                    {mode}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="text-[10px] text-zinc-500 dark:text-zinc-400 italic">
+                                    * Valid for 1 Year (365 days). Handled in Cash Drawer as Health Card Sale. Can also be overridden at billing time.
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

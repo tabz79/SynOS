@@ -1,0 +1,18 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using SynOS.Models.DTOs.HealthCards;
+
+namespace SynOS.Services.HealthCards
+{
+    public interface IHealthCardService
+    {
+        Task<IEnumerable<HealthCardPlanDto>> GetActivePlansAsync();
+        Task<HealthCardSummaryDto> IssueCardAsync(IssueHealthCardRequestDto request, Guid cashierUserId, string cashierUserName, Guid branchId);
+        Task<HealthCardEligibilityCheckDto> CheckEligibilityAsync(Guid? patientId, string? phoneNumber);
+        Task<HealthCardBeneficiaryDto> EnrollBeneficiaryAsync(Guid cardId, EnrollBeneficiaryRequestDto request, Guid cashierUserId);
+        Task<bool> RecordCardUsageAsync(RecordCardUsageRequestDto request, Guid cashierUserId, string cashierUserName);
+        Task<IEnumerable<HealthCardSummaryDto>> GetCardsAsync(string? searchQuery, int limit = 50);
+        Task<HealthCardSummaryDto?> GetCardByIdAsync(Guid cardId);
+    }
+}
