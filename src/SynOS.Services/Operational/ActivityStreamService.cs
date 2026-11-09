@@ -30,8 +30,7 @@ namespace SynOS.Services.Operational
         public async Task<List<ActivityItemDto>> GetActivityForRoleAsync(Guid branchId, string role)
         {
             var branchIdStr = branchId.ToString();
-            var utcToday = DateTime.UtcNow.Date;
-            var utcTomorrow = utcToday.AddDays(1);
+            var windowStart = DateTime.UtcNow.AddHours(-24);
 
             // Filter by whitelisted event types for the requested role
             var allowedTypes = GetAllowedEventTypes(role);
@@ -40,11 +39,10 @@ namespace SynOS.Services.Operational
             var events = await _context.BranchOperationalEvents
                 .AsNoTracking()
                 .Where(e => e.BranchId == branchIdStr && 
-                            e.OccurredAt >= utcToday && 
-                            e.OccurredAt < utcTomorrow &&
+                            e.OccurredAt >= windowStart &&
                             allowedTypeStrings.Contains(e.EventType))
                 .OrderByDescending(e => e.OccurredAt)
-                .Take(50)
+                .Take(200)
                 .ToListAsync();
 
             return events.Select(MapToDto).ToList();
@@ -58,8 +56,15 @@ namespace SynOS.Services.Operational
                 {
                     BranchEventType.VISIT_STARTED,
                     BranchEventType.VISIT_FINALIZED,
+                    BranchEventType.VISIT_UPDATED,
+                    BranchEventType.VISIT_CORRECTED_AFTER_PAYMENT,
                     BranchEventType.BILL_GENERATED,
                     BranchEventType.PAYMENT_RECEIVED,
+                    BranchEventType.RECEIVABLE_CREATED,
+                    BranchEventType.SPECIMEN_COLLECTED,
+                    BranchEventType.RESULT_VERIFIED,
+                    BranchEventType.REPORT_VERIFIED,
+                    BranchEventType.REPORT_SIGNED,
                     BranchEventType.REPORT_DELIVERED
                 },
                 "lab" => new List<BranchEventType>
@@ -114,6 +119,8 @@ namespace SynOS.Services.Operational
                 BranchEventType.REPORT_VERIFIED => ("clipboard", "orange"),
                 BranchEventType.REPORT_SIGNED => ("pen-tool", "green"),
                 BranchEventType.REPORT_DELIVERED => ("send", "green"),
+                BranchEventType.VISIT_UPDATED => ("edit", "blue"),
+                BranchEventType.VISIT_CORRECTED_AFTER_PAYMENT => ("alert-circle", "amber"),
                 _ => ("activity", "gray")
             };
         }

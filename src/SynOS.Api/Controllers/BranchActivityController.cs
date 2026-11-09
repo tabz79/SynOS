@@ -61,15 +61,14 @@ namespace SynOS.Api.Controllers
             }
 
             var targetBranchId = contextBranchId;
-            var utcToday = DateTime.UtcNow.Date;
-            var utcTomorrow = utcToday.AddDays(1);
+            var windowStart = DateTime.UtcNow.AddHours(-24);
 
-            // 3. Fetch Raw Events
+            // 3. Fetch Raw Events (Capture full rolling 24-hour timeline up to 200 events)
             var events = await _context.BranchOperationalEvents
                 .AsNoTracking()
-                .Where(e => e.BranchId == targetBranchId && e.OccurredAt >= utcToday && e.OccurredAt < utcTomorrow)
+                .Where(e => e.BranchId == targetBranchId && e.OccurredAt >= windowStart)
                 .OrderByDescending(e => e.OccurredAt)
-                .Take(50)
+                .Take(200)
                 .ToListAsync();
 
             if (!events.Any()) return Ok(new List<object>()); // Empty
@@ -233,18 +232,16 @@ namespace SynOS.Api.Controllers
                 return BadRequest("Branch mismatch.");
 
             var targetBranchId = contextBranchId;
-            var utcToday = DateTime.UtcNow.Date;
-            var utcTomorrow = utcToday.AddDays(1);
+            var windowStart = DateTime.UtcNow.AddHours(-24);
 
-            // 1. Fetch Candidates (Visibility != Hide)
+            // 1. Fetch Candidates (Visibility != Hide, rolling 24-hour timeline)
             var rawEvents = await _context.BranchOperationalEvents
                 .AsNoTracking()
                 .Where(e => e.BranchId == targetBranchId 
-                            && e.OccurredAt >= utcToday 
-                            && e.OccurredAt < utcTomorrow
+                            && e.OccurredAt >= windowStart
                             && e.Visibility != TimelineVisibility.Hide)
                 .OrderByDescending(e => e.OccurredAt)
-                .Take(100)
+                .Take(200)
                 .ToListAsync();
 
             if (!rawEvents.Any()) return Ok(new List<object>());

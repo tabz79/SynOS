@@ -67,19 +67,15 @@ export function ActivityStream({ serverTime }) {
                     return false;
                 }
 
-                // Suppress extra internal events
-                if (titleStr.includes('referral partner updated') || 
-                    titleStr.includes('sample collection requested') || 
-                    titleStr.includes('collection requested') ||
-                    typeStr.includes('INVENTORY') || 
+                // Suppress inventory alerts and raw internal events only
+                if (typeStr.includes('INVENTORY') || 
                     titleStr.includes('inventory') || 
                     titleStr.includes('stock') ||
-                    titleStr.includes('insufficient stock') ||
-                    typeStr === 'VISIT_CREATED') {
+                    titleStr.includes('insufficient stock')) {
                     return false;
                 }
 
-                // 2. Billing filter: Remove zero bills (unless prepaid/finalized)
+                // 2. Billing filter: Remove zero bills (unless prepaid/finalized/due)
                 if (e.eventType === 'BILL_GENERATED' && !isFinalizedOrBilled) {
                     if (titleStr.includes('0.00')) return false;
                     const total = parseFloat(e.metadataObj.Total || e.metadataObj.Amount || 0);
@@ -98,7 +94,7 @@ export function ActivityStream({ serverTime }) {
             setEvents(sorted);
             try {
                 if (sorted.length > 0) {
-                    localStorage.setItem('synos_cached_activity_events', JSON.stringify(sorted.slice(0, 50)));
+                    localStorage.setItem('synos_cached_activity_events', JSON.stringify(sorted.slice(0, 200)));
                 }
             } catch (_) {}
             setLoading(false);
@@ -159,25 +155,37 @@ export function ActivityStream({ serverTime }) {
             return `Patient ${patientName} registered`;
         }
 
-        // 2. Visit Started / Token Assigned
-        if (type === 'VISIT_STARTED' || lowerMsg.includes('visit started') || lowerMsg.includes('token id') || lowerMsg.includes('token assigned')) {
-            const isDraftToken = token && (token.toUpperCase().startsWith('DRAFT-') || token.toUpperCase().startsWith('D-'));
-            return token && !isDraftToken && token !== 'System'
-                ? `Token ID ${token} assigned to ${patientName}`
-                : `Visit started for ${patientName}`;
+        // 2. Audit / Amendments / Updates
+        if (type === 'VISIT_UPDATED' || type === 'VISIT_CORRECTED' || type === 'VISIT_CORRECTED_AFTER_PAYMENT' || lowerMsg.includes('amend') || lowerMsg.includes('corrected') || lowerMsg.includes('audit')) {
+            const actorStr = actor ? `by ${actor}` : '';
+            let detail = '';
+            if (lowerMsg.includes('added') || lowerMsg.includes('add test')) detail = 'test added';
+            else if (lowerMsg.includes('removed') || lowerMsg.includes('remove test')) detail = 'test removed';
+            else if (lowerMsg.includes('discount') || lowerMsg.includes('concession')) detail = 'discount updated';
+            else if (lowerMsg.includes('referral') || lowerMsg.includes('doctor') || lowerMsg.includes('partner')) detail = 'doctor updated';
+            else if (lowerMsg.includes('demographic') || lowerMsg.includes('patient')) detail = 'patient updated';
+
+            const detailStr = detail ? ` (${detail})` : '';
+            return `Visit amended ${actorStr}${detailStr}`.replace(/\s+/g, ' ').trim();
         }
 
-        // 3. Billing & Payment
-        if (type === 'BILL_GENERATED' || type === 'PAYMENT_RECEIVED' || type === 'RECEIVABLE_CREATED' || lowerMsg.includes('payment received') || lowerMsg.includes('billed') || lowerMsg.includes('prepaid') || lowerMsg.includes('partner collects')) {
+        // 3. Billing, Settlement, Full Due & Payment
+        if (type === 'BILL_GENERATED' || type === 'PAYMENT_RECEIVED' || type === 'RECEIVABLE_CREATED' || type === 'VISIT_FINALIZED' || lowerMsg.includes('payment received') || lowerMsg.includes('billed') || lowerMsg.includes('prepaid') || lowerMsg.includes('partner collects') || lowerMsg.includes('finalized')) {
             const tests = meta.TestCodes && Array.isArray(meta.TestCodes) && meta.TestCodes.length > 0
-                ? meta.TestCodes.join('_') 
+                ? meta.TestCodes.join(', ') 
                 : (meta.TestNames || meta.Services || 'tests');
             const refDoc = meta.DoctorName || meta.PartnerName || meta.ReferralPartner || (lowerMsg.includes('dr.') ? msg.match(/dr\.\s*[\w\s]+/i)?.[0] : '');
             const actorStr = actor ? `by ${actor}` : '';
             const refStr = refDoc ? `, referred by ${refDoc}` : '';
+            
             const isPrepaid = lowerMsg.includes('prepaid') || lowerMsg.includes('partner collects') || meta.Method === 'PartnerCollects';
-            const actionPrefix = isPrepaid ? 'Prepaid visit billed' : 'Billed';
-            return `${actionPrefix} ${actorStr} for ${tests} test${refStr}`.replace(/\s+/g, ' ').trim();
+            const isFullDue = lowerMsg.includes('full due') || meta.PaymentStatus === 'PendingPayment' || meta.PaymentStatus === 'FullDue' || meta.IsFullDue;
+            
+            let actionPrefix = 'Billed';
+            if (isPrepaid) actionPrefix = 'Prepaid visit billed';
+            else if (isFullDue) actionPrefix = 'Full Due bill confirmed';
+
+            return `${actionPrefix} ${actorStr} for ${tests}${refStr}`.replace(/\s+/g, ' ').trim();
         }
 
         // 4. Sample Collection (Phlebotomy)
@@ -209,6 +217,14 @@ export function ActivityStream({ serverTime }) {
             return `Report is ready at Delivery desk.`;
         }
 
+        // 9. Visit Started / Token Assigned
+        if (type === 'VISIT_STARTED' || lowerMsg.includes('visit started') || lowerMsg.includes('token id') || lowerMsg.includes('token assigned')) {
+            const isDraftToken = token && (token.toUpperCase().startsWith('DRAFT-') || token.toUpperCase().startsWith('D-'));
+            return token && !isDraftToken && token !== 'System'
+                ? `Token ID ${token} assigned to ${patientName}`
+                : `Visit started for ${patientName}`;
+        }
+
         // Fallback
         let clean = msg.replace(/\(Fact:.*?\)/g, "").trim();
         clean = clean.replace(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/g, "").trim();
@@ -217,43 +233,54 @@ export function ActivityStream({ serverTime }) {
 
     const mapEventTypeToIcon = (type, msg) => {
         const message = (msg || "").toLowerCase();
-        if (message.includes('added test')) return <Activity className="h-4 w-4 text-muted-foreground" />;
-        if (message.includes('removed test')) return <Activity className="h-4 w-4 text-muted-foreground" />;
-        if (message.includes('referral partner')) return <User className="h-4 w-4 text-muted-foreground" />;
+        if (type === 'VISIT_UPDATED' || type === 'VISIT_CORRECTED' || type === 'VISIT_CORRECTED_AFTER_PAYMENT' || message.includes('amend') || message.includes('audit') || message.includes('corrected')) {
+            return <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />;
+        }
+        if (message.includes('added test')) return <Activity className="h-4 w-4 text-amber-500" />;
+        if (message.includes('removed test')) return <Activity className="h-4 w-4 text-rose-500" />;
+        if (message.includes('referral partner')) return <User className="h-4 w-4 text-purple-500" />;
 
         switch (type) {
             case 'VISIT_CREATED': return <User className="h-4 w-4 text-muted-foreground" />;
-            // User prefers Financial Event as completion signal -> Check Circle
-            case 'PAYMENT_RECEIVED': return <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-500" />;
-            case 'RECEIVABLE_CREATED': return <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-500" />;
-
-            // Fallback for visits without payment (e.g. Free/Zero Due / Prepaid) -> Check Circle
+            case 'PAYMENT_RECEIVED':
+            case 'RECEIVABLE_CREATED':
             case 'VISIT_FINALIZED': return <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-500" />;
+            case 'SPECIMEN_COLLECTED': return <TestTube2 className="h-4 w-4 text-blue-500" />;
+            case 'SPECIMEN_PROCESSED': return <Microscope className="h-4 w-4 text-indigo-500" />;
+            case 'REPORT_VERIFIED':
+            case 'REPORT_SIGNED': return <CheckCircle2 className="h-4 w-4 text-teal-600" />;
             default: return <Activity className="h-4 w-4 text-muted-foreground" />;
         }
     };
 
     const groupedEvents = useMemo(() => {
-        // Create a map of VisitId -> Latest (non-draft preferred) Token
+        // Create maps of VisitId -> Latest Token and Patient
         const latestTokenMap = {};
+        const latestPatientMap = {};
         events.forEach(event => {
             const visitId = event.visitId || event.VisitId || event.metadataObj?.VisitId;
             const rawToken = event.tokenId || event.TokenId || event.token || event.metadataObj?.TokenId;
-            if (visitId && rawToken) {
-                const cleanToken = rawToken.trim();
-                const isDraft = cleanToken.toUpperCase().startsWith("DRAFT-") || cleanToken.toUpperCase().startsWith("D-");
-                const current = latestTokenMap[visitId];
-                const currentIsDraft = current && (current.toUpperCase().startsWith("DRAFT-") || current.toUpperCase().startsWith("D-"));
-                if (!current) {
-                    latestTokenMap[visitId] = cleanToken;
-                } else if (currentIsDraft && !isDraft) {
-                    latestTokenMap[visitId] = cleanToken;
+            const patient = event.metadataObj?.PatientName || event.patientName;
+            if (visitId) {
+                if (patient && !latestPatientMap[visitId]) {
+                    latestPatientMap[visitId] = patient;
+                }
+                if (rawToken) {
+                    const cleanToken = rawToken.trim();
+                    const isDraft = cleanToken.toUpperCase().startsWith("DRAFT-") || cleanToken.toUpperCase().startsWith("D-");
+                    const current = latestTokenMap[visitId];
+                    const currentIsDraft = current && (current.toUpperCase().startsWith("DRAFT-") || current.toUpperCase().startsWith("D-"));
+                    if (!current) {
+                        latestTokenMap[visitId] = cleanToken;
+                    } else if (currentIsDraft && !isDraft) {
+                        latestTokenMap[visitId] = cleanToken;
+                    }
                 }
             }
         });
 
-        const groups = [];
-        let currentGroup = null;
+        // Group events by Token into a unified timeline map
+        const groupsByToken = new Map();
 
         events.forEach(event => {
             const msg = event.title || event.summaryText || event.SummaryText || "";
@@ -267,43 +294,48 @@ export function ActivityStream({ serverTime }) {
             }
             token = (token || "").trim();
 
-            if (!currentGroup || currentGroup.token !== token) {
-                if (currentGroup) groups.push(currentGroup);
+            let groupPatientName = event.metadataObj?.PatientName || (visitId ? latestPatientMap[visitId] : null);
+            if (!groupPatientName) {
+                groupPatientName = (token === "System") ? "Operational Log" : "Processing...";
+            }
 
-                let groupPatientName = event.metadataObj?.PatientName;
-                if (!groupPatientName) {
-                    groupPatientName = (token === "System") ? "Operational Log" : "Processing...";
-                }
-
-                currentGroup = {
+            if (!groupsByToken.has(token)) {
+                groupsByToken.set(token, {
                     token: token,
                     patientName: groupPatientName,
                     actorName: event.metadataObj?.ActorName || event.actorName || "User",
-                    items: [{ ...event, messageResolved: msg }],
+                    items: [],
                     timestamp: event.occurredAt
-                };
-            } else {
-                currentGroup.items.push({ ...event, messageResolved: msg });
-                if (currentGroup.patientName === "Processing..." && event.metadataObj?.PatientName) {
-                    currentGroup.patientName = event.metadataObj.PatientName;
-                }
+                });
             }
-        });
-        if (currentGroup) groups.push(currentGroup);
 
-        return groups.map(group => {
+            const group = groupsByToken.get(token);
+            if (group.patientName === "Processing..." && groupPatientName !== "Processing...") {
+                group.patientName = groupPatientName;
+            }
+            if (new Date(event.occurredAt) > new Date(group.timestamp)) {
+                group.timestamp = event.occurredAt;
+            }
+            group.items.push({ ...event, messageResolved: msg });
+        });
+
+        const rawGroups = Array.from(groupsByToken.values());
+
+        // Sort groups by latest activity descending
+        rawGroups.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+        return rawGroups.map(group => {
             const seenCategories = new Set();
             const mergedItems = group.items.filter(item => {
                 const type = (item.eventType || '').toUpperCase();
                 const msg = (item.title || item.summaryText || item.SummaryText || '').toLowerCase();
 
-                // Hide noise: standard Visit Finalized (unless it represents a Prepaid/Partner Collects checkout)
-                const isPrepaidFinalize = msg.includes('prepaid') || msg.includes('partner collects') || item.metadataObj?.Method === 'PartnerCollects';
-                if (type === 'VISIT_FINALIZED' && !isPrepaidFinalize) return false;
-
                 let category = type;
-                if (type === 'BILL_GENERATED' || type === 'PAYMENT_RECEIVED' || type === 'RECEIVABLE_CREATED' || isPrepaidFinalize || msg.includes('payment received') || msg.includes('billed') || msg.includes('prepaid')) {
+                if (type === 'BILL_GENERATED' || type === 'PAYMENT_RECEIVED' || type === 'RECEIVABLE_CREATED' || type === 'VISIT_FINALIZED' || msg.includes('payment received') || msg.includes('billed') || msg.includes('prepaid') || msg.includes('finalized')) {
                     category = 'BILLING';
+                }
+                else if (type === 'VISIT_UPDATED' || type === 'VISIT_CORRECTED' || type === 'VISIT_CORRECTED_AFTER_PAYMENT' || msg.includes('amend') || msg.includes('corrected') || msg.includes('audit')) {
+                    category = 'AMENDMENT_' + (item.eventId || item.occurredAt);
                 }
                 else if (type === 'SPECIMEN_COLLECTED' || type === 'SAMPLE_COLLECTED' || msg.includes('sample collected') || msg.includes('specimen collected')) {
                     category = 'COLLECTION';
@@ -325,8 +357,11 @@ export function ActivityStream({ serverTime }) {
                 return true;
             });
 
-            return { ...group, items: mergedItems };
-        });
+            // Fallback: If mergedItems is empty, retain the latest event so patient is never an empty card
+            const finalItems = mergedItems.length > 0 ? mergedItems : (group.items.length > 0 ? [group.items[0]] : []);
+
+            return { ...group, items: finalItems };
+        }).filter(group => group.items.length > 0);
     }, [events]);
 
     // STYLES MATCHING ACTION QUEUE
