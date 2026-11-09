@@ -409,7 +409,7 @@ export function PatientIdentification({
 
             {/* NEW PATIENT FORM (Inline) */}
             {isNewPatientMode && (
-                <div className={cn("rounded-lg p-4 animate-in slide-in-from-right-2 border", ui.form)}>
+                <div className={cn("rounded-2xl p-4 sm:p-5 animate-in slide-in-from-right-2 border shadow-lg overflow-y-auto max-h-[calc(100vh-140px)]", ui.form)}>
                     <div className="flex items-center gap-2.5 mb-4">
                         <div className="w-7 h-7 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-sm shadow-xs">
                             1
@@ -436,8 +436,8 @@ export function PatientIdentification({
                         initialMobile={searchQuery}
                         initialNoMobile={startWithNoMobile}
                         onSuccess={(result, data) => {
-                            // Ensure MRN and other metadata from backend are preserved
-                            onSelectPatient({ ...data, ...result, id: result.patientId }); 
+                            // Ensure MRN, health card and other metadata from backend are preserved
+                            onSelectPatient({ ...data, ...result, id: result.patientId }, data); 
                             setIsNewPatientMode(false);
                             setStartWithNoMobile(false);
                         }}
@@ -453,6 +453,13 @@ export function PatientIdentification({
 }
 
 
+const DEFAULT_HEALTH_CARD_PLANS = [
+    { planId: "c0000000-0000-0000-0000-000000000001", planCode: "HC-INDIVIDUAL", planName: "Individual Care (1 Person)", price: 500, maxMembers: 1, defaultDiscountPercentage: 30 },
+    { planId: "c0000000-0000-0000-0000-000000000002", planCode: "HC-COUPLE-2", planName: "Couple Care (2 Persons)", price: 1000, maxMembers: 2, defaultDiscountPercentage: 30 },
+    { planId: "c0000000-0000-0000-0000-000000000003", planCode: "HC-FAMILY-3", planName: "Family of 3", price: 1500, maxMembers: 3, defaultDiscountPercentage: 30 },
+    { planId: "c0000000-0000-0000-0000-000000000004", planCode: "HC-FAMILY-4", planName: "Family of 4", price: 2000, maxMembers: 4, defaultDiscountPercentage: 30 }
+];
+
 function RegisterFormInline({ onSuccess, onCancel, initialMobile = '', initialNoMobile = false }) {
     const [formData, setFormData] = useState({ name: '', mobile: initialMobile, gender: 'Male' });
     const [hasNoMobile, setHasNoMobile] = useState(Boolean(initialNoMobile));
@@ -464,10 +471,10 @@ function RegisterFormInline({ onSuccess, onCancel, initialMobile = '', initialNo
     const [error, setError] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Health Card Instant Subscription State
+    // Health Card Instant Subscription State (Pre-populated with default plans for 0ms lag)
     const [issueHealthCard, setIssueHealthCard] = useState(false);
-    const [healthCardPlans, setHealthCardPlans] = useState([]);
-    const [selectedPlanId, setSelectedPlanId] = useState(null);
+    const [healthCardPlans, setHealthCardPlans] = useState(DEFAULT_HEALTH_CARD_PLANS);
+    const [selectedPlanId, setSelectedPlanId] = useState(DEFAULT_HEALTH_CARD_PLANS[0].planId);
     const [hcDiscountType, setHcDiscountType] = useState('Percentage'); // 'Percentage' | 'Flat'
     const [hcDiscountValue, setHcDiscountValue] = useState('30');
     const [hcPaymentMode, setHcPaymentMode] = useState('Cash'); // Cash, UPI, Card
@@ -484,8 +491,7 @@ function RegisterFormInline({ onSuccess, onCancel, initialMobile = '', initialNo
         HealthCardApi.getPlans().then(plans => {
             if (plans && plans.length > 0) {
                 setHealthCardPlans(plans);
-                setSelectedPlanId(plans[0].planId);
-                setHcDiscountValue(String(plans[0].defaultDiscountPercentage || 30));
+                setSelectedPlanId(prev => (plans.some(p => p.planId === prev) ? prev : plans[0].planId));
             }
         }).catch(err => console.error('Failed to load health card plans', err));
     }, []);
@@ -655,13 +661,17 @@ function RegisterFormInline({ onSuccess, onCancel, initialMobile = '', initialNo
             };
             const result = await ReceptionApi.registerPatient(apiPayload);
             if (result && result.patientId) {
+                let cardRes = null;
+                const chosenPlan = healthCardPlans.find(p => p.planId === selectedPlanId) || 
+                                   DEFAULT_HEALTH_CARD_PLANS.find(p => p.planId === selectedPlanId) || 
+                                   DEFAULT_HEALTH_CARD_PLANS[0];
+
                 if (issueHealthCard && selectedPlanId) {
                     try {
-                        const plan = healthCardPlans.find(p => p.planId === selectedPlanId);
-                        const cardRes = await HealthCardApi.issueCard({
-                            planId: selectedPlanId,
+                        cardRes = await HealthCardApi.issueCard({
+                            planId: chosenPlan.planId,
                             primaryPatientId: result.patientId,
-                            pricePaid: plan?.price || 500,
+                            pricePaid: chosenPlan.price || 1000,
                             paymentMode: hcPaymentMode,
                             discountType: hcDiscountType,
                             discountValue: parseFloat(hcDiscountValue) || 30,
@@ -678,7 +688,16 @@ function RegisterFormInline({ onSuccess, onCancel, initialMobile = '', initialNo
                     dob: finalDob, 
                     isDateOfBirthKnown, 
                     age: finalAge,
-                    mrn: result.mrn 
+                    mrn: result.mrn,
+                    healthCardToBill: issueHealthCard ? {
+                        planId: chosenPlan.planId,
+                        planCode: chosenPlan.planCode,
+                        planName: chosenPlan.planName,
+                        price: chosenPlan.price,
+                        discountType: hcDiscountType,
+                        discountValue: parseFloat(hcDiscountValue) || 30,
+                        card: cardRes
+                    } : null
                 });
             }
         } catch (err) {
@@ -918,12 +937,12 @@ function RegisterFormInline({ onSuccess, onCancel, initialMobile = '', initialNo
 
                         {issueHealthCard && (
                             <div className="space-y-3 pt-2 border-t border-blue-100 dark:border-blue-900/40 animate-in fade-in duration-200">
-                                {/* TIER SELECTION */}
+                                {/* TIER SELECTION (2x2 Grid Layout) */}
                                 <div>
                                     <label className={cn("text-[11px] font-bold block mb-1.5", isDark ? "text-zinc-300" : "text-slate-700")}>
                                         Select Subscription Tier
                                     </label>
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                                    <div className="grid grid-cols-2 gap-2.5">
                                         {healthCardPlans.map(plan => {
                                             const isSelected = selectedPlanId === plan.planId;
                                             return (
@@ -932,18 +951,21 @@ function RegisterFormInline({ onSuccess, onCancel, initialMobile = '', initialNo
                                                     type="button"
                                                     onClick={() => handleSelectPlan(plan)}
                                                     className={cn(
-                                                        "p-2 rounded-lg text-left transition-all border cursor-pointer",
+                                                        "p-3 rounded-xl text-left transition-all border cursor-pointer relative",
                                                         isSelected
-                                                            ? "bg-blue-600 text-white border-blue-600 shadow-xs font-bold"
+                                                            ? "bg-blue-600 text-white border-blue-600 shadow-sm ring-2 ring-blue-500/30"
                                                             : (isDark ? "bg-zinc-850 hover:bg-zinc-800 border-zinc-700 text-zinc-300" : "bg-white hover:bg-slate-50 border-slate-200 text-slate-800")
                                                     )}
                                                 >
-                                                    <div className="text-xs font-bold truncate">{plan.planName}</div>
-                                                    <div className={cn("text-[11px] font-mono mt-0.5", isSelected ? "text-blue-100" : "text-blue-600 dark:text-blue-400 font-bold")}>
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="text-xs font-bold truncate pr-1">{plan.planName}</div>
+                                                        {isSelected && <Check className="w-3.5 h-3.5 text-white shrink-0" />}
+                                                    </div>
+                                                    <div className={cn("text-sm font-black font-mono mt-1", isSelected ? "text-white" : "text-blue-600 dark:text-blue-400")}>
                                                         ₹{plan.price.toLocaleString()}
                                                     </div>
-                                                    <div className={cn("text-[10px]", isSelected ? "text-blue-200" : "text-zinc-500")}>
-                                                        {plan.maxMembers} Member{plan.maxMembers > 1 ? 's' : ''}
+                                                    <div className={cn("text-[11px] mt-0.5", isSelected ? "text-blue-100" : "text-zinc-500")}>
+                                                        {plan.maxMembers} Member{plan.maxMembers > 1 ? 's' : ''} • 365 Days
                                                     </div>
                                                 </button>
                                             );
@@ -1081,13 +1103,13 @@ function RegisterFormInline({ onSuccess, onCancel, initialMobile = '', initialNo
                 </div>
             )}
 
-            {/* ACTIONS */}
-            <div className="pt-2 flex items-center gap-2">
+            {/* ACTIONS (Sticky Footer: Always visible and accessible on small screens) */}
+            <div className="sticky bottom-0 bg-white/95 dark:bg-zinc-900/95 pt-3 pb-2 backdrop-blur-md border-t border-slate-200/80 dark:border-zinc-800 -mx-4 px-4 -mb-4 rounded-b-xl z-20 shadow-[0_-4px_12px_rgba(0,0,0,0.06)] flex items-center gap-2">
                 {onCancel && (
                     <button
                         type="button"
                         onClick={onCancel}
-                        className="flex-1 py-2 rounded-lg border border-transparent hover:bg-black/5 text-zinc-500 text-xs font-medium transition-colors"
+                        className="flex-1 py-2 rounded-lg border border-transparent hover:bg-black/5 text-zinc-500 text-xs font-medium transition-colors cursor-pointer"
                     >
                         Cancel
                     </button>

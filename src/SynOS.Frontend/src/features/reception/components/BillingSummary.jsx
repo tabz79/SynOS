@@ -884,7 +884,7 @@ export function BillingSummary({
         amountLabel = displayAmountToCollect > 0 ? "Patient Co-Pay to Collect" : "Cashless Claim (₹0 at desk)";
     }
 
-    const currentGross = (isCorrectionIntent && stagedGross !== undefined)
+    const currentGross = (stagedGross !== undefined)
         ? stagedGross
         : (billing?.grossAmount || 0);
     const hasTestsForBilling = currentGross > 0 || (snapshot?.tests?.length || 0) > 0;
@@ -997,7 +997,7 @@ export function BillingSummary({
 
                 {/* 1. TOP REFERRAL & CONCESSION ACTION BAR */}
                 {(() => {
-                    const grossDisplay = isCorrectionIntent && stagedGross !== undefined
+                    const grossDisplay = (stagedGross !== undefined)
                         ? stagedGross
                         : (billing?.grossAmount || 0);
 
@@ -1020,21 +1020,21 @@ export function BillingSummary({
 
                     const hasDiscountApplied = isPrepaid
                         ? computedB2BDiscountAmt > 0
-                        : (isCorrectionIntent 
-                            ? (Boolean(stagedDiscount) && !stagedDiscount.remove)
-                            : (Boolean(billing.appliedDiscount) && (billing.discountAmount > 0)));
+                        : (stagedDiscount && !stagedDiscount.remove)
+                            ? (stagedDiscountAmt > 0)
+                            : (Boolean(billing?.appliedDiscount) && (billing?.discountAmount > 0));
 
                     const discountDisplay = isPrepaid
                         ? computedB2BDiscountAmt
-                        : (isCorrectionIntent && stagedDiscount
+                        : (stagedDiscount && !stagedDiscount.remove)
                             ? (stagedDiscountAmt || 0)
-                            : (billing.discountAmount || 0));
+                            : (billing?.discountAmount || 0);
 
-                    const taxDisplay = billing.taxAmount || 0;
+                    const taxDisplay = billing?.taxAmount || 0;
 
-                    const discountReasonText = isCorrectionIntent && stagedDiscount && !stagedDiscount.isB2B
+                    const discountReasonText = (stagedDiscount && !stagedDiscount.remove && !stagedDiscount.isB2B)
                         ? (stagedDiscount.reason || stagedDiscount.name || (stagedDiscount.type === 'Percentage' ? `${stagedDiscount.value}%` : `₹${stagedDiscount.value}`))
-                        : (billing.appliedDiscount?.reason || billing.appliedDiscount?.name || '');
+                        : (billing?.appliedDiscount?.reason || billing?.appliedDiscount?.name || '');
 
                     // Contextual label: "B2B Discount" for Corporate B2B (Prepaid), "Patient Discount" for Direct/Standard
                     const discountLabel = isPrepaid 

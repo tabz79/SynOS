@@ -2341,6 +2341,37 @@ END
                     context.HealthCardPlanMasters.Add(plan);
                     Console.WriteLine($"[DbInitializer] SEEDED HEALTH CARD PLAN: {plan.PlanName} (Max {plan.MaxMembers} members, ₹{plan.Price})");
                 }
+
+                // Also ensure a billable Test catalog entry exists so Health Cards can be added directly to visit orders/bills
+                var test = context.Tests.FirstOrDefault(t => t.TestCode == plan.PlanCode);
+                if (test == null)
+                {
+                    test = new Test
+                    {
+                        TestId = Guid.NewGuid(),
+                        TestCode = plan.PlanCode,
+                        TestName = $"Health Card: {plan.PlanName}",
+                        Category = "HealthCard",
+                        IsActive = true,
+                        CreatedAt = DateTimeOffset.UtcNow,
+                        UpdatedAt = DateTimeOffset.UtcNow
+                    };
+                    context.Tests.Add(test);
+                    context.SaveChanges();
+                }
+
+                if (!context.TestPricings.Any(tp => tp.TestId == test.TestId))
+                {
+                    context.TestPricings.Add(new TestPricing
+                    {
+                        PricingId = Guid.NewGuid(),
+                        TestId = test.TestId,
+                        BasePrice = plan.Price,
+                        EffectiveFrom = DateTime.UtcNow.AddYears(-1),
+                        CreatedAt = DateTimeOffset.UtcNow
+                    });
+                    context.SaveChanges();
+                }
             }
             context.SaveChanges();
         }

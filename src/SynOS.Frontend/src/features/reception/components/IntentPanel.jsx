@@ -122,14 +122,52 @@ export function IntentPanel({ onVisitUpdated }) {
         return () => window.removeEventListener('synos:notification-hint', handleHint);
     }, []);
 
+    // Active Health Card state in IntentPanel
+    const [healthCardEligibility, setHealthCardEligibility] = useState(null);
+
     // Auto-apply Health Card discount when an active enrolled member is identified
     useEffect(() => {
-        const handleHealthCardEligibility = (e) => {
-            const elig = e.detail;
+        const p = displayedPatient || snapshot?.patient;
+        const pId = currentPatientId || p?.id || p?.Id || p?.patientId;
+        const phone = p?.mobile || p?.Mobile || p?.phoneNumber || p?.currentPhoneNumber || p?.CurrentPhoneNumber;
+
+        if (!pId && !phone) {
+            setHealthCardEligibility(null);
+            return;
+        }
+
+        let isMounted = true;
+        HealthCardApi.checkEligibility(pId, phone).then(elig => {
+            if (!isMounted) return;
+            setHealthCardEligibility(elig);
             if (elig?.hasActiveCard && elig?.isPatientEnrolledBeneficiary && elig?.card) {
                 const card = elig.card;
                 setStagedDiscount(prev => {
-                    // Do not override if user already entered a custom discount
+                    // Do not override if user already entered an explicit non-HC discount
+                    if (prev && !prev.isHealthCard && !prev.remove) return prev;
+                    return {
+                        type: card.configuredDiscountType === 'Flat' ? 'Flat' : 'Percentage',
+                        value: card.configuredDiscountValue,
+                        reason: `Health Card (${card.cardNumber})`,
+                        cardId: card.cardId,
+                        cardNumber: card.cardNumber,
+                        isHealthCard: true
+                    };
+                });
+            }
+        }).catch(err => console.error('HealthCard check failed in IntentPanel', err));
+
+        return () => { isMounted = false; };
+    }, [currentPatientId, displayedPatient, snapshot?.patient]);
+
+    // Also support custom event listener for immediate inter-component updates
+    useEffect(() => {
+        const handleHealthCardEligibility = (e) => {
+            const elig = e.detail;
+            if (elig) setHealthCardEligibility(elig);
+            if (elig?.hasActiveCard && elig?.isPatientEnrolledBeneficiary && elig?.card) {
+                const card = elig.card;
+                setStagedDiscount(prev => {
                     if (prev && !prev.isHealthCard && !prev.remove) return prev;
                     return {
                         type: card.configuredDiscountType === 'Flat' ? 'Flat' : 'Percentage',
@@ -410,12 +448,14 @@ export function IntentPanel({ onVisitUpdated }) {
 
     // HANDLERS
     // HANDLERS
-    const handleSelectPatient = async (patient) => {
+    const handleSelectPatient = async (patient, extraData = {}) => {
         if (!patient?.id) return;
 
         // Ensure Payer Mode is fully expanded with its options upon patient selection
         setUserPayerExpandedState(true);
         setIsPatientCardCollapsed(false);
+
+        const hcToBill = patient.healthCardToBill || extraData?.healthCardToBill;
 
         // INSTANT OPTIMISTIC SELECTION (< 1 ms): Render Visit Details immediately without full-screen spinner
         const patientName = patient.fullName || patient.name || `${patient.firstName || ''} ${patient.lastName || ''}`.trim();
@@ -429,13 +469,29 @@ export function IntentPanel({ onVisitUpdated }) {
             dateOfBirth: patient.dateOfBirth
         };
 
+        const optimisticTests = hcToBill ? [{
+            orderId: 'opt-hc-' + Date.now(),
+            OrderId: 'opt-hc-' + Date.now(),
+            testCode: hcToBill.planCode,
+            code: hcToBill.planCode,
+            testName: `Health Card: ${hcToBill.planName}`,
+            name: `Health Card: ${hcToBill.planName}`,
+            price: hcToBill.price,
+            basePrice: hcToBill.price,
+            isOptimistic: true,
+            dept: 'HEALTHCARD'
+        }] : [];
+
         setSnapshot(prev => ({
             ...prev,
             patient: optimisticPatient,
-            visit: prev?.visit || {
+            visit: prev?.visit ? {
+                ...prev.visit,
+                tests: optimisticTests
+            } : {
                 visitId: null,
                 paymentCollectionModel: 'LabCollects',
-                tests: []
+                tests: optimisticTests
             },
             uiState: { canRegisterPatient: true }
         }));
@@ -446,13 +502,31 @@ export function IntentPanel({ onVisitUpdated }) {
             const payload = {
                 patientId: patient.id,
                 dept: "Pathology",
-                testCodes: [],
+                testCodes: hcToBill?.planCode ? [hcToBill.planCode] : [],
                 paymentCollectionModel: null,
                 referralPartnerId: null
             };
 
             const { visitId } = await ReceptionApi.startVisit(payload);
             setCurrentVisitId(visitId);
+
+            if (hcToBill && visitId) {
+                try {
+                    await ReceptionApi.addTestToVisit(visitId, hcToBill.planCode);
+                } catch (e) {
+                    console.warn("Direct test add failed, attempting custom/outsourced item", e);
+                    try {
+                        await ReceptionApi.addOutsourcedTestToVisit(
+                            visitId,
+                            `Health Card: ${hcToBill.planName}`,
+                            hcToBill.price
+                        );
+                    } catch (err2) {
+                        console.error("Failed to add health card to visit", err2);
+                    }
+                }
+                await loadSnapshot(visitId);
+            }
         } catch (err) {
             console.error("Immediate Visit Creation Failed", err);
             setError("Failed to initialize visit: " + err.message);
@@ -762,7 +836,19 @@ export function IntentPanel({ onVisitUpdated }) {
     } else if (stagedDiscount) {
         const val = Number(stagedDiscount.value) || 0;
         if (stagedDiscount.type === 'Percentage') {
-            stagedDiscountAmt = Math.round((stagedGross * (val / 100)) * 100) / 100;
+            const allActiveTests = activeRemainingTests.concat(stagedAddedTests);
+            const discountableGross = stagedDiscount.isHealthCard
+                ? allActiveTests
+                    .filter(t => {
+                        const code = (t.code || t.testCode || '').toUpperCase();
+                        const name = (t.name || t.testName || '').toUpperCase();
+                        const cat = (t.dept || t.department || t.category || '').toUpperCase();
+                        return !code.startsWith('HC-') && !name.includes('HEALTH CARD') && cat !== 'HEALTHCARD';
+                    })
+                    .reduce((sum, t) => sum + (Number(t.basePrice || t.price || t.Price) || 0), 0)
+                : stagedGross;
+
+            stagedDiscountAmt = Math.round((discountableGross * (val / 100)) * 100) / 100;
         } else {
             stagedDiscountAmt = Math.min(stagedGross, val);
         }
@@ -1864,8 +1950,8 @@ export function IntentPanel({ onVisitUpdated }) {
                 {snapshot && (
                     <>
                         {(!hasPatient && !isCorrectionIntent) ? (
-                            /* 1. SEARCH STATE (No Patient Identified Yet) */
-                            <div className="relative h-full flex-1 min-h-0">
+                            /* 1. SEARCH STATE (No Patient Identified Yet - Scrollable on small laptop screens) */
+                            <div className="relative h-full flex-1 min-h-0 overflow-y-auto pr-1">
                                 <PatientIdentification
                                     snapshot={{ ...snapshot, patient: displayedPatient }}
                                     onSelectPatient={handleSelectPatient}
@@ -2709,6 +2795,85 @@ export function IntentPanel({ onVisitUpdated }) {
                                                         onSecondaryAction={handleOpenEditDemographics}
                                                         isLocked={true}
                                                     />
+                                                </div>
+                                            )}
+
+                                            {/* Health Card Membership Status Banner (2-Column Active View) */}
+                                            {healthCardEligibility?.hasActiveCard && (
+                                                <div className="pt-1 animate-in fade-in duration-200">
+                                                    {healthCardEligibility.isPatientEnrolledBeneficiary ? (
+                                                        <div className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-950/40 dark:to-blue-950/30 border border-indigo-200 dark:border-indigo-800/80 flex items-center justify-between shadow-2xs">
+                                                            <div className="flex items-center gap-2.5 min-w-0">
+                                                                <div className="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold shrink-0 shadow-xs text-xs">
+                                                                    💎
+                                                                </div>
+                                                                <div className="min-w-0">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className="text-xs sm:text-sm font-black text-indigo-950 dark:text-indigo-200 truncate">
+                                                                            Active Health Card (#{healthCardEligibility.card?.cardNumber})
+                                                                        </span>
+                                                                        <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-indigo-200 dark:bg-indigo-900 text-indigo-900 dark:text-indigo-200 shrink-0">
+                                                                            {healthCardEligibility.card?.configuredDiscountValue}% Discount Tier
+                                                                        </span>
+                                                                    </div>
+                                                                    <p className="text-[11px] text-indigo-700 dark:text-indigo-300 mt-0.5 truncate">
+                                                                        {healthCardEligibility.card?.plan?.planName || 'Membership'} • Valid until {new Date(healthCardEligibility.card?.validUntil).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                            <span className="px-2.5 py-1 rounded-xl text-xs font-black bg-indigo-600 text-white shadow-xs shrink-0 ml-2">
+                                                                {healthCardEligibility.card?.configuredDiscountValue}% Applied
+                                                            </span>
+                                                        </div>
+                                                    ) : healthCardEligibility.hasOpenSlots ? (
+                                                        <div className="p-3 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/30 border border-amber-300 dark:border-amber-800/80 flex items-center justify-between shadow-2xs">
+                                                            <div className="flex items-center gap-2.5 min-w-0">
+                                                                <div className="w-7 h-7 rounded-lg bg-amber-600 text-white flex items-center justify-center font-bold shrink-0 shadow-xs text-xs">
+                                                                    👨‍👩‍👧
+                                                                </div>
+                                                                <div className="min-w-0">
+                                                                    <div className="flex items-center gap-2">
+                                                                        <span className="text-xs sm:text-sm font-black text-amber-950 dark:text-amber-200 truncate">
+                                                                            Family Card Found ({healthCardEligibility.card?.cardNumber})
+                                                                        </span>
+                                                                        <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200 shrink-0">
+                                                                            {healthCardEligibility.availableSlots} Slot(s) Open
+                                                                        </span>
+                                                                    </div>
+                                                                    <p className="text-[11px] text-amber-800 dark:text-amber-300 mt-0.5">
+                                                                        Patient not enrolled yet. Click to enroll as family member.
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                onClick={async () => {
+                                                                    try {
+                                                                        const pId = currentPatientId || displayedPatient?.id || displayedPatient?.patientId;
+                                                                        await HealthCardApi.enrollBeneficiary(healthCardEligibility.card.cardId, {
+                                                                            existingPatientId: pId,
+                                                                            relationship: 'Family'
+                                                                        });
+                                                                        const recheck = await HealthCardApi.checkEligibility(pId, displayedPatient?.mobile);
+                                                                        setHealthCardEligibility(recheck);
+                                                                    } catch (e) {
+                                                                        alert(e.message || 'Enrollment failed');
+                                                                    }
+                                                                }}
+                                                                className="px-3 py-1.5 rounded-xl text-xs font-black bg-amber-600 hover:bg-amber-700 text-white shadow-xs flex items-center gap-1 cursor-pointer shrink-0 transition-transform active:scale-95 ml-2"
+                                                            >
+                                                                <UserPlus className="w-3.5 h-3.5" />
+                                                                <span>Enroll</span>
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-zinc-800/90 border border-slate-200 dark:border-zinc-700 flex items-center justify-between text-xs text-slate-700 dark:text-zinc-300">
+                                                            <div className="flex items-center gap-2">
+                                                                <Lock className="w-4 h-4 text-slate-400 shrink-0" />
+                                                                <span>Card #{healthCardEligibility.card?.cardNumber} is at capacity ({healthCardEligibility.card?.maxMembers} members). Standard tariff applies.</span>
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>
