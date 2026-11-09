@@ -760,6 +760,11 @@ export function VisitDetails({
                                    document.querySelector('[data-financials-focus="true"]');
         if (standardConcession && standardConcession.offsetParent !== null) return standardConcession;
 
+        // 1b. Secondary Concession Trigger / Input (for Existing Billed Due visits)
+        const secondaryConcession = document.getElementById('btn-toggle-secondary-concession') ||
+                                    document.getElementById('input-secondary-discount-val');
+        if (secondaryConcession && secondaryConcession.offsetParent !== null) return secondaryConcession;
+
         // 2. Corporate B2B Mode controls (B2B Discount Edit button if minimized, or Input if expanded)
         const b2bEditDiscount = document.getElementById('btn-edit-b2b-discount');
         if (b2bEditDiscount && b2bEditDiscount.offsetParent !== null) return b2bEditDiscount;

@@ -42,6 +42,8 @@ export function BillingSummary({
     setIsPartialPayment,
     customPaymentAmount = '',
     setCustomPaymentAmount,
+    settlementTerm = 'FULL',
+    setSettlementTerm,
     referralPartners = [],
     // POS Cash Tender & Split Payment Props
     tenderedAmount = '',
@@ -683,6 +685,7 @@ export function BillingSummary({
             setIsSecondaryExpanded(false);
             setSecondaryDiscountValue('');
             if (onVisitUpdated) onVisitUpdated();
+            advanceFocusToSettlementOrPayment();
         } catch (err) {
             console.error("Failed to apply secondary concession", err);
             alert("Failed to apply secondary concession: " + err.message);
@@ -852,15 +855,23 @@ export function BillingSummary({
     // It must NEVER appear during initial registration/intake, nor on Corporate B2B (Prepaid) or Insurance.
     const isExistingBilledDueVisit = isDirectStandard && 
         !isDraftVisit && 
-        remainingDue > 0 && 
-        (isCorrectionIntent || billing?.paymentStatus === 'PartialPayment' || billing?.paymentStatus === 'PartialDue' || (totalPaid > 0 && remainingDue > 0) || snapshot?.billing?.isLocked);
+        remainingDue > 0;
+
+    // Enterprise-grade settlement term determination ('FULL' | 'PARTIAL' | 'FULL_DUE')
+    const effectiveSettlementTerm = settlementTerm || (
+        isPartialPayment 
+            ? (customPaymentAmount === '0' ? 'FULL_DUE' : 'PARTIAL') 
+            : 'FULL'
+    );
 
     const hasDiscountApplied = isCorrectionIntent 
         ? (stagedDiscountAmt > 0 || (snapshot?.billing?.discountAmount > 0 && !stagedDiscount?.remove))
         : (billing?.discountAmount > 0 || stagedDiscountAmt > 0);
 
     let displayAmountToCollect = remainingDue;
-    let amountLabel = billing?.paymentStatus === 'Paid' ? "Total Bill Amount" : (totalPaid > 0 ? "Remaining Due to Collect" : "Amount to Collect");
+    let amountLabel = billing?.paymentStatus === 'Paid' 
+        ? "Total Bill Amount" 
+        : ((!isDraftVisit || totalPaid > 0) ? "Remaining Due to Collect" : "Amount to Collect");
 
     if (isPrepaid) {
         displayAmountToCollect = 0;
@@ -945,11 +956,17 @@ export function BillingSummary({
                         "px-3 py-1 rounded-full text-xs sm:text-sm font-bold border tracking-normal shrink-0",
                         billing.paymentStatus === 'Paid'
                             ? (isDark ? "bg-emerald-950/40 text-emerald-400 border-emerald-800" : "bg-[#EAF5F0] text-[#245E49] border-[#CFE8DD]")
-                            : billing.paymentStatus === 'PartialPayment'
+                            : (billing.paymentStatus === 'PartialPayment' || billing.paymentStatus === 'PartialDue' || (totalPaid > 0 && remainingDue > 0))
                                 ? (isDark ? "bg-amber-950/30 text-amber-300 border-amber-900/40" : "bg-[#FFF8EE] text-[#9A6B2F] border-[#F5E2C8]")
                                 : (isDark ? "bg-amber-950/30 text-amber-300 border-amber-900/40" : "bg-[#FFF8EE] text-[#9A6B2F] border-[#F5E2C8]")
                     )}>
-                        {billing.paymentStatus === 'PartialPayment' ? 'Partial Due' : billing.paymentStatus}
+                        {billing.paymentStatus === 'Paid' 
+                            ? 'Paid' 
+                            : (billing.paymentStatus === 'PartialPayment' || billing.paymentStatus === 'PartialDue' || (totalPaid > 0 && remainingDue > 0))
+                                ? 'Partial Due' 
+                                : (!isDraftVisit && remainingDue > 0)
+                                    ? 'Full Due'
+                                    : billing.paymentStatus}
                     </div>
                 )}
             </div>
@@ -1598,6 +1615,13 @@ export function BillingSummary({
                                                         id="btn-apply-secondary-discount"
                                                         disabled={!secondaryDiscountValue || Number(secondaryDiscountValue) <= 0 || !secondaryReason?.trim() || isApplyingSecondary || isProcessing}
                                                         onClick={handleApplySecondaryConcession}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === 'Tab' && !e.shiftKey) {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                advanceFocusToSettlementOrPayment();
+                                                            }
+                                                        }}
                                                         className="h-12 px-5 rounded-xl bg-[#E87A38] hover:bg-[#D96B29] text-white text-sm font-bold disabled:opacity-50 transition-all shrink-0 cursor-pointer shadow-xs active:scale-95 flex items-center gap-1.5 synos-focus-btn"
                                                     >
                                                         {isApplyingSecondary ? <Loader2 className="w-4 h-4 animate-spin" /> : "Apply"}
@@ -2631,9 +2655,14 @@ export function BillingSummary({
                     >
                         <div className="flex items-center justify-between">
                             <label className="text-base font-bold text-slate-800 dark:text-zinc-200 tracking-normal">Settlement Terms</label>
-                            {isPartialPayment && Number(customPaymentAmount) > 0 && (
+                            {effectiveSettlementTerm === 'PARTIAL' && (
                                 <span className="text-xs px-2.5 py-0.5 rounded-md font-bold uppercase tracking-wider border bg-[#FFF8EE] text-[#9A6B2F] dark:bg-amber-950/30 dark:text-amber-300 border-[#F5E2C8] dark:border-amber-900/40">
                                     Partial Due
+                                </span>
+                            )}
+                            {effectiveSettlementTerm === 'FULL_DUE' && (
+                                <span className="text-xs px-2.5 py-0.5 rounded-md font-bold uppercase tracking-wider border bg-[#FFF8EE] text-[#9A6B2F] dark:bg-amber-950/30 dark:text-amber-300 border-[#F5E2C8] dark:border-amber-900/40">
+                                    Full Due
                                 </span>
                             )}
                         </div>
@@ -2644,6 +2673,7 @@ export function BillingSummary({
                                 id="btn-settlement-full"
                                 type="button"
                                 onClick={() => {
+                                    setSettlementTerm?.('FULL');
                                     setIsPartialPayment?.(false);
                                     setCustomPaymentAmount?.('');
                                 }}
@@ -2652,7 +2682,16 @@ export function BillingSummary({
                                         if (e.shiftKey) {
                                             e.preventDefault();
                                             e.stopPropagation();
-                                            if (isDiscountExpanded) {
+                                            if (isSecondaryExpanded) {
+                                                document.getElementById('btn-apply-secondary-discount')?.focus();
+                                            } else if (isExistingBilledDueVisit) {
+                                                const secToggle = document.getElementById('btn-toggle-secondary-concession');
+                                                if (secToggle) secToggle.focus();
+                                                else {
+                                                    const outsourceBtn = document.getElementById('btn-outsource-test');
+                                                    if (outsourceBtn) outsourceBtn.focus();
+                                                }
+                                            } else if (isDiscountExpanded) {
                                                 document.getElementById('btn-apply-custom-discount')?.focus();
                                             } else if (hasDiscountApplied) {
                                                 const removeBtn = document.getElementById('btn-remove-discount');
@@ -2664,6 +2703,10 @@ export function BillingSummary({
                                             } else {
                                                 const trigger = document.getElementById('btn-discount-header-toggle') || document.querySelector('[data-concession-trigger="true"]');
                                                 if (trigger) trigger.focus();
+                                                else {
+                                                    const outsourceBtn = document.getElementById('btn-outsource-test');
+                                                    if (outsourceBtn) outsourceBtn.focus();
+                                                }
                                             }
                                         } else {
                                             e.preventDefault();
@@ -2674,12 +2717,12 @@ export function BillingSummary({
                                 }}
                                 className={cn(
                                     "flex-1 h-12 sm:h-13 px-3 rounded-2xl text-sm sm:text-base font-bold transition-all cursor-pointer flex items-center justify-center gap-2 border synos-focus-btn active:scale-95",
-                                    !isPartialPayment
+                                    effectiveSettlementTerm === 'FULL'
                                         ? "bg-[#39495E] text-white border-[#2F3D4E] shadow-sm"
                                         : "bg-[#EBF2F7] dark:bg-zinc-850 text-slate-800 dark:text-zinc-200 border-[#C5D8E6] dark:border-zinc-700 hover:bg-[#E2EDF4] shadow-2xs"
                                 )}
                             >
-                                {!isPartialPayment ? (
+                                {effectiveSettlementTerm === 'FULL' ? (
                                     <CircleDot className="w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 text-white" strokeWidth={2.5} />
                                 ) : (
                                     <Circle className="w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 text-slate-500 dark:text-zinc-400" strokeWidth={2} />
@@ -2691,10 +2734,18 @@ export function BillingSummary({
                                 id="btn-settlement-partial"
                                 type="button"
                                 onClick={() => {
+                                    setSettlementTerm?.('PARTIAL');
                                     setIsPartialPayment?.(true);
                                     if (!customPaymentAmount || Number(customPaymentAmount) === 0) {
                                         setCustomPaymentAmount?.(String(Math.round(displayAmountToCollect * 0.5)));
                                     }
+                                    setTimeout(() => {
+                                        const inp = document.getElementById('input-partial-amount');
+                                        if (inp) {
+                                            inp.focus();
+                                            inp.select();
+                                        }
+                                    }, 50);
                                 }}
                                 onKeyDown={(e) => {
                                     if (e.key === 'Tab') {
@@ -2711,12 +2762,12 @@ export function BillingSummary({
                                 }}
                                 className={cn(
                                     "flex-1 h-12 sm:h-13 px-3 rounded-2xl text-sm sm:text-base font-bold transition-all cursor-pointer flex items-center justify-center gap-2 border synos-focus-btn active:scale-95",
-                                    isPartialPayment && Number(customPaymentAmount) > 0
+                                    effectiveSettlementTerm === 'PARTIAL'
                                         ? "bg-[#39495E] text-white border-[#2F3D4E] shadow-sm"
                                         : "bg-[#EBF2F7] dark:bg-zinc-850 text-slate-800 dark:text-zinc-200 border-[#C5D8E6] dark:border-zinc-700 hover:bg-[#E2EDF4] shadow-2xs"
                                 )}
                             >
-                                {isPartialPayment && Number(customPaymentAmount) > 0 ? (
+                                {effectiveSettlementTerm === 'PARTIAL' ? (
                                     <CircleDot className="w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 text-white" strokeWidth={2.5} />
                                 ) : (
                                     <Circle className="w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 text-slate-500 dark:text-zinc-400" strokeWidth={2} />
@@ -2728,6 +2779,7 @@ export function BillingSummary({
                                 id="btn-settlement-fulldue"
                                 type="button"
                                 onClick={() => {
+                                    setSettlementTerm?.('FULL_DUE');
                                     setIsPartialPayment?.(true);
                                     setCustomPaymentAmount?.('0');
                                 }}
@@ -2740,30 +2792,35 @@ export function BillingSummary({
                                         } else {
                                             e.preventDefault();
                                             e.stopPropagation();
-                                            const partialInput = document.getElementById('input-partial-amount');
-                                            if (partialInput && partialInput.offsetParent !== null) {
-                                                partialInput.focus();
-                                            } else {
-                                                const payCash = document.getElementById('btn-payment-cash') ||
-                                                                document.querySelector('[data-payment-method="true"]');
-                                                if (payCash) payCash.focus();
-                                                else {
-                                                    const actionBtn = document.getElementById('btn-delete-draft') ||
-                                                                      document.getElementById('btn-unified-action');
-                                                    if (actionBtn) actionBtn.focus();
+                                            if (effectiveSettlementTerm === 'PARTIAL') {
+                                                const partialInput = document.getElementById('input-partial-amount');
+                                                if (partialInput && partialInput.offsetParent !== null) {
+                                                    partialInput.focus();
+                                                    return;
                                                 }
                                             }
+                                            if (effectiveSettlementTerm !== 'FULL_DUE') {
+                                                const payCash = document.getElementById('btn-payment-cash') ||
+                                                                document.querySelector('[data-payment-method="true"]');
+                                                if (payCash) {
+                                                    payCash.focus();
+                                                    return;
+                                                }
+                                            }
+                                            const actionBtn = document.getElementById('btn-delete-draft') ||
+                                                              document.getElementById('btn-unified-action');
+                                            if (actionBtn) actionBtn.focus();
                                         }
                                     }
                                 }}
                                 className={cn(
                                     "flex-1 h-12 sm:h-13 px-3 rounded-2xl text-sm sm:text-base font-bold transition-all cursor-pointer flex items-center justify-center gap-2 border synos-focus-btn active:scale-95",
-                                    isPartialPayment && Number(customPaymentAmount) === 0
+                                    effectiveSettlementTerm === 'FULL_DUE'
                                         ? "bg-[#39495E] text-white border-[#2F3D4E] shadow-sm"
                                         : "bg-[#EBF2F7] dark:bg-zinc-850 text-slate-800 dark:text-zinc-200 border-[#C5D8E6] dark:border-zinc-700 hover:bg-[#E2EDF4] shadow-2xs"
                                 )}
                             >
-                                {isPartialPayment && Number(customPaymentAmount) === 0 ? (
+                                {effectiveSettlementTerm === 'FULL_DUE' ? (
                                     <CircleDot className="w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 text-white" strokeWidth={2.5} />
                                 ) : (
                                     <Circle className="w-4 h-4 sm:w-4.5 sm:h-4.5 shrink-0 text-slate-500 dark:text-zinc-400" strokeWidth={2} />
@@ -2773,7 +2830,7 @@ export function BillingSummary({
                         </div>
 
                         {/* Partial Payment Amount Input & Quick Chips */}
-                        {isPartialPayment && Number(customPaymentAmount) > 0 && (
+                        {effectiveSettlementTerm === 'PARTIAL' && (
                             <div className="p-4 sm:p-5 rounded-2xl bg-white/70 dark:bg-zinc-800/60 border border-[#CCDCE8]/80 dark:border-zinc-700/80 shadow-[0_2px_8px_rgba(15,35,60,0.03)] space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
                                 <div className="flex items-center justify-between">
                                     <span className="text-base font-bold text-slate-800 dark:text-zinc-200 tracking-normal">
@@ -2791,10 +2848,15 @@ export function BillingSummary({
                                         type="number"
                                         min="1"
                                         max={displayAmountToCollect}
-                                        value={customPaymentAmount || ''}
+                                        value={customPaymentAmount ?? ''}
                                         onChange={(e) => {
-                                            const val = Math.min(displayAmountToCollect, Math.max(0, Number(e.target.value)));
-                                            setCustomPaymentAmount?.(e.target.value === '' ? '' : String(val));
+                                            const raw = e.target.value;
+                                            if (raw === '') {
+                                                setCustomPaymentAmount?.('');
+                                                return;
+                                            }
+                                            const val = Math.min(displayAmountToCollect, Math.max(0, Number(raw)));
+                                            setCustomPaymentAmount?.(String(val));
                                         }}
                                         onFocus={(e) => e.target.select()}
                                         onKeyDown={(e) => {
@@ -2869,7 +2931,7 @@ export function BillingSummary({
                 )}
 
                 {/* E. Payment Method (STAGE 2) - Only show when desk collection is required */}
-                {displayAmountToCollect > 0 && !(isPartialPayment && Number(customPaymentAmount) === 0) && (billing?.paymentStatus === 'PendingPayment' || billing?.paymentStatus === 'PartialPayment') && (
+                {displayAmountToCollect > 0 && effectiveSettlementTerm !== 'FULL_DUE' && (billing?.paymentStatus === 'PendingPayment' || billing?.paymentStatus === 'PartialPayment') && (
                     <div 
                         className="pt-2 animate-in fade-in space-y-2"
                         onFocusCapture={() => { if (isDiscountExpanded) setIsDiscountExpanded(false); }}

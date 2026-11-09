@@ -95,6 +95,7 @@ export function IntentPanel({ onVisitUpdated }) {
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [isPartialPayment, setIsPartialPayment] = useState(false);
     const [customPaymentAmount, setCustomPaymentAmount] = useState('');
+    const [settlementTerm, setSettlementTerm] = useState('FULL'); // 'FULL' | 'PARTIAL' | 'FULL_DUE'
     const [userPayerExpandedState, setUserPayerExpandedState] = useState(true);
     const [isPatientCardCollapsed, setIsPatientCardCollapsed] = useState(false);
     const [isPayerScrolledOut, setIsPayerScrolledOut] = useState(false);
@@ -260,6 +261,7 @@ export function IntentPanel({ onVisitUpdated }) {
             setPaymentMethod('Cash'); // Reset to default
             setIsPartialPayment(false);
             setCustomPaymentAmount('');
+            setSettlementTerm('FULL');
             setActiveModal(null);
             setStagedAddedTests([]);
             setStagedRemovedOrderIds([]);
@@ -1192,9 +1194,17 @@ export function IntentPanel({ onVisitUpdated }) {
             setIsActionSubmitting(true);
             setError(null);
             try {
-                const isFullDueSelected = isPartialPayment && Number(customPaymentAmount) === 0;
+                const isFullDueSelected = settlementTerm === 'FULL_DUE';
+                const isPartialSelected = settlementTerm === 'PARTIAL';
                 const numCustom = Number(customPaymentAmount);
-                const isPartialValid = isPartialPayment && numCustom > 0 && numCustom < remainingDue;
+                const isPartialValid = isPartialSelected && numCustom > 0 && numCustom < remainingDue;
+
+                if (isPartialSelected && !isPartialValid) {
+                    setIsLoading(false);
+                    setIsActionSubmitting(false);
+                    return;
+                }
+
                 const effectiveAmount = isFullDueSelected ? 0 : (isPartialValid ? numCustom : remainingDue);
                 const methodToUse = isFullDueSelected ? 'Unpaid / Credit' : paymentMethod;
 
@@ -1254,6 +1264,7 @@ export function IntentPanel({ onVisitUpdated }) {
 
                 setIsPartialPayment(false);
                 setCustomPaymentAmount('');
+                setSettlementTerm('FULL');
                 setTenderedAmount('');
                 setChangeReturnedNow('');
                 setIsChangeRetainedAsDue(false);
@@ -1622,18 +1633,30 @@ export function IntentPanel({ onVisitUpdated }) {
                 mainActionLabel = "Confirm & Complete Visit (₹0)";
                 isActionEnabled = true;
             } else {
-                const isFullDueSelected = isPartialPayment && Number(customPaymentAmount) === 0;
+                const isFullDueSelected = settlementTerm === 'FULL_DUE';
+                const isPartialSelected = settlementTerm === 'PARTIAL';
                 const numCustom = Number(customPaymentAmount);
-                const isPartialValid = isPartialPayment && numCustom > 0 && numCustom < remainingDue;
+                const isPartialValid = isPartialSelected && numCustom > 0 && numCustom < remainingDue;
                 const payNowAmount = isPartialValid ? numCustom : remainingDue;
-                const balanceRemaining = remainingDue - payNowAmount;
+                const balanceRemaining = Math.max(0, remainingDue - payNowAmount);
 
                 if (isFullDueSelected) {
                     mainActionLabel = `Confirm Visit (Full Due ₹${remainingDue.toLocaleString()})`;
-                } else if (isPartialValid) {
-                    mainActionLabel = `Accept Partial (₹${payNowAmount.toLocaleString()}) • Due ₹${balanceRemaining.toLocaleString()}`;
+                    isActionEnabled = true;
+                } else if (isPartialSelected) {
+                    if (!customPaymentAmount || numCustom <= 0) {
+                        mainActionLabel = "Enter Partial Amount to Collect";
+                        isActionEnabled = false;
+                    } else if (numCustom >= remainingDue) {
+                        mainActionLabel = `Partial must be less than ₹${remainingDue.toLocaleString()}`;
+                        isActionEnabled = false;
+                    } else {
+                        mainActionLabel = `Accept Partial (₹${payNowAmount.toLocaleString()}) • Due ₹${balanceRemaining.toLocaleString()}`;
+                        isActionEnabled = true;
+                    }
                 } else if (isSplitPayment && (Number(splitCashAmount) + Number(splitUpiAmount) === payNowAmount)) {
                     mainActionLabel = `Accept Split Payment (₹${Number(splitCashAmount).toLocaleString()} Cash + ₹${Number(splitUpiAmount).toLocaleString()} UPI)`;
+                    isActionEnabled = true;
                 } else if (paymentMethod === 'Cash' && Number(tenderedAmount) > payNowAmount) {
                     if (isChangeRetainedAsDue) {
                         const retNow = Number(changeReturnedNow) || 0;
@@ -1643,10 +1666,11 @@ export function IntentPanel({ onVisitUpdated }) {
                         const changeToReturn = Number(tenderedAmount) - payNowAmount;
                         mainActionLabel = `Accept ₹${Number(tenderedAmount).toLocaleString()} and Return ₹${changeToReturn.toLocaleString()}`;
                     }
+                    isActionEnabled = true;
                 } else {
                     mainActionLabel = `Accept Payment (₹${payNowAmount.toLocaleString()})`;
+                    isActionEnabled = true;
                 }
-                isActionEnabled = true;
             }
         } else {
             mainActionLabel = hasTests ? "Visit Complete (Close)" : "Add Tests to Proceed";
@@ -2763,6 +2787,8 @@ export function IntentPanel({ onVisitUpdated }) {
                                                 setIsPartialPayment={setIsPartialPayment}
                                                 customPaymentAmount={customPaymentAmount}
                                                 setCustomPaymentAmount={setCustomPaymentAmount}
+                                                settlementTerm={settlementTerm}
+                                                setSettlementTerm={setSettlementTerm}
                                                 referralPartners={referralPartners}
                                                 tenderedAmount={tenderedAmount}
                                                 setTenderedAmount={setTenderedAmount}
