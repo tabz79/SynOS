@@ -74,6 +74,18 @@ export const HealthCardApi = {
         return data;
     },
 
+    attachToVisit: async (visitId, planId) => {
+        const url = withBranchId('/api/v1/reception/health-cards/attach-to-visit');
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: getHeaders(),
+            body: JSON.stringify({ visitId, planId })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Failed to attach health card to visit');
+        return data;
+    },
+
     getCards: async (query = '', limit = 50) => {
         const params = new URLSearchParams();
         if (query) params.append('query', query);

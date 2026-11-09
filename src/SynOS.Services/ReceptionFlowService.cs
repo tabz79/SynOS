@@ -166,6 +166,33 @@ namespace SynOS.Services
             {
                 _logger.LogInformation("StartVisit Idempotency: resuming existing visit {VisitId} (Token: {Token}, Status: {Status})", 
                     existingVisit.VisitId, existingVisit.Token, existingVisit.Status);
+
+                if (request.TestCodes != null && request.TestCodes.Length > 0)
+                {
+                    foreach (var code in request.TestCodes)
+                    {
+                        if (!string.IsNullOrWhiteSpace(code) && 
+                            !existingVisit.Orders.Any(o => string.Equals(o.TestCode, code, StringComparison.OrdinalIgnoreCase) && o.Status != OrderStatus.Cancelled))
+                        {
+                            try
+                            {
+                                await _visitService.AddTestToVisitAsync(existingVisit.VisitId, code, actorUserId);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogWarning(ex, "Failed to append test {TestCode} to resumed draft visit {VisitId}", code, existingVisit.VisitId);
+                            }
+                        }
+                    }
+
+                    existingVisit = await _context.Visits
+                        .Include(v => v.Patient)
+                        .Include(v => v.Orders)
+                        .Include(v => v.Invoices).ThenInclude(i => i.Payments)
+                        .Include(v => v.ReferralDraft)
+                        .FirstOrDefaultAsync(v => v.VisitId == existingVisit.VisitId) ?? existingVisit;
+                }
+
                 return await MapToStartVisitResponse(existingVisit);
             }
             // ------------------------------------------------------------
@@ -1471,9 +1498,48 @@ namespace SynOS.Services
             var stillMissing = missingCodes.Where(c => !dbMatchesSet.Contains(c)).ToList();
             if (stillMissing.Any())
             {
-                // Log and throw first missing for clear controller 404 behavior
-                _logger.LogWarning("Missing Test Definitions for codes: {codes}", string.Join(", ", stillMissing));
-                throw new KeyNotFoundException($"Test Definition for TestCode {stillMissing.First()} not found.");
+                // Self-healing: Check if any missing codes are Health Card plans and auto-provision them
+                var hcPlans = await _context.HealthCardPlanMasters
+                    .Where(p => stillMissing.Contains(p.PlanCode))
+                    .ToListAsync(cancellationToken);
+
+                if (hcPlans.Any())
+                {
+                    foreach (var plan in hcPlans)
+                    {
+                        var newTest = new Test
+                        {
+                            TestId = Guid.NewGuid(),
+                            TestCode = plan.PlanCode,
+                            TestName = $"Health Card: {plan.PlanName}",
+                            Category = "HealthCard",
+                            SpecimenTypeCode = "NO_SPECIMEN",
+                            IsActive = true,
+                            CreatedAt = DateTimeOffset.UtcNow,
+                            UpdatedAt = DateTimeOffset.UtcNow
+                        };
+                        _context.Tests.Add(newTest);
+
+                        _context.TestPricings.Add(new TestPricing
+                        {
+                            PricingId = Guid.NewGuid(),
+                            TestId = newTest.TestId,
+                            BasePrice = plan.Price,
+                            EffectiveFrom = DateTime.UtcNow.AddYears(-1),
+                            CreatedAt = DateTimeOffset.UtcNow
+                        });
+                        stillMissing.RemoveAll(c => string.Equals(c, plan.PlanCode, StringComparison.OrdinalIgnoreCase));
+                    }
+                    await _context.SaveChangesAsync(cancellationToken);
+                    _testsCacheService?.InvalidateTestsCache();
+                }
+
+                if (stillMissing.Any())
+                {
+                    // Log and throw first missing for clear controller 404 behavior
+                    _logger.LogWarning("Missing Test Definitions for codes: {codes}", string.Join(", ", stillMissing));
+                    throw new KeyNotFoundException($"Test Definition for TestCode {stillMissing.First()} not found.");
+                }
             }
         }
 

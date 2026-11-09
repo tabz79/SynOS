@@ -323,17 +323,19 @@ export function IntentPanel({ onVisitUpdated }) {
             .catch(err => console.warn("Failed to load referral partners:", err));
     }, [isOpen]);
 
-    const loadSnapshot = async () => {
+    const loadSnapshot = async (overrideVisitId = null, overridePatientId = null) => {
         if (!snapshot) setIsLoading(true);
         const snapshotVersion = modeSwitchVersionRef.current;
         try {
+            const targetPatientId = overridePatientId || currentPatientId;
+            const targetVisitId = overrideVisitId || currentVisitId;
             // In Resume/Correct Mode, we primarily query by VisitId
             // In Create Mode, we query by PatientId first (after selection)
-            const data = await ReceptionApi.getIntakeSnapshot(currentPatientId, currentVisitId);
+            const data = await ReceptionApi.getIntakeSnapshot(targetPatientId, targetVisitId);
             
             setSnapshot(prev => {
                 const mergedVisit = data?.visit || prev?.visit || {
-                    visitId: currentVisitId || null,
+                    visitId: targetVisitId || null,
                     paymentCollectionModel: 'LabCollects',
                     tests: []
                 };
@@ -348,9 +350,10 @@ export function IntentPanel({ onVisitUpdated }) {
             });
 
             // Sync IDs from verified snapshot
-            if (data?.visit?.id && data.visit.id !== currentVisitId) setCurrentVisitId(data.visit.id);
-            if (data?.visit?.visitId && data.visit.visitId !== currentVisitId) setCurrentVisitId(data.visit.visitId);
-            if (data?.patient?.patientId && data.patient.patientId !== currentPatientId) setCurrentPatientId(data.patient.patientId);
+            const finalVisitId = data?.visit?.id || data?.visit?.visitId || overrideVisitId;
+            if (finalVisitId && finalVisitId !== currentVisitId) setCurrentVisitId(finalVisitId);
+            const finalPatientId = data?.patient?.patientId || overridePatientId;
+            if (finalPatientId && finalPatientId !== currentPatientId) setCurrentPatientId(finalPatientId);
 
             // Sync multi-payer billing mode from snapshot ONLY if a mode switch hasn't occurred in the meantime
             if (snapshotVersion === modeSwitchVersionRef.current) {
@@ -447,6 +450,8 @@ export function IntentPanel({ onVisitUpdated }) {
             dept: 'HEALTHCARD'
         }] : [];
 
+        const optimisticGross = hcToBill ? (Number(hcToBill.price) || 0) : 0;
+
         setSnapshot(prev => ({
             ...prev,
             patient: optimisticPatient,
@@ -458,8 +463,32 @@ export function IntentPanel({ onVisitUpdated }) {
                 paymentCollectionModel: 'LabCollects',
                 tests: optimisticTests
             },
+            billing: {
+                grossAmount: optimisticGross,
+                discountAmount: 0,
+                netAmount: optimisticGross,
+                totalAmount: optimisticGross,
+                totalPaid: 0,
+                paymentStatus: 'PendingPayment'
+            },
             uiState: { canRegisterPatient: true }
         }));
+
+        // If newly issued card returned with selection, immediately stage discount rule
+        if (hcToBill?.card || hcToBill?.discountValue) {
+            const cardObj = hcToBill.card;
+            setStagedDiscount(prev => {
+                if (prev && !prev.isHealthCard && !prev.remove) return prev;
+                return {
+                    type: (cardObj?.configuredDiscountType || hcToBill.discountType) === 'Flat' ? 'Flat' : 'Percentage',
+                    value: Number(cardObj?.configuredDiscountValue ?? hcToBill.discountValue ?? 30),
+                    reason: `Health Card (${cardObj?.cardNumber || hcToBill.planName || 'Active'})`,
+                    cardId: cardObj?.cardId,
+                    cardNumber: cardObj?.cardNumber,
+                    isHealthCard: true
+                };
+            });
+        }
 
         setCurrentPatientId(patient.id);
 
@@ -472,25 +501,32 @@ export function IntentPanel({ onVisitUpdated }) {
                 referralPartnerId: null
             };
 
-            const { visitId } = await ReceptionApi.startVisit(payload);
-            setCurrentVisitId(visitId);
+            const res = await ReceptionApi.startVisit(payload);
+            const visitId = res?.visitId || res?.visit?.visitId || res?.id;
+            if (visitId) setCurrentVisitId(visitId);
 
             if (hcToBill && visitId) {
-                try {
-                    await ReceptionApi.addTestToVisit(visitId, hcToBill.planCode);
-                } catch (e) {
-                    console.warn("Direct test add failed, attempting custom/outsourced item", e);
+                // Ensure card order is attached if not already in response
+                const hasOrder = res?.orders?.some(o => o.testCode === hcToBill.planCode || o.code === hcToBill.planCode);
+                if (!hasOrder) {
                     try {
-                        await ReceptionApi.addOutsourcedTestToVisit(
-                            visitId,
-                            `Health Card: ${hcToBill.planName}`,
-                            hcToBill.price
-                        );
-                    } catch (err2) {
-                        console.error("Failed to add health card to visit", err2);
+                        if (hcToBill.planId) {
+                            await HealthCardApi.attachToVisit(visitId, hcToBill.planId);
+                        } else {
+                            await ReceptionApi.addTestToVisit(visitId, hcToBill.planCode);
+                        }
+                    } catch (e) {
+                        console.warn("Direct attach failed, trying addTestToVisit fallback", e);
+                        try {
+                            await ReceptionApi.addTestToVisit(visitId, hcToBill.planCode);
+                        } catch (err2) {
+                            console.error("Failed to add health card test to visit", err2);
+                        }
                     }
                 }
-                await loadSnapshot(visitId);
+                await loadSnapshot(visitId, patient.id);
+            } else if (visitId) {
+                await loadSnapshot(visitId, patient.id);
             }
         } catch (err) {
             console.error("Immediate Visit Creation Failed", err);

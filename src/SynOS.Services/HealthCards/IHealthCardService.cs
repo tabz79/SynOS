@@ -12,6 +12,7 @@ namespace SynOS.Services.HealthCards
         Task<HealthCardEligibilityCheckDto> CheckEligibilityAsync(Guid? patientId, string? phoneNumber);
         Task<HealthCardBeneficiaryDto> EnrollBeneficiaryAsync(Guid cardId, EnrollBeneficiaryRequestDto request, Guid cashierUserId);
         Task<bool> RecordCardUsageAsync(RecordCardUsageRequestDto request, Guid cashierUserId, string cashierUserName);
+        Task<bool> AttachCardToVisitAsync(Guid visitId, Guid planId, Guid cashierUserId);
         Task<IEnumerable<HealthCardSummaryDto>> GetCardsAsync(string? searchQuery, int limit = 50);
         Task<HealthCardSummaryDto?> GetCardByIdAsync(Guid cardId);
     }

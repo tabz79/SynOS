@@ -7,6 +7,7 @@ using SynOS.Data;
 using SynOS.Models.DTOs.HealthCards;
 using SynOS.Models.DTOs.Reception;
 using SynOS.Models.DTOs.Revenue;
+using SynOS.Models.Entities;
 using SynOS.Models.Entities.HealthCards;
 using SynOS.Models.Entities.Revenue;
 using SynOS.Services.Reception;
@@ -19,15 +20,18 @@ namespace SynOS.Services.HealthCards
         private readonly SynOSDbContext _context;
         private readonly IReceptionPatientService _patientService;
         private readonly IRevenueFactWriter _revenueFactWriter;
+        private readonly IRevenueEngine _revenueEngine;
 
         public HealthCardService(
             SynOSDbContext context,
             IReceptionPatientService patientService,
-            IRevenueFactWriter revenueFactWriter)
+            IRevenueFactWriter revenueFactWriter,
+            IRevenueEngine revenueEngine)
         {
             _context = context;
             _patientService = patientService;
             _revenueFactWriter = revenueFactWriter;
+            _revenueEngine = revenueEngine;
         }
 
         public async Task<IEnumerable<HealthCardPlanDto>> GetActivePlansAsync()
@@ -525,6 +529,73 @@ namespace SynOS.Services.HealthCards
                     FirstUsedAt = b.FirstUsedAt
                 }).ToList() ?? new List<HealthCardBeneficiaryDto>()
             };
+        }
+
+        public async Task<bool> AttachCardToVisitAsync(Guid visitId, Guid planId, Guid cashierUserId)
+        {
+            var plan = await _context.HealthCardPlanMasters.FindAsync(planId);
+            if (plan == null) throw new ArgumentException("Invalid health card plan ID.");
+
+            var visit = await _context.Visits
+                .Include(v => v.Orders)
+                .Include(v => v.Invoices)
+                .FirstOrDefaultAsync(v => v.VisitId == visitId);
+
+            if (visit == null) throw new KeyNotFoundException("Visit not found.");
+
+            // Idempotent: check if order already exists in active status
+            if (visit.Orders.Any(o => o.TestCode.Equals(plan.PlanCode, StringComparison.OrdinalIgnoreCase) && o.Status != SynOS.Models.Enums.OrderStatus.Cancelled))
+            {
+                return true;
+            }
+
+            // Ensure billable test catalog entry exists
+            var test = await _context.Tests.FirstOrDefaultAsync(t => t.TestCode == plan.PlanCode);
+            if (test == null)
+            {
+                test = new Test
+                {
+                    TestId = Guid.NewGuid(),
+                    TestCode = plan.PlanCode,
+                    TestName = $"Health Card: {plan.PlanName}",
+                    Category = "HealthCard",
+                    SpecimenTypeCode = "NO_SPECIMEN",
+                    IsActive = true,
+                    CreatedAt = DateTimeOffset.UtcNow,
+                    UpdatedAt = DateTimeOffset.UtcNow
+                };
+                _context.Tests.Add(test);
+
+                _context.TestPricings.Add(new TestPricing
+                {
+                    PricingId = Guid.NewGuid(),
+                    TestId = test.TestId,
+                    BasePrice = plan.Price,
+                    EffectiveFrom = DateTime.UtcNow.AddYears(-1),
+                    CreatedAt = DateTimeOffset.UtcNow
+                });
+                await _context.SaveChangesAsync();
+            }
+
+            var order = new Order
+            {
+                OrderId = Guid.NewGuid(),
+                VisitId = visitId,
+                TestId = test.TestId,
+                TestCode = plan.PlanCode,
+                Department = "HealthCard",
+                Status = SynOS.Models.Enums.OrderStatus.Pending,
+                Price = plan.Price,
+                Discount = 0,
+                CreatedAt = DateTime.UtcNow,
+                IsOutsourced = false
+            };
+
+            _context.Orders.Add(order);
+            await _context.SaveChangesAsync();
+
+            await _revenueEngine.ApplySnapshotAsync(visitId, cashierUserId);
+            return true;
         }
 
         private async Task<string> GenerateCardNumberAsync()

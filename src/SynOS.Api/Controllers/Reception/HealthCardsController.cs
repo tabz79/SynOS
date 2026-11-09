@@ -110,6 +110,29 @@ namespace SynOS.Api.Controllers.Reception
             }
         }
 
+        [HttpPost("attach-to-visit")]
+        public async Task<IActionResult> AttachToVisit([FromBody] AttachCardToVisitRequestDto request)
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                var success = await _healthCardService.AttachCardToVisitAsync(request.VisitId, request.PlanId, userId);
+                return Ok(new { success });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Failed to attach health card to visit.", details = ex.Message });
+            }
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetCards(
             [FromQuery] string? query = null, 

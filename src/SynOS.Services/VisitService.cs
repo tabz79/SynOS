@@ -1704,40 +1704,73 @@ namespace SynOS.Services
 
                 if (test == null)
                 {
-                    // If still missing, automatically auto-provision standard test with active pricing
-                    var isRad = normalized.Contains("XRAY") || normalized.Contains("CT") || normalized.Contains("MRI") || normalized.Contains("RAD");
-                    var dept = isRad
-                        ? await _context.DepartmentMasters.FirstOrDefaultAsync(d => d.Code == "RAD")
-                        : await _context.DepartmentMasters.FirstOrDefaultAsync(d => d.Code == "HEM" || d.Code == "PATHOLOGY");
-                    var mod = isRad ? await _context.ModalityMasters.FirstOrDefaultAsync(m => normalized.Contains(m.Code)) : null;
-
-                    test = new Test
+                    // Check if code matches a Health Card plan first
+                    var hcPlan = await _context.HealthCardPlanMasters.FirstOrDefaultAsync(p => p.PlanCode.ToUpper() == normalized);
+                    if (hcPlan != null)
                     {
-                        TestId = Guid.NewGuid(),
-                        TestCode = normalized,
-                        TestName = normalized == "CBC" ? "Complete Blood Count (CBC)" : normalized,
-                        Category = isRad ? "Radiology" : "Hematology",
-                        SpecimenTypeCode = isRad ? "NO_SPECIMEN" : "EDTA",
-                        DepartmentId = dept?.DepartmentId,
-                        ModalityId = mod?.ModalityId,
-                        IsProfile = false,
-                        IsActive = true,
-                        CreatedAt = DateTimeOffset.UtcNow,
-                        UpdatedAt = DateTimeOffset.UtcNow
-                    };
-                    _context.Tests.Add(test);
+                        test = new Test
+                        {
+                            TestId = Guid.NewGuid(),
+                            TestCode = hcPlan.PlanCode,
+                            TestName = $"Health Card: {hcPlan.PlanName}",
+                            Category = "HealthCard",
+                            SpecimenTypeCode = "NO_SPECIMEN",
+                            IsProfile = false,
+                            IsActive = true,
+                            CreatedAt = DateTimeOffset.UtcNow,
+                            UpdatedAt = DateTimeOffset.UtcNow
+                        };
+                        _context.Tests.Add(test);
 
-                    var pricing = new TestPricing
+                        var hcPricing = new TestPricing
+                        {
+                            PricingId = Guid.NewGuid(),
+                            TestId = test.TestId,
+                            BasePrice = hcPlan.Price,
+                            EffectiveFrom = DateTime.UtcNow.AddYears(-1),
+                            CreatedAt = DateTimeOffset.UtcNow
+                        };
+                        _context.TestPricings.Add(hcPricing);
+                        await _context.SaveChangesAsync();
+                        _testsCacheService.InvalidateTestsCache();
+                    }
+                    else
                     {
-                        PricingId = Guid.NewGuid(),
-                        TestId = test.TestId,
-                        BasePrice = isRad ? 1500.00m : 250.00m,
-                        EffectiveFrom = DateTime.UtcNow.AddMonths(-1),
-                        CreatedAt = DateTimeOffset.UtcNow
-                    };
-                    _context.TestPricings.Add(pricing);
-                    await _context.SaveChangesAsync();
-                    _testsCacheService.InvalidateTestsCache();
+                        // If still missing, automatically auto-provision standard test with active pricing
+                        var isRad = normalized.Contains("XRAY") || normalized.Contains("CT") || normalized.Contains("MRI") || normalized.Contains("RAD");
+                        var dept = isRad
+                            ? await _context.DepartmentMasters.FirstOrDefaultAsync(d => d.Code == "RAD")
+                            : await _context.DepartmentMasters.FirstOrDefaultAsync(d => d.Code == "HEM" || d.Code == "PATHOLOGY");
+                        var mod = isRad ? await _context.ModalityMasters.FirstOrDefaultAsync(m => normalized.Contains(m.Code)) : null;
+
+                        test = new Test
+                        {
+                            TestId = Guid.NewGuid(),
+                            TestCode = normalized,
+                            TestName = normalized == "CBC" ? "Complete Blood Count (CBC)" : normalized,
+                            Category = isRad ? "Radiology" : "Hematology",
+                            SpecimenTypeCode = isRad ? "NO_SPECIMEN" : "EDTA",
+                            DepartmentId = dept?.DepartmentId,
+                            ModalityId = mod?.ModalityId,
+                            IsProfile = false,
+                            IsActive = true,
+                            CreatedAt = DateTimeOffset.UtcNow,
+                            UpdatedAt = DateTimeOffset.UtcNow
+                        };
+                        _context.Tests.Add(test);
+
+                        var pricing = new TestPricing
+                        {
+                            PricingId = Guid.NewGuid(),
+                            TestId = test.TestId,
+                            BasePrice = isRad ? 1500.00m : 250.00m,
+                            EffectiveFrom = DateTime.UtcNow.AddMonths(-1),
+                            CreatedAt = DateTimeOffset.UtcNow
+                        };
+                        _context.TestPricings.Add(pricing);
+                        await _context.SaveChangesAsync();
+                        _testsCacheService.InvalidateTestsCache();
+                    }
                 }
             }
 
@@ -1781,6 +1814,17 @@ namespace SynOS.Services
             {
                 basePrice = test.TestPricings.OrderByDescending(tp => tp.CreatedAt).Select(tp => tp.BasePrice).FirstOrDefault();
             }
+
+            // If health card test, ensure price accurately matches plan price
+            if (test.TestCode.StartsWith("HC-", StringComparison.OrdinalIgnoreCase))
+            {
+                var plan = await _context.HealthCardPlanMasters.FirstOrDefaultAsync(p => p.PlanCode.ToUpper() == normalized);
+                if (plan != null && (basePrice <= 0 || basePrice == 100 || basePrice == 250))
+                {
+                    basePrice = plan.Price;
+                }
+            }
+
             if (basePrice <= 0)
             {
                 // Fallback to reasonable nominal default for catalog test to avoid breaking visit intake

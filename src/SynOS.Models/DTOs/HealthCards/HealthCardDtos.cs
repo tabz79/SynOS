@@ -122,4 +122,10 @@ namespace SynOS.Models.DTOs.HealthCards
         public decimal DiscountAmount { get; set; }
         public decimal NetAmount { get; set; }
     }
+
+    public class AttachCardToVisitRequestDto
+    {
+        public Guid VisitId { get; set; }
+        public Guid PlanId { get; set; }
+    }
 }

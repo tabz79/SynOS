@@ -71,16 +71,35 @@ namespace SynOS.Services.Revenue
 
             if (discountFact != null)
             {
+                var discountMaster = discountFact.DiscountDefinitionId != Guid.Empty
+                    ? await _context.DiscountMasters.FindAsync(discountFact.DiscountDefinitionId)
+                    : null;
+
+                bool isHealthCardDiscount = 
+                    (discountMaster != null && (discountMaster.Name.Contains("Health Card", StringComparison.OrdinalIgnoreCase) || discountMaster.Code.Contains("HC", StringComparison.OrdinalIgnoreCase))) ||
+                    (!string.IsNullOrEmpty(discountFact.AppliedBy) && discountFact.AppliedBy.Contains("Health Card", StringComparison.OrdinalIgnoreCase));
+
+                decimal discountableGross = grossAmount;
+                // INVARIANT: Health Card discount ONLY applies to diagnostic tests, never to the Health Card subscription fee itself
+                if (isHealthCardDiscount)
+                {
+                    discountableGross = visit.Orders
+                        .Where(o => o.Status != SynOS.Models.Enums.OrderStatus.Cancelled &&
+                                    !o.TestCode.StartsWith("HC-", StringComparison.OrdinalIgnoreCase) &&
+                                    o.Department != "HealthCard")
+                        .Sum(o => o.Price);
+                }
+
                 // RULE: Recompute derived amount based on Snapshot Rule + Current Gross.
                 if (discountFact.Type == DiscountType.Percentage)
-                    discountAmount = grossAmount * (discountFact.Value / 100m);
+                    discountAmount = discountableGross * (discountFact.Value / 100m);
                 else
-                    discountAmount = discountFact.Value;
+                    discountAmount = Math.Min(discountableGross, discountFact.Value);
 
                 if (discountFact.MaxLimit.HasValue && discountAmount > discountFact.MaxLimit.Value)
                     discountAmount = discountFact.MaxLimit.Value;
 
-                if (discountAmount > grossAmount) discountAmount = grossAmount;
+                if (discountAmount > discountableGross) discountAmount = discountableGross;
 
                 // Update Derived State in Fact
                 discountFact.GrossAmount = grossAmount;

@@ -860,6 +860,16 @@ BEGIN
 END
 ";
             context.Database.ExecuteSqlRaw(sql);
+
+            // Ensure Health Card Plans and billable test definitions exist in the active catalog
+            try
+            {
+                SeedHealthCardPlans(context);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[DbInitializer] Notice during SeedHealthCardPlans: {ex.Message}");
+            }
         }
 
         public static void Initialize(SynOSDbContext context)
