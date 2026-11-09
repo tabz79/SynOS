@@ -66,7 +66,23 @@ export function ReceptionScreen() {
     const [isServerUpdating, setIsServerUpdating] = useState(false);
 
     // Global Notification Center integration
-    const { isCenterOpen, toggleCenter, closeCenter, unreadCount, notify, syncRealitySummary } = useNotifications();
+    const { isCenterOpen, toggleCenter, closeCenter, unreadCount, notify, syncRealitySummary, clearToasts } = useNotifications();
+
+    // Suppress floating toasts and clear active toasts whenever ANY panel / drawer is open
+    const isAnyPanelOpen = Boolean(
+        isIntentPanelOpen ||
+        isInventoryModalOpen ||
+        isExpenseDrawerOpen ||
+        isB2BReceivablesOpen ||
+        isOptionsPanelOpen ||
+        isCenterOpen
+    );
+
+    useEffect(() => {
+        if (isAnyPanelOpen) {
+            clearToasts();
+        }
+    }, [isAnyPanelOpen, clearToasts]);
 
     // Synchronize reality summary with the milestone notification
     useEffect(() => {
@@ -795,8 +811,8 @@ export function ReceptionScreen() {
                 </div>
             </div>
 
-            {/* Floating 3-Toast Stack (Bottom-Right HUD) */}
-            <FloatingToastStack />
+            {/* Floating 3-Toast Stack (Bottom-Right HUD, suppressed when panels are open) */}
+            <FloatingToastStack isSuppressed={isAnyPanelOpen} />
         </div>
     )
 }

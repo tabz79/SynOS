@@ -61,10 +61,17 @@ export function NotificationProvider({ children }) {
         return DEFAULT_SEED_NOTIFICATIONS;
     });
 
-    // Floating Toast Stack (strictly the latest 3 FIFO items)
-    const [toastNotifications, setToastNotifications] = useState(() => {
-        return notifications.slice(0, 3);
+    // Toasts enabled preference (saved in localStorage)
+    const [toastsEnabled, setToastsEnabledState] = useState(() => {
+        try {
+            return localStorage.getItem('synos_toasts_enabled') !== 'false';
+        } catch (_) {
+            return true;
+        }
     });
+
+    // Floating Toast Stack (strictly transient FIFO items, default empty so they do not meddle indefinitely)
+    const [toastNotifications, setToastNotifications] = useState([]);
 
     const [isCenterOpen, setIsCenterOpen] = useState(false);
 
@@ -75,7 +82,42 @@ export function NotificationProvider({ children }) {
         } catch (_) {}
     }, [notifications]);
 
-    // Push new notification (FIFO: newest takes slot 1, oldest evicted beyond 3 in toasts)
+    // Toggle toasts enabled state
+    const toggleToastsEnabled = useCallback(() => {
+        setToastsEnabledState(prev => {
+            const next = !prev;
+            try {
+                localStorage.setItem('synos_toasts_enabled', String(next));
+            } catch (_) {}
+            if (!next) {
+                setToastNotifications([]);
+            }
+            return next;
+        });
+    }, []);
+
+    const setToastsEnabled = useCallback((enabled) => {
+        setToastsEnabledState(Boolean(enabled));
+        try {
+            localStorage.setItem('synos_toasts_enabled', String(Boolean(enabled)));
+        } catch (_) {}
+        if (!enabled) {
+            setToastNotifications([]);
+        }
+    }, []);
+
+    // Dismiss single toast without removing it from Notification Center
+    const dismissToast = useCallback((id) => {
+        if (!id) return;
+        setToastNotifications(prev => prev.filter(t => t.id !== id));
+    }, []);
+
+    // Clear all active floating toasts immediately (e.g. when any drawer opens)
+    const clearToasts = useCallback(() => {
+        setToastNotifications([]);
+    }, []);
+
+    // Push new notification (FIFO: newest takes slot 1, max 3 in toasts)
     const notify = useCallback((item) => {
         if (!item || !item.message) return;
         const newNotif = {
@@ -90,18 +132,22 @@ export function NotificationProvider({ children }) {
             timestamp: item.timestamp || 'Now'
         };
 
+        // Always add to persistent Notification Center
         setNotifications(prev => {
             const filtered = prev.filter(n => n.id !== newNotif.id);
             return [newNotif, ...filtered];
         });
 
-        setToastNotifications(prev => {
-            const filtered = prev.filter(t => t.id !== newNotif.id);
-            return [newNotif, ...filtered].slice(0, 3);
-        });
-    }, []);
+        // Add to floating toasts only if user has toasts enabled
+        if (toastsEnabled) {
+            setToastNotifications(prev => {
+                const filtered = prev.filter(t => t.id !== newNotif.id);
+                return [newNotif, ...filtered].slice(0, 3);
+            });
+        }
+    }, [toastsEnabled]);
 
-    // Dismiss single notification
+    // Dismiss single notification permanently from Notification Center and toasts
     const dismiss = useCallback((id) => {
         if (!id) return;
         setNotifications(prev => prev.filter(n => n.id !== id));
@@ -196,10 +242,15 @@ export function NotificationProvider({ children }) {
     const value = useMemo(() => ({
         notifications,
         toastNotifications,
+        toastsEnabled,
         unreadCount,
         isCenterOpen,
         notify,
         dismiss,
+        dismissToast,
+        clearToasts,
+        toggleToastsEnabled,
+        setToastsEnabled,
         clearAll,
         markAllAsRead,
         syncRealitySummary,
@@ -207,7 +258,26 @@ export function NotificationProvider({ children }) {
         toggleCenter,
         openCenter,
         closeCenter
-    }), [notifications, toastNotifications, unreadCount, isCenterOpen, notify, dismiss, clearAll, markAllAsRead, syncRealitySummary, executeAction, toggleCenter, openCenter, closeCenter]);
+    }), [
+        notifications, 
+        toastNotifications, 
+        toastsEnabled, 
+        unreadCount, 
+        isCenterOpen, 
+        notify, 
+        dismiss, 
+        dismissToast, 
+        clearToasts, 
+        toggleToastsEnabled, 
+        setToastsEnabled, 
+        clearAll, 
+        markAllAsRead, 
+        syncRealitySummary, 
+        executeAction, 
+        toggleCenter, 
+        openCenter, 
+        closeCenter
+    ]);
 
     return (
         <NotificationContext.Provider value={value}>

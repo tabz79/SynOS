@@ -33,11 +33,14 @@ import {
     Layers,
     Briefcase,
     UserCheck,
-    FileText
+    FileText,
+    Bell,
+    BellOff
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/context/ThemeContext';
 import { useAuth } from '@/context/AuthContext';
+import { useNotifications } from '@/context/NotificationContext';
 import { usePanelEntry } from '@/hooks/useSynOSMotion';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { AttendanceApi } from '@/api/attendance';
@@ -60,6 +63,7 @@ export function ReceptionOptionsPanel({
 }) {
     const { isDark } = useTheme();
     const { user } = useAuth();
+    const { toastsEnabled, toggleToastsEnabled } = useNotifications();
     const panelRef = useRef(null);
 
     // Active View inside the single sliding panel canvas:
@@ -249,6 +253,13 @@ export function ReceptionOptionsPanel({
             icon: Package,
             iconBg: 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
             onClick: () => setActiveView('stock')
+        },
+        {
+            id: 'toggle-alert-popups',
+            title: toastsEnabled ? 'Mute Desk Alert Popups' : 'Enable Desk Alert Popups',
+            icon: toastsEnabled ? BellOff : Bell,
+            iconBg: toastsEnabled ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+            onClick: toggleToastsEnabled
         }
     ];
 

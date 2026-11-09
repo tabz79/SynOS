@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { 
     Bell, 
+    BellOff,
     ChevronDown, 
     History, 
     X,
@@ -21,7 +22,9 @@ export function ReceptionNotificationCenter({
         markAllAsRead, 
         executeAction,
         isCenterOpen,
-        closeCenter 
+        closeCenter,
+        toastsEnabled,
+        toggleToastsEnabled
     } = useNotifications();
 
     const [isAuditExpanded, setIsAuditExpanded] = useState(false);
@@ -77,20 +80,38 @@ export function ReceptionNotificationCenter({
 
             {/* Apple iOS-Style Card Flyout Container */}
             <div className="pointer-events-auto rounded-3xl p-3.5 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-xl border border-slate-200/90 dark:border-zinc-800 shadow-[0_12px_40px_rgba(15,35,60,0.08)] space-y-3">
-                {/* Header with Title and "Mark all as read" */}
-                <div className="flex items-center justify-between px-1">
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">
+                {/* Header with Title, Popups Toggle, and "Mark all as read" */}
+                <div className="flex items-center justify-between px-1 gap-2">
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight shrink-0">
                         Notifications
                     </h3>
-                    {notifications.length > 0 && (
+
+                    <div className="flex items-center gap-1.5 shrink-0">
                         <button
                             type="button"
-                            onClick={markAllAsRead}
-                            className="text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 transition-colors cursor-pointer hover:underline"
+                            onClick={toggleToastsEnabled}
+                            className={cn(
+                                "px-2 py-0.5 rounded-lg text-[10px] font-semibold flex items-center gap-1 transition-all cursor-pointer border",
+                                toastsEnabled 
+                                    ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100" 
+                                    : "bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 border-slate-200 dark:border-zinc-700 hover:bg-slate-200"
+                            )}
+                            title={toastsEnabled ? "Desktop toast popups are ON (click to mute)" : "Desktop toast popups are OFF (click to enable)"}
                         >
-                            Mark all as read
+                            {toastsEnabled ? <Bell className="w-2.5 h-2.5 text-emerald-600 dark:text-emerald-400" /> : <BellOff className="w-2.5 h-2.5 text-slate-400" />}
+                            <span>{toastsEnabled ? "Popups On" : "Popups Off"}</span>
                         </button>
-                    )}
+
+                        {notifications.length > 0 && (
+                            <button
+                                type="button"
+                                onClick={markAllAsRead}
+                                className="text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 transition-colors cursor-pointer hover:underline whitespace-nowrap"
+                            >
+                                Mark all as read
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 {/* Notifications Stack (Strict Calm Apple iOS cards) */}
