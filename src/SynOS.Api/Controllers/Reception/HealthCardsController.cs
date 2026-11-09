@@ -157,16 +157,30 @@ namespace SynOS.Api.Controllers.Reception
             [FromQuery] string? query = null, 
             [FromQuery] int limit = 50)
         {
-            var cards = await _healthCardService.GetCardsAsync(query, limit);
-            return Ok(cards);
+            try
+            {
+                var cards = await _healthCardService.GetCardsAsync(query, limit);
+                return Ok(cards);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Failed to fetch health cards.", details = ex.Message });
+            }
         }
 
         [HttpGet("{cardId:guid}")]
         public async Task<IActionResult> GetCardById(Guid cardId)
         {
-            var card = await _healthCardService.GetCardByIdAsync(cardId);
-            if (card == null) return NotFound(new { message = "Health card not found." });
-            return Ok(card);
+            try
+            {
+                var card = await _healthCardService.GetCardByIdAsync(cardId);
+                if (card == null) return NotFound(new { message = "Health card not found." });
+                return Ok(card);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Failed to fetch health card details.", details = ex.Message });
+            }
         }
 
         private Guid GetCurrentUserId()

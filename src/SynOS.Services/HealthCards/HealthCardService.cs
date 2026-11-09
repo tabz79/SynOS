@@ -556,10 +556,18 @@ namespace SynOS.Services.HealthCards
             var totalSaved = card.Usages?.Sum(u => u.DiscountAmount) ?? 0m;
             var totalVisits = card.Usages?.Count ?? 0;
 
+            var primaryName = card.PrimaryPatient?.DisplayName;
+            if (string.IsNullOrWhiteSpace(primaryName) && card.PrimaryPatient != null)
+            {
+                var combined = $"{card.PrimaryPatient.FirstName} {card.PrimaryPatient.LastName}".Trim();
+                if (!string.IsNullOrWhiteSpace(combined)) primaryName = combined;
+            }
+            if (string.IsNullOrWhiteSpace(primaryName)) primaryName = "Subscriber";
+
             return new HealthCardSummaryDto
             {
                 CardId = card.CardId,
-                CardNumber = card.CardNumber,
+                CardNumber = card.CardNumber ?? string.Empty,
                 PlanId = card.PlanId,
                 PlanCode = card.Plan?.PlanCode ?? string.Empty,
                 PlanName = card.Plan?.PlanName ?? "Health Card Plan",
@@ -567,16 +575,16 @@ namespace SynOS.Services.HealthCards
                 EnrolledMembersCount = enrolledCount,
                 AvailableSlots = availableSlots,
                 PrimaryPatientId = card.PrimaryPatientId,
-                PrimaryPatientName = card.PrimaryPatient?.DisplayName ?? $"{card.PrimaryPatient?.FirstName} {card.PrimaryPatient?.LastName}".Trim(),
-                PrimaryPhoneNumber = card.PrimaryPhoneNumber,
+                PrimaryPatientName = primaryName,
+                PrimaryPhoneNumber = card.PrimaryPhoneNumber ?? string.Empty,
                 PricePaid = card.PricePaid,
-                PaymentMode = card.PaymentMode,
-                ConfiguredDiscountType = card.ConfiguredDiscountType,
+                PaymentMode = card.PaymentMode ?? "Cash",
+                ConfiguredDiscountType = card.ConfiguredDiscountType ?? "Percentage",
                 ConfiguredDiscountValue = card.ConfiguredDiscountValue,
                 EffectiveFrom = card.EffectiveFrom,
                 ValidUntil = card.ValidUntil,
                 IsExpired = card.ValidUntil < DateTime.UtcNow,
-                Status = card.ValidUntil < DateTime.UtcNow ? "Expired" : card.Status,
+                Status = card.ValidUntil < DateTime.UtcNow ? "Expired" : (card.Status ?? "Active"),
                 AssociatedVisitId = card.AssociatedVisitId,
                 TotalSavedToDate = totalSaved,
                 TotalVisitsBilled = totalVisits,
@@ -585,10 +593,10 @@ namespace SynOS.Services.HealthCards
                     BeneficiaryId = b.BeneficiaryId,
                     PatientId = b.PatientId,
                     MRN = b.Patient?.MRN ?? string.Empty,
-                    DisplayName = b.Patient?.DisplayName ?? $"{b.Patient?.FirstName} {b.Patient?.LastName}".Trim(),
+                    DisplayName = b.Patient?.DisplayName ?? (!string.IsNullOrWhiteSpace($"{b.Patient?.FirstName} {b.Patient?.LastName}".Trim()) ? $"{b.Patient?.FirstName} {b.Patient?.LastName}".Trim() : "Beneficiary"),
                     Gender = b.Patient?.Gender ?? string.Empty,
                     PhoneNumber = b.Patient?.CurrentPhoneNumber ?? string.Empty,
-                    Relationship = b.Relationship,
+                    Relationship = b.Relationship ?? "Family",
                     EnrolledAt = b.EnrolledAt,
                     IsSlotLocked = b.IsSlotLocked,
                     FirstUsedAt = b.FirstUsedAt

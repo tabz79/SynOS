@@ -377,43 +377,7 @@ export function BillingSummary({
         load();
     }, []);
 
-    // Reactively receive and select reason created from scoped modal
-    useEffect(() => {
-        if (createdDiscountReason) {
-            setDiscountReasons(prev => {
-                const exists = prev.some(r => r.discountReasonId === createdDiscountReason.discountReasonId || r.reasonText?.toLowerCase() === createdDiscountReason.reasonText?.toLowerCase());
-                return exists ? prev : [...prev, createdDiscountReason];
-            });
-            setCustomDiscountReason(createdDiscountReason.reasonText || '');
-            setShowReasonDropdown(false);
-            setIsDiscountExpanded(true);
-        }
-    }, [createdDiscountReason]);
 
-    // Auto populate custom discount input when drawer opens with an existing staged or applied discount
-    useEffect(() => {
-        if (isDiscountExpanded) {
-            if (stagedDiscount && !stagedDiscount.remove) {
-                setCustomDiscountType(stagedDiscount.type === 'Flat' ? 'FLAT' : 'PERCENTAGE');
-                if (stagedDiscount.value !== undefined && stagedDiscount.value !== null) {
-                    setCustomDiscountValue(String(stagedDiscount.value));
-                }
-                if (stagedDiscount.reason) {
-                    setCustomDiscountReason(stagedDiscount.reason);
-                }
-                setDiscountInputMode('custom');
-            } else if (billing?.appliedDiscount && !customDiscountValue) {
-                const isPct = billing.appliedDiscount.type === 0 || billing.appliedDiscount.type === 'Percentage';
-                setCustomDiscountType(isPct ? 'PERCENTAGE' : 'FLAT');
-                if (billing.appliedDiscount.value !== undefined && billing.appliedDiscount.value !== null) {
-                    setCustomDiscountValue(String(billing.appliedDiscount.value));
-                }
-                if (billing.appliedDiscount.reason || billing.appliedDiscount.name) {
-                    setCustomDiscountReason(billing.appliedDiscount.reason || billing.appliedDiscount.name);
-                }
-            }
-        }
-    }, [isDiscountExpanded, stagedDiscount]);
 
     // Derived filtered suggestions for Reason Autocomplete
     const filteredReasonSuggestions = useMemo(() => {
@@ -935,6 +899,44 @@ export function BillingSummary({
         if (!isInitialIntake) return;
         setUserDiscountExpandedState(typeof val === 'function' ? val(isDiscountExpanded) : val);
     };
+
+    // Reactively receive and select reason created from scoped modal
+    useEffect(() => {
+        if (createdDiscountReason) {
+            setDiscountReasons(prev => {
+                const exists = prev.some(r => r.discountReasonId === createdDiscountReason.discountReasonId || r.reasonText?.toLowerCase() === createdDiscountReason.reasonText?.toLowerCase());
+                return exists ? prev : [...prev, createdDiscountReason];
+            });
+            setCustomDiscountReason(createdDiscountReason.reasonText || '');
+            setShowReasonDropdown(false);
+            setIsDiscountExpanded(true);
+        }
+    }, [createdDiscountReason]);
+
+    // Auto populate custom discount input when drawer opens with an existing staged or applied discount
+    useEffect(() => {
+        if (isDiscountExpanded) {
+            if (stagedDiscount && !stagedDiscount.remove) {
+                setCustomDiscountType(stagedDiscount.type === 'Flat' ? 'FLAT' : 'PERCENTAGE');
+                if (stagedDiscount.value !== undefined && stagedDiscount.value !== null) {
+                    setCustomDiscountValue(String(stagedDiscount.value));
+                }
+                if (stagedDiscount.reason) {
+                    setCustomDiscountReason(stagedDiscount.reason);
+                }
+                setDiscountInputMode('custom');
+            } else if (billing?.appliedDiscount && !customDiscountValue) {
+                const isPct = billing.appliedDiscount.type === 0 || billing.appliedDiscount.type === 'Percentage';
+                setCustomDiscountType(isPct ? 'PERCENTAGE' : 'FLAT');
+                if (billing.appliedDiscount.value !== undefined && billing.appliedDiscount.value !== null) {
+                    setCustomDiscountValue(String(billing.appliedDiscount.value));
+                }
+                if (billing.appliedDiscount.reason || billing.appliedDiscount.name) {
+                    setCustomDiscountReason(billing.appliedDiscount.reason || billing.appliedDiscount.name);
+                }
+            }
+        }
+    }, [isDiscountExpanded, stagedDiscount]);
 
     return (
         <div id="synos-financials-container" data-section="financials" className="flex flex-col space-y-2">

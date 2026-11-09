@@ -811,6 +811,7 @@ BEGIN
         [EffectiveFrom] datetime2 NOT NULL DEFAULT GETUTCDATE(),
         [ValidUntil] datetime2 NOT NULL,
         [Status] nvarchar(20) NOT NULL DEFAULT 'Active',
+        [AssociatedVisitId] uniqueidentifier NULL,
         [RevenueFactId] uniqueidentifier NULL,
         [IssuedAtBranchId] uniqueidentifier NULL,
         [IssuedByUserId] uniqueidentifier NULL,
@@ -821,6 +822,46 @@ BEGIN
     CREATE UNIQUE INDEX [IX_PatientHealthCards_CardNumber] ON [PatientHealthCards]([CardNumber]);
     CREATE INDEX [IX_PatientHealthCards_PrimaryPhoneNumber] ON [PatientHealthCards]([PrimaryPhoneNumber]);
     CREATE INDEX [IX_PatientHealthCards_PrimaryPatientId] ON [PatientHealthCards]([PrimaryPatientId]);
+END
+
+IF COL_LENGTH('PatientHealthCards', 'AssociatedVisitId') IS NULL
+BEGIN
+    ALTER TABLE [PatientHealthCards] ADD [AssociatedVisitId] uniqueidentifier NULL;
+END
+
+IF COL_LENGTH('PatientHealthCards', 'RevenueFactId') IS NULL
+BEGIN
+    ALTER TABLE [PatientHealthCards] ADD [RevenueFactId] uniqueidentifier NULL;
+END
+
+IF COL_LENGTH('PatientHealthCards', 'IssuedAtBranchId') IS NULL
+BEGIN
+    ALTER TABLE [PatientHealthCards] ADD [IssuedAtBranchId] uniqueidentifier NULL;
+END
+
+IF COL_LENGTH('PatientHealthCards', 'IssuedByUserId') IS NULL
+BEGIN
+    ALTER TABLE [PatientHealthCards] ADD [IssuedByUserId] uniqueidentifier NULL;
+END
+
+IF COL_LENGTH('PatientHealthCards', 'IssuedByUserName') IS NULL
+BEGIN
+    ALTER TABLE [PatientHealthCards] ADD [IssuedByUserName] nvarchar(100) NULL;
+END
+
+IF COL_LENGTH('PatientHealthCards', 'Status') IS NULL
+BEGIN
+    ALTER TABLE [PatientHealthCards] ADD [Status] nvarchar(20) NOT NULL DEFAULT 'Active';
+END
+
+IF COL_LENGTH('PatientHealthCards', 'ConfiguredDiscountType') IS NULL
+BEGIN
+    ALTER TABLE [PatientHealthCards] ADD [ConfiguredDiscountType] nvarchar(20) NOT NULL DEFAULT 'Percentage';
+END
+
+IF COL_LENGTH('PatientHealthCards', 'ConfiguredDiscountValue') IS NULL
+BEGIN
+    ALTER TABLE [PatientHealthCards] ADD [ConfiguredDiscountValue] decimal(18,2) NOT NULL DEFAULT 30.00;
 END
 
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'HealthCardBeneficiaries' AND type = 'U')

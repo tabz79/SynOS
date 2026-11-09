@@ -228,7 +228,7 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
             </div>
 
             {/* Body */}
-            <div className="flex-1 overflow-y-auto px-5 py-3 space-y-4 no-scrollbar">
+            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 pb-8 no-scrollbar">
                 {/* TAB 1: DIRECTORY */}
                 {activeTab === 'directory' && (
                     <div className="space-y-3">
@@ -240,7 +240,7 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
                                 placeholder="Search by Card Number, Mobile, or Patient Name..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full h-11 pl-10 pr-4 rounded-xl text-xs font-semibold border bg-white dark:bg-zinc-900 border-slate-200/90 dark:border-zinc-800 text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none shadow-2xs transition-all"
+                                className="w-full h-11 pl-10 pr-4 rounded-xl text-xs font-semibold border bg-white dark:bg-zinc-900 border-slate-300 dark:border-zinc-700 text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none shadow-2xs transition-all"
                             />
                         </div>
 
@@ -269,7 +269,7 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
                                     return (
                                         <div 
                                             key={card.cardId}
-                                            className="p-4 rounded-2xl border border-slate-200/90 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 space-y-3 shadow-2xs hover:border-slate-300 transition-all"
+                                            className="p-4 rounded-2xl border border-slate-300 dark:border-zinc-700/90 bg-white dark:bg-zinc-900 shadow-xs space-y-3 hover:border-blue-400 dark:hover:border-blue-500 transition-all"
                                         >
                                             {/* Top Row: Card # & Status */}
                                             <div className="flex items-center justify-between">
@@ -472,7 +472,7 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
                                     Select Plan Tier
                                 </span>
                             </div>
-                            <div className="grid grid-cols-2 gap-2.5">
+                            <div className="grid grid-cols-2 gap-3">
                                 {plans.map(p => {
                                     const isSelected = p.planId === selectedPlanId;
                                     return (
@@ -484,22 +484,35 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
                                                 setDiscountValue(p.defaultDiscountPercentage || 30);
                                             }}
                                             className={cn(
-                                                "p-3 rounded-2xl border text-left transition-all cursor-pointer relative",
+                                                "p-4 rounded-2xl text-left transition-all duration-200 cursor-pointer relative flex flex-col justify-between min-h-[86px] shadow-xs",
                                                 isSelected
-                                                    ? "bg-[#DCEBFF] dark:bg-blue-950/70 border-2 border-[#0D6EFD] dark:border-blue-500 shadow-xs"
-                                                    : "bg-white/80 dark:bg-zinc-900/80 border-slate-200/90 dark:border-zinc-800 hover:border-slate-300 shadow-2xs"
+                                                    ? "bg-[#DCEBFF] dark:bg-blue-950/70 border-2 border-[#0D6EFD] dark:border-blue-500 shadow-blue-500/10"
+                                                    : "bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700/90 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm"
                                             )}
                                         >
-                                            <div className="flex items-center justify-between gap-1">
+                                            <div className="flex items-start justify-between gap-2">
                                                 <span className={cn(
-                                                    "font-bold text-xs sm:text-sm truncate",
-                                                    isSelected ? "text-blue-900 dark:text-blue-200" : "text-slate-800 dark:text-zinc-200"
+                                                    "font-bold text-xs sm:text-sm leading-snug",
+                                                    isSelected ? "text-blue-950 dark:text-blue-100 font-extrabold" : "text-slate-800 dark:text-zinc-200"
                                                 )}>
                                                     {p.planName}
                                                 </span>
+                                                {isSelected && (
+                                                    <div className="w-4 h-4 rounded-full bg-[#0D6EFD] text-white flex items-center justify-center shrink-0">
+                                                        <Check className="w-2.5 h-2.5 stroke-[3]" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="flex items-baseline justify-between mt-3 pt-2 border-t border-black/5 dark:border-white/5">
                                                 <span className={cn(
-                                                    "font-mono font-black text-xs sm:text-sm shrink-0",
-                                                    isSelected ? "text-blue-700 dark:text-blue-300" : "text-slate-900 dark:text-white"
+                                                    "text-[11px] font-semibold",
+                                                    isSelected ? "text-blue-700 dark:text-blue-300" : "text-slate-500 dark:text-zinc-400"
+                                                )}>
+                                                    {p.maxMembers} {p.maxMembers === 1 ? 'Member' : 'Members'}
+                                                </span>
+                                                <span className={cn(
+                                                    "font-mono font-black text-sm sm:text-base",
+                                                    isSelected ? "text-[#0D6EFD] dark:text-blue-400" : "text-slate-900 dark:text-white"
                                                 )}>
                                                     ₹{p.price.toLocaleString()}
                                                 </span>
@@ -520,7 +533,7 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
                                     Discount & Validity
                                 </span>
                             </div>
-                            <div className="p-3.5 rounded-2xl border border-slate-200/90 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/60 shadow-2xs space-y-3">
+                            <div className="p-4 rounded-2xl border border-slate-300 dark:border-zinc-700/90 bg-white dark:bg-zinc-900 shadow-xs space-y-3">
                                 <div className="flex items-center justify-between gap-2">
                                     <span className="text-xs font-bold text-slate-600 dark:text-zinc-400">Discount Type</span>
                                     <div className="flex p-0.5 rounded-xl bg-slate-100 dark:bg-zinc-800/80 border border-slate-200/80 dark:border-zinc-700/80 text-xs font-bold">
@@ -599,7 +612,7 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
                                     Primary Subscriber
                                 </span>
                             </div>
-                            <div className="p-3.5 rounded-2xl border border-slate-200/90 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/60 shadow-2xs space-y-2.5">
+                            <div className="p-4 rounded-2xl border border-slate-300 dark:border-zinc-700/90 bg-white dark:bg-zinc-900 shadow-xs space-y-3">
                                 <div className="grid grid-cols-2 gap-2.5">
                                     <div>
                                         <label className="text-[11px] font-bold text-slate-600 dark:text-zinc-400 block mb-1">Full Name *</label>
@@ -666,7 +679,7 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
                                     {familyMembers.map((member, idx) => (
                                         <div 
                                             key={idx}
-                                            className="p-3 rounded-2xl border border-slate-200/90 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/60 shadow-2xs space-y-2"
+                                            className="p-3.5 rounded-2xl border border-slate-300 dark:border-zinc-700/90 bg-white dark:bg-zinc-900 shadow-xs space-y-2"
                                         >
                                             <span className="text-xs font-bold text-slate-700 dark:text-zinc-300 block">
                                                 Member #{idx + 2}
@@ -716,25 +729,25 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
                             </div>
                         )}
 
-                        {/* Bottom Actions Footer */}
-                        <div className="shrink-0 pt-3 border-t border-slate-200/80 dark:border-zinc-800 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-md space-y-3">
+                        {/* Bottom Actions Settlement Card */}
+                        <div className="p-4 rounded-2xl border border-slate-300 dark:border-zinc-700/90 bg-white dark:bg-zinc-900 shadow-xs space-y-3.5 mt-2">
                             <div className="flex items-center justify-between">
-                                <div className="flex items-baseline gap-1.5">
-                                    <span className="text-xs font-bold text-slate-500 dark:text-zinc-400">Total:</span>
-                                    <span className="text-xl font-black font-mono text-slate-900 dark:text-white">
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Total Due:</span>
+                                    <span className="text-2xl font-black font-mono text-slate-900 dark:text-white">
                                         ₹{selectedPlan.price.toLocaleString()}
                                     </span>
                                 </div>
-                                <div className="flex p-0.5 rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-200/80 dark:border-zinc-700 text-xs font-bold">
+                                <div className="flex p-0.5 rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs font-bold">
                                     {['Cash', 'UPI', 'Card'].map(m => (
                                         <button
                                             key={m}
                                             type="button"
                                             onClick={() => setPaymentMode(m)}
                                             className={cn(
-                                                "px-3 py-1 rounded-lg transition-all cursor-pointer font-bold",
+                                                "px-3.5 py-1.5 rounded-lg transition-all cursor-pointer font-bold",
                                                 paymentMode === m
-                                                    ? "bg-[#0D6EFD] text-white shadow-xs"
+                                                    ? "bg-[#0D6EFD] text-white shadow-xs font-extrabold"
                                                     : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"
                                             )}
                                         >
@@ -747,7 +760,7 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
                             <button
                                 type="submit"
                                 disabled={isSubmittingCard}
-                                className="w-full h-12 rounded-2xl text-sm sm:text-base font-bold bg-[#0D6EFD] hover:bg-blue-600 text-white shadow-md active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                                className="w-full h-12 rounded-xl text-sm sm:text-base font-bold bg-[#0D6EFD] hover:bg-blue-600 text-white shadow-md active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                             >
                                 {isSubmittingCard ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
                                 <span>Activate Card & Collect ₹{selectedPlan.price.toLocaleString()}</span>
