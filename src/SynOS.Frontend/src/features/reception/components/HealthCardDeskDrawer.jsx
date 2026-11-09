@@ -8,20 +8,22 @@ import {
     Check, 
     AlertCircle, 
     Calendar, 
-    ChevronRight, 
-    ChevronDown, 
     Loader2, 
     ShieldCheck, 
     Sparkles, 
-    IndianRupee, 
-    Printer, 
     UserCheck,
-    Clock,
-    Lock
+    Lock,
+    Phone,
+    User,
+    ArrowRight,
+    CheckCircle2,
+    RotateCcw
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/context/ThemeContext';
 import { HealthCardApi } from '@/api/healthCards';
+import { ReceptionApi } from '@/api/reception';
+import { calculateDetailedAge } from '@/components/patient/RichPatientCard';
 
 export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded = false }) {
     const { isDark } = useTheme();
@@ -35,8 +37,16 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
     const [isEnrolling, setIsEnrolling] = useState(false);
     const [statusMessage, setStatusMessage] = useState(null);
 
-    // Issue New Card State
+    // ==========================================
+    // Issue New Card State: Subscriber First
+    // ==========================================
     const [selectedPlanId, setSelectedPlanId] = useState('');
+    const [patientSearchQuery, setPatientSearchQuery] = useState('');
+    const [patientMatches, setPatientMatches] = useState([]);
+    const [isSearchingPatients, setIsSearchingPatients] = useState(false);
+    const [selectedPatient, setSelectedPatient] = useState(null); // Identified Primary Subscriber
+    const [isRegisteringNew, setIsRegisteringNew] = useState(false);
+
     const [primarySubscriber, setPrimarySubscriber] = useState({ name: '', phone: '', age: '', gender: 'Male' });
     const [discountType, setDiscountType] = useState('Percentage');
     const [discountValue, setDiscountValue] = useState(30);
@@ -87,6 +97,29 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
+    // Live Debounced Patient Search (for Step 1: Subscriber Identification)
+    useEffect(() => {
+        if (!patientSearchQuery || patientSearchQuery.trim().length < 3) {
+            setPatientMatches([]);
+            return;
+        }
+
+        const timer = setTimeout(async () => {
+            setIsSearchingPatients(true);
+            try {
+                const results = await ReceptionApi.searchPatients(patientSearchQuery.trim());
+                setPatientMatches(results || []);
+            } catch (err) {
+                console.error("Patient search failed", err);
+                setPatientMatches([]);
+            } finally {
+                setIsSearchingPatients(false);
+            }
+        }, 250);
+
+        return () => clearTimeout(timer);
+    }, [patientSearchQuery]);
+
     const selectedPlan = plans.find(p => p.planId === selectedPlanId) || plans[0] || { price: 1000, maxMembers: 2 };
     const maxCapacity = selectedPlan?.maxMembers || 1;
     const additionalFamilySlotsNeeded = Math.max(0, maxCapacity - 1);
@@ -102,8 +135,88 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
         });
     }, [additionalFamilySlotsNeeded]);
 
+    // Handler: Pick registered patient from search candidates
+    const handleSelectPatient = (patient) => {
+        const pId = patient.id || patient.Id || patient.patientId;
+        const name = patient.displayName || `${patient.firstName || ''} ${patient.lastName || ''}`.trim() || patient.name || 'Subscriber';
+        const phone = patient.currentPhoneNumber || patient.phone || '';
+        const gender = patient.gender || 'Male';
+        const ageText = patient.age ? `${patient.age} Yrs` : (patient.dateOfBirth ? calculateDetailedAge(patient.dateOfBirth).text : '');
+
+        setSelectedPatient({
+            id: pId,
+            patientId: pId,
+            mrn: patient.mrn || patient.MRN || '',
+            name,
+            phone,
+            gender,
+            age: ageText,
+            raw: patient
+        });
+        setPrimarySubscriber({
+            name,
+            phone,
+            age: patient.age ? String(patient.age) : '',
+            gender
+        });
+        setIsRegisteringNew(false);
+        setPatientSearchQuery('');
+        setPatientMatches([]);
+        setStatusMessage(null);
+    };
+
+    // Handler: Open new patient registration inline form
+    const handleStartNewPatient = (initialPhone = '') => {
+        setSelectedPatient(null);
+        setIsRegisteringNew(true);
+        setPrimarySubscriber(prev => ({
+            ...prev,
+            name: '',
+            phone: initialPhone || patientSearchQuery || '',
+            age: '',
+            gender: 'Male'
+        }));
+        setStatusMessage(null);
+    };
+
+    // Handler: Confirm inline new patient details
+    const handleConfirmNewPatient = (e) => {
+        if (e) e.preventDefault();
+        if (!primarySubscriber.name.trim() || !primarySubscriber.phone.trim()) {
+            setStatusMessage({ type: 'error', text: 'Full Name and Mobile Number are required to register patient.' });
+            return;
+        }
+
+        setSelectedPatient({
+            id: null,
+            patientId: null,
+            mrn: 'NEW REGISTRATION',
+            name: primarySubscriber.name.trim(),
+            phone: primarySubscriber.phone.trim(),
+            gender: primarySubscriber.gender,
+            age: primarySubscriber.age ? `${primarySubscriber.age} Yrs` : '',
+            isNew: true
+        });
+        setIsRegisteringNew(false);
+        setStatusMessage(null);
+    };
+
+    // Handler: Clear / Change selected subscriber
+    const handleClearSubscriber = () => {
+        setSelectedPatient(null);
+        setIsRegisteringNew(false);
+        setPrimarySubscriber({ name: '', phone: '', age: '', gender: 'Male' });
+        setPatientSearchQuery('');
+        setPatientMatches([]);
+    };
+
     const handleIssueCardSubmit = async (e) => {
         e.preventDefault();
+        if (!selectedPatient) {
+            setStatusMessage({ type: 'error', text: 'Please identify or register the Primary Subscriber first.' });
+            return;
+        }
+
         if (!primarySubscriber.name.trim() || !primarySubscriber.phone.trim()) {
             setStatusMessage({ type: 'error', text: 'Primary subscriber name and phone number are required.' });
             return;
@@ -114,6 +227,7 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
         try {
             const payload = {
                 planId: selectedPlan.planId,
+                primaryPatientId: selectedPatient.patientId || null,
                 primaryFullName: primarySubscriber.name.trim(),
                 primaryPhoneNumber: primarySubscriber.phone.trim(),
                 primaryGender: primarySubscriber.gender,
@@ -135,7 +249,7 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
 
             const created = await HealthCardApi.issueCard(payload);
             setIssuedSuccessCard(created);
-            setStatusMessage({ type: 'success', text: `Health Card ${created.cardNumber} issued successfully!` });
+            setStatusMessage({ type: 'success', text: `Health Card ${created.cardNumber} activated successfully!` });
             loadCards();
             if (onCardIssued) onCardIssued(created);
         } catch (err) {
@@ -262,93 +376,111 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
                                 </button>
                             </div>
                         ) : (
-                            <div className="space-y-3">
+                            <div className="space-y-3.5">
                                 {cards.map(card => {
                                     const isCapacityFull = card.availableSlots === 0;
                                     const isPending = card.status === 'PendingPayment';
                                     return (
                                         <div 
                                             key={card.cardId}
-                                            className="p-4 rounded-2xl border border-slate-300 dark:border-zinc-700/90 bg-white dark:bg-zinc-900 shadow-xs space-y-3 hover:border-blue-400 dark:hover:border-blue-500 transition-all"
+                                            className={cn(
+                                                "rounded-[20px] border transition-all p-4 sm:p-4.5 space-y-3.5",
+                                                isDark
+                                                    ? "bg-zinc-900/90 border-zinc-800 shadow-lg"
+                                                    : "bg-gradient-to-b from-[#FFFFFF] via-[#F8FBFE] to-[#F1F6FA] border border-white/95 shadow-[0_4px_16px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.04),inset_0_1px_0_#FFFFFF]"
+                                            )}
                                         >
-                                            {/* Top Row: Card # & Status */}
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
-                                                    <span className="font-mono text-sm font-black text-blue-600 dark:text-blue-400">
-                                                        {card.cardNumber}
-                                                    </span>
+                                            {/* Header Row: Avatar, Name, Card #, Status, Benefit Badge */}
+                                            <div className="flex items-start justify-between gap-3">
+                                                <div className="flex items-center gap-3 min-w-0">
+                                                    <div className="w-10 h-10 rounded-xl bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold shrink-0 border border-blue-200/80 dark:border-blue-800/80">
+                                                        <CreditCard className="w-5 h-5" />
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <div className="flex items-center gap-2 flex-wrap">
+                                                            <h4 className="font-bold text-base text-slate-900 dark:text-white truncate">
+                                                                {card.primaryPatientName}
+                                                            </h4>
+                                                            <span className="font-mono text-xs font-black text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2.5 py-0.5 rounded-md border border-blue-200 dark:border-blue-800">
+                                                                {card.cardNumber}
+                                                            </span>
+                                                        </div>
+                                                        <p className="text-xs text-slate-500 dark:text-zinc-400 flex items-center gap-1.5 mt-0.5">
+                                                            <Phone className="w-3 h-3 text-slate-400" />
+                                                            <span className="font-mono">{card.primaryPhoneNumber}</span>
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center gap-2 shrink-0">
+                                                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-extrabold bg-gradient-to-r from-amber-500/15 to-orange-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/25">
+                                                        <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                                                        <span>{card.configuredDiscountValue}{card.configuredDiscountType === 'Percentage' ? '%' : '₹'} Benefit</span>
+                                                    </div>
+
                                                     <span className={cn(
-                                                        "text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border",
+                                                        "text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full border flex items-center gap-1",
                                                         card.isExpired 
                                                             ? "bg-rose-500/10 text-rose-600 border-rose-500/20"
                                                             : isPending
                                                                 ? "bg-amber-500/10 text-amber-600 border-amber-500/20"
                                                                 : "bg-emerald-500/10 text-emerald-600 border-emerald-500/20"
                                                     )}>
+                                                        <span className={cn("w-1.5 h-1.5 rounded-full", card.isExpired ? "bg-rose-500" : isPending ? "bg-amber-500" : "bg-emerald-500 animate-pulse")} />
                                                         {card.status}
                                                     </span>
                                                 </div>
-                                                <div className="flex items-center gap-1.5 text-xs font-extrabold text-slate-700 dark:text-zinc-300">
-                                                    <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                                                    <span>{card.configuredDiscountValue}{card.configuredDiscountType === 'Percentage' ? '%' : '₹'} Off</span>
-                                                </div>
                                             </div>
 
-                                            {/* Subscriber Info */}
-                                            <div className="grid grid-cols-2 gap-2 text-xs">
-                                                <div>
-                                                    <span className="text-slate-400 block text-[11px] font-bold">Subscriber</span>
-                                                    <span className="font-bold text-slate-800 dark:text-zinc-100">{card.primaryPatientName}</span>
-                                                </div>
-                                                <div>
-                                                    <span className="text-slate-400 block text-[11px] font-bold">Phone</span>
-                                                    <span className="font-mono font-medium text-slate-700 dark:text-zinc-300">{card.primaryPhoneNumber}</span>
-                                                </div>
-                                            </div>
-
-                                            {/* Plan & Capacity */}
-                                            <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-zinc-800 text-xs">
+                                            {/* Clinical Meta Pod (Plan, Capacity, Validity) */}
+                                            <div className="rounded-xl p-3 border border-[#CCDCE8]/70 dark:border-zinc-800 bg-[#E8F1F7]/60 dark:bg-zinc-950/60 flex items-center justify-between text-xs font-medium">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="font-bold text-slate-700 dark:text-zinc-200">{card.planName}</span>
-                                                    <span className="font-bold px-2 py-0.5 rounded-md text-[10px] bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                                                    <span className="font-bold text-slate-800 dark:text-zinc-200">{card.planName}</span>
+                                                    <span className="font-bold px-2 py-0.5 rounded-md text-[10px] bg-blue-100/80 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
                                                         {card.enrolledMembersCount} / {card.maxMembers} Members
                                                     </span>
                                                 </div>
 
-                                                <span className="text-[11px] text-slate-500 dark:text-zinc-400">
-                                                    Valid till: <strong className="text-slate-700 dark:text-zinc-200">{new Date(card.validUntil).toLocaleDateString()}</strong>
+                                                <span className="text-[11px] text-slate-500 dark:text-zinc-400 flex items-center gap-1">
+                                                    <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                                                    <span>Valid till: <strong className="text-slate-800 dark:text-zinc-200">{new Date(card.validUntil).toLocaleDateString()}</strong></span>
                                                 </span>
                                             </div>
 
                                             {/* Covered Family Members */}
                                             {card.beneficiaries && card.beneficiaries.length > 0 && (
-                                                <div className="flex flex-wrap gap-1.5 pt-1">
-                                                    {card.beneficiaries.map(ben => (
-                                                        <span 
-                                                            key={ben.beneficiaryId}
-                                                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 font-medium"
-                                                        >
-                                                            <UserCheck className="w-3 h-3 text-emerald-600" />
-                                                            <strong>{ben.displayName}</strong>
-                                                            <span className="text-[10px] text-slate-400">({ben.relationship})</span>
-                                                            {ben.isSlotLocked && (
-                                                                <Lock className="w-2.5 h-2.5 text-slate-400 ml-0.5" title="Locked after test billing" />
-                                                            )}
-                                                        </span>
-                                                    ))}
+                                                <div className="space-y-1.5">
+                                                    <span className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider block">
+                                                        Covered Beneficiaries:
+                                                    </span>
+                                                    <div className="flex flex-wrap gap-1.5">
+                                                        {card.beneficiaries.map(ben => (
+                                                            <span 
+                                                                key={ben.beneficiaryId}
+                                                                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 font-medium shadow-2xs"
+                                                            >
+                                                                <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
+                                                                <strong className="text-slate-800 dark:text-zinc-200">{ben.displayName}</strong>
+                                                                <span className="text-[10px] text-slate-400">({ben.relationship})</span>
+                                                                {ben.isSlotLocked && (
+                                                                    <Lock className="w-2.5 h-2.5 text-slate-400 ml-0.5" title="Locked after test billing" />
+                                                                )}
+                                                            </span>
+                                                        ))}
+                                                    </div>
                                                 </div>
                                             )}
 
-                                            {/* Action Bar */}
+                                            {/* Action Bar (Enroll family members if quota remains) */}
                                             {!isCapacityFull && !card.isExpired && !isPending && (
                                                 <div className="pt-1 flex justify-end">
                                                     <button
                                                         type="button"
                                                         onClick={() => setSelectedCardForEnroll(card)}
-                                                        className="px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 hover:bg-blue-100 transition-colors flex items-center gap-1.5 cursor-pointer border border-blue-200 dark:border-blue-800 shadow-2xs"
+                                                        className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#0D6EFD] hover:bg-blue-600 text-white transition-all flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-[0.98]"
                                                     >
                                                         <UserPlus className="w-3.5 h-3.5" />
-                                                        <span>Enroll Family Member ({card.availableSlots} open)</span>
+                                                        <span>Enroll Family Member ({card.availableSlots} Open)</span>
                                                     </button>
                                                 </div>
                                             )}
@@ -362,7 +494,7 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
 
                 {/* MODAL: ENROLL FAMILY MEMBER */}
                 {selectedCardForEnroll && (
-                    <div className="p-4 rounded-2xl border bg-white dark:bg-zinc-900 border-blue-200 dark:border-blue-800 space-y-3 shadow-md animate-in fade-in">
+                    <div className="p-4 rounded-[20px] border bg-gradient-to-b from-[#FFFFFF] via-[#F8FBFE] to-[#F1F6FA] dark:bg-zinc-900 border-blue-200 dark:border-blue-800 space-y-3.5 shadow-xl animate-in fade-in">
                         <div className="flex items-center justify-between">
                             <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-800 dark:text-zinc-200 flex items-center gap-2">
                                 <UserPlus className="w-4 h-4 text-blue-600" />
@@ -373,7 +505,7 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
                             </button>
                         </div>
                         <form onSubmit={handleEnrollSubmit} className="space-y-3">
-                            <div className="grid grid-cols-2 gap-2">
+                            <div className="grid grid-cols-2 gap-2.5">
                                 <div>
                                     <label className="text-[11px] font-bold text-slate-600 dark:text-zinc-400 block mb-1">Full Name *</label>
                                     <input
@@ -382,7 +514,7 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
                                         value={enrollFormData.name}
                                         onChange={(e) => setEnrollFormData(prev => ({ ...prev, name: e.target.value }))}
                                         placeholder="Full Name"
-                                        className="w-full h-10 px-3 rounded-xl text-xs font-semibold border bg-white dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white outline-none focus:border-blue-500 shadow-2xs"
+                                        className="w-full h-10 px-3 rounded-xl text-xs font-semibold border bg-white dark:bg-zinc-950 border-slate-300 dark:border-zinc-800 text-slate-900 dark:text-white outline-none focus:border-blue-500 shadow-2xs"
                                     />
                                 </div>
                                 <div>
@@ -390,7 +522,7 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
                                     <select
                                         value={enrollFormData.relationship}
                                         onChange={(e) => setEnrollFormData(prev => ({ ...prev, relationship: e.target.value }))}
-                                        className="w-full h-10 px-3 rounded-xl text-xs font-semibold border bg-white dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white outline-none focus:border-blue-500 shadow-2xs cursor-pointer"
+                                        className="w-full h-10 px-3 rounded-xl text-xs font-semibold border bg-white dark:bg-zinc-950 border-slate-300 dark:border-zinc-800 text-slate-900 dark:text-white outline-none focus:border-blue-500 shadow-2xs cursor-pointer"
                                     >
                                         <option value="Spouse">Spouse</option>
                                         <option value="Daughter">Daughter</option>
@@ -401,7 +533,7 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
                                     </select>
                                 </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-2">
+                            <div className="grid grid-cols-2 gap-2.5">
                                 <div>
                                     <label className="text-[11px] font-bold text-slate-600 dark:text-zinc-400 block mb-1">Age (Years)</label>
                                     <input
@@ -409,7 +541,7 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
                                         value={enrollFormData.age}
                                         onChange={(e) => setEnrollFormData(prev => ({ ...prev, age: e.target.value }))}
                                         placeholder="Age"
-                                        className="w-full h-10 px-3 rounded-xl text-xs font-semibold border bg-white dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white outline-none focus:border-blue-500 shadow-2xs"
+                                        className="w-full h-10 px-3 rounded-xl text-xs font-semibold border bg-white dark:bg-zinc-950 border-slate-300 dark:border-zinc-800 text-slate-900 dark:text-white outline-none focus:border-blue-500 shadow-2xs"
                                     />
                                 </div>
                                 <div>
@@ -417,7 +549,7 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
                                     <select
                                         value={enrollFormData.gender}
                                         onChange={(e) => setEnrollFormData(prev => ({ ...prev, gender: e.target.value }))}
-                                        className="w-full h-10 px-3 rounded-xl text-xs font-semibold border bg-white dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white outline-none focus:border-blue-500 shadow-2xs cursor-pointer"
+                                        className="w-full h-10 px-3 rounded-xl text-xs font-semibold border bg-white dark:bg-zinc-950 border-slate-300 dark:border-zinc-800 text-slate-900 dark:text-white outline-none focus:border-blue-500 shadow-2xs cursor-pointer"
                                     >
                                         <option value="Female">Female</option>
                                         <option value="Male">Male</option>
@@ -429,14 +561,14 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
                                 <button
                                     type="button"
                                     onClick={() => setSelectedCardForEnroll(null)}
-                                    className="px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 cursor-pointer"
+                                    className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 cursor-pointer"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={isEnrolling}
-                                    className="px-4 py-1.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1.5 cursor-pointer shadow-xs"
+                                    className="px-4 py-1.5 rounded-xl text-xs font-bold bg-[#0D6EFD] hover:bg-blue-600 text-white flex items-center gap-1.5 cursor-pointer shadow-xs"
                                 >
                                     {isEnrolling ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
                                     <span>Confirm Enrollment</span>
@@ -446,32 +578,310 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
                     </div>
                 )}
 
-                {/* TAB 2: ISSUE NEW CARD */}
+                {/* TAB 2: ISSUE NEW CARD (Subscriber First Workflow) */}
                 {activeTab === 'issue' && (
                     <form onSubmit={handleIssueCardSubmit} className="space-y-4">
                         {/* Status Message */}
                         {statusMessage && (
                             <div className={cn(
-                                "p-3 rounded-xl border text-xs font-bold flex items-center gap-2",
+                                "p-3.5 rounded-2xl border text-xs font-bold flex items-center gap-2 shadow-xs",
                                 statusMessage.type === 'success'
                                     ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-800 dark:text-emerald-300"
                                     : "bg-rose-500/10 border-rose-500/30 text-rose-800 dark:text-rose-300"
                             )}>
-                                {statusMessage.type === 'success' ? <Check className="w-4 h-4 text-emerald-600" /> : <AlertCircle className="w-4 h-4 text-rose-600" />}
+                                {statusMessage.type === 'success' ? <Check className="w-4 h-4 text-emerald-600 shrink-0" /> : <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />}
                                 <span>{statusMessage.text}</span>
                             </div>
                         )}
 
-                        {/* Step 1: Select Plan Tier (2x2 Cards) */}
-                        <div className="space-y-2">
-                            <div className="flex items-center gap-2">
-                                <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[11px] font-black shrink-0">
-                                    1
+                        {/* STEP 1: PRIMARY SUBSCRIBER IDENTIFICATION (SynOS Facelift Card) */}
+                        <div className={cn(
+                            "rounded-[20px] border transition-all p-4 space-y-3.5",
+                            isDark
+                                ? "bg-zinc-900/90 border-zinc-800 shadow-xl"
+                                : "bg-gradient-to-b from-[#FFFFFF] via-[#F8FBFE] to-[#F1F6FA] border border-white/95 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.04),inset_0_1px_0_#FFFFFF]"
+                        )}>
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2.5">
+                                    <div className="w-7 h-7 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-sm shadow-xs shrink-0">
+                                        1
+                                    </div>
+                                    <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-normal">
+                                        Primary Subscriber Identification
+                                    </h3>
                                 </div>
-                                <span className="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-zinc-300">
-                                    Select Plan Tier
-                                </span>
+
+                                {selectedPatient && (
+                                    <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                                        Subscriber Identified
+                                    </span>
+                                )}
                             </div>
+
+                            {/* STATE A: PATIENT IS SELECTED (Canonical Recessed Pod) */}
+                            {selectedPatient ? (
+                                <div className="rounded-2xl border border-[#CCDCE8] dark:border-zinc-800 bg-gradient-to-b from-[#E2EDF5] to-[#D9E6EF] dark:bg-zinc-950/80 p-3.5 sm:p-4 shadow-[inset_0_1px_3px_rgba(15,35,60,0.06),0_1px_0_rgba(255,255,255,0.7)] flex items-center justify-between gap-3 animate-in fade-in duration-200">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-xs">
+                                            <User className="w-5 h-5" />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                <span className="font-bold text-base text-slate-900 dark:text-white truncate">
+                                                    {selectedPatient.name}
+                                                </span>
+                                                <span className="font-mono text-xs font-black text-blue-600 dark:text-blue-400 bg-white/90 dark:bg-zinc-800 px-2 py-0.5 rounded-md border border-blue-200 dark:border-blue-800">
+                                                    {selectedPatient.mrn || 'NEW REG'}
+                                                </span>
+                                                {selectedPatient.isNew && (
+                                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                                        New Patient
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-zinc-400 mt-1 font-medium flex-wrap">
+                                                <span>📞 {selectedPatient.phone}</span>
+                                                {selectedPatient.age && <span>🎂 {selectedPatient.age}</span>}
+                                                <span>⚧ {selectedPatient.gender}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={handleClearSubscriber}
+                                        className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white/90 dark:bg-zinc-800 text-slate-700 dark:text-zinc-200 hover:bg-white border border-slate-300 dark:border-zinc-700 shadow-2xs cursor-pointer shrink-0 transition-colors"
+                                    >
+                                        Change
+                                    </button>
+                                </div>
+                            ) : isRegisteringNew ? (
+                                /* STATE B: REGISTER NEW PATIENT INLINE FORM */
+                                <div className="p-4 rounded-2xl border border-slate-300 dark:border-zinc-700/80 bg-white dark:bg-zinc-950/80 shadow-xs space-y-3.5 animate-in fade-in duration-150">
+                                    <div className="flex items-center justify-between border-b border-slate-100 dark:border-zinc-800 pb-2">
+                                        <span className="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
+                                            <UserPlus className="w-3.5 h-3.5 text-blue-600" />
+                                            Register New Patient as Subscriber
+                                        </span>
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsRegisteringNew(false)}
+                                            className="text-xs font-bold text-slate-500 hover:text-slate-800 cursor-pointer"
+                                        >
+                                            Back to Search
+                                        </button>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label className="text-[11px] font-bold text-slate-600 dark:text-zinc-400 block mb-1">Full Name *</label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={primarySubscriber.name}
+                                                onChange={(e) => setPrimarySubscriber(prev => ({ ...prev, name: e.target.value }))}
+                                                placeholder="e.g. Ramesh Kumar"
+                                                className="w-full h-10 px-3 rounded-xl text-xs font-semibold border bg-white dark:bg-zinc-900 border-slate-300 dark:border-zinc-800 text-slate-900 dark:text-white outline-none focus:border-blue-500 shadow-2xs"
+                                                autoFocus
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-[11px] font-bold text-slate-600 dark:text-zinc-400 block mb-1">Mobile Number *</label>
+                                            <input
+                                                type="tel"
+                                                required
+                                                value={primarySubscriber.phone}
+                                                onChange={(e) => setPrimarySubscriber(prev => ({ ...prev, phone: e.target.value }))}
+                                                placeholder="10-digit mobile"
+                                                className="w-full h-10 px-3 rounded-xl text-xs font-mono font-semibold border bg-white dark:bg-zinc-900 border-slate-300 dark:border-zinc-800 text-slate-900 dark:text-white outline-none focus:border-blue-500 shadow-2xs"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label className="text-[11px] font-bold text-slate-600 dark:text-zinc-400 block mb-1">Age (Years)</label>
+                                            <input
+                                                type="number"
+                                                value={primarySubscriber.age}
+                                                onChange={(e) => setPrimarySubscriber(prev => ({ ...prev, age: e.target.value }))}
+                                                placeholder="e.g. 42"
+                                                className="w-full h-10 px-3 rounded-xl text-xs font-semibold border bg-white dark:bg-zinc-900 border-slate-300 dark:border-zinc-800 text-slate-900 dark:text-white outline-none focus:border-blue-500 shadow-2xs"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-[11px] font-bold text-slate-600 dark:text-zinc-400 block mb-1">Gender</label>
+                                            <div className="flex p-0.5 rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs font-bold h-10 items-center">
+                                                {['Male', 'Female', 'Other'].map(g => (
+                                                    <button
+                                                        key={g}
+                                                        type="button"
+                                                        onClick={() => setPrimarySubscriber(prev => ({ ...prev, gender: g }))}
+                                                        className={cn(
+                                                            "flex-1 h-8 rounded-lg transition-all cursor-pointer font-bold",
+                                                            primarySubscriber.gender === g
+                                                                ? "bg-[#0D6EFD] text-white shadow-xs font-extrabold"
+                                                                : "text-slate-600 dark:text-zinc-400 hover:text-slate-900"
+                                                        )}
+                                                    >
+                                                        {g}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-end gap-2.5 pt-1">
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsRegisteringNew(false)}
+                                            className="px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 cursor-pointer"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={handleConfirmNewPatient}
+                                            className="px-4 py-2 rounded-xl text-xs font-bold bg-[#0D6EFD] hover:bg-blue-600 text-white flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-[0.98]"
+                                        >
+                                            <Check className="w-3.5 h-3.5" />
+                                            <span>Confirm & Select Subscriber</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                /* STATE C: SEARCH SUBSCRIBER (Mobile / MRN / Name) */
+                                <div className="space-y-3">
+                                    <div className="relative group">
+                                        <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none group-focus-within:text-blue-600 transition-colors" />
+                                        <input
+                                            type="text"
+                                            placeholder="Search registered patients by Mobile, MRN, or Name..."
+                                            value={patientSearchQuery}
+                                            onChange={(e) => setPatientSearchQuery(e.target.value)}
+                                            className="w-full h-11 pl-10 pr-10 rounded-xl text-xs sm:text-sm font-semibold border bg-white dark:bg-zinc-950 border-slate-300 dark:border-zinc-700 text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none shadow-2xs transition-all"
+                                            autoFocus
+                                        />
+                                        {isSearchingPatients && (
+                                            <Loader2 className="w-4 h-4 text-blue-600 animate-spin absolute right-3.5 top-1/2 -translate-y-1/2" />
+                                        )}
+                                    </div>
+
+                                    {/* Action Link: Register Brand New Directly */}
+                                    <div className="flex items-center justify-between px-1">
+                                        <span className="text-[11px] text-slate-500 dark:text-zinc-400 font-medium">
+                                            Type 10-digit mobile number or search existing database.
+                                        </span>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleStartNewPatient('')}
+                                            className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer"
+                                        >
+                                            <UserPlus className="w-3.5 h-3.5" />
+                                            <span>+ Register Brand New Patient</span>
+                                        </button>
+                                    </div>
+
+                                    {/* Candidate Search Matches */}
+                                    {patientMatches.length > 0 && (
+                                        <div className="space-y-2 pt-1">
+                                            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 block px-1">
+                                                Matching Registered Patients ({patientMatches.length}):
+                                            </span>
+                                            <div className="space-y-2 max-h-56 overflow-y-auto no-scrollbar pr-0.5">
+                                                {patientMatches.map(p => {
+                                                    const pId = p.id || p.Id || p.patientId;
+                                                    const name = p.displayName || `${p.firstName || ''} ${p.lastName || ''}`.trim() || p.name;
+                                                    const phone = p.currentPhoneNumber || p.phone;
+                                                    const mrn = p.mrn || p.MRN;
+                                                    return (
+                                                        <div 
+                                                            key={pId}
+                                                            className="p-3 rounded-2xl border border-slate-200/90 dark:border-zinc-800 bg-white dark:bg-zinc-900 flex items-center justify-between gap-3 shadow-2xs hover:border-blue-400 transition-all"
+                                                        >
+                                                            <div className="flex items-center gap-2.5 min-w-0">
+                                                                <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center font-bold text-xs shrink-0">
+                                                                    <User className="w-4 h-4" />
+                                                                </div>
+                                                                <div className="min-w-0">
+                                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                                        <strong className="text-xs sm:text-sm text-slate-900 dark:text-white truncate">
+                                                                            {name}
+                                                                        </strong>
+                                                                        {mrn && (
+                                                                            <span className="font-mono text-[10px] font-black text-slate-500 bg-slate-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-zinc-700">
+                                                                                {mrn}
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                    <div className="text-[11px] text-slate-500 dark:text-zinc-400 flex items-center gap-2 mt-0.5">
+                                                                        <span>📞 {phone}</span>
+                                                                        {p.gender && <span>⚧ {p.gender}</span>}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleSelectPatient(p)}
+                                                                className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-[#0D6EFD] hover:bg-blue-600 text-white flex items-center gap-1 shadow-xs cursor-pointer shrink-0 transition-colors"
+                                                            >
+                                                                <span>Select</span>
+                                                                <ArrowRight className="w-3 h-3" />
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+
+                                            <div className="pt-1 text-center border-t border-slate-100 dark:border-zinc-800">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleStartNewPatient(patientSearchQuery)}
+                                                    className="text-xs font-bold text-slate-600 dark:text-zinc-400 hover:text-blue-600 transition-colors"
+                                                >
+                                                    Not the patient you're looking for? <u>Register as New Patient</u>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* No Match State */}
+                                    {patientSearchQuery.trim().length >= 3 && !isSearchingPatients && patientMatches.length === 0 && (
+                                        <div className="p-3.5 rounded-2xl border border-dashed border-slate-300 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/50 text-center space-y-2">
+                                            <p className="text-xs text-slate-600 dark:text-zinc-400 font-semibold">
+                                                No registered patient matches "<span className="font-bold text-slate-800 dark:text-zinc-200">{patientSearchQuery}</span>".
+                                            </p>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleStartNewPatient(patientSearchQuery)}
+                                                className="px-4 py-2 rounded-xl text-xs font-bold bg-[#0D6EFD] hover:bg-blue-600 text-white inline-flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
+                                            >
+                                                <UserPlus className="w-3.5 h-3.5" />
+                                                <span>Register New Patient with this Number</span>
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* STEP 2: SELECT HEALTH CARD PLAN TIER (2x2 Cards) */}
+                        <div className={cn(
+                            "rounded-[20px] border transition-all p-4 space-y-3.5",
+                            isDark
+                                ? "bg-zinc-900/90 border-zinc-800 shadow-xl"
+                                : "bg-gradient-to-b from-[#FFFFFF] via-[#F8FBFE] to-[#F1F6FA] border border-white/95 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.04),inset_0_1px_0_#FFFFFF]"
+                        )}>
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-7 h-7 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-sm shadow-xs shrink-0">
+                                    2
+                                </div>
+                                <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-normal">
+                                    Select Health Card Plan Tier
+                                </h3>
+                            </div>
+
                             <div className="grid grid-cols-2 gap-3">
                                 {plans.map(p => {
                                     const isSelected = p.planId === selectedPlanId;
@@ -484,7 +894,7 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
                                                 setDiscountValue(p.defaultDiscountPercentage || 30);
                                             }}
                                             className={cn(
-                                                "p-4 rounded-2xl text-left transition-all duration-200 cursor-pointer relative flex flex-col justify-between min-h-[86px] shadow-xs",
+                                                "p-4 rounded-2xl text-left transition-all duration-200 cursor-pointer relative flex flex-col justify-between min-h-[88px] shadow-xs",
                                                 isSelected
                                                     ? "bg-[#DCEBFF] dark:bg-blue-950/70 border-2 border-[#0D6EFD] dark:border-blue-500 shadow-blue-500/10"
                                                     : "bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-700/90 hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-sm"
@@ -523,158 +933,28 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
                             </div>
                         </div>
 
-                        {/* Step 2: Discount & Validity Customization */}
-                        <div className="space-y-2">
-                            <div className="flex items-center gap-2">
-                                <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[11px] font-black shrink-0">
-                                    2
-                                </div>
-                                <span className="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-zinc-300">
-                                    Discount & Validity
-                                </span>
-                            </div>
-                            <div className="p-4 rounded-2xl border border-slate-300 dark:border-zinc-700/90 bg-white dark:bg-zinc-900 shadow-xs space-y-3">
-                                <div className="flex items-center justify-between gap-2">
-                                    <span className="text-xs font-bold text-slate-600 dark:text-zinc-400">Discount Type</span>
-                                    <div className="flex p-0.5 rounded-xl bg-slate-100 dark:bg-zinc-800/80 border border-slate-200/80 dark:border-zinc-700/80 text-xs font-bold">
-                                        <button
-                                            type="button"
-                                            onClick={() => setDiscountType('Percentage')}
-                                            className={cn(
-                                                "px-3 py-1 rounded-lg transition-all cursor-pointer font-bold",
-                                                discountType === 'Percentage'
-                                                    ? "bg-white dark:bg-zinc-900 text-blue-600 dark:text-blue-400 shadow-2xs font-extrabold"
-                                                    : "text-slate-500 hover:text-slate-800"
-                                            )}
-                                        >
-                                            % Percentage
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setDiscountType('Flat')}
-                                            className={cn(
-                                                "px-3 py-1 rounded-lg transition-all cursor-pointer font-bold",
-                                                discountType === 'Flat'
-                                                    ? "bg-white dark:bg-zinc-900 text-blue-600 dark:text-blue-400 shadow-2xs font-extrabold"
-                                                    : "text-slate-500 hover:text-slate-800"
-                                            )}
-                                        >
-                                            Flat Concession (₹)
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-3 items-center">
-                                    <div>
-                                        <label className="text-[11px] font-bold text-slate-600 dark:text-zinc-400 block mb-1">
-                                            Discount Value
-                                        </label>
-                                        <div className="relative">
-                                            <input
-                                                type="number"
-                                                min="1"
-                                                max={discountType === 'Percentage' ? 100 : 10000}
-                                                value={discountValue}
-                                                onChange={(e) => setDiscountValue(e.target.value)}
-                                                className="w-full h-10 px-3 pr-8 rounded-xl text-sm font-mono font-bold border bg-white dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs"
-                                            />
-                                            <span className="absolute right-3 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-xs pointer-events-none">
-                                                {discountType === 'Percentage' ? '%' : '₹'}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label className="text-[11px] font-bold text-slate-600 dark:text-zinc-400 block mb-1">
-                                            Validity Period
-                                        </label>
-                                        <select
-                                            value={validityDays}
-                                            onChange={(e) => setValidityDays(Number(e.target.value))}
-                                            className="w-full h-10 px-3 rounded-xl text-xs font-bold border bg-white dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs cursor-pointer"
-                                        >
-                                            <option value={365}>1 Year (365 Days)</option>
-                                            <option value={180}>6 Months (180 Days)</option>
-                                            <option value={730}>2 Years (730 Days)</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Step 3: Primary Subscriber */}
-                        <div className="space-y-2">
-                            <div className="flex items-center gap-2">
-                                <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[11px] font-black shrink-0">
-                                    3
-                                </div>
-                                <span className="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-zinc-300">
-                                    Primary Subscriber
-                                </span>
-                            </div>
-                            <div className="p-4 rounded-2xl border border-slate-300 dark:border-zinc-700/90 bg-white dark:bg-zinc-900 shadow-xs space-y-3">
-                                <div className="grid grid-cols-2 gap-2.5">
-                                    <div>
-                                        <label className="text-[11px] font-bold text-slate-600 dark:text-zinc-400 block mb-1">Full Name *</label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={primarySubscriber.name}
-                                            onChange={(e) => setPrimarySubscriber(prev => ({ ...prev, name: e.target.value }))}
-                                            placeholder="e.g. Ramesh Kumar"
-                                            className="w-full h-10 px-3 rounded-xl text-xs font-semibold border bg-white dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-[11px] font-bold text-slate-600 dark:text-zinc-400 block mb-1">Mobile Number *</label>
-                                        <input
-                                            type="tel"
-                                            required
-                                            value={primarySubscriber.phone}
-                                            onChange={(e) => setPrimarySubscriber(prev => ({ ...prev, phone: e.target.value }))}
-                                            placeholder="10-digit mobile"
-                                            className="w-full h-10 px-3 rounded-xl text-xs font-mono font-semibold border bg-white dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-2.5">
-                                    <div>
-                                        <label className="text-[11px] font-bold text-slate-600 dark:text-zinc-400 block mb-1">Age (Years)</label>
-                                        <input
-                                            type="number"
-                                            value={primarySubscriber.age}
-                                            onChange={(e) => setPrimarySubscriber(prev => ({ ...prev, age: e.target.value }))}
-                                            placeholder="e.g. 42"
-                                            className="w-full h-10 px-3 rounded-xl text-xs font-semibold border bg-white dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="text-[11px] font-bold text-slate-600 dark:text-zinc-400 block mb-1">Gender</label>
-                                        <select
-                                            value={primarySubscriber.gender}
-                                            onChange={(e) => setPrimarySubscriber(prev => ({ ...prev, gender: e.target.value }))}
-                                            className="w-full h-10 px-3 rounded-xl text-xs font-semibold border bg-white dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-2xs cursor-pointer"
-                                        >
-                                            <option value="Male">Male</option>
-                                            <option value="Female">Female</option>
-                                            <option value="Other">Other</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Step 4: Family Members Quota */}
+                        {/* STEP 3: FAMILY MEMBERS QUOTA (Only if plan capacity > 1) */}
                         {additionalFamilySlotsNeeded > 0 && (
-                            <div className="space-y-2">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[11px] font-black shrink-0">
-                                        4
+                            <div className={cn(
+                                "rounded-[20px] border transition-all p-4 space-y-3.5",
+                                isDark
+                                    ? "bg-zinc-900/90 border-zinc-800 shadow-xl"
+                                    : "bg-gradient-to-b from-[#FFFFFF] via-[#F8FBFE] to-[#F1F6FA] border border-white/95 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.04),inset_0_1px_0_#FFFFFF]"
+                            )}>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2.5">
+                                        <div className="w-7 h-7 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-sm shadow-xs shrink-0">
+                                            3
+                                        </div>
+                                        <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-normal">
+                                            Family Members ({additionalFamilySlotsNeeded} Slot{additionalFamilySlotsNeeded > 1 ? 's' : ''})
+                                        </h3>
                                     </div>
-                                    <span className="text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-zinc-300">
-                                        Family Members ({additionalFamilySlotsNeeded} Slot{additionalFamilySlotsNeeded > 1 ? 's' : ''})
+                                    <span className="text-[11px] text-slate-500 dark:text-zinc-400 font-medium">
+                                        Optional: Can be enrolled now or during visits
                                     </span>
                                 </div>
+
                                 <div className="space-y-2.5">
                                     {familyMembers.map((member, idx) => (
                                         <div 
@@ -682,7 +962,7 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
                                             className="p-3.5 rounded-2xl border border-slate-300 dark:border-zinc-700/90 bg-white dark:bg-zinc-900 shadow-xs space-y-2"
                                         >
                                             <span className="text-xs font-bold text-slate-700 dark:text-zinc-300 block">
-                                                Member #{idx + 2}
+                                                Family Member Slot #{idx + 2}
                                             </span>
                                             <div className="grid grid-cols-3 gap-2">
                                                 <div className="col-span-2">
@@ -697,7 +977,7 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
                                                                 return arr;
                                                             });
                                                         }}
-                                                        placeholder="Full Name"
+                                                        placeholder="Member Full Name"
                                                         className="w-full h-9 px-3 rounded-xl text-xs font-semibold border bg-white dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white outline-none focus:border-blue-500 shadow-2xs"
                                                     />
                                                 </div>
@@ -729,11 +1009,101 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
                             </div>
                         )}
 
-                        {/* Bottom Actions Settlement Card */}
-                        <div className="p-4 rounded-2xl border border-slate-300 dark:border-zinc-700/90 bg-white dark:bg-zinc-900 shadow-xs space-y-3.5 mt-2">
+                        {/* STEP 4: DISCOUNT CONCESSION & VALIDITY */}
+                        <div className={cn(
+                            "rounded-[20px] border transition-all p-4 space-y-3.5",
+                            isDark
+                                ? "bg-zinc-900/90 border-zinc-800 shadow-xl"
+                                : "bg-gradient-to-b from-[#FFFFFF] via-[#F8FBFE] to-[#F1F6FA] border border-white/95 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.04),inset_0_1px_0_#FFFFFF]"
+                        )}>
+                            <div className="flex items-center gap-2.5">
+                                <div className="w-7 h-7 rounded-full bg-[#5A6E85] text-white font-bold flex items-center justify-center text-sm shadow-xs shrink-0">
+                                    {additionalFamilySlotsNeeded > 0 ? 4 : 3}
+                                </div>
+                                <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-normal">
+                                    Desk Discount Freedom & Validity
+                                </h3>
+                            </div>
+
+                            <div className="p-4 rounded-2xl border border-slate-300 dark:border-zinc-700/90 bg-white dark:bg-zinc-900 shadow-xs space-y-3">
+                                <div className="flex items-center justify-between gap-2">
+                                    <span className="text-xs font-bold text-slate-600 dark:text-zinc-400">Discount Concession Mode</span>
+                                    <div className="flex p-0.5 rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs font-bold">
+                                        <button
+                                            type="button"
+                                            onClick={() => setDiscountType('Percentage')}
+                                            className={cn(
+                                                "px-3 py-1 rounded-lg transition-all cursor-pointer font-bold",
+                                                discountType === 'Percentage'
+                                                    ? "bg-[#0D6EFD] text-white shadow-xs font-extrabold"
+                                                    : "text-slate-600 dark:text-zinc-400 hover:text-slate-800"
+                                            )}
+                                        >
+                                            % Percentage
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setDiscountType('Flat')}
+                                            className={cn(
+                                                "px-3 py-1 rounded-lg transition-all cursor-pointer font-bold",
+                                                discountType === 'Flat'
+                                                    ? "bg-[#0D6EFD] text-white shadow-xs font-extrabold"
+                                                    : "text-slate-600 dark:text-zinc-400 hover:text-slate-800"
+                                            )}
+                                        >
+                                            Flat Concession (₹)
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3 items-center">
+                                    <div>
+                                        <label className="text-[11px] font-bold text-slate-600 dark:text-zinc-400 block mb-1">
+                                            Discount Rate
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                type="number"
+                                                min="1"
+                                                max={discountType === 'Percentage' ? 100 : 10000}
+                                                value={discountValue}
+                                                onChange={(e) => setDiscountValue(e.target.value)}
+                                                className="w-full h-10 px-3 pr-8 rounded-xl text-sm font-mono font-bold border bg-white dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white outline-none focus:border-blue-500 shadow-2xs"
+                                            />
+                                            <span className="absolute right-3 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-xs pointer-events-none">
+                                                {discountType === 'Percentage' ? '%' : '₹'}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="text-[11px] font-bold text-slate-600 dark:text-zinc-400 block mb-1">
+                                            Validity Period
+                                        </label>
+                                        <select
+                                            value={validityDays}
+                                            onChange={(e) => setValidityDays(Number(e.target.value))}
+                                            className="w-full h-10 px-3 rounded-xl text-xs font-bold border bg-white dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white outline-none focus:border-blue-500 shadow-2xs cursor-pointer"
+                                        >
+                                            <option value={365}>1 Year (365 Days) - Standard</option>
+                                            <option value={180}>6 Months (180 Days)</option>
+                                            <option value={730}>2 Years (730 Days)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* STEP 5: COUNTER SETTLEMENT & ACTIVATION CARD */}
+                        <div className={cn(
+                            "rounded-[20px] border transition-all p-4 space-y-3.5 shadow-sm",
+                            isDark
+                                ? "bg-zinc-900/90 border-zinc-800"
+                                : "bg-gradient-to-b from-[#FFFFFF] via-[#F8FBFE] to-[#F1F6FA] border border-white/95 shadow-[0_8px_24px_rgba(15,35,60,0.06),0_1px_3px_rgba(15,35,60,0.04),inset_0_1px_0_#FFFFFF]"
+                        )}>
                             <div className="flex items-center justify-between">
                                 <div className="flex items-baseline gap-2">
-                                    <span className="text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Total Due:</span>
+                                    <span className="text-xs font-bold text-slate-500 dark:text-zinc-400 uppercase tracking-wider">Total Subscription Due:</span>
                                     <span className="text-2xl font-black font-mono text-slate-900 dark:text-white">
                                         ₹{selectedPlan.price.toLocaleString()}
                                     </span>
@@ -759,11 +1129,18 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
 
                             <button
                                 type="submit"
-                                disabled={isSubmittingCard}
-                                className="w-full h-12 rounded-xl text-sm sm:text-base font-bold bg-[#0D6EFD] hover:bg-blue-600 text-white shadow-md active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                                disabled={isSubmittingCard || !selectedPatient}
+                                className={cn(
+                                    "w-full h-12 rounded-xl text-sm sm:text-base font-bold text-white shadow-md transition-all flex items-center justify-center gap-2",
+                                    !selectedPatient 
+                                        ? "bg-slate-300 dark:bg-zinc-800 text-slate-500 cursor-not-allowed" 
+                                        : "bg-[#0D6EFD] hover:bg-blue-600 active:scale-[0.99] cursor-pointer"
+                                )}
                             >
                                 {isSubmittingCard ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
-                                <span>Activate Card & Collect ₹{selectedPlan.price.toLocaleString()}</span>
+                                <span>
+                                    {!selectedPatient ? "Select / Register Subscriber First" : `Activate Card & Collect ₹${selectedPlan.price.toLocaleString()}`}
+                                </span>
                             </button>
                         </div>
                     </form>
