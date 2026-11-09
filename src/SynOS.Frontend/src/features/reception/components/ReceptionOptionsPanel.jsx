@@ -161,6 +161,8 @@ export function ReceptionOptionsPanel({
         viewWidthClasses = "w-[96vw] sm:w-[94vw] md:w-[90vw] lg:w-[85vw] max-w-[1400px]";
     } else if (activeView === 'requests') {
         viewWidthClasses = "w-[96vw] sm:w-[92vw] md:w-[680px] lg:w-[720px] max-w-[800px]";
+    } else if (activeView === 'healthcard') {
+        viewWidthClasses = "w-[96vw] sm:w-[92vw] md:w-[680px] lg:w-[740px] xl:w-[780px] max-w-[820px]";
     }
 
     // 1. Group 1: Desk Operations & Counter Settlements
@@ -372,6 +374,7 @@ export function ReceptionOptionsPanel({
             {activeView === 'healthcard' && (
                 <HealthCardDeskDrawer
                     isOpen={true}
+                    embedded={true}
                     onClose={() => {
                         setActiveView('menu');
                         onDataUpdated?.();

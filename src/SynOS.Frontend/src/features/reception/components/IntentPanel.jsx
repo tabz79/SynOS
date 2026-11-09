@@ -93,6 +93,7 @@ export function IntentPanel({ onVisitUpdated }) {
     const [isBatchEditConfirmModalOpen, setIsBatchEditConfirmModalOpen] = useState(false);
     const [batchEditReason, setBatchEditReason] = useState('');
     const [isSubmittingBatchEdit, setIsSubmittingBatchEdit] = useState(false);
+    const [isNotificationCenterDismissed, setIsNotificationCenterDismissed] = useState(false);
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [isPartialPayment, setIsPartialPayment] = useState(false);
     const [customPaymentAmount, setCustomPaymentAmount] = useState('');
@@ -302,6 +303,7 @@ export function IntentPanel({ onVisitUpdated }) {
             setBatchEditReason('');
             setUserPayerExpandedState(true);
             setIsPatientCardCollapsed(false);
+            setIsNotificationCenterDismissed(false);
             return;
         }
 
@@ -1851,17 +1853,18 @@ export function IntentPanel({ onVisitUpdated }) {
 
     return (
         <>
-            {/* Notification Center Rail (Left Viewport) */}
+            {/* Notification Center Rail (Left Viewport) - Kept active during intake/registration/billing for live hints */}
             <ReceptionNotificationCenter
-                isOpen={hasPatient || isCorrectionIntent || isPostProcessingView}
+                isOpen={!isNotificationCenterDismissed}
                 correctionHistory={snapshot?.correctionHistory}
+                onClose={() => setIsNotificationCenterDismissed(true)}
             />
 
         <div 
             ref={panelRef} 
             className={cn(
                 "flex flex-col h-full overflow-hidden rounded-[24px] transition-[width,transform,opacity] duration-300 ease-out z-30 shadow-2xl", 
-                (hasPatient || isCorrectionIntent || isPostProcessingView) 
+                (!isNotificationCenterDismissed) 
                     ? "absolute right-0 top-0 bottom-0 w-full xl:left-[314px] 2xl:left-[334px] xl:w-auto" 
                     : "absolute right-0 top-0 bottom-0 w-[96vw] sm:w-[92vw] md:w-[75vw] lg:w-[50vw] xl:w-[44vw] 2xl:w-[40vw] min-w-[580px] max-w-[880px]",
                 ui.panel

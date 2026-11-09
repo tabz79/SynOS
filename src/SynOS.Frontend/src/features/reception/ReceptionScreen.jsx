@@ -762,9 +762,9 @@ export function ReceptionScreen() {
                         <ActivityStream serverTime={serverTimeAnchor} />
                     </div>
 
-                    {/* Left Rail Notification Center when Options Panel is open or toggled from Notifications button */}
+                    {/* Left Rail Notification Center: decoupled from Options Panel, toggled from Notifications toolbar button */}
                     <ReceptionNotificationCenter
-                        isOpen={(isOptionsPanelOpen || isCenterOpen) && !isIntentPanelOpen}
+                        isOpen={isCenterOpen && !isOptionsPanelOpen && !isIntentPanelOpen}
                         realitySummary={summary}
                         onClose={closeCenter}
                     />
