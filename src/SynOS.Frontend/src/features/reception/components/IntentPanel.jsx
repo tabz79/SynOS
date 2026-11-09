@@ -1673,7 +1673,7 @@ export function IntentPanel({ onVisitUpdated }) {
             className={cn(
                 "flex flex-col h-full overflow-hidden rounded-[24px] transition-[width,transform,opacity] duration-300 ease-out z-30 shadow-2xl", 
                 (hasPatient || isCorrectionIntent || isPostProcessingView) 
-                    ? "absolute right-0 top-0 bottom-0 w-full xl:left-[268px] 2xl:left-[288px] xl:w-auto" 
+                    ? "absolute right-0 top-0 bottom-0 w-full xl:left-[314px] 2xl:left-[334px] xl:w-auto" 
                     : "absolute right-0 top-0 bottom-0 w-[96vw] sm:w-[92vw] md:w-[75vw] lg:w-[50vw] xl:w-[44vw] 2xl:w-[40vw] min-w-[580px] max-w-[880px]",
                 ui.panel
             )}

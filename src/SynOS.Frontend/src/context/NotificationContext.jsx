@@ -4,6 +4,17 @@ const NotificationContext = createContext(null);
 
 const DEFAULT_SEED_NOTIFICATIONS = [
     {
+        id: 'milestone-cash-counter',
+        type: 'milestone',
+        category: 'billing',
+        title: '₹3,180 Cash in Counter',
+        message: '2 bills completed, ₹3,180 cash collected today.',
+        priority: 'normal',
+        dismissible: false,
+        action: { label: 'Open Drawer', type: 'OPEN_DRAWER' },
+        timestamp: '10:56 AM'
+    },
+    {
         id: 'feat-revamped-options',
         type: 'feature',
         category: 'system',
@@ -12,7 +23,7 @@ const DEFAULT_SEED_NOTIFICATIONS = [
         priority: 'normal',
         dismissible: true,
         action: { label: 'Explore Tools', type: 'OPEN_OPTIONS' },
-        timestamp: new Date()
+        timestamp: 'Now'
     },
     {
         id: 'remind-start-shift',
@@ -23,7 +34,7 @@ const DEFAULT_SEED_NOTIFICATIONS = [
         priority: 'high',
         dismissible: true,
         action: { label: 'Open Drawer', type: 'OPEN_DRAWER' },
-        timestamp: new Date()
+        timestamp: 'Now'
     },
     {
         id: 'remind-end-shift',
@@ -34,7 +45,7 @@ const DEFAULT_SEED_NOTIFICATIONS = [
         priority: 'normal',
         dismissible: true,
         action: { label: 'End Shift', type: 'OPEN_END_SHIFT' },
-        timestamp: new Date()
+        timestamp: 'Now'
     }
 ];
 
@@ -76,7 +87,7 @@ export function NotificationProvider({ children }) {
             priority: item.priority || 'normal',
             dismissible: item.dismissible !== false,
             action: item.action || null,
-            timestamp: item.timestamp || new Date()
+            timestamp: item.timestamp || 'Now'
         };
 
         setNotifications(prev => {
@@ -97,10 +108,35 @@ export function NotificationProvider({ children }) {
         setToastNotifications(prev => prev.filter(t => t.id !== id));
     }, []);
 
-    // Clear all dismissible notifications
+    // Clear all dismissible notifications (Mark all as read)
     const clearAll = useCallback(() => {
         setNotifications(prev => prev.filter(n => !n.dismissible));
         setToastNotifications([]);
+    }, []);
+
+    const markAllAsRead = clearAll;
+
+    // Synchronize reality summary with the milestone notification
+    const syncRealitySummary = useCallback((summary) => {
+        if (!summary) return;
+        const cashCollected = Number(summary.paymentsCashTotal || 0);
+        const drawerCash = Number(summary.cashDrawerBalancePool ?? summary.cashDrawerBalance ?? summary.paymentsCashTotal ?? 0);
+        const walkIns = Number(summary.walkInsToday || 0);
+
+        if (drawerCash > 0 || cashCollected > 0 || walkIns > 0) {
+            const updateFn = (list) => list.map(n => {
+                if (n.id === 'milestone-cash-counter') {
+                    return {
+                        ...n,
+                        title: `₹${drawerCash.toLocaleString('en-IN')} Cash in Counter`,
+                        message: `${walkIns} bills completed, ₹${cashCollected.toLocaleString('en-IN')} cash collected today.`
+                    };
+                }
+                return n;
+            });
+            setNotifications(updateFn);
+            setToastNotifications(updateFn);
+        }
     }, []);
 
     // Action Execution Router
@@ -165,11 +201,13 @@ export function NotificationProvider({ children }) {
         notify,
         dismiss,
         clearAll,
+        markAllAsRead,
+        syncRealitySummary,
         executeAction,
         toggleCenter,
         openCenter,
         closeCenter
-    }), [notifications, toastNotifications, unreadCount, isCenterOpen, notify, dismiss, clearAll, executeAction, toggleCenter, openCenter, closeCenter]);
+    }), [notifications, toastNotifications, unreadCount, isCenterOpen, notify, dismiss, clearAll, markAllAsRead, syncRealitySummary, executeAction, toggleCenter, openCenter, closeCenter]);
 
     return (
         <NotificationContext.Provider value={value}>

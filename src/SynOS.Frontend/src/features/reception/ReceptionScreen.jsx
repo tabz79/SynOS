@@ -66,7 +66,14 @@ export function ReceptionScreen() {
     const [isServerUpdating, setIsServerUpdating] = useState(false);
 
     // Global Notification Center integration
-    const { isCenterOpen, toggleCenter, closeCenter, unreadCount, notify } = useNotifications();
+    const { isCenterOpen, toggleCenter, closeCenter, unreadCount, notify, syncRealitySummary } = useNotifications();
+
+    // Synchronize reality summary with the milestone notification
+    useEffect(() => {
+        if (summary) {
+            syncRealitySummary(summary);
+        }
+    }, [summary, syncRealitySummary]);
 
     // History State (Phase 5)
     // We use a Ref for SignalR callback access, and State for Render.
