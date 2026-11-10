@@ -19,6 +19,9 @@ namespace SynOS.Models.DTOs
         public DateTime? LastVisitDate { get; set; }
         public System.Collections.Generic.List<string> LastVisitTestCodes { get; set; } = new();
         public bool HasActiveHealthCard { get; set; }
+        public bool IsHealthCardExpired { get; set; }
+        public DateTime? HealthCardValidUntil { get; set; }
+        public Guid? HealthCardId { get; set; }
         public string? HealthCardNumber { get; set; }
         public string? HealthCardPlanName { get; set; }
         public decimal? HealthCardDiscountValue { get; set; }

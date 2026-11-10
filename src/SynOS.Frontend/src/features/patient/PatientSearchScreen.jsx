@@ -243,7 +243,28 @@ export function PatientSearchScreen() {
 
                     {/* MRN / Card Code Column */}
                     <td className="px-6 py-4">
-                      {p.hasActiveHealthCard || p.healthCardNumber || hasHealthCardFilter ? (
+                      {p.hasActiveHealthCard ? (
+                        <div className="flex flex-col gap-1 items-start">
+                          <span className="font-mono text-xs font-black text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-1 rounded-lg border border-indigo-200 dark:border-indigo-800 shadow-2xs flex items-center gap-1.5 w-fit">
+                            <CreditCard className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                            <span>{p.healthCardNumber || (p.mrn ? `${p.mrn}-HC` : 'HC MEMBER')}</span>
+                          </span>
+                          <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                            <span>● Active</span>
+                            {p.healthCardPlanName && <span>• {p.healthCardPlanName}</span>}
+                          </span>
+                        </div>
+                      ) : p.isHealthCardExpired ? (
+                        <div className="flex flex-col gap-1 items-start">
+                          <span className="font-mono text-xs font-black text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 px-2.5 py-1 rounded-lg border border-amber-300 dark:border-amber-800 shadow-2xs flex items-center gap-1.5 w-fit">
+                            <CreditCard className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                            <span>{p.healthCardNumber || (p.mrn ? `${p.mrn}-HC` : 'HC MEMBER')}</span>
+                          </span>
+                          <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                            <span>⚠️ Expired {p.healthCardValidUntil ? formatDate(p.healthCardValidUntil) : ''}</span>
+                          </span>
+                        </div>
+                      ) : (p.healthCardNumber || hasHealthCardFilter) ? (
                         <div className="flex flex-col gap-1 items-start">
                           <span className="font-mono text-xs font-black text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-1 rounded-lg border border-indigo-200 dark:border-indigo-800 shadow-2xs flex items-center gap-1.5 w-fit">
                             <CreditCard className="w-3.5 h-3.5 text-indigo-500 shrink-0" />

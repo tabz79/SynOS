@@ -1523,3 +1523,165 @@ isCollapsed ? "px-4 py-2.5 gap-0 h-full" : "p-4 sm:p-5 h-28 sm:h-32 gap-0"
          return false;
      }
      ```
+
+
+---
+
+## 29. Cross-Branch Token Counter Collision & Sequence Offset (First Billed Patient in MRI Branch Assigned MRI-007 Instead of MRI-001) — [AUDITED & ROOT CAUSE IDENTIFIED]
+### Severity: High / Multi-Branch Daily Counter Contamination & Queue Desynchronization
+### Impacted Modules & Files
+* **Visit Service Daily Token Generator:** [`VisitService.cs:1607-1670`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/VisitService.cs#L1607-L1670)
+* **Token Promotion Entry Point:** [`VisitService.cs:1345-1379`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/VisitService.cs#L1345-L1379)
+* **Database Entity Model Configuration:** [`SynOSDbContext.cs:763`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Data/SynOSDbContext.cs#L763)
+* **Token Counter Entity Model:** [`TokenCounter.cs:7-30`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Models/Entities/TokenCounter.cs#L7-L30)
+* **Initial Database Migration:** [`20251218064454_InitialSchema.cs:2622-2624`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Data/migrations/20251218064454_InitialSchema.cs#L2622-L2624)
+
+### Incident Evidence (Live Pilot Telemetry)
+* **Active Branch Selected:** `MRI Branch` (code prefix `MRI`, branch selector active at top header).
+* **Observed Timestamp:** `2026-11-10 15:15:36` (Live Screen).
+* **Logged-in Actor:** `Tabrez Developer`.
+* **Observed Reality Summary for MRI Branch:**
+  * Walk-Ins (Paid/Credit): `1`
+  * Prepaid Bills Issued: `1` (Prepaid Total: `₹2,800`)
+  * Cash Collected: `₹0`
+  * Online Total: `₹0`
+* **Observed State in Action Queues:**
+  * Assigned Token: `MRI-007` (Red-boxed in UI)
+  * Patient: `P.JANAMMA 65y/F (CT_NECK)`
+  * Payment: `₹2,800 PREPAID POOJA HOSPITALS`
+  * Status: `• Ready for Sample`
+* **Observed Events in Branch Live Stream:**
+  * `MRI-007 P.JANAMMA` — *"Prepaid visit billed by Uday Sri for CT_NECK, referred by POOJA"*.
+* **Defect Raised by User:**
+  * `P.JANAMMA` is the **very first patient billed today in the MRI Branch**.
+  * The assigned token number should have started at **`MRI-001`**, but was instead assigned **`MRI-007`**.
+
+---
+
+### Root Cause Analysis
+
+#### 1. Database Schema Constraint Flaw: Global Unique Index Lacking `BranchId`
+* In `SynOSDbContext.cs:763`:
+  ```csharp
+  modelBuilder.Entity<TokenCounter>(entity => entity.HasIndex(e => new { e.Day, e.Department }).IsUnique());
+  ```
+* In the initial EF Core migration (`20251218064454_InitialSchema.cs:2622`), the unique index was established as:
+  ```csharp
+  table.CreateIndex(
+      name: "IX_TokenCounters_Day_Department",
+      table: "TokenCounters",
+      columns: new[] { "Day", "Department" },
+      unique: true);
+  ```
+* **The Fundamental Design Defect:**
+  * When multi-branch operations were introduced, `TokenCounter.BranchId` was added to the entity, but the database-level unique index `IX_TokenCounters_Day_Department` was **never updated to include `BranchId`**.
+  * Because the unique constraint is strictly on `(Day, Department)`, SQL Server strictly forbids inserting more than one row in `TokenCounters` for any given day and department across all branches in the entire organization.
+
+#### 2. Fragile Multi-Branch Fallback in `VisitService.GenerateDailyTokenAsync`
+* When multi-branch testing was performed, attempting to insert a separate counter row for a second branch previously caused an immediate SQL Server `Unique Constraint Violation (Error 2601 / 2627)`.
+* In commit `18fefb3a527d6cf3e12ea6b1965c4d664dac3a05` (*"fix unique index IX_TokenCounters_Day_Department fallback"*), rather than migrating the database index to `(BranchId, Day, Department)`, the service logic was modified with an ad-hoc fallback in `VisitService.cs:1630-1659`:
+  ```csharp
+  // We find any existing token counter for this day & department to respect unique index IX_TokenCounters_Day_Department
+  var tokenCounter = await _context.TokenCounters
+      .FirstOrDefaultAsync(tc => tc.Day == labLocalDay && tc.BranchId == branchId && tc.Department == department)
+      ?? await _context.TokenCounters
+      .FirstOrDefaultAsync(tc => tc.Day == labLocalDay && tc.Department == department);
+
+  if (tokenCounter == null)
+  {
+      tokenCounter = new TokenCounter
+      {
+          CounterId = Guid.NewGuid(),
+          Department = department,
+          Day = labLocalDay,
+          BranchId = branchId,
+          Prefix = prefix,
+          LastNumber = 0,
+          MaxPerSeries = 9999,
+          UpdatedAt = DateTime.UtcNow
+      };
+      _context.TokenCounters.Add(tokenCounter);
+  }
+  else
+  {
+      if (tokenCounter.BranchId != branchId && branchId != Guid.Empty)
+      {
+          tokenCounter.BranchId = branchId;
+      }
+      await _context.Entry(tokenCounter).ReloadAsync();
+  }
+
+  tokenCounter.LastNumber++;
+  tokenCounter.UpdatedAt = DateTime.UtcNow;
+  await _context.SaveChangesAsync();
+
+  return $"{prefix}-{tokenCounter.LastNumber:D3}";
+  ```
+
+#### 3. Step-by-Step Chronology Explaining `MRI-007`
+1. **Earlier Today (MAIN Branch Activity):**
+   * Prior to this visit, the `MAIN` branch processed exactly **6 billed visits / token generations** (`MAI-001` through `MAI-006`).
+   * The single shared row in `dbo.TokenCounters` had:
+     * `Day = 2026-11-10`
+     * `Department = ""`
+     * `BranchId = <MainBranchGuid>`
+     * `Prefix = "MAI"`
+     * `LastNumber = 6`
+2. **First Intake in MRI Branch (`P.JANAMMA`):**
+   * Receptionist (Uday Sri) billed `P.JANAMMA` at the `MRI Branch`.
+   * `AssignOfficialTokenAsync` invoked `GenerateDailyTokenAsync(visit.Department, today, actorUserId, mriBranchId)`.
+   * The primary check (`tc.Day == today && tc.BranchId == mriBranchId && tc.Department == ""`) returned `null` because no record existed yet for `MRI Branch`.
+   * **The Fallback Fired:** `tc.Day == today && tc.Department == ""` queried across the entire table without branch scoping. It retrieved the **existing MAIN branch record** where `LastNumber = 6`.
+   * The logic then executed:
+     * `tokenCounter.BranchId = mriBranchId;` (Hijacking the row and reassigning it to MRI Branch).
+     * `tokenCounter.LastNumber++;` (Incrementing from `6` to `7`).
+     * Resolved branch prefix for MRI Branch: `"MRI"`.
+     * Constructed return string: `$"MRI-{7:D3}"` = **`MRI-007`**.
+3. **Consequences:**
+   * The first patient in the MRI branch received sequence number `007` instead of `001`.
+   * Branch token sequences are completely coupled and interleaved across branches: whichever branch bills next will continue from `008` (e.g. `MAI-008` or `MRI-008`), depriving each physical clinic branch of its independent daily `001` reset sequence.
+
+---
+
+### Architectural Fix Specification (To be executed when authorized)
+
+1. **Database Schema & Index Scoping (`SynOSDbContext.cs` & New EF Migration):**
+   * Drop the legacy organization-wide unique index `IX_TokenCounters_Day_Department`.
+   * Replace it with a branch-isolated composite unique index:
+     ```csharp
+     modelBuilder.Entity<TokenCounter>(entity => 
+         entity.HasIndex(e => new { e.BranchId, e.Day, e.Department }).IsUnique());
+     ```
+   * Generate and apply migration `20261110_ScopeTokenCountersByBranch`.
+
+2. **Remove Unsafe Cross-Branch Fallback (`VisitService.cs`):**
+   * Revert lines 1630-1659 in `VisitService.cs` to strictly query and insert counters per branch:
+     ```csharp
+     var tokenCounter = await _context.TokenCounters
+         .FirstOrDefaultAsync(tc => tc.Day == labLocalDay && tc.BranchId == branchId && tc.Department == department);
+
+     if (tokenCounter == null)
+     {
+         tokenCounter = new TokenCounter
+         {
+             CounterId = Guid.NewGuid(),
+             Department = department,
+             Day = labLocalDay,
+             BranchId = branchId,
+             Prefix = prefix,
+             LastNumber = 0,
+             MaxPerSeries = 9999,
+             UpdatedAt = DateTime.UtcNow
+         };
+         _context.TokenCounters.Add(tokenCounter);
+     }
+     else
+     {
+         await _context.Entry(tokenCounter).ReloadAsync();
+     }
+     ```
+   * Remove the mutating line `tokenCounter.BranchId = branchId;` which overwrites branch ownership on existing counters.
+
+3. **Data Backfill & Integrity Guard:**
+   * Backfill any existing legacy rows where `BranchId IS NULL` to the designated `MAIN` branch ID.
+   * If a branch has not billed any patient for the day, its counter starts cleanly at `0`, assigning `001` to its first patient (`MRI-001`, `MAI-001`, etc.) without interference.

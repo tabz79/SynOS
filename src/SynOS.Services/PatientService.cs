@@ -203,8 +203,7 @@ namespace SynOS.Services
             if (hasHealthCard == true)
             {
                 patients = patients.Where(p => _context.PatientHealthCards.Any(c => 
-                    c.Status == "Active" && 
-                    c.ValidUntil >= now && 
+                    c.Status != "Cancelled" && 
                     (c.PrimaryPatientId == p.PatientId || c.Beneficiaries.Any(b => b.PatientId == p.PatientId))));
             }
 
@@ -287,20 +286,26 @@ namespace SynOS.Services
             if (paged.Count > 0)
             {
                 var patientIds = paged.Select(p => p.PatientId).ToList();
-                var activeCards = await _context.PatientHealthCards
+                var allCards = await _context.PatientHealthCards
                     .AsNoTracking()
                     .Include(c => c.Plan)
                     .Include(c => c.Beneficiaries)
-                    .Where(c => c.Status == "Active" && c.ValidUntil >= now &&
+                    .Where(c => c.Status != "Cancelled" &&
                                 (patientIds.Contains(c.PrimaryPatientId) || c.Beneficiaries.Any(b => patientIds.Contains(b.PatientId))))
+                    .OrderByDescending(c => c.Status == "Active" && c.ValidUntil >= now)
+                    .ThenByDescending(c => c.ValidUntil)
                     .ToListAsync();
 
                 foreach (var p in paged)
                 {
-                    var card = activeCards.FirstOrDefault(c => c.PrimaryPatientId == p.PatientId || c.Beneficiaries.Any(b => b.PatientId == p.PatientId));
+                    var card = allCards.FirstOrDefault(c => c.PrimaryPatientId == p.PatientId || c.Beneficiaries.Any(b => b.PatientId == p.PatientId));
                     if (card != null)
                     {
-                        p.HasActiveHealthCard = true;
+                        var isActive = card.Status == "Active" && card.ValidUntil >= now;
+                        p.HasActiveHealthCard = isActive;
+                        p.IsHealthCardExpired = !isActive;
+                        p.HealthCardValidUntil = card.ValidUntil;
+                        p.HealthCardId = card.CardId;
                         p.HealthCardNumber = !string.IsNullOrWhiteSpace(card.CardNumber) && !card.CardNumber.StartsWith("HC-")
                             ? card.CardNumber
                             : (!string.IsNullOrWhiteSpace(p.MRN) ? $"{p.MRN.Trim()}-HC" : card.CardNumber);
@@ -329,14 +334,19 @@ namespace SynOS.Services
                 .AsNoTracking()
                 .Include(c => c.Plan)
                 .Include(c => c.Beneficiaries)
-                .Where(c => c.Status == "Active" && c.ValidUntil >= now &&
+                .Where(c => c.Status != "Cancelled" &&
                             (c.PrimaryPatientId == id || c.Beneficiaries.Any(b => b.PatientId == id)))
-                .OrderByDescending(c => c.CreatedAt)
+                .OrderByDescending(c => c.Status == "Active" && c.ValidUntil >= now)
+                .ThenByDescending(c => c.ValidUntil)
                 .FirstOrDefaultAsync();
 
             if (card != null)
             {
-                dto.HasActiveHealthCard = true;
+                var isActive = card.Status == "Active" && card.ValidUntil >= now;
+                dto.HasActiveHealthCard = isActive;
+                dto.IsHealthCardExpired = !isActive;
+                dto.HealthCardValidUntil = card.ValidUntil;
+                dto.HealthCardId = card.CardId;
                 dto.HealthCardNumber = !string.IsNullOrWhiteSpace(card.CardNumber) && !card.CardNumber.StartsWith("HC-")
                     ? card.CardNumber
                     : (!string.IsNullOrWhiteSpace(dto.MRN) ? $"{dto.MRN.Trim()}-HC" : card.CardNumber);

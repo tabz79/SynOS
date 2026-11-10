@@ -279,7 +279,7 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 fields: {
                     badgeTitle: { id: 'badgeTitle', enabled: true, label: 'Document Title', value: 'PATIENT ACKNOWLEDGEMENT & TEST ORDER' },
                     subBadge: { id: 'subBadge', enabled: true, label: 'Sub-Badge', value: 'Prepaid / Partner Account Billing' },
-                    billNumber: { id: 'billNumber', enabled: true, label: 'Order / Slip No', value: 'ORD-202610-0042' },
+                    billNumber: { id: 'billNumber', enabled: true, label: 'Bill No', value: 'MAI001-261102' },
                     date: { id: 'date', enabled: true, label: 'Order Date & Time', value: '14/10/2026 12:45 PM' },
                     tokenNumber: { id: 'tokenNumber', enabled: true, label: 'Token No', value: 'COUNTER-104' },
                     branchName: { id: 'branchName', enabled: true, label: 'Branch Facility', value: 'Main Diagnostic Facility' },
@@ -385,7 +385,7 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 enabled: true,
                 fields: {
                     badgeTitle: { id: 'badgeTitle', enabled: true, label: 'Slip Title', value: 'PREPAID PATIENT SLIP' },
-                    receiptNumber: { id: 'receiptNumber', enabled: true, label: 'Slip No', value: 'SLIP-202610-0912' },
+                    receiptNumber: { id: 'receiptNumber', enabled: true, label: 'Bill No', value: 'MAI001-261102' },
                     date: { id: 'date', enabled: true, label: 'Date/Time', value: '14/10/2026 12:48 PM' },
                     tokenNumber: { id: 'tokenNumber', enabled: true, label: 'Token No', value: 'TOKEN # T-0142' }
                 },
@@ -473,7 +473,7 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 enabled: true,
                 fields: {
                     badgeTitle: { id: 'badgeTitle', enabled: true, label: 'Slip Title', value: 'PREPAID SLIP (BILLED TO DOCTOR)' },
-                    receiptNumber: { id: 'receiptNumber', enabled: true, label: 'Slip No', value: 'SLIP-202610-0912' },
+                    receiptNumber: { id: 'receiptNumber', enabled: true, label: 'Bill No', value: 'MAI001-261102' },
                     date: { id: 'date', enabled: true, label: 'Date/Time', value: '14/10/2026 12:48 PM' },
                     tokenNumber: { id: 'tokenNumber', enabled: true, label: 'Token No', value: 'TOKEN # T-0142' }
                 },

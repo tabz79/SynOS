@@ -2,14 +2,34 @@
 import { DEFAULT_DOCUMENT_SCHEMAS } from './documentLayoutSchemas';
 import { formatDateCompact } from '@/lib/utils';
 
+const resolveCanonicalBillNumber = (liveData = {}) => {
+    const rawBill = liveData.billNumber;
+    if (rawBill && !rawBill.startsWith('BILL-') && !rawBill.startsWith('RCPT-') && !rawBill.startsWith('SLIP-') && !rawBill.startsWith('ORD-') && !rawBill.startsWith('INV-B2B-')) {
+        return rawBill;
+    }
+    const rawRcpt = liveData.receiptNumber;
+    if (rawRcpt && !rawRcpt.startsWith('BILL-') && !rawRcpt.startsWith('RCPT-') && !rawRcpt.startsWith('SLIP-') && !rawRcpt.startsWith('ORD-') && !rawRcpt.startsWith('INV-B2B-')) {
+        return rawRcpt;
+    }
+    const rawInv = liveData.invoiceNumber;
+    if (rawInv && !rawInv.startsWith('BILL-') && !rawInv.startsWith('RCPT-') && !rawInv.startsWith('SLIP-') && !rawInv.startsWith('ORD-') && !rawInv.startsWith('INV-B2B-')) {
+        return rawInv;
+    }
+    const token = liveData.token || liveData.visitToken || liveData.patient?.token || '';
+    const now = new Date();
+    const dateStr = `${String(now.getFullYear()).slice(-2)}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+    const cleanToken = token ? String(token).replace(/[^a-zA-Z0-9]/g, '').toUpperCase() : 'MAI000';
+    return `${cleanToken}-${dateStr}`;
+};
+
 const resolvePatientCode = (patient, fallbackMrn) => {
     if (!patient) return fallbackMrn || "WALK-IN";
-    const hasCard = Boolean(patient.hasActiveHealthCard || patient.healthCardNumber || patient.hasHealthCard);
+    const hasCard = Boolean(patient.hasActiveHealthCard || patient.healthCardNumber || patient.hasHealthCard || patient.isHealthCardSubscriber);
     if (hasCard) {
         const raw = patient.healthCardNumber;
-        if (raw && !raw.startsWith("HC-")) return raw;
+        if (raw && !raw.startsWith("HC-")) return raw.endsWith("-HC") ? raw : `${raw}-HC`;
         const mrn = patient.mrn || patient.uhid || fallbackMrn;
-        if (mrn && mrn !== "WALK-IN") return `${mrn}-HC`;
+        if (mrn && mrn !== "WALK-IN") return String(mrn).endsWith("-HC") ? mrn : `${mrn}-HC`;
     }
     return patient.uhid || patient.mrn || fallbackMrn || "WALK-IN";
 };
@@ -78,7 +98,15 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
             const refClinic = bCtx.referralPartnerClinic || "";
 
             if (boxes.docBadge?.fields) {
-                if (boxes.docBadge.fields.billNumber) boxes.docBadge.fields.billNumber.value = liveData.billNumber || liveData.invoiceNumber || boxes.docBadge.fields.billNumber.value;
+                const bNum = resolveCanonicalBillNumber(liveData);
+                if (boxes.docBadge.fields.billNumber) {
+                    boxes.docBadge.fields.billNumber.value = bNum;
+                    boxes.docBadge.fields.billNumber.label = "Bill No";
+                }
+                if (boxes.docBadge.fields.receiptNumber) {
+                    boxes.docBadge.fields.receiptNumber.value = bNum;
+                    boxes.docBadge.fields.receiptNumber.label = "Bill No";
+                }
                 if (boxes.docBadge.fields.date) boxes.docBadge.fields.date.value = liveData.date ? new Date(liveData.date).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : new Date().toLocaleString();
                 if (boxes.docBadge.fields.tokenNumber) boxes.docBadge.fields.tokenNumber.value = p.token || liveData.token || "COUNTER";
                 if (boxes.docBadge.fields.branchName) boxes.docBadge.fields.branchName.value = p.branchName || liveData.branchName || "Main Facility";
@@ -239,7 +267,15 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
             const fin = liveData.financial || liveData.billing || {};
 
             if (boxes.docBadge?.fields) {
-                if (boxes.docBadge.fields.receiptNumber) boxes.docBadge.fields.receiptNumber.value = liveData.receiptNumber || liveData.token || boxes.docBadge.fields.receiptNumber.value;
+                const bNum = resolveCanonicalBillNumber(liveData);
+                if (boxes.docBadge.fields.receiptNumber) {
+                    boxes.docBadge.fields.receiptNumber.value = bNum;
+                    boxes.docBadge.fields.receiptNumber.label = "Bill No";
+                }
+                if (boxes.docBadge.fields.billNumber) {
+                    boxes.docBadge.fields.billNumber.value = bNum;
+                    boxes.docBadge.fields.billNumber.label = "Bill No";
+                }
                 if (boxes.docBadge.fields.date) boxes.docBadge.fields.date.value = liveData.dateTime || new Date().toLocaleString();
                 if (boxes.docBadge.fields.tokenNumber) boxes.docBadge.fields.tokenNumber.value = liveData.token ? `TOKEN # ${liveData.token}` : "TOKEN # COUNTER";
             }
@@ -313,7 +349,15 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
             const refClinic = liveData.partnerClinic || liveData.billingContext?.referralPartnerClinic || "";
 
             if (boxes.docBadge?.fields) {
-                if (boxes.docBadge.fields.billNumber) boxes.docBadge.fields.billNumber.value = liveData.billNumber || liveData.invoiceNumber || (liveData.token ? `ORD-${liveData.token}` : boxes.docBadge.fields.billNumber.value);
+                const bNum = resolveCanonicalBillNumber(liveData);
+                if (boxes.docBadge.fields.billNumber) {
+                    boxes.docBadge.fields.billNumber.value = bNum;
+                    boxes.docBadge.fields.billNumber.label = "Bill No";
+                }
+                if (boxes.docBadge.fields.receiptNumber) {
+                    boxes.docBadge.fields.receiptNumber.value = bNum;
+                    boxes.docBadge.fields.receiptNumber.label = "Bill No";
+                }
                 if (boxes.docBadge.fields.date) boxes.docBadge.fields.date.value = liveData.date || liveData.dateTime ? new Date(liveData.date || liveData.dateTime).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : new Date().toLocaleString();
                 if (boxes.docBadge.fields.tokenNumber) boxes.docBadge.fields.tokenNumber.value = p.token || liveData.token || "COUNTER";
                 if (boxes.docBadge.fields.branchName) boxes.docBadge.fields.branchName.value = p.branchName || liveData.branchName || "Main Facility";
@@ -382,7 +426,15 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
             const prescribingDoc = liveData.prescribingDoctorName || liveData.patient?.referringDoctor || liveData.referringDoctorName || "Prescribing Doctor";
 
             if (boxes.docBadge?.fields) {
-                if (boxes.docBadge.fields.receiptNumber) boxes.docBadge.fields.receiptNumber.value = liveData.receiptNumber || (liveData.token ? `SLIP-${liveData.token}` : boxes.docBadge.fields.receiptNumber.value);
+                const bNum = resolveCanonicalBillNumber(liveData);
+                if (boxes.docBadge.fields.receiptNumber) {
+                    boxes.docBadge.fields.receiptNumber.value = bNum;
+                    boxes.docBadge.fields.receiptNumber.label = "Bill No";
+                }
+                if (boxes.docBadge.fields.billNumber) {
+                    boxes.docBadge.fields.billNumber.value = bNum;
+                    boxes.docBadge.fields.billNumber.label = "Bill No";
+                }
                 if (boxes.docBadge.fields.date) boxes.docBadge.fields.date.value = liveData.dateTime || new Date().toLocaleString();
                 if (boxes.docBadge.fields.tokenNumber) boxes.docBadge.fields.tokenNumber.value = liveData.token ? `TOKEN # ${liveData.token}` : "TOKEN # COUNTER";
             }
@@ -434,7 +486,15 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
             const prescribingDoc = liveData.prescribingDoctorName || liveData.patient?.referringDoctor || liveData.referringDoctorName || billedToDoc;
 
             if (boxes.docBadge?.fields) {
-                if (boxes.docBadge.fields.receiptNumber) boxes.docBadge.fields.receiptNumber.value = liveData.receiptNumber || (liveData.token ? `SLIP-${liveData.token}` : boxes.docBadge.fields.receiptNumber.value);
+                const bNum = resolveCanonicalBillNumber(liveData);
+                if (boxes.docBadge.fields.receiptNumber) {
+                    boxes.docBadge.fields.receiptNumber.value = bNum;
+                    boxes.docBadge.fields.receiptNumber.label = "Bill No";
+                }
+                if (boxes.docBadge.fields.billNumber) {
+                    boxes.docBadge.fields.billNumber.value = bNum;
+                    boxes.docBadge.fields.billNumber.label = "Bill No";
+                }
                 if (boxes.docBadge.fields.date) boxes.docBadge.fields.date.value = liveData.dateTime || new Date().toLocaleString();
                 if (boxes.docBadge.fields.tokenNumber) boxes.docBadge.fields.tokenNumber.value = liveData.token ? `TOKEN # ${liveData.token}` : "TOKEN # COUNTER";
             }
@@ -868,7 +928,8 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
 
             if (boxes.docBadge?.fields) {
                 if (boxes.docBadge.fields.billNumber) {
-                    boxes.docBadge.fields.billNumber.value = liveData.billNumber || liveData.invoiceNumber || (liveData.token ? `INV-B2B-${liveData.token}` : boxes.docBadge.fields.billNumber.value);
+                    boxes.docBadge.fields.billNumber.value = resolveCanonicalBillNumber(liveData);
+                    boxes.docBadge.fields.billNumber.label = "Bill No";
                 }
                 if (boxes.docBadge.fields.date) {
                     boxes.docBadge.fields.date.value = liveData.date || liveData.createdAt 

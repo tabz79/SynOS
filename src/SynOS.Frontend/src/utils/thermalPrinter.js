@@ -27,12 +27,23 @@ function renderQrSvgSync(text, size = 68) {
 }
 
 function extractDisplayPatientCode(patientObj = {}, payload = {}) {
-    const isHc = Boolean(patientObj.hasActiveHealthCard || patientObj.healthCardNumber || payload.hasActiveHealthCard || payload.healthCardNumber);
+    const discountStr = (payload.discountReason || payload.billing?.discountReason || '').toLowerCase();
+    const isHcByDiscount = discountStr.includes('health card') || discountStr.includes('healthcard');
+    const isHc = Boolean(
+        patientObj.hasActiveHealthCard || 
+        patientObj.healthCardNumber || 
+        patientObj.hasHealthCard ||
+        patientObj.isHealthCardSubscriber ||
+        payload.hasActiveHealthCard || 
+        payload.healthCardNumber ||
+        isHcByDiscount ||
+        (patientObj.mrn && String(patientObj.mrn).endsWith('-HC'))
+    );
     if (isHc) {
         const raw = patientObj.healthCardNumber || payload.healthCardNumber;
-        if (raw && !raw.startsWith("HC-")) return raw;
+        if (raw && !raw.startsWith("HC-")) return raw.endsWith('-HC') ? raw : `${raw}-HC`;
         const mrn = patientObj.mrn || patientObj.uhid || payload.mrn || payload.Mrn;
-        if (mrn) return `${mrn}-HC`;
+        if (mrn && mrn !== "WALK-IN") return String(mrn).endsWith('-HC') ? mrn : `${mrn}-HC`;
     }
     return patientObj.uhid || patientObj.mrn || payload.mrn || payload.Mrn || 'SYN-2026-0001';
 }
@@ -287,14 +298,29 @@ export function generateThermalInvoiceHtml(payload = {}) {
     if (boxes.partyDetails?.enabled) {
         const pf = boxes.partyDetails.fields || {};
         const ptName = pf.fullName?.value || normalizedData.patient.fullName;
-        const mrnVal = pf.uhid?.value || normalizedData.patient.uhid;
+        let mrnVal = pf.uhid?.value || normalizedData.patient.uhid;
         const ageGender = pf.ageGender?.value || normalizedData.patient.ageGender;
+
+        const isHcCard = Boolean(
+            normalizedData.patient?.hasActiveHealthCard ||
+            normalizedData.patient?.healthCardNumber ||
+            payload.hasActiveHealthCard ||
+            payload.healthCardNumber ||
+            (mrnVal && String(mrnVal).endsWith('-HC')) ||
+            (normalizedData.discountReason && String(normalizedData.discountReason).toLowerCase().includes('health card')) ||
+            (payload.discountReason && String(payload.discountReason).toLowerCase().includes('health card')) ||
+            (payload.billing?.discountReason && String(payload.billing.discountReason).toLowerCase().includes('health card'))
+        );
+        if (isHcCard && mrnVal && !String(mrnVal).endsWith('-HC') && mrnVal !== 'WALK-IN') {
+            mrnVal = `${mrnVal}-HC`;
+        }
+        const codeLabel = isHcCard ? 'CARD:' : 'MRN:';
 
         patientHtml = `
             <div style="border-bottom: 1px dashed #000000; padding-bottom: 4px; margin-bottom: 5px;">
                 <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2px;">
                     <span style="font-size: 9.5px; font-weight: 900; text-transform: uppercase; color: #000000; letter-spacing: 0.04em;">${boxes.partyDetails.title || 'PATIENT DETAILS'}</span>
-                    ${pf.uhid?.enabled !== false && mrnVal ? `<span style="font-size: 11px; font-weight: 900; font-family: monospace; color: #000000;">MRN: <b>${mrnVal}</b></span>` : ''}
+                    ${pf.uhid?.enabled !== false && mrnVal ? `<span style="font-size: 11px; font-weight: 900; font-family: monospace; color: #000000;">${codeLabel} <b>${mrnVal}</b></span>` : ''}
                 </div>
                 <div style="font-size: 10.5px; line-height: 1.3; color: #000000;">
                     <div style="font-size: 13px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.02em; color: #000000; margin-bottom: 2px;">
@@ -631,8 +657,20 @@ export function generateThermalPrepaidSlipHtml(payload = {}) {
         testName: it.testName || it.name || it.testCode || 'Diagnostic Test'
     }));
 
+    const now = new Date();
+    const dateStr = `${String(now.getFullYear()).slice(-2)}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+    const cleanToken = token ? String(token).replace(/[^a-zA-Z0-9]/g, '').toUpperCase() : 'MAI000';
+    const defaultBillNo = `${cleanToken}-${dateStr}`;
+
+    const canonicalBillNo = (payload.billNumber && !payload.billNumber.startsWith('BILL-') && !payload.billNumber.startsWith('RCPT-') && !payload.billNumber.startsWith('SLIP-') && !payload.billNumber.startsWith('ORD-'))
+        ? payload.billNumber
+        : (payload.receiptNumber && !payload.receiptNumber.startsWith('BILL-') && !payload.receiptNumber.startsWith('RCPT-') && !payload.receiptNumber.startsWith('SLIP-') && !payload.receiptNumber.startsWith('ORD-')
+            ? payload.receiptNumber
+            : defaultBillNo);
+
     const normalizedData = {
-        receiptNumber: payload.receiptNumber || (token ? `SLIP-${token}` : `SLIP-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(Math.floor(Math.random() * 9000) + 1000)}`),
+        receiptNumber: canonicalBillNo,
+        billNumber: canonicalBillNo,
         dateTime: payload.dateTime || new Date().toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }),
         token: token || "WAIT",
         patient: {
@@ -703,7 +741,7 @@ export function generateThermalPrepaidSlipHtml(payload = {}) {
                 ` : ''}
                 <div style="display: flex; justify-content: space-between; font-size: 9.5px; font-weight: 700; color: #000000; padding: 0 1px;">
                     ${df.date?.enabled !== false ? `<span>Date: <b>${dateVal}</b></span>` : ''}
-                    ${df.receiptNumber?.enabled !== false ? `<span>Slip: <b style="font-family: monospace;">${slipNo}</b></span>` : ''}
+                    ${df.receiptNumber?.enabled !== false ? `<span>Bill No: <b style="font-family: monospace;">${slipNo}</b></span>` : ''}
                 </div>
                 ${token && df.tokenNumber?.enabled !== false ? `
                     <div style="margin-top: 5px; padding: 3px 6px; border: 2px solid #000000; text-align: center; background: #ffffff;">

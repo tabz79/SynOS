@@ -135,21 +135,25 @@ namespace SynOS.Services.Reception
                 .Select(v => new { v.TokenDate, TestCodes = v.Orders.Select(o => o.TestCode).ToList() })
                 .FirstOrDefaultAsync();
 
-            // Fetch active health card for patient or beneficiary
+            // Fetch health card for patient or beneficiary (Active or Expired)
             var now = DateTime.UtcNow;
-            var activeCard = await _context.PatientHealthCards
+            var card = await _context.PatientHealthCards
                 .AsNoTracking()
                 .Include(c => c.Plan)
                 .Include(c => c.Beneficiaries)
-                .Where(c => c.Status == "Active" && c.ValidUntil >= now &&
+                .Where(c => c.Status != "Cancelled" &&
                             (c.PrimaryPatientId == visit.Patient.PatientId || c.Beneficiaries.Any(b => b.PatientId == visit.Patient.PatientId)))
-                .OrderByDescending(c => c.CreatedAt)
+                .OrderByDescending(c => c.Status == "Active" && c.ValidUntil >= now)
+                .ThenByDescending(c => c.ValidUntil)
                 .FirstOrDefaultAsync();
 
-            var normalizedCardNumber = activeCard != null
-                ? (!string.IsNullOrWhiteSpace(activeCard.CardNumber) && !activeCard.CardNumber.StartsWith("HC-")
-                    ? activeCard.CardNumber
-                    : (!string.IsNullOrWhiteSpace(visit.Patient.MRN) ? $"{visit.Patient.MRN.Trim()}-HC" : activeCard.CardNumber))
+            var isActive = card != null && card.Status == "Active" && card.ValidUntil >= now;
+            var isExpired = card != null && !isActive;
+
+            var normalizedCardNumber = card != null
+                ? (!string.IsNullOrWhiteSpace(card.CardNumber) && !card.CardNumber.StartsWith("HC-")
+                    ? card.CardNumber
+                    : (!string.IsNullOrWhiteSpace(visit.Patient.MRN) ? $"{visit.Patient.MRN.Trim()}-HC" : card.CardNumber))
                 : null;
 
             // Populate Patient
@@ -169,11 +173,14 @@ namespace SynOS.Services.Reception
                 Mobile = visit.Patient.CurrentPhoneNumber,
                 LastVisitDate = lastVisit?.TokenDate,
                 LastVisitTestCodes = lastVisit?.TestCodes ?? new List<string>(),
-                HasActiveHealthCard = activeCard != null,
+                HasActiveHealthCard = isActive,
+                IsHealthCardExpired = isExpired,
+                HealthCardValidUntil = card?.ValidUntil,
+                HealthCardId = card?.CardId,
                 HealthCardNumber = normalizedCardNumber,
-                HealthCardPlanName = activeCard?.Plan?.PlanName,
-                HealthCardDiscountValue = activeCard?.ConfiguredDiscountValue,
-                HealthCardDiscountType = activeCard?.ConfiguredDiscountType
+                HealthCardPlanName = card?.Plan?.PlanName,
+                HealthCardDiscountValue = card?.ConfiguredDiscountValue,
+                HealthCardDiscountType = card?.ConfiguredDiscountType
             };
 
             // 1. Resolve Active Invoice and Meta-data
@@ -460,15 +467,20 @@ namespace SynOS.Services.Reception
                 .Select(v => new { v.TokenDate, TestCodes = v.Orders.Select(o => o.TestCode).ToList() })
                 .FirstOrDefaultAsync();
 
-            // Fetch active health card for patient or beneficiary
+            // Fetch health card for patient or beneficiary (Active or Expired)
+            var pNow = DateTime.UtcNow;
             var activeCard = await _context.PatientHealthCards
                 .AsNoTracking()
                 .Include(c => c.Plan)
                 .Include(c => c.Beneficiaries)
-                .Where(c => c.Status == "Active" && c.ValidUntil >= DateTime.UtcNow &&
+                .Where(c => c.Status != "Cancelled" &&
                             (c.PrimaryPatientId == patient.PatientId || c.Beneficiaries.Any(b => b.PatientId == patient.PatientId)))
-                .OrderByDescending(c => c.CreatedAt)
+                .OrderByDescending(c => c.Status == "Active" && c.ValidUntil >= pNow)
+                .ThenByDescending(c => c.ValidUntil)
                 .FirstOrDefaultAsync();
+
+            var isPatientActive = activeCard != null && activeCard.Status == "Active" && activeCard.ValidUntil >= pNow;
+            var isPatientExpired = activeCard != null && !isPatientActive;
 
             var normalizedCardNumber = activeCard != null
                 ? (!string.IsNullOrWhiteSpace(activeCard.CardNumber) && !activeCard.CardNumber.StartsWith("HC-")
@@ -492,7 +504,10 @@ namespace SynOS.Services.Reception
                 Mobile = patient.CurrentPhoneNumber,
                 LastVisitDate = lastVisit?.TokenDate,
                 LastVisitTestCodes = lastVisit?.TestCodes ?? new List<string>(),
-                HasActiveHealthCard = activeCard != null,
+                HasActiveHealthCard = isPatientActive,
+                IsHealthCardExpired = isPatientExpired,
+                HealthCardValidUntil = activeCard?.ValidUntil,
+                HealthCardId = activeCard?.CardId,
                 HealthCardNumber = normalizedCardNumber,
                 HealthCardPlanName = activeCard?.Plan?.PlanName,
                 HealthCardDiscountValue = activeCard?.ConfiguredDiscountValue,

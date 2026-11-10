@@ -44,6 +44,23 @@ export function PatientIdentification({
 
     const [healthCardEligibility, setHealthCardEligibility] = useState(null);
     const [isQuickEnrolling, setIsQuickEnrolling] = useState(false);
+    const [isQuickRenewing, setIsQuickRenewing] = useState(false);
+
+    const handleQuickRenewCard = async () => {
+        if (!healthCardEligibility?.card?.cardId || !selectedPatient) return;
+        setIsQuickRenewing(true);
+        try {
+            await HealthCardApi.renewCard(healthCardEligibility.card.cardId, {
+                validityDays: 365,
+                paymentMode: 'Cash'
+            });
+            await checkHealthCard(selectedPatient);
+        } catch (err) {
+            alert(err.message || 'Failed to renew health card');
+        } finally {
+            setIsQuickRenewing(false);
+        }
+    };
 
     const checkHealthCard = async (patient) => {
         if (!patient) {
@@ -170,10 +187,46 @@ export function PatientIdentification({
                     />
 
                     {/* Health Card Membership Banner */}
-                    {selectedPatient && healthCardEligibility && healthCardEligibility.hasActiveCard && (() => {
+                    {selectedPatient && healthCardEligibility && (healthCardEligibility.hasActiveCard || healthCardEligibility.isExpired) && (() => {
                         const displayEligCardCode = (healthCardEligibility?.card?.cardNumber && !healthCardEligibility.card.cardNumber.startsWith("HC-"))
                             ? healthCardEligibility.card.cardNumber
                             : (selectedPatient?.mrn ? `${selectedPatient.mrn}-HC` : healthCardEligibility?.card?.cardNumber);
+
+                        if (healthCardEligibility.isExpired) {
+                            return (
+                                <div className="pt-1 animate-in fade-in duration-200">
+                                    <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50/70 dark:from-amber-950/40 dark:to-orange-950/30 border border-amber-300 dark:border-amber-700/80 flex items-center justify-between shadow-2xs">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold shrink-0 shadow-xs text-sm">
+                                                ⚠️
+                                            </div>
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs sm:text-sm font-black text-amber-950 dark:text-amber-200">
+                                                        Health Card Expired ({displayEligCardCode})
+                                                    </span>
+                                                    <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200 shrink-0">
+                                                        Expired {new Date(healthCardEligibility.card?.validUntil).toLocaleDateString()}
+                                                    </span>
+                                                </div>
+                                                <p className="text-[11px] text-amber-800 dark:text-amber-300 mt-0.5">
+                                                    Standard tariff applies. Renew card to retain {displayEligCardCode} and reactivate discount benefits.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={handleQuickRenewCard}
+                                            disabled={isQuickRenewing}
+                                            className="px-3.5 py-2 rounded-xl text-xs font-black bg-amber-600 hover:bg-amber-700 text-white shadow-xs flex items-center gap-1.5 cursor-pointer shrink-0 transition-transform active:scale-95"
+                                        >
+                                            {isQuickRenewing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                                            <span>Renew Card (₹{healthCardEligibility.card?.pricePaid || 1000})</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        }
 
                         return (
                         <div className="pt-1 animate-in fade-in duration-200">
