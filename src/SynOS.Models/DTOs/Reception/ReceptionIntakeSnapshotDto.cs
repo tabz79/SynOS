@@ -128,9 +128,19 @@ namespace SynOS.Models.DTOs.Reception
         
         public string PaymentStatus { get; set; } = "PendingPayment"; // PendingPayment | Paid
         public string? PaymentMethod { get; set; }
+        public List<IntakePaymentSummaryDto> Payments { get; set; } = new();
         public string? BilledBy { get; set; }
         public bool IsEditable { get; set; }
         public bool IsLocked { get; set; }
+    }
+
+    public class IntakePaymentSummaryDto
+    {
+        public Guid PaymentId { get; set; }
+        public decimal Amount { get; set; }
+        public string Method { get; set; } = string.Empty;
+        public string ReceiptNo { get; set; } = string.Empty;
+        public DateTime ReceivedAt { get; set; }
     }
 
     public class AppliedDiscountInfo

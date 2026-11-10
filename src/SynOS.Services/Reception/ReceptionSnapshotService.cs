@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SynOS.Services.Operational; // ADDED
 using SynOS.Data;
+using SynOS.Models.Entities;
 using SynOS.Models.DTOs.Reception;
 using SynOS.Services.Security;
 using SynOS.Models.Enums;
@@ -383,6 +384,11 @@ namespace SynOS.Services.Reception
             // 2. Populate Billing Contract
             if (invoice != null)
             {
+                var validPayments = invoice.Payments?.Where(p => p.Amount > 0).ToList() ?? new List<Payment>();
+                string effectiveMethod = validPayments.Count > 1
+                    ? $"Split ({string.Join(" + ", validPayments.Select(p => p.Method).Distinct())})"
+                    : validPayments.FirstOrDefault()?.Method ?? invoice.Payments?.FirstOrDefault()?.Method ?? "Cash";
+
                 snapshot.Billing = new IntakeBilling
                 {
                     InvoiceId = invoice.InvoiceId,
@@ -397,7 +403,15 @@ namespace SynOS.Services.Reception
                     Referral = referralState, // Updated Structure
                     BilledBy = billerDisplay,
                     PaymentStatus = invoice.Status, // "PendingPayment" | "Paid"
-                    PaymentMethod = invoice.Payments?.FirstOrDefault()?.Method, // Safe navigation
+                    PaymentMethod = effectiveMethod,
+                    Payments = validPayments.Select(p => new IntakePaymentSummaryDto
+                    {
+                        PaymentId = p.PaymentId,
+                        Amount = p.Amount,
+                        Method = p.Method,
+                        ReceiptNo = p.ReceiptNo ?? string.Empty,
+                        ReceivedAt = p.ReceivedAt
+                    }).ToList(),
                     TotalPaid = (invoice.Payments?.Sum(p => p.Amount) ?? 0m) + (invoice.PartialPayments?.Sum(p => p.Amount) ?? 0m),
                     
                     IsEditable = !_lifecyclePolicy.IsTerminal(visit.Status),

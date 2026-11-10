@@ -953,6 +953,32 @@ namespace SynOS.Services
                 };
                 await _context.SaveChangesAsync();
             }
+            else if (request.Amount <= 0 && existingInvoice != null && (existingInvoice.Total <= 0 || existingInvoice.DiscountAmount >= existingInvoice.GrossAmount || (!string.IsNullOrEmpty(request.Method) && (request.Method.Contains("Concession") || request.Method.Contains("Zero Due")))))
+            {
+                // 100% Concession / Zero Net Due Mode (Settled cleanly with no debt)
+                var zeroReceiptNo = request.ReceiptNo ?? $"SYS-ZERO-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..6].ToUpper()}";
+                payment = new Payment
+                {
+                    PaymentId = Guid.NewGuid(),
+                    InvoiceId = invoiceId,
+                    Amount = 0,
+                    Method = !string.IsNullOrWhiteSpace(request.Method) && !request.Method.Equals("Cash", StringComparison.OrdinalIgnoreCase) 
+                        ? request.Method 
+                        : "Concession / Zero Due",
+                    ReceiptNo = zeroReceiptNo,
+                    ReceivedAt = DateTime.UtcNow,
+                    ReceivedByUserId = userId
+                };
+                _context.Payments.Add(payment);
+                existingInvoice.Status = "Paid";
+                var dbVisit = await _context.Visits.FindAsync(visit.VisitId);
+                if (dbVisit != null)
+                {
+                    dbVisit.Status = VisitStatus.Paid;
+                }
+                visit.Status = VisitStatus.Paid;
+                await _context.SaveChangesAsync();
+            }
             else if (request.SplitPayments != null && request.SplitPayments.Any(p => p.Amount > 0))
             {
                 // Multi-method / Split payment handling (e.g. Cash + UPI)

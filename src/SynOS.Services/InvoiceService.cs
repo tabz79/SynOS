@@ -346,7 +346,15 @@ namespace SynOS.Services
 
             if (recordedAmount <= 0)
             {
-                throw new InvalidOperationException("Effective payment amount must be greater than zero.");
+                if (invoice.Total <= 0 || invoice.DiscountAmount >= invoice.GrossAmount)
+                {
+                    // 100% Concession / Zero Net Due invoice: Allow ₹0 payment record to settle invoice cleanly
+                    recordedAmount = 0m;
+                }
+                else
+                {
+                    throw new InvalidOperationException("Effective payment amount must be greater than zero.");
+                }
             }
 
             var receiverId = paymentDto.ReceivedByUserId;

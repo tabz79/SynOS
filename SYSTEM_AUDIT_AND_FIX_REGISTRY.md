@@ -2565,3 +2565,219 @@ While backend mathematical accounting is sound, the **User Interface and Documen
   }
   ```
 * This ensures that whenever a draft visit with a staged discount is checked out, the discount is persisted to the backend database and snapshot recalculated *before* payment collection occurs, guaranteeing Grand Total is `₹0` on the very first printout.
+
+
+---
+
+## 39. Intake Snapshot Payment Mode Flattening & Thermal Slip Split Erasure (Collapse of Multi-Method Payments to FirstOrDefault) — [RESOLVED & VERIFIED]
+### Severity: High / Financial Transparency & Receipt Accuracy Defect
+### Impacted Modules & Files
+* **Intake Snapshot Service:** [`ReceptionSnapshotService.cs`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/Reception/ReceptionSnapshotService.cs) (lines 400–401)
+* **Intake Billing Contract DTO:** [`ReceptionSnapshotDtos.cs`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Models/DTOs/Reception/ReceptionSnapshotDtos.cs)
+* **Intake & Dispatch Panel:** [`IntentPanel.jsx`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/components/IntentPanel.jsx) (lines 1265, 1284–1295, 2878–2883)
+* **Thermal Receipt Engine:** [`thermalPrinter.js`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/utils/thermalPrinter.js) (lines 263–269, 420–427)
+
+### Incident Evidence
+* **Incident Scenario:** On visit `MAI-018` (VEERANNA, Total: ₹2,000), the cashier used the multi-channel split payment button to split the ₹2,000 payment across Cash and UPI.
+* **Observed Inconsistency:**
+  - **In Reception Action Queue (Image 2):** Correctly displays purple pill **`₹2,000 SPLIT`** with subtext **`Split (UPI + Cash)`**.
+  - **In Visit Finalized & Print Dispatch (Image 1):**
+    - Section 3 Financials reads: **`Desk Collection: ₹2,000 via Cash`** *(Completely erases the UPI portion!)*
+    - Thermal Slip Header: **`CASH PAYMENT RECEIPT`**
+    - Thermal Slip Payment Mode: **`Payment Mode: CASH`**
+* **The Core Paradox:** The Action Queue clearly knows it was a split payment, but the visit summary screen and thermal receipt display it as pure Cash.
+
+### Detailed Root Cause Analysis
+
+#### 1. Backend Persistence Succeeded
+* In `ReceptionFlowService.cs` (lines 956–976), when `request.SplitPayments` is received, the service iterates over each item and calls `_invoiceService.RecordPaymentAsync` for each channel.
+* The database `dbo.Payments` table correctly holds both individual payment rows (e.g. Cash: ₹X, UPI: ₹Y).
+* `OperationsEngine.cs` (lines 560–565) loads `invoice.Payments.ToList()`, detects `validPayments.Count > 1`, and joins the distinct methods into `"Split (UPI + Cash)"`. That is why the Action Queue shows the purple `SPLIT` pill.
+
+#### 2. The Bottleneck: `ReceptionSnapshotService.cs` Collapsing Payments
+* In `ReceptionSnapshotService.cs` line 400:
+  ```csharp
+  snapshot.Billing = new IntakeBilling
+  {
+      ...
+      PaymentStatus = invoice.Status,
+      PaymentMethod = invoice.Payments?.FirstOrDefault()?.Method, // <--- BOTTLENECK!
+      TotalPaid = (invoice.Payments?.Sum(p => p.Amount) ?? 0m) + ...
+  };
+  ```
+* While `OperationsEngine.cs` properly checked for multi-payment splits, `ReceptionSnapshotService.cs` blindly took `FirstOrDefault()?.Method`!
+* Because the Cash payment was the first record in `invoice.Payments`, `snapshot.Billing.PaymentMethod` returned `"Cash"`.
+* Furthermore, `IntakeBilling` did not serialize the itemized `Payments` collection (e.g. `List<PaymentSummaryDto>`), completely starving the frontend of the split breakdown.
+
+#### 3. Frontend Blindly Renders the Truncated Snapshot
+* In `IntentPanel.jsx`:
+  - **Section 3 Financials (line 2883):**
+    `Desk Collection: ₹{postPaid} via {snapshot?.billing?.paymentMethod || paymentMethod}` -> renders `"via Cash"`.
+  - **Thermal Payload Builder (line 1265):**
+    When viewing a completed/finalized visit, `isSplitPayment` is false (since `isSplitPayment` is only a live form input flag). It falls back to `snapshot?.billing?.paymentMethod` which is `"Cash"`.
+* In `thermalPrinter.js` (lines 263, 426):
+  - Because `rawPaymentMethod` is `"Cash"`, it sets the document title to `"CASH PAYMENT RECEIPT"`.
+  - Under tests, it renders `Payment Mode: CASH`.
+  - It has no `payments` array to render itemized bullet points (e.g. `• Cash: ₹X`, `• UPI: ₹Y`).
+
+### Architectural Fix Specification
+
+1. **Multi-Payment Awareness in `ReceptionSnapshotService.cs`:**
+   - Detect multiple payment channels and synthesize the composite method string:
+     ```csharp
+     var validPayments = invoice.Payments?.Where(p => p.Amount > 0).ToList() ?? new List<Payment>();
+     string effectiveMethod = validPayments.Count > 1
+         ? $"Split ({string.Join(" + ", validPayments.Select(p => p.Method).Distinct())})"
+         : validPayments.FirstOrDefault()?.Method ?? "Cash";
+
+     snapshot.Billing = new IntakeBilling
+     {
+         ...
+         PaymentMethod = effectiveMethod,
+         Payments = validPayments.Select(p => new IntakePaymentSummaryDto
+         {
+             PaymentId = p.PaymentId,
+             Amount = p.Amount,
+             Method = p.Method,
+             ReceiptNo = p.ReceiptNo,
+             ReceivedAt = p.ReceivedAt
+         }).ToList()
+     };
+     ```
+
+2. **Expose `Payments` Breakdown on `IntentPanel.jsx`:**
+   - In Section 3 Financials: If `snapshot.billing.payments?.length > 1`, render itemized badges:
+     `Desk Collection: ₹2,000 via Split [Cash: ₹500 | UPI: ₹1,500]`
+   - In `buildThermalPayload`: Pass `payments: snapshot.billing.payments` and `paymentMethod: snapshot.billing.paymentMethod`.
+
+3. **Thermal Receipt Dynamic Badge & Multi-Channel Breakdown (`thermalPrinter.js`):**
+   - If `paymentMethod` contains `"Split"` or `payments.length > 1`:
+     - Badge title: **`MULTI-CHANNEL PAYMENT RECEIPT`** or **`SPLIT PAYMENT RECEIPT`**.
+     - Payment Mode section renders itemized lines:
+       ```text
+       Payment Mode:           SPLIT (CASH + UPI)
+         • Cash:                          ₹500.00
+         • UPI:                         ₹1,500.00
+       ```
+
+### Verification & Resolution Details
+* **Multi-Payment Snapshot Contract:** `ReceptionIntakeSnapshotDto.cs` now includes `List<IntakePaymentSummaryDto> Payments`. `ReceptionSnapshotService.cs` checks `invoice.Payments` for multiple payments, serializes each payment channel, and generates the consolidated `Split (Cash + UPI)` method string.
+* **Intake & Dispatch Preview Synchronization:** `IntentPanel.jsx` (`buildThermalPayload`) binds `payments` and `paymentMethod` from `effectivePayments` and `snapshot.billing`, ensuring both live split forms and finalized visits pass complete payment collections.
+* **Section 3 Financial Pod Chips:** Section 3 in `IntentPanel.jsx` now renders `via Split` along with individual color-coded chips for each channel (e.g. `Cash: ₹500`, `UPI: ₹1,500`).
+* **Thermal Slip Rendering:** `thermalPrinter.js` detects multi-channel splits, titles the slip `SPLIT PAYMENT RECEIPT`, sets payment mode to `Split (...)`, and prints the itemized bulleted payment lines with exact amounts.
+
+---
+
+## 40. Zero-Net-Due Draft Checkout Rejection & Accidental Full Due Transition (100% Concession Invoice Payment Rejection) — [RESOLVED & VERIFIED]
+### Severity: High / Financial Workflow Failure & Inadvertent Counter Credit Creation
+### Impacted Modules & Files
+* **Intake Checkout Workflow:** [`IntentPanel.jsx`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/components/IntentPanel.jsx) (lines 1520–1585, 1845–1848)
+* **Reception Flow Service:** [`ReceptionFlowService.cs`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/Reception/ReceptionFlowService.cs) (lines 940–946)
+* **Invoice Accounting Service:** [`InvoiceService.cs`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/InvoiceService.cs) (lines 347–350)
+* **Visit Correction Engine:** [`VisitService.cs`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/VisitService.cs) (lines 667–747)
+
+### Incident Evidence
+* **Incident Scenario:** On visit `MAI-021` (Patient: `DURGA`, 54y/F, MRN: `A00048`, Tests: `VITAMIN D`, `VITAMIN B 12`, `HAEMOGRAM`, `ESR` — Gross: `₹3,000`).
+* **Sequence of Events:**
+  1. Cashier Moin entered a ₹3,000 discount (making net amount `₹0`).
+  2. Cashier clicked **"Confirm & Complete Visit (₹0)"**.
+  3. Instead of completing as settled with zero balance, the visit transitioned into **`FULL DUE` (`₹3,000 Due`)** in the Action Queue.
+  4. Realizing the bill was stuck in Full Due, Moin opened **Visit Correction** and amended the discount to `₹300` (net `₹2,700`), collecting `₹2,700` in Cash.
+  5. The resulting thermal receipt (Image 1) and audit trail show:
+     ```text
+     Gross Subtotal:     ₹3,000
+     Discount:           -₹300 (DR TVR [Authorized Secondary Concession: -₹3000])
+     GRAND TOTAL:        ₹2,700
+     Amount Received:    ₹2,700
+     Payment Mode:       CASH
+     Balance Due:        ₹0
+     ```
+     The discount note clearly preserved the historical authorized concession string `-₹3000`.
+
+### Detailed Root Cause Analysis
+
+#### 1. Compound Effect of Bug 38 (Discount Staged Only in React State)
+* During initial draft creation, `BillingSummary.jsx` stages the discount in React state (`stagedDiscount = { value: 3000, type: 'Flat', reason: 'DR TVR' }`).
+* On the backend, `Invoice` was created with `Gross: ₹3,000, DiscountAmount: ₹0, Total: ₹3,000`.
+* In `IntentPanel.jsx`, the UI calculates `stagedNet = 0` and `remainingDue = 0`, rendering the button: `Confirm & Complete Visit (₹0)`.
+* When Moin clicked this button, `IntentPanel.jsx` did **NOT** commit the discount to the backend (Bug 38).
+
+#### 2. The Zero-Amount Payment Trap (`IntentPanel.jsx`)
+* In `handleUnifiedAction` (line 1526):
+  ```javascript
+  const effectiveAmount = isFullDueSelected ? 0 : (isPartialValid ? numCustom : remainingDue);
+  // Because remainingDue was 0 (in React state), effectiveAmount evaluated to 0!
+  paymentPayload = {
+      VisitId: snapshot.visit.visitId,
+      Amount: 0,
+      Method: paymentMethod // 'Cash'
+  };
+  const res = await ReceptionApi.collectPayment(paymentPayload);
+  ```
+* The frontend attempted to collect a `₹0` payment with method `"Cash"`.
+
+#### 3. Backend Hard Rejection in `InvoiceService.cs`
+* In `ReceptionFlowService.cs` (lines 940–946):
+  ```csharp
+  if (request.Amount == 0 && request.Method == "Unpaid / Credit")
+  {
+      // Only special-cased if Method is explicitly "Unpaid / Credit"
+  }
+  else
+  {
+      payment = await _invoiceService.RecordPaymentAsync(invoiceId, paymentDto);
+  }
+  ```
+* Because `request.Method` was `"Cash"`, it called `_invoiceService.RecordPaymentAsync(invoiceId, paymentDto)` with `Amount = 0`.
+* In `InvoiceService.cs` (lines 347–350):
+  ```csharp
+  if (recordedAmount <= 0)
+  {
+      throw new InvalidOperationException("Effective payment amount must be greater than zero.");
+  }
+  ```
+* **The backend threw an `InvalidOperationException`!** `RecordPaymentAsync` forbids any payment where `Amount <= 0`.
+* The payment call was aborted. No payment record was created.
+
+#### 4. The Accidental "Full Due" Transition
+* Because the payment failed and the discount was never persisted to the backend:
+  - Database `dbo.Invoices`: `Gross = ₹3,000`, `DiscountAmount = ₹0`, `Total = ₹3,000`, `Paid = ₹0`.
+  - Database `dbo.Visits`: `Status = ReadyForSample` (token `MAI-021` issued).
+* When `OperationsEngine.cs` and `ReceptionScreen.jsx` evaluated the visit:
+  - `totalBilled = 3000`
+  - `totalPaid = 0`
+  - `remainingDue = 3000`
+  - Rule 5: `totalPaid === 0 && remainingDue > 0` -> **`FULL DUE` (₹3,000 Due)**.
+* Moin saw the bill unexpectedly turn into a ₹3,000 debt for the patient. He immediately used **Visit Correction** to salvage the visit, applying a ₹300 concession and collecting ₹2,700 in Cash. Because Visit Correction uses `batchEditVisit` (which directly commits discounts and accepts positive payment), it succeeded.
+
+### Architectural Fix Specification
+
+1. **Commit Staged Discount Before Payment Collection (Bug 38 Resolution):**
+   - In `IntentPanel.jsx` (`handleUnifiedAction`), always commit `stagedDiscount` to `ReceptionApi.applyDiscountToVisit` before initiating payment collection.
+   - This ensures `Invoice.Total` becomes `₹0` in the database.
+
+2. **Zero-Net-Due Invoice Settlement Handler (`IntentPanel.jsx` & `ReceptionFlowService.cs`):**
+   - In `IntentPanel.jsx`: When `stagedNet === 0` (100% concession), do **NOT** dispatch a `RecordPaymentAsync(Amount: 0)` with method `"Cash"`.
+   - Instead, dispatch a dedicated zero-due settlement action or pass `Method: "Concession / Zero Due"`.
+   - In `ReceptionFlowService.cs`:
+     ```csharp
+     if (request.Amount == 0)
+     {
+         var invoice = await _invoiceService.GetInvoiceByIdAsync(invoiceId);
+         if (invoice != null && (invoice.Total == 0 || invoice.DiscountAmount >= invoice.Gross))
+         {
+             // Invoice is 100% discounted; mark as Paid / Settled directly without creating a ₹0 Payment row
+             invoice.Status = InvoiceStatus.Paid;
+             await _invoiceService.UpdateInvoiceAsync(invoice);
+             return Ok(new PaymentResultDto { Success = true, Message = "Settled via 100% Concession" });
+         }
+     }
+     ```
+   - In `InvoiceService.cs`: Guard zero-due invoices so that 100% discounted bills automatically achieve `Status = InvoiceStatus.Paid` without throwing validation errors.
+
+### Verification & Resolution Details
+* **Zero-Net-Due Draft Settle Mode:** In `ReceptionFlowService.cs`, zero-amount payments where net due is ₹0 or discount covers gross amount are cleanly settled with `Status = "Paid"`, generating an official audit payment record without invoking rejection logic.
+* **Invoice Validation Guard:** In `InvoiceService.cs` (`RecordPaymentAsync`), 100% concession / zero-due invoices with `invoice.Total <= 0` or `invoice.DiscountAmount >= invoice.GrossAmount` permit zero-amount recording and transition to `Paid` without throwing `InvalidOperationException`.
+* **Zero-Net Fallback Elimination:** In `OperationsEngine.cs` (lines 335 and 469), `TotalAmount` was falling back to `orders.Sum()` when `invoice.Total == 0`. This was corrected so that an invoice with total ₹0 preserves `Total = 0` instead of falsely reverting to the gross ₹3,000.
+* **Frontend Queue Badge Guard:** In `ReceptionScreen.jsx`, visits with 100% concession and ₹0 remaining due are explicitly identified and tagged with a clean `CONCESSION` badge instead of being misclassified as `FULL DUE`.
+

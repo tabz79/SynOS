@@ -332,7 +332,7 @@ namespace SynOS.Services.Operations
                     // Phase 6: Granular Payment Fields (Contracted B2B Net Rate applied for Prepaid)
                     TotalAmount = (visit.PaymentCollectionModel == "PartnerCollects")
                         ? Math.Max(0m, ((invoice?.GrossAmount > 0 ? invoice.GrossAmount : invoice?.Total) ?? 0m) - ((visit.B2BDiscountAmount.HasValue && visit.B2BDiscountAmount.Value > 0) ? visit.B2BDiscountAmount.Value : (invoice?.DiscountAmount ?? 0m)))
-                        : ((invoice?.Total > 0 ? invoice.Total : (visit.Orders?.Where(o => o.ParentOrderId == null && o.Status != OrderStatus.Cancelled).Sum(o => o.Price) ?? 0m))),
+                        : (invoice != null ? invoice.Total : (visit.Orders?.Where(o => o.ParentOrderId == null && o.Status != OrderStatus.Cancelled).Sum(o => o.Price) ?? 0m)),
                     TotalPaid = (visit.PaymentCollectionModel == "PartnerCollects")
                         ? Math.Max(0m, ((invoice?.GrossAmount > 0 ? invoice.GrossAmount : invoice?.Total) ?? 0m) - ((visit.B2BDiscountAmount.HasValue && visit.B2BDiscountAmount.Value > 0) ? visit.B2BDiscountAmount.Value : (invoice?.DiscountAmount ?? 0m)))
                         : (invoice?.Payments.Sum(p => p.Amount) ?? 0m),
@@ -466,7 +466,7 @@ namespace SynOS.Services.Operations
                 
                 TotalAmount = (visit.PaymentCollectionModel == "PartnerCollects")
                     ? Math.Max(0m, ((invoice?.GrossAmount > 0 ? invoice.GrossAmount : invoice?.Total) ?? 0m) - ((visit.B2BDiscountAmount.HasValue && visit.B2BDiscountAmount.Value > 0) ? visit.B2BDiscountAmount.Value : (invoice?.DiscountAmount ?? 0m)))
-                    : ((invoice?.Total > 0 ? invoice.Total : (visit.Orders?.Where(o => o.ParentOrderId == null && o.Status != OrderStatus.Cancelled).Sum(o => o.Price) ?? 0m))),
+                    : (invoice != null ? invoice.Total : (visit.Orders?.Where(o => o.ParentOrderId == null && o.Status != OrderStatus.Cancelled).Sum(o => o.Price) ?? 0m)),
                 TotalPaid = (visit.PaymentCollectionModel == "PartnerCollects")
                     ? Math.Max(0m, ((invoice?.GrossAmount > 0 ? invoice.GrossAmount : invoice?.Total) ?? 0m) - ((visit.B2BDiscountAmount.HasValue && visit.B2BDiscountAmount.Value > 0) ? visit.B2BDiscountAmount.Value : (invoice?.DiscountAmount ?? 0m)))
                     : (invoice?.Payments.Sum(p => p.Amount) ?? 0m),
@@ -555,7 +555,7 @@ namespace SynOS.Services.Operations
                 return $"Prepaid ({partnerName})";
             }
 
-            if (invoice != null && (invoice.Status == "Paid" || invoice.Status == "FullPaid"))
+            if (invoice != null && (invoice.Status == "Paid" || invoice.Status == "FullPaid" || visit.Status == VisitStatus.Paid))
             {
                 var validPayments = invoice.Payments.Where(p => p.Amount > 0).ToList();
                 if (validPayments.Count > 1)
@@ -573,7 +573,7 @@ namespace SynOS.Services.Operations
                         _ => method
                     };
                 }
-                return "Paid";
+                return (invoice.GrossAmount > 0 && invoice.DiscountAmount >= invoice.GrossAmount) ? "Concession" : "Paid";
             }
 
             if (invoice != null && (invoice.Status == "PartialPayment" || visit.Status == VisitStatus.PartialPayment))
@@ -581,6 +581,11 @@ namespace SynOS.Services.Operations
                 var paid = invoice.Payments.Sum(p => p.Amount);
                 var due = Math.Max(0m, invoice.Total - paid);
                 return $"Partial Due (₹{due:N0})";
+            }
+
+            if (invoice != null && invoice.GrossAmount > 0 && invoice.DiscountAmount >= invoice.GrossAmount)
+            {
+                return "Concession";
             }
 
             return "Due";
@@ -595,7 +600,7 @@ namespace SynOS.Services.Operations
 
             if (visit.PaymentCollectionModel == "PartnerCollects") return "Prepaid";
 
-            if (invoice != null && (invoice.Status == "Paid" || invoice.Status == "FullPaid"))
+            if (invoice != null && (invoice.Status == "Paid" || invoice.Status == "FullPaid" || visit.Status == VisitStatus.Paid))
             {
                 var validPayments = invoice.Payments.Where(p => p.Amount > 0).ToList();
                 if (validPayments.Count > 1)
@@ -604,12 +609,18 @@ namespace SynOS.Services.Operations
                     return $"Split ({methods})";
                 }
                 var method = validPayments.FirstOrDefault()?.Method ?? invoice.Payments.FirstOrDefault()?.Method;
-                return method ?? "Paid"; // Fallback
+                if (!string.IsNullOrEmpty(method)) return method;
+                return (invoice.GrossAmount > 0 && invoice.DiscountAmount >= invoice.GrossAmount) ? "Concession" : "Paid";
             }
 
             if (invoice != null && (invoice.Status == "PartialPayment" || visit.Status == VisitStatus.PartialPayment))
             {
                 return "Partial Due";
+            }
+
+            if (invoice != null && invoice.GrossAmount > 0 && invoice.DiscountAmount >= invoice.GrossAmount)
+            {
+                return "Concession";
             }
 
             return "Due";

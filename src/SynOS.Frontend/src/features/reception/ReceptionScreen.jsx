@@ -535,8 +535,9 @@ export function ReceptionScreen() {
                 // Enterprise scoping: isOverpaid applies strictly to retail direct desk collections exceeding billed total. NEVER hijack Corporate B2B Prepaid visits.
                 const isOverpaid = !isDraft && !isPrepaid && totalPaid > totalBilled && totalBilled > 0;
                 const remainingDue = row.remainingDue !== undefined ? Number(row.remainingDue) : Math.max(0, totalBilled - totalPaid);
-                const isPartial = !isDraft && !isPrepaid && !isOverpaid && (row.paymentMethod === "Partial Due" || (row.paymentDisplay && row.paymentDisplay.includes("Partial")) || (totalPaid > 0 && remainingDue > 0));
-                const isPaid = !isDraft && !isPrepaid && !isPartial && !isOverpaid && (row.paymentMethod === "Paid" || row.paymentMethod === "Cash" || row.paymentMethod === "UPI" || row.paymentMethod === "Card" || (row.paymentMethod && row.paymentMethod.startsWith("Split")) || (remainingDue === 0 && totalBilled > 0));
+                const isConcession = !isDraft && !isPrepaid && ((row.paymentMethod || '').toLowerCase().includes('concession') || (totalBilled === 0 && remainingDue === 0 && !((row.paymentMethod || '').toLowerCase().includes('due'))));
+                const isPartial = !isDraft && !isPrepaid && !isOverpaid && !isConcession && (row.paymentMethod === "Partial Due" || (row.paymentDisplay && row.paymentDisplay.includes("Partial")) || (totalPaid > 0 && remainingDue > 0));
+                const isPaid = !isDraft && !isPrepaid && !isPartial && !isOverpaid && (isConcession || row.paymentMethod === "Paid" || row.paymentMethod === "Cash" || row.paymentMethod === "UPI" || row.paymentMethod === "Card" || (row.paymentMethod && row.paymentMethod.startsWith("Split")) || remainingDue === 0);
                 const isFullDue = !isDraft && !isPrepaid && !isPaid && !isPartial && !isOverpaid && (totalPaid === 0 && (remainingDue > 0 || (row.paymentMethod || '').toLowerCase().includes('due') || (row.paymentMethod || '').toLowerCase().includes('credit')));
 
                 const badgeBase = "text-[10px] px-1.5 py-0.5 rounded font-mono leading-none border uppercase tracking-wide shrink-0 font-bold";
@@ -559,7 +560,10 @@ export function ReceptionScreen() {
                     badgeColor = "bg-orange-500/15 dark:text-orange-300 text-orange-700 border-orange-500/30";
                     badgeText = "FULL DUE";
                 } else if (isPaid) {
-                    if (row.paymentMethod && row.paymentMethod.startsWith("Split")) {
+                    if (isConcession || (row.paymentMethod || '').toLowerCase().includes("concession")) {
+                        badgeColor = "bg-teal-500/15 dark:text-teal-300 text-teal-700 border-teal-500/30";
+                        badgeText = "CONCESSION";
+                    } else if (row.paymentMethod && row.paymentMethod.startsWith("Split")) {
                         badgeColor = "bg-purple-500/15 dark:text-purple-300 text-purple-700 border-purple-500/30";
                         badgeText = "SPLIT";
                     } else {
@@ -594,6 +598,10 @@ export function ReceptionScreen() {
                         ) : row.paymentMethod && row.paymentMethod.startsWith("Split") ? (
                             <span className="type-meta text-purple-600 dark:text-purple-400 text-[10px] font-mono font-bold">
                                 {row.paymentDisplay || "Cash + UPI"}
+                            </span>
+                        ) : isConcession ? (
+                            <span className="type-meta text-teal-600 dark:text-teal-400 text-[10px] font-mono font-medium">
+                                100% Concession
                             </span>
                         ) : null}
                         {isPrepaid && row.referrerName && (

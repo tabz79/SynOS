@@ -1254,6 +1254,20 @@ export function IntentPanel({ onVisitUpdated }) {
             : null;
         const hcPlan = hasHc ? (healthCardEligibility?.card?.planName || p?.healthCardPlanName || "Health Card") : null;
 
+        const effectivePayments = (isSplitPayment && Number(splitCashAmount) > 0 && Number(splitUpiAmount) > 0)
+            ? [{ amount: Number(splitCashAmount), method: 'Cash' }, { amount: Number(splitUpiAmount), method: 'UPI' }]
+            : (snapshot?.billing?.payments || []);
+
+        const isEffectiveSplit = (isSplitPayment && Number(splitCashAmount) > 0 && Number(splitUpiAmount) > 0)
+            || (effectivePayments && effectivePayments.filter(p => Number(p.amount || p.Amount) > 0).length > 1)
+            || (snapshot?.billing?.paymentMethod && snapshot.billing.paymentMethod.startsWith('Split'));
+
+        const effectivePaymentMethod = isPrepaid 
+            ? "Corporate B2B Prepaid" 
+            : (isEffectiveSplit 
+                ? (snapshot?.billing?.paymentMethod || "Split (Cash + UPI)") 
+                : (snapshot?.billing?.paymentMethod || paymentMethod || "Cash"));
+
         return {
             visitId: visitObj?.visitId || currentVisitId,
             token: tokenToPrint,
@@ -1264,7 +1278,8 @@ export function IntentPanel({ onVisitUpdated }) {
             hasActiveHealthCard: hasHc,
             healthCardNumber: rawCard,
             healthCardPlanName: hcPlan,
-            paymentMethod: isPrepaid ? "Corporate B2B Prepaid" : (isSplitPayment ? "Split (Cash + UPI)" : (snapshot?.billing?.paymentMethod || paymentMethod || "Cash")),
+            paymentMethod: effectivePaymentMethod,
+            payments: effectivePayments,
             changeDue: finalChangeDue,
             tenderedAmount: Number(tenderedAmount || postProcessingSession?.tenderedAmount || 0),
             isChangeRetainedAsDue: Boolean(isChangeRetainedAsDue || postProcessingSession?.isChangeRetainedAsDue || finalChangeDue > 0),
@@ -1293,7 +1308,8 @@ export function IntentPanel({ onVisitUpdated }) {
                 totalPaid: effectivePaid,
                 changeDue: finalChangeDue,
                 tenderedAmount: Number(tenderedAmount || postProcessingSession?.tenderedAmount || 0),
-                paymentMethod: isPrepaid ? "Corporate B2B Prepaid" : (snapshot?.billing?.paymentMethod || paymentMethod || "Cash")
+                paymentMethod: effectivePaymentMethod,
+                payments: effectivePayments
             },
             orders: effectiveTests.map(t => ({
                 testCode: t.testCode,
@@ -1553,7 +1569,10 @@ export function IntentPanel({ onVisitUpdated }) {
                 }
 
                 const effectiveAmount = isFullDueSelected ? 0 : (isPartialValid ? numCustom : remainingDue);
-                const methodToUse = isFullDueSelected ? 'Unpaid / Credit' : paymentMethod;
+                const isZeroConcessionDue = effectiveAmount === 0 && !isFullDueSelected;
+                const methodToUse = isFullDueSelected 
+                    ? 'Unpaid / Credit' 
+                    : (isZeroConcessionDue ? 'Concession / Zero Due' : paymentMethod);
 
                 let paymentPayload;
                 let paidAmountDisplay = effectiveAmount;
@@ -2879,9 +2898,35 @@ export function IntentPanel({ onVisitUpdated }) {
                                                                     <span className="font-mono">
                                                                         ₹{postPaid.toLocaleString()}
                                                                     </span>
-                                                                    <span className="text-xs font-normal text-slate-500 dark:text-zinc-400">
-                                                                        {postPaid > 0 ? `via ${paymentMethod}` : `(Unpaid / Credit)`}
-                                                                    </span>
+                                                                    {(() => {
+                                                                        const deskPayments = snapshot?.billing?.payments || [];
+                                                                        const effectiveDeskMethod = snapshot?.billing?.paymentMethod || paymentMethod || "Cash";
+                                                                        const isDeskSplit = effectiveDeskMethod.startsWith("Split") || deskPayments.filter(p => Number(p.amount || p.Amount) > 0).length > 1;
+                                                                        const isZeroConcessionVisit = (postPaid === 0 && actualBalanceDue <= 0 && ((stagedDiscountAmt !== undefined && stagedGross !== undefined && stagedDiscountAmt >= stagedGross && stagedGross > 0) || (effectiveDiscount >= effectiveGross && effectiveGross > 0) || effectiveDeskMethod.toLowerCase().includes("concession")));
+
+                                                                        if (isDeskSplit && deskPayments.length > 1) {
+                                                                            return (
+                                                                                <span className="flex items-center gap-1.5 ml-1">
+                                                                                    <span className="text-xs font-semibold text-purple-700 dark:text-purple-300">via Split</span>
+                                                                                    <span className="inline-flex items-center gap-1">
+                                                                                        {deskPayments.filter(p => Number(p.amount || p.Amount) > 0).map((p, idx) => (
+                                                                                            <span key={idx} className="px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-950/50 text-purple-800 dark:text-purple-200 text-[11px] font-mono font-bold border border-purple-300 dark:border-purple-800">
+                                                                                                {p.method || p.Method}: ₹{Number(p.amount || p.Amount || 0).toLocaleString()}
+                                                                                            </span>
+                                                                                        ))}
+                                                                                    </span>
+                                                                                </span>
+                                                                            );
+                                                                        }
+
+                                                                        return (
+                                                                            <span className="text-xs font-normal text-slate-500 dark:text-zinc-400">
+                                                                                {postPaid > 0 
+                                                                                    ? `via ${effectiveDeskMethod}` 
+                                                                                    : (isZeroConcessionVisit ? `(100% Concession / Settled)` : `(Unpaid / Credit)`)}
+                                                                            </span>
+                                                                        );
+                                                                    })()}
                                                                 </div>
                                                                 <div className="text-xs font-semibold text-slate-600 dark:text-zinc-400">
                                                                     Balance Due:{" "}

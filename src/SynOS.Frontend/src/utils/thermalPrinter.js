@@ -183,11 +183,22 @@ export function generateThermalInvoiceHtml(payload = {}) {
     const excessOverpaid = Math.max(0, totalPaid - totalAmount);
     const finalChangeDue = Math.max(explicitChangeDue, excessOverpaid);
 
-    const rawPaymentMethod = payload.paymentMethod 
+    const resolvedPayments = payload.payments || payload.Payments || billingObj.payments || payload.financial?.payments || payload.splitPayments || [];
+    const isMultiPayment = resolvedPayments && resolvedPayments.filter(p => Number(p.amount || p.Amount) > 0).length > 1;
+
+    let rawPaymentMethod = payload.paymentMethod 
         || billingObj.paymentMethod 
         || payload.financial?.paymentMethod 
         || payload.visit?.paymentMethod 
         || 'Cash';
+
+    if (isMultiPayment && !rawPaymentMethod.toLowerCase().includes('split')) {
+        const methods = resolvedPayments.filter(p => Number(p.amount || p.Amount) > 0).map(p => p.method || p.Method).filter(Boolean);
+        const distinct = Array.from(new Set(methods));
+        rawPaymentMethod = `Split (${distinct.join(' + ')})`;
+    } else if (totalAmount === 0 && discountAmount > 0 && rawPaymentMethod.toLowerCase() === 'cash') {
+        rawPaymentMethod = 'Concession (100% Discount)';
+    }
 
     const normalizedData = {
         receiptNumber: canonicalBillNo,
@@ -213,7 +224,7 @@ export function generateThermalInvoiceHtml(payload = {}) {
             tenderedAmount: Number(payload.tenderedAmount || billingObj.tenderedAmount || payload.financial?.tenderedAmount || 0),
             discountReason,
             paymentMethod: rawPaymentMethod,
-            payments: payload.payments || payload.Payments || billingObj.payments || payload.financial?.payments || payload.splitPayments || []
+            payments: resolvedPayments
         },
         biller: {
             billedBy: billerDisplay
@@ -262,8 +273,14 @@ export function generateThermalInvoiceHtml(payload = {}) {
         const df = boxes.docBadge.fields || {};
         const dueVal = Number(normalizedData.financial.balanceDue || 0);
         const paidVal = Number(normalizedData.financial.totalPaid || 0);
+        const totalAmt = Number(normalizedData.financial.totalAmount || 0);
+        const discAmt = Number(normalizedData.financial.discountAmount || 0);
         let defaultTitle = `${String(rawPaymentMethod || 'CASH').toUpperCase()} PAYMENT RECEIPT`;
-        if (dueVal > 0 && paidVal > 0) {
+        if (totalAmt === 0 && discAmt > 0) {
+            defaultTitle = "100% CONCESSION RECEIPT";
+        } else if (rawPaymentMethod.toLowerCase().includes('split') || isMultiPayment) {
+            defaultTitle = "SPLIT PAYMENT RECEIPT";
+        } else if (dueVal > 0 && paidVal > 0) {
             defaultTitle = "PARTIAL PAYMENT RECEIPT";
         } else if (dueVal > 0 && paidVal === 0) {
             defaultTitle = "PAYMENT DUE RECEIPT";
