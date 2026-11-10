@@ -267,7 +267,7 @@ namespace SynOS.Services.HealthCards
                         HasOpenSlots = summary.AvailableSlots > 0,
                         AvailableSlots = summary.AvailableSlots,
                         Card = summary,
-                        Message = $"Active {summary.ConfiguredDiscountValue}% Health Card Member ({card.CardNumber})"
+                        Message = $"Active {summary.ConfiguredDiscountValue}% Health Card Member ({summary.CardNumber})"
                     };
                 }
             }
@@ -300,10 +300,10 @@ namespace SynOS.Services.HealthCards
                         AvailableSlots = openSlots,
                         Card = summary,
                         Message = isEnrolled
-                            ? $"Active {summary.ConfiguredDiscountValue}% Health Card Member ({card.CardNumber})"
+                            ? $"Active {summary.ConfiguredDiscountValue}% Health Card Member ({summary.CardNumber})"
                             : (openSlots > 0
-                                ? $"Family Card Found ({card.CardNumber}) with {openSlots} open slot{(openSlots > 1 ? "s" : "")}"
-                                : $"Card {card.CardNumber} is at full capacity ({card.Beneficiaries.Count}/{card.Plan?.MaxMembers})")
+                                ? $"Family Card Found ({summary.CardNumber}) with {openSlots} open slot{(openSlots > 1 ? "s" : "")}"
+                                : $"Card {summary.CardNumber} is at full capacity ({card.Beneficiaries.Count}/{card.Plan?.MaxMembers})")
                     };
                 }
             }
@@ -332,7 +332,7 @@ namespace SynOS.Services.HealthCards
                         HasOpenSlots = summary.AvailableSlots > 0,
                         AvailableSlots = summary.AvailableSlots,
                         Card = summary,
-                        Message = $"Health Card ({pendingCard.CardNumber}) • Pending Bill Settlement"
+                        Message = $"Health Card ({summary.CardNumber}) • Pending Bill Settlement"
                     };
                 }
             }
@@ -362,7 +362,7 @@ namespace SynOS.Services.HealthCards
                         HasOpenSlots = summary.AvailableSlots > 0,
                         AvailableSlots = summary.AvailableSlots,
                         Card = summary,
-                        Message = $"Health Card ({pendingCard.CardNumber}) • Pending Bill Settlement"
+                        Message = $"Health Card ({summary.CardNumber}) • Pending Bill Settlement"
                     };
                 }
             }
@@ -404,7 +404,7 @@ namespace SynOS.Services.HealthCards
                         HasOpenSlots = summary.AvailableSlots > 0,
                         AvailableSlots = summary.AvailableSlots,
                         Card = summary,
-                        Message = $"Health Card ({expiredCard.CardNumber}) Expired on {expiredCard.ValidUntil:dd MMM yyyy}. Renewal required."
+                        Message = $"Health Card ({summary.CardNumber}) Expired on {expiredCard.ValidUntil:dd MMM yyyy}. Renewal required."
                     };
                 }
             }

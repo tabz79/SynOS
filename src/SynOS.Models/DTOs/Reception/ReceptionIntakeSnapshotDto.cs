@@ -35,6 +35,11 @@ namespace SynOS.Models.DTOs.Reception
         public string Mobile { get; set; } = string.Empty;
         public DateTime? LastVisitDate { get; set; }
         public List<string> LastVisitTestCodes { get; set; } = new();
+        public bool HasActiveHealthCard { get; set; }
+        public string? HealthCardNumber { get; set; }
+        public string? HealthCardPlanName { get; set; }
+        public decimal? HealthCardDiscountValue { get; set; }
+        public string? HealthCardDiscountType { get; set; }
     }
 
     public class IntakeVisit

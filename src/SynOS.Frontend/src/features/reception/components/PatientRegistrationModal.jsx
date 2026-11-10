@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { X, Loader2, UserPlus, Save, AlertCircle, Zap } from 'lucide-react'
+import { X, Loader2, UserPlus, Save, AlertCircle, Zap, CreditCard } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ReceptionApi } from '@/api/reception'
 import { useTheme } from '@/context/ThemeContext'
@@ -465,7 +465,14 @@ export function PatientRegistrationModal({ isOpen, onClose, onPatientRegistered 
                                                 <span className="text-[11px] text-zinc-500">({m.age} Yrs, {m.gender})</span>
                                             </div>
                                             <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-zinc-500">
-                                                <span className="font-mono font-bold bg-slate-100 dark:bg-zinc-700 px-1.5 py-0.2 rounded">MRN: {m.mrn}</span>
+                                                {m.hasActiveHealthCard || m.healthCardNumber ? (
+                                                    <span className="font-mono font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 px-1.5 py-0.2 rounded border border-indigo-200 dark:border-indigo-800 flex items-center gap-1">
+                                                        <CreditCard className="w-2.5 h-2.5 text-indigo-500 shrink-0" />
+                                                        <span>{m.healthCardNumber || `${m.mrn}-HC`}</span>
+                                                    </span>
+                                                ) : (
+                                                    <span className="font-mono font-bold bg-slate-100 dark:bg-zinc-700 px-1.5 py-0.2 rounded">MRN: {m.mrn}</span>
+                                                )}
                                                 {m.lastVisitDate && (
                                                     <span>• Last: {new Date(m.lastVisitDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</span>
                                                 )}

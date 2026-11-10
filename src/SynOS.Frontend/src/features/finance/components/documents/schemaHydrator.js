@@ -2,6 +2,18 @@
 import { DEFAULT_DOCUMENT_SCHEMAS } from './documentLayoutSchemas';
 import { formatDateCompact } from '@/lib/utils';
 
+const resolvePatientCode = (patient, fallbackMrn) => {
+    if (!patient) return fallbackMrn || "WALK-IN";
+    const hasCard = Boolean(patient.hasActiveHealthCard || patient.healthCardNumber || patient.hasHealthCard);
+    if (hasCard) {
+        const raw = patient.healthCardNumber;
+        if (raw && !raw.startsWith("HC-")) return raw;
+        const mrn = patient.mrn || patient.uhid || fallbackMrn;
+        if (mrn && mrn !== "WALK-IN") return `${mrn}-HC`;
+    }
+    return patient.uhid || patient.mrn || fallbackMrn || "WALK-IN";
+};
+
 export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySettings = {}) {
     // Start from active custom schema or factory default
     const defaultSchema = DEFAULT_DOCUMENT_SCHEMAS[slotId] || {};
@@ -83,7 +95,7 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
 
             if (boxes.partyDetails?.fields) {
                 if (boxes.partyDetails.fields.fullName) boxes.partyDetails.fields.fullName.value = p.name || p.fullName || "Direct Walk-in Patient";
-                if (boxes.partyDetails.fields.uhid) boxes.partyDetails.fields.uhid.value = p.uhid || p.mrn || "WALK-IN";
+                if (boxes.partyDetails.fields.uhid) boxes.partyDetails.fields.uhid.value = resolvePatientCode(p);
                 if (boxes.partyDetails.fields.ageGender) boxes.partyDetails.fields.ageGender.value = p.ageGender || (p.age ? `${p.age} / ${p.gender || ''}` : "Adult");
                 if (boxes.partyDetails.fields.phone) boxes.partyDetails.fields.phone.value = p.phone || p.mobile || "N/A";
                 if (boxes.partyDetails.fields.refDoctor) {
@@ -234,7 +246,7 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
 
             if (boxes.partyDetails?.fields) {
                 if (boxes.partyDetails.fields.fullName) boxes.partyDetails.fields.fullName.value = p.name || p.fullName || "Patient";
-                if (boxes.partyDetails.fields.uhid) boxes.partyDetails.fields.uhid.value = p.uhid || p.mrn || "WALK-IN";
+                if (boxes.partyDetails.fields.uhid) boxes.partyDetails.fields.uhid.value = resolvePatientCode(p);
                 if (boxes.partyDetails.fields.ageGender) boxes.partyDetails.fields.ageGender.value = p.ageGender || `${p.age || ''} / ${p.gender || ''}`;
             }
 
@@ -312,7 +324,7 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
 
             if (boxes.partyDetails?.fields) {
                 if (boxes.partyDetails.fields.fullName) boxes.partyDetails.fields.fullName.value = p.name || p.fullName || "Patient";
-                if (boxes.partyDetails.fields.uhid) boxes.partyDetails.fields.uhid.value = p.uhid || p.mrn || "WALK-IN";
+                if (boxes.partyDetails.fields.uhid) boxes.partyDetails.fields.uhid.value = resolvePatientCode(p);
                 if (boxes.partyDetails.fields.ageGender) boxes.partyDetails.fields.ageGender.value = p.ageGender || (p.age ? `${p.age} / ${p.gender || ''}` : "Adult");
                 if (boxes.partyDetails.fields.phone) boxes.partyDetails.fields.phone.value = p.phone || p.mobile || "N/A";
                 const prescribingDoc = liveData.prescribingDoctorName || liveData.patient?.referringDoctor || liveData.referringDoctorName || refPartnerName;
@@ -377,7 +389,7 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
 
             if (boxes.partyDetails?.fields) {
                 if (boxes.partyDetails.fields.fullName) boxes.partyDetails.fields.fullName.value = p.name || p.fullName || "Patient";
-                if (boxes.partyDetails.fields.uhid) boxes.partyDetails.fields.uhid.value = p.uhid || p.mrn || "WALK-IN";
+                if (boxes.partyDetails.fields.uhid) boxes.partyDetails.fields.uhid.value = resolvePatientCode(p);
                 if (boxes.partyDetails.fields.ageGender) boxes.partyDetails.fields.ageGender.value = p.ageGender || `${p.age || ''} / ${p.gender || ''}`;
                 if (boxes.partyDetails.fields.sponsorName) {
                     boxes.partyDetails.fields.sponsorName.enabled = false;
@@ -429,7 +441,7 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
 
             if (boxes.partyDetails?.fields) {
                 if (boxes.partyDetails.fields.fullName) boxes.partyDetails.fields.fullName.value = p.name || p.fullName || "Patient";
-                if (boxes.partyDetails.fields.uhid) boxes.partyDetails.fields.uhid.value = p.uhid || p.mrn || "WALK-IN";
+                if (boxes.partyDetails.fields.uhid) boxes.partyDetails.fields.uhid.value = resolvePatientCode(p);
                 if (boxes.partyDetails.fields.ageGender) boxes.partyDetails.fields.ageGender.value = p.ageGender || `${p.age || ''} / ${p.gender || ''}`;
                 if (boxes.partyDetails.fields.billedToDoctor) boxes.partyDetails.fields.billedToDoctor.value = billedToDoc;
                 if (boxes.partyDetails.fields.referringDoctor) boxes.partyDetails.fields.referringDoctor.value = prescribingDoc;
@@ -885,7 +897,7 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
                     boxes.partyDetails.fields.fullName.value = p.name || p.fullName || liveData.patientName || "Patient";
                 }
                 if (boxes.partyDetails.fields.uhid) {
-                    boxes.partyDetails.fields.uhid.value = p.uhid || p.mrn || liveData.mrn || "WALK-IN";
+                    boxes.partyDetails.fields.uhid.value = resolvePatientCode(p, liveData.mrn);
                 }
                 if (boxes.partyDetails.fields.ageGender) {
                     boxes.partyDetails.fields.ageGender.value = p.ageGender || (p.age ? `${p.age} Yrs / ${p.gender || ''}` : "Adult");
@@ -992,7 +1004,7 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
 
             if (boxes.partyDetails?.fields) {
                 if (boxes.partyDetails.fields.fullName) boxes.partyDetails.fields.fullName.value = p.name || p.fullName || liveData.patientName || "Patient";
-                if (boxes.partyDetails.fields.uhid) boxes.partyDetails.fields.uhid.value = p.uhid || p.mrn || "WALK-IN";
+                if (boxes.partyDetails.fields.uhid) boxes.partyDetails.fields.uhid.value = resolvePatientCode(p);
                 if (boxes.partyDetails.fields.ageGender) boxes.partyDetails.fields.ageGender.value = p.ageGender || `${p.age || ''} / ${p.gender || ''}`;
                 if (boxes.partyDetails.fields.insuranceProvider) {
                     boxes.partyDetails.fields.insuranceProvider.value = ins.insuranceCompanyName || liveData.insuranceProvider || liveData.insuranceCompany || "Insurance Provider";
@@ -1072,7 +1084,7 @@ export function hydrateDocumentSchema(slotId, rawSchema, liveData, stationerySet
             }
             if (boxes.partyDetails?.fields) {
                 if (boxes.partyDetails.fields.fullName) boxes.partyDetails.fields.fullName.value = liveData.patientName || boxes.partyDetails.fields.fullName.value;
-                if (boxes.partyDetails.fields.uhid) boxes.partyDetails.fields.uhid.value = liveData.patientMrn || liveData.uhid || boxes.partyDetails.fields.uhid.value;
+                if (boxes.partyDetails.fields.uhid) boxes.partyDetails.fields.uhid.value = resolvePatientCode(p, liveData.patientMrn || liveData.uhid);
                 if (boxes.partyDetails.fields.insuranceProvider) boxes.partyDetails.fields.insuranceProvider.value = liveData.insuranceCompanyName || liveData.insuranceCompany || liveData.insuranceProvider || boxes.partyDetails.fields.insuranceProvider.value;
                 if (boxes.partyDetails.fields.tpaName) boxes.partyDetails.fields.tpaName.value = liveData.tpaName || boxes.partyDetails.fields.tpaName.value;
                 if (boxes.partyDetails.fields.policyNumber) boxes.partyDetails.fields.policyNumber.value = liveData.policyNumber || boxes.partyDetails.fields.policyNumber.value;

@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils'
 import { useTheme } from '@/context/ThemeContext'
-import { User, Pencil } from 'lucide-react'
+import { User, Pencil, CreditCard } from 'lucide-react'
 
 export const calculateDetailedAge = (dobString, fallbackAge) => {
     if (!dobString && fallbackAge && fallbackAge > 0) {
@@ -81,6 +81,30 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
     let name = p.name || p.Name || p.fullName || p.FullName || p.displayName || p.DisplayName || `${p.firstName || p.FirstName || ''} ${p.lastName || p.LastName || ''}`.trim();
     const mobile = p.mobile || p.Mobile || p.phoneNumber || p.PhoneNumber || p.phone || p.Phone || p.currentPhoneNumber || p.CurrentPhoneNumber;
     const mrn = p.mrn || p.MRN || "—";
+
+    // Systemic Health Card extraction across all clinical pods
+    const hasHealthCard = Boolean(
+        p.hasActiveHealthCard || 
+        p.HasActiveHealthCard || 
+        p.healthCardNumber || 
+        p.HealthCardNumber ||
+        (p.healthCardEligibility && (p.healthCardEligibility.hasActiveCard || p.healthCardEligibility.isPatientEnrolledBeneficiary)) ||
+        (p.membershipCard && p.membershipCard.status === 'Active')
+    );
+    const rawCardNumber = p.healthCardNumber || 
+                          p.HealthCardNumber || 
+                          p.healthCardEligibility?.card?.cardNumber ||
+                          p.membershipCard?.cardNumber;
+    const healthCardNumber = (rawCardNumber && !rawCardNumber.startsWith("HC-")) 
+        ? rawCardNumber 
+        : (hasHealthCard && mrn && mrn !== "—" ? `${String(mrn).trim()}-HC` : null);
+    const healthCardPlanName = p.healthCardPlanName || 
+                               p.HealthCardPlanName || 
+                               p.planName || 
+                               p.PlanName ||
+                               p.healthCardEligibility?.card?.plan?.planName ||
+                               p.healthCardEligibility?.card?.planName ||
+                               p.membershipCard?.planName;
     
     const dob = p.dateOfBirth || p.DateOfBirth || p.dob || p.Dob;
     const fallbackAge = p.age !== undefined ? p.age : p.Age;
@@ -202,12 +226,31 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
                     {/* COL 3: MRN & EDIT ACTION */}
                     <div className="flex items-center gap-3 sm:gap-4 shrink-0 justify-end">
                         <div className="text-right leading-tight">
-                            <span className="text-[10px] sm:text-xs uppercase font-bold tracking-wider text-slate-500 dark:text-zinc-400 block">
-                                MRN
-                            </span>
-                            <span className="font-mono text-slate-900 dark:text-white font-bold text-sm sm:text-base block mt-0.5">
-                                {mrn}
-                            </span>
+                            {hasHealthCard ? (
+                                <>
+                                    <span className="text-[10px] sm:text-xs uppercase font-extrabold tracking-wider text-indigo-600 dark:text-indigo-400 flex items-center gap-1 justify-end">
+                                        <CreditCard className="w-3 h-3 text-indigo-500" />
+                                        CARD / MRN
+                                    </span>
+                                    <span className="font-mono text-indigo-700 dark:text-indigo-300 font-black text-sm sm:text-base block mt-0.5">
+                                        {healthCardNumber || `${mrn}-HC`}
+                                    </span>
+                                    {healthCardPlanName && (
+                                        <span className="text-[10px] font-semibold text-slate-500 dark:text-zinc-400 block truncate max-w-[140px]">
+                                            {healthCardPlanName}
+                                        </span>
+                                    )}
+                                </>
+                            ) : (
+                                <>
+                                    <span className="text-[10px] sm:text-xs uppercase font-bold tracking-wider text-slate-500 dark:text-zinc-400 block">
+                                        MRN
+                                    </span>
+                                    <span className="font-mono text-slate-900 dark:text-white font-bold text-sm sm:text-base block mt-0.5">
+                                        {mrn}
+                                    </span>
+                                </>
+                            )}
                         </div>
 
                         {secondaryActionLabel && (
@@ -434,12 +477,26 @@ export const RichPatientCard = ({ patient, onAction, actionLabel, secondaryActio
                     )}
                 </div>
 
-                {/* ROW 3: MRN + DATE */}
+                {/* ROW 3: MRN / HEALTH CARD + DATE */}
                 <div className="flex items-center leading-none">
-                    <div className={cn("px-2 py-0.5 rounded-md text-xs font-mono tracking-normal inline-flex items-center gap-1.5", cardUi.mrn)}>
-                        <span className="font-bold opacity-60 text-xs">MRN:</span>
-                        <span className="font-bold">{mrn}</span>
-                    </div>
+                    {hasHealthCard ? (
+                        <div className="inline-flex items-center gap-1.5 flex-wrap">
+                            <div className="px-2.5 py-1 rounded-lg text-xs font-mono font-bold tracking-normal inline-flex items-center gap-1.5 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 shadow-2xs">
+                                <CreditCard className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                                <span>{healthCardNumber || `${mrn}-HC`}</span>
+                            </div>
+                            {healthCardPlanName && (
+                                <span className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50/60 dark:bg-indigo-950/40 px-2 py-0.5 rounded border border-indigo-200/80 dark:border-indigo-800/80">
+                                    {healthCardPlanName}
+                                </span>
+                            )}
+                        </div>
+                    ) : (
+                        <div className={cn("px-2 py-0.5 rounded-md text-xs font-mono tracking-normal inline-flex items-center gap-1.5", cardUi.mrn)}>
+                            <span className="font-bold opacity-60 text-xs">MRN:</span>
+                            <span className="font-bold">{mrn}</span>
+                        </div>
+                    )}
                 </div>
                 <div className="justify-self-end leading-none">
                     {lastVisitDate ? (

@@ -382,21 +382,27 @@ export function PatientDetailScreen() {
         {patient && (
           <div>
             <div className="flex items-center gap-3 flex-wrap">
-              <span className="font-mono text-[10px] font-semibold text-synos-primary bg-synos-primary/10 px-2 py-0.5 rounded border border-synos-primary/20 uppercase tracking-wider">
-                {patient.hasActiveHealthCard || membershipCard?.status === 'Active'
-                  ? (membershipCard?.cardNumber || patient.healthCardNumber || `${patient.mrn}-HC`)
-                  : patient.mrn}
-              </span>
-              <h1 className="text-xl font-semibold tracking-tight text-zinc-850 dark:text-zinc-100">
-                {patient.firstName} {patient.lastName}
-              </h1>
-              {(patient.hasActiveHealthCard || membershipCard?.status === 'Active') && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-gradient-to-r from-blue-500/15 via-indigo-500/15 to-purple-500/15 text-blue-700 dark:text-blue-300 border border-blue-400/30">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                  <span>💎 Health Card Member ({membershipCard?.cardNumber || patient.healthCardNumber})</span>
-                  <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400">• {membershipCard?.planName || patient.healthCardPlanName}</span>
-                </span>
-              )}
+              {(() => {
+                const isMember = patient.hasActiveHealthCard || membershipCard?.status === 'Active';
+                const memberCardCode = (!membershipCard?.cardNumber?.startsWith("HC-") ? membershipCard?.cardNumber : null) || patient.healthCardNumber || (patient.mrn ? `${patient.mrn}-HC` : null);
+                return (
+                  <>
+                    <span className="font-mono text-[10px] font-semibold text-synos-primary bg-synos-primary/10 px-2 py-0.5 rounded border border-synos-primary/20 uppercase tracking-wider">
+                      {isMember ? (memberCardCode || `${patient.mrn}-HC`) : patient.mrn}
+                    </span>
+                    <h1 className="text-xl font-semibold tracking-tight text-zinc-850 dark:text-zinc-100">
+                      {patient.firstName} {patient.lastName}
+                    </h1>
+                    {isMember && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-gradient-to-r from-blue-500/15 via-indigo-500/15 to-purple-500/15 text-blue-700 dark:text-blue-300 border border-blue-400/30">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                        <span>💎 Health Card Member ({memberCardCode})</span>
+                        <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400">• {membershipCard?.planName || patient.healthCardPlanName}</span>
+                      </span>
+                    )}
+                  </>
+                );
+              })()}
             </div>
             <p className="text-zinc-400 dark:text-zinc-500 text-[10px] font-medium mt-1 uppercase tracking-wider">
               Active Patient Demographics File

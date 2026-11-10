@@ -47,8 +47,8 @@ export const ThermalPosReceipt80mm = ({ data }) => {
                     <strong className="truncate max-w-[150px]">{patient.fullName || "Walk-in Patient"}</strong>
                 </div>
                 <div className="flex justify-between">
-                    <span>MRN / Age / Sex:</span>
-                    <span>{patient.mrn || "SYN-2026-9042"} / {patient.age || "42Y"} / {patient.gender || "M"}</span>
+                    <span>{patient.hasActiveHealthCard || patient.healthCardNumber ? "CARD / Age / Sex:" : "MRN / Age / Sex:"}</span>
+                    <span>{(patient.hasActiveHealthCard || patient.healthCardNumber) ? (patient.healthCardNumber || (patient.mrn ? `${patient.mrn}-HC` : "HC MEMBER")) : (patient.mrn || "SYN-2026-9042")} / {patient.age || "42Y"} / {patient.gender || "M"}</span>
                 </div>
                 <div className="flex justify-between">
                     <span>Counter:</span>

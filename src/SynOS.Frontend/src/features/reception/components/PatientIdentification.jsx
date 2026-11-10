@@ -170,7 +170,12 @@ export function PatientIdentification({
                     />
 
                     {/* Health Card Membership Banner */}
-                    {selectedPatient && healthCardEligibility && healthCardEligibility.hasActiveCard && (
+                    {selectedPatient && healthCardEligibility && healthCardEligibility.hasActiveCard && (() => {
+                        const displayEligCardCode = (healthCardEligibility?.card?.cardNumber && !healthCardEligibility.card.cardNumber.startsWith("HC-"))
+                            ? healthCardEligibility.card.cardNumber
+                            : (selectedPatient?.mrn ? `${selectedPatient.mrn}-HC` : healthCardEligibility?.card?.cardNumber);
+
+                        return (
                         <div className="pt-1 animate-in fade-in duration-200">
                             {healthCardEligibility.isPatientEnrolledBeneficiary ? (
                                 (healthCardEligibility.isPendingPayment || healthCardEligibility.card?.status === 'PendingPayment') ? (
@@ -185,7 +190,7 @@ export function PatientIdentification({
                                                         Health Card • Pending Settlement
                                                     </span>
                                                     <span className="font-mono text-xs font-black text-amber-800 dark:text-amber-300 bg-white/80 dark:bg-zinc-800 px-2 py-0.5 rounded-md border border-amber-300 dark:border-amber-700">
-                                                        {healthCardEligibility.card?.cardNumber}
+                                                        {displayEligCardCode}
                                                     </span>
                                                 </div>
                                                 <p className="text-[11px] text-amber-800 dark:text-amber-300 mt-0.5">
@@ -209,7 +214,7 @@ export function PatientIdentification({
                                                         Active Health Card Member
                                                     </span>
                                                     <span className="font-mono text-xs font-black text-indigo-700 dark:text-indigo-400 bg-white/80 dark:bg-zinc-800 px-2 py-0.5 rounded-md border border-indigo-200 dark:border-indigo-700">
-                                                        {healthCardEligibility.card?.cardNumber}
+                                                        {displayEligCardCode}
                                                     </span>
                                                 </div>
                                                 <p className="text-[11px] text-slate-600 dark:text-zinc-400 mt-0.5">
@@ -231,10 +236,10 @@ export function PatientIdentification({
                                         <div>
                                             <div className="flex items-center gap-2">
                                                 <span className="text-xs sm:text-sm font-black text-amber-950 dark:text-amber-200">
-                                                    Family Card Found ({healthCardEligibility.card?.cardNumber})
+                                                    Family Card Found ({displayEligCardCode})
                                                 </span>
-                                                <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200">
-                                                    {healthCardEligibility.availableSlots} Slot(s) Open
+                                                <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-amber-200 text-amber-900 shrink-0">
+                                                    {healthCardEligibility.availableSlots} Open Slot(s)
                                                 </span>
                                             </div>
                                             <p className="text-[11px] text-amber-800 dark:text-amber-300 mt-0.5">
@@ -256,12 +261,13 @@ export function PatientIdentification({
                                 <div className="p-3 rounded-2xl bg-slate-100 dark:bg-zinc-800/90 border border-slate-200 dark:border-zinc-700 flex items-center justify-between text-xs text-slate-700 dark:text-zinc-300">
                                     <div className="flex items-center gap-2">
                                         <Lock className="w-4 h-4 text-slate-400 shrink-0" />
-                                        <span>Card #{healthCardEligibility.card?.cardNumber} is at full capacity ({healthCardEligibility.card?.maxMembers}/{healthCardEligibility.card?.maxMembers} members: {healthCardEligibility.card?.beneficiaries?.map(b => b.displayName).join(', ')}). Standard tariff applies.</span>
+                                        <span>Card #{displayEligCardCode} is at full capacity ({healthCardEligibility.card?.maxMembers}/{healthCardEligibility.card?.maxMembers} members: {healthCardEligibility.card?.beneficiaries?.map(b => b.displayName).join(', ')}). Standard tariff applies.</span>
                                     </div>
                                 </div>
                             )}
                         </div>
-                    )}
+                        );
+                    })()}
                 </div>
             )}
 
@@ -1101,9 +1107,16 @@ function RegisterFormInline({ onSuccess, onCancel, initialMobile = '', initialNo
                                         <span className="text-[11px] text-zinc-500 dark:text-zinc-400">({m.age} Yrs, {m.gender})</span>
                                     </div>
                                     <div className="flex items-center gap-2 mt-0.5 text-[10px] text-zinc-500">
-                                        <span className="font-mono font-bold bg-slate-100 dark:bg-zinc-700 px-1.5 py-0.2 rounded text-zinc-700 dark:text-zinc-300">
-                                            MRN: {m.mrn}
-                                        </span>
+                                        {m.hasActiveHealthCard || m.healthCardNumber ? (
+                                            <span className="font-mono font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 px-1.5 py-0.2 rounded border border-indigo-200 dark:border-indigo-800 flex items-center gap-1">
+                                                <CreditCard className="w-2.5 h-2.5 text-indigo-500 shrink-0" />
+                                                <span>{m.healthCardNumber || `${m.mrn}-HC`}</span>
+                                            </span>
+                                        ) : (
+                                            <span className="font-mono font-bold bg-slate-100 dark:bg-zinc-700 px-1.5 py-0.2 rounded text-zinc-700 dark:text-zinc-300">
+                                                MRN: {m.mrn}
+                                            </span>
+                                        )}
                                         {m.currentPhoneNumber ? (
                                             <span>Phone: {m.currentPhoneNumber}</span>
                                         ) : (

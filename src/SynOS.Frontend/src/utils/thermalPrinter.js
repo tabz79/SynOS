@@ -26,6 +26,17 @@ function renderQrSvgSync(text, size = 68) {
     }
 }
 
+function extractDisplayPatientCode(patientObj = {}, payload = {}) {
+    const isHc = Boolean(patientObj.hasActiveHealthCard || patientObj.healthCardNumber || payload.hasActiveHealthCard || payload.healthCardNumber);
+    if (isHc) {
+        const raw = patientObj.healthCardNumber || payload.healthCardNumber;
+        if (raw && !raw.startsWith("HC-")) return raw;
+        const mrn = patientObj.mrn || patientObj.uhid || payload.mrn || payload.Mrn;
+        if (mrn) return `${mrn}-HC`;
+    }
+    return patientObj.uhid || patientObj.mrn || payload.mrn || payload.Mrn || 'SYN-2026-0001';
+}
+
 function formatInr(val) {
     const num = Number(val) || 0;
     return `₹${num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -61,7 +72,7 @@ export function generateThermalInvoiceHtml(payload = {}) {
     const token = payload.token || payload.Token || payload.visitToken || '';
     const patientObj = payload.patient || payload.Patient || {};
     const patientName = patientObj.name || patientObj.fullName || payload.patientName || payload.PatientName || 'Patient';
-    const patientUhid = patientObj.uhid || patientObj.mrn || payload.mrn || payload.Mrn || 'SYN-2026-0001';
+    const patientUhid = extractDisplayPatientCode(patientObj, payload);
     const patientAge = patientObj.age || payload.age || payload.Age || '';
     const patientGender = patientObj.gender || patientObj.sex || payload.gender || payload.Gender || 'M';
     const billingObj = payload.billing || payload.Billing || payload.financial || {};
@@ -554,7 +565,7 @@ export function generateThermalPrepaidSlipHtml(payload = {}) {
     const token = payload.token || payload.Token || payload.visitToken || '';
     const patientObj = payload.patient || payload.Patient || {};
     const patientName = patientObj.name || patientObj.fullName || payload.patientName || payload.PatientName || 'Patient';
-    const patientUhid = patientObj.uhid || patientObj.mrn || payload.mrn || payload.Mrn || 'SYN-2026-0001';
+    const patientUhid = extractDisplayPatientCode(patientObj, payload);
     const patientAge = patientObj.age || payload.age || payload.Age || '';
     const patientGender = patientObj.gender || patientObj.sex || payload.gender || payload.Gender || 'M';
     const billingObj = payload.billing || payload.Billing || payload.financial || {};
@@ -920,7 +931,7 @@ export function generateThermalInsuranceReceiptHtml(payload = {}) {
     const token = payload.token || payload.Token || payload.visitToken || '';
     const patientObj = payload.patient || payload.Patient || {};
     const patientName = patientObj.name || patientObj.fullName || payload.patientName || payload.PatientName || 'Patient';
-    const patientUhid = patientObj.uhid || patientObj.mrn || payload.mrn || payload.Mrn || 'SYN-2026-0001';
+    const patientUhid = extractDisplayPatientCode(patientObj, payload);
     const patientAge = patientObj.age || payload.age || payload.Age || '';
     const patientGender = patientObj.gender || patientObj.sex || payload.gender || payload.Gender || 'M';
     const billingObj = payload.billing || payload.Billing || payload.financial || {};

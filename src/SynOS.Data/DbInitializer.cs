@@ -936,7 +936,7 @@ UPDATE c
 SET c.CardNumber = CONCAT(RTRIM(p.MRN), '-HC')
 FROM PatientHealthCards c
 INNER JOIN Patients p ON c.PrimaryPatientId = p.PatientId
-WHERE p.MRN IS NOT NULL AND p.MRN <> '' AND c.CardNumber LIKE 'HC-%';
+WHERE p.MRN IS NOT NULL AND p.MRN <> '' AND (c.CardNumber LIKE 'HC-%' OR c.CardNumber NOT LIKE '%-HC%');
 ";
                 context.Database.ExecuteSqlRaw(updateCardsSql);
             }

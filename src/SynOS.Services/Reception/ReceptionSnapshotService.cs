@@ -135,6 +135,23 @@ namespace SynOS.Services.Reception
                 .Select(v => new { v.TokenDate, TestCodes = v.Orders.Select(o => o.TestCode).ToList() })
                 .FirstOrDefaultAsync();
 
+            // Fetch active health card for patient or beneficiary
+            var now = DateTime.UtcNow;
+            var activeCard = await _context.PatientHealthCards
+                .AsNoTracking()
+                .Include(c => c.Plan)
+                .Include(c => c.Beneficiaries)
+                .Where(c => c.Status == "Active" && c.ValidUntil >= now &&
+                            (c.PrimaryPatientId == visit.Patient.PatientId || c.Beneficiaries.Any(b => b.PatientId == visit.Patient.PatientId)))
+                .OrderByDescending(c => c.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            var normalizedCardNumber = activeCard != null
+                ? (!string.IsNullOrWhiteSpace(activeCard.CardNumber) && !activeCard.CardNumber.StartsWith("HC-")
+                    ? activeCard.CardNumber
+                    : (!string.IsNullOrWhiteSpace(visit.Patient.MRN) ? $"{visit.Patient.MRN.Trim()}-HC" : activeCard.CardNumber))
+                : null;
+
             // Populate Patient
             snapshot.Patient = new IntakePatient
             {
@@ -151,7 +168,12 @@ namespace SynOS.Services.Reception
                 IsDateOfBirthKnown = visit.Patient.IsDateOfBirthKnown,
                 Mobile = visit.Patient.CurrentPhoneNumber,
                 LastVisitDate = lastVisit?.TokenDate,
-                LastVisitTestCodes = lastVisit?.TestCodes ?? new List<string>()
+                LastVisitTestCodes = lastVisit?.TestCodes ?? new List<string>(),
+                HasActiveHealthCard = activeCard != null,
+                HealthCardNumber = normalizedCardNumber,
+                HealthCardPlanName = activeCard?.Plan?.PlanName,
+                HealthCardDiscountValue = activeCard?.ConfiguredDiscountValue,
+                HealthCardDiscountType = activeCard?.ConfiguredDiscountType
             };
 
             // 1. Resolve Active Invoice and Meta-data
@@ -438,6 +460,22 @@ namespace SynOS.Services.Reception
                 .Select(v => new { v.TokenDate, TestCodes = v.Orders.Select(o => o.TestCode).ToList() })
                 .FirstOrDefaultAsync();
 
+            // Fetch active health card for patient or beneficiary
+            var activeCard = await _context.PatientHealthCards
+                .AsNoTracking()
+                .Include(c => c.Plan)
+                .Include(c => c.Beneficiaries)
+                .Where(c => c.Status == "Active" && c.ValidUntil >= DateTime.UtcNow &&
+                            (c.PrimaryPatientId == patient.PatientId || c.Beneficiaries.Any(b => b.PatientId == patient.PatientId)))
+                .OrderByDescending(c => c.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            var normalizedCardNumber = activeCard != null
+                ? (!string.IsNullOrWhiteSpace(activeCard.CardNumber) && !activeCard.CardNumber.StartsWith("HC-")
+                    ? activeCard.CardNumber
+                    : (!string.IsNullOrWhiteSpace(patient.MRN) ? $"{patient.MRN.Trim()}-HC" : activeCard.CardNumber))
+                : null;
+
             snapshot.Patient = new IntakePatient
             {
                 PatientId = patient.PatientId,
@@ -453,7 +491,12 @@ namespace SynOS.Services.Reception
                 IsDateOfBirthKnown = patient.IsDateOfBirthKnown,
                 Mobile = patient.CurrentPhoneNumber,
                 LastVisitDate = lastVisit?.TokenDate,
-                LastVisitTestCodes = lastVisit?.TestCodes ?? new List<string>()
+                LastVisitTestCodes = lastVisit?.TestCodes ?? new List<string>(),
+                HasActiveHealthCard = activeCard != null,
+                HealthCardNumber = normalizedCardNumber,
+                HealthCardPlanName = activeCard?.Plan?.PlanName,
+                HealthCardDiscountValue = activeCard?.ConfiguredDiscountValue,
+                HealthCardDiscountType = activeCard?.ConfiguredDiscountType
             };
 
             // No Visit context

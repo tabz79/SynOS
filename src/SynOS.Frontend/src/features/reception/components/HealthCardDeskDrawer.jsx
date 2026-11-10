@@ -911,7 +911,7 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
                                                     {selectedPatient.name}
                                                 </span>
                                                 <span className="font-mono text-xs font-black text-blue-600 dark:text-blue-400 bg-white/90 dark:bg-zinc-800 px-2 py-0.5 rounded-md border border-blue-200 dark:border-blue-800">
-                                                    {selectedPatient.mrn || 'NEW REG'}
+                                                    {selectedPatient.healthCardNumber || (selectedPatient.mrn ? `${selectedPatient.mrn}-HC` : 'NEW REG')}
                                                 </span>
                                                 {selectedPatient.isNew && (
                                                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200">
@@ -1089,9 +1089,16 @@ export function HealthCardDeskDrawer({ isOpen, onClose, onCardIssued, embedded =
                                                                             {name}
                                                                         </strong>
                                                                         {mrn && (
-                                                                            <span className="font-mono text-[10px] font-black text-slate-500 bg-slate-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-zinc-700">
-                                                                                {mrn}
-                                                                            </span>
+                                                                            p.hasActiveHealthCard || p.healthCardNumber ? (
+                                                                                <span className="font-mono text-[10px] font-black text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 px-1.5 py-0.5 rounded border border-indigo-200 dark:border-indigo-800 flex items-center gap-1">
+                                                                                    <CreditCard className="w-2.5 h-2.5 text-indigo-500 shrink-0" />
+                                                                                    <span>{p.healthCardNumber || `${mrn}-HC`}</span>
+                                                                                </span>
+                                                                            ) : (
+                                                                                <span className="font-mono text-[10px] font-black text-slate-500 bg-slate-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-zinc-700">
+                                                                                    {mrn}
+                                                                                </span>
+                                                                            )
                                                                         )}
                                                                     </div>
                                                                     <div className="text-[11px] text-slate-500 dark:text-zinc-400 flex items-center gap-2 mt-0.5">

@@ -436,7 +436,10 @@ export function IntentPanel({ onVisitUpdated }) {
             gender: patient.gender || 'M',
             age: patient.age,
             mobile: patient.phone || patient.mobile || patient.currentPhoneNumber,
-            dateOfBirth: patient.dateOfBirth
+            dateOfBirth: patient.dateOfBirth,
+            hasActiveHealthCard: Boolean(patient.hasActiveHealthCard || patient.HasActiveHealthCard || hcToBill),
+            healthCardNumber: patient.healthCardNumber || patient.HealthCardNumber || (patient.hasActiveHealthCard && patient.mrn ? `${patient.mrn}-HC` : null),
+            healthCardPlanName: patient.healthCardPlanName || patient.HealthCardPlanName || hcToBill?.planName
         };
 
         const optimisticTests = hcToBill ? [{
@@ -746,22 +749,44 @@ export function IntentPanel({ onVisitUpdated }) {
     // Derived Modified Patient Identity
     const displayedPatient = useMemo(() => {
         if (!snapshot?.patient) return null;
-        if (!stagedDemographics) return snapshot.patient;
-        const fn = stagedDemographics.firstName ?? snapshot.patient.firstName;
-        const ln = stagedDemographics.lastName ?? snapshot.patient.lastName;
-        return {
+        const fn = stagedDemographics?.firstName ?? snapshot.patient.firstName;
+        const ln = stagedDemographics?.lastName ?? snapshot.patient.lastName;
+        const fullName = `${fn || ''} ${ln || ''}`.trim();
+        const basePatient = stagedDemographics ? {
             ...snapshot.patient,
             firstName: fn,
             lastName: ln,
-            name: `${fn || ''} ${ln || ''}`.trim(),
-            displayName: `${fn || ''} ${ln || ''}`.trim(),
+            name: fullName,
+            displayName: fullName,
             age: stagedDemographics.age !== undefined && stagedDemographics.age !== '' ? Number(stagedDemographics.age) : snapshot.patient.age,
             gender: stagedDemographics.gender ?? snapshot.patient.gender,
             mobile: stagedDemographics.mobile ?? snapshot.patient.mobile,
             currentPhoneNumber: stagedDemographics.mobile ?? snapshot.patient.currentPhoneNumber,
             isModified: true
+        } : snapshot.patient;
+
+        const hasCard = Boolean(
+            basePatient.hasActiveHealthCard || 
+            basePatient.HasActiveHealthCard || 
+            basePatient.healthCardNumber ||
+            healthCardEligibility?.hasActiveCard || 
+            healthCardEligibility?.isPatientEnrolledBeneficiary
+        );
+        const rawCard = basePatient.healthCardNumber || 
+                        healthCardEligibility?.card?.cardNumber;
+        const normalizedCard = (rawCard && !rawCard.startsWith("HC-"))
+            ? rawCard
+            : (hasCard && basePatient.mrn ? `${basePatient.mrn}-HC` : null);
+
+        return {
+            ...basePatient,
+            hasActiveHealthCard: hasCard,
+            healthCardNumber: normalizedCard,
+            healthCardPlanName: basePatient.healthCardPlanName || 
+                               healthCardEligibility?.card?.plan?.planName || 
+                               healthCardEligibility?.card?.planName
         };
-    }, [snapshot?.patient, stagedDemographics]);
+    }, [snapshot?.patient, stagedDemographics, healthCardEligibility]);
 
     // Auto-apply Health Card discount when an active enrolled member is identified
     useEffect(() => {
@@ -780,15 +805,18 @@ export function IntentPanel({ onVisitUpdated }) {
             setHealthCardEligibility(elig);
             if ((elig?.hasActiveCard || elig?.isPendingPayment) && elig?.isPatientEnrolledBeneficiary && elig?.card) {
                 const card = elig.card;
+                const normalizedCardNumber = (!card.cardNumber?.startsWith("HC-"))
+                    ? card.cardNumber
+                    : (p?.mrn ? `${p.mrn}-HC` : card.cardNumber);
                 setStagedDiscount(prev => {
                     // Do not override if user already entered an explicit non-HC discount or dismissed/removed it
                     if (prev?.userDismissed || prev?.remove || (prev && !prev.isHealthCard)) return prev;
                     return {
                         type: card.configuredDiscountType === 'Flat' ? 'Flat' : 'Percentage',
                         value: card.configuredDiscountValue,
-                        reason: `Health Card (${card.cardNumber})`,
+                        reason: `Health Card (${normalizedCardNumber})`,
                         cardId: card.cardId,
-                        cardNumber: card.cardNumber,
+                        cardNumber: normalizedCardNumber,
                         isHealthCard: true
                     };
                 });
@@ -797,6 +825,14 @@ export function IntentPanel({ onVisitUpdated }) {
 
         return () => { isMounted = false; };
     }, [currentPatientId, displayedPatient, snapshot?.patient]);
+
+    const displayEligCardCode = useMemo(() => {
+        if (!healthCardEligibility?.card) return '';
+        const raw = healthCardEligibility.card.cardNumber;
+        if (raw && !raw.startsWith("HC-")) return raw;
+        const mrn = displayedPatient?.mrn || snapshot?.patient?.mrn;
+        return mrn ? `${mrn}-HC` : raw;
+    }, [healthCardEligibility, displayedPatient, snapshot?.patient]);
 
     // Auto-focus Edit Demographics button after adding/selecting/resuming a patient
     useEffect(() => {
@@ -2854,7 +2890,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                                     <div className="min-w-0">
                                                                         <div className="flex items-center gap-2">
                                                                             <span className="text-xs sm:text-sm font-black text-amber-950 dark:text-amber-200 truncate">
-                                                                                Health Card ({healthCardEligibility.card?.cardNumber}) • Pending Settlement
+                                                                                Health Card ({displayEligCardCode}) • Pending Settlement
                                                                             </span>
                                                                             <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200 shrink-0">
                                                                                 {healthCardEligibility.card?.configuredDiscountValue}% Discount Tier
@@ -2878,7 +2914,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                                     <div className="min-w-0">
                                                                         <div className="flex items-center gap-2">
                                                                             <span className="text-xs sm:text-sm font-black text-indigo-950 dark:text-indigo-200 truncate">
-                                                                                Active Health Card ({healthCardEligibility.card?.cardNumber})
+                                                                                Active Health Card ({displayEligCardCode})
                                                                             </span>
                                                                             <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-indigo-200 dark:bg-indigo-900 text-indigo-900 dark:text-indigo-200 shrink-0">
                                                                                 {healthCardEligibility.card?.configuredDiscountValue}% Discount Tier
@@ -2903,7 +2939,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                                 <div className="min-w-0">
                                                                     <div className="flex items-center gap-2">
                                                                         <span className="text-xs sm:text-sm font-black text-amber-950 dark:text-amber-200 truncate">
-                                                                            Family Card Found ({healthCardEligibility.card?.cardNumber})
+                                                                            Family Card Found ({displayEligCardCode})
                                                                         </span>
                                                                         <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200 shrink-0">
                                                                             {healthCardEligibility.availableSlots} Slot(s) Open
@@ -2939,7 +2975,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                         <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-zinc-800/90 border border-slate-200 dark:border-zinc-700 flex items-center justify-between text-xs text-slate-700 dark:text-zinc-300">
                                                             <div className="flex items-center gap-2">
                                                                 <Lock className="w-4 h-4 text-slate-400 shrink-0" />
-                                                                <span>Card #{healthCardEligibility.card?.cardNumber} is at capacity ({healthCardEligibility.card?.maxMembers} members). Standard tariff applies.</span>
+                                                                <span>Card #{displayEligCardCode} is at capacity ({healthCardEligibility.card?.maxMembers} members). Standard tariff applies.</span>
                                                             </div>
                                                         </div>
                                                     )}
