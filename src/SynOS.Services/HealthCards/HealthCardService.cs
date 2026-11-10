@@ -104,8 +104,8 @@ namespace SynOS.Services.HealthCards
                 throw new ArgumentException("Primary patient identification or demographic details are required.");
             }
 
-            // 2. Generate Sequential Barcode/Card Number: HC-YYYY-XXXXX
-            var cardNumber = await GenerateCardNumberAsync();
+            // 2. Generate Intuitive MRN-based Card Number: {MRN}-HC
+            var cardNumber = await GenerateCardNumberAsync(primaryPatientId);
 
             // 3. Determine Expiration & Discount Rules
             var effectiveFrom = DateTime.UtcNow;
@@ -858,26 +858,29 @@ namespace SynOS.Services.HealthCards
             return null;
         }
 
-        private async Task<string> GenerateCardNumberAsync()
+        private async Task<string> GenerateCardNumberAsync(Guid primaryPatientId)
         {
-            var year = DateTime.UtcNow.Year;
-            var prefix = $"HC-{year}-";
-            var lastCard = await _context.PatientHealthCards
-                .Where(c => c.CardNumber.StartsWith(prefix))
-                .OrderByDescending(c => c.CardNumber)
-                .Select(c => c.CardNumber)
-                .FirstOrDefaultAsync();
-
-            int nextNum = 1;
-            if (!string.IsNullOrEmpty(lastCard) && lastCard.Length > prefix.Length)
+            var patient = await _context.Patients.AsNoTracking().FirstOrDefaultAsync(p => p.PatientId == primaryPatientId);
+            var mrn = patient?.MRN?.Trim();
+            if (string.IsNullOrWhiteSpace(mrn))
             {
-                var numPart = lastCard.Substring(prefix.Length);
-                if (int.TryParse(numPart, out int parsed))
-                {
-                    nextNum = parsed + 1;
-                }
+                var shortId = primaryPatientId.ToString("N").Substring(0, 6).ToUpper();
+                mrn = shortId;
             }
-            return $"{prefix}{nextNum:D5}";
+
+            var baseCardNumber = $"{mrn}-HC";
+            var exists = await _context.PatientHealthCards.AnyAsync(c => c.CardNumber == baseCardNumber);
+            if (!exists)
+            {
+                return baseCardNumber;
+            }
+
+            int suffix = 2;
+            while (await _context.PatientHealthCards.AnyAsync(c => c.CardNumber == $"{baseCardNumber}-{suffix}"))
+            {
+                suffix++;
+            }
+            return $"{baseCardNumber}-{suffix}";
         }
 
         private static PaymentMode ParsePaymentMode(string mode)

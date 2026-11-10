@@ -911,6 +911,39 @@ END
             {
                 Console.WriteLine($"[DbInitializer] Notice during SeedHealthCardPlans: {ex.Message}");
             }
+
+            // Purge seeded/duplicate dummy test health card records (HAZI phone: 8985451456)
+            try
+            {
+                var purgeSql = @"
+DELETE FROM HealthCardBeneficiaries WHERE CardId IN (SELECT CardId FROM PatientHealthCards WHERE PrimaryPhoneNumber = '8985451456' OR CardNumber LIKE '%-00002' OR CardNumber LIKE '%-00003' OR CardNumber LIKE '%-00004' OR CardNumber LIKE '%-00005');
+DELETE FROM HealthCardUsageLedgers WHERE CardId IN (SELECT CardId FROM PatientHealthCards WHERE PrimaryPhoneNumber = '8985451456' OR CardNumber LIKE '%-00002' OR CardNumber LIKE '%-00003' OR CardNumber LIKE '%-00004' OR CardNumber LIKE '%-00005');
+DELETE FROM PatientHealthCards WHERE PrimaryPhoneNumber = '8985451456' OR PrimaryPatientId IN (SELECT PatientId FROM Patients WHERE FirstName = 'HAZI');
+DELETE FROM Patients WHERE FirstName = 'HAZI' OR CurrentPhoneNumber = '8985451456';
+";
+                context.Database.ExecuteSqlRaw(purgeSql);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[DbInitializer] Notice during HAZI purge: {ex.Message}");
+            }
+
+            // Standardize existing Health Card numbers to {MRN}-HC format
+            try
+            {
+                var updateCardsSql = @"
+UPDATE c
+SET c.CardNumber = CONCAT(RTRIM(p.MRN), '-HC')
+FROM PatientHealthCards c
+INNER JOIN Patients p ON c.PrimaryPatientId = p.PatientId
+WHERE p.MRN IS NOT NULL AND p.MRN <> '' AND c.CardNumber LIKE 'HC-%';
+";
+                context.Database.ExecuteSqlRaw(updateCardsSql);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[DbInitializer] Notice during card number standardization: {ex.Message}");
+            }
         }
 
         public static void Initialize(SynOSDbContext context)

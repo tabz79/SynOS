@@ -2854,7 +2854,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                                     <div className="min-w-0">
                                                                         <div className="flex items-center gap-2">
                                                                             <span className="text-xs sm:text-sm font-black text-amber-950 dark:text-amber-200 truncate">
-                                                                                Health Card (#{healthCardEligibility.card?.cardNumber}) • Pending Settlement
+                                                                                Health Card ({healthCardEligibility.card?.cardNumber}) • Pending Settlement
                                                                             </span>
                                                                             <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200 shrink-0">
                                                                                 {healthCardEligibility.card?.configuredDiscountValue}% Discount Tier
@@ -2878,7 +2878,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                                     <div className="min-w-0">
                                                                         <div className="flex items-center gap-2">
                                                                             <span className="text-xs sm:text-sm font-black text-indigo-950 dark:text-indigo-200 truncate">
-                                                                                Active Health Card (#{healthCardEligibility.card?.cardNumber})
+                                                                                Active Health Card ({healthCardEligibility.card?.cardNumber})
                                                                             </span>
                                                                             <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-indigo-200 dark:bg-indigo-900 text-indigo-900 dark:text-indigo-200 shrink-0">
                                                                                 {healthCardEligibility.card?.configuredDiscountValue}% Discount Tier

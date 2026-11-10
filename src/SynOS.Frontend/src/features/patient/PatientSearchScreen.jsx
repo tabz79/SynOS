@@ -223,17 +223,6 @@ export function PatientSearchScreen() {
                               <Phone className="w-3 h-3 text-slate-400" />
                               {p.currentPhoneNumber || 'No phone registered'}
                             </span>
-
-                            {/* Active Health Card Badge */}
-                            {p.hasActiveHealthCard && (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-gradient-to-r from-amber-500/15 to-orange-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30">
-                                <Sparkles className="w-3 h-3 text-amber-500" />
-                                <span>💎 HC Member ({p.healthCardNumber})</span>
-                                {p.healthCardPlanName && (
-                                  <span className="text-[9px] text-slate-500 dark:text-zinc-400">• {p.healthCardPlanName}</span>
-                                )}
-                              </span>
-                            )}
                           </div>
                         </div>
                       </div>

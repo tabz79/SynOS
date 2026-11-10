@@ -128,11 +128,27 @@ namespace SynOS.Services
                 .Include(v => v.Invoices)
                 .ToListAsync();
 
+            var prepaidVisitIds = prepaidVisits.Select(v => v.VisitId).ToList();
+            var partnerReceivables = await _context.ReceivableFacts
+                .Where(r => prepaidVisitIds.Contains(r.SourceVisitId) && r.DebtorType == DebtorType.Partner)
+                .ToListAsync();
+
             int prepaidCount = prepaidVisits.Count;
             decimal prepaidTotal = prepaidVisits.Sum(v => {
-                var invTotal = v.Invoices.FirstOrDefault()?.Total ?? 0m;
-                var b2bDiscount = v.B2BDiscountAmount ?? 0m;
-                return Math.Max(0m, invTotal - b2bDiscount);
+                // Priority 1: Direct single source of truth from authoritative ledger (ReceivableFacts)
+                var rec = partnerReceivables.FirstOrDefault(r => r.SourceVisitId == v.VisitId);
+                if (rec != null) return rec.Amount;
+
+                // Priority 2: Synchronized calculation aligned identically with OperationsEngine / Action Queue
+                var inv = v.Invoices.OrderByDescending(i => i.CreatedAt).FirstOrDefault();
+                if (inv == null) return 0m;
+
+                decimal gross = inv.GrossAmount > 0 ? inv.GrossAmount : inv.Total;
+                decimal concession = (v.B2BDiscountAmount.HasValue && v.B2BDiscountAmount.Value > 0)
+                    ? v.B2BDiscountAmount.Value
+                    : inv.DiscountAmount;
+
+                return Math.Max(0m, gross - concession);
             });
 
             var finalPrepaidCount = prepaidCount;
@@ -276,7 +292,7 @@ namespace SynOS.Services
                 PaymentsOnlineTotal = finalOnline,
                 PaymentsOnlineCount = finalOnlineCount,
                 PrepaidBillsCount = finalPrepaidCount,
-                PrepaidBillsTotal = prepaidTotal > 0 ? prepaidTotal : (stats?.PrepaidTotal ?? 0m),
+                PrepaidBillsTotal = finalPrepaidCount > 0 ? prepaidTotal : (stats?.PrepaidTotal ?? 0m),
                 DailyExpensesCashTotal = dailyCashExpenses,
                 DailyExpensesCashPool = dailyCashExpenses,
                 DailyExpensesCashIndividual = userDailyCashExpenses,
