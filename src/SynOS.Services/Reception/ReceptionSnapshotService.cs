@@ -385,9 +385,10 @@ namespace SynOS.Services.Reception
             if (invoice != null)
             {
                 var validPayments = invoice.Payments?.Where(p => p.Amount > 0).ToList() ?? new List<Payment>();
-                string effectiveMethod = validPayments.Count > 1
-                    ? $"Split ({string.Join(" + ", validPayments.Select(p => p.Method).Distinct())})"
-                    : validPayments.FirstOrDefault()?.Method ?? invoice.Payments?.FirstOrDefault()?.Method ?? "Cash";
+                var distinctMethods = validPayments.Select(p => p.Method).Where(m => !string.IsNullOrEmpty(m)).Distinct().ToList();
+                string effectiveMethod = distinctMethods.Count > 1
+                    ? $"Split ({string.Join(" + ", distinctMethods)})"
+                    : distinctMethods.FirstOrDefault() ?? invoice.Payments?.FirstOrDefault()?.Method ?? "Cash";
 
                 snapshot.Billing = new IntakeBilling
                 {

@@ -4833,7 +4833,7 @@ export const CashDrawerLedgersScreen = () => {
                 <div className="p-4 rounded-xl synos-kpi-card border border-emerald-500/20 bg-emerald-500/5">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Total Cash Inflow</p>
                     <p className="text-2xl font-black text-emerald-700 dark:text-emerald-300 mt-1">
-                        +₹{(ledgerData?.inflowBreakdown?.totalInflow || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                        +₹{(ledgerData?.totalInflow ?? ledgerData?.inflowBreakdown?.totalInflow ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </p>
                     <span className="text-[10px] text-emerald-600/80 font-medium">
                         Patient Desk (₹{(ledgerData?.inflowBreakdown?.patientDeskCash || 0).toLocaleString()}) + B2B (₹{(ledgerData?.inflowBreakdown?.b2bPartnerCash || 0).toLocaleString()})
@@ -4843,7 +4843,7 @@ export const CashDrawerLedgersScreen = () => {
                 <div className="p-4 rounded-xl synos-kpi-card border border-rose-500/20 bg-rose-500/5">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">Total Cash Outflows</p>
                     <p className="text-2xl font-black text-rose-700 dark:text-rose-300 mt-1">
-                        -₹{(ledgerData?.outflowBreakdown?.totalOutflow || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                        -₹{(ledgerData?.totalOutflow ?? ledgerData?.outflowBreakdown?.totalOutflow ?? 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </p>
                     <span className="text-[10px] text-rose-600/80 font-medium">
                         Expenses (₹{(ledgerData?.outflowBreakdown?.dailyExpensesCash || 0).toLocaleString()}) + Refunds (₹{(ledgerData?.outflowBreakdown?.refundsCash || 0).toLocaleString()})

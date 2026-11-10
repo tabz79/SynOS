@@ -1053,13 +1053,6 @@ namespace SynOS.Services.EconomicsIntelligence
                     }
                 }
 
-                // Branch filter enforcement
-                if (branchId.HasValue && branchId.Value != Guid.Empty)
-                {
-                    if (visit != null && visit.BranchId != branchId.Value)
-                        continue;
-                }
-
                 // Resolve Cashier identity
                 SynOS.Models.Entities.User? cashierUser = null;
                 Guid effectiveCashierId = Guid.Empty;
@@ -1083,6 +1076,26 @@ namespace SynOS.Services.EconomicsIntelligence
                 {
                     cashierUser = uCre;
                     effectiveCashierId = visit.CreatedByUserId.Value;
+                }
+
+                // Branch filter enforcement
+                if (branchId.HasValue && branchId.Value != Guid.Empty)
+                {
+                    if (visit != null)
+                    {
+                        if (visit.BranchId != branchId.Value)
+                            continue;
+                    }
+                    else if (cashierUser != null && cashierUser.DefaultBranchId.HasValue)
+                    {
+                        if (cashierUser.DefaultBranchId.Value != branchId.Value)
+                            continue;
+                    }
+                    else
+                    {
+                        // Unattributed orphan revenue fact must not leak across branch boundaries
+                        continue;
+                    }
                 }
                 else if (f.DeclaredByUserId != Guid.Empty)
                 {

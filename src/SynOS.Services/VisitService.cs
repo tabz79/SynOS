@@ -2475,6 +2475,21 @@ namespace SynOS.Services
                         foreach (var cp in counterPayments)
                         {
                             _context.Payments.Remove(cp);
+
+                            var reversalFactId = await _revenueFactWriter.DeclareRevenueFactAsync(new SynOS.Models.DTOs.Revenue.DeclareRevenueFactCommand
+                            {
+                                OccurredAt = DateTimeOffset.UtcNow,
+                                Amount = cp.Amount,
+                                Currency = "INR",
+                                Direction = SynOS.Models.Entities.Revenue.RevenueDirection.Reversal,
+                                SourceType = SynOS.Models.Entities.Revenue.RevenueSourceType.Patient,
+                                SourceReferenceId = cp.PaymentId.ToString(),
+                                PaymentMode = cp.Method.IndexOf("Cash", StringComparison.OrdinalIgnoreCase) >= 0 ? SynOS.Models.Entities.Revenue.PaymentMode.Cash : SynOS.Models.Entities.Revenue.PaymentMode.UPI,
+                                DeclaredByUserId = actorUserId,
+                                Notes = $"Reversal of desk payment for visit {visit.Token} switched to Corporate B2B Prepaid",
+                                ExternalTransactionId = cp.ReceiptNo
+                            });
+
                             await _operationalEventWriter.WriteEventAsync(
                                 BranchEventType.PAYMENT_VOIDED,
                                 visit.BranchId.HasValue ? visit.BranchId.Value.ToString() : "GLOBAL",
@@ -2483,7 +2498,7 @@ namespace SynOS.Services
                                 $"Counter payment of ₹{cp.Amount:N0} voided via visit correction",
                                 "User",
                                 actorUserId.ToString(),
-                                true, null, null,
+                                true, reversalFactId, "RevenueFact",
                                 TimelineVisibility.Surface,
                                 visit.VisitId,
                                 metadata: JsonSerializer.Serialize(new { PaymentId = cp.PaymentId, Amount = cp.Amount, Method = cp.Method })

@@ -1258,8 +1258,11 @@ export function IntentPanel({ onVisitUpdated }) {
             ? [{ amount: Number(splitCashAmount), method: 'Cash' }, { amount: Number(splitUpiAmount), method: 'UPI' }]
             : (snapshot?.billing?.payments || []);
 
+        const validEffPayments = effectivePayments.filter(p => Number(p.amount || p.Amount) > 0);
+        const distinctEffMethods = Array.from(new Set(validEffPayments.map(p => p.method || p.Method).filter(Boolean)));
+
         const isEffectiveSplit = (isSplitPayment && Number(splitCashAmount) > 0 && Number(splitUpiAmount) > 0)
-            || (effectivePayments && effectivePayments.filter(p => Number(p.amount || p.Amount) > 0).length > 1)
+            || distinctEffMethods.length > 1
             || (snapshot?.billing?.paymentMethod && snapshot.billing.paymentMethod.startsWith('Split'));
 
         const effectivePaymentMethod = isPrepaid 
@@ -2900,16 +2903,18 @@ export function IntentPanel({ onVisitUpdated }) {
                                                                     </span>
                                                                     {(() => {
                                                                         const deskPayments = snapshot?.billing?.payments || [];
+                                                                        const validDeskPayments = deskPayments.filter(p => Number(p.amount || p.Amount) > 0);
+                                                                        const distinctDeskMethods = Array.from(new Set(validDeskPayments.map(p => p.method || p.Method).filter(Boolean)));
                                                                         const effectiveDeskMethod = snapshot?.billing?.paymentMethod || paymentMethod || "Cash";
-                                                                        const isDeskSplit = effectiveDeskMethod.startsWith("Split") || deskPayments.filter(p => Number(p.amount || p.Amount) > 0).length > 1;
+                                                                        const isDeskSplit = (effectiveDeskMethod.startsWith("Split") && distinctDeskMethods.length > 1) || distinctDeskMethods.length > 1;
                                                                         const isZeroConcessionVisit = (postPaid === 0 && actualBalanceDue <= 0 && ((stagedDiscountAmt !== undefined && stagedGross !== undefined && stagedDiscountAmt >= stagedGross && stagedGross > 0) || (effectiveDiscount >= effectiveGross && effectiveGross > 0) || effectiveDeskMethod.toLowerCase().includes("concession")));
 
-                                                                        if (isDeskSplit && deskPayments.length > 1) {
+                                                                        if (isDeskSplit && validDeskPayments.length > 1) {
                                                                             return (
                                                                                 <span className="flex items-center gap-1.5 ml-1">
                                                                                     <span className="text-xs font-semibold text-purple-700 dark:text-purple-300">via Split</span>
                                                                                     <span className="inline-flex items-center gap-1">
-                                                                                        {deskPayments.filter(p => Number(p.amount || p.Amount) > 0).map((p, idx) => (
+                                                                                        {validDeskPayments.map((p, idx) => (
                                                                                             <span key={idx} className="px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-950/50 text-purple-800 dark:text-purple-200 text-[11px] font-mono font-bold border border-purple-300 dark:border-purple-800">
                                                                                                 {p.method || p.Method}: ₹{Number(p.amount || p.Amount || 0).toLocaleString()}
                                                                                             </span>

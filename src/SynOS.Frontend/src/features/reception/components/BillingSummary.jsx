@@ -3135,9 +3135,20 @@ export function BillingSummary({
                                 <span className="text-base font-bold block leading-tight">
                                     Payment Settled & Complete
                                 </span>
-                                <span className="text-sm opacity-80 font-medium mt-0.5 block">
-                                    Paid via {billing.paymentMethod || 'Counter Collection'}
-                                </span>
+                                {billing.payments && billing.payments.filter(p => Number(p.amount || p.Amount) > 0).length > 0 ? (
+                                    <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                                        <span className="text-xs font-semibold opacity-90">Paid via:</span>
+                                        {billing.payments.filter(p => Number(p.amount || p.Amount) > 0).map((p, idx) => (
+                                            <span key={idx} className="text-[11px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-950 dark:text-emerald-100 border border-emerald-500/30">
+                                                {(p.method || p.Method) === 'Cash' ? '💵 Cash' : (p.method || p.Method) === 'UPI' ? '📱 UPI' : (p.method || p.Method)}: ₹{Number(p.amount || p.Amount).toLocaleString()}
+                                            </span>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <span className="text-sm opacity-80 font-medium mt-0.5 block">
+                                        Paid via {billing.paymentMethod || 'Counter Collection'}
+                                    </span>
+                                )}
                             </div>
                         </div>
                         <span className="font-mono text-base font-bold px-3 py-1 rounded-full border bg-white/70 dark:bg-black/30 border-current/20">

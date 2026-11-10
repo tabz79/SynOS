@@ -1553,7 +1553,8 @@ namespace SynOS.Api.Controllers
             [FromQuery] DateTime? endDate = null,
             [FromQuery] string? preset = null,
             [FromQuery] string? range = null,
-            [FromQuery] Guid? userId = null)
+            [FromQuery] Guid? userId = null,
+            [FromQuery] Guid? branchId = null)
         {
             // 1. Resolve user ID
             Guid effectiveUserId = Guid.Empty;
@@ -1572,6 +1573,24 @@ namespace SynOS.Api.Controllers
                 else
                 {
                     effectiveUserId = await _context.Users.OrderBy(u => u.CreatedAt).Select(u => u.UserId).FirstOrDefaultAsync();
+                }
+            }
+
+            Guid? effectiveBranchId = null;
+            if (branchId.HasValue && branchId.Value != Guid.Empty)
+            {
+                effectiveBranchId = branchId.Value;
+            }
+            else if (Request.Headers.TryGetValue("X-Branch-Id", out var headerBranch) && Guid.TryParse(headerBranch, out var bId))
+            {
+                effectiveBranchId = bId;
+            }
+            else
+            {
+                var ubr = await _context.UserBranchRoles.AsNoTracking().FirstOrDefaultAsync(ub => ub.UserId == effectiveUserId);
+                if (ubr != null && ubr.BranchId != Guid.Empty)
+                {
+                    effectiveBranchId = ubr.BranchId;
                 }
             }
 
@@ -1597,7 +1616,9 @@ namespace SynOS.Api.Controllers
             }
 
             // 3. Query all Cash Payments received by this user today
-            var cashPayments = await _context.Payments
+            var cashPaymentsQuery = _context.Payments
+                .Include(p => p.Invoice)
+                    .ThenInclude(i => i.Payments)
                 .Include(p => p.Invoice)
                     .ThenInclude(i => i.Visit)
                         .ThenInclude(v => v.Patient)
@@ -1610,7 +1631,14 @@ namespace SynOS.Api.Controllers
                             .ThenInclude(o => o.Test)
                 .Where(p => p.ReceivedByUserId == effectiveUserId 
                          && p.Method.ToLower().Contains("cash")
-                         && p.ReceivedAt >= startUtc && p.ReceivedAt < endUtc)
+                         && p.ReceivedAt >= startUtc && p.ReceivedAt < endUtc);
+
+            if (effectiveBranchId.HasValue && effectiveBranchId.Value != Guid.Empty)
+            {
+                cashPaymentsQuery = cashPaymentsQuery.Where(p => p.Invoice.Visit == null || p.Invoice.Visit.BranchId == effectiveBranchId.Value);
+            }
+
+            var cashPayments = await cashPaymentsQuery
                 .OrderBy(p => p.ReceivedAt)
                 .AsNoTracking()
                 .ToListAsync();
@@ -1666,7 +1694,13 @@ namespace SynOS.Api.Controllers
                 {
                     type = "PATIENT_CASH";
                     category = "Inflow";
-                    if (p.TenderedAmount.HasValue && p.TenderedAmount.Value > p.Amount)
+                    var otherPayments = p.Invoice?.Payments?.Where(op => op.PaymentId != p.PaymentId && op.Amount > 0).ToList();
+                    if (otherPayments != null && otherPayments.Any())
+                    {
+                        var otherSummary = string.Join(", ", otherPayments.Select(op => $"{op.Method}: ₹{op.Amount:N0}"));
+                        particulars = $"{patientName} • {testSummary} (Split: ₹{p.Amount:N0} Cash tendered | {otherSummary} digital)";
+                    }
+                    else if (p.TenderedAmount.HasValue && p.TenderedAmount.Value > p.Amount)
                     {
                         var changeRet = p.ChangeReturned ?? (p.TenderedAmount.Value - p.Amount);
                         particulars = $"{patientName} • {testSummary} (Tendered: ₹{p.TenderedAmount.Value:N2}, Change: ₹{changeRet:N2})";
@@ -1751,12 +1785,14 @@ namespace SynOS.Api.Controllers
                 netCashInDrawer = netCash,
                 inflowBreakdown = new
                 {
+                    totalInflow = totalInflow,
                     patientDeskCash = patientCashTotal,
                     b2bPartnerCash = b2bCashTotal,
                     otherInflows = totalInflow - (patientCashTotal + b2bCashTotal)
                 },
                 outflowBreakdown = new
                 {
+                    totalOutflow = totalOutflow,
                     dailyExpensesCash = expenseOutflowTotal,
                     refundsCash = refundOutflowTotal,
                     otherOutflows = totalOutflow - (expenseOutflowTotal + refundOutflowTotal)

@@ -557,13 +557,19 @@ namespace SynOS.Services.Operations
 
             if (invoice != null && (invoice.Status == "Paid" || invoice.Status == "FullPaid" || visit.Status == VisitStatus.Paid))
             {
-                var validPayments = invoice.Payments.Where(p => p.Amount > 0).ToList();
-                if (validPayments.Count > 1)
+                var validPayments = invoice.Payments?.Where(p => p.Amount > 0).ToList() ?? new List<Payment>();
+                var distinctMethods = validPayments.Select(p => p.Method).Where(m => !string.IsNullOrEmpty(m)).Distinct().ToList();
+
+                if (distinctMethods.Count > 1)
                 {
-                    var methods = string.Join(" + ", validPayments.Select(p => p.Method).Distinct());
-                    return $"Split ({methods})";
+                    var channelDetails = distinctMethods.Select(m => {
+                        var sum = validPayments.Where(p => p.Method == m).Sum(p => p.Amount);
+                        return $"{m}: ₹{sum:N0}";
+                    });
+                    return $"Split ({string.Join(" + ", channelDetails)})";
                 }
-                var method = validPayments.FirstOrDefault()?.Method ?? invoice.Payments.FirstOrDefault()?.Method;
+
+                var method = distinctMethods.FirstOrDefault() ?? invoice.Payments?.FirstOrDefault()?.Method;
                 if (!string.IsNullOrEmpty(method))
                 {
                     // Normalize Method display
@@ -602,13 +608,15 @@ namespace SynOS.Services.Operations
 
             if (invoice != null && (invoice.Status == "Paid" || invoice.Status == "FullPaid" || visit.Status == VisitStatus.Paid))
             {
-                var validPayments = invoice.Payments.Where(p => p.Amount > 0).ToList();
-                if (validPayments.Count > 1)
+                var validPayments = invoice.Payments?.Where(p => p.Amount > 0).ToList() ?? new List<Payment>();
+                var distinctMethods = validPayments.Select(p => p.Method).Where(m => !string.IsNullOrEmpty(m)).Distinct().ToList();
+
+                if (distinctMethods.Count > 1)
                 {
-                    var methods = string.Join("+", validPayments.Select(p => p.Method).Distinct());
-                    return $"Split ({methods})";
+                    return $"Split ({string.Join("+", distinctMethods)})";
                 }
-                var method = validPayments.FirstOrDefault()?.Method ?? invoice.Payments.FirstOrDefault()?.Method;
+
+                var method = distinctMethods.FirstOrDefault() ?? invoice.Payments?.FirstOrDefault()?.Method;
                 if (!string.IsNullOrEmpty(method)) return method;
                 return (invoice.GrossAmount > 0 && invoice.DiscountAmount >= invoice.GrossAmount) ? "Concession" : "Paid";
             }

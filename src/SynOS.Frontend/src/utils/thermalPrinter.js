@@ -184,7 +184,9 @@ export function generateThermalInvoiceHtml(payload = {}) {
     const finalChangeDue = Math.max(explicitChangeDue, excessOverpaid);
 
     const resolvedPayments = payload.payments || payload.Payments || billingObj.payments || payload.financial?.payments || payload.splitPayments || [];
-    const isMultiPayment = resolvedPayments && resolvedPayments.filter(p => Number(p.amount || p.Amount) > 0).length > 1;
+    const validPayments = resolvedPayments.filter(p => Number(p.amount || p.Amount) > 0);
+    const distinctPaymentMethods = Array.from(new Set(validPayments.map(p => p.method || p.Method).filter(Boolean)));
+    const isMultiChannelSplit = distinctPaymentMethods.length > 1;
 
     let rawPaymentMethod = payload.paymentMethod 
         || billingObj.paymentMethod 
@@ -192,10 +194,10 @@ export function generateThermalInvoiceHtml(payload = {}) {
         || payload.visit?.paymentMethod 
         || 'Cash';
 
-    if (isMultiPayment && !rawPaymentMethod.toLowerCase().includes('split')) {
-        const methods = resolvedPayments.filter(p => Number(p.amount || p.Amount) > 0).map(p => p.method || p.Method).filter(Boolean);
-        const distinct = Array.from(new Set(methods));
-        rawPaymentMethod = `Split (${distinct.join(' + ')})`;
+    if (isMultiChannelSplit && !rawPaymentMethod.toLowerCase().includes('split')) {
+        rawPaymentMethod = `Split (${distinctPaymentMethods.join(' + ')})`;
+    } else if (!isMultiChannelSplit && rawPaymentMethod.toLowerCase().startsWith('split') && distinctPaymentMethods.length === 1) {
+        rawPaymentMethod = distinctPaymentMethods[0];
     } else if (totalAmount === 0 && discountAmount > 0 && rawPaymentMethod.toLowerCase() === 'cash') {
         rawPaymentMethod = 'Concession (100% Discount)';
     }
@@ -278,7 +280,7 @@ export function generateThermalInvoiceHtml(payload = {}) {
         let defaultTitle = `${String(rawPaymentMethod || 'CASH').toUpperCase()} PAYMENT RECEIPT`;
         if (totalAmt === 0 && discAmt > 0) {
             defaultTitle = "100% CONCESSION RECEIPT";
-        } else if (rawPaymentMethod.toLowerCase().includes('split') || isMultiPayment) {
+        } else if (rawPaymentMethod.toLowerCase().includes('split') || isMultiChannelSplit) {
             defaultTitle = "SPLIT PAYMENT RECEIPT";
         } else if (dueVal > 0 && paidVal > 0) {
             defaultTitle = "PARTIAL PAYMENT RECEIPT";
@@ -446,9 +448,9 @@ export function generateThermalInvoiceHtml(payload = {}) {
                         <span>Payment Mode:</span>
                         <span style="font-weight: 900; text-transform: uppercase; font-family: monospace; text-align: right;">${rawPaymentMethod}</span>
                     </div>
-                    ${(normalizedData.financial.payments && normalizedData.financial.payments.filter(p => Number(p.amount || p.Amount) > 0).length > 1) ? `
+                    ${((isMultiChannelSplit || rawPaymentMethod.toLowerCase().includes('split')) && validPayments.length > 1) ? `
                         <div style="font-size: 9.5px; font-weight: 700; margin-bottom: 2px; padding-left: 6px; border-left: 2px solid #000000;">
-                            ${normalizedData.financial.payments.filter(p => Number(p.amount || p.Amount) > 0).map(p => `
+                            ${validPayments.map(p => `
                                 <div style="display: flex; justify-content: space-between;">
                                     <span>• ${p.method || p.Method || 'Payment'}:</span>
                                     <span style="font-family: monospace;">₹${Number(p.amount || p.Amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>

@@ -2781,3 +2781,114 @@ While backend mathematical accounting is sound, the **User Interface and Documen
 * **Zero-Net Fallback Elimination:** In `OperationsEngine.cs` (lines 335 and 469), `TotalAmount` was falling back to `orders.Sum()` when `invoice.Total == 0`. This was corrected so that an invoice with total ₹0 preserves `Total = 0` instead of falsely reverting to the gross ₹3,000.
 * **Frontend Queue Badge Guard:** In `ReceptionScreen.jsx`, visits with 100% concession and ₹0 remaining due are explicitly identified and tagged with a clean `CONCESSION` badge instead of being misclassified as `FULL DUE`.
 
+
+
+## 41. Single-Method Multi-Payment Pseudo-Split Classification ("Split (Cash)") & Channel Amount Concealment in Visit Correction — [RESOLVED & VERIFIED]
+
+### Executive Summary & Problem Statement
+When a patient settles an invoice across multiple installments or adjustments using the *same* payment method (for example, ₹700 Cash initial deposit + ₹150 Cash balance settlement, or two UPI payments), the intake snapshot, visit summary, thermal slip, and action queue erroneously classified the transaction as a split payment with confusing labels such as `"Split (Cash)"` or `"Split (UPI)"`. 
+
+Furthermore, during Visit Correction and Reception Desk reviews, multi-channel payments lacked clear itemized visibility into the exact amount collected per tender type, obscuring whether cash was tendered at the physical desk or transferred digitally.
+
+### Root Cause Analysis
+1. **Quantity vs. Distinct Channel Flaw (`OperationsEngine.cs` & `ReceptionSnapshotService.cs`):**
+   * In `OperationsEngine.cs` (lines 560 and 605) and `ReceptionSnapshotService.cs` (line 386), split payment detection was evaluated using:
+     ```csharp
+     if (validPayments.Count > 1) { return "Split"; }
+     ```
+   * When an invoice had multiple payment entries with the identical method (e.g. 2 Cash payments), `validPayments.Count` was 2, but `validPayments.Select(p => p.Method).Distinct().Count()` was 1 (`["Cash"]`). This triggered the split formatting branch and output the contradictory string `"Split (Cash)"`.
+2. **Thermal Receipt Header & Itemization Trigger (`thermalPrinter.js`):**
+   * In `thermalPrinter.js`, receipt badge titles and channel bullets were evaluated based on `payments.length > 1` or raw substring matches on `"split"`, causing single-method multiple payments to trigger the `SPLIT PAYMENT RECEIPT` banner.
+3. **Frontend Settlement Status Concealment (`BillingSummary.jsx` & `IntentPanel.jsx`):**
+   * In `BillingSummary.jsx` and `IntentPanel.jsx`, payment summaries rendered flat badges without breaking down the constituent tender channels when multiple methods were present.
+
+### Architectural Fix Specification
+1. **Distinct Channel Thresholding (`OperationsEngine.cs` & `ReceptionSnapshotService.cs`):**
+   * Refactored split evaluation across all backend engines to check `distinctMethods.Count > 1`.
+   * When multiple payments exist under a single channel, the method cleanly returns the singular method name (e.g., `"Cash"`).
+   * When distinct payment methods exceed 1, the backend outputs explicit itemized channel breakdowns: `Split (Cash: ₹{cashAmount:N0} + UPI: ₹{upiAmount:N0})`.
+2. **Thermal Print Engine True Split Verification (`thermalPrinter.js`):**
+   * Guarded `isMultiChannelSplit = distinctPaymentMethods.length > 1`.
+   * `SPLIT PAYMENT RECEIPT` header and itemized tender bullets (`• Cash: ₹X`, `• UPI: ₹Y`) render strictly when distinct tender channels exceed 1.
+3. **Transparent Tender Itemization (`BillingSummary.jsx` & `IntentPanel.jsx`):**
+   * Rendered explicit channel badges (`[ 💵 Cash: ₹X ]`, `[ 📱 UPI: ₹Y ]`) across Billing Summary and Intent Panel financials.
+
+### Verification & Resolution Details
+* **Build Clean:** Verified `SynOS.sln` (.NET backend) and `SynOS.Frontend` (Vite) compiled with 0 errors.
+* **Single-Method Multi-Payment Verification:** An invoice with two separate cash payments (₹700 + ₹150) resolves cleanly to `"Cash"`, eliminating `"Split (Cash)"`.
+* **Multi-Method Transparency:** Split transactions (e.g. ₹500 Cash + ₹1,500 UPI) render explicit tender amounts on the reception summary, thermal slip, and intent panel.
+
+---
+
+## 42. Collection History Orphaned RevenueFacts (Prepaid Switch Ghost), Cash Drawer KPI Zero-Display Mismatch & Branch Heuristic Seepage — [RESOLVED & VERIFIED]
+
+### Executive Summary & Problem Statement
+Three interrelated financial and ledger accounting discrepancies occurred:
+1. **Ghost ₹10,000 Cash Collection in History:** When a visit was initially created as a Cash walk-in and later changed to Corporate B2B Prepaid via Visit Correction, the Collection History ledger continued to report the original ₹10,000 Cash collection as an active inflow.
+2. **Cash Drawer KPI Zero Display (`+₹0.00` / `-₹0.00`):** In the Cash Drawer Shift Ledgers screen (`RevenueScreens.jsx`), the Total Inflow and Total Outflow KPI summary cards displayed `+₹0.00` and `-₹0.00` even while the detailed ledger rows below listed positive cash inflows.
+3. **Cross-Branch Cash Drawer & History Leaks:** Cash drawer shift ledgers and collection history records occasionally leaked across branches when transactions lacked direct visit links or branch scopes.
+
+### Root Cause Analysis
+1. **Missing Revenue Reversal Fact on Mode Switch (`VisitService.cs`):**
+   * In `VisitService.cs` (`BatchEditVisitAsync`), when a visit mode was changed from Cash to Corporate B2B Prepaid (`PrepaidPartner`), the backend deleted the existing counter payments from `_context.Payments`.
+   * However, `_revenueFactWriter.DeclareRevenueFactAsync` was never called with a `Reversal` fact. Because the Collection History terminal queries the append-only `dbo.RevenueFacts` table rather than mutable `dbo.Payments`, the original ₹10,000 Cash inflow fact remained active and unreversed.
+2. **DTO Contract Property Nesting Mismatch (`FinanceBillsController.cs` & `RevenueScreens.jsx`):**
+   * In `FinanceBillsController.cs` (`GetMyCashDrawerLedger`), `totalInflow` and `totalOutflow` were returned at the root of the JSON response payload.
+   * `RevenueScreens.jsx` was reading `ledgerData?.inflowBreakdown?.totalInflow` and `ledgerData?.outflowBreakdown?.totalOutflow`. Because `inflowBreakdown` did not contain `totalInflow`, the KPI cards evaluated to `undefined` and defaulted to `+₹0.00`.
+3. **Unfiltered Cash Drawer Query & Null Visit Branch Fallback (`FinanceBillsController.cs` & `EconomicsIntelligenceService.cs`):**
+   * `GetMyCashDrawerLedger` did not scope payments by `BranchId`.
+   * In `EconomicsIntelligenceService.cs`, when `visit == null` (e.g. manual adjustments or non-visit revenue facts), the check `visit != null && visit.BranchId != branchId.Value` evaluated to false, allowing orphan facts to bypass the branch filter.
+
+### Architectural Fix Specification
+1. **Explicit Revenue Fact Reversals on Mode Switch (`VisitService.cs`):**
+   * In `VisitService.cs`, when switching a visit to Corporate B2B Prepaid and removing counter payments, an explicit reversal fact is written to `_revenueFactWriter`:
+     ```csharp
+     await _revenueFactWriter.DeclareRevenueFactAsync(
+         branchId: visit.BranchId,
+         sourceId: payment.PaymentId,
+         sourceType: "PAYMENT_CANCELLED",
+         direction: RevenueDirection.Reversal,
+         amount: payment.Amount,
+         paymentMethod: payment.Method,
+         eventType: BranchEventType.PAYMENT_VOIDED,
+         notes: $"Reversal: Visit {visit.TokenNumber} switched to Corporate B2B Prepaid."
+     );
+     ```
+2. **Dual-Redundancy KPI Payload Contract (`FinanceBillsController.cs` & `RevenueScreens.jsx`):**
+   * In `FinanceBillsController.cs`, `totalInflow` and `totalOutflow` are returned both at the DTO root and inside the `inflowBreakdown` and `outflowBreakdown` sub-objects.
+   * In `RevenueScreens.jsx`, KPI readers use safe dual-fallback: `ledgerData?.totalInflow ?? ledgerData?.inflowBreakdown?.totalInflow ?? 0`.
+3. **Strict Branch Scoping & Cashier Fallback (`FinanceBillsController.cs` & `EconomicsIntelligenceService.cs`):**
+   * Added `[FromQuery] Guid? branchId` to `GetMyCashDrawerLedger` and filtered cash payments by `Invoice.Visit.BranchId == effectiveBranchId.Value`.
+   * In `EconomicsIntelligenceService.cs`, when `visit == null`, fallback to `cashierUser?.DefaultBranchId == branchId.Value`, ensuring orphan records never leak across branches.
+
+### Verification & Resolution Details
+* **Prepaid Switch Inflow Neutralization:** Converting a ₹10,000 cash visit to Corporate B2B Prepaid creates an equal and opposite reversal fact, completely neutralizing the phantom cash inflow from Collection History.
+* **KPI Card Accuracy:** Cash drawer KPI cards correctly display actual cash inflows and outflows (e.g. `+₹10,000.00`) matching the underlying itemized shift ledger.
+* **Cross-Branch Isolation:** Cash drawers and collection history strictly reflect the user's active branch.
+
+---
+
+## 43. Omnipresent Multi-Channel Split Accounting, Ledger Integrity & Universal Frontend Surface Separation Contract — [RESOLVED & VERIFIED]
+
+### Executive Summary & Problem Statement
+In split payment workflows where a patient settles a bill using a combination of Cash and digital channels (such as UPI or Card), downstream surfaces must maintain strict separation between physical currency and digital funds:
+1. Physical cash drawer ledgers must strictly count only the physical cash tendered, never absorbing the digital portion.
+2. Digital UPI/Online totals must strictly track digital collections without leaking into cash in hand.
+3. Every operational touchpoint—including the Reception Queue, Billing Summary, Intent Panel, Thermal Slip, and Financial Ledgers—must transparently communicate the exact breakdown of tender types.
+
+### Architectural Guarantees & Implementation Contract
+1. **Cash Drawer Strict Cash Filtering (`FinanceBillsController.cs`):**
+   * Physical drawer inflow queries filter strictly by `p.Method == "Cash"` or `RevenueDirection.Inflow` with cash tender type.
+   * For split invoices, the cash drawer particulars explicitly annotate the split nature:
+     `{patientName} • {testSummary} (Split: ₹{cashAmount:N0} Cash tendered | {otherSummary} digital)`.
+2. **Universal Thermal Slip Contract (`thermalPrinter.js`):**
+   * Generates `SPLIT PAYMENT RECEIPT` badge only when distinct channels > 1.
+   * Prints itemized bullets for each channel (`• Cash: ₹X`, `• UPI: ₹Y`).
+   * Reflects accurate `Change Tendered` / `Change Due` without conflating digital payments with cash tender.
+3. **Billing Summary & Reception Surface Transparency (`BillingSummary.jsx` & `IntentPanel.jsx`):**
+   * Billing settlement displays distinct colored badges for each tender method with exact collected figures.
+   * Eliminates ambiguous `"Split"` labels in favor of fully itemized breakdowns.
+
+### Verification & Resolution Details
+* **Zero Cross-Contamination:** A ₹2,000 bill settled with ₹500 Cash + ₹1,500 UPI credits exactly ₹500 to the physical cash drawer and ₹1,500 to digital accounts.
+* **Ledger Consistency:** Collection history, shift drawer ledgers, and live metrics reflect matching, reconciled numbers.
