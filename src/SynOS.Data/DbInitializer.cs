@@ -966,6 +966,25 @@ END
             {
                 Console.WriteLine($"[DbInitializer] Notice during TokenCounters index migration: {ex.Message}");
             }
+
+            // Calibrate historical contaminated MRI branch tokens from today (Issue 29)
+            try
+            {
+                var repairMriTokensSql = @"
+UPDATE Visits SET Token = 'MRI-001' WHERE Token = 'MRI-007';
+UPDATE Visits SET Token = 'MRI-002' WHERE Token = 'MRI-014';
+
+UPDATE tc
+SET tc.LastNumber = 2
+FROM TokenCounters tc
+WHERE tc.Prefix = 'MRI' OR tc.BranchId IN (SELECT BranchId FROM Branches WHERE Code = 'MRI' OR Name LIKE '%MRI%');
+";
+                context.Database.ExecuteSqlRaw(repairMriTokensSql);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[DbInitializer] Notice during MRI token calibration: {ex.Message}");
+            }
         }
 
         public static void Initialize(SynOSDbContext context)

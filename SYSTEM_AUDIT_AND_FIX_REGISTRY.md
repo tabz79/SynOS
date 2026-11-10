@@ -1685,3 +1685,162 @@ isCollapsed ? "px-4 py-2.5 gap-0 h-full" : "p-4 sm:p-5 h-28 sm:h-32 gap-0"
 3. **Data Backfill & Integrity Guard:**
    * Backfill any existing legacy rows where `BranchId IS NULL` to the designated `MAIN` branch ID.
    * If a branch has not billed any patient for the day, its counter starts cleanly at `0`, assigning `001` to its first patient (`MRI-001`, `MAI-001`, etc.) without interference.
+
+
+---
+
+## 30. Cross-Branch Notification Leaks & Session Storage Contamination (Main Branch Billing & Cash Milestone Notifications Polluting MRI Branch) — [AUDITED & ROOT CAUSE IDENTIFIED]
+### Severity: Medium-High / Multi-Branch UI Data Isolation & Operator Confusion
+### Impacted Modules & Files
+* **Notification Context State & Persistence Engine:** [`NotificationContext.jsx:52-84, 120-148, 166-186`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/context/NotificationContext.jsx#L52-L84)
+* **Reception Screen Real-Time Event Listener:** [`ReceptionScreen.jsx:206-245`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/ReceptionScreen.jsx#L206-L245)
+* **Action Queue Delta Transfer Object:** [`ActionQueueRowDto.cs:7-50`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Models/DTOs/Dashboard/ActionQueueRowDto.cs#L7-L50)
+* **Action Queue Projection Engine:** [`OperationsEngine.cs:359-488`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/Operations/OperationsEngine.cs#L359-L488)
+* **Real-Time SignalR Broadcast Dispatcher:** [`SignalRNotifier.cs:24-85`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Services/SignalRNotifier.cs#L24-L85)
+* **Dashboard SignalR Hub:** [`DashboardHub.cs:11-40`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Hubs/DashboardHub.cs#L11-L40)
+* **Notification Center UI Rail:** [`ReceptionNotificationCenter.jsx:14-125`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/components/ReceptionNotificationCenter.jsx#L14-L125)
+
+### Incident Evidence (Live Pilot Telemetry)
+* **Active Branch Selected in Header:** `MRI Branch` (surrounded by active red boundary indicator).
+* **Observed Timestamp:** `2026-11-10 14:55:37` (Live Screen).
+* **Logged-in Actor:** `Tabrez Developer`.
+* **Observed State in Main UI Panels:**
+  * **Action Queue (Center):** Correctly scoped to `MRI Branch` via `/api/v1/branch/action-queue?branchId=...` (shows only `MRI-007` and draft `D-531183CCB2`).
+  * **Activity Live Stream (Right):** Correctly scoped to `MRI Branch` via `/api/v1/branch/activity?branchId=...` (shows only `MRI-007 P.JANAMMA`).
+  * **Financials & Intake (Bottom):** Active draft `Registration ID: AFC02868C2` for patient `HC-test`.
+* **Contamination in Notification Center (Left Rail):**
+  * Top bar indicates `Notifications (6)` with active Live pulse.
+  * Card 1: `₹1,000 Billed` `Now` — *"Visit MAI-008 (DHANUSH) finalized by Desk."*
+  * Card 2: `₹650 Billed` `Now` — *"Visit MAI-009 (SK.SHAHFEEN) finalized by Desk."*
+  * Card 3: `₹2,450 Billed` `Now` — *"Visit MAI-011 (CH ANIL) finalized by Desk."*
+  * Card 4: `₹2,200 Billed` `Now` — *"Visit MAI-015 (NAGA PRASANNA) finalized by Desk."*
+  * Card 5: `₹400 Billed` `Now` — *"Visit MAI-012 (HC-test) finalized by Desk."*
+  * Card 6: `₹10,000 Cash In Coun...` `10:58 AM` — *"3 bills completed, ₹10,000 cash collected today."*
+* **Defect Raised by User:**
+  * All 5 billed visit notifications belong to the **`MAIN` branch** (`MAI-008`, `MAI-009`, `MAI-011`, `MAI-012`, `MAI-015`), and the cash milestone notification represents MAIN branch's cash collection.
+  * When operating inside the `MRI Branch`, the notification rail must be strictly branch-isolated; MAIN branch activities must never pollute the MRI branch interface.
+
+---
+
+### Root Cause Analysis
+
+Investigation across the full frontend and backend telemetry paths identified **three distinct architectural leaks** that combine to cause this cross-branch pollution:
+
+#### 1. Unpartitioned Global Storage in `NotificationContext.jsx`
+* In `NotificationContext.jsx` (lines 53-83):
+  ```javascript
+  const [notifications, setNotifications] = useState(() => {
+      try {
+          const saved = sessionStorage.getItem('synos_notifications_list');
+          if (saved) {
+              const parsed = JSON.parse(saved);
+              if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+          }
+      } catch (_) {}
+      return DEFAULT_SEED_NOTIFICATIONS;
+  });
+
+  useEffect(() => {
+      try {
+          sessionStorage.setItem('synos_notifications_list', JSON.stringify(notifications));
+      } catch (_) {}
+  }, [notifications]);
+  ```
+* **The Failure Mechanism:**
+  * In SynOS, branch switching via `SystemBar.jsx` updates `localStorage.setItem('synos_oversight_branch_id', bId)` and triggers `window.location.reload()`.
+  * In the browser DOM model, `sessionStorage` **persists across page reloads within the same browser tab**.
+  * The storage key `'synos_notifications_list'` is **completely global and lacks any branch scoping**.
+  * Any notifications accumulated while the user was on the `MAIN` branch (the 5 finalized visits and the cash milestone) were serialized to `synos_notifications_list`.
+  * When the page refreshed into the `MRI Branch`, `NotificationProvider` mounted, read `'synos_notifications_list'` from `sessionStorage`, and restored all `MAIN` branch notifications directly into the `MRI Branch` view.
+
+#### 2. SignalR Delta Listener Lacks Branch Filtering (`ReceptionScreen.jsx`)
+* In `ReceptionScreen.jsx` (lines 206-245):
+  ```javascript
+  SignalRService.onActionQueueDeltaReceived((deltaRow) => {
+      if (!deltaRow) return;
+
+      const normalized = normalizeQueueData([deltaRow])[0];
+      if (!normalized) return;
+
+      // MULTI-DESK DRAFT ISOLATION INVARIANT (Zero-Seepage Rule):
+      // Filters unfinalized drafts belonging to other receptionists...
+
+      // OS-Level Dynamic Notification for finalized/billed visits
+      if (normalized.isFinalized || normalized.operationalStatus === 'Paid') {
+          const paidAmt = Number(normalized.totalPaid || normalized.amount || normalized.netAmount || 0);
+          notify({
+              id: `bill_${normalized.visitId || normalized.token}`,
+              type: 'activity',
+              category: 'billing',
+              title: paidAmt > 0 ? `₹${paidAmt.toLocaleString('en-IN')} Billed` : 'Visit Finalized',
+              message: `Visit ${normalized.token || ''} (${normalized.patientName || 'Patient'}) finalized by ${normalized.createdByName || 'Desk'}.`,
+              action: { label: 'View Visit', type: 'ROUTE_TO_VISIT', payload: { visitId: normalized.visitId } }
+          });
+      }
+  ```
+* **The Failure Mechanism:**
+  * While Section 17 introduced a *multi-desk draft isolation guard* (`currentUserId !== draftOwnerId`), there is **no branch isolation check** whatsoever.
+  * Whenever an `ActionQueueDeltaReceived` event is received by the browser, `ReceptionScreen.jsx` calls `notify()` for every finalized visit unconditionally, without checking whether `normalized.branchId` matches the currently active branch (`activeOversightBranchId`).
+
+#### 3. DTO Schema Gap: `ActionQueueRowDto` Lacks `BranchId`
+* In `src/SynOS.Models/DTOs/Dashboard/ActionQueueRowDto.cs`:
+  * The DTO defines `VisitId`, `Token`, `PatientName`, `TotalAmount`, `TotalPaid`, `OperationalStatus`, `AssignedToUserId`, `DepartmentCode`, etc.
+  * **`BranchId` is completely missing from `ActionQueueRowDto`.**
+* In `OperationsEngine.ProjectActionQueueRowAsync(Guid visitId)`:
+  * Even though `visit.BranchId` is present in the `Visit` entity, it is never projected onto `ActionQueueRowDto`.
+* Consequently, when `SignalRNotifier` serializes `delta` and sends it to connected clients, the receiving frontend has no reliable way to verify the branch origin of the delta row.
+
+#### 4. SignalR Hub Channel Coupling to JWT Home Branch
+* In `DashboardHub.OnConnectedAsync`:
+  ```csharp
+  var branchIdClaim = Context.User?.FindFirst("branch_id")?.Value;
+  ...
+  await Groups.AddToGroupAsync(Context.ConnectionId, $"Branch-{branchId}");
+  ```
+* In `signalr.js`:
+  * The WebSocket connects to `/dashboardHub` using `localStorage.getItem('synos_jwt')`.
+  * The JWT contains the user's permanent home branch (`MAIN`).
+  * When an admin or multi-branch user switches to `MRI Branch`, `activeOversightBranchId` is stored in `localStorage`, but the JWT is NOT re-minted.
+  * As a result, the WebSocket connection remains joined to `Branch-<MainBranchId>`.
+  * When any receptionist bills a patient at `MAIN`, `SignalRNotifier` broadcasts to `Branch-<MainBranchId>` (and to `Clients.User(...)`), which is immediately delivered to the user's browser even while viewing `MRI Branch`.
+
+---
+
+### Architectural Fix Specification (To be executed when authorized)
+
+1. **Branch-Scoped Storage & Notification State (`NotificationContext.jsx`):**
+   * Scope notification storage keys by active branch:
+     ```javascript
+     const activeBranchId = localStorage.getItem('synos_oversight_branch_id') || 'default';
+     const storageKey = `synos_notifications_${activeBranchId}`;
+     ```
+   * Listen for branch switch events or reload changes: clear or swap the active notifications list to match the active branch.
+   * Attach `branchId` to each notification item generated by `notify()`:
+     ```javascript
+     const newNotif = {
+         ...
+         branchId: item.branchId || activeBranchId,
+     };
+     ```
+   * In `ReceptionNotificationCenter.jsx`, strictly filter displayed cards:
+     ```javascript
+     const branchNotifications = notifications.filter(n => !n.branchId || n.branchId === activeBranchId);
+     ```
+
+2. **Add `BranchId` to `ActionQueueRowDto` (`ActionQueueRowDto.cs` & `OperationsEngine.cs`):**
+   * Add `public Guid? BranchId { get; set; }` to `ActionQueueRowDto.cs`.
+   * Populate `BranchId = visit.BranchId` in `OperationsEngine.ProjectActionQueueRowAsync`.
+
+3. **Enforce Branch Invariant in `ReceptionScreen.jsx` Delta Handler:**
+   * In `SignalRService.onActionQueueDeltaReceived`:
+     ```javascript
+     const activeBranchId = localStorage.getItem('synos_oversight_branch_id') || user?.branchId;
+     if (normalized.branchId && activeBranchId && String(normalized.branchId).toLowerCase() !== String(activeBranchId).toLowerCase()) {
+         return; // Discard foreign branch deltas
+     }
+     ```
+   * Pass `branchId: normalized.branchId` into `notify({ ... })`.
+
+4. **Dynamic SignalR Group Subscription on Branch Switch (`DashboardHub.cs` & `signalr.js`):**
+   * Pass the active branch ID in query parameters when establishing the SignalR connection (`/dashboardHub?branchId=...`), or implement a `JoinBranchGroup(string branchId)` hub method invoked when switching branches.
+   * Ensure `DashboardHub` joins the client to `Branch-{activeBranchId}` rather than exclusively using the static JWT claim.
