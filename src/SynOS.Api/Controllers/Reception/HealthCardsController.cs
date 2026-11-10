@@ -183,6 +183,76 @@ namespace SynOS.Api.Controllers.Reception
             }
         }
 
+        [HttpGet("by-patient/{patientId:guid}")]
+        public async Task<IActionResult> GetCardByPatient(Guid patientId)
+        {
+            try
+            {
+                var card = await _healthCardService.GetCardByPatientIdAsync(patientId);
+                if (card == null) return NotFound(new { message = "No health card found for this patient." });
+                return Ok(card);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Failed to fetch patient health card.", details = ex.Message });
+            }
+        }
+
+        [HttpPut("{cardId:guid}")]
+        public async Task<IActionResult> UpdateCard(Guid cardId, [FromBody] UpdateHealthCardRequestDto request)
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                var card = await _healthCardService.UpdateCardAsync(cardId, request, userId);
+                return Ok(card);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Failed to update health card.", details = ex.Message });
+            }
+        }
+
+        [HttpPost("{cardId:guid}/cancel")]
+        public async Task<IActionResult> CancelCard(Guid cardId, [FromBody] CancelHealthCardRequestDto? request)
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                var success = await _healthCardService.CancelCardAsync(cardId, request?.Reason, userId);
+                if (!success) return NotFound(new { message = "Health card not found." });
+                return Ok(new { success, message = "Health card cancelled successfully." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Failed to cancel health card.", details = ex.Message });
+            }
+        }
+
+        [HttpDelete("{cardId:guid}/beneficiaries/{beneficiaryId:guid}")]
+        public async Task<IActionResult> RemoveBeneficiary(Guid cardId, Guid beneficiaryId)
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                var success = await _healthCardService.RemoveBeneficiaryAsync(cardId, beneficiaryId, userId);
+                if (!success) return NotFound(new { message = "Beneficiary not found on this card." });
+                return Ok(new { success, message = "Beneficiary removed successfully." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Failed to remove beneficiary.", details = ex.Message });
+            }
+        }
+
         private Guid GetCurrentUserId()
         {
             var claim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??

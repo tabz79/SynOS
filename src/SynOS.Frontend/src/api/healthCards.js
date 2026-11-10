@@ -105,5 +105,49 @@ export const HealthCardApi = {
         });
         if (!response.ok) throw new Error('Failed to fetch health card details');
         return await response.json();
+    },
+
+    getCardByPatient: async (patientId) => {
+        const url = withBranchId(`/api/v1/reception/health-cards/by-patient/${patientId}`);
+        const response = await fetch(url, {
+            headers: getHeaders()
+        });
+        if (!response.ok) return null;
+        return await response.json();
+    },
+
+    updateCard: async (cardId, payload) => {
+        const url = withBranchId(`/api/v1/reception/health-cards/${cardId}`);
+        const response = await fetch(url, {
+            method: 'PUT',
+            headers: getHeaders(),
+            body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Failed to update health card');
+        return data;
+    },
+
+    cancelCard: async (cardId, reason = '') => {
+        const url = withBranchId(`/api/v1/reception/health-cards/${cardId}/cancel`);
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: getHeaders(),
+            body: JSON.stringify({ reason })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Failed to cancel health card');
+        return data;
+    },
+
+    removeBeneficiary: async (cardId, beneficiaryId) => {
+        const url = withBranchId(`/api/v1/reception/health-cards/${cardId}/beneficiaries/${beneficiaryId}`);
+        const response = await fetch(url, {
+            method: 'DELETE',
+            headers: getHeaders()
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Failed to remove beneficiary');
+        return data;
     }
 };

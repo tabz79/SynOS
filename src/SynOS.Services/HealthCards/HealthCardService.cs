@@ -548,6 +548,94 @@ namespace SynOS.Services.HealthCards
             return card != null ? MapToSummary(card) : null;
         }
 
+        public async Task<HealthCardSummaryDto?> GetCardByPatientIdAsync(Guid patientId)
+        {
+            var now = DateTime.UtcNow;
+            var card = await _context.PatientHealthCards
+                .Include(c => c.Plan)
+                .Include(c => c.PrimaryPatient)
+                .Include(c => c.Beneficiaries).ThenInclude(b => b.Patient)
+                .Include(c => c.Usages)
+                .Where(c => c.PrimaryPatientId == patientId || c.Beneficiaries.Any(b => b.PatientId == patientId))
+                .OrderByDescending(c => c.Status == "Active" && c.ValidUntil >= now)
+                .ThenByDescending(c => c.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            return card != null ? MapToSummary(card) : null;
+        }
+
+        public async Task<HealthCardSummaryDto> UpdateCardAsync(Guid cardId, UpdateHealthCardRequestDto request, Guid cashierUserId)
+        {
+            var card = await _context.PatientHealthCards
+                .Include(c => c.Plan)
+                .Include(c => c.PrimaryPatient)
+                .Include(c => c.Beneficiaries).ThenInclude(b => b.Patient)
+                .Include(c => c.Usages)
+                .FirstOrDefaultAsync(c => c.CardId == cardId);
+
+            if (card == null) throw new KeyNotFoundException($"Health card with ID {cardId} not found.");
+
+            if (!string.IsNullOrWhiteSpace(request.DiscountType))
+            {
+                card.ConfiguredDiscountType = string.Equals(request.DiscountType, "Flat", StringComparison.OrdinalIgnoreCase)
+                    ? "Flat"
+                    : "Percentage";
+            }
+
+            if (request.DiscountValue.HasValue && request.DiscountValue.Value >= 0)
+            {
+                card.ConfiguredDiscountValue = request.DiscountValue.Value;
+            }
+
+            if (request.CustomExpiryDate.HasValue)
+            {
+                card.ValidUntil = request.CustomExpiryDate.Value;
+            }
+            else if (request.ValidityDays.HasValue && request.ValidityDays.Value > 0)
+            {
+                card.ValidUntil = card.EffectiveFrom.AddDays(request.ValidityDays.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(request.Status))
+            {
+                card.Status = request.Status;
+            }
+
+            card.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            return MapToSummary(card);
+        }
+
+        public async Task<bool> CancelCardAsync(Guid cardId, string? reason, Guid cashierUserId)
+        {
+            var card = await _context.PatientHealthCards.FindAsync(cardId);
+            if (card == null) return false;
+
+            card.Status = "Cancelled";
+            card.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> RemoveBeneficiaryAsync(Guid cardId, Guid beneficiaryId, Guid cashierUserId)
+        {
+            var beneficiary = await _context.HealthCardBeneficiaries
+                .Include(b => b.Card)
+                .FirstOrDefaultAsync(b => b.CardId == cardId && b.BeneficiaryId == beneficiaryId);
+
+            if (beneficiary == null) return false;
+
+            if (beneficiary.Relationship == "Self" || (beneficiary.Card != null && beneficiary.PatientId == beneficiary.Card.PrimaryPatientId))
+            {
+                throw new InvalidOperationException("Cannot remove the primary subscriber from the health card.");
+            }
+
+            _context.HealthCardBeneficiaries.Remove(beneficiary);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
         private static HealthCardSummaryDto MapToSummary(PatientHealthCard card)
         {
             var max = card.Plan?.MaxMembers ?? 1;

@@ -3,8 +3,12 @@ import { apiClient } from './client';
 const API_BASE = '/api/v1/patients';
 
 export const PatientApi = {
-    searchPatients: async (query, limit = 20, offset = 0) => {
-        return apiClient.get(`${API_BASE}?q=${encodeURIComponent(query)}&limit=${limit}&offset=${offset}`);
+    searchPatients: async (query = '', limit = 20, offset = 0, hasHealthCard = null) => {
+        let url = `${API_BASE}?q=${encodeURIComponent(query || '')}&limit=${limit}&offset=${offset}`;
+        if (hasHealthCard !== null && hasHealthCard !== undefined) {
+            url += `&hasHealthCard=${hasHealthCard}`;
+        }
+        return apiClient.get(url);
     },
 
     getPatientById: async (id) => {

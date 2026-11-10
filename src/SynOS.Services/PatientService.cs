@@ -190,7 +190,7 @@ namespace SynOS.Services
         }
 
         // Enhanced search - returns DTOs directly with Last Visit info (Canonical JOIN Implementation)
-        public async Task<IEnumerable<PatientDto>> SearchPatientsAsync(string? query, int limit, int offset)
+        public async Task<IEnumerable<PatientDto>> SearchPatientsAsync(string? query, int limit, int offset, bool? hasHealthCard = null)
         {
             var q = query?.Trim();
 
@@ -198,6 +198,15 @@ namespace SynOS.Services
             var patients = _context.Patients
                 .AsNoTracking()
                 .Where(p => !p.IsSoftDeleted);
+
+            var now = DateTime.UtcNow;
+            if (hasHealthCard == true)
+            {
+                patients = patients.Where(p => _context.PatientHealthCards.Any(c => 
+                    c.Status == "Active" && 
+                    c.ValidUntil >= now && 
+                    (c.PrimaryPatientId == p.PatientId || c.Beneficiaries.Any(b => b.PatientId == p.PatientId))));
+            }
 
             // 3️⃣ Active phone scope (canonical source)
             var activePhones =
@@ -275,6 +284,31 @@ namespace SynOS.Services
                 .Take(limit)
                 .ToListAsync();
 
+            if (paged.Count > 0)
+            {
+                var patientIds = paged.Select(p => p.PatientId).ToList();
+                var activeCards = await _context.PatientHealthCards
+                    .AsNoTracking()
+                    .Include(c => c.Plan)
+                    .Include(c => c.Beneficiaries)
+                    .Where(c => c.Status == "Active" && c.ValidUntil >= now &&
+                                (patientIds.Contains(c.PrimaryPatientId) || c.Beneficiaries.Any(b => patientIds.Contains(b.PatientId))))
+                    .ToListAsync();
+
+                foreach (var p in paged)
+                {
+                    var card = activeCards.FirstOrDefault(c => c.PrimaryPatientId == p.PatientId || c.Beneficiaries.Any(b => b.PatientId == p.PatientId));
+                    if (card != null)
+                    {
+                        p.HasActiveHealthCard = true;
+                        p.HealthCardNumber = card.CardNumber;
+                        p.HealthCardPlanName = card.Plan?.PlanName ?? "Health Card";
+                        p.HealthCardDiscountValue = card.ConfiguredDiscountValue;
+                        p.HealthCardDiscountType = card.ConfiguredDiscountType;
+                    }
+                }
+            }
+
             return paged;
         }
 
@@ -286,7 +320,28 @@ namespace SynOS.Services
                 .SingleOrDefaultAsync(p => p.PatientId == id);
 
             if (patient == null) return null;
-            return _mapper.Map<PatientDto>(patient);
+            var dto = _mapper.Map<PatientDto>(patient);
+
+            var now = DateTime.UtcNow;
+            var card = await _context.PatientHealthCards
+                .AsNoTracking()
+                .Include(c => c.Plan)
+                .Include(c => c.Beneficiaries)
+                .Where(c => c.Status == "Active" && c.ValidUntil >= now &&
+                            (c.PrimaryPatientId == id || c.Beneficiaries.Any(b => b.PatientId == id)))
+                .OrderByDescending(c => c.CreatedAt)
+                .FirstOrDefaultAsync();
+
+            if (card != null)
+            {
+                dto.HasActiveHealthCard = true;
+                dto.HealthCardNumber = card.CardNumber;
+                dto.HealthCardPlanName = card.Plan?.PlanName ?? "Health Card";
+                dto.HealthCardDiscountValue = card.ConfiguredDiscountValue;
+                dto.HealthCardDiscountType = card.ConfiguredDiscountType;
+            }
+
+            return dto;
         }
 
         // Phone history fetch - returns entity list

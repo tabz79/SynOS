@@ -132,4 +132,18 @@ namespace SynOS.Models.DTOs.HealthCards
         public Guid VisitId { get; set; }
         public Guid PlanId { get; set; }
     }
+
+    public class UpdateHealthCardRequestDto
+    {
+        public string? DiscountType { get; set; } // "Percentage" | "Flat"
+        public decimal? DiscountValue { get; set; }
+        public int? ValidityDays { get; set; }
+        public DateTime? CustomExpiryDate { get; set; }
+        public string? Status { get; set; } // "Active" | "Suspended" | "Cancelled"
+    }
+
+    public class CancelHealthCardRequestDto
+    {
+        public string? Reason { get; set; }
+    }
 }

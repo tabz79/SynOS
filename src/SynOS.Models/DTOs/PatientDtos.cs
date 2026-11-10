@@ -18,6 +18,11 @@ namespace SynOS.Models.DTOs
         public bool IsSoftDeleted { get; set; }
         public DateTime? LastVisitDate { get; set; }
         public System.Collections.Generic.List<string> LastVisitTestCodes { get; set; } = new();
+        public bool HasActiveHealthCard { get; set; }
+        public string? HealthCardNumber { get; set; }
+        public string? HealthCardPlanName { get; set; }
+        public decimal? HealthCardDiscountValue { get; set; }
+        public string? HealthCardDiscountType { get; set; }
     }
 
     public class PatientCreateDto

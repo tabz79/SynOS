@@ -38,9 +38,9 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<PatientDto>>> SearchPatients([FromQuery] string? q = null, [FromQuery] int limit = 20, [FromQuery] int offset = 0)
+        public async Task<ActionResult<IEnumerable<PatientDto>>> SearchPatients([FromQuery] string? q = null, [FromQuery] int limit = 20, [FromQuery] int offset = 0, [FromQuery] bool? hasHealthCard = null)
         {
-            var patients = await _patientService.SearchPatientsAsync(q, limit, offset);
+            var patients = await _patientService.SearchPatientsAsync(q, limit, offset, hasHealthCard);
             return Ok(patients);
         }
 
