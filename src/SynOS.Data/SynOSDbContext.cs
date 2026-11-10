@@ -760,7 +760,7 @@ namespace SynOS.Data
                 entity.Property(e => e.Status).HasConversion<string>().HasMaxLength(50);
             });
 
-            modelBuilder.Entity<TokenCounter>(entity => entity.HasIndex(e => new { e.Day, e.Department }).IsUnique());
+            modelBuilder.Entity<TokenCounter>(entity => entity.HasIndex(e => new { e.BranchId, e.Day, e.Department }).IsUnique());
 
             modelBuilder.Entity<Order>(entity => {
                 entity.HasIndex(e => e.TestCode);

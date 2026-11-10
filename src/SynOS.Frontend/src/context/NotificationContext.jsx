@@ -188,6 +188,14 @@ export function NotificationProvider({ children }) {
     // Action Execution Router
     const executeAction = useCallback((notification) => {
         if (!notification?.action) return;
+        if (typeof notification.action.onClick === 'function') {
+            try {
+                notification.action.onClick(notification);
+            } catch (err) {
+                console.error("Failed to execute notification onClick action", err);
+            }
+            return;
+        }
         const { type, payload } = notification.action;
         window.dispatchEvent(new CustomEvent('synos:trigger-action', {
             detail: { type, payload, notificationId: notification.id }

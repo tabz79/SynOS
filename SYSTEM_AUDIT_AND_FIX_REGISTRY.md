@@ -1527,7 +1527,7 @@ isCollapsed ? "px-4 py-2.5 gap-0 h-full" : "p-4 sm:p-5 h-28 sm:h-32 gap-0"
 
 ---
 
-## 29. Cross-Branch Token Counter Collision & Sequence Offset (First Billed Patient in MRI Branch Assigned MRI-007 Instead of MRI-001) — [AUDITED & ROOT CAUSE IDENTIFIED]
+## 29. Cross-Branch Token Counter Collision & Sequence Offset (First Billed Patient in MRI Branch Assigned MRI-007 Instead of MRI-001) — [RESOLVED & VERIFIED]
 ### Severity: High / Multi-Branch Daily Counter Contamination & Queue Desynchronization
 ### Impacted Modules & Files
 * **Visit Service Daily Token Generator:** [`VisitService.cs:1607-1670`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/VisitService.cs#L1607-L1670)

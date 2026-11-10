@@ -1627,11 +1627,9 @@ namespace SynOS.Services
                 if (prefix.Length > 3) prefix = prefix.Substring(0, 3);
             }
 
-            // We find any existing token counter for this day & department to respect unique index IX_TokenCounters_Day_Department
+            // Isolate daily token counters by branch, day, and department (Issue 29 fix)
             var tokenCounter = await _context.TokenCounters
-                .FirstOrDefaultAsync(tc => tc.Day == labLocalDay && tc.BranchId == branchId && tc.Department == department)
-                ?? await _context.TokenCounters
-                .FirstOrDefaultAsync(tc => tc.Day == labLocalDay && tc.Department == department);
+                .FirstOrDefaultAsync(tc => tc.Day == labLocalDay && tc.BranchId == branchId && tc.Department == department);
 
             if (tokenCounter == null)
             {
@@ -1650,10 +1648,6 @@ namespace SynOS.Services
             }
             else
             {
-                if (tokenCounter.BranchId != branchId && branchId != Guid.Empty)
-                {
-                    tokenCounter.BranchId = branchId;
-                }
                 // Ensure we have the latest number from DB (basic concurrency guard)
                 await _context.Entry(tokenCounter).ReloadAsync();
             }
@@ -1704,9 +1698,42 @@ namespace SynOS.Services
 
                 if (test == null)
                 {
+                    // Check if code matches a Health Card renewal order
+                    if (normalized.StartsWith("HC-RENEW-"))
+                    {
+                        var planPart = normalized.Substring("HC-RENEW-".Length);
+                        var hcPlan = await _context.HealthCardPlanMasters.FirstOrDefaultAsync(p => p.PlanCode.ToUpper() == planPart);
+                        var planPrice = hcPlan?.Price ?? 1000m;
+                        var planName = hcPlan?.PlanName ?? "Annual Care";
+
+                        test = new Test
+                        {
+                            TestId = Guid.NewGuid(),
+                            TestCode = normalized,
+                            TestName = $"Health Card Renewal ({planName})",
+                            Category = "HealthCard",
+                            SpecimenTypeCode = "NO_SPECIMEN",
+                            IsProfile = false,
+                            IsActive = true,
+                            CreatedAt = DateTimeOffset.UtcNow,
+                            UpdatedAt = DateTimeOffset.UtcNow
+                        };
+                        _context.Tests.Add(test);
+
+                        var hcPricing = new TestPricing
+                        {
+                            PricingId = Guid.NewGuid(),
+                            TestId = test.TestId,
+                            BasePrice = planPrice,
+                            EffectiveFrom = DateTime.UtcNow.AddYears(-1),
+                            CreatedAt = DateTimeOffset.UtcNow
+                        };
+                        _context.TestPricings.Add(hcPricing);
+                        await _context.SaveChangesAsync();
+                        _testsCacheService.InvalidateTestsCache();
+                    }
                     // Check if code matches a Health Card plan first
-                    var hcPlan = await _context.HealthCardPlanMasters.FirstOrDefaultAsync(p => p.PlanCode.ToUpper() == normalized);
-                    if (hcPlan != null)
+                    else if (await _context.HealthCardPlanMasters.FirstOrDefaultAsync(p => p.PlanCode.ToUpper() == normalized) is { } hcPlan)
                     {
                         test = new Test
                         {
@@ -2228,6 +2255,27 @@ namespace SynOS.Services
                                     affectedTubes.Add($"New Collection Needed: {testDef.SpecimenTypeCode}");
                                 }
                             }
+                        }
+                    }
+
+                    // Automatic health card validity extension if renewal order was added
+                    var hasRenewalCode = dto.AddTestCodes.Any(c => c.StartsWith("HC-RENEW", StringComparison.OrdinalIgnoreCase));
+                    if (hasRenewalCode && visit.PatientId != Guid.Empty)
+                    {
+                        var healthCards = await _context.PatientHealthCards
+                            .Include(c => c.Plan)
+                            .Where(c => c.PrimaryPatientId == visit.PatientId || c.Beneficiaries.Any(b => b.PatientId == visit.PatientId))
+                            .OrderByDescending(c => c.ValidUntil)
+                            .ToListAsync();
+
+                        foreach (var hc in healthCards)
+                        {
+                            var days = hc.Plan?.DefaultValidityDays ?? 365;
+                            var now = DateTime.UtcNow;
+                            var baseDate = (hc.ValidUntil > now && hc.Status == "Active") ? hc.ValidUntil : now;
+                            hc.ValidUntil = baseDate.AddDays(days);
+                            hc.Status = "Active";
+                            hc.UpdatedAt = now;
                         }
                     }
                 }

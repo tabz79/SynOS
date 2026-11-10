@@ -73,6 +73,29 @@ export function PatientIdentification({
             const res = await HealthCardApi.checkEligibility(pId, phone);
             setHealthCardEligibility(res);
             window.dispatchEvent(new CustomEvent('synos:healthcard-eligibility', { detail: res }));
+
+            if (res?.isExpired && res?.card) {
+                const card = res.card;
+                const code = (card.cardNumber && !card.cardNumber.startsWith("HC-"))
+                    ? card.cardNumber
+                    : (patient?.mrn ? `${patient.mrn}-HC` : card.cardNumber);
+                const renewalPrice = Number(card.pricePaid || card.plan?.price || 1000);
+                const expiryDate = card.validUntil ? new Date(card.validUntil).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'recently';
+
+                window.dispatchEvent(new CustomEvent('synos:notification-hint', {
+                    detail: {
+                        id: `hc-expired-${card.cardId || code}`,
+                        type: 'warning',
+                        title: 'Health Card Expired',
+                        message: `Card ${code} expired on ${expiryDate}. Standard tariff applies until renewed.`,
+                        action: {
+                            label: `⚡ Renew Card (₹${renewalPrice.toLocaleString('en-IN')})`,
+                            type: 'renew-health-card-to-cart',
+                            payload: { card, code }
+                        }
+                    }
+                }));
+            }
         } catch (e) {
             console.error('HealthCard check failed', e);
         }
@@ -187,46 +210,10 @@ export function PatientIdentification({
                     />
 
                     {/* Health Card Membership Banner */}
-                    {selectedPatient && healthCardEligibility && (healthCardEligibility.hasActiveCard || healthCardEligibility.isExpired) && (() => {
+                    {selectedPatient && healthCardEligibility && healthCardEligibility.hasActiveCard && !healthCardEligibility.isExpired && (() => {
                         const displayEligCardCode = (healthCardEligibility?.card?.cardNumber && !healthCardEligibility.card.cardNumber.startsWith("HC-"))
                             ? healthCardEligibility.card.cardNumber
                             : (selectedPatient?.mrn ? `${selectedPatient.mrn}-HC` : healthCardEligibility?.card?.cardNumber);
-
-                        if (healthCardEligibility.isExpired) {
-                            return (
-                                <div className="pt-1 animate-in fade-in duration-200">
-                                    <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50/70 dark:from-amber-950/40 dark:to-orange-950/30 border border-amber-300 dark:border-amber-700/80 flex items-center justify-between shadow-2xs">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold shrink-0 shadow-xs text-sm">
-                                                ⚠️
-                                            </div>
-                                            <div>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-xs sm:text-sm font-black text-amber-950 dark:text-amber-200">
-                                                        Health Card Expired ({displayEligCardCode})
-                                                    </span>
-                                                    <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200 shrink-0">
-                                                        Expired {new Date(healthCardEligibility.card?.validUntil).toLocaleDateString()}
-                                                    </span>
-                                                </div>
-                                                <p className="text-[11px] text-amber-800 dark:text-amber-300 mt-0.5">
-                                                    Standard tariff applies. Renew card to retain {displayEligCardCode} and reactivate discount benefits.
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={handleQuickRenewCard}
-                                            disabled={isQuickRenewing}
-                                            className="px-3.5 py-2 rounded-xl text-xs font-black bg-amber-600 hover:bg-amber-700 text-white shadow-xs flex items-center gap-1.5 cursor-pointer shrink-0 transition-transform active:scale-95"
-                                        >
-                                            {isQuickRenewing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-                                            <span>Renew Card (₹{healthCardEligibility.card?.pricePaid || 1000})</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            );
-                        }
 
                         return (
                         <div className="pt-1 animate-in fade-in duration-200">

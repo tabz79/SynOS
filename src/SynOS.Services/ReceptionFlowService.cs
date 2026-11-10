@@ -1055,6 +1055,54 @@ namespace SynOS.Services
                         await _context.SaveChangesAsync();
                         _logger.LogInformation("Activated {Count} pending health card(s) for Visit {VisitId}", pendingCards.Count, visit.VisitId);
                     }
+
+                    // --- STAGE 2 HEALTH CARD RENEWAL UPON PAYMENT SETTLEMENT ---
+                    var visitOrders = await _context.Orders
+                        .Include(o => o.Test)
+                        .Where(o => o.VisitId == visit.VisitId && o.Status != OrderStatus.Cancelled)
+                        .ToListAsync();
+
+                    var hasRenewalOrder = visitOrders.Any(o => 
+                        (o.TestCode != null && o.TestCode.StartsWith("HC-RENEW", StringComparison.OrdinalIgnoreCase)) ||
+                        (o.Test != null && o.Test.TestName != null && o.Test.TestName.Contains("Health Card Renewal", StringComparison.OrdinalIgnoreCase)) ||
+                        (o.Department != null && o.Department.Equals("HealthCard", StringComparison.OrdinalIgnoreCase))
+                    );
+
+                    if (hasRenewalOrder && visit.PatientId != Guid.Empty)
+                    {
+                        var cardsToRenew = await _context.PatientHealthCards
+                            .Include(c => c.Plan)
+                            .Include(c => c.PrimaryPatient)
+                            .Where(c => c.PrimaryPatientId == visit.PatientId || c.Beneficiaries.Any(b => b.PatientId == visit.PatientId))
+                            .OrderByDescending(c => c.ValidUntil)
+                            .ToListAsync();
+
+                        foreach (var hc in cardsToRenew)
+                        {
+                            var days = hc.Plan?.DefaultValidityDays ?? 365;
+                            var now = DateTime.UtcNow;
+                            var baseDate = (hc.ValidUntil > now && hc.Status == "Active") ? hc.ValidUntil : now;
+                            hc.ValidUntil = baseDate.AddDays(days);
+                            hc.Status = "Active";
+                            hc.AssociatedVisitId = visit.VisitId;
+                            hc.PaymentMode = payment.Method;
+                            hc.UpdatedAt = now;
+
+                            var renewOrder = visitOrders.FirstOrDefault(o => 
+                                (o.TestCode != null && o.TestCode.StartsWith("HC-RENEW", StringComparison.OrdinalIgnoreCase)) ||
+                                (o.Test != null && o.Test.TestName != null && o.Test.TestName.Contains("Health Card Renewal", StringComparison.OrdinalIgnoreCase)));
+                            if (renewOrder != null && renewOrder.Price > 0)
+                            {
+                                hc.PricePaid += renewOrder.Price;
+                            }
+                        }
+
+                        if (cardsToRenew.Any())
+                        {
+                            await _context.SaveChangesAsync();
+                            _logger.LogInformation("Successfully renewed health card(s) for Visit {VisitId}", visit.VisitId);
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {

@@ -835,39 +835,123 @@ export function IntentPanel({ onVisitUpdated }) {
         return mrn ? `${mrn}-HC` : raw;
     }, [healthCardEligibility, displayedPatient, snapshot?.patient]);
 
-    const handleRenewHealthCard = async () => {
-        if (!healthCardEligibility?.card?.cardId) return;
-        setIsRenewingHealthCard(true);
-        try {
-            const cardId = healthCardEligibility.card.cardId;
-            await HealthCardApi.renewCard(cardId, {
-                validityDays: 365,
-                paymentMode: 'Cash'
-            });
-            const pId = currentPatientId || displayedPatient?.id || displayedPatient?.patientId;
-            const phone = displayedPatient?.mobile || displayedPatient?.currentPhoneNumber;
-            const recheck = await HealthCardApi.checkEligibility(pId, phone);
-            setHealthCardEligibility(recheck);
-            if (recheck?.hasActiveCard && recheck?.card) {
-                const card = recheck.card;
-                const normalizedCardNumber = (!card.cardNumber?.startsWith("HC-"))
-                    ? card.cardNumber
-                    : (displayedPatient?.mrn ? `${displayedPatient.mrn}-HC` : card.cardNumber);
-                setStagedDiscount({
-                    type: card.configuredDiscountType === 'Flat' ? 'Flat' : 'Percentage',
-                    value: card.configuredDiscountValue,
-                    reason: `Health Card (${normalizedCardNumber})`,
-                    cardId: card.cardId,
-                    cardNumber: normalizedCardNumber,
-                    isHealthCard: true
+    const handleAddRenewalToCart = useCallback((cardToRenew = null) => {
+        const card = cardToRenew || healthCardEligibility?.card;
+        if (!card) return;
+
+        const code = displayEligCardCode || (card.cardNumber && !card.cardNumber.startsWith("HC-") ? card.cardNumber : `${displayedPatient?.mrn || 'CARD'}-HC`);
+        const planName = card.plan?.planName || card.planName || 'Care Plan';
+        const renewalPrice = Number(card.pricePaid || card.plan?.price || 1000);
+        const planCodePart = card.planCode || card.plan?.planCode || 'PLAN';
+        const renewTestCode = `HC-RENEW-${planCodePart}`.toUpperCase();
+
+        const alreadyInCart = stagedAddedTests.some(t => 
+            (t.testCode || t.code)?.toUpperCase() === renewTestCode ||
+            t.isHealthCardRenewal
+        );
+
+        const renewalItem = {
+            testCode: renewTestCode,
+            code: renewTestCode,
+            testName: `Health Card Renewal (${planName})`,
+            name: `Health Card Renewal (${planName})`,
+            price: renewalPrice,
+            basePrice: renewalPrice,
+            department: 'HealthCard',
+            dept: 'HealthCard',
+            category: 'HealthCard',
+            isHealthCardRenewal: true,
+            cardId: card.cardId,
+            cardNumber: code
+        };
+
+        if (!alreadyInCart) {
+            setStagedAddedTests(prev => [...prev, renewalItem]);
+
+            // Also optimistically add to snapshot tests so it is immediately visible in the active basket
+            if (snapshot?.visit) {
+                setSnapshot(prev => {
+                    if (!prev || !prev.visit) return prev;
+                    const existing = prev.visit.tests || [];
+                    if (existing.some(t => (t.testCode || t.code)?.toUpperCase() === renewTestCode)) return prev;
+                    const tempId = 'opt-renew-' + Date.now();
+                    return {
+                        ...prev,
+                        visit: {
+                            ...prev.visit,
+                            tests: [...existing, { ...renewalItem, orderId: tempId, OrderId: tempId, isOptimistic: true }]
+                        }
+                    };
                 });
             }
-        } catch (err) {
-            console.error("Failed to renew health card:", err);
-        } finally {
-            setIsRenewingHealthCard(false);
         }
+
+        // Apply health card discount to diagnostic tests
+        const discountVal = Number(card.configuredDiscountValue || 30);
+        const discountType = card.configuredDiscountType === 'Flat' ? 'Flat' : 'Percentage';
+        setStagedDiscount({
+            type: discountType,
+            value: discountVal,
+            reason: `Health Card (${code}) - Renewed`,
+            cardId: card.cardId,
+            cardNumber: code,
+            isHealthCard: true
+        });
+
+        // Treat as active locally in this session
+        setHealthCardEligibility(prev => prev ? { ...prev, isExpired: false, hasActiveCard: true } : prev);
+
+        // Dismiss the notification hint
+        window.dispatchEvent(new CustomEvent('synos:dismiss-notification-hint', {
+            detail: { id: `hc-expired-${card.cardId || code}` }
+        }));
+    }, [healthCardEligibility, displayEligCardCode, displayedPatient, stagedAddedTests, snapshot?.visit]);
+
+    const handleRenewHealthCard = () => {
+        handleAddRenewalToCart();
     };
+
+    // Notification Center routing for Expired Health Card & trigger-action listener
+    useEffect(() => {
+        if (healthCardEligibility?.isExpired && healthCardEligibility?.card) {
+            const card = healthCardEligibility.card;
+            const code = displayEligCardCode || (card.cardNumber && !card.cardNumber.startsWith("HC-") ? card.cardNumber : `${displayedPatient?.mrn || 'CARD'}-HC`);
+            const renewalPrice = Number(card.pricePaid || card.plan?.price || 1000);
+            const expiryDate = card.validUntil ? new Date(card.validUntil).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'recently';
+            const notifId = `hc-expired-${card.cardId || code}`;
+
+            window.dispatchEvent(new CustomEvent('synos:notification-hint', {
+                detail: {
+                    id: notifId,
+                    type: 'warning',
+                    title: 'Health Card Expired',
+                    message: `Health Card (${code}) expired on ${expiryDate}. Standard tariff applies until renewed.`,
+                    action: {
+                        label: `⚡ Renew Card (₹${renewalPrice.toLocaleString('en-IN')})`,
+                        type: 'renew-health-card-to-cart',
+                        payload: { card, code }
+                    }
+                }
+            }));
+        } else if (healthCardEligibility?.hasActiveCard) {
+            const card = healthCardEligibility.card;
+            const code = displayEligCardCode || card?.cardNumber;
+            window.dispatchEvent(new CustomEvent('synos:dismiss-notification-hint', {
+                detail: { id: `hc-expired-${card?.cardId || code}` }
+            }));
+        }
+    }, [healthCardEligibility, displayEligCardCode, displayedPatient?.mrn]);
+
+    useEffect(() => {
+        const handleTriggerAction = (e) => {
+            const { type, payload } = e.detail || {};
+            if (type === 'renew-health-card-to-cart') {
+                handleAddRenewalToCart(payload?.card);
+            }
+        };
+        window.addEventListener('synos:trigger-action', handleTriggerAction);
+        return () => window.removeEventListener('synos:trigger-action', handleTriggerAction);
+    }, [handleAddRenewalToCart]);
 
     // Auto-focus Edit Demographics button after adding/selecting/resuming a patient
     useEffect(() => {
@@ -2938,39 +3022,9 @@ export function IntentPanel({ onVisitUpdated }) {
                                             )}
 
                                             {/* Health Card Membership Status Banner (2-Column Active View) */}
-                                            {(healthCardEligibility?.hasActiveCard || healthCardEligibility?.isExpired) && (
+                                            {healthCardEligibility?.hasActiveCard && !healthCardEligibility?.isExpired && (
                                                 <div className="pt-1 animate-in fade-in duration-200">
-                                                    {healthCardEligibility.isExpired ? (
-                                                        <div className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50/70 dark:from-amber-950/40 dark:to-orange-950/30 border border-amber-300 dark:border-amber-700/80 flex items-center justify-between shadow-2xs">
-                                                            <div className="flex items-center gap-2.5 min-w-0">
-                                                                <div className="w-7 h-7 rounded-lg bg-amber-500 text-white flex items-center justify-center font-bold shrink-0 shadow-xs text-xs">
-                                                                    ⚠️
-                                                                </div>
-                                                                <div className="min-w-0">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <span className="text-xs sm:text-sm font-black text-amber-950 dark:text-amber-200 truncate">
-                                                                            Health Card ({displayEligCardCode}) • Subscription Expired
-                                                                        </span>
-                                                                        <span className="text-[10px] font-black px-2 py-0.5 rounded-md bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200 shrink-0">
-                                                                            Expired {new Date(healthCardEligibility.card?.validUntil).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
-                                                                        </span>
-                                                                    </div>
-                                                                    <p className="text-[11px] text-amber-800 dark:text-amber-300 mt-0.5 truncate">
-                                                                        Standard tariff applies until renewed. One-click renew keeps the same card number.
-                                                                    </p>
-                                                                </div>
-                                                            </div>
-                                                            <button
-                                                                type="button"
-                                                                onClick={handleRenewHealthCard}
-                                                                disabled={isRenewingHealthCard}
-                                                                className="px-3 py-1.5 rounded-xl text-xs font-black bg-amber-600 hover:bg-amber-700 text-white shadow-xs flex items-center gap-1.5 cursor-pointer shrink-0 ml-2 transition-transform active:scale-95"
-                                                            >
-                                                                {isRenewingHealthCard ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-                                                                <span>Renew Card (₹{healthCardEligibility.card?.pricePaid || 1000})</span>
-                                                            </button>
-                                                        </div>
-                                                    ) : healthCardEligibility.isPatientEnrolledBeneficiary ? (
+                                                    {healthCardEligibility.isPatientEnrolledBeneficiary ? (
                                                         (healthCardEligibility.isPendingPayment || healthCardEligibility.card?.status === 'PendingPayment') ? (
                                                             <div className="p-3 sm:p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 to-amber-100/60 dark:from-amber-950/40 dark:to-amber-900/30 border border-amber-300 dark:border-amber-700/80 flex items-center justify-between shadow-2xs">
                                                                 <div className="flex items-center gap-2.5 min-w-0">

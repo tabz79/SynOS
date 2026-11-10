@@ -944,6 +944,28 @@ WHERE p.MRN IS NOT NULL AND p.MRN <> '' AND (c.CardNumber LIKE 'HC-%' OR c.CardN
             {
                 Console.WriteLine($"[DbInitializer] Notice during card number standardization: {ex.Message}");
             }
+
+            // Issue 29: Multi-Branch Daily Token Counter Isolation Index Migration
+            try
+            {
+                var tokenIndexSql = @"
+IF EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_TokenCounters_Day_Department' AND object_id = OBJECT_ID('TokenCounters'))
+BEGIN
+    DROP INDEX [IX_TokenCounters_Day_Department] ON [TokenCounters];
+END
+
+IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'IX_TokenCounters_BranchId_Day_Department' AND object_id = OBJECT_ID('TokenCounters'))
+BEGIN
+    CREATE UNIQUE NONCLUSTERED INDEX [IX_TokenCounters_BranchId_Day_Department] 
+    ON [dbo].[TokenCounters] ([BranchId], [Day], [Department]);
+END
+";
+                context.Database.ExecuteSqlRaw(tokenIndexSql);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[DbInitializer] Notice during TokenCounters index migration: {ex.Message}");
+            }
         }
 
         public static void Initialize(SynOSDbContext context)

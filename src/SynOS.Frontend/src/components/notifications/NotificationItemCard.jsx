@@ -86,6 +86,22 @@ export function NotificationItemCard({ notif, onDismiss, onAction }) {
                 <p className="text-xs text-slate-600 dark:text-zinc-300 leading-snug line-clamp-2">
                     {notif.message}
                 </p>
+
+                {/* Explicit One-Click Action Pill (e.g. Renew Health Card) */}
+                {notif.action && notif.action.label && (
+                    <div className="pt-1.5 flex items-center">
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                if (onAction) onAction(notif);
+                            }}
+                            className="px-2.5 py-1 rounded-xl text-[11px] font-black bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-2xs flex items-center gap-1 cursor-pointer transition-transform active:scale-95"
+                        >
+                            <span>{notif.action.label}</span>
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Right Chevron for action hint */}
