@@ -14,7 +14,9 @@ import {
     FileText,
     Building2,
     Columns,
-    Upload
+    Upload,
+    Phone,
+    Mail
 } from 'lucide-react';
 
 const CanvasContext = createContext({ readOnly: false });
@@ -67,11 +69,14 @@ const EditableField = ({
         }
     };
 
+    // Clean label to eliminate double colons (e.g. "Doctor Name:" instead of "Doctor Name::")
+    const cleanLabel = label ? label.trim().replace(/[:\s]+$/, '') + ':' : '';
+
     if (isReadOnly) {
         return (
             <div className={`inline-flex items-center gap-1.5 max-w-full min-w-0 ${className} ${isBlock ? 'flex justify-between w-full' : ''}`}>
                 <div className={`flex items-center gap-1 min-w-0 ${isBlock ? 'justify-between w-full' : 'flex-1'}`}>
-                    {label && <span className={`${labelClassName} shrink-0`}>{label}</span>}
+                    {cleanLabel && <span className={`${labelClassName} shrink-0`}>{cleanLabel}</span>}
                     <span className={`${valueClassName}`}>{value}</span>
                 </div>
             </div>
@@ -148,7 +153,7 @@ const EditableField = ({
             className={`group/field relative inline-flex items-center gap-1.5 rounded px-1 -mx-1 transition-all hover:bg-indigo-50/70 dark:hover:bg-indigo-950/50 hover:ring-1 hover:ring-indigo-300/60 max-w-full min-w-0 cursor-pointer ${className} ${isBlock ? 'flex justify-between w-full' : ''}`}
         >
             <div className={`flex items-center gap-1 min-w-0 ${isBlock ? 'justify-between w-full' : 'flex-1'}`}>
-                {label && <span className={`${labelClassName} shrink-0`}>{label}</span>}
+                {cleanLabel && <span className={`${labelClassName} shrink-0`}>{cleanLabel}</span>}
                 <span className={`${valueClassName}`}>{value}</span>
             </div>
 
@@ -633,6 +638,59 @@ export const DynamicInvoiceCanvas = ({
         updateSchema({ ...schema, boxes: nextBoxes });
     };
 
+    // Helper to extract metadata fields for the top-right card in A4 mode
+    const docBadgeFields = boxes.docBadge?.fields || {};
+    const statusEntry = Object.entries(docBadgeFields).find(([k]) => k === 'paymentStatus' || k === 'status');
+    const statusKey = statusEntry ? statusEntry[0] : null;
+    const statusField = statusEntry ? statusEntry[1] : null;
+
+    // The metadata entries for the top-right card (exclude badge title, sub-badge, and status)
+    const metaEntries = Object.entries(docBadgeFields).filter(([k, f]) => {
+        if (!f || f.enabled === false) return false;
+        if (k === 'badgeTitle' || k === 'subBadge' || k === 'paymentStatus' || k === 'status') return false;
+        return true;
+    });
+
+    // Helper for status badge styling
+    const getStatusBadgeClass = (statusStr) => {
+        const s = String(statusStr || "").toUpperCase();
+        if (s.includes('DUE') || s.includes('PENDING') || s.includes('CLAIM')) {
+            return 'bg-amber-100 text-amber-900 border-amber-300';
+        }
+        if (s.includes('PAID') || s.includes('SETTLED')) {
+            return 'bg-emerald-100 text-emerald-900 border-emerald-300';
+        }
+        if (s.includes('PREPAID') || s.includes('PARTNER')) {
+            return 'bg-blue-100 text-blue-900 border-blue-300';
+        }
+        return 'bg-zinc-100 text-zinc-900 border-zinc-300';
+    };
+
+    // Compute lab initials tile for header
+    const labLegalName = boxes.header?.fields?.legalName?.value || labSettings.labLegalName || 'Sri Divya Diagnostic Centre';
+    const labWords = labLegalName.split(/\s+/).filter(w => !['AND', '&', 'THE', 'OF', 'CENTRE', 'CENTER', 'LABORATORY', 'LAB'].includes(w.toUpperCase()));
+    const labInitials = (labWords.length >= 2 ? labWords.slice(0, 2).map(w => w[0]).join('') : labLegalName.slice(0, 2)).toUpperCase();
+
+    // Financial fields split: normal summary items vs highlighted net due item
+    const finFields = Object.entries(boxes.financialSummary?.fields || {}).filter(([_, f]) => f && f.enabled !== false);
+    const netKeysPriority = ['balanceDue', 'netDue', 'totalDue', 'netPayable', 'netSalary', 'counterPayable', 'totalAmount'];
+    let summaryNetEntry = null;
+    for (const key of netKeysPriority) {
+        const found = finFields.find(([k]) => k === key);
+        if (found) {
+            summaryNetEntry = found;
+            break;
+        }
+    }
+    if (!summaryNetEntry && finFields.length > 0) {
+        summaryNetEntry = finFields[finFields.length - 1];
+    }
+    const summaryNormalEntries = finFields.filter(([k]) => !summaryNetEntry || k !== summaryNetEntry[0]);
+
+    const isNumericCol = (colKey) => {
+        return ['price', 'amount', 'grossAmount', 'netDue', 'received', 'labBilled', 'labTariff', 'rate', 'unitPrice', 'total', 'totalAmount', 'paidAmount', 'pendingAmount', 'dueAmount', 'tariff', 'discount', 'concession', 'b2bRate', 'patientPaid', 'referralAmount', 'billedAmount', 'approvedAmount', 'patientCoPay', 'claimAmount', 'counterDue', 'patientDue', 'coveredBy'].includes(colKey);
+    };
+
     return (
         <CanvasContext.Provider value={{ readOnly, isThermal }}>
             <div className={`w-full flex flex-col justify-between leading-tight ${
@@ -718,12 +776,12 @@ export const DynamicInvoiceCanvas = ({
                             </div>
                         </div>
                     ) : (
-                        <div className="border-b-2 border-zinc-900 pb-3 mb-3">
-                            <div className="flex items-start gap-4">
-                                {/* Top-Left Diagnostics Brand Logo */}
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-2">
+                            {/* Top-Left Diagnostics Brand Logo & Lab Identity */}
+                            <div className="flex items-start gap-3.5 min-w-0 flex-1">
                                 <div className="shrink-0 pt-0.5">
                                     {effectiveLogo ? (
-                                        <div className="w-20 h-20 sm:w-24 sm:h-24 p-1.5 rounded-xl border border-zinc-200 bg-white flex items-center justify-center overflow-hidden shadow-xs">
+                                        <div className="w-14 h-14 p-1 rounded-xl border border-zinc-200 bg-white flex items-center justify-center overflow-hidden shadow-2xs">
                                             <img 
                                                 src={effectiveLogo} 
                                                 alt="Diagnostic Centre Brand Logo" 
@@ -732,24 +790,23 @@ export const DynamicInvoiceCanvas = ({
                                         </div>
                                     ) : (
                                         <div 
-                                            title="Brand Logo: Upload your clinic or diagnostic logo in Commercial Paperwork Studio"
-                                            className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl border-2 border-dashed border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/40 flex flex-col items-center justify-center text-zinc-400 p-2 text-center select-none"
+                                            title="Brand Logo Tile"
+                                            className="w-14 h-14 rounded-xl bg-teal-800 text-white font-black text-xl flex items-center justify-center shrink-0 shadow-2xs uppercase tracking-wider select-none"
                                         >
-                                            <Building2 size={24} className="mb-1 text-zinc-400" />
-                                            <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-400">Brand Logo</span>
+                                            {labInitials}
                                         </div>
                                     )}
                                 </div>
 
-                                {/* Header Particulars (Legal Name, Trade Name, Address, Contact) */}
-                                <div className="flex-1 min-w-0 space-y-1">
+                                {/* Header Particulars */}
+                                <div className="flex-1 min-w-0 space-y-0.5">
                                     {boxes.header.fields?.legalName?.enabled && (
                                         <div className="block">
                                             <EditableField 
                                                 value={boxes.header.fields.legalName.value || labSettings.labLegalName}
                                                 onSave={(_, val) => updateField('header', 'legalName', undefined, val)}
                                                 onDelete={() => deleteField('header', 'legalName')}
-                                                valueClassName="text-lg font-black text-zinc-900 tracking-tight uppercase"
+                                                valueClassName="text-lg font-black text-zinc-900 tracking-tight uppercase block leading-tight"
                                             />
                                         </div>
                                     )}
@@ -759,7 +816,7 @@ export const DynamicInvoiceCanvas = ({
                                                 value={boxes.header.fields.tagline.value || labSettings.labTradeName}
                                                 onSave={(_, val) => updateField('header', 'tagline', undefined, val)}
                                                 onDelete={() => deleteField('header', 'tagline')}
-                                                valueClassName="text-[11px] font-bold text-zinc-600 block"
+                                                valueClassName="text-[10px] text-zinc-500 block leading-tight"
                                             />
                                         </div>
                                     )}
@@ -769,32 +826,36 @@ export const DynamicInvoiceCanvas = ({
                                                 value={boxes.header.fields.address.value || labSettings.address}
                                                 onSave={(_, val) => updateField('header', 'address', undefined, val)}
                                                 onDelete={() => deleteField('header', 'address')}
-                                                valueClassName="text-[10px] text-zinc-500 leading-relaxed block"
+                                                valueClassName="text-[10.5px] text-zinc-600 block leading-relaxed"
                                             />
                                         </div>
                                     )}
-                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[9px] text-zinc-600 font-semibold pt-0.5">
+                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-0.5 text-[10px] text-zinc-600 font-semibold pt-0.5">
                                         {boxes.header.fields?.phone?.enabled && (
-                                            <EditableField 
-                                                label="Phone:"
-                                                value={boxes.header.fields.phone.value || labSettings.phone}
-                                                onSave={(lbl, val) => updateField('header', 'phone', lbl, val)}
-                                                onDelete={() => deleteField('header', 'phone')}
-                                                valueClassName="font-mono text-zinc-800"
-                                            />
+                                            <div className="inline-flex items-center gap-1">
+                                                <Phone size={10} className="text-zinc-400 shrink-0" />
+                                                <EditableField 
+                                                    value={boxes.header.fields.phone.value || labSettings.phone}
+                                                    onSave={(lbl, val) => updateField('header', 'phone', lbl, val)}
+                                                    onDelete={() => deleteField('header', 'phone')}
+                                                    valueClassName="font-mono text-zinc-800"
+                                                />
+                                            </div>
                                         )}
                                         {boxes.header.fields?.email?.enabled && (
-                                            <EditableField 
-                                                label="Email:"
-                                                value={boxes.header.fields.email.value || labSettings.email}
-                                                onSave={(lbl, val) => updateField('header', 'email', lbl, val)}
-                                                onDelete={() => deleteField('header', 'email')}
-                                                valueClassName="text-zinc-800"
-                                            />
+                                            <div className="inline-flex items-center gap-1">
+                                                <Mail size={10} className="text-zinc-400 shrink-0" />
+                                                <EditableField 
+                                                    value={boxes.header.fields.email.value || labSettings.email}
+                                                    onSave={(lbl, val) => updateField('header', 'email', lbl, val)}
+                                                    onDelete={() => deleteField('header', 'email')}
+                                                    valueClassName="text-zinc-800"
+                                                />
+                                            </div>
                                         )}
                                         {boxes.header.fields?.gstin?.enabled && (
                                             <EditableField 
-                                                label="GSTIN:"
+                                                label="GSTIN"
                                                 value={boxes.header.fields.gstin.value || labSettings.gstin}
                                                 onSave={(lbl, val) => updateField('header', 'gstin', lbl, val)}
                                                 onDelete={() => deleteField('header', 'gstin')}
@@ -803,7 +864,7 @@ export const DynamicInvoiceCanvas = ({
                                         )}
                                         {boxes.header.fields?.pan?.enabled && (
                                             <EditableField 
-                                                label="PAN:"
+                                                label="PAN"
                                                 value={boxes.header.fields.pan.value || labSettings.pan}
                                                 onSave={(lbl, val) => updateField('header', 'pan', lbl, val)}
                                                 onDelete={() => deleteField('header', 'pan')}
@@ -829,10 +890,35 @@ export const DynamicInvoiceCanvas = ({
                                     ))}
                                 </div>
                             </div>
+
+                            {/* Top-Right Shaded Metadata Card */}
+                            {boxes.docBadge?.enabled && metaEntries.length > 0 && (
+                                <div className="bg-slate-50 border border-slate-200/90 rounded-xl p-3 min-w-[260px] max-w-[320px] text-[11px] shadow-2xs space-y-1 shrink-0">
+                                    {metaEntries.map(([key, field]) => {
+                                        const isNum = key.toLowerCase().includes('number') || key.toLowerCase().includes('no') || key === 'billNumber' || key === 'tokenNumber' || key === 'receiptNumber';
+                                        return (
+                                            <div key={key} className="flex justify-between items-center gap-3">
+                                                <span className="text-zinc-500 font-medium shrink-0">
+                                                    {field.label ? field.label.trim().replace(/[:\s]+$/, '') + ':' : ''}
+                                                </span>
+                                                <EditableField 
+                                                    value={field.value}
+                                                    onSave={(_, val) => updateField('docBadge', key, undefined, val)}
+                                                    onDelete={() => deleteField('docBadge', key)}
+                                                    valueClassName={`text-right truncate ${isNum ? 'font-mono font-bold text-zinc-900' : 'font-semibold text-zinc-800'}`}
+                                                />
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
                     )}
                 </ModularBoxWrapper>
             )}
+
+            {/* Divider line below header */}
+            {!isThermal && <div className="border-b border-zinc-200 my-2.5" />}
 
             {/* 2. DOCUMENT BADGE & INVOICE META NUMBERS BOX */}
             {boxes.docBadge?.enabled && (
@@ -891,48 +977,51 @@ export const DynamicInvoiceCanvas = ({
                             )}
                         </div>
                     ) : (
-                        <div className="pb-2 mb-2 border-b border-zinc-200 flex flex-wrap items-center justify-between gap-2">
+                        <div className="pb-2.5 mb-2.5 border-b border-zinc-200 flex flex-wrap items-center justify-between gap-2">
                             <div className="flex items-center gap-2">
                                 {boxes.docBadge.fields?.badgeTitle?.enabled && (
                                     <EditableField 
                                         value={boxes.docBadge.fields.badgeTitle.value}
                                         onSave={(_, val) => updateField('docBadge', 'badgeTitle', undefined, val)}
                                         onDelete={() => deleteField('docBadge', 'badgeTitle')}
-                                        valueClassName="inline-block px-3 py-1 bg-zinc-900 text-white rounded font-black text-[11px] tracking-wider uppercase"
+                                        valueClassName="inline-block px-3.5 py-1 bg-zinc-900 text-white rounded-md font-black text-xs uppercase tracking-wider shadow-2xs"
                                     />
                                 )}
-                                {boxes.docBadge.fields?.subBadge?.enabled && (
+                                {statusField && statusField.enabled && (
                                     <EditableField 
-                                        value={boxes.docBadge.fields.subBadge.value}
-                                        onSave={(_, val) => updateField('docBadge', 'subBadge', undefined, val)}
-                                        onDelete={() => deleteField('docBadge', 'subBadge')}
-                                        valueClassName="text-[9px] text-zinc-500 font-semibold uppercase tracking-wider"
+                                        value={statusField.value}
+                                        onSave={(_, val) => updateField('docBadge', statusKey, undefined, val)}
+                                        onDelete={() => deleteField('docBadge', statusKey)}
+                                        valueClassName={`inline-block px-3 py-1 rounded-md font-black text-xs uppercase tracking-wider border shadow-2xs ${getStatusBadgeClass(statusField.value)}`}
                                     />
                                 )}
                             </div>
 
-                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px]">
-                                {Object.entries(boxes.docBadge.fields || {}).map(([key, field]) => {
-                                    if (key === 'badgeTitle' || key === 'subBadge') return null;
-                                    if (!field || !field.enabled) return null;
-                                    const isStatus = key === 'paymentStatus' || key === 'status';
-                                    return (
+                            {boxes.docBadge.fields?.subBadge?.enabled && (
+                                <EditableField 
+                                    value={boxes.docBadge.fields.subBadge.value}
+                                    onSave={(_, val) => updateField('docBadge', 'subBadge', undefined, val)}
+                                    onDelete={() => deleteField('docBadge', 'subBadge')}
+                                    valueClassName="text-xs text-zinc-600 font-medium"
+                                />
+                            )}
+
+                            {/* If header was disabled or in preprinted mode, render metadata inline here */}
+                            {(!boxes.header?.enabled || letterheadMode === 'preprinted') && (
+                                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] w-full pt-1.5 border-t border-zinc-100">
+                                    {metaEntries.map(([key, field]) => (
                                         <EditableField 
                                             key={key}
-                                            label={!isStatus && field.label ? `${field.label}:` : ""}
+                                            label={field.label}
                                             value={field.value}
                                             onSave={(lbl, val) => updateField('docBadge', key, lbl, val)}
                                             onDelete={() => deleteField('docBadge', key)}
                                             labelClassName="text-zinc-500 font-medium text-[10px]"
-                                            valueClassName={isStatus 
-                                                ? "px-2 py-0.5 rounded font-black text-[9px] uppercase border tracking-wider bg-amber-50 text-amber-800 border-amber-300" 
-                                                : (key.includes('Number') || key.includes('No') || key === 'billNumber' || key === 'receiptNumber' || key === 'tokenNumber'
-                                                    ? "font-mono font-black text-zinc-900" 
-                                                    : "text-zinc-800 font-medium")}
+                                            valueClassName="font-mono font-bold text-zinc-900"
                                         />
-                                    );
-                                })}
-                            </div>
+                                    ))}
+                                </div>
+                            )}
 
                             {/* Custom Lines in Badge */}
                             {boxes.docBadge.customLines?.map(line => (
@@ -962,23 +1051,23 @@ export const DynamicInvoiceCanvas = ({
                     onDeleteBox={() => deleteBox('partyDetails')}
                     onAddCustomLine={(line) => addCustomLine('partyDetails', line)}
                 >
-                    <div className={isThermal ? "border-b border-dashed border-black pb-1 mb-1 text-[10.5px] leading-tight text-black" : "border border-zinc-300 rounded-lg p-3 mb-3 bg-zinc-50/50"}>
-                        <div className={isThermal ? "mb-0.5" : "flex justify-between items-center mb-1.5 pb-1 border-b border-zinc-200"}>
-                            <span className={isThermal ? "text-[9.5px] font-black uppercase text-black tracking-wider block" : "text-[10px] font-black uppercase text-zinc-500 tracking-wider"}>
+                    <div className={isThermal ? "border-b border-dashed border-black pb-1 mb-1 text-[10.5px] leading-tight text-black" : "rounded-xl border border-zinc-200 overflow-hidden mb-3.5 bg-white shadow-2xs"}>
+                        <div className={isThermal ? "mb-0.5" : "bg-slate-100/90 px-3.5 py-1.5 border-b border-zinc-200 flex justify-between items-center"}>
+                            <span className={isThermal ? "text-[9.5px] font-black uppercase text-black tracking-wider block" : "text-[10.5px] font-black uppercase text-zinc-700 tracking-wider"}>
                                 {boxes.partyDetails.title || "Party Particulars"}
                             </span>
                         </div>
 
-                        <div className={`grid ${isThermal ? 'grid-cols-1 gap-y-0.5' : 'grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1'} text-[11px]`}>
+                        <div className={`grid ${isThermal ? 'grid-cols-1 gap-y-0.5' : 'grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1.5 p-3.5'} text-[11px]`}>
                             {Object.entries(boxes.partyDetails.fields || {}).map(([key, field]) => {
                                 if (!field.enabled) return null;
                                 const isName = key === 'fullName';
-                                const isMrn = key === 'uhid' || key === 'mrn';
+                                const isMrn = key === 'uhid' || key === 'mrn' || key === 'partnerId' || key === 'policyNumber' || key === 'preAuthApprovalNumber';
                                 const displayLabel = (isMrn && (!field.label || field.label === 'UHID')) ? 'MRN' : field.label;
                                 return (
                                     <div key={key} className={isThermal ? (isName || isMrn ? "py-0.5" : "py-0") : "py-0.5"}>
                                         <EditableField 
-                                            label={displayLabel ? `${displayLabel}:` : ""}
+                                            label={displayLabel}
                                             value={field.value}
                                             isBlock={!isThermal}
                                             onSave={(lbl, val) => updateField('partyDetails', key, lbl, val)}
@@ -1006,7 +1095,7 @@ export const DynamicInvoiceCanvas = ({
                             {boxes.partyDetails.customLines?.map(line => (
                                 <div key={line.id} className={`py-0.5 ${isThermal ? '' : 'sm:col-span-2'}`}>
                                     <EditableField 
-                                        label={line.label ? `${line.label}:` : ""}
+                                        label={line.label}
                                         value={line.value}
                                         isBlock={true}
                                         onSave={(lbl, val) => {
@@ -1020,21 +1109,41 @@ export const DynamicInvoiceCanvas = ({
                                 </div>
                             ))}
                         </div>
+
+                        {/* Optional integrated biller details bar at bottom of card */}
+                        {!isThermal && boxes.billerDetails?.enabled && (
+                            <div className="bg-slate-50/70 border-t border-zinc-200 px-3.5 py-1.5 flex flex-wrap items-center gap-x-6 gap-y-1 text-[10.5px]">
+                                {Object.entries(boxes.billerDetails.fields || {}).map(([key, field]) => {
+                                    if (!field || !field.enabled) return null;
+                                    return (
+                                        <EditableField 
+                                            key={key}
+                                            label={field.label}
+                                            value={field.value}
+                                            onSave={(lbl, val) => updateField('billerDetails', key, lbl, val)}
+                                            onDelete={() => deleteField('billerDetails', key)}
+                                            labelClassName="text-zinc-500 font-medium"
+                                            valueClassName="font-bold text-zinc-800"
+                                        />
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
                 </ModularBoxWrapper>
             )}
 
-            {/* 3B. BILLER / DESK AUDIT DETAILS BOX */}
-            {boxes.billerDetails?.enabled && (
+            {/* 3B. BILLER / DESK AUDIT DETAILS BOX (Thermal or Standalone) */}
+            {boxes.billerDetails?.enabled && (isThermal || !boxes.partyDetails?.enabled) && (
                 <ModularBoxWrapper 
                     boxId="billerDetails" 
                     boxName={boxes.billerDetails.name || "Billing Desk Box"}
                     onDeleteBox={() => deleteBox('billerDetails')}
                     onAddCustomLine={(line) => addCustomLine('billerDetails', line)}
                 >
-                    <div className={isThermal ? "border-b border-dashed border-black pb-1 mb-1 text-[10px] leading-tight text-black" : "border border-zinc-300 rounded-lg p-3 mb-3 bg-zinc-50/50"}>
+                    <div className={isThermal ? "border-b border-dashed border-black pb-1 mb-1 text-[10px] leading-tight text-black" : "border border-zinc-200 rounded-xl p-3 mb-3.5 bg-slate-50/60 shadow-2xs"}>
                         <div className={isThermal ? "mb-0.5" : "flex justify-between items-center mb-1.5 pb-1 border-b border-zinc-200"}>
-                            <span className={isThermal ? "text-[9.5px] font-black uppercase text-black tracking-wider block" : "text-[10px] font-black uppercase text-zinc-500 tracking-wider"}>
+                            <span className={isThermal ? "text-[9.5px] font-black uppercase text-black tracking-wider block" : "text-[10px] font-black uppercase text-zinc-600 tracking-wider"}>
                                 {boxes.billerDetails.title || "Billing Desk"}
                             </span>
                         </div>
@@ -1045,7 +1154,7 @@ export const DynamicInvoiceCanvas = ({
                                 return (
                                     <div key={key} className={isThermal ? "py-0" : "py-0.5"}>
                                         <EditableField 
-                                            label={field.label ? `${field.label}:` : ""}
+                                            label={field.label}
                                             value={field.value}
                                             isBlock={!isThermal}
                                             onSave={(lbl, val) => updateField('billerDetails', key, lbl, val)}
@@ -1061,7 +1170,7 @@ export const DynamicInvoiceCanvas = ({
                             {boxes.billerDetails.customLines?.map(line => (
                                 <div key={line.id} className={`py-0.5 ${isThermal ? '' : 'sm:col-span-2'}`}>
                                     <EditableField 
-                                        label={line.label ? `${line.label}:` : ""}
+                                        label={line.label}
                                         value={line.value}
                                         isBlock={true}
                                         onSave={(lbl, val) => {
@@ -1087,115 +1196,125 @@ export const DynamicInvoiceCanvas = ({
 
                 const getColWeight = (key) => {
                     const weights = {
-                        index: 4,
-                        description: 34,
-                        testDescription: 32,
-                        testName: 32,
-                        itemDescription: 32,
+                        index: 5,
+                        description: 36,
+                        testDescription: 36,
+                        testName: 36,
+                        itemDescription: 36,
                         name: 26,
-                        serviceDescription: 32,
-                        investigations: 34,
-                        testNames: 34,
+                        serviceDescription: 36,
+                        investigations: 36,
+                        prescribedInvestigations: 36,
+                        testNames: 36,
                         expenseHead: 25,
                         
-                        department: 14,
-                        patientName: 18,
-                        doctorName: 18,
-                        prescribingDoctor: 18,
-                        corporateName: 20,
+                        department: 16,
+                        patientName: 22,
+                        doctorName: 20,
+                        prescribingDoctor: 20,
+                        corporateName: 22,
                         tpaName: 20,
                         insuranceCompany: 20,
                         referenceLab: 20,
-                        labName: 16,
-                        branchName: 12,
-                        specialty: 13,
-                        employeeId: 11,
+                        labName: 18,
+                        branchName: 14,
+                        specialty: 14,
+                        employeeId: 12,
+                        sampleType: 18,
+                        tat: 18,
+                        policyNumber: 16,
                         
-                        token: 9,
-                        visitToken: 9,
-                        billNumber: 13,
-                        date: 10,
-                        visitDate: 10,
-                        occurredAt: 12,
-                        period: 12,
-                        sacCode: 8,
-                        code: 8,
-                        itemCode: 9,
-                        sampleBarcode: 12,
-                        tpaClaimNo: 12,
-                        sourceReferenceId: 12,
-                        paymentMode: 10,
-                        mode: 10,
+                        token: 10,
+                        visitToken: 10,
+                        billNumber: 14,
+                        date: 15,
+                        visitDate: 15,
+                        occurredAt: 14,
+                        period: 14,
+                        sacCode: 10,
+                        code: 10,
+                        itemCode: 10,
+                        sampleBarcode: 14,
+                        tpaClaimNo: 14,
+                        claimId: 14,
+                        sourceReferenceId: 14,
+                        paymentMode: 12,
+                        mode: 12,
                         sourceType: 12,
-                        status: 8,
-                        partnerCategory: 10,
-                        uom: 7,
-                        quantity: 7,
-                        qty: 7,
-                        poQty: 7,
-                        receivedQty: 7,
-                        acceptedQty: 7,
-                        rejectedQty: 7,
-                        totalReferrals: 8,
-                        pendingBills: 8,
-                        claimsCount: 8,
-                        testsReferred: 8,
-                        activeClaims: 8,
-                        visitsCount: 8,
-                        employeesTested: 8,
-                        samplesCount: 8,
+                        status: 10,
+                        partnerCategory: 12,
+                        uom: 8,
+                        quantity: 8,
+                        qty: 8,
+                        poQty: 8,
+                        receivedQty: 8,
+                        acceptedQty: 8,
+                        rejectedQty: 8,
+                        totalReferrals: 10,
+                        pendingBills: 10,
+                        claimsCount: 10,
+                        testsReferred: 10,
+                        activeClaims: 10,
+                        visitsCount: 10,
+                        employeesTested: 10,
+                        samplesCount: 10,
                         
-                        price: 11,
-                        tariff: 11,
-                        rate: 9,
-                        unitPrice: 11,
-                        b2bRate: 11,
-                        discount: 10,
-                        concession: 10,
-                        coPay: 9,
-                        commissionRate: 9,
-                        taxRate: 8,
-                        tdsDeducted: 9,
-                        tdsAmount: 9,
-                        amount: 11,
-                        total: 11,
-                        totalAmount: 11,
-                        grossAmount: 11,
-                        grossCommission: 11,
-                        grossClaimed: 11,
-                        grossDue: 11,
-                        netAmount: 11,
-                        netPayout: 11,
-                        netDue: 11,
-                        netPayable: 11,
-                        paidAmount: 11,
-                        pendingAmount: 11,
-                        dueAmount: 11,
-                        received: 11,
-                        receivedAmount: 11,
-                        settledAmount: 11,
-                        billedToCorp: 11,
-                        preAuthAmount: 11,
-                        approvedAmount: 11,
-                        patientShare: 10,
-                        patientPaid: 11,
-                        referralAmount: 11,
-                        claimAmount: 11,
-                        claimedAmount: 11,
-                        deniedAmount: 11,
-                        billedByLab: 11,
-                        billedAmount: 11,
-                        outstandingBalance: 12,
-                        labBilled: 11,
-                        notes: 15
+                        price: 14,
+                        tariff: 14,
+                        labTariff: 14,
+                        b2bTariff: 14,
+                        rate: 12,
+                        unitPrice: 14,
+                        b2bRate: 14,
+                        discount: 12,
+                        concession: 12,
+                        coPay: 12,
+                        commissionRate: 12,
+                        taxRate: 10,
+                        tdsDeducted: 12,
+                        tdsAmount: 12,
+                        amount: 14,
+                        total: 14,
+                        totalAmount: 14,
+                        grossAmount: 14,
+                        grossCommission: 14,
+                        grossClaimed: 14,
+                        grossDue: 14,
+                        netAmount: 14,
+                        netPayout: 14,
+                        netDue: 14,
+                        netPayable: 14,
+                        paidAmount: 14,
+                        pendingAmount: 14,
+                        dueAmount: 14,
+                        amountDue: 14,
+                        received: 14,
+                        receivedAmount: 14,
+                        settledAmount: 14,
+                        billedToCorp: 14,
+                        preAuthAmount: 14,
+                        approvedAmount: 14,
+                        approved: 14,
+                        patientShare: 12,
+                        patientPaid: 14,
+                        referralAmount: 14,
+                        claimAmount: 14,
+                        claimedAmount: 14,
+                        deniedAmount: 14,
+                        billedByLab: 14,
+                        billedAmount: 14,
+                        outstandingBalance: 14,
+                        labBilled: 14,
+                        realizationDue: 14,
+                        notes: 16
                     };
 
                     if (weights[key]) return weights[key];
                     const lower = String(key || "").toLowerCase();
-                    if (lower.includes('investigation') || lower.includes('desc') || lower.includes('name') || lower.includes('service') || lower.includes('item')) return 30;
-                    if (lower.includes('date') || lower.includes('token') || lower.includes('time') || lower.includes('code') || lower.includes('num') || lower.includes('no')) return 9;
-                    if (lower.includes('price') || lower.includes('amt') || lower.includes('amount') || lower.includes('rate') || lower.includes('due') || lower.includes('disc') || lower.includes('tariff') || lower.includes('fee')) return 11;
-                    return 10;
+                    if (lower.includes('investigation') || lower.includes('desc') || lower.includes('name') || lower.includes('service') || lower.includes('item')) return 36;
+                    if (lower.includes('date') || lower.includes('token') || lower.includes('time') || lower.includes('code') || lower.includes('num') || lower.includes('no')) return 14;
+                    if (lower.includes('price') || lower.includes('amt') || lower.includes('amount') || lower.includes('rate') || lower.includes('due') || lower.includes('disc') || lower.includes('tariff') || lower.includes('fee') || lower.includes('claim')) return 14;
+                    return 12;
                 };
 
                 const getColumnWidth = (key) => {
@@ -1330,7 +1449,7 @@ export const DynamicInvoiceCanvas = ({
                             updateSchema(next);
                         }}
                     >
-                        <div className={isThermal ? "border-b border-dashed border-black pb-1 mb-1 overflow-x-auto print:overflow-visible" : "mb-3 overflow-x-auto print:overflow-visible rounded-lg border border-zinc-300"}>
+                        <div className={isThermal ? "border-b border-dashed border-black pb-1 mb-1 overflow-x-auto print:overflow-visible" : "mb-3.5 overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-2xs"}>
                             <table className="w-full text-left border-collapse table-fixed">
                                 <colgroup>
                                     {activeColumns.map(([colKey]) => (
@@ -1339,9 +1458,10 @@ export const DynamicInvoiceCanvas = ({
                                     {!readOnly && <col style={{ width: '3.5%' }} />}
                                 </colgroup>
                                 <thead>
-                                    <tr className={isThermal ? "border-b-[1.5px] border-black font-black uppercase text-black text-[9.5px]" : `bg-zinc-100 border-b border-zinc-300 font-black uppercase text-zinc-700 tracking-wider ${isDense ? 'text-[8.5px]' : 'text-[10px]'}`}>
+                                    <tr className={isThermal ? "border-b-[1.5px] border-black font-black uppercase text-black text-[9.5px]" : `bg-slate-100/75 border-b border-zinc-200 font-black uppercase text-zinc-700 tracking-wider ${isDense ? 'text-[8.5px]' : 'text-[10px]'}`}>
                                         {activeColumns.map(([colKey, col]) => {
-                                            const isNumeric = ['price', 'amount', 'grossAmount', 'netDue', 'received', 'labBilled', 'rate', 'unitPrice', 'total', 'totalAmount', 'paidAmount', 'pendingAmount', 'dueAmount', 'tariff', 'discount', 'concession', 'b2bRate', 'patientPaid', 'referralAmount', 'billedAmount'].includes(colKey);
+                                            const isNumeric = ['price', 'amount', 'grossAmount', 'netDue', 'received', 'labBilled', 'rate', 'unitPrice', 'total', 'totalAmount', 'paidAmount', 'pendingAmount', 'dueAmount', 'tariff', 'labTariff', 'b2bTariff', 'discount', 'concession', 'b2bRate', 'patientPaid', 'referralAmount', 'billedAmount', 'claimAmount', 'claimedAmount', 'realizationDue'].includes(colKey);
+                                            const isShortCol = isNumeric || ['date', 'visitDate', 'index', 'token', 'visitToken', 'claimId', 'sacCode', 'code', 'status', 'uom', 'qty', 'quantity'].includes(colKey);
                                             return (
                                                 <th 
                                                     key={colKey} 
@@ -1354,11 +1474,14 @@ export const DynamicInvoiceCanvas = ({
                                                     }}
                                                     className={isThermal 
                                                         ? `py-0.5 px-0.5 align-middle ${isNumeric ? 'text-right' : 'text-left'}` 
-                                                        : `${isDense ? 'px-1.5 py-1.5' : 'px-2 py-2'} border-r last:border-r-0 border-zinc-200 group/colhead relative align-middle overflow-hidden box-border ${!readOnly ? 'cursor-pointer hover:bg-indigo-50/70 transition-colors' : ''} ${isNumeric ? 'text-right' : 'text-left'}`}
+                                                        : `${isDense ? 'px-2 py-2' : 'px-3.5 py-2.5'} group/colhead relative align-middle overflow-hidden box-border ${!readOnly ? 'cursor-pointer hover:bg-indigo-50/70 transition-colors' : ''} ${isNumeric ? 'text-right' : 'text-left'}`}
                                                     title={!readOnly ? `Click to edit "${col.label || colKey}" column heading` : undefined}
                                                 >
                                                     <div className={`flex items-center gap-1 w-full min-w-0 ${isNumeric ? 'justify-end' : 'justify-between'}`}>
-                                                        <span className={isThermal ? "font-black text-black uppercase text-[9.5px]" : `font-black text-zinc-800 uppercase ${isDense ? 'text-[8.5px]' : 'text-[9.5px]'} whitespace-normal break-words [overflow-wrap:anywhere] leading-tight block flex-1 min-w-0`}>
+                                                        <span className={isThermal 
+                                                            ? "font-black text-black uppercase text-[9.5px]" 
+                                                            : `font-black text-zinc-700 uppercase ${isDense ? 'text-[8.5px]' : 'text-[10px]'} tracking-wider ${isShortCol ? 'whitespace-nowrap' : 'whitespace-normal break-words leading-tight'} block flex-1 min-w-0`
+                                                        }>
                                                             {col.label}
                                                         </span>
                                                         {!readOnly && (
@@ -1392,10 +1515,10 @@ export const DynamicInvoiceCanvas = ({
                                                 </th>
                                             );
                                         })}
-                                        {!readOnly && <th style={{ width: '3.5%' }} className={isThermal ? "p-0.5 text-center text-zinc-400" : "p-1 text-center text-zinc-400 border-zinc-200"}>✕</th>}
+                                        {!readOnly && <th style={{ width: '3.5%' }} className={isThermal ? "p-0.5 text-center text-zinc-400" : "p-1 text-center text-zinc-400"}>✕</th>}
                                     </tr>
                                 </thead>
-                                <tbody className={isThermal ? "text-[10.5px] text-black" : `divide-y divide-zinc-200 ${isDense ? 'text-[9.5px]' : 'text-[11px]'}`}>
+                                <tbody className={isThermal ? "text-[10.5px] text-black" : `divide-y divide-zinc-100 ${isDense ? 'text-[9.5px]' : 'text-[11px]'}`}>
                                     {(boxes.itemsTable.rows || []).map((row, idx) => (
                                         <React.Fragment key={row.id || idx}>
                                             {/* A4 Sheet Demarcation Guide (Visual aid in screen preview, strictly hidden in print) */}
@@ -1421,17 +1544,17 @@ export const DynamicInvoiceCanvas = ({
                                                     </td>
                                                 </tr>
                                             )}
-                                            <tr className={isThermal ? "border-b border-dotted border-black hover:bg-zinc-50" : "hover:bg-zinc-50 group/row break-inside-avoid print:break-inside-avoid"}>
+                                            <tr className={isThermal ? "border-b border-dotted border-black hover:bg-zinc-50" : "hover:bg-slate-50/60 group/row break-inside-avoid print:break-inside-avoid transition-colors"}>
                                                 {activeColumns.map(([colKey, col]) => {
                                                     const cellVal = row[colKey] !== undefined ? row[colKey] : (row[col.id] ?? '');
-                                                    const isNumeric = ['price', 'amount', 'grossAmount', 'netDue', 'received', 'labBilled', 'rate', 'unitPrice', 'total', 'totalAmount', 'paidAmount', 'pendingAmount', 'dueAmount', 'tariff', 'discount', 'concession', 'b2bRate', 'patientPaid', 'referralAmount', 'billedAmount'].includes(colKey);
+                                                    const isNumeric = ['price', 'amount', 'grossAmount', 'netDue', 'received', 'labBilled', 'rate', 'unitPrice', 'total', 'totalAmount', 'paidAmount', 'pendingAmount', 'dueAmount', 'tariff', 'labTariff', 'b2bTariff', 'discount', 'concession', 'b2bRate', 'patientPaid', 'referralAmount', 'billedAmount', 'claimAmount', 'claimedAmount', 'realizationDue'].includes(colKey);
                                                     return (
                                                         <td 
                                                             key={colKey} 
                                                             style={{ width: getColumnWidth(colKey) }}
                                                             className={isThermal 
                                                                 ? `py-0.5 px-0.5 align-top ${isNumeric ? 'text-right font-mono font-bold' : 'font-bold'}` 
-                                                                : `${isDense ? 'px-1.5 py-1 text-[9px]' : 'p-2 text-[10px]'} border-r last:border-r-0 border-zinc-200 align-top overflow-hidden box-border ${isNumeric ? 'text-right font-mono font-semibold' : ''}`}
+                                                                : `${isDense ? 'px-2 py-1.5 text-[9.5px]' : 'px-3.5 py-2.5 text-[11px]'} align-middle overflow-hidden box-border ${isNumeric ? 'text-right font-mono font-bold text-zinc-900' : 'text-zinc-800'}`}
                                                         >
                                                             <div className="min-w-0 overflow-hidden">
                                                                 <EditableField 
@@ -1441,14 +1564,14 @@ export const DynamicInvoiceCanvas = ({
                                                                     className="w-full min-w-0"
                                                                     valueClassName={isThermal 
                                                                         ? `font-bold text-black ${isNumeric ? 'font-mono' : 'whitespace-normal break-words'} block` 
-                                                                        : `font-medium text-zinc-800 ${isNumeric ? 'font-mono' : 'whitespace-normal break-words [overflow-wrap:anywhere] leading-tight'} block`}
+                                                                        : `${isNumeric ? 'font-mono font-bold text-zinc-900' : (colKey === 'patientName' || colKey === 'fullName' ? 'font-bold text-zinc-900' : 'font-medium text-zinc-800')} whitespace-normal break-words leading-tight block`}
                                                                 />
                                                             </div>
                                                         </td>
                                                     );
                                                 })}
                                                 {!readOnly && (
-                                                    <td style={{ width: '3.5%' }} className={isThermal ? "p-0.5 text-center" : "p-1 text-center border-zinc-200"}>
+                                                    <td style={{ width: '3.5%' }} className={isThermal ? "p-0.5 text-center" : "p-1 text-center"}>
                                                         <button 
                                                             type="button"
                                                             onClick={() => deleteRow('itemsTable', row.id)}
@@ -1469,8 +1592,218 @@ export const DynamicInvoiceCanvas = ({
                 );
             })()}
 
-            {/* 5. FINANCIAL TOTALS & TAX BREAKUP BOX */}
-            {boxes.financialSummary?.enabled && (
+            {/* 5. A4 DUAL LOWER BLOCK: PAYMENT DETAILS (LEFT) & FINANCIAL SUMMARY (RIGHT) */}
+            {!isThermal && (boxes.bankAndUpi?.enabled || boxes.financialSummary?.enabled) && (
+                <div className={
+                    boxes.bankAndUpi?.enabled && boxes.financialSummary?.enabled
+                        ? "grid grid-cols-1 md:grid-cols-2 gap-3.5 mb-3.5 items-stretch"
+                        : (boxes.financialSummary?.isPrepaidNotice ? "w-full mb-3.5" : "max-w-md ml-auto mb-3.5")
+                }>
+                    {/* LEFT CARD: PAYMENT DETAILS & BHARAT UPI QR */}
+                    {boxes.bankAndUpi?.enabled && (
+                        <ModularBoxWrapper 
+                            boxId="bankAndUpi" 
+                            boxName={boxes.bankAndUpi.name || "Payment Details & UPI QR"}
+                            onDeleteBox={() => deleteBox('bankAndUpi')}
+                            onAddCustomLine={(line) => addCustomLine('bankAndUpi', line)}
+                            extraToolbarActions={!readOnly && (
+                                <div className="flex items-center gap-1">
+                                    <label className="px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 font-bold flex items-center gap-0.5 cursor-pointer text-[10px]">
+                                        <Upload size={10} />
+                                        <span>{effectiveQrImage ? 'Change QR' : 'Upload QR'}</span>
+                                        <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={handleQrUpload} className="hidden" />
+                                    </label>
+                                    {effectiveQrImage && (
+                                        <button
+                                            type="button"
+                                            onClick={handleRemoveQr}
+                                            className="px-1.5 py-0.5 rounded bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold flex items-center gap-0.5 cursor-pointer text-[10px]"
+                                            title="Reset to dynamic QR"
+                                        >
+                                            <X size={10} /> Reset
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                        >
+                            <div className="border border-zinc-200 rounded-xl p-3.5 bg-white shadow-2xs flex items-center gap-4 h-full">
+                                {/* Dynamic or Custom UPI QR Code */}
+                                {boxes.bankAndUpi.fields?.showQr?.enabled !== false && (
+                                    <div className="relative group/qr shrink-0 flex flex-col items-center">
+                                        <div className="w-24 h-24 bg-white p-1 rounded-lg border border-zinc-200 flex flex-col items-center justify-center shadow-2xs">
+                                            {effectiveQrImage ? (
+                                                <img 
+                                                    src={effectiveQrImage} 
+                                                    alt="Custom UPI QR" 
+                                                    className="w-20 h-20 object-contain rounded filter contrast-125" 
+                                                />
+                                            ) : (
+                                                <img 
+                                                    src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(`upi://pay?pa=${encodeURIComponent(boxes.bankAndUpi.fields?.upiId?.value || labSettings.upiId || 'divyalab@okicicibank')}&pn=SynOS`)}`}
+                                                    alt="UPI QR"
+                                                    className="w-20 h-20 object-contain"
+                                                />
+                                            )}
+                                            {!readOnly && (
+                                                <label className="absolute inset-0 bg-black/60 opacity-0 group-hover/qr:opacity-100 flex flex-col items-center justify-center text-white text-[8px] font-bold rounded cursor-pointer transition-opacity">
+                                                    <Upload size={12} className="mb-0.5" />
+                                                    <span>{effectiveQrImage ? "Change" : "Upload"}</span>
+                                                    <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={handleQrUpload} className="hidden" />
+                                                </label>
+                                            )}
+                                        </div>
+                                        <span className="text-[9px] font-bold text-zinc-500 mt-1">
+                                            Scan to Pay
+                                        </span>
+                                    </div>
+                                )}
+
+                                {/* Vertical Divider */}
+                                <div className="w-px self-stretch bg-zinc-200 shrink-0" />
+
+                                {/* Bank & UPI Details */}
+                                <div className="flex-1 min-w-0 space-y-1 text-[11px]">
+                                    <EditableField 
+                                        value={boxes.bankAndUpi.title || "Payment Details"}
+                                        onSave={(_, val) => updateSchema({ ...schema, boxes: { ...boxes, bankAndUpi: { ...boxes.bankAndUpi, title: val } } })}
+                                        valueClassName="text-xs font-black uppercase tracking-wider text-zinc-800 block mb-1"
+                                    />
+
+                                    {boxes.bankAndUpi.fields?.bankName?.enabled && (
+                                        <div className="flex items-center gap-2">
+                                            <EditableField 
+                                                label="Bank:"
+                                                value={boxes.bankAndUpi.fields.bankName.value || labSettings.bankName || 'HDFC Bank'}
+                                                onSave={(lbl, val) => updateField('bankAndUpi', 'bankName', lbl, val)}
+                                                onDelete={() => deleteField('bankAndUpi', 'bankName')}
+                                                labelClassName="text-zinc-500 font-medium min-w-[50px]"
+                                                valueClassName="font-bold text-zinc-800"
+                                            />
+                                        </div>
+                                    )}
+                                    {boxes.bankAndUpi.fields?.accountNumber?.enabled && (
+                                        <div className="flex items-center gap-2">
+                                            <EditableField 
+                                                label="A/C No.:"
+                                                value={boxes.bankAndUpi.fields.accountNumber.value || labSettings.accountNumber || '50200012345678'}
+                                                onSave={(lbl, val) => updateField('bankAndUpi', 'accountNumber', lbl, val)}
+                                                onDelete={() => deleteField('bankAndUpi', 'accountNumber')}
+                                                labelClassName="text-zinc-500 font-medium min-w-[50px]"
+                                                valueClassName="font-mono font-bold text-zinc-900"
+                                            />
+                                        </div>
+                                    )}
+                                    {boxes.bankAndUpi.fields?.ifsc?.enabled && (
+                                        <div className="flex items-center gap-2">
+                                            <EditableField 
+                                                label="IFSC:"
+                                                value={boxes.bankAndUpi.fields.ifsc.value || labSettings.ifscCode || 'HDFC0001234'}
+                                                onSave={(lbl, val) => updateField('bankAndUpi', 'ifsc', lbl, val)}
+                                                onDelete={() => deleteField('bankAndUpi', 'ifsc')}
+                                                labelClassName="text-zinc-500 font-medium min-w-[50px]"
+                                                valueClassName="font-mono font-bold text-zinc-900"
+                                            />
+                                        </div>
+                                    )}
+                                    {boxes.bankAndUpi.fields?.upiId?.enabled && (
+                                        <div className="flex items-center gap-2">
+                                            <EditableField 
+                                                label="UPI ID:"
+                                                value={boxes.bankAndUpi.fields.upiId.value || labSettings.upiId || 'divyalab@okicicibank'}
+                                                onSave={(lbl, val) => updateField('bankAndUpi', 'upiId', lbl, val)}
+                                                onDelete={() => deleteField('bankAndUpi', 'upiId')}
+                                                labelClassName="text-zinc-500 font-medium min-w-[50px]"
+                                                valueClassName="font-mono font-bold text-zinc-800 break-all"
+                                            />
+                                        </div>
+                                    )}
+
+                                    {/* Custom Lines */}
+                                    {boxes.bankAndUpi.customLines?.map(line => (
+                                        <div key={line.id} className="flex items-center gap-2">
+                                            <EditableField 
+                                                label={line.label}
+                                                value={line.value}
+                                                onSave={(lbl, val) => {
+                                                    const nextLines = boxes.bankAndUpi.customLines.map(l => l.id === line.id ? { ...l, label: lbl, value: val } : l);
+                                                    updateSchema({ ...schema, boxes: { ...boxes, bankAndUpi: { ...boxes.bankAndUpi, customLines: nextLines } } });
+                                                }}
+                                                onDelete={() => deleteCustomLine('bankAndUpi', line.id)}
+                                                labelClassName="text-zinc-500 font-medium min-w-[50px]"
+                                                valueClassName="font-medium text-zinc-800"
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </ModularBoxWrapper>
+                    )}
+
+                    {/* RIGHT CARD: FINANCIAL SUMMARY BREAKDOWN & RED NET DUE BAR */}
+                    {boxes.financialSummary?.enabled && (
+                        <ModularBoxWrapper 
+                            boxId="financialSummary" 
+                            boxName={boxes.financialSummary.name || "Financial Totals Box"}
+                            className="break-inside-avoid print:break-inside-avoid synos-avoid-page-break"
+                            onDeleteBox={() => deleteBox('financialSummary')}
+                            onAddCustomLine={(line) => addCustomLine('financialSummary', line)}
+                        >
+                            <div className="border border-zinc-200 rounded-xl p-3.5 bg-white shadow-2xs flex flex-col justify-between h-full">
+                                {/* Normal Financial Entries */}
+                                <div className="space-y-1.5 mb-2">
+                                    {summaryNormalEntries.map(([key, field]) => (
+                                        <div key={key} className="flex justify-between items-center py-0.5 text-[11px]">
+                                            <EditableField 
+                                                label={field.label}
+                                                value={field.value}
+                                                isBlock={true}
+                                                onSave={(lbl, val) => updateField('financialSummary', key, lbl, val)}
+                                                onDelete={() => deleteField('financialSummary', key)}
+                                                labelClassName="text-zinc-600 font-medium"
+                                                valueClassName="font-mono font-bold text-zinc-900"
+                                            />
+                                        </div>
+                                    ))}
+                                    {boxes.financialSummary.customLines?.map(line => (
+                                        <div key={line.id} className="flex justify-between items-center py-0.5 text-[11px]">
+                                            <EditableField 
+                                                label={line.label}
+                                                value={line.value}
+                                                isBlock={true}
+                                                onSave={(lbl, val) => {
+                                                    const nextLines = boxes.financialSummary.customLines.map(l => l.id === line.id ? { ...l, label: lbl, value: val } : l);
+                                                    updateSchema({ ...schema, boxes: { ...boxes, financialSummary: { ...boxes.financialSummary, customLines: nextLines } } });
+                                                }}
+                                                onDelete={() => deleteCustomLine('financialSummary', line.id)}
+                                                labelClassName="text-zinc-600 font-medium"
+                                                valueClassName="font-mono font-bold text-zinc-900"
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Net Due / Highlighted Total Bottom Row */}
+                                {summaryNetEntry && (
+                                    <div className="bg-rose-50/90 border border-rose-100 rounded-lg p-2.5 flex items-center justify-between mt-auto">
+                                        <EditableField 
+                                            label={summaryNetEntry[1].label}
+                                            value={summaryNetEntry[1].value}
+                                            isBlock={true}
+                                            onSave={(lbl, val) => updateField('financialSummary', summaryNetEntry[0], lbl, val)}
+                                            onDelete={() => deleteField('financialSummary', summaryNetEntry[0])}
+                                            labelClassName="text-xs font-black text-zinc-900 tracking-tight"
+                                            valueClassName="font-mono font-black text-rose-600 text-lg"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        </ModularBoxWrapper>
+                    )}
+                </div>
+            )}
+
+            {/* 5B. THERMAL FINANCIAL TOTALS BOX */}
+            {isThermal && boxes.financialSummary?.enabled && (
                 <ModularBoxWrapper 
                     boxId="financialSummary" 
                     boxName={boxes.financialSummary.name || "Financial Totals Box"}
@@ -1478,7 +1811,7 @@ export const DynamicInvoiceCanvas = ({
                     onDeleteBox={() => deleteBox('financialSummary')}
                     onAddCustomLine={(line) => addCustomLine('financialSummary', line)}
                 >
-                    {isThermal && (boxes.financialSummary.isPrepaidNotice || boxes.financialSummary.fields?.counterPayable || schema.slotId === 'patient_thermal_prepaid_slip' || schema.slotId === 'patient_thermal_prepaid_billed_doctor' || boxes.financialSummary.title?.includes('REFERRAL PARTNER')) ? (
+                    {(boxes.financialSummary.isPrepaidNotice || boxes.financialSummary.fields?.counterPayable || schema.slotId === 'patient_thermal_prepaid_slip' || schema.slotId === 'patient_thermal_prepaid_billed_doctor' || boxes.financialSummary.title?.includes('REFERRAL PARTNER')) ? (
                         <div className="border-[1.5px] border-black p-1.5 mb-1.5 text-center bg-white">
                             <div className="text-[10px] font-black uppercase tracking-wider text-black">
                                 <EditableField 
@@ -1501,25 +1834,22 @@ export const DynamicInvoiceCanvas = ({
                             )}
                         </div>
                     ) : (
-                        <div className={isThermal ? "border-b-[1.5px] border-black pb-1 mb-1 text-[11px] text-black w-full" : `bg-zinc-50 rounded-lg border border-zinc-300 p-3 mb-3 space-y-1.5 text-[11px] ${isThermal ? 'w-full' : 'max-w-sm ml-auto'}`}>
+                        <div className="border-b-[1.5px] border-black pb-1 mb-1 text-[11px] text-black w-full">
                             {Object.entries(boxes.financialSummary.fields || {}).map(([key, field]) => {
                                 if (!field.enabled) return null;
                                 const isNet = key === 'totalAmount' || key === 'netSalary';
-                                const isDue = key === 'balanceDue';
                                 return (
                                     <div key={key} className={`flex justify-between items-center ${
-                                        isThermal 
-                                            ? (isNet ? 'border-y border-dashed border-black py-0.5 my-0.5 font-black text-[13.5px]' : 'py-0 font-bold text-[10.5px]') 
-                                            : (isNet ? 'border-t-2 border-zinc-900 pt-1.5 font-black text-sm' : 'py-0.5')
-                                    } ${!isThermal && isDue ? 'border-t border-zinc-200 pt-1 font-black text-rose-600' : ''}`}>
+                                        isNet ? 'border-y border-dashed border-black py-0.5 my-0.5 font-black text-[13.5px]' : 'py-0 font-bold text-[10.5px]'
+                                    }`}>
                                         <EditableField 
-                                            label={field.label ? `${field.label}:` : ""}
+                                            label={field.label}
                                             value={field.value}
                                             isBlock={true}
                                             onSave={(lbl, val) => updateField('financialSummary', key, lbl, val)}
                                             onDelete={() => deleteField('financialSummary', key)}
-                                            labelClassName={isThermal ? (isNet ? 'text-black font-black uppercase' : 'text-black font-normal') : "text-zinc-600 font-medium"}
-                                            valueClassName={isThermal ? "font-mono font-black text-black" : `font-mono font-bold ${isDue ? 'text-rose-600' : 'text-zinc-900'}`}
+                                            labelClassName={isNet ? 'text-black font-black uppercase' : 'text-black font-normal'}
+                                            valueClassName="font-mono font-black text-black"
                                         />
                                     </div>
                                 );
@@ -1529,7 +1859,7 @@ export const DynamicInvoiceCanvas = ({
                             {boxes.financialSummary.customLines?.map(line => (
                                 <div key={line.id} className="flex justify-between items-center py-0.5 border-t border-dashed border-zinc-200">
                                     <EditableField 
-                                        label={line.label ? `${line.label}:` : ""}
+                                        label={line.label}
                                         value={line.value}
                                         isBlock={true}
                                         onSave={(lbl, val) => {
@@ -1554,8 +1884,8 @@ export const DynamicInvoiceCanvas = ({
                     boxName={boxes.amountInWords.name || "Amount in Words"}
                     onDeleteBox={() => deleteBox('amountInWords')}
                 >
-                    <div className="p-2.5 bg-zinc-50 rounded-lg border border-zinc-200 mb-3 space-y-0.5">
-                        <span className="text-[10px] font-bold uppercase text-zinc-400 block tracking-wider">
+                    <div className={isThermal ? "p-1 bg-zinc-50 border-y border-dashed border-black mb-1 text-[9.5px]" : "p-2.5 bg-slate-50/70 rounded-xl border border-zinc-200/80 mb-3.5 space-y-0.5 shadow-2xs"}>
+                        <span className={isThermal ? "text-[8.5px] font-bold uppercase text-black block tracking-wider" : "text-[9.5px] font-bold uppercase text-zinc-500 block tracking-wider"}>
                             {boxes.amountInWords.label || "Amount in Words"}
                         </span>
                         <EditableField 
@@ -1571,7 +1901,7 @@ export const DynamicInvoiceCanvas = ({
                                 updateSchema(next);
                             }}
                             onDelete={() => deleteBox('amountInWords')}
-                            valueClassName="text-xs font-bold text-zinc-900 italic block"
+                            valueClassName={isThermal ? "text-[9.5px] font-black text-black italic block" : "text-xs font-bold text-zinc-900 italic block"}
                         />
                     </div>
                 </ModularBoxWrapper>
@@ -1584,8 +1914,8 @@ export const DynamicInvoiceCanvas = ({
                     boxName={boxes.receiptHistory.name || "Receipt History"}
                     onDeleteBox={() => deleteBox('receiptHistory')}
                 >
-                    <div className="p-2.5 bg-zinc-50/80 rounded border border-zinc-200 text-[10px] space-y-1 mb-3">
-                        <span className="font-bold uppercase text-zinc-400 tracking-wider">
+                    <div className={isThermal ? "p-1 bg-zinc-50 border border-black text-[9.5px] mb-1" : "p-2.5 bg-slate-50/70 rounded-xl border border-zinc-200 text-[10px] space-y-1 mb-3.5 shadow-2xs"}>
+                        <span className={isThermal ? "font-black uppercase text-black block" : "font-bold uppercase text-zinc-500 tracking-wider text-[9.5px]"}>
                             {boxes.receiptHistory.title || "Settlement Receipt History"}
                         </span>
                         <div className="flex flex-wrap gap-3 text-zinc-700">
@@ -1602,140 +1932,37 @@ export const DynamicInvoiceCanvas = ({
                 </ModularBoxWrapper>
             )}
 
-            {/* 8. BANK WIRE & DYNAMIC BHARAT UPI QR */}
-            {boxes.bankAndUpi?.enabled && (
+            {/* 8. THERMAL STANDALONE BANK WIRE & DYNAMIC BHARAT UPI QR */}
+            {isThermal && boxes.bankAndUpi?.enabled && (
                 <ModularBoxWrapper 
                     boxId="bankAndUpi" 
-                    boxName={boxes.bankAndUpi.name || (isThermal ? "Instant Payment QR" : "Bank Wire & Dynamic UPI")}
+                    boxName={boxes.bankAndUpi.name || "Instant Payment QR"}
                     onDeleteBox={() => deleteBox('bankAndUpi')}
                     onAddCustomLine={(line) => addCustomLine('bankAndUpi', line)}
-                    className="mt-2"
-                    extraToolbarActions={!readOnly && (
-                        <div className="flex items-center gap-1">
-                            <label className="px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 text-emerald-700 dark:text-emerald-400 font-bold flex items-center gap-0.5 cursor-pointer">
-                                <Upload size={10} />
-                                <span>{effectiveQrImage ? 'Change QR' : 'Upload QR'}</span>
-                                <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={handleQrUpload} className="hidden" />
-                            </label>
-                            {effectiveQrImage && (
-                                <button
-                                    type="button"
-                                    onClick={handleRemoveQr}
-                                    className="px-1.5 py-0.5 rounded bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold flex items-center gap-0.5 cursor-pointer"
-                                    title="Reset to dynamic QR"
-                                >
-                                    <X size={10} /> Reset QR
-                                </button>
-                            )}
-                        </div>
-                    )}
+                    className="mt-1"
                 >
-                    {isThermal ? (
-                        <div className="border border-dashed border-black p-1.5 mb-1 text-center">
-                            <div className="flex items-center justify-center gap-2">
-                                {boxes.bankAndUpi.fields?.showQr?.enabled !== false && (
-                                    <div className="relative group/qr shrink-0">
-                                        {effectiveQrImage ? (
-                                            <img 
-                                                src={effectiveQrImage} 
-                                                alt="Custom UPI QR" 
-                                                className="w-16 h-16 object-contain rounded border border-zinc-200 filter contrast-125" 
-                                            />
-                                        ) : (
-                                            <img 
-                                                src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(`upi://pay?pa=${encodeURIComponent(boxes.bankAndUpi.fields?.upiId?.value || labSettings.upiId || 'synoslab@hdfcbank')}&pn=SynOS`)}`}
-                                                alt="UPI QR"
-                                                className="w-16 h-16 object-contain"
-                                            />
-                                        )}
-                                        {!readOnly && (
-                                            <label className="absolute inset-0 bg-black/60 opacity-0 group-hover/qr:opacity-100 flex flex-col items-center justify-center text-white text-[8px] font-bold rounded cursor-pointer transition-opacity">
-                                                <Upload size={12} className="mb-0.5" />
-                                                <span>{effectiveQrImage ? "Change" : "Upload"}</span>
-                                                <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={handleQrUpload} className="hidden" />
-                                            </label>
-                                        )}
-                                    </div>
-                                )}
-                                <div className="text-left text-black space-y-0.5 flex-1 min-w-0">
-                                    <EditableField 
-                                        value={boxes.bankAndUpi.title || "SCAN QR TO PAY"}
-                                        onSave={(_, val) => {
-                                            const next = {
-                                                ...schema,
-                                                boxes: {
-                                                    ...boxes,
-                                                    bankAndUpi: { ...boxes.bankAndUpi, title: val }
-                                                }
-                                            };
-                                            updateSchema(next);
-                                        }}
-                                        onDelete={() => deleteBox('bankAndUpi')}
-                                        valueClassName="text-[9.5px] font-black uppercase tracking-wider text-black block leading-tight"
-                                    />
-                                    <EditableField 
-                                        value={boxes.bankAndUpi.fields?.upiId?.value || labSettings.upiId || 'synoslab@hdfcbank'}
-                                        onSave={(_, val) => {
-                                            updateField('bankAndUpi', 'upiId', undefined, val);
-                                            if (onUpdateLabSetting) onUpdateLabSetting('upiId', val);
-                                        }}
-                                        onDelete={() => deleteField('bankAndUpi', 'upiId')}
-                                        valueClassName="text-[8.5px] font-mono font-bold text-black block break-all leading-tight"
-                                    />
-                                    <EditableField 
-                                        value={boxes.bankAndUpi.subtitle || "Instant Bharat UPI"}
-                                        onSave={(_, val) => {
-                                            const next = {
-                                                ...schema,
-                                                boxes: {
-                                                    ...boxes,
-                                                    bankAndUpi: { ...boxes.bankAndUpi, subtitle: val }
-                                                }
-                                            };
-                                            updateSchema(next);
-                                        }}
-                                        onDelete={() => {
-                                            const next = {
-                                                ...schema,
-                                                boxes: {
-                                                    ...boxes,
-                                                    bankAndUpi: { ...boxes.bankAndUpi, subtitle: "" }
-                                                }
-                                            };
-                                            updateSchema(next);
-                                        }}
-                                        valueClassName="text-[8px] font-bold text-black block leading-tight"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="p-3 rounded-lg border border-zinc-200 mb-3 flex gap-3 items-center bg-zinc-50/30">
-                            {/* Dynamic or Custom UPI QR Code */}
-                            {boxes.bankAndUpi.fields?.showQr?.enabled && (
-                                <div className="relative group/qr w-20 h-20 bg-white p-1 rounded border border-zinc-300 flex flex-col items-center justify-center shrink-0">
-                                    <img 
-                                        src={effectiveQrImage || `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(`upi://pay?pa=${encodeURIComponent(boxes.bankAndUpi.fields?.upiId?.value || labSettings.upiId || 'synoslab@hdfcbank')}&pn=SynOS`)}`}
-                                        alt="UPI QR"
-                                        className="w-16 h-16 object-contain"
-                                    />
-                                    <span className="text-[7px] font-extrabold uppercase text-zinc-500 mt-0.5">
-                                        {effectiveQrImage ? "Custom QR" : "Scan to Pay"}
-                                    </span>
-                                    {!readOnly && (
-                                        <label className="absolute inset-0 bg-black/60 opacity-0 group-hover/qr:opacity-100 flex flex-col items-center justify-center text-white text-[8px] font-bold rounded cursor-pointer transition-opacity">
-                                            <Upload size={12} className="mb-0.5" />
-                                            <span>{effectiveQrImage ? "Change" : "Upload"}</span>
-                                            <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={handleQrUpload} className="hidden" />
-                                        </label>
+                    <div className="border border-dashed border-black p-1.5 mb-1 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                            {boxes.bankAndUpi.fields?.showQr?.enabled !== false && (
+                                <div className="relative group/qr shrink-0">
+                                    {effectiveQrImage ? (
+                                        <img 
+                                            src={effectiveQrImage} 
+                                            alt="Custom UPI QR" 
+                                            className="w-16 h-16 object-contain rounded border border-zinc-200 filter contrast-125" 
+                                        />
+                                    ) : (
+                                        <img 
+                                            src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(`upi://pay?pa=${encodeURIComponent(boxes.bankAndUpi.fields?.upiId?.value || labSettings.upiId || 'synoslab@hdfcbank')}&pn=SynOS`)}`}
+                                            alt="UPI QR"
+                                            className="w-16 h-16 object-contain"
+                                        />
                                     )}
                                 </div>
                             )}
-
-                            {/* Bank Text */}
-                            <div className="space-y-0.5 text-[10px] text-zinc-600 flex-1 min-w-0">
+                            <div className="text-left text-black space-y-0.5 flex-1 min-w-0">
                                 <EditableField 
-                                    value={boxes.bankAndUpi.title || "Bank Transfer Details"}
+                                    value={boxes.bankAndUpi.title || "SCAN QR TO PAY"}
                                     onSave={(_, val) => {
                                         const next = {
                                             ...schema,
@@ -1746,63 +1973,35 @@ export const DynamicInvoiceCanvas = ({
                                         };
                                         updateSchema(next);
                                     }}
-                                    valueClassName="font-bold text-zinc-900 uppercase block tracking-wider text-[10px]"
+                                    onDelete={() => deleteBox('bankAndUpi')}
+                                    valueClassName="text-[9.5px] font-black uppercase tracking-wider text-black block leading-tight"
                                 />
-                                {boxes.bankAndUpi.fields?.bankName?.enabled && (
-                                    <EditableField 
-                                        label="Bank:"
-                                        value={boxes.bankAndUpi.fields.bankName.value || labSettings.bankName}
-                                        onSave={(lbl, val) => updateField('bankAndUpi', 'bankName', lbl, val)}
-                                        onDelete={() => deleteField('bankAndUpi', 'bankName')}
-                                        valueClassName="font-bold text-zinc-800"
-                                    />
-                                )}
-                                {boxes.bankAndUpi.fields?.accountNumber?.enabled && (
-                                    <EditableField 
-                                        label="A/C No:"
-                                        value={boxes.bankAndUpi.fields.accountNumber.value || labSettings.accountNumber}
-                                        onSave={(lbl, val) => updateField('bankAndUpi', 'accountNumber', lbl, val)}
-                                        onDelete={() => deleteField('bankAndUpi', 'accountNumber')}
-                                        valueClassName="font-mono font-bold text-zinc-900"
-                                    />
-                                )}
-                                {boxes.bankAndUpi.fields?.ifsc?.enabled && (
-                                    <EditableField 
-                                        label="IFSC:"
-                                        value={boxes.bankAndUpi.fields.ifsc.value || labSettings.ifscCode}
-                                        onSave={(lbl, val) => updateField('bankAndUpi', 'ifsc', lbl, val)}
-                                        onDelete={() => deleteField('bankAndUpi', 'ifsc')}
-                                        valueClassName="font-mono font-bold text-zinc-900"
-                                    />
-                                )}
-                                {boxes.bankAndUpi.fields?.upiId?.enabled && (
-                                    <EditableField 
-                                        label="UPI ID:"
-                                        value={boxes.bankAndUpi.fields.upiId.value || labSettings.upiId}
-                                        onSave={(lbl, val) => updateField('bankAndUpi', 'upiId', lbl, val)}
-                                        onDelete={() => deleteField('bankAndUpi', 'upiId')}
-                                        valueClassName="font-mono font-bold text-indigo-700"
-                                    />
-                                )}
-
-                                {/* Custom Lines */}
-                                {boxes.bankAndUpi.customLines?.map(line => (
-                                    <div key={line.id} className="pt-0.5">
-                                        <EditableField 
-                                            label={line.label ? `${line.label}:` : ""}
-                                            value={line.value}
-                                            onSave={(lbl, val) => {
-                                                const nextLines = boxes.bankAndUpi.customLines.map(l => l.id === line.id ? { ...l, label: lbl, value: val } : l);
-                                                updateSchema({ ...schema, boxes: { ...boxes, bankAndUpi: { ...boxes.bankAndUpi, customLines: nextLines } } });
-                                            }}
-                                            onDelete={() => deleteCustomLine('bankAndUpi', line.id)}
-                                            valueClassName="font-medium text-zinc-800"
-                                        />
-                                    </div>
-                                ))}
+                                <EditableField 
+                                    value={boxes.bankAndUpi.fields?.upiId?.value || labSettings.upiId || 'synoslab@hdfcbank'}
+                                    onSave={(_, val) => {
+                                        updateField('bankAndUpi', 'upiId', undefined, val);
+                                        if (onUpdateLabSetting) onUpdateLabSetting('upiId', val);
+                                    }}
+                                    onDelete={() => deleteField('bankAndUpi', 'upiId')}
+                                    valueClassName="text-[8.5px] font-mono font-bold text-black block break-all leading-tight"
+                                />
+                                <EditableField 
+                                    value={boxes.bankAndUpi.subtitle || "Instant Bharat UPI"}
+                                    onSave={(_, val) => {
+                                        const next = {
+                                            ...schema,
+                                            boxes: {
+                                                ...boxes,
+                                                bankAndUpi: { ...boxes.bankAndUpi, subtitle: val }
+                                            }
+                                        };
+                                        updateSchema(next);
+                                    }}
+                                    valueClassName="text-[8px] font-bold text-black block leading-tight"
+                                />
                             </div>
                         </div>
-                    )}
+                    </div>
                 </ModularBoxWrapper>
             )}
 
@@ -1856,9 +2055,9 @@ export const DynamicInvoiceCanvas = ({
                             )}
                         </div>
                     ) : (
-                        <div className="border-t border-zinc-300 pt-2 mb-3">
-                            <span className="text-[10px] font-bold uppercase text-zinc-700 block tracking-wider mb-1">
-                                {boxes.termsAndConditions.title || "Terms & Conditions"}
+                        <div className="pt-2 mb-3.5">
+                            <span className="text-xs font-black uppercase text-zinc-900 block tracking-wide mb-1">
+                                {boxes.termsAndConditions.title || "Commercial Settlement Terms"}
                             </span>
                             <EditableField 
                                 value={boxes.termsAndConditions.text}
@@ -1873,7 +2072,7 @@ export const DynamicInvoiceCanvas = ({
                                     updateSchema(next);
                                 }}
                                 onDelete={() => deleteBox('termsAndConditions')}
-                                valueClassName="text-[9px] text-zinc-600 leading-relaxed whitespace-pre-line block"
+                                valueClassName="text-[10px] text-zinc-600 leading-relaxed whitespace-pre-line block"
                             />
                             {boxes.termsAndConditions.systemNote ? (
                                 <div className="pt-1">
@@ -2021,6 +2220,15 @@ export const DynamicInvoiceCanvas = ({
                     </ModularBoxWrapper>
                 );
             })}
+
+            {/* 12. UNIFIED A4 DOCUMENT FOOTER */}
+            {!isThermal && (
+                <div className="border-t border-zinc-200 pt-3 mt-4 flex items-center justify-between text-[9.5px] text-zinc-500 font-medium">
+                    <span>Generated by SynOS Diagnostics OS</span>
+                    <span>Page 1 of 1</span>
+                    <span>Printed on {boxes.docBadge?.fields?.date?.value || '14-Oct-2026, 01:05 PM'}</span>
+                </div>
+            )}
 
             {/* FLOATING COLUMN EDITOR MODAL */}
             {editingColumn && (

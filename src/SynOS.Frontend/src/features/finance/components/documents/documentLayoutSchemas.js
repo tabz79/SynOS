@@ -229,16 +229,26 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 },
                 customLines: []
             },
+            amountInWords: {
+                id: 'amountInWords',
+                name: 'Amount in Words Box',
+                enabled: true,
+                label: 'Amount in Words',
+                value: 'Rupees Five Hundred Fifty Only'
+            },
             bankAndUpi: {
                 id: 'bankAndUpi',
-                name: 'Instant Payment QR',
+                name: 'Payment Details & Instant UPI QR',
                 enabled: true,
-                title: 'Scan QR to Pay',
+                title: 'Payment Details',
                 subtitle: 'Instant Bharat UPI',
                 customQrImage: '',
                 fields: {
-                    showQr: { id: 'showQr', enabled: true, label: 'UPI QR', value: true },
-                    upiId: { id: 'upiId', enabled: true, label: 'UPI ID', value: 'synoslab@hdfcbank' }
+                    showQr: { id: 'showQr', enabled: true, label: 'Dynamic UPI QR', value: true },
+                    bankName: { id: 'bankName', enabled: true, label: 'Bank', value: 'HDFC Bank' },
+                    accountNumber: { id: 'accountNumber', enabled: true, label: 'A/C No.', value: '50200012345678' },
+                    ifsc: { id: 'ifsc', enabled: true, label: 'IFSC', value: 'HDFC0001234' },
+                    upiId: { id: 'upiId', enabled: true, label: 'UPI ID', value: 'divyalab@okicicibank' }
                 },
                 customLines: []
             },
@@ -246,8 +256,8 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 id: 'termsAndConditions',
                 name: 'Counter Instructions',
                 enabled: true,
-                title: 'Notice',
-                text: 'Please collect reports at counter or via WhatsApp.\nReports available within 4 hours.',
+                title: 'Commercial Settlement Terms',
+                text: '1. Reports available within 4 hours at the counter or dispatched directly via WhatsApp / SMS.\n2. In-person clinical validation required for critical report dispatch.',
                 systemNote: 'Thank You • SynOS Diagnostic OS'
             }
         }
@@ -547,13 +557,13 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 name: 'Lab Letterhead & Clinic Brand',
                 enabled: true,
                 fields: {
-                    legalName: { id: 'legalName', enabled: true, label: 'Legal Name', value: 'SynOS Diagnostic Centre & Laboratory' },
-                    tagline: { id: 'tagline', enabled: true, label: 'Trade Tagline', value: 'B2B Diagnostic & Outsourced Pathology Services' },
-                    address: { id: 'address', enabled: true, label: 'Facility Address', value: 'Central Facility, Wyra Road, Khammam, Telangana - 507001' },
-                    phone: { id: 'phone', enabled: true, label: 'Accounts Helpdesk', value: '+91 98765 43210' },
+                    legalName: { id: 'legalName', enabled: true, label: 'Legal Name', value: 'SRI DIVYA DIAGNOSTIC CENTRE' },
+                    tagline: { id: 'tagline', enabled: false, label: 'Trade Tagline', value: 'Central Facility, Wyra Road, Khammam, Telangana – 507001' },
+                    address: { id: 'address', enabled: true, label: 'Facility Address', value: 'Central Facility, Wyra Road, Khammam, Telangana – 507001' },
+                    phone: { id: 'phone', enabled: true, label: 'Phone', value: '+91 98765 43210' },
                     email: { id: 'email', enabled: true, label: 'Email', value: 'b2b.billing@synoslab.in' },
-                    gstin: { id: 'gstin', enabled: true, label: 'GSTIN', value: '36AAAAA0000A1Z5' },
-                    pan: { id: 'pan', enabled: true, label: 'PAN', value: 'AAAAA0000A' }
+                    gstin: { id: 'gstin', enabled: false, label: 'GSTIN', value: '36AAAAA0000A1Z5' },
+                    pan: { id: 'pan', enabled: false, label: 'PAN', value: 'AAAAA0000A' }
                 },
                 customLines: []
             },
@@ -562,12 +572,12 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 name: 'B2B Claim Statement Badge',
                 enabled: true,
                 fields: {
-                    badgeTitle: { id: 'badgeTitle', enabled: true, label: 'Document Title', value: 'B2B DIAGNOSTIC TAX INVOICE' },
-                    subBadge: { id: 'subBadge', enabled: true, label: 'Statement Type', value: 'Commercial Claim Statement' },
-                    billNumber: { id: 'billNumber', enabled: true, label: 'Invoice No', value: 'B2B-202610-0019' },
-                    date: { id: 'date', enabled: true, label: 'Statement Date', value: '14/10/2026 01:00 PM' },
+                    badgeTitle: { id: 'badgeTitle', enabled: true, label: 'Document Title', value: 'B2B TAX INVOICE' },
+                    subBadge: { id: 'subBadge', enabled: true, label: 'Statement Type', value: 'Claim Statement for Referral Partner' },
+                    billNumber: { id: 'billNumber', enabled: true, label: 'Invoice No.', value: 'B2B-202610-0019' },
+                    date: { id: 'date', enabled: true, label: 'Statement Date', value: '14-Oct-2026, 01:00 PM' },
                     billingCycle: { id: 'billingCycle', enabled: true, label: 'Billing Period', value: 'Current Unsettled Claims' },
-                    paymentStatus: { id: 'paymentStatus', enabled: true, label: 'Claim Status', value: 'PAYMENT DUE' }
+                    paymentStatus: { id: 'paymentStatus', enabled: true, label: 'Payment Status', value: 'PAYMENT DUE' }
                 },
                 customLines: []
             },
@@ -575,14 +585,12 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 id: 'partyDetails',
                 name: 'Referral Partner / B2B Client Details',
                 enabled: true,
-                title: 'Billed To (Referral Partner / Clinic)',
+                title: 'BILLED TO (REFERRAL PARTNER / CLINIC)',
                 fields: {
-                    fullName: { id: 'fullName', enabled: true, label: 'Billed To Doctor', value: 'Dr. Khaleeq Ur Rahman, MD' },
-                    prescribingDoctor: { id: 'prescribingDoctor', enabled: true, label: 'Prescribing Doctor', value: 'Dr. B.S.V. Padmavathi' },
-                    clinicName: { id: 'clinicName', enabled: true, label: 'Clinic / Hospital', value: 'Khaleeq Polyclinic & Maternity Center' },
-                    partnerId: { id: 'partnerId', enabled: true, label: 'Partner ID', value: 'PART-DR-KHALIKH' },
+                    fullName: { id: 'fullName', enabled: true, label: 'Doctor Name', value: 'Dr. Khaleeq Ur Rahman, MD' },
+                    partnerId: { id: 'partnerId', enabled: true, label: 'Doctor ID', value: 'PART-DR-KHALIKH' },
                     phone: { id: 'phone', enabled: true, label: 'Contact Phone', value: '+91 98490 11223' },
-                    address: { id: 'address', enabled: true, label: 'Clinic Address', value: 'Wyra Road, Khammam, Telangana' }
+                    clinicName: { id: 'clinicName', enabled: true, label: 'Partner / Clinic', value: 'Khaleeq Clinic & Diagnostics' }
                 },
                 customLines: []
             },
@@ -591,21 +599,17 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 name: 'Claimed Patient Visits Table',
                 enabled: true,
                 columns: {
-                    index: { id: 'index', enabled: true, label: '#' },
-                    token: { id: 'token', enabled: true, label: 'Visit Token' },
+                    index: { id: 'index', enabled: false, label: '#' },
                     date: { id: 'date', enabled: true, label: 'Date' },
                     patientName: { id: 'patientName', enabled: true, label: 'Patient Name' },
-                    prescribingDoctor: { id: 'prescribingDoctor', enabled: true, label: 'Prescribing Dr' },
                     investigations: { id: 'investigations', enabled: true, label: 'Prescribed Investigations' },
                     labBilled: { id: 'labBilled', enabled: true, label: 'Lab Tariff (₹)' },
-                    discount: { id: 'discount', enabled: false, label: 'Concession (₹)' },
-                    received: { id: 'received', enabled: false, label: 'Direct Paid (₹)' },
-                    netDue: { id: 'netDue', enabled: true, label: 'Claim Due (₹)' }
+                    netDue: { id: 'netDue', enabled: true, label: 'Claim Amount (₹)' }
                 },
                 rows: [
-                    { id: 'b2b-1', index: 1, token: 'T-0104', date: '14/10/2026', patientName: 'Mohammed Afzal', prescribingDoctor: 'Dr. B.S.V. Padmavathi', investigations: 'CBC, Serum Creatinine', labBilled: 550, received: 0, netDue: 550 },
-                    { id: 'b2b-2', index: 2, token: 'T-0118', date: '14/10/2026', patientName: 'Smt. Lakshmi Devi', prescribingDoctor: 'Dr. B.S.V. Padmavathi', investigations: 'Lipid Profile, Thyroid Profile', labBilled: 1250, received: 0, netDue: 1250 },
-                    { id: 'b2b-3', index: 3, token: 'T-0131', date: '14/10/2026', patientName: 'K. Venkatesh', prescribingDoctor: 'Dr. B.S.V. Padmavathi', investigations: 'Whole Abdomen Ultrasound', labBilled: 1200, received: 0, netDue: 1200 }
+                    { id: 'b2b-1', index: 1, date: '14-Oct-2026', patientName: 'Mohammed Afzal', investigations: 'CBC, Serum Creatinine', labBilled: '550.00', netDue: '550.00' },
+                    { id: 'b2b-2', index: 2, date: '14-Oct-2026', patientName: 'Smt. Lakshmi Devi', investigations: 'Lipid Profile, Thyroid Profile', labBilled: '1,250.00', netDue: '1,250.00' },
+                    { id: 'b2b-3', index: 3, date: '14-Oct-2026', patientName: 'K. Venkatesh', investigations: 'Whole Abdomen Ultrasound', labBilled: '1,200.00', netDue: '1,200.00' }
                 ]
             },
             financialSummary: {
@@ -615,7 +619,6 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 fields: {
                     totalVisits: { id: 'totalVisits', enabled: true, label: 'Total Patient Visits Claimed', value: '3 Visits' },
                     grossSubtotal: { id: 'grossSubtotal', enabled: true, label: 'Gross Diagnostic Tariff', value: '₹3,000.00' },
-                    discount: { id: 'discount', enabled: false, label: 'Partner Concession / Discount', value: '₹0.00' },
                     totalPaid: { id: 'totalPaid', enabled: true, label: 'Patient Direct Collection', value: '₹0.00' },
                     balanceDue: { id: 'balanceDue', enabled: true, label: 'Net B2B Receivable Amount Due', value: '₹3,000.00' }
                 },
@@ -632,14 +635,13 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 id: 'bankAndUpi',
                 name: 'Bank Remittance & UPI QR',
                 enabled: true,
-                title: 'Remittance Wire Instructions',
+                title: 'Payment Details',
                 fields: {
                     showQr: { id: 'showQr', enabled: true, label: 'Dynamic Bharat UPI QR', value: true },
-                    bankName: { id: 'bankName', enabled: true, label: 'Bank Name', value: 'HDFC Bank' },
-                    accountNumber: { id: 'accountNumber', enabled: true, label: 'A/C No', value: '50200012345678' },
-                    ifsc: { id: 'ifsc', enabled: true, label: 'IFSC Code', value: 'HDFC0001234' },
-                    branch: { id: 'branch', enabled: true, label: 'Branch', value: 'Main Branch, Hyderabad' },
-                    upiId: { id: 'upiId', enabled: true, label: 'UPI ID', value: 'synoslab@hdfcbank' }
+                    bankName: { id: 'bankName', enabled: true, label: 'Bank', value: 'HDFC Bank' },
+                    accountNumber: { id: 'accountNumber', enabled: true, label: 'A/C No.', value: '50200012345678' },
+                    ifsc: { id: 'ifsc', enabled: true, label: 'IFSC', value: 'HDFC0001234' },
+                    upiId: { id: 'upiId', enabled: true, label: 'UPI ID', value: 'divyalab@okicicibank' }
                 },
                 customLines: []
             },
@@ -648,13 +650,13 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 name: 'B2B Settlement Terms',
                 enabled: true,
                 title: 'Commercial Settlement Terms',
-                text: '1. Standard lab tariff applies. B2B claims are net of referral commissions on non-prepaid bills.\n2. Payment is due within 15 calendar days from statement generation.\n3. Please remit via NEFT/RTGS/UPI and share UTR reference with accounts desk.',
+                text: '1. Standard lab tariff applies.\n2. B2B claims are net of referral commissions on non-prepaid bills.',
                 systemNote: 'Authentic computerized statement generated by SynOS Diagnostic Enterprise.'
             },
             signatory: {
                 id: 'signatory',
                 name: 'Commercial Accounts Signatory',
-                enabled: true,
+                enabled: false,
                 title: 'Authorised Signatory',
                 subtitle: 'Finance & Partner Accounts Desk'
             }
@@ -1403,10 +1405,32 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 label: 'Claim Amount in Words',
                 value: 'Rupees Eight Thousand Five Hundred Only'
             },
+            bankAndUpi: {
+                id: 'bankAndUpi',
+                name: 'Bank Remittance & UPI QR',
+                enabled: true,
+                title: 'Payment Details',
+                fields: {
+                    showQr: { id: 'showQr', enabled: true, label: 'Dynamic Bharat UPI QR', value: true },
+                    bankName: { id: 'bankName', enabled: true, label: 'Bank', value: 'HDFC Bank' },
+                    accountNumber: { id: 'accountNumber', enabled: true, label: 'A/C No.', value: '50200012345678' },
+                    ifsc: { id: 'ifsc', enabled: true, label: 'IFSC', value: 'HDFC0001234' },
+                    upiId: { id: 'upiId', enabled: true, label: 'UPI ID', value: 'divyalab@okicicibank' }
+                },
+                customLines: []
+            },
+            termsAndConditions: {
+                id: 'termsAndConditions',
+                name: 'TPA Settlement Terms',
+                enabled: true,
+                title: 'Commercial Settlement Terms',
+                text: '1. Standard lab tariff applies.\n2. TPA claims are subject to cashless pre-authorization reconciliation.',
+                systemNote: 'Authentic computerized statement generated by SynOS Diagnostic Enterprise.'
+            },
             signatory: {
                 id: 'signatory',
                 name: 'Signatory',
-                enabled: true,
+                enabled: false,
                 title: 'Medical Superintendent',
                 subtitle: 'TPA & Cashless Claims Desk'
             }
@@ -1644,10 +1668,12 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 name: 'Statement Meta & Cycle',
                 enabled: true,
                 fields: {
-                    badgeTitle: { id: 'badgeTitle', enabled: true, label: 'Statement Title', value: 'B2B REFERRAL DOCTOR SUMMARY' },
-                    statementNumber: { id: 'statementNumber', enabled: true, label: 'Statement No', value: 'STMT-B2B-202610-0019' },
+                    badgeTitle: { id: 'badgeTitle', enabled: true, label: 'Statement Title', value: 'B2B CORPORATE SUMMARY' },
+                    subBadge: { id: 'subBadge', enabled: true, label: 'Statement Type', value: 'Consolidated Referral Partner Ledger' },
+                    statementNumber: { id: 'statementNumber', enabled: true, label: 'Statement No.', value: 'STMT-B2B-202610-0019' },
                     statementPeriod: { id: 'statementPeriod', enabled: true, label: 'Billing Period', value: 'Current Month (October 2026)' },
-                    generatedAt: { id: 'generatedAt', enabled: true, label: 'Generated Date', value: '14/10/2026' }
+                    generatedAt: { id: 'generatedAt', enabled: true, label: 'Statement Date', value: '14-Oct-2026, 01:00 PM' },
+                    paymentStatus: { id: 'paymentStatus', enabled: true, label: 'Payment Status', value: 'PAYMENT DUE' }
                 },
                 customLines: []
             },
@@ -1655,7 +1681,7 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 id: 'partyDetails',
                 name: 'Referring Doctor / Partner Info',
                 enabled: true,
-                title: 'Billed To (Referring Doctor / Clinic)',
+                title: 'BILLED TO (REFERRAL PARTNER / CLINIC)',
                 fields: {
                     partnerName: { id: 'partnerName', enabled: true, label: 'Doctor / Partner Name', value: 'Dr. Khalil Ahmed, MD' },
                     clinicName: { id: 'clinicName', enabled: true, label: 'Hospital / Clinic', value: 'Padmavathi Nursing Home & Hospital' },
@@ -1693,7 +1719,28 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                     totalConcession: { id: 'totalConcession', enabled: true, label: 'Doctor Concession / Benefit', value: '-₹1,850.00' },
                     totalBilled: { id: 'totalBilled', enabled: true, label: 'Total Charged to Doctor (Due)', value: '₹2,150.00' },
                     totalSettled: { id: 'totalSettled', enabled: true, label: 'Settled / Collected from Doctor', value: '₹0.00' },
-                    totalDue: { id: 'totalDue', enabled: true, label: 'Net Outstanding Due', value: '₹2,150.00' }
+                    totalDue: { id: 'totalDue', enabled: true, label: 'Net B2B Receivable Amount Due', value: '₹2,150.00' }
+                },
+                customLines: []
+            },
+            amountInWords: {
+                id: 'amountInWords',
+                name: 'Amount in Words Box',
+                enabled: true,
+                label: 'Amount in Words',
+                value: 'Rupees Two Thousand One Hundred Fifty Only'
+            },
+            bankAndUpi: {
+                id: 'bankAndUpi',
+                name: 'Bank Remittance & UPI QR',
+                enabled: true,
+                title: 'Payment Details',
+                fields: {
+                    showQr: { id: 'showQr', enabled: true, label: 'Dynamic Bharat UPI QR', value: true },
+                    bankName: { id: 'bankName', enabled: true, label: 'Bank', value: 'HDFC Bank' },
+                    accountNumber: { id: 'accountNumber', enabled: true, label: 'A/C No.', value: '50200012345678' },
+                    ifsc: { id: 'ifsc', enabled: true, label: 'IFSC', value: 'HDFC0001234' },
+                    upiId: { id: 'upiId', enabled: true, label: 'UPI ID', value: 'divyalab@okicicibank' }
                 },
                 customLines: []
             },
@@ -1701,14 +1748,14 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 id: 'termsAndConditions',
                 name: 'Settlement Terms',
                 enabled: true,
-                title: 'Settlement Terms & Notes',
-                text: '1. All tests were ordered by the referring doctor under the B2B Partner billing arrangement.\n2. Patients paid ₹0.00 at lab reception desk.\n3. The net charged total is billed to the doctor / clinic ledger.\n4. Payment due within 15 days of monthly statement.',
-                systemNote: 'Computer Generated B2B Corporate Summary • SynOS Diagnostics'
+                title: 'Commercial Settlement Terms',
+                text: '1. Standard lab tariff applies.\n2. B2B claims are net of referral commissions on non-prepaid bills.',
+                systemNote: 'Authentic computerized statement generated by SynOS Diagnostic Enterprise.'
             },
             signatory: {
                 id: 'signatory',
                 name: 'Signatory',
-                enabled: true,
+                enabled: false,
                 title: 'Authorised Signatory',
                 subtitle: 'B2B Accounts & Audit Desk'
             }
@@ -1736,8 +1783,21 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 enabled: true,
                 fields: {
                     badgeTitle: { id: 'badgeTitle', enabled: true, label: 'Document Title', value: 'INSURANCE & TPA SUMMARY' },
-                    statementPeriod: { id: 'statementPeriod', enabled: true, label: 'Billing Period', value: 'All Time' },
-                    generatedAt: { id: 'generatedAt', enabled: true, label: 'Generated At', value: '14/10/2026' }
+                    subBadge: { id: 'subBadge', enabled: true, label: 'Statement Type', value: 'Cashless Claims Audit Ledger' },
+                    statementPeriod: { id: 'statementPeriod', enabled: true, label: 'Billing Period', value: 'Current Month (October 2026)' },
+                    generatedAt: { id: 'generatedAt', enabled: true, label: 'Statement Date', value: '14-Oct-2026, 01:00 PM' },
+                    paymentStatus: { id: 'paymentStatus', enabled: true, label: 'Claim Status', value: 'CLAIM PENDING' }
+                },
+                customLines: []
+            },
+            partyDetails: {
+                id: 'partyDetails',
+                name: 'Insurance / TPA Overview',
+                enabled: true,
+                title: 'INSURANCE & TPA CLAIMS SUMMARY LEDGER',
+                fields: {
+                    clientGroup: { id: 'clientGroup', enabled: true, label: 'Claims Network', value: 'All Empanelled Insurance TPAs' },
+                    auditCycle: { id: 'auditCycle', enabled: true, label: 'Audit Cycle', value: 'Monthly Institutional Audit' }
                 },
                 customLines: []
             },
@@ -1764,14 +1824,43 @@ export const DEFAULT_DOCUMENT_SCHEMAS = {
                 enabled: true,
                 fields: {
                     totalBilled: { id: 'totalBilled', enabled: true, label: 'Total Claims Filed', value: '₹50,500.00' },
-                    totalDue: { id: 'totalDue', enabled: true, label: 'Pending Claim Realization', value: '₹8,000.00' }
+                    totalDue: { id: 'totalDue', enabled: true, label: 'Net Claim Realization Due', value: '₹8,000.00' }
                 },
                 customLines: []
+            },
+            amountInWords: {
+                id: 'amountInWords',
+                name: 'Amount in Words Box',
+                enabled: true,
+                label: 'Amount in Words',
+                value: 'Rupees Eight Thousand Only'
+            },
+            bankAndUpi: {
+                id: 'bankAndUpi',
+                name: 'Bank Remittance & UPI QR',
+                enabled: true,
+                title: 'Payment Details',
+                fields: {
+                    showQr: { id: 'showQr', enabled: true, label: 'Dynamic Bharat UPI QR', value: true },
+                    bankName: { id: 'bankName', enabled: true, label: 'Bank', value: 'HDFC Bank' },
+                    accountNumber: { id: 'accountNumber', enabled: true, label: 'A/C No.', value: '50200012345678' },
+                    ifsc: { id: 'ifsc', enabled: true, label: 'IFSC', value: 'HDFC0001234' },
+                    upiId: { id: 'upiId', enabled: true, label: 'UPI ID', value: 'divyalab@okicicibank' }
+                },
+                customLines: []
+            },
+            termsAndConditions: {
+                id: 'termsAndConditions',
+                name: 'TPA Settlement Terms',
+                enabled: true,
+                title: 'Commercial Settlement Terms',
+                text: '1. Standard lab tariff applies.\n2. Claims realization subject to cashless pre-authorization reconciliation.',
+                systemNote: 'Authentic computerized statement generated by SynOS Diagnostic Enterprise.'
             },
             signatory: {
                 id: 'signatory',
                 name: 'TPA Signatory',
-                enabled: true,
+                enabled: false,
                 title: 'TPA Desk Incharge',
                 subtitle: 'SynOS Diagnostics'
             }

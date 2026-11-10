@@ -1844,3 +1844,382 @@ Investigation across the full frontend and backend telemetry paths identified **
 4. **Dynamic SignalR Group Subscription on Branch Switch (`DashboardHub.cs` & `signalr.js`):**
    * Pass the active branch ID in query parameters when establishing the SignalR connection (`/dashboardHub?branchId=...`), or implement a `JoinBranchGroup(string branchId)` hub method invoked when switching branches.
    * Ensure `DashboardHub` joins the client to `Branch-{activeBranchId}` rather than exclusively using the static JWT claim.
+
+
+---
+
+## 31. Live SignalR Broadcast Seepage into Foreign Branch (Main Branch Reality Summary & Queue Delta Polluting Active MRI Branch View) — [AUDITED & ROOT CAUSE IDENTIFIED]
+### Severity: High / Cross-Branch Data Leakage & Real-Time Operational Pollution
+### Impacted Modules & Files
+* **Reception Screen Event Listeners:** [`ReceptionScreen.jsx:195-267`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/ReceptionScreen.jsx#L195-L267)
+* **Real-Time SignalR Broadcast Dispatcher:** [`SignalRNotifier.cs:64-85, 137-148`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Services/SignalRNotifier.cs#L64-L85)
+* **SignalR Dashboard Hub Group Assignment:** [`DashboardHub.cs:24-30`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Hubs/DashboardHub.cs#L24-L30)
+* **Action Queue Row Delta DTO:** [`ActionQueueRowDto.cs:7-50`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Models/DTOs/Dashboard/ActionQueueRowDto.cs#L7-L50)
+* **Frontend Cache Storage:** [`ReceptionScreen.jsx:34-52`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/ReceptionScreen.jsx#L34-L52)
+
+### Incident Evidence (Live Pilot Telemetry)
+* **Active Branch Selected in Header:** `MRI Branch` (code prefix `MRI`, branch dropdown active).
+* **Observed Timestamp:** `2026-11-10 15:04:04` (Before Browser Refresh).
+* **Logged-in Actor:** `Tabrez Developer`.
+* **Observed Reality Summary Cards (Image 1):**
+  * Walk-Ins (Paid/Credit): `15` (Belongs to MAIN branch; MRI branch had only 1 confirmed visit).
+  * Cash Collected: `₹3,230` (Belongs to MAIN branch).
+  * Online Payments: `3` (Online Total: `₹3,500`) (Belongs to MAIN branch).
+  * Prepaid Bills Issued: `8` (Prepaid Total: `₹4,980`) (Belongs to MAIN branch).
+  * Cash in the Drawer: `₹3,230`.
+* **Observed Action Queue Table (Image 1):**
+  * `MAI-018` | `VEERANNA 35y/M` | `₹2,000 CASH` | `• Ready for Sample`
+  * This visit was finalized in the **`MAIN` Branch**, yet it was injected live into the **`MRI Branch` Action Queue table**.
+* **Post-Refresh Behavior (Image 2 - 16:06:10):**
+  * When the user pressed browser refresh (`F5`), `MAI-018` completely disappeared.
+  * Walk-Ins dropped from `15` to `2` (the genuine count of MRI branch visits).
+  * Prepaid Bills dropped from `8` to `2` (Prepaid Total: `₹6,800`, matching `MRI-001` ₹2,800 + `MRI-002` ₹4,000).
+
+---
+
+### Root Cause Analysis
+
+The incident demonstrates a severe divergence between **initial REST API hydration** (which is branch-isolated) and **live WebSocket SignalR subscriptions** (which are not):
+
+1. **Static JWT Token vs. Dynamic Branch Oversight:**
+   * When `Tabrez Developer` connects to the system, SignalR establishes a WebSocket connection to `/dashboardHub` using `localStorage.getItem('synos_jwt')`.
+   * In `DashboardHub.OnConnectedAsync`:
+     ```csharp
+     var branchIdClaim = Context.User?.FindFirst("branch_id")?.Value;
+     await Groups.AddToGroupAsync(Context.ConnectionId, $"Branch-{branchId}");
+     ```
+   * The user's JWT has `branch_id = <MainBranchGuid>`.
+   * When switching to `MRI Branch` via the header dropdown, `activeOversightBranchId` is saved in `localStorage`, but the JWT is never re-issued.
+   * Consequently, the browser's live WebSocket remains permanently joined to `Branch-<MainBranchGuid>`.
+
+2. **Unfiltered SignalR Ingestion in `ReceptionScreen.jsx`:**
+   * **Reality Summary Ingestion (`ReceptionScreen.jsx:195-203`):**
+     ```javascript
+     SignalRService.onReceptionSummaryUpdated((payload) => {
+         if (payload) {
+             setSummary(payload);
+             localStorage.setItem('synos_cached_reality_summary', JSON.stringify(payload));
+         }
+     });
+     ```
+     When any cashier at MAIN branch accepted a payment, `SignalRNotifier.NotifyRealitySummaryUpdateAsync` broadcasted `ReceptionSummaryUpdated` to `Branch-<MainBranchGuid>`.
+     Because `Tabrez Developer` was still listening to that channel, this listener fired and unconditionally overwrote the MRI Branch reality summary cards with MAIN branch stats (`15 walk-ins, ₹3,230 cash, 8 prepaid bills`).
+   * **Action Queue Delta Ingestion (`ReceptionScreen.jsx:206-267`):**
+     ```javascript
+     SignalRService.onActionQueueDeltaReceived((deltaRow) => {
+         const normalized = normalizeQueueData([deltaRow])[0];
+         ...
+         setActionQueue(prev => [normalized, ...prev]);
+     });
+     ```
+     When visit `MAI-018` was billed at MAIN branch, `SignalRNotifier` broadcasted `ActionQueueDeltaReceived` to `Branch-<MainBranchGuid>`.
+     `ReceptionScreen.jsx` received `MAI-018` and prepended it straight into the MRI branch table.
+
+3. **Why Refresh Fixed the Table and Tiles:**
+   * On browser refresh, `refreshDashboard()` executes REST calls: `ReceptionApi.getActionQueue()` and `ReceptionApi.getDailySummary()`.
+   * These REST calls pass `?branchId=<MRI_Branch_Guid>`.
+   * The database query executed exclusively for the MRI Branch. Thus, `MAI-018` was filtered out and the genuine counts (`2 walk-ins`, `2 prepaid bills`) were restored.
+
+---
+
+## 32. Reality Summary Cash Collected Stagnation on Visit Mode Correction (Cash Bill Converted to Prepaid Leaving Cash Stuck at ₹10,000) — [AUDITED & ROOT CAUSE IDENTIFIED]
+### Severity: High / Financial Reporting Inaccuracy & Ledger Stagnation
+### Impacted Modules & Files
+* **Daily Revenue Calculation Engine:** [`InvoiceService.cs:157-222`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/InvoiceService.cs#L157-L222)
+* **Visit Correction Settlement Handler:** [`VisitService.cs:2452-2488, 2630-2695`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/VisitService.cs#L2452-L2488)
+* **Operational Stats Projection Engine:** [`OperationalStatsProjector.cs:238-305`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/Operational/OperationalStatsProjector.cs#L238-L305)
+
+### Incident Evidence (Live Pilot Telemetry)
+* **Observed Screenshot:** Image 2 (`2026-11-10 16:06:10`, Post-Refresh).
+* **Active Queue State for MRI Branch:**
+  * `MRI-001` | `P.JANAMMA` | `₹2,800 PREPAID POOJA HOSPITALS`
+  * `MRI-002` | `B.BALU` | `₹4,000 PREPAID MEDHA HOSPITAL`
+  * There are **zero cash visits** in the active queue today.
+* **Observed Reality Summary Cards:**
+  * Walk-Ins: `2`
+  * Prepaid Bills: `2` (Prepaid Total: `₹6,800`)
+  * **Cash in the Drawer: `₹0`** (Accurate: physical drawer has zero cash).
+  * **Cash Collected: `₹10,000`** (Completely wrong: showing ₹10,000 despite zero cash bills).
+* **Operational Context Provided by User:**
+  * Visit `MRI-002` was initially registered and billed as a **Cash bill for ₹10,000**.
+  * The user subsequently executed a **Visit Correction** on `MRI-002`, changing it from Cash (₹10,000) to Corporate B2B Prepaid (₹4,000 Medha Hospital).
+  * Even after refreshing the page, `Cash Collected` remains frozen at **`₹10,000`**.
+
+---
+
+### Root Cause Analysis
+
+Investigation of the backend financial calculation revealed a **defective fallback expression** in [`InvoiceService.cs`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/InvoiceService.cs#L211-L221) combined with an **event reversal gap** in [`VisitService.cs`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/VisitService.cs#L2452-L2462):
+
+#### 1. The Broken Ternary Fallback in `InvoiceService.cs:218`
+* In `InvoiceService.GetDailyRevenueStatsAsync`:
+  ```csharp
+  var payments = await paymentsQuery.ToListAsync(); // Query payments for this branch today
+  decimal cashTotal = payments.Where(p => isCash(p.Method)).Sum(p => p.Amount);
+  ...
+  // Direct ledger takes precedence for real-time accuracy (partial payments, refunds, cash desk)
+  decimal finalCash = payments.Any() ? cashTotal : (stats?.Cash ?? 0m);
+  ```
+* **The Fatal Flaw:**
+  * When `MRI-002` was changed from Cash to Prepaid, `VisitService.cs` (lines 2455-2461) executed:
+    ```csharp
+    var counterPayments = invoice.Payments.Where(p => p.Method != "PartnerAccount" ...).ToList();
+    _context.Payments.RemoveRange(counterPayments);
+    ```
+    This successfully deleted the ₹10,000 cash payment row from `dbo.Payments`.
+  * Because there were no other cash visits at MRI branch today, `paymentsQuery.ToListAsync()` returned an **empty list** (`payments.Count == 0`).
+  * Therefore, `payments.Any()` evaluated to **`FALSE`**!
+  * Because `payments.Any()` was false, the ternary skipped `cashTotal` (which was `0m`) and fell back to:
+    ```csharp
+    (stats?.Cash ?? 0m)
+    ```
+  * `stats` comes from `dbo.UserOperationalStats` / `dbo.BranchOperationalStats`!
+
+#### 2. The Projection Reversal Gap in `VisitService.cs` & `OperationalStatsProjector.cs`
+* When `MRI-002` was initially paid in cash, a `PAYMENT_RECEIVED` event was published.
+* `OperationalStatsProjector.cs` incremented:
+  ```csharp
+  userStats.PaymentsCashTotal += 10000m;
+  branchStats.PaymentsCashTotal += 10000m;
+  ```
+* When the visit correction occurred:
+  * `VisitService.cs` deleted the payment from `dbo.Payments` and emitted `BranchEventType.VISIT_UPDATED`.
+  * However, `OperationalStatsProjector.cs` **does not listen to `VISIT_UPDATED` to adjust payment statistics**, nor did `VisitService.cs` emit a `PAYMENT_VOIDED` event for the removed cash payment.
+  * Consequently, `UserOperationalStats.PaymentsCashTotal` remained permanently recorded as **`10,000`**.
+
+#### 3. Contrast Between "Cash in Drawer" vs "Cash Collected"
+* **Cash in Drawer (`₹0`):** Calculated on line 284 using `branchCashTotal = allBranchPayments.Where(p => isCash(p.Method)).Sum(p => p.Amount)`. Because `allBranchPayments` had 0 cash rows, it correctly evaluated `0 - 0 = 0` (rendered as `₹0`).
+* **Cash Collected (`₹10,000`):** Calculated on line 218 using the broken ternary `payments.Any() ? cashTotal : stats.Cash`. Because `payments.Any()` was false, it picked up `stats.Cash` (10,000), leaving the card frozen at `₹10,000` even though not a single rupee of cash was collected.
+
+---
+
+### Architectural Fix Specification (To be executed when authorized)
+
+1. **Fix Fallback Logic in `InvoiceService.cs` (`GetDailyRevenueStatsAsync`):**
+   * Do NOT use `payments.Any()` to gate `cashTotal`. If the branch has active confirmed visits for today, the authoritative sum from `dbo.Payments` (`cashTotal`) is the absolute truth, even when it is `0m`:
+     ```csharp
+     // Authoritative truth from direct ledger
+     decimal finalCash = cashTotal;
+     decimal finalOnline = onlineTotal;
+     int finalOnlineCount = onlineCount;
+     decimal finalTotal = totalPayments;
+     ```
+   * Only fall back to `stats?.Cash` if the ledger query itself is completely unindexed or bypassed in offline emergency mode.
+
+2. **Emit `PAYMENT_VOIDED` on Payment Removal during Visit Correction (`VisitService.cs`):**
+   * In `VisitService.cs` (lines 2455-2461), when removing counter payments during a billing mode switch:
+     ```csharp
+     foreach (var cp in counterPayments)
+     {
+         _context.Payments.Remove(cp);
+         await _operationalEventWriter.WriteEventAsync(
+             BranchEventType.PAYMENT_VOIDED,
+             visit.BranchId.ToString(),
+             visit.VisitId.ToString(),
+             visit.Token,
+             $"Counter payment of ₹{cp.Amount:N0} voided via visit correction",
+             actorName,
+             actorUserId.ToString(),
+             true, null, null,
+             TimelineVisibility.Surface,
+             visit.VisitId,
+             metadata: JsonSerializer.Serialize(new { PaymentId = cp.PaymentId, Amount = cp.Amount, Method = cp.Method })
+         );
+     }
+     ```
+
+3. **Branch Isolation on WebSocket Channels (`signalr.js` & `DashboardHub.cs`):**
+   * Re-bind SignalR connection dynamically when `activeOversightBranchId` changes so that clients only join the group of the active branch on screen.
+   * Discard any SignalR delta or summary updates in `ReceptionScreen.jsx` if `payload.branchId !== activeOversightBranchId`.
+
+
+---
+
+## 33. Multi-Channel Split Payment (Cash + UPI) Accounting & UI Transparency Audit — [AUDITED & ROOT CAUSE IDENTIFIED]
+### Severity: Medium-High / Front-Desk Operational Confusion & Slip Reconciliation
+### Impacted Modules & Files
+* **Action Queue Projection Engine:** [`OperationsEngine.cs:556-568, 590-595`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/Operations/OperationsEngine.cs#L556-L568)
+* **Thermal POS Slip Generator:** [`thermalPrinter.js:185-215, 420-435`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/utils/thermalPrinter.js#L185-L215)
+* **Print Thermal Receipt Event DTO:** [`PrintThermalReceiptEvent.cs:35-39`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Models/Events/Reception/PrintThermalReceiptEvent.cs#L35-L39)
+* **Reception Payment Intent Panel:** [`IntentPanel.jsx:1543-1580, 1995-2020`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/components/IntentPanel.jsx#L1543-L1580)
+* **Reception Flow Payment Processor:** [`ReceptionFlowService.cs:940-1000`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/ReceptionFlowService.cs#L940-L1000)
+* **Daily Revenue & Cash Drawer Calculation:** [`InvoiceService.cs:211-235`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/InvoiceService.cs#L211-L235)
+* **Bills & Collections Ledger:** [`FinanceBillsController.cs:502-522, 694-696`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Controllers/FinanceBillsController.cs#L502-L522)
+* **Cashier Shift Closing Ledger:** [`FinanceBillsController.cs:1850-1863`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Controllers/FinanceBillsController.cs#L1850-L1863)
+
+### Incident & Scenario Evidence
+* **Observed Test Case in Draft Mode (Image 2):**
+  * Registration ID: `#D-F1C3727F51` | Patient: `Test Patient3` 43y/M
+  * Test: `CBP WITH PLATELETS` (Bill Total: `₹400`)
+  * Settlement: `Full (₹400)` with `Split / Multi-Channel Payment` enabled
+  * Split Breakdown: `Cash from Patient: ₹150` | `UPI / QR Scan: ₹250`
+  * Action Button: `Accept Split Payment (₹150 Cash + ₹250 UPI) →`
+* **Live Incident Raised by Operator (Image 1):**
+  * Operator used the "Split UPI and Cash" button to settle a patient bill.
+  * Operator claimed *"something is wrong and something didn't work"* because:
+    1. In the Action Queue table (`PAYMENT` column), the visit did NOT indicate it was split. It displayed a single payment badge (e.g. `₹2,000 UPI` on `MAI-018` or `₹2,000 CASH`), leading the cashier to believe the system had charged the full amount to one method.
+    2. The thermal paper receipt printed `Payment Mode: SPLIT (CASH+UPI)` without itemizing how much was paid in Cash vs UPI.
+
+---
+
+### Deep Dive Audit: Where Does the Money Go? (e.g. ₹2,000 Bill = ₹500 Cash + ₹1,500 UPI)
+
+#### 1. Database Ledger Accounting (`dbo.Payments`): **[WORKING CORRECTLY]**
+* In `ReceptionFlowService.cs:940-958`:
+  ```csharp
+  foreach (var sp in request.SplitPayments.Where(p => p.Amount > 0))
+  {
+      var spDto = new PaymentRequestDto { Amount = sp.Amount, Method = sp.Method, ... };
+      lastPayment = await _invoiceService.RecordPaymentAsync(invoiceId, spDto);
+  }
+  ```
+* For a ₹2,000 bill split as ₹500 Cash + ₹1,500 UPI, the backend creates **two separate, immutable payment rows** in `dbo.Payments`:
+  * Row 1: `Amount = ₹500.00`, `Method = "Cash"`
+  * Row 2: `Amount = ₹1,500.00`, `Method = "UPI"`
+* Both rows are linked to the same `InvoiceId` and sum to ₹2,000.
+
+#### 2. Cash Drawer & Shift Handover Accounting: **[WORKING CORRECTLY]**
+* **Reality Summary "Cash in the Drawer" (`InvoiceService.cs:235`):**
+  * Queries `allBranchPayments.Where(p => isCash(p.Method)).Sum(p => p.Amount)`.
+  * Filters strictly for `Cash` and captures exactly **`₹500`**.
+* **Cashier Shift Closing (`FinanceBillsController.cs:1850-1863`):**
+  * `standardCashPayments = cashierPayments.Where(p => p.Method.Contains("cash"))` -> captures **`₹500`**.
+  * `standardUpiPayments = cashierPayments.Where(p => p.Method.Contains("upi"))` -> captures **`₹1,500`**.
+* **Physical Cash Ledger (`/cash-drawer/my-ledger`):**
+  * Displays the ₹500 cash payment as an inflow transaction in the cashier's drawer ledger.
+
+#### 3. Revenue Tab & Bills and Collections Ledger: **[WORKING CORRECTLY]**
+* In `FinanceBillsController.cs:507-522`:
+  * Iterates `genuinePayments`: adds ₹500 to `cashAmount` and ₹1,500 to `onlineAmount`.
+* In `RevenueScreens.jsx:1362-1366`:
+  * Renders: `Cash: ₹500` and `Online: ₹1,500` under the Collected column.
+* In Revenue KPI headers:
+  * Sums `bill.cashAmount` into Total Cash Collections, and `bill.onlineAmount` into Online Collections.
+
+---
+
+### Root Causes: Why Did the Operator Claim "It Didn't Work"?
+
+While backend mathematical accounting is sound, the **User Interface and Document engines suffer from three severe transparency defects**:
+
+#### Defect 1: Action Queue PAYMENT Column Obliterates Split Payments
+* In `OperationsEngine.cs` (lines 556-568 & 590-595):
+  ```csharp
+  if (invoice != null && (invoice.Status == "Paid" || invoice.Status == "FullPaid"))
+  {
+      var method = invoice.Payments.FirstOrDefault()?.Method;
+      return method ?? "Paid";
+  }
+  ```
+* **The Glitch:**
+  * `OperationsEngine` only checks `invoice.Payments.FirstOrDefault()?.Method`.
+  * It completely ignores whether the invoice has multiple payment rows!
+  * If the ₹1,500 UPI row happens to be first, `PaymentDisplay` evaluates to **`UPI`**.
+  * `ActionQueueCells.jsx` renders: **`₹2,000 UPI`** with a cyan badge.
+  * The cashier sees `₹2,000 UPI` and panics, believing the ₹500 cash portion was ignored.
+
+#### Defect 2: Thermal POS Slip Lacks Payment Breakdown
+* In `thermalPrinter.js` (lines 185-189 & 425-428):
+  * The receipt template uses a single string variable:
+    ```html
+    <span>Payment Mode:</span>
+    <span style="font-weight: 900;">${rawPaymentMethod}</span>
+    ```
+  * If `rawPaymentMethod` is `"Split (Cash+UPI)"`, the receipt prints:
+    `Amount Received: ₹2,000.00`
+    `Payment Mode: SPLIT (CASH+UPI)`
+  * It **never prints the itemized amounts** (`Cash: ₹500.00`, `UPI: ₹1,500.00`).
+  * If `rawPaymentMethod` falls back to `"Cash"` or `"UPI"`, it falsely tells the patient that 100% of the bill was paid via that single channel.
+* Furthermore, `PrintThermalReceiptEvent.cs` **omits the `Payments` list entirely** from the event payload, preventing printer terminals from rendering split payment line items.
+
+#### Defect 3: Silent Single-Method Fallback on Input Discrepancy in `IntentPanel.jsx`
+* In `IntentPanel.jsx` (lines 1543-1579 & 1995-2019):
+  ```javascript
+  if (isSplitPayment && (Number(splitCashAmount) + Number(splitUpiAmount) === effectiveAmount)) {
+      paymentPayload = {
+          Method: 'Split (Cash+UPI)',
+          SplitPayments: [ ... ]
+      };
+  } else {
+      paymentPayload = {
+          Method: methodToUse, // Single method (e.g. 'Cash' or 'UPI')
+          ...
+      };
+  }
+  ```
+* **The Trap:**
+  * If the receptionist toggles "Split Payment", but the sum of `splitCashAmount` + `splitUpiAmount` does not **exactly match** the bill total (e.g. typing error, extra digit, or unbalanced partial due):
+    * The main action button **does NOT disable**. It silently falls back to `Accept Payment (₹2,000)`.
+    * When clicked, the code silently enters the `else` branch, sending `Method: 'Cash'` (or `'UPI'`) with **zero split data**.
+    * The entire bill is collected under a single method without any warning or validation error.
+
+#### Defect 4: Incomplete `PaymentConfirmedFact` Emission
+* In `ReceptionFlowService.cs:957-1000`:
+  * In split payment mode, `payment = lastPayment`.
+  * `PaymentConfirmedFact` is only created for `payment.PaymentId` (the second payment).
+  * The first payment (Cash) never receives an immutable `PaymentConfirmedFact`.
+
+---
+
+### Architectural Fix Specification (To be executed when authorized)
+
+1. **Action Queue Multi-Method Support (`OperationsEngine.cs`):**
+   * In `DerivePaymentDisplay` and `DerivePaymentMethod`:
+     ```csharp
+     if (invoice != null && (invoice.Status == "Paid" || invoice.Status == "FullPaid"))
+     {
+         var validPayments = invoice.Payments.Where(p => p.Amount > 0).ToList();
+         if (validPayments.Count > 1)
+         {
+             var methods = string.Join(" + ", validPayments.Select(p => p.Method).Distinct());
+             return $"Split ({methods})";
+         }
+         return validPayments.FirstOrDefault()?.Method ?? "Paid";
+     }
+     ```
+   * In `ActionQueueCells.jsx`, render a distinct pastel purple badge for `Split` payments.
+
+2. **Thermal Receipt Breakdown (`thermalPrinter.js` & `PrintThermalReceiptEvent.cs`):**
+   * Add `public List<PaymentSummaryDto> Payments { get; set; } = new();` to `PrintThermalReceiptEvent.cs`.
+   * In `thermalPrinter.js`, when `normalizedData.financial.payments.length > 1`, render itemized lines:
+     ```html
+     <div style="font-size: 10px; margin-top: 2px;">
+         <div>• Cash: ₹500.00</div>
+         <div>• UPI / QR: ₹1,500.00</div>
+     </div>
+     ```
+
+3. **IntentPanel Strict Validation Guard (`IntentPanel.jsx`):**
+   * When `isSplitPayment` is true, disable the submit button unless `splitCashAmount + splitUpiAmount === payNowAmount`.
+   * Never silently fall back to pure cash/UPI when the split toggle is active.
+
+4. **Iterate All Split Payments for `PaymentConfirmedFact` (`ReceptionFlowService.cs`):**
+   * Loop through all recorded split payments and create a `PaymentConfirmedFact` for each payment entity.
+
+---
+
+## 33. A4 Document Layout Unification (Target Print Standard Across B2B, Direct, and Insurance Modules) — [IMPLEMENTED & VERIFIED]
+### Severity: Medium / Visual Uniformity & Commercial Print Standardization
+### Impacted Modules & Files
+* **Dynamic Invoice Canvas Renderer:** [`DynamicInvoiceCanvas.jsx`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/finance/components/documents/DynamicInvoiceCanvas.jsx)
+* **Document Layout Schemas Registry:** [`documentLayoutSchemas.js`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/finance/components/documents/documentLayoutSchemas.js)
+
+### Target Document Suite
+1. **Corporate B2B Prepaid Mode:**
+   * Doctor Bill A4 (`partner_b2b_invoice`)
+   * B2B Corporate Summary A4 (`summary_corporate`)
+   * Prepaid Patient Slip A4 (`prepaid_patient_a4_slip`)
+2. **Direct Mode:**
+   * Patient Tax Invoice A4 (`patient_tax_invoice`)
+3. **Insurance / TPA Mode:**
+   * Insurance TPA Claim Invoice A4 (`insurance_tpa_claim`)
+   * Insurance Summary A4 (`summary_insurance`)
+
+### Resolution Summary
+* **Header:** Rendered brand initials tile (`SD` or uploaded logo), lab legal name, facility address, contact phone with icon, and billing email with icon on the left, paired with a shaded metadata card (Invoice No., Statement Date, Billing Period) on the top right.
+* **Title & Badge:** Replaced plain headers with solid dark title badge, color-coded payment status pill, and descriptive subtitle bar.
+* **Party Details:** Replaced loose text fields with a rounded card featuring a light-grey header title bar, a clean 2-column demographics grid without double colons, and an integrated billing desk audit strip.
+* **Investigation Table:** Adjusted column weights and added non-wrapping flags for short and numeric headers to eliminate vertical per-letter breaking (`D-A-T-E`, `L-A-B- -T-A-R-I-F-F`). Removed harsh vertical column borders for a clean horizontal row layout.
+* **Dual Lower Block:** Implemented a side-by-side grid uniting the Payment Details card (QR code + bank remittance info) on the left and the Financial Summary card (totals breakdown + highlighted soft red Net Amount Due bar) on the right.
+* **Settlement Terms & Footer:** Added clean Commercial Settlement Terms numbered list and a unified 3-part bottom footer (`Generated by SynOS Diagnostics OS | Page 1 of 1 | Printed on {timestamp}`).
+* **Thermal Isolation:** Preserved all 80mm thermal receipt code paths intact.
