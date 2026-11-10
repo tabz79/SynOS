@@ -367,7 +367,7 @@ export function PatientDetailScreen() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto py-8 px-6 text-zinc-800 dark:text-zinc-100 font-sans">
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-6 text-zinc-800 dark:text-zinc-100 font-sans animate-in fade-in duration-300">
       {/* Back button & Title Header */}
       <div className="flex items-center gap-4 mb-6 border-b dark:border-zinc-800 border-zinc-200 pb-5">
         <button
@@ -383,7 +383,9 @@ export function PatientDetailScreen() {
           <div>
             <div className="flex items-center gap-3 flex-wrap">
               <span className="font-mono text-[10px] font-semibold text-synos-primary bg-synos-primary/10 px-2 py-0.5 rounded border border-synos-primary/20 uppercase tracking-wider">
-                {patient.mrn}
+                {patient.hasActiveHealthCard || membershipCard?.status === 'Active'
+                  ? (membershipCard?.cardNumber || patient.healthCardNumber || `${patient.mrn}-HC`)
+                  : patient.mrn}
               </span>
               <h1 className="text-xl font-semibold tracking-tight text-zinc-850 dark:text-zinc-100">
                 {patient.firstName} {patient.lastName}

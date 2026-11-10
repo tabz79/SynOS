@@ -82,7 +82,7 @@ export function PatientSearchScreen() {
   };
 
   return (
-    <div className="p-6 sm:p-8 space-y-6 max-w-7xl mx-auto animate-in fade-in duration-300">
+    <div className="w-full px-4 sm:px-6 lg:px-8 py-6 space-y-6 animate-in fade-in duration-300">
       {/* Header Block */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -101,7 +101,7 @@ export function PatientSearchScreen() {
       {/* Action Bar: Search Input & Health Card Filter Chips */}
       <div className="p-3.5 rounded-2xl bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-800 shadow-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
         {/* Search Input */}
-        <div className="relative flex-1 max-w-md">
+        <div className="relative flex-1 max-w-xl">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             type="text"
@@ -177,7 +177,7 @@ export function PatientSearchScreen() {
               <tr className="text-xs font-extrabold text-slate-700 dark:text-zinc-300 uppercase tracking-wider border-b border-slate-300 dark:border-zinc-800 bg-slate-100/70 dark:bg-zinc-900/60">
                 <th className="px-6 py-3.5">Patient</th>
                 <th className="px-6 py-3.5">Demographics</th>
-                <th className="px-6 py-3.5">MRN Code</th>
+                <th className="px-6 py-3.5">{hasHealthCardFilter ? "Health Card / MRN Code" : "MRN Code"}</th>
                 <th className="px-6 py-3.5">Last Visit Date</th>
                 <th className="px-6 py-3.5">Last Visit Tests</th>
                 <th className="px-6 py-3.5 text-right">Operational Actions</th>
@@ -241,11 +241,25 @@ export function PatientSearchScreen() {
                       </div>
                     </td>
 
-                    {/* MRN Code Column */}
+                    {/* MRN / Card Code Column */}
                     <td className="px-6 py-4">
-                      <span className="font-mono text-xs font-black text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 px-2.5 py-1 rounded-lg border border-blue-200 dark:border-blue-800 shadow-2xs">
-                        {p.mrn || 'NO MRN'}
-                      </span>
+                      {p.hasActiveHealthCard || p.healthCardNumber || hasHealthCardFilter ? (
+                        <div className="flex flex-col gap-1 items-start">
+                          <span className="font-mono text-xs font-black text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 px-2.5 py-1 rounded-lg border border-indigo-200 dark:border-indigo-800 shadow-2xs flex items-center gap-1.5 w-fit">
+                            <CreditCard className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                            <span>{p.healthCardNumber || (p.mrn ? `${p.mrn}-HC` : 'HC MEMBER')}</span>
+                          </span>
+                          {p.healthCardPlanName && (
+                            <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400">
+                              {p.healthCardPlanName}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="font-mono text-xs font-black text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 px-2.5 py-1 rounded-lg border border-blue-200 dark:border-blue-800 shadow-2xs">
+                          {p.mrn || 'NO MRN'}
+                        </span>
+                      )}
                     </td>
 
                     {/* Last Visit Date Column */}
@@ -259,7 +273,7 @@ export function PatientSearchScreen() {
 
                     {/* Last Visit Tests Column */}
                     <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1 max-w-[220px]">
+                      <div className="flex flex-wrap gap-1 max-w-xl">
                         {p.lastVisitTestCodes && p.lastVisitTestCodes.length > 0 ? (
                           p.lastVisitTestCodes.map((code, idx) => (
                             <span 

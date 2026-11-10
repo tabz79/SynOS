@@ -301,7 +301,9 @@ namespace SynOS.Services
                     if (card != null)
                     {
                         p.HasActiveHealthCard = true;
-                        p.HealthCardNumber = card.CardNumber;
+                        p.HealthCardNumber = !string.IsNullOrWhiteSpace(card.CardNumber) && !card.CardNumber.StartsWith("HC-")
+                            ? card.CardNumber
+                            : (!string.IsNullOrWhiteSpace(p.MRN) ? $"{p.MRN.Trim()}-HC" : card.CardNumber);
                         p.HealthCardPlanName = card.Plan?.PlanName ?? "Health Card";
                         p.HealthCardDiscountValue = card.ConfiguredDiscountValue;
                         p.HealthCardDiscountType = card.ConfiguredDiscountType;
@@ -335,7 +337,9 @@ namespace SynOS.Services
             if (card != null)
             {
                 dto.HasActiveHealthCard = true;
-                dto.HealthCardNumber = card.CardNumber;
+                dto.HealthCardNumber = !string.IsNullOrWhiteSpace(card.CardNumber) && !card.CardNumber.StartsWith("HC-")
+                    ? card.CardNumber
+                    : (!string.IsNullOrWhiteSpace(dto.MRN) ? $"{dto.MRN.Trim()}-HC" : card.CardNumber);
                 dto.HealthCardPlanName = card.Plan?.PlanName ?? "Health Card";
                 dto.HealthCardDiscountValue = card.ConfiguredDiscountValue;
                 dto.HealthCardDiscountType = card.ConfiguredDiscountType;

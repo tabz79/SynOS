@@ -747,10 +747,15 @@ namespace SynOS.Services.HealthCards
             }
             if (string.IsNullOrWhiteSpace(primaryName)) primaryName = "Subscriber";
 
+            var mrn = card.PrimaryPatient?.MRN?.Trim();
+            var displayCardNumber = !string.IsNullOrWhiteSpace(card.CardNumber) && !card.CardNumber.StartsWith("HC-")
+                ? card.CardNumber
+                : (!string.IsNullOrWhiteSpace(mrn) ? $"{mrn}-HC" : card.CardNumber ?? string.Empty);
+
             return new HealthCardSummaryDto
             {
                 CardId = card.CardId,
-                CardNumber = card.CardNumber ?? string.Empty,
+                CardNumber = displayCardNumber,
                 PlanId = card.PlanId,
                 PlanCode = card.Plan?.PlanCode ?? string.Empty,
                 PlanName = card.Plan?.PlanName ?? "Health Card Plan",
