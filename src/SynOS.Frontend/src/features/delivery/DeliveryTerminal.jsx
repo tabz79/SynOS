@@ -21,6 +21,7 @@ import {
 import { ReportA4 } from '../documents/templates/ReportA4';
 import { useTemplateForReport } from '../documents/templates/hooks/useReportTemplates';
 import { StockRequestPanel } from '../inventory/StockRequestPanel';
+import { MobileDeliveryTerminal } from './MobileDeliveryTerminal';
 
 export function DeliveryTerminal() {
     const { user } = useAuth();
@@ -29,6 +30,25 @@ export function DeliveryTerminal() {
     // Auto-fit preview scale to prevent horizontal clipping when window is not maximized
     const previewContainerRef = useRef(null);
     const [previewScale, setPreviewScale] = useState(0.92);
+    
+    // View Mode: 'desktop' vs 'mobile' (auto-detect viewport < 1024px or URL ?view=mobile)
+    const [viewMode, setViewMode] = useState(() => {
+        if (typeof window !== 'undefined') {
+            if (window.location.search.includes('view=mobile')) return 'mobile';
+            if (window.innerWidth < 1024) return 'mobile';
+        }
+        return 'desktop';
+    });
+
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth < 1024 && viewMode !== 'mobile') {
+                setViewMode('mobile');
+            }
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [viewMode]);
     const [departmentTab, setDepartmentTab] = useState(() => {
         return localStorage.getItem('synos_delivery_department') || 'Pathology';
     });
@@ -232,6 +252,16 @@ export function DeliveryTerminal() {
         ? reportStructure?.isPhysicallyVerified 
         : (reportStructure?.isPhysicallyVerified || isDigital);
 
+    if (viewMode === 'mobile') {
+        return (
+            <MobileDeliveryTerminal
+                user={user}
+                initialDepartment={departmentTab}
+                onDesktopSwitch={() => setViewMode('desktop')}
+            />
+        );
+    }
+
     return (
         <div className="h-screen w-screen dark:bg-synos-background bg-zinc-50 text-foreground flex flex-col overflow-hidden font-sans selection:bg-synos-primary/20 relative">
             <SystemBar serverTime={null} syncStatus="Synced" />
@@ -272,6 +302,14 @@ export function DeliveryTerminal() {
                                     }`}
                                 >
                                     History (7d)
+                                </button>
+                                <button
+                                    onClick={() => setViewMode('mobile')}
+                                    className="text-[9px] uppercase font-bold px-2 py-0.5 rounded transition-all bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 hover:bg-teal-500/20 flex items-center gap-1 cursor-pointer"
+                                    title="Switch to Smartphone Mobile View"
+                                >
+                                    <Smartphone className="w-2.5 h-2.5" />
+                                    Mobile
                                 </button>
                             </div>
                         </div>
