@@ -4,6 +4,13 @@ import './index.css'
 import App from './App.jsx'
 import { ThemeProvider } from './context/ThemeContext'
 
+// Global Browser Safety: Polyfill reportError for Safari < 15.4 / older WebKit
+if (typeof window !== 'undefined' && typeof window.reportError !== 'function') {
+  window.reportError = function (error) {
+    console.error(error);
+  };
+}
+
 // Global DOM Safety Patch for Third-Party Libraries (Cornerstone3D, TipTap, etc.)
 // Prevents unhandled NotFoundError exceptions when third-party canvas or DOM managers
 // attempt to remove child nodes during React unmount/teardown cycles.

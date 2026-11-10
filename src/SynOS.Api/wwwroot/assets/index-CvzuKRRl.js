@@ -45384,7 +45384,7 @@ Minimum version required to store current data is: ` + P + `.
       Kt,
       rr,
       K == null ? void 0 : K.patient
-    ]), Qe = useCallback((At = null) => {
+    ]), Qe = F.useCallback((At = null) => {
       var _a3, _b2, _c2;
       const Be = At || (Kt == null ? void 0 : Kt.card);
       if (!Be) return;
@@ -292208,6 +292208,9 @@ Input: ` + this.err.str);
       })
     });
   }
+  typeof window < "u" && typeof window.reportError != "function" && (window.reportError = function(t) {
+    console.error(t);
+  });
   if (typeof window < "u" && typeof Node < "u" && Node.prototype && Node.prototype.removeChild) {
     const t = Node.prototype.removeChild;
     Node.prototype.removeChild = function(e) {
