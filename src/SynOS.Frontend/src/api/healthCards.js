@@ -128,6 +128,18 @@ export const HealthCardApi = {
         return data;
     },
 
+    renewCard: async (cardId, payload = { validityDays: 365, paymentMode: 'Cash' }) => {
+        const url = withBranchId(`/api/v1/reception/health-cards/${cardId}/renew`);
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: getHeaders(),
+            body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Failed to renew health card');
+        return data;
+    },
+
     cancelCard: async (cardId, reason = '') => {
         const url = withBranchId(`/api/v1/reception/health-cards/${cardId}/cancel`);
         const response = await fetch(url, {

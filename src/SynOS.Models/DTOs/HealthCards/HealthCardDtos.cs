@@ -101,8 +101,16 @@ namespace SynOS.Models.DTOs.HealthCards
         public bool HasOpenSlots { get; set; }
         public int AvailableSlots { get; set; }
         public bool IsPendingPayment { get; set; } = false;
+        public bool IsExpired { get; set; } = false;
         public HealthCardSummaryDto? Card { get; set; }
         public string Message { get; set; } = string.Empty;
+    }
+
+    public class RenewHealthCardRequestDto
+    {
+        public int ValidityDays { get; set; } = 365;
+        public decimal? RenewalPrice { get; set; }
+        public string PaymentMode { get; set; } = "Cash"; // Cash, UPI, Card
     }
 
     public class EnrollBeneficiaryRequestDto

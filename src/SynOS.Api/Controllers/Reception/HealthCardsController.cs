@@ -217,6 +217,26 @@ namespace SynOS.Api.Controllers.Reception
             }
         }
 
+        [HttpPost("{cardId:guid}/renew")]
+        public async Task<IActionResult> RenewCard(Guid cardId, [FromBody] RenewHealthCardRequestDto request)
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                var userName = User.Identity?.Name ?? "receptionist";
+                var card = await _healthCardService.RenewCardAsync(cardId, request, userId, userName);
+                return Ok(card);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Failed to renew health card.", details = ex.Message });
+            }
+        }
+
         [HttpPost("{cardId:guid}/cancel")]
         public async Task<IActionResult> CancelCard(Guid cardId, [FromBody] CancelHealthCardRequestDto? request)
         {

@@ -19,6 +19,7 @@ namespace SynOS.Services.HealthCards
         Task<HealthCardSummaryDto?> GetCardByIdAsync(Guid cardId);
         Task<HealthCardSummaryDto?> GetCardByPatientIdAsync(Guid patientId);
         Task<HealthCardSummaryDto> UpdateCardAsync(Guid cardId, UpdateHealthCardRequestDto request, Guid cashierUserId);
+        Task<HealthCardSummaryDto> RenewCardAsync(Guid cardId, RenewHealthCardRequestDto request, Guid cashierUserId, string cashierUserName);
         Task<bool> CancelCardAsync(Guid cardId, string? reason, Guid cashierUserId);
         Task<bool> RemoveBeneficiaryAsync(Guid cardId, Guid beneficiaryId, Guid cashierUserId);
     }

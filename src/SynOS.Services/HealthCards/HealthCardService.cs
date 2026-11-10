@@ -367,10 +367,53 @@ namespace SynOS.Services.HealthCards
                 }
             }
 
+            // Scenario 4: Check for Expired Card (Eligible for seamless 1-click renewal keeping the same card number)
+            var expiredQuery = _context.PatientHealthCards
+                .Include(c => c.Plan)
+                .Include(c => c.PrimaryPatient)
+                .Include(c => c.Beneficiaries).ThenInclude(b => b.Patient)
+                .Include(c => c.Usages)
+                .Where(c => (c.ValidUntil < now || c.Status == "Expired") && c.Status != "Cancelled");
+
+            if (patientId.HasValue && patientId.Value != Guid.Empty)
+            {
+                expiredQuery = expiredQuery.Where(c => c.Beneficiaries.Any(b => b.PatientId == patientId.Value));
+            }
+            else if (!string.IsNullOrWhiteSpace(phoneNumber))
+            {
+                var cleanPhone = phoneNumber.Trim();
+                expiredQuery = expiredQuery.Where(c => c.PrimaryPhoneNumber == cleanPhone);
+            }
+            else
+            {
+                expiredQuery = null;
+            }
+
+            if (expiredQuery != null)
+            {
+                var expiredCard = await expiredQuery.OrderByDescending(c => c.ValidUntil).FirstOrDefaultAsync();
+                if (expiredCard != null)
+                {
+                    var summary = MapToSummary(expiredCard);
+                    var isEnrolled = patientId.HasValue && expiredCard.Beneficiaries.Any(b => b.PatientId == patientId.Value);
+                    return new HealthCardEligibilityCheckDto
+                    {
+                        HasActiveCard = false,
+                        IsExpired = true,
+                        IsPatientEnrolledBeneficiary = isEnrolled,
+                        HasOpenSlots = summary.AvailableSlots > 0,
+                        AvailableSlots = summary.AvailableSlots,
+                        Card = summary,
+                        Message = $"Health Card ({expiredCard.CardNumber}) Expired on {expiredCard.ValidUntil:dd MMM yyyy}. Renewal required."
+                    };
+                }
+            }
+
             return new HealthCardEligibilityCheckDto
             {
                 HasActiveCard = false,
                 IsPendingPayment = false,
+                IsExpired = false,
                 IsPatientEnrolledBeneficiary = false,
                 HasOpenSlots = false,
                 AvailableSlots = 0,
@@ -604,6 +647,58 @@ namespace SynOS.Services.HealthCards
             card.UpdatedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync();
 
+            return MapToSummary(card);
+        }
+
+        public async Task<HealthCardSummaryDto> RenewCardAsync(Guid cardId, RenewHealthCardRequestDto request, Guid cashierUserId, string cashierUserName)
+        {
+            var card = await _context.PatientHealthCards
+                .Include(c => c.Plan)
+                .Include(c => c.PrimaryPatient)
+                .Include(c => c.Beneficiaries).ThenInclude(b => b.Patient)
+                .Include(c => c.Usages)
+                .FirstOrDefaultAsync(c => c.CardId == cardId);
+
+            if (card == null) throw new KeyNotFoundException($"Health card with ID {cardId} not found.");
+
+            var days = request.ValidityDays > 0 ? request.ValidityDays : (card.Plan?.DefaultValidityDays ?? 365);
+            var now = DateTime.UtcNow;
+
+            // Enterprise renewal invariant:
+            // If renewing before expiry, extend from current expiry date.
+            // If already expired, start fresh renewal period from today!
+            var baseDate = (card.ValidUntil > now && card.Status == "Active") ? card.ValidUntil : now;
+            card.ValidUntil = baseDate.AddDays(days);
+            card.Status = "Active";
+            card.UpdatedAt = now;
+
+            decimal price = request.RenewalPrice ?? card.Plan?.Price ?? 0m;
+            if (price > 0)
+            {
+                card.PricePaid += price;
+                try
+                {
+                    var paymentModeEnum = ParsePaymentMode(request.PaymentMode);
+                    await _revenueFactWriter.DeclareRevenueFactAsync(new DeclareRevenueFactCommand
+                    {
+                        OccurredAt = DateTimeOffset.UtcNow,
+                        Amount = price,
+                        Currency = "INR",
+                        Direction = RevenueDirection.Inflow,
+                        SourceType = RevenueSourceType.Patient,
+                        SourceReferenceId = card.CardId.ToString(),
+                        PaymentMode = paymentModeEnum,
+                        DeclaredByUserId = cashierUserId,
+                        Notes = $"Health Card Renewal: {card.Plan?.PlanName} ({card.CardNumber} - {card.PrimaryPatient?.DisplayName})"
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[HealthCardService] Note: RevenueFact declaration failed during renewal: {ex.Message}");
+                }
+            }
+
+            await _context.SaveChangesAsync();
             return MapToSummary(card);
         }
 
