@@ -41,6 +41,7 @@ namespace SynOS.Services
         private readonly ILabTimeProvider _labTimeProvider; // ADDED
         private readonly IMiddlewareOutboxService _outboxService;
         private readonly IImsConsumptionService _consumptionService;
+        private readonly INotifier? _notifier;
 
         public VisitService(
             SynOSDbContext context,
@@ -55,7 +56,8 @@ namespace SynOS.Services
             ILabTimeProvider labTimeProvider,
             IVisitLifecyclePolicy lifecyclePolicy,
             IMiddlewareOutboxService outboxService,
-            IImsConsumptionService consumptionService) // ADDED
+            IImsConsumptionService consumptionService,
+            INotifier? notifier = null) // ADDED
         {
             _context = context;
             _logger = logger;
@@ -70,6 +72,7 @@ namespace SynOS.Services
             _lifecyclePolicy = lifecyclePolicy; // ADDED
             _outboxService = outboxService ?? throw new ArgumentNullException(nameof(outboxService));
             _consumptionService = consumptionService;
+            _notifier = notifier;
         }
 
         public async Task<VisitTokenPrintDto> GetVisitTokenForPrintingAsync(Guid visitId)
@@ -1585,7 +1588,7 @@ namespace SynOS.Services
                     visit.VisitId.ToString(),
                     visit.Token,
                     $"Visit Cancelled: {cancelDto.Reason}. Refund: ₹{totalRefunded}",
-                    actorName,
+                    "User",
                     cancelDto.CancelledByUserId.ToString(),
                     true, null, null,
                     TimelineVisibility.Surface,
@@ -1599,6 +1602,18 @@ namespace SynOS.Services
                         Reason = cancelDto.Reason 
                     })
                 );
+
+                if (_notifier != null)
+                {
+                    try
+                    {
+                        await _notifier.NotifyRealitySummaryUpdateAsync(visit.BranchId.HasValue ? visit.BranchId.Value.ToString() : "GLOBAL");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to broadcast reality summary update on visit cancellation");
+                    }
+                }
             }
 
             return cancellation;
@@ -2457,7 +2472,23 @@ namespace SynOS.Services
                         (p.ReceiptNo == null || (!p.ReceiptNo.StartsWith("RCP-B2B") && !p.ReceiptNo.StartsWith("REC-B2B")))).ToList();
                     if (counterPayments.Any())
                     {
-                        _context.Payments.RemoveRange(counterPayments);
+                        foreach (var cp in counterPayments)
+                        {
+                            _context.Payments.Remove(cp);
+                            await _operationalEventWriter.WriteEventAsync(
+                                BranchEventType.PAYMENT_VOIDED,
+                                visit.BranchId.HasValue ? visit.BranchId.Value.ToString() : "GLOBAL",
+                                visit.VisitId.ToString(),
+                                visit.Token,
+                                $"Counter payment of ₹{cp.Amount:N0} voided via visit correction",
+                                "User",
+                                actorUserId.ToString(),
+                                true, null, null,
+                                TimelineVisibility.Surface,
+                                visit.VisitId,
+                                metadata: JsonSerializer.Serialize(new { PaymentId = cp.PaymentId, Amount = cp.Amount, Method = cp.Method })
+                            );
+                        }
                     }
 
                     // Adjust system payment for PartnerAccount to align with revised invoice total
@@ -2697,6 +2728,18 @@ namespace SynOS.Services
                 );
 
                 await transaction.CommitAsync();
+
+                if (_notifier != null)
+                {
+                    try
+                    {
+                        await _notifier.NotifyRealitySummaryUpdateAsync(visit.BranchId.HasValue ? visit.BranchId.Value.ToString() : _userContext.CurrentBranchId.ToString());
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to broadcast reality summary update on batch edit");
+                    }
+                }
 
                 return new BatchEditVisitResponseDto
                 {

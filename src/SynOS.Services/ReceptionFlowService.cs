@@ -937,24 +937,42 @@ namespace SynOS.Services
                 };
                 await _context.SaveChangesAsync();
             }
+            var recordedSplitPayments = new List<Payment>();
+            if (request.Amount == 0 && request.Method == "Unpaid / Credit")
+            {
+                // Full Due Mode
+                payment = new Payment
+                {
+                    PaymentId = Guid.NewGuid(),
+                    InvoiceId = invoiceId,
+                    Amount = 0,
+                    Method = "Unpaid / Credit",
+                    ReceiptNo = request.ReceiptNo ?? $"SYS-DUE-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..6].ToUpper()}",
+                    ReceivedAt = DateTime.UtcNow,
+                    ReceivedByUserId = userId
+                };
+                await _context.SaveChangesAsync();
+            }
             else if (request.SplitPayments != null && request.SplitPayments.Any(p => p.Amount > 0))
             {
                 // Multi-method / Split payment handling (e.g. Cash + UPI)
-                Payment? lastPayment = null;
                 foreach (var sp in request.SplitPayments.Where(p => p.Amount > 0))
                 {
                     var spDto = new PaymentRequestDto
                     {
                         Amount = sp.Amount,
                         Method = sp.Method,
-                        ReceiptNo = request.ReceiptNo ?? $"RCP-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpper()}",
+                        ReceiptNo = request.ReceiptNo != null
+                            ? $"{request.ReceiptNo}-{recordedSplitPayments.Count + 1}"
+                            : $"RCP-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpper()}",
                         ReceivedByUserId = userId,
                         Notes = request.Notes,
                         AllowOverpayment = request.AllowOverpayment || request.IsChangeRetainedAsDue
                     };
-                    lastPayment = await _invoiceService.RecordPaymentAsync(invoiceId, spDto);
+                    var pRecord = await _invoiceService.RecordPaymentAsync(invoiceId, spDto);
+                    recordedSplitPayments.Add(pRecord);
                 }
-                payment = lastPayment ?? throw new InvalidOperationException("No valid split payments provided.");
+                payment = recordedSplitPayments.LastOrDefault() ?? throw new InvalidOperationException("No valid split payments provided.");
             }
             else
             {
@@ -978,26 +996,30 @@ namespace SynOS.Services
                 .FirstAsync(i => i.InvoiceId == invoiceId);
 
             // --- STAGE 1: IMMUTABLE FACT CREATION (Before Event Emission) ---
-            if (payment.Amount > 0)
+            var allPaymentsToConfirm = recordedSplitPayments.Count > 0 ? recordedSplitPayments : new List<Payment> { payment };
+            foreach (var pItem in allPaymentsToConfirm)
             {
-                var factExists = await _context.PaymentConfirmedFacts.AnyAsync(f => f.ReferenceId == payment.PaymentId);
-                if (!factExists)
+                if (pItem.Amount > 0)
                 {
-                    var factFinal = new PaymentConfirmedFact(
-                        Guid.NewGuid(),
-                        PaymentDirection.In, // Was Inbound
-                        payment.Amount,
-                        visit.PatientId, // Payer
-                        DateTimeOffset.UtcNow,
-                        DateTimeOffset.UtcNow,
-                        payment.PaymentId,
-                        payment.Method
-                    );
-                    
-                    _context.PaymentConfirmedFacts.Add(factFinal);
-                    await _context.SaveChangesAsync();
+                    var factExists = await _context.PaymentConfirmedFacts.AnyAsync(f => f.ReferenceId == pItem.PaymentId);
+                    if (!factExists)
+                    {
+                        var factFinal = new PaymentConfirmedFact(
+                            Guid.NewGuid(),
+                            PaymentDirection.In,
+                            pItem.Amount,
+                            visit.PatientId,
+                            DateTimeOffset.UtcNow,
+                            DateTimeOffset.UtcNow,
+                            pItem.PaymentId,
+                            pItem.Method
+                        );
+                        
+                        _context.PaymentConfirmedFacts.Add(factFinal);
+                    }
                 }
             }
+            await _context.SaveChangesAsync();
             // ------------------------------------------------------------
 
             // --- STAGE 1 HEALTH CARD ACTIVATION UPON PAYMENT SETTLEMENT ---
@@ -1389,6 +1411,7 @@ namespace SynOS.Services
                         Patient = printSnapshot.Patient,
                         Billing = printSnapshot.Invoice,
                         Orders = printSnapshot.Orders,
+                        Payments = printSnapshot.Payments ?? new List<LastPaymentDto>(),
                         LabName = labProfile?.Name ?? "Laboratory",
                         LabAddress = labProfile?.Address,
                         LabPhone = labProfile?.Phone,

@@ -50,9 +50,18 @@ const DEFAULT_SEED_NOTIFICATIONS = [
 ];
 
 export function NotificationProvider({ children }) {
+    const getActiveBranchId = () => {
+        try {
+            return localStorage.getItem('synos_oversight_branch_id') || 'default';
+        } catch (_) {
+            return 'default';
+        }
+    };
+
     const [notifications, setNotifications] = useState(() => {
         try {
-            const saved = sessionStorage.getItem('synos_notifications_list');
+            const bId = localStorage.getItem('synos_oversight_branch_id') || 'default';
+            const saved = sessionStorage.getItem(`synos_notifications_${bId}`);
             if (saved) {
                 const parsed = JSON.parse(saved);
                 if (Array.isArray(parsed) && parsed.length > 0) return parsed;
@@ -75,10 +84,11 @@ export function NotificationProvider({ children }) {
 
     const [isCenterOpen, setIsCenterOpen] = useState(false);
 
-    // Save active notifications to session storage
+    // Save active notifications to branch-scoped session storage
     useEffect(() => {
         try {
-            sessionStorage.setItem('synos_notifications_list', JSON.stringify(notifications));
+            const bId = getActiveBranchId();
+            sessionStorage.setItem(`synos_notifications_${bId}`, JSON.stringify(notifications));
         } catch (_) {}
     }, [notifications]);
 
@@ -120,8 +130,10 @@ export function NotificationProvider({ children }) {
     // Push new notification (FIFO: newest takes slot 1, max 3 in toasts)
     const notify = useCallback((item) => {
         if (!item || !item.message) return;
+        const bId = item.branchId || (typeof localStorage !== 'undefined' ? localStorage.getItem('synos_oversight_branch_id') : null) || 'default';
         const newNotif = {
             id: item.id || `notif_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+            branchId: bId,
             type: item.type || 'activity',
             category: item.category || 'billing',
             title: item.title || 'SynOS Update',

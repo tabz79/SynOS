@@ -215,10 +215,10 @@ namespace SynOS.Services
             decimal totalPayments = cashTotal + onlineTotal;
 
             // Direct ledger takes precedence for real-time accuracy (partial payments, refunds, cash desk)
-            decimal finalCash = payments.Any() ? cashTotal : (stats?.Cash ?? 0m);
-            decimal finalOnline = payments.Any() ? onlineTotal : (stats?.Online ?? 0m);
-            int finalOnlineCount = payments.Any() ? onlineCount : (stats?.OnlineCount ?? 0);
-            decimal finalTotal = payments.Any() ? totalPayments : (stats?.Payments ?? 0m);
+            decimal finalCash = cashTotal;
+            decimal finalOnline = onlineTotal;
+            int finalOnlineCount = onlineCount;
+            decimal finalTotal = totalPayments;
 
             // Branch Pool Cash Collected (All desks combined for drawer balance calculation)
             var allBranchPayments = await _context.Payments

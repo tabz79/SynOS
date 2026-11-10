@@ -25,5 +25,6 @@ namespace SynOS.Models.DTOs.Dashboard
         public int? PendingCollections { get; set; }
         public int? CompletedCollections { get; set; }
         public int? TestsRunning { get; set; }
+        public Guid? BranchId { get; set; }
     }
 }

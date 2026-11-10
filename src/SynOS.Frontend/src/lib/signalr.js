@@ -18,8 +18,10 @@ let stopTimer = null;
 export const SignalRService = {
     _getConnection: () => {
         if (!connection) {
+            const bId = typeof localStorage !== 'undefined' ? localStorage.getItem('synos_oversight_branch_id') : null;
+            const url = bId ? `/dashboardHub?branchId=${encodeURIComponent(bId)}` : "/dashboardHub";
             connection = new HubConnectionBuilder()
-                .withUrl("/dashboardHub", {
+                .withUrl(url, {
                     accessTokenFactory: () => localStorage.getItem('synos_jwt')
                 })
                 .withAutomaticReconnect(synosReconnectPolicy)

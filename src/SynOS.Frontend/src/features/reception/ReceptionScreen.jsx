@@ -195,6 +195,11 @@ export function ReceptionScreen() {
             SignalRService.onReceptionSummaryUpdated((payload) => {
                 console.log("ReceptionScreen: Received Reality Summary Update", payload);
                 if (payload) {
+                    const activeBranchId = localStorage.getItem('synos_oversight_branch_id') || user?.branchId;
+                    if (payload.branchId && activeBranchId && String(payload.branchId).toLowerCase() !== String(activeBranchId).toLowerCase()) {
+                        console.log("ReceptionScreen: Discarded foreign reality summary update for branch", payload.branchId);
+                        return;
+                    }
                     setSummary(payload);
                     try {
                         localStorage.setItem('synos_cached_reality_summary', JSON.stringify(payload));
@@ -208,6 +213,13 @@ export function ReceptionScreen() {
 
                 const normalized = normalizeQueueData([deltaRow])[0];
                 if (!normalized) return;
+
+                // MULTI-BRANCH ISOLATION INVARIANT (Zero-Seepage Rule):
+                const activeBranchId = localStorage.getItem('synos_oversight_branch_id') || user?.branchId;
+                if (normalized.branchId && activeBranchId && String(normalized.branchId).toLowerCase() !== String(activeBranchId).toLowerCase()) {
+                    console.log("ReceptionScreen: Discarded foreign branch delta from branch", normalized.branchId);
+                    return;
+                }
 
                 console.log("ReceptionScreen: Delta Received", { 
                     visitId: normalized.visitId, 
@@ -235,6 +247,7 @@ export function ReceptionScreen() {
                     const paidAmt = Number(normalized.totalPaid || normalized.amount || normalized.netAmount || 0);
                     notify({
                         id: `bill_${normalized.visitId || normalized.token}`,
+                        branchId: normalized.branchId || activeBranchId,
                         type: 'activity',
                         category: 'billing',
                         title: paidAmt > 0 ? `₹${paidAmt.toLocaleString('en-IN')} Billed` : 'Visit Finalized',
@@ -523,7 +536,7 @@ export function ReceptionScreen() {
                 const isOverpaid = !isDraft && !isPrepaid && totalPaid > totalBilled && totalBilled > 0;
                 const remainingDue = row.remainingDue !== undefined ? Number(row.remainingDue) : Math.max(0, totalBilled - totalPaid);
                 const isPartial = !isDraft && !isPrepaid && !isOverpaid && (row.paymentMethod === "Partial Due" || (row.paymentDisplay && row.paymentDisplay.includes("Partial")) || (totalPaid > 0 && remainingDue > 0));
-                const isPaid = !isDraft && !isPrepaid && !isPartial && !isOverpaid && (row.paymentMethod === "Paid" || row.paymentMethod === "Cash" || row.paymentMethod === "UPI" || row.paymentMethod === "Card" || (remainingDue === 0 && totalBilled > 0));
+                const isPaid = !isDraft && !isPrepaid && !isPartial && !isOverpaid && (row.paymentMethod === "Paid" || row.paymentMethod === "Cash" || row.paymentMethod === "UPI" || row.paymentMethod === "Card" || (row.paymentMethod && row.paymentMethod.startsWith("Split")) || (remainingDue === 0 && totalBilled > 0));
                 const isFullDue = !isDraft && !isPrepaid && !isPaid && !isPartial && !isOverpaid && (totalPaid === 0 && (remainingDue > 0 || (row.paymentMethod || '').toLowerCase().includes('due') || (row.paymentMethod || '').toLowerCase().includes('credit')));
 
                 const badgeBase = "text-[10px] px-1.5 py-0.5 rounded font-mono leading-none border uppercase tracking-wide shrink-0 font-bold";
@@ -546,8 +559,13 @@ export function ReceptionScreen() {
                     badgeColor = "bg-orange-500/15 dark:text-orange-300 text-orange-700 border-orange-500/30";
                     badgeText = "FULL DUE";
                 } else if (isPaid) {
-                    badgeColor = "bg-emerald-500/10 dark:text-emerald-400 text-emerald-600 border-emerald-500/20";
-                    badgeText = row.paymentMethod || "PAID";
+                    if (row.paymentMethod && row.paymentMethod.startsWith("Split")) {
+                        badgeColor = "bg-purple-500/15 dark:text-purple-300 text-purple-700 border-purple-500/30";
+                        badgeText = "SPLIT";
+                    } else {
+                        badgeColor = "bg-emerald-500/10 dark:text-emerald-400 text-emerald-600 border-emerald-500/20";
+                        badgeText = row.paymentMethod || "PAID";
+                    }
                 }
 
                 // If partial, primary emphasis is the remaining due amount to collect
@@ -572,6 +590,10 @@ export function ReceptionScreen() {
                         ) : isPartial && totalPaid > 0 ? (
                             <span className="type-meta text-emerald-600 dark:text-emerald-400 text-[10px] font-mono font-medium">
                                 Paid: ₹{totalPaid.toLocaleString()}
+                            </span>
+                        ) : row.paymentMethod && row.paymentMethod.startsWith("Split") ? (
+                            <span className="type-meta text-purple-600 dark:text-purple-400 text-[10px] font-mono font-bold">
+                                {row.paymentDisplay || "Cash + UPI"}
                             </span>
                         ) : null}
                         {isPrepaid && row.referrerName && (

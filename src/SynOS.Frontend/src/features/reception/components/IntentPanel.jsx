@@ -1247,10 +1247,12 @@ export function IntentPanel({ onVisitUpdated }) {
             (healthCardEligibility?.hasActiveCard && healthCardEligibility?.isPatientEnrolledBeneficiary) ||
             (effectiveDiscountReason && effectiveDiscountReason.toLowerCase().includes('health card'))
         );
-        const rawCard = (!healthCardEligibility?.card?.cardNumber?.startsWith("HC-") ? healthCardEligibility?.card?.cardNumber : null)
-            || p?.healthCardNumber 
-            || (p?.mrn ? `${p.mrn}-HC` : null);
-        const hcPlan = healthCardEligibility?.card?.planName || p?.healthCardPlanName || "Health Card";
+        const rawCard = hasHc
+            ? ((!healthCardEligibility?.card?.cardNumber?.startsWith("HC-") ? healthCardEligibility?.card?.cardNumber : null)
+                || p?.healthCardNumber 
+                || (p?.mrn ? `${p.mrn}-HC` : null))
+            : null;
+        const hcPlan = hasHc ? (healthCardEligibility?.card?.planName || p?.healthCardPlanName || "Health Card") : null;
 
         return {
             visitId: visitObj?.visitId || currentVisitId,
@@ -1523,6 +1525,22 @@ export function IntentPanel({ onVisitUpdated }) {
             setIsActionSubmitting(true);
             setError(null);
             try {
+                if (stagedDiscount && snapshot?.visit?.visitId) {
+                    if (stagedDiscount.remove) {
+                        try {
+                            await ReceptionApi.removeDiscountFromVisit(snapshot.visit.visitId);
+                        } catch (e) {
+                            console.warn("Non-fatal: could not remove discount on draft visit", e);
+                        }
+                    } else if (Number(stagedDiscount.value) > 0) {
+                        await ReceptionApi.applyDiscountToVisit(snapshot.visit.visitId, {
+                            mode: stagedDiscount.type === 'Percentage' ? 'PERCENTAGE' : 'FLAT',
+                            customValue: Number(stagedDiscount.value),
+                            reason: stagedDiscount.reason || 'Desk Concession'
+                        });
+                    }
+                }
+
                 const isFullDueSelected = settlementTerm === 'FULL_DUE';
                 const isPartialSelected = settlementTerm === 'PARTIAL';
                 const numCustom = Number(customPaymentAmount);
@@ -1540,7 +1558,14 @@ export function IntentPanel({ onVisitUpdated }) {
                 let paymentPayload;
                 let paidAmountDisplay = effectiveAmount;
 
-                if (isSplitPayment && (Number(splitCashAmount) + Number(splitUpiAmount) === effectiveAmount)) {
+                if (isSplitPayment) {
+                    const splitSum = Number(splitCashAmount) + Number(splitUpiAmount);
+                    if (splitSum !== effectiveAmount) {
+                        alert(`Split payment amounts (Cash ₹${splitCashAmount} + UPI ₹${splitUpiAmount} = ₹${splitSum}) must equal the total payment amount ₹${effectiveAmount}.`);
+                        setIsLoading(false);
+                        setIsActionSubmitting(false);
+                        return;
+                    }
                     paymentPayload = {
                         VisitId: snapshot.visit.visitId,
                         Amount: effectiveAmount,
@@ -1992,11 +2017,17 @@ export function IntentPanel({ onVisitUpdated }) {
                 } else if (isPartialSelected && numCustom >= remainingDue) {
                     mainActionLabel = `Partial must be less than ₹${remainingDue.toLocaleString()}`;
                     isActionEnabled = false;
-                } else if (isSplitPayment && (Number(splitCashAmount) + Number(splitUpiAmount) === payNowAmount)) {
-                    mainActionLabel = isPartialSelected
-                        ? `Accept Split (₹${Number(splitCashAmount).toLocaleString()} Cash + ₹${Number(splitUpiAmount).toLocaleString()} UPI) • Due ₹${balanceRemaining.toLocaleString()}`
-                        : `Accept Split Payment (₹${Number(splitCashAmount).toLocaleString()} Cash + ₹${Number(splitUpiAmount).toLocaleString()} UPI)`;
-                    isActionEnabled = true;
+                } else if (isSplitPayment) {
+                    const splitSum = Number(splitCashAmount) + Number(splitUpiAmount);
+                    if (splitSum === payNowAmount) {
+                        mainActionLabel = isPartialSelected
+                            ? `Accept Split (₹${Number(splitCashAmount).toLocaleString()} Cash + ₹${Number(splitUpiAmount).toLocaleString()} UPI) • Due ₹${balanceRemaining.toLocaleString()}`
+                            : `Accept Split Payment (₹${Number(splitCashAmount).toLocaleString()} Cash + ₹${Number(splitUpiAmount).toLocaleString()} UPI)`;
+                        isActionEnabled = true;
+                    } else {
+                        mainActionLabel = `Split sum (₹${splitSum.toLocaleString()}) must equal ₹${payNowAmount.toLocaleString()}`;
+                        isActionEnabled = false;
+                    }
                 } else if (paymentMethod === 'Cash' && Number(tenderedAmount) > payNowAmount) {
                     if (isChangeRetainedAsDue) {
                         const retNow = Number(changeReturnedNow) || 0;

@@ -29,7 +29,8 @@ function renderQrSvgSync(text, size = 68) {
 function extractDisplayPatientCode(patientObj = {}, payload = {}) {
     const discountStr = (payload.discountReason || payload.billing?.discountReason || '').toLowerCase();
     const isHcByDiscount = discountStr.includes('health card') || discountStr.includes('healthcard');
-    const isHc = Boolean(
+    const isExplicitlyNonHc = patientObj.hasActiveHealthCard === false || payload.hasActiveHealthCard === false;
+    const isHc = !isExplicitlyNonHc && Boolean(
         patientObj.hasActiveHealthCard || 
         patientObj.healthCardNumber || 
         patientObj.hasHealthCard ||
@@ -211,7 +212,8 @@ export function generateThermalInvoiceHtml(payload = {}) {
             changeDue: finalChangeDue,
             tenderedAmount: Number(payload.tenderedAmount || billingObj.tenderedAmount || payload.financial?.tenderedAmount || 0),
             discountReason,
-            paymentMethod: rawPaymentMethod
+            paymentMethod: rawPaymentMethod,
+            payments: payload.payments || payload.Payments || billingObj.payments || payload.financial?.payments || payload.splitPayments || []
         },
         biller: {
             billedBy: billerDisplay
@@ -301,7 +303,8 @@ export function generateThermalInvoiceHtml(payload = {}) {
         let mrnVal = pf.uhid?.value || normalizedData.patient.uhid;
         const ageGender = pf.ageGender?.value || normalizedData.patient.ageGender;
 
-        const isHcCard = Boolean(
+        const isExplicitlyNonHc = normalizedData.patient?.hasActiveHealthCard === false || payload.hasActiveHealthCard === false;
+        const isHcCard = !isExplicitlyNonHc && Boolean(
             normalizedData.patient?.hasActiveHealthCard ||
             normalizedData.patient?.healthCardNumber ||
             payload.hasActiveHealthCard ||
@@ -426,6 +429,16 @@ export function generateThermalInvoiceHtml(payload = {}) {
                         <span>Payment Mode:</span>
                         <span style="font-weight: 900; text-transform: uppercase; font-family: monospace; text-align: right;">${rawPaymentMethod}</span>
                     </div>
+                    ${(normalizedData.financial.payments && normalizedData.financial.payments.filter(p => Number(p.amount || p.Amount) > 0).length > 1) ? `
+                        <div style="font-size: 9.5px; font-weight: 700; margin-bottom: 2px; padding-left: 6px; border-left: 2px solid #000000;">
+                            ${normalizedData.financial.payments.filter(p => Number(p.amount || p.Amount) > 0).map(p => `
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>• ${p.method || p.Method || 'Payment'}:</span>
+                                    <span style="font-family: monospace;">₹${Number(p.amount || p.Amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
                 ` : ''}
                 ${ff.balanceDue?.enabled !== false ? `
                     <div style="display: flex; justify-content: space-between; font-weight: 900; font-size: 11px; ${normalizedData.financial.balanceDue > 0 ? 'font-size: 12px;' : ''}">

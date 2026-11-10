@@ -59,7 +59,8 @@ namespace SynOS.Services.Dashboard
                 // Phlebotomy Stats (Operations Engine)
                 PendingCollections = opsStats.PendingCollections,
                 CompletedCollections = opsStats.CompletedCollections,
-                TestsRunning = opsStats.TestsRunning
+                TestsRunning = opsStats.TestsRunning,
+                BranchId = effectiveBranchId
             };
         }
     }

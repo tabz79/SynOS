@@ -36,5 +36,6 @@ namespace SynOS.Models.Events.Reception
         public PatientSummaryDto Patient { get; set; } = new PatientSummaryDto();
         public InvoiceSummaryDto Billing { get; set; } = new InvoiceSummaryDto();
         public List<OrderSummaryDto> Orders { get; set; } = new List<OrderSummaryDto>();
+        public List<LastPaymentDto> Payments { get; set; } = new List<LastPaymentDto>();
     }
 }

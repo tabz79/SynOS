@@ -3374,7 +3374,9 @@ export const CollectionHistoryScreen = () => {
                 digital: 0,
                 bank: 0
             };
-            const amt = Number(r.amount) || 0;
+            const isReversal = (r.direction || '').toLowerCase() === 'reversal';
+            const rawAmt = Number(r.amount) || 0;
+            const amt = isReversal ? -Math.abs(rawAmt) : rawAmt;
             existing.total += amt;
             existing.count += 1;
             const mode = (r.paymentMode || '').toLowerCase();
@@ -3433,10 +3435,15 @@ export const CollectionHistoryScreen = () => {
         return true;
     });
 
-    const totalCollected = filteredHistory.reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
-    const cashTotal = filteredHistory.filter(r => (r.paymentMode || '').toLowerCase().includes('cash')).reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
-    const digitalTotal = filteredHistory.filter(r => (r.paymentMode || '').toLowerCase().includes('upi') || (r.paymentMode || '').toLowerCase().includes('online')).reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
-    const bankTotal = filteredHistory.filter(r => (r.paymentMode || '').toLowerCase().includes('bank') || (r.paymentMode || '').toLowerCase().includes('card') || (r.paymentMode || '').toLowerCase().includes('transfer')).reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+    const getRowAmount = (r) => {
+        const isReversal = (r.direction || '').toLowerCase() === 'reversal';
+        const rawAmt = Number(r.amount) || 0;
+        return isReversal ? -Math.abs(rawAmt) : rawAmt;
+    };
+    const totalCollected = filteredHistory.reduce((sum, r) => sum + getRowAmount(r), 0);
+    const cashTotal = filteredHistory.filter(r => (r.paymentMode || '').toLowerCase().includes('cash')).reduce((sum, r) => sum + getRowAmount(r), 0);
+    const digitalTotal = filteredHistory.filter(r => (r.paymentMode || '').toLowerCase().includes('upi') || (r.paymentMode || '').toLowerCase().includes('online')).reduce((sum, r) => sum + getRowAmount(r), 0);
+    const bankTotal = filteredHistory.filter(r => (r.paymentMode || '').toLowerCase().includes('bank') || (r.paymentMode || '').toLowerCase().includes('card') || (r.paymentMode || '').toLowerCase().includes('transfer')).reduce((sum, r) => sum + getRowAmount(r), 0);
 
     // Tab-Aware CSV Download for Collection History
     const handleDownloadSummary = () => {
@@ -3688,9 +3695,14 @@ export const CollectionHistoryScreen = () => {
                                             : FinanceUtils.mapRevenueSource(row.sourceType)}
                                     </td>
                                     <td className="p-4 text-xs font-bold text-right dark:text-zinc-300">
-                                        <span className={Number(row.amount) < 0 ? "text-rose-500 font-mono" : "text-emerald-600 dark:text-emerald-400 font-mono"}>
-                                            {Number(row.amount) < 0 ? `-₹${Math.abs(Number(row.amount)).toLocaleString()}` : `₹${Number(row.amount).toLocaleString()}`}
-                                        </span>
+                                        {(() => {
+                                            const displayAmt = getRowAmount(row);
+                                            return (
+                                                <span className={displayAmt < 0 ? "text-rose-500 font-mono" : "text-emerald-600 dark:text-emerald-400 font-mono"}>
+                                                    {displayAmt < 0 ? `-₹${Math.abs(displayAmt).toLocaleString()}` : `₹${displayAmt.toLocaleString()}`}
+                                                </span>
+                                            );
+                                        })()}
                                     </td>
                                     <td className="p-4 text-center">
                                         <span className="px-2 py-1 rounded-md bg-zinc-100 dark:bg-zinc-800 text-[10px] font-medium text-zinc-500 uppercase tracking-wider">

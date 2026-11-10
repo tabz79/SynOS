@@ -298,7 +298,7 @@ namespace SynOS.Services.Settlements
                                         : await _context.Users.OrderBy(u => u.CreatedAt).Select(u => u.UserId).FirstOrDefaultAsync();
 
                                     var receiptNo = !string.IsNullOrWhiteSpace(reference)
-                                        ? reference.Trim()
+                                        ? $"{reference.Trim()}-{Guid.NewGuid().ToString("N")[..4].ToUpper()}"
                                         : $"RCP-PARTNER-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpper()}";
 
                                     var payRecord = new Payment
@@ -625,6 +625,7 @@ namespace SynOS.Services.Settlements
 
                 decimal remainingPayment = request.Amount;
                 decimal remainingConcession = concession;
+                int paymentItemIndex = 1;
 
                 foreach (var fact in facts)
                 {
@@ -659,13 +660,16 @@ namespace SynOS.Services.Settlements
                         {
                             if (paymentApply > 0)
                             {
+                                var itemReceiptNo = facts.Count > 1 ? $"{receiptNo}-{paymentItemIndex:D2}" : receiptNo;
+                                paymentItemIndex++;
+
                                 var payment = new Payment
                                 {
                                     PaymentId = Guid.NewGuid(),
                                     InvoiceId = invoice.InvoiceId,
                                     Amount = paymentApply,
                                     Method = request.PaymentMode,
-                                    ReceiptNo = receiptNo,
+                                    ReceiptNo = itemReceiptNo,
                                     ReceivedAt = DateTime.UtcNow,
                                     ReceivedByUserId = userId
                                 };

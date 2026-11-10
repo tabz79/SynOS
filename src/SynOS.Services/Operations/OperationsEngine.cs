@@ -377,7 +377,8 @@ namespace SynOS.Services.Operations
                                     .Select(wa => wa.Department)
                                     .FirstOrDefault(),
                     
-                    DepartmentCode = assignments.FirstOrDefault(a => a.VisitId == visit.VisitId)?.DepartmentCode // Check entity or snapshot?
+                    DepartmentCode = assignments.FirstOrDefault(a => a.VisitId == visit.VisitId)?.DepartmentCode, // Check entity or snapshot?
+                    BranchId = visit.BranchId
                 };
 
                 queue.Add(dto);
@@ -513,7 +514,8 @@ namespace SynOS.Services.Operations
                                 .FirstOrDefault(),
                 
                 DepartmentCode = assignments.FirstOrDefault()?.DepartmentCode,
-                HasPhlebotomy = visit.Orders.Any(o => o.Status != SynOS.Models.Enums.OrderStatus.Cancelled && (o.Test == null || (o.Test.ModalityId == null && !string.Equals(o.Test.Category, "Radiology", StringComparison.OrdinalIgnoreCase) && !string.Equals(o.Test.DepartmentMaster?.Name, "Radiology", StringComparison.OrdinalIgnoreCase))))
+                HasPhlebotomy = visit.Orders.Any(o => o.Status != SynOS.Models.Enums.OrderStatus.Cancelled && (o.Test == null || (o.Test.ModalityId == null && !string.Equals(o.Test.Category, "Radiology", StringComparison.OrdinalIgnoreCase) && !string.Equals(o.Test.DepartmentMaster?.Name, "Radiology", StringComparison.OrdinalIgnoreCase)))),
+                BranchId = visit.BranchId
             };
         }
 
@@ -555,7 +557,13 @@ namespace SynOS.Services.Operations
 
             if (invoice != null && (invoice.Status == "Paid" || invoice.Status == "FullPaid"))
             {
-                var method = invoice.Payments.FirstOrDefault()?.Method;
+                var validPayments = invoice.Payments.Where(p => p.Amount > 0).ToList();
+                if (validPayments.Count > 1)
+                {
+                    var methods = string.Join(" + ", validPayments.Select(p => p.Method).Distinct());
+                    return $"Split ({methods})";
+                }
+                var method = validPayments.FirstOrDefault()?.Method ?? invoice.Payments.FirstOrDefault()?.Method;
                 if (!string.IsNullOrEmpty(method))
                 {
                     // Normalize Method display
@@ -589,7 +597,13 @@ namespace SynOS.Services.Operations
 
             if (invoice != null && (invoice.Status == "Paid" || invoice.Status == "FullPaid"))
             {
-                var method = invoice.Payments.FirstOrDefault()?.Method;
+                var validPayments = invoice.Payments.Where(p => p.Amount > 0).ToList();
+                if (validPayments.Count > 1)
+                {
+                    var methods = string.Join("+", validPayments.Select(p => p.Method).Distinct());
+                    return $"Split ({methods})";
+                }
+                var method = validPayments.FirstOrDefault()?.Method ?? invoice.Payments.FirstOrDefault()?.Method;
                 return method ?? "Paid"; // Fallback
             }
 

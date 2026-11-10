@@ -29,6 +29,9 @@ export function ReceptionNotificationCenter({
 
     const [isAuditExpanded, setIsAuditExpanded] = useState(false);
 
+    const activeBranchId = typeof localStorage !== 'undefined' ? localStorage.getItem('synos_oversight_branch_id') : null;
+    const branchNotifications = notifications.filter(n => !n.branchId || !activeBranchId || String(n.branchId).toLowerCase() === String(activeBranchId).toLowerCase());
+
     // Effective visibility: explicitly passed or globally toggled via toolbar button
     const shouldShow = isOpen || isCenterOpen;
     if (!shouldShow) return null;
@@ -47,9 +50,9 @@ export function ReceptionNotificationCenter({
                     <span className="text-xs font-bold text-slate-800 dark:text-zinc-200">
                         Notifications
                     </span>
-                    {notifications.length > 0 && (
+                    {branchNotifications.length > 0 && (
                         <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-blue-600 text-white">
-                            {notifications.length}
+                            {branchNotifications.length}
                         </span>
                     )}
                 </div>
@@ -116,7 +119,7 @@ export function ReceptionNotificationCenter({
 
                 {/* Notifications Stack (Strict Calm Apple iOS cards) */}
                 <div className="space-y-2.5 max-h-[calc(100vh-250px)] overflow-y-auto no-scrollbar pr-0.5">
-                    {notifications.map(notif => (
+                    {branchNotifications.map(notif => (
                         <NotificationItemCard
                             key={notif.id}
                             notif={notif}

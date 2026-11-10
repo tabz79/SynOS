@@ -1135,11 +1135,14 @@ namespace SynOS.Services.EconomicsIntelligence
                         : (f.Direction == RevenueDirection.Reversal ? "Correction / Cancellation Refund" : "Walk-in Patient Payment");
                 }
 
+                decimal effectiveAmount = f.Direction == RevenueDirection.Reversal ? -Math.Abs(f.Amount) : Math.Abs(f.Amount);
+
                 results.Add(new
                 {
                     RevenueFactId = f.RevenueFactId,
                     OccurredAt = f.OccurredAt,
-                    Amount = f.Amount,
+                    Amount = effectiveAmount,
+                    RawAmount = f.Amount,
                     Currency = f.Currency,
                     Direction = f.Direction.ToString(),
                     SourceType = f.SourceType.ToString(),

@@ -286,27 +286,53 @@ namespace SynOS.Services.Operational
                             break;
 
                         case BranchEventType.PAYMENT_VOIDED:
+                            decimal voidAmt = 0m;
+                            PaymentMode voidMode = PaymentMode.Cash;
+                            bool resolvedVoid = false;
+
                             if (evt.SourceId.HasValue && evt.SourceType == "RevenueFact")
                             {
                                 var fact = await _context.RevenueFacts.FindAsync(evt.SourceId.Value);
                                 if (fact != null)
                                 {
-                                     userStats.PaymentsTotal -= fact.Amount;
-                                     branchStats.PaymentsTotal -= fact.Amount;
-
-                                     if (fact.PaymentMode == PaymentMode.Cash || fact.PaymentMode == PaymentMode.Other) 
-                                     {
-                                         userStats.PaymentsCashTotal -= fact.Amount;
-                                         branchStats.PaymentsCashTotal -= fact.Amount;
-                                     }
-                                     else if (fact.PaymentMode == PaymentMode.UPI || fact.PaymentMode == PaymentMode.Card || fact.PaymentMode == PaymentMode.BankTransfer) {
-                                         userStats.PaymentsOnlineTotal -= fact.Amount;
-                                         branchStats.PaymentsOnlineTotal -= fact.Amount;
-                                         userStats.PaymentsOnlineCount--;
-                                         branchStats.PaymentsOnlineCount--;
-                                     }
-                                     updated = true;
+                                    voidAmt = fact.Amount;
+                                    voidMode = fact.PaymentMode;
+                                    resolvedVoid = true;
                                 }
+                            }
+                            else if (!string.IsNullOrWhiteSpace(evt.Metadata))
+                            {
+                                try
+                                {
+                                    using var doc = System.Text.Json.JsonDocument.Parse(evt.Metadata);
+                                    if (doc.RootElement.TryGetProperty("Amount", out var amtProp) && amtProp.TryGetDecimal(out var amtVal))
+                                    {
+                                        voidAmt = amtVal;
+                                        string mStr = doc.RootElement.TryGetProperty("Method", out var mProp) ? (mProp.GetString() ?? "Cash") : "Cash";
+                                        voidMode = (mStr.IndexOf("Cash", StringComparison.OrdinalIgnoreCase) >= 0) ? PaymentMode.Cash : PaymentMode.UPI;
+                                        resolvedVoid = true;
+                                    }
+                                }
+                                catch {}
+                            }
+
+                            if (resolvedVoid && voidAmt > 0)
+                            {
+                                userStats.PaymentsTotal -= voidAmt;
+                                branchStats.PaymentsTotal -= voidAmt;
+
+                                if (voidMode == PaymentMode.Cash || voidMode == PaymentMode.Other) 
+                                {
+                                    userStats.PaymentsCashTotal -= voidAmt;
+                                    branchStats.PaymentsCashTotal -= voidAmt;
+                                }
+                                else if (voidMode == PaymentMode.UPI || voidMode == PaymentMode.Card || voidMode == PaymentMode.BankTransfer) {
+                                    userStats.PaymentsOnlineTotal -= voidAmt;
+                                    branchStats.PaymentsOnlineTotal -= voidAmt;
+                                    if (userStats.PaymentsOnlineCount > 0) userStats.PaymentsOnlineCount--;
+                                    if (branchStats.PaymentsOnlineCount > 0) branchStats.PaymentsOnlineCount--;
+                                }
+                                updated = true;
                             }
                             break;
 

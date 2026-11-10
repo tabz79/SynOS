@@ -61,7 +61,8 @@ export const ReceptionApi = {
             assignedDepartmentCode: row.assignedDepartmentCode || row.AssignedDepartmentCode,
             isTokenPrinted: row.isTokenPrinted ?? row.IsTokenPrinted,
             dateGroup: row.dateGroup || row.DateGroup || "Today",
-            hasPhlebotomy: row.hasPhlebotomy ?? row.HasPhlebotomy ?? true
+            hasPhlebotomy: row.hasPhlebotomy ?? row.HasPhlebotomy ?? true,
+            branchId: row.branchId || row.BranchId
         }));
     },
 
