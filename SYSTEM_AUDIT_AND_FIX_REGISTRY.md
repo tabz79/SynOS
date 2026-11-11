@@ -3018,3 +3018,17 @@ In split payment workflows where a patient settles a bill using a combination of
    - **Protocol Rule:** Any future AI coding agent (or developer) operating on this repository **MUST inspect `AGENTS.md` and `.agents/AGENTS.md`** before planning or executing any task touching billing, reception, finance, cash drawers, reports, or prints.
    - **Reason:** Previous agents performed isolated "one-off" fixes (such as adding restrictive branch filters or changing cashier matching) that solved a localized symptom but broke other tabs (such as wiping Cash Drawer transactions to zero while Collection History had 7 transactions). Consulting `AGENTS.md` prevents breaking the architectural invariants and guarantees zero regressions across the 8 Finance Hub tabs.
 
+### 6. Filter Pipeline Verification Audit (Date, Cashier & Branch Wiring)
+* **Date Filter Verification (`Today` / `Preset`):**
+  - **Frontend:** `RevenueScreens.jsx` extracts `presetRange` ("today") and sends `preset: 'today'`.
+  - **Backend:** `FinanceBillsController.cs` passes `preset` into `ResolvePresetDateRange()`, producing exact UTC timestamps (`startUtc` to `endUtc`).
+  - **Database Query:** Enforced via `p.ReceivedAt >= startUtc && p.ReceivedAt < endUtc`. No bypass.
+* **Cashier Filter Verification (`Moin`):**
+  - **Frontend:** Cashier tab selection passes `userId: selectedUserId`.
+  - **Backend:** `FinanceBillsController.cs` binds `effectiveUserId = userId.Value`.
+  - **Database Query:** Enforced via canonical 4-tier hierarchy `(p.ReceivedByUserId == effectiveUserId || p.Invoice.Visit.AssignedReceptionistId == effectiveUserId || p.Invoice.Visit.CreatedByUserId == effectiveUserId)`. No bypass.
+* **Branch Filter Verification (`Branch View: Main Lab` vs `All Branches`):**
+  - **When "Main Lab" is Selected:** `effectiveBranchId` (Main Lab GUID) is sent as `branchId`. The backend applies `p.Invoice.Visit.BranchId == effectiveBranchId.Value`. Main Lab cash transactions are strictly matched.
+  - **When "All Branches" is Selected:** `isConsolidated && isAdmin` is true, so `branchId` is omitted (`undefined`). The backend leaves `effectiveBranchId = null`, eliminating the previous guessing trap and querying all branches.
+  - **Zero Heuristics Guarantee:** No hardcoded GUIDs, no synthetic data mocking, and no user profile fallback guessing. All three filter dimensions are strictly wired end-to-end.
+
