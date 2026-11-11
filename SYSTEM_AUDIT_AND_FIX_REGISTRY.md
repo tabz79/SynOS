@@ -3085,62 +3085,80 @@ In split payment workflows where a patient settles a bill using a combination of
 ## 46. Deep-Dive Audit: Cash Drawer Ledgers Returning Zero Under Admin & Reception Tests — [AUDITED & REPORTED]
 
 ### Incident Summary & Observed Evidence
-* **User Test Context:** The user performed live verification in the Cash Drawer Shift Ledgers tab (`#POS-DRAWER`) under two distinct accounts:
+* **User Test Context:** The user installed the latest compiled installer containing commit `36ac15fb` and performed live verification in the Cash Drawer Shift Ledgers tab (`#POS-DRAWER`) under two accounts:
   1. **Admin Test (`media_1794369888756_2e18c40c.png`):** Logged in as `Tabrez Developer` (`Admin`). Filter set to `Today`, branch set to `Branch View: Main Lab`, cashier button clicked on `Moin`.
      - **Observed Result:** Displayed `No Cash Drawer Transactions Recorded`, `Opening Float: ₹0.00`, `Total Cash Inflow: +₹0.00`, `Net Cash In Hand: ₹0.00`.
   2. **Reception Test (`media_1794369961548_097a9f82.png`):** Logged in as `Moin` (`Receptionist`). Top bar set to `Main Lab`, filter set to `Today`, cashier `Moin`.
      - **Observed Result:** Displayed `No Cash Drawer Transactions Recorded`, `Opening Float: ₹0.00`, `Total Cash Inflow: +₹0.00`, `Net Cash In Hand: ₹0.00`.
 * **Discrepancy:** In `Collection History` for the same shift date (`2026-11-11`), Moin has 7 confirmed cash transactions totaling ₹3,150 (`media_1794364321533_31912d11.jpg`).
 
-### Forensic Audit & Root Cause Analysis
+---
 
-#### 1. Runtime Process State vs Source Code State (The Uncompiled Binary Gap)
-* As explicitly confirmed by the user in turn 7:
-  > *"And FYI, this was the old compiled code, so I haven't yet compiled your fix. So just an FYI."*
-* On the Windows operating environment, SynOS runs as a background Windows Service (`TBZSynOSService` executing `SynOS.Api.exe` on port 59998/59999).
-* Committing code to GitHub (`cloud-testing-2`) does not automatically update a running Windows service. Until the service is stopped, recompiled (`dotnet build src/SynOS.Api`), and restarted (`Restart-Service TBZSynOSService`), the running process executes the **pre-fix binary**.
+### Root Cause 1: Untranslatable LINQ on SQL Server Throws Silent HTTP 500 (`userSpendFacts`)
 
-#### 2. Why the Pre-Fix Binary Wipes the Cash Drawer to Zero in BOTH Tests
+* **Location:** [`FinanceBillsController.cs:1645-1662`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Controllers/FinanceBillsController.cs#L1645-L1662)
+```csharp
+// 4. Query all Cash Daily Expenses recorded by this user today
+var userPayables = await _context.OverheadPayableFacts
+    .Where(p => p.CreatedBy == effectiveUserId
+             && p.CreatedAt >= startUtc && p.CreatedAt < endUtc
+             && p.Status != SynOS.Models.Enums.Payables.VendorPayableStatus.Cancelled)
+    .OrderBy(p => p.CreatedAt)
+    .AsNoTracking()
+    .ToListAsync();
 
-##### A. In the Admin Test (`Tabrez Developer` viewing `Moin` at `Main Lab`):
-* In the pre-fix code (`FinanceBillsController.cs` before commit `36ac15fb`):
-  1. The frontend (`RevenueScreens.jsx`) called `FinanceApi.getMyCashDrawerLedger({ userId: selectedUserId })` without passing `branchId`.
-  2. The backend received `branchId = null`.
-  3. The backend executed the legacy blind fallback:
-     ```csharp
-     var ubr = await _context.UserBranchRoles.AsNoTracking().FirstOrDefaultAsync(ub => ub.UserId == effectiveUserId);
-     if (ubr != null && ubr.BranchId != Guid.Empty)
-     {
-         effectiveBranchId = ubr.BranchId; // Mapped to MRI Branch!
+List<SpendFact> userSpendFacts = new();
+if (userPayables.Any())
+{
+    var userPrefixes = userPayables.Select(p => $"OHP-{p.OverheadPayableId.ToString().Substring(0, 8)}").ToList();
+    userSpendFacts = await _context.SpendFacts
+        .Where(s => userPrefixes.Any(pfx => s.TransactionReference.StartsWith(pfx))) // 💥 UNTRANSLATABLE IN SQL SERVER
+        .AsNoTracking()
+        .ToListAsync();
+}
+```
+
+* **Forensic Breakdown:**
+  1. On Moin's shift today (`2026-11-11`), Moin recorded a **₹500 petty cash expense** (visible in the Reception Reality Summary tile 6: `Recorded Expenses: ₹500`).
+  2. Because Moin has an expense today, `userPayables.Any()` evaluates to `true`.
+  3. The backend then executes `_context.SpendFacts.Where(s => userPrefixes.Any(pfx => s.TransactionReference.StartsWith(pfx)))`.
+  4. In Entity Framework Core on Microsoft SQL Server, `IEnumerable<string>.Any(prefix => column.StartsWith(prefix))` **CANNOT be translated into Transact-SQL**. Unlike in-memory LINQ-to-Objects, EF Core throws an immediate:
+     `System.InvalidOperationException: The LINQ expression 'DbSet<SpendFact>().Where(s => ...)' could not be translated.`
+  5. The API controller crashes with **HTTP 500 Internal Server Error**.
+  6. In frontend [`RevenueScreens.jsx:4660-4665`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/finance/RevenueScreens.jsx#L4660-L4665):
+     ```javascript
+     } catch (err) {
+         console.error("Failed to load shift cash ledger:", err);
+         setLedgerData(null);
+     } finally {
+         setLoading(false);
      }
      ```
-  4. In the database, Moin's `UserBranchRole` is assigned to **`MRI Branch`**!
-  5. The query filtered `p.Invoice.Visit.BranchId == MRI Branch`.
-  6. Because all 7 of today's confirmed cash transactions occurred at **`Main Lab`**, the query found 0 rows and returned `+₹0.00`.
+  7. The frontend silently catches the HTTP 500 failure, sets `ledgerData = null`, and displays `+₹0.00` and `No Cash Drawer Transactions Recorded`. No error toast is rendered, making it look as though the drawer is legitimately empty.
 
-##### B. In the Reception Test (`Moin` viewing `Moin` at `Main Lab`):
-* Even though Moin switched the top bar to `Main Lab`:
-  1. The pre-fix frontend did not pass `branchId` to `getMyCashDrawerLedger`.
-  2. The pre-fix backend received `branchId = null`.
-  3. The backend once again executed the `UserBranchRoles` fallback for Moin's user ID, which forced `effectiveBranchId = MRI Branch`.
-  4. The query filtered by `MRI Branch`, completely discarding Moin's `Main Lab` transactions and displaying `No Cash Drawer Transactions Recorded`.
+---
 
-##### C. The Second Flaw: Single-Field Attribution (`ReceivedByUserId`):
-* In the pre-fix binary, the query checked ONLY `p.ReceivedByUserId == effectiveUserId`.
-* When visits were confirmed from the admin takeover desk, or when tokens were generated under a shared station token while Moin was the assigned receptionist, `ReceivedByUserId` did not match Moin's ID, dropping those payments from the drawer.
+### Root Cause 2: Untranslatable Navigation & Null Guard on `cashPaymentsQuery`
 
-#### 3. How Commit `36ac15fb` Fixes Both Scenarios Once Recompiled
+* **Location:** [`FinanceBillsController.cs:1634-1637`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Controllers/FinanceBillsController.cs#L1634-L1637)
+```csharp
+if (effectiveBranchId.HasValue && effectiveBranchId.Value != Guid.Empty)
+{
+    cashPaymentsQuery = cashPaymentsQuery.Where(p => p.Invoice.Visit == null || p.Invoice.Visit.BranchId == effectiveBranchId.Value);
+}
+```
+* **Forensic Breakdown:**
+  - If a visit has `BranchId == null` in the database, `p.Invoice.Visit.BranchId == effectiveBranchId.Value` evaluates to SQL `NULL = @id`, which evaluates to `UNKNOWN` (falsy) in SQL Server.
+  - Furthermore, deep multi-level navigation checks (`p.Invoice.Visit != null`) inside complex `OR` conditions can cause EF Core query execution plans to fail or drop valid payments when joined across `Payments -> Invoices -> Visits`.
 
-| Dimension | Pre-Fix Behavior (Running in Test Screenshots) | Post-Fix Behavior (`36ac15fb` in Repo) |
-| :--- | :--- | :--- |
-| **Branch Parameter Passing** | Frontend sent `undefined`, omitting `branchId`. | `RevenueScreens.jsx` explicitly forwards `effectiveBranchId` (Main Lab GUID). |
-| **Backend Branch Resolution** | Blindly guessed branch from cashier's `UserBranchRoles` (`MRI Branch`). | **Eliminated.** When `branchId` is passed, it strictly respects `Main Lab`. When `All Branches` is passed, it leaves `branchId = null` (no drop). |
-| **Cashier Attribution** | Single field `p.ReceivedByUserId == effectiveUserId`. | Canonical 4-tier hierarchy: `ReceivedByUserId` OR `Visit.AssignedReceptionistId` OR `Visit.CreatedByUserId`. |
-| **Automated Test Verification** | None. | Enforced by `FinanceHubParityTests.cs` (2/2 passing). |
+---
 
-### Summary & Next Action
-* The code in branch `cloud-testing-2` is 100% verified, tested, and guarded against regressions.
-* To see the 7 transactions appear in the Cash Drawer Shift Ledgers, the local Windows service running the API must be recompiled and restarted with the latest commits from `cloud-testing-2`.
+### Audit Conclusion & Recommended Rectification (For Approval)
+1. **Fix `userSpendFacts` Query:**
+   - Instead of the untranslatable `userPrefixes.Any(pfx => s.TransactionReference.StartsWith(pfx))`, retrieve spend facts by exact `SpendFactId` or transaction reference list, or evaluate `StartsWith` in-memory after fetching today's shift spend facts.
+2. **Surface API Errors in UI:**
+   - Instead of silently suppressing API errors and setting `ledgerData = null`, display an explicit warning banner if the server returns a 500 error so issues are immediately visible in the UI rather than masquerading as an empty ledger.
+
 
 
 
