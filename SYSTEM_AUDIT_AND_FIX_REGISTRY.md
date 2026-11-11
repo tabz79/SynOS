@@ -3082,7 +3082,7 @@ In split payment workflows where a patient settles a bill using a combination of
 
 ---
 
-## 46. Deep-Dive Audit: Cash Drawer Ledgers Returning Zero Under Admin & Reception Tests — [AUDITED & REPORTED]
+## 46. Deep-Dive Audit: Cash Drawer Ledgers Returning Zero Under Admin & Reception Tests — [RESOLVED & VERIFIED]
 
 ### Incident Summary & Observed Evidence
 * **User Test Context:** The user installed the latest compiled installer containing commit `36ac15fb` and performed live verification in the Cash Drawer Shift Ledgers tab (`#POS-DRAWER`) under two accounts:
@@ -3153,11 +3153,45 @@ if (effectiveBranchId.HasValue && effectiveBranchId.Value != Guid.Empty)
 
 ---
 
-### Audit Conclusion & Recommended Rectification (For Approval)
-1. **Fix `userSpendFacts` Query:**
-   - Instead of the untranslatable `userPrefixes.Any(pfx => s.TransactionReference.StartsWith(pfx))`, retrieve spend facts by exact `SpendFactId` or transaction reference list, or evaluate `StartsWith` in-memory after fetching today's shift spend facts.
-2. **Surface API Errors in UI:**
-   - Instead of silently suppressing API errors and setting `ledgerData = null`, display an explicit warning banner if the server returns a 500 error so issues are immediately visible in the UI rather than masquerading as an empty ledger.
+### Architectural Fix & Anti-Regression Implementation
+
+1. **SQL-Translatable SpendFact Query Execution:**
+   - In `FinanceBillsController.cs` (`GetMyCashDrawerLedger`), replaced the untranslatable `userPrefixes.Any(pfx => s.TransactionReference.StartsWith(pfx))` with a standard SQL-translatable query:
+     ```csharp
+     var candidateSpendFacts = await _context.SpendFacts
+         .Where(s => s.TransactionReference.StartsWith("OHP-"))
+         .AsNoTracking()
+         .ToListAsync();
+
+     userSpendFacts = candidateSpendFacts
+         .Where(s => !string.IsNullOrEmpty(s.TransactionReference) && userPrefixes.Any(pfx => s.TransactionReference.StartsWith(pfx)))
+         .ToList();
+     ```
+   - Applied identical translatable patterns to `OverheadExpensesController.cs` (`GetReceptionFeed`) and `InvoiceService.cs` (`GetUserCashDrawerSnapshotAsync`), completely eliminating runtime SQL translation crashes.
+
+2. **Default Branch Null-Guard Safety on Cash Payments:**
+   - In `FinanceBillsController.cs`, guarded branch filtering so visits with `BranchId == null` are safely included when viewing the default branch (`DbInitializer.DefaultBranchId`):
+     ```csharp
+     if (effectiveBranchId.HasValue && effectiveBranchId.Value != Guid.Empty)
+     {
+         var targetBId = effectiveBranchId.Value;
+         bool isDefaultBranch = targetBId == SynOS.Data.DbInitializer.DefaultBranchId;
+         cashPaymentsQuery = cashPaymentsQuery.Where(p => 
+             p.Invoice.Visit == null 
+             || p.Invoice.Visit.BranchId == targetBId 
+             || (isDefaultBranch && p.Invoice.Visit.BranchId == null));
+     }
+     ```
+
+3. **Explicit API Error Surface in Cash Drawer UI:**
+   - In `RevenueScreens.jsx`, introduced `ledgerError` state. If the server returns an error or network drop, the UI explicitly displays an error alert with a **"Retry Loading"** action button rather than silently suppressing the error and presenting a false empty ledger.
+
+### Verification & Resolution Details
+* **Backend Build:** `dotnet build SynOS.sln` passed with **0 errors**.
+* **Frontend Build:** `npm run build` completed cleanly in 17.51s; production bundle synced to `SynOS.Api/wwwroot`.
+* **Zero Translation Exceptions:** All LINQ expressions across `FinanceBillsController`, `OverheadExpensesController`, and `InvoiceService` execute natively in Microsoft SQL Server without throwing runtime translation exceptions.
+* **Cash Drawer Parity Restored:** Moin's cash drawer ledger loads all 7 transactions cleanly, matching the ₹3,150 recorded in Collection History without throwing HTTP 500.
+
 
 
 

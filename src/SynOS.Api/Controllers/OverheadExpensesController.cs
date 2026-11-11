@@ -477,9 +477,14 @@ namespace SynOS.Api.Controllers
                     .Concat(vendorPayables.Select(vp => $"VENDOR-SETTLE-{vp.VendorPayableId.ToString().Substring(0, 8)}"))
                     .ToList();
 
-                var spendFacts = await _context.SpendFacts
-                    .Where(s => payablePrefixes.Any(pfx => s.TransactionReference.StartsWith(pfx)))
+                var candidateSpendFacts = await _context.SpendFacts
+                    .Where(s => s.TransactionReference.StartsWith("OHP-") || s.TransactionReference.StartsWith("VENDOR-SETTLE-"))
+                    .AsNoTracking()
                     .ToListAsync();
+
+                var spendFacts = candidateSpendFacts
+                    .Where(s => !string.IsNullOrEmpty(s.TransactionReference) && payablePrefixes.Any(pfx => s.TransactionReference.StartsWith(pfx)))
+                    .ToList();
 
                 decimal cashOutflow = 0;
                 decimal digitalOutflow = 0;

@@ -1633,7 +1633,12 @@ namespace SynOS.Api.Controllers
 
             if (effectiveBranchId.HasValue && effectiveBranchId.Value != Guid.Empty)
             {
-                cashPaymentsQuery = cashPaymentsQuery.Where(p => p.Invoice.Visit == null || p.Invoice.Visit.BranchId == effectiveBranchId.Value);
+                var targetBId = effectiveBranchId.Value;
+                bool isDefaultBranch = targetBId == SynOS.Data.DbInitializer.DefaultBranchId;
+                cashPaymentsQuery = cashPaymentsQuery.Where(p => 
+                    p.Invoice.Visit == null 
+                    || p.Invoice.Visit.BranchId == targetBId 
+                    || (isDefaultBranch && p.Invoice.Visit.BranchId == null));
             }
 
             var cashPayments = await cashPaymentsQuery
@@ -1654,10 +1659,14 @@ namespace SynOS.Api.Controllers
             if (userPayables.Any())
             {
                 var userPrefixes = userPayables.Select(p => $"OHP-{p.OverheadPayableId.ToString().Substring(0, 8)}").ToList();
-                userSpendFacts = await _context.SpendFacts
-                    .Where(s => userPrefixes.Any(pfx => s.TransactionReference.StartsWith(pfx)))
+                var candidateSpendFacts = await _context.SpendFacts
+                    .Where(s => s.TransactionReference.StartsWith("OHP-"))
                     .AsNoTracking()
                     .ToListAsync();
+
+                userSpendFacts = candidateSpendFacts
+                    .Where(s => !string.IsNullOrEmpty(s.TransactionReference) && userPrefixes.Any(pfx => s.TransactionReference.StartsWith(pfx)))
+                    .ToList();
             }
 
             // 5. Build unified transaction items

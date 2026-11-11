@@ -260,9 +260,14 @@ namespace SynOS.Services
                 if (userPayables.Any())
                 {
                     var userPrefixes = userPayables.Select(p => $"OHP-{p.OverheadPayableId.ToString().Substring(0, 8)}").ToList();
-                    var userSpendFacts = await _context.SpendFacts
-                        .Where(s => userPrefixes.Any(pfx => s.TransactionReference.StartsWith(pfx)))
+                    var candidateSpendFacts = await _context.SpendFacts
+                        .Where(s => s.TransactionReference.StartsWith("OHP-"))
+                        .AsNoTracking()
                         .ToListAsync();
+
+                    var userSpendFacts = candidateSpendFacts
+                        .Where(s => !string.IsNullOrEmpty(s.TransactionReference) && userPrefixes.Any(pfx => s.TransactionReference.StartsWith(pfx)))
+                        .ToList();
 
                     foreach (var up in userPayables)
                     {

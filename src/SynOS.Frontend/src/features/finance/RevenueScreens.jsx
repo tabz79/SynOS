@@ -4601,6 +4601,7 @@ export const CashDrawerLedgersScreen = () => {
     const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
     const [useCustomSingleDate, setUseCustomSingleDate] = useState(false);
     const [ledgerData, setLedgerData] = useState(null);
+    const [ledgerError, setLedgerError] = useState(null);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('All'); // 'All' | 'Inflows' | 'Outflows' | 'Refunds'
     const [searchQuery, setSearchQuery] = useState('');
@@ -4646,6 +4647,7 @@ export const CashDrawerLedgersScreen = () => {
     const loadLedger = async () => {
         try {
             setLoading(true);
+            setLedgerError(null);
             const bId = isConsolidated && isAdmin ? undefined : (effectiveBranchId || undefined);
             const data = await FinanceApi.getMyCashDrawerLedger({
                 userId: selectedUserId || undefined,
@@ -4659,6 +4661,7 @@ export const CashDrawerLedgersScreen = () => {
             setLedgerData(data);
         } catch (err) {
             console.error("Failed to load shift cash ledger:", err);
+            setLedgerError(err.message || "Failed to load cash drawer shift ledger");
             setLedgerData(null);
         } finally {
             setLoading(false);
@@ -4901,6 +4904,23 @@ export const CashDrawerLedgersScreen = () => {
                     <div className="p-16 text-center animate-pulse text-zinc-500 font-bold uppercase tracking-widest text-xs flex flex-col items-center gap-3">
                         <div className="w-8 h-8 border-3 border-teal-500 border-t-transparent rounded-full animate-spin" />
                         <span>Loading drawer shift transactions...</span>
+                    </div>
+                ) : ledgerError ? (
+                    <div className="p-16 text-center space-y-3">
+                        <div className="p-3 bg-rose-500/10 text-rose-600 rounded-full w-12 h-12 flex items-center justify-center mx-auto">
+                            <AlertCircle className="w-6 h-6" />
+                        </div>
+                        <p className="text-sm font-bold text-rose-600 dark:text-rose-400">Failed to Load Cash Drawer Ledger</p>
+                        <p className="text-xs text-zinc-500 max-w-sm mx-auto">
+                            {ledgerError}
+                        </p>
+                        <button
+                            type="button"
+                            onClick={loadLedger}
+                            className="mt-2 px-4 py-1.5 text-xs font-semibold rounded-lg bg-rose-500/10 text-rose-600 hover:bg-rose-500/20 transition-all cursor-pointer"
+                        >
+                            Retry Loading
+                        </button>
                     </div>
                 ) : filteredTransactions.length === 0 ? (
                     <div className="p-16 text-center space-y-3">
