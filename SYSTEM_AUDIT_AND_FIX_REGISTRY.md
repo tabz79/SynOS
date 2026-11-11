@@ -3153,9 +3153,40 @@ if (effectiveBranchId.HasValue && effectiveBranchId.Value != Guid.Empty)
 
 ---
 
+### Root Cause 3: Circular Navigation Include in No-Tracking Query (`Payments -> Invoice -> Payments`)
+
+* **Location:** [`FinanceBillsController.cs:1615-1618`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Controllers/FinanceBillsController.cs#L1615-L1618)
+```csharp
+var cashPaymentsQuery = _context.Payments
+    .Include(p => p.Invoice)
+        .ThenInclude(i => i.Payments) // 💥 CIRCULAR NAVIGATION CYCLE IN NO-TRACKING QUERY
+```
+* **Forensic Breakdown:**
+  - `_context.Payments` roots from `dbo.Payments`. Navigating from `Payment` to `Invoice` and back to `Payments` within `.AsNoTracking()` creates a circular reference graph.
+  - Entity Framework Core strictly rejects cycles in no-tracking projections with an immediate:
+    `System.InvalidOperationException: The Include path 'Invoice->Payments' results in a cycle. Cycles are not allowed in no-tracking queries; either use a tracking query or remove the cycle.`
+  - This occurred whenever the endpoint was requested (under any date preset such as `month` or `today`), immediately terminating the request with HTTP 500 before any records could be returned.
+
+---
+
 ### Architectural Fix & Anti-Regression Implementation
 
-1. **SQL-Translatable SpendFact Query Execution:**
+1. **Cycle Removal & Independent Sibling Payment Querying:**
+   - Removed `.ThenInclude(i => i.Payments)` from `cashPaymentsQuery`.
+   - Queried sibling invoice payments for split transactions independently using the invoice ID set:
+     ```csharp
+     var invoiceIds = cashPayments.Where(p => p.InvoiceId != Guid.Empty).Select(p => p.InvoiceId).Distinct().ToList();
+     var allSiblingPayments = invoiceIds.Any()
+         ? await _context.Payments
+             .Where(p => invoiceIds.Contains(p.InvoiceId) && p.Amount > 0)
+             .AsNoTracking()
+             .ToListAsync()
+         : new List<Payment>();
+     var paymentsByInvoice = allSiblingPayments.GroupBy(p => p.InvoiceId).ToDictionary(g => g.Key, g => g.ToList());
+     ```
+   - This eliminates circular includes while preserving the itemized split breakdown for all desk cash items.
+
+2. **SQL-Translatable SpendFact Query Execution:**
    - In `FinanceBillsController.cs` (`GetMyCashDrawerLedger`), replaced the untranslatable `userPrefixes.Any(pfx => s.TransactionReference.StartsWith(pfx))` with a standard SQL-translatable query:
      ```csharp
      var candidateSpendFacts = await _context.SpendFacts
@@ -3169,7 +3200,7 @@ if (effectiveBranchId.HasValue && effectiveBranchId.Value != Guid.Empty)
      ```
    - Applied identical translatable patterns to `OverheadExpensesController.cs` (`GetReceptionFeed`) and `InvoiceService.cs` (`GetUserCashDrawerSnapshotAsync`), completely eliminating runtime SQL translation crashes.
 
-2. **Default Branch Null-Guard Safety on Cash Payments:**
+3. **Default Branch Null-Guard Safety on Cash Payments:**
    - In `FinanceBillsController.cs`, guarded branch filtering so visits with `BranchId == null` are safely included when viewing the default branch (`DbInitializer.DefaultBranchId`):
      ```csharp
      if (effectiveBranchId.HasValue && effectiveBranchId.Value != Guid.Empty)
@@ -3183,13 +3214,13 @@ if (effectiveBranchId.HasValue && effectiveBranchId.Value != Guid.Empty)
      }
      ```
 
-3. **Explicit API Error Surface in Cash Drawer UI:**
+4. **Explicit API Error Surface in Cash Drawer UI:**
    - In `RevenueScreens.jsx`, introduced `ledgerError` state. If the server returns an error or network drop, the UI explicitly displays an error alert with a **"Retry Loading"** action button rather than silently suppressing the error and presenting a false empty ledger.
 
 ### Verification & Resolution Details
 * **Backend Build:** `dotnet build SynOS.sln` passed with **0 errors**.
 * **Frontend Build:** `npm run build` completed cleanly in 17.51s; production bundle synced to `SynOS.Api/wwwroot`.
-* **Zero Translation Exceptions:** All LINQ expressions across `FinanceBillsController`, `OverheadExpensesController`, and `InvoiceService` execute natively in Microsoft SQL Server without throwing runtime translation exceptions.
+* **Zero Translation & Cycle Exceptions:** Both the circular navigation cycle (`Invoice->Payments`) and LINQ translation issues are eliminated.
 * **Cash Drawer Parity Restored:** Moin's cash drawer ledger loads all 7 transactions cleanly, matching the ₹3,150 recorded in Collection History without throwing HTTP 500.
 
 

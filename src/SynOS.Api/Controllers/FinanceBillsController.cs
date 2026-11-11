@@ -1614,8 +1614,6 @@ namespace SynOS.Api.Controllers
             // 3. Query all Cash Payments received or attributed to this cashier today (Canonical 4-tier hierarchy)
             var cashPaymentsQuery = _context.Payments
                 .Include(p => p.Invoice)
-                    .ThenInclude(i => i.Payments)
-                .Include(p => p.Invoice)
                     .ThenInclude(i => i.Visit)
                         .ThenInclude(v => v.Patient)
                 .Include(p => p.Invoice)
@@ -1645,6 +1643,16 @@ namespace SynOS.Api.Controllers
                 .OrderBy(p => p.ReceivedAt)
                 .AsNoTracking()
                 .ToListAsync();
+
+            // Sibling payments for split payment annotation without circular EF Core include
+            var invoiceIds = cashPayments.Where(p => p.InvoiceId != Guid.Empty).Select(p => p.InvoiceId).Distinct().ToList();
+            var allSiblingPayments = invoiceIds.Any()
+                ? await _context.Payments
+                    .Where(p => invoiceIds.Contains(p.InvoiceId) && p.Amount > 0)
+                    .AsNoTracking()
+                    .ToListAsync()
+                : new List<Payment>();
+            var paymentsByInvoice = allSiblingPayments.GroupBy(p => p.InvoiceId).ToDictionary(g => g.Key, g => g.ToList());
 
             // 4. Query all Cash Daily Expenses recorded by this user today
             var userPayables = await _context.OverheadPayableFacts
@@ -1701,7 +1709,11 @@ namespace SynOS.Api.Controllers
                 {
                     type = "PATIENT_CASH";
                     category = "Inflow";
-                    var otherPayments = p.Invoice?.Payments?.Where(op => op.PaymentId != p.PaymentId && op.Amount > 0).ToList();
+                    List<Payment>? otherPayments = null;
+                    if (paymentsByInvoice.TryGetValue(p.InvoiceId, out var invPayments))
+                    {
+                        otherPayments = invPayments.Where(op => op.PaymentId != p.PaymentId && op.Amount > 0).ToList();
+                    }
                     if (otherPayments != null && otherPayments.Any())
                     {
                         var otherSummary = string.Join(", ", otherPayments.Select(op => $"{op.Method}: ₹{op.Amount:N0}"));
