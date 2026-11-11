@@ -1060,6 +1060,29 @@ export const prewarmReceptionCatalogs = () => {
     fetchReferralPartnersCached();
     fetchReferenceLabsCached();
     fetchOutsourcedCatalogCached();
+
+    // Pre-warm and synchronize lab stationery branding & logo across all terminals
+    fetch(ReceptionApi.withBranchId('/api/v1/finance/bills/stationery-settings'), {
+        headers: ReceptionApi.getHeaders()
+    }).then(async res => {
+        if (!res.ok) return;
+        const settings = await res.json();
+        if (settings && typeof window !== 'undefined') {
+            window.__synos_stationery_settings = settings;
+            if (window.localStorage) {
+                window.localStorage.setItem('synos_stationery_settings', JSON.stringify(settings));
+                if (settings.logoUrl) {
+                    window.localStorage.setItem('synos_lab_logo', settings.logoUrl);
+                }
+                if (settings.customQrImage) {
+                    window.localStorage.setItem('synos_custom_qr_image', settings.customQrImage);
+                }
+                if (settings.receiptPrinterName) {
+                    window.localStorage.setItem('synos_receipt_printer_name', settings.receiptPrinterName);
+                }
+            }
+        }
+    }).catch(() => {});
 };
 
 export const clearReceptionMasterCaches = () => {

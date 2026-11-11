@@ -1555,12 +1555,12 @@ export async function legacyTriggerPrint(htmlContent, customPrinterName) {
     return new Promise((resolve) => {
         const iframe = document.createElement('iframe');
         iframe.style.position = 'fixed';
-        iframe.style.right = '0';
-        iframe.style.bottom = '0';
-        iframe.style.width = '1px';
-        iframe.style.height = '1px';
-        iframe.style.opacity = '0.01';
+        iframe.style.left = '-9999px';
+        iframe.style.top = '0';
+        iframe.style.width = '80mm';
+        iframe.style.height = '600px';
         iframe.style.border = '0';
+        iframe.style.visibility = 'hidden';
         document.body.appendChild(iframe);
 
         const doc = iframe.contentWindow.document;
@@ -1572,30 +1572,51 @@ export async function legacyTriggerPrint(htmlContent, customPrinterName) {
         } catch {}
 
         let printed = false;
-        const triggerPrint = () => {
+        const triggerPrint = async () => {
             if (printed) return;
             printed = true;
+
+            // Wait for all images (logo, QR) inside the iframe to finish decoding and loading
+            try {
+                const images = Array.from(iframe.contentWindow?.document?.images || []);
+                await Promise.all(images.map(img => {
+                    if (img.complete && img.naturalHeight !== 0) return Promise.resolve();
+                    if (img.decode) return img.decode().catch(() => {});
+                    return new Promise((res) => {
+                        img.onload = res;
+                        img.onerror = res;
+                        setTimeout(res, 600);
+                    });
+                }));
+            } catch (_) {}
+
             try {
                 iframe.contentWindow.focus();
                 iframe.contentWindow.print();
             } catch (err) {
                 console.warn("Direct iframe print call error:", err);
             }
-            setTimeout(() => {
+
+            const cleanup = () => {
                 try {
                     if (document.body.contains(iframe)) {
                         document.body.removeChild(iframe);
                     }
                 } catch {}
                 resolve();
-            }, 800);
+            };
+
+            if (iframe.contentWindow) {
+                iframe.contentWindow.onafterprint = () => setTimeout(cleanup, 500);
+            }
+            setTimeout(cleanup, 10000);
         };
 
         if (doc.readyState === 'complete') {
-            setTimeout(triggerPrint, 100);
+            setTimeout(triggerPrint, 150);
         } else {
             iframe.onload = triggerPrint;
-            setTimeout(triggerPrint, 300);
+            setTimeout(triggerPrint, 400);
         }
     });
 }

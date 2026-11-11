@@ -967,23 +967,49 @@ END
                 Console.WriteLine($"[DbInitializer] Notice during TokenCounters index migration: {ex.Message}");
             }
 
-            // Calibrate historical contaminated MRI branch tokens from today (Issue 29)
+            // Auto-heal duplicate tokens for today across branches (chronological re-sequencing)
             try
             {
-                var repairMriTokensSql = @"
-UPDATE Visits SET Token = 'MRI-001' WHERE Token = 'MRI-007';
-UPDATE Visits SET Token = 'MRI-002' WHERE Token = 'MRI-014';
+                var today = DateTime.UtcNow.Date;
+                var duplicateGroups = context.Visits
+                    .Where(v => v.TokenDate.Date == today && v.Token != null && !v.Token.StartsWith("D-"))
+                    .GroupBy(v => new { v.BranchId, v.Token })
+                    .Where(g => g.Count() > 1)
+                    .Select(g => g.Key.BranchId)
+                    .Distinct()
+                    .ToList();
 
-UPDATE tc
-SET tc.LastNumber = 2
-FROM TokenCounters tc
-WHERE tc.Prefix = 'MRI' OR tc.BranchId IN (SELECT BranchId FROM Branches WHERE Code = 'MRI' OR Name LIKE '%MRI%');
-";
-                context.Database.ExecuteSqlRaw(repairMriTokensSql);
+                foreach (var bId in duplicateGroups)
+                {
+                    if (!bId.HasValue) continue;
+                    var branch = context.Branches.Find(bId.Value);
+                    string prefix = branch?.Code?.Trim().ToUpper() ?? "LAB";
+                    if (prefix.Length > 3) prefix = prefix.Substring(0, 3);
+
+                    // Re-sequence all visits of this branch today in strict order of CreatedAt
+                    var branchVisits = context.Visits
+                        .Where(v => v.BranchId == bId.Value && v.TokenDate.Date == today && v.Token != null && !v.Token.StartsWith("D-"))
+                        .OrderBy(v => v.CreatedAt)
+                        .ToList();
+
+                    int seq = 1;
+                    foreach (var v in branchVisits)
+                    {
+                        v.Token = $"{prefix}-{seq:D3}";
+                        seq++;
+                    }
+
+                    var counter = context.TokenCounters.FirstOrDefault(tc => tc.BranchId == bId.Value && tc.Day == today);
+                    if (counter != null)
+                    {
+                        counter.LastNumber = seq - 1;
+                    }
+                    context.SaveChanges();
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[DbInitializer] Notice during MRI token calibration: {ex.Message}");
+                Console.WriteLine($"[DbInitializer] Notice during duplicate token re-sequencing: {ex.Message}");
             }
         }
 

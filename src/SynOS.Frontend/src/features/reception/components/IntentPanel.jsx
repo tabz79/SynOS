@@ -1325,6 +1325,26 @@ export function IntentPanel({ onVisitUpdated }) {
         };
     };
 
+    const [stationerySync, setStationerySync] = useState(0);
+
+    // Synchronize latest branding & logo from server whenever print dispatch is active
+    useEffect(() => {
+        if (isOpen && isPostProcessingView) {
+            FinanceApi.getStationerySettings().then(settings => {
+                if (settings && typeof window !== 'undefined') {
+                    window.__synos_stationery_settings = settings;
+                    if (window.localStorage) {
+                        window.localStorage.setItem('synos_stationery_settings', JSON.stringify(settings));
+                        if (settings.logoUrl) {
+                            window.localStorage.setItem('synos_lab_logo', settings.logoUrl);
+                        }
+                    }
+                    setStationerySync(v => v + 1);
+                }
+            }).catch(() => {});
+        }
+    }, [isOpen, isPostProcessingView]);
+
     const thermalHtml = useMemo(() => {
         try {
             const payload = buildThermalPayload();
@@ -1333,7 +1353,7 @@ export function IntentPanel({ onVisitUpdated }) {
             console.warn("Failed to generate thermal preview HTML:", e);
             return "<html><body><p>Generating Thermal Slip...</p></body></html>";
         }
-    }, [snapshot, stagedGross, stagedDiscountAmt, stagedNet, postProcessingSession, paymentMethod, isPrepaid, billingMode, activeRemainingTests, stagedAddedTests, displayedPatient]);
+    }, [snapshot, stagedGross, stagedDiscountAmt, stagedNet, postProcessingSession, paymentMethod, isPrepaid, billingMode, activeRemainingTests, stagedAddedTests, displayedPatient, stationerySync]);
 
     // Automatically fetch claim statement when Doc Claim format is active
     useEffect(() => {

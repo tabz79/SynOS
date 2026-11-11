@@ -157,36 +157,6 @@ namespace SynOS.Services.Operations
             // DEBUG TRACING
             Console.WriteLine($"[ActionQueue] Query: Branch={branchId}, Date={date}, Today={today}, Window=[{startDate} - {nextDay})");
 
-            // Issue 29 Auto-heal Guard: Calibrate contaminated historical MRI tokens for today
-            try
-            {
-                var taintedVisits = await _context.Visits
-                    .Where(v => v.BranchId == branchId && (v.Token == "MRI-007" || v.Token == "MRI-014"))
-                    .ToListAsync();
-
-                if (taintedVisits.Any())
-                {
-                    foreach (var v in taintedVisits)
-                    {
-                        if (v.Token == "MRI-007") v.Token = "MRI-001";
-                        else if (v.Token == "MRI-014") v.Token = "MRI-002";
-                    }
-
-                    var mriCounter = await _context.TokenCounters
-                        .FirstOrDefaultAsync(tc => tc.BranchId == branchId && tc.Day == today);
-                    if (mriCounter != null && mriCounter.LastNumber > 2)
-                    {
-                        mriCounter.LastNumber = 2;
-                    }
-
-                    await _context.SaveChangesAsync();
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[OperationsEngine] Notice during MRI token auto-heal: {ex.Message}");
-            }
-
             // Use Policy-driven operational window
             // Rule 1: Show ALL Active (Non-terminal) visits from the retrospective window (7 days)
             // Rule 2: Show Terminal (Finalized) visits ONLY from the current Operational Today

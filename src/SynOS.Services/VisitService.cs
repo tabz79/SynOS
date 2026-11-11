@@ -1667,6 +1667,28 @@ namespace SynOS.Services
                 await _context.Entry(tokenCounter).ReloadAsync();
             }
 
+            // 🛡️ PERMANENT MONOTONIC UNIQUENESS INVARIANT:
+            // Ensure token counter never issues a duplicate by verifying against actual visits created for this branch & day
+            var existingTokens = await _context.Visits
+                .Where(v => v.BranchId == branchId && v.TokenDate.Date == labLocalDay.Date && v.Token != null && v.Token.StartsWith(prefix + "-"))
+                .Select(v => v.Token)
+                .ToListAsync();
+
+            int maxExistingNum = 0;
+            foreach (var t in existingTokens)
+            {
+                var parts = t.Split('-');
+                if (parts.Length > 1 && int.TryParse(parts[1], out int parsedNum))
+                {
+                    if (parsedNum > maxExistingNum) maxExistingNum = parsedNum;
+                }
+            }
+
+            if (tokenCounter.LastNumber < maxExistingNum)
+            {
+                tokenCounter.LastNumber = maxExistingNum;
+            }
+
             tokenCounter.LastNumber++;
             tokenCounter.UpdatedAt = DateTime.UtcNow;
 
