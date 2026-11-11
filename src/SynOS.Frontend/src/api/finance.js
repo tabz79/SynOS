@@ -691,6 +691,48 @@ export const FinanceApi = {
         return response.json();
     },
 
+    getCommissionDashboard: async (branchId, isConsolidated, preset = null, startDate = null, endDate = null) => {
+        const q = [];
+        if (branchId) q.push(`branchId=${branchId}`);
+        if (isConsolidated) q.push(`isConsolidated=true`);
+        if (preset && preset !== 'all' && preset !== 'custom') q.push(`preset=${preset}`);
+        if (startDate) q.push(`startDate=${startDate}`);
+        if (endDate) q.push(`endDate=${endDate}`);
+        const qs = q.length ? '?' + q.join('&') : '';
+        let url = `/api/v1/admin/referral-commissions/dashboard${qs}`;
+        if (!branchId && !isConsolidated) {
+            url = FinanceApi.withBranchId(url);
+        }
+        const response = await fetch(url, {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load referral commission dashboard");
+        return response.json();
+    },
+
+    getCommissionVisits: async (params = {}) => {
+        const q = [];
+        if (params.branchId) q.push(`branchId=${params.branchId}`);
+        if (params.partnerId) q.push(`partnerId=${params.partnerId}`);
+        if (params.preset && params.preset !== 'all' && params.preset !== 'custom') q.push(`preset=${params.preset}`);
+        if (params.startDate) q.push(`startDate=${params.startDate}`);
+        if (params.endDate) q.push(`endDate=${params.endDate}`);
+        if (params.search) q.push(`search=${encodeURIComponent(params.search)}`);
+        if (params.billStatus) q.push(`billStatus=${encodeURIComponent(params.billStatus)}`);
+        if (params.page) q.push(`page=${params.page}`);
+        if (params.pageSize) q.push(`pageSize=${params.pageSize}`);
+        const qs = q.length ? '?' + q.join('&') : '';
+        let url = `/api/v1/admin/referral-commissions/visits${qs}`;
+        if (!params.branchId) {
+            url = FinanceApi.withBranchId(url);
+        }
+        const response = await fetch(url, {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load referral commission visits");
+        return response.json();
+    },
+
     settleReferralPayout: async (data) => {
         const response = await fetch('/api/v1/admin/referral-settle/payout', {
             method: 'POST',

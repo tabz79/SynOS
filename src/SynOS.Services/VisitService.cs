@@ -934,69 +934,9 @@ namespace SynOS.Services
             visit.B2BDiscountEnteredBy = actorName;
             visit.B2BDiscountEnteredAt = DateTimeOffset.UtcNow;
 
-            // Self-Learning Rate Engine:
-            // When a receptionist enters a contracted B2B discount for this partner, learn it safely
+            // Strict Invariant: B2B concessions entered at reception are bill-level commercial adjustments
+            // and must NEVER mutate or generate permanent ReferralCommissionRules.
             var effectivePartnerId = visit.SecondaryReferralPartnerId ?? visit.ReferralPartnerId;
-            if (effectivePartnerId.HasValue && visit.Orders.Any())
-            {
-                try
-                {
-                    decimal totalGross = visit.Orders.Where(o => o.Status != OrderStatus.Cancelled).Sum(o => o.Price);
-                    if (totalGross > 0)
-                    {
-                        decimal discountRatio = Math.Min(1m, Math.Max(0m, b2bDiscountAmount / totalGross));
-                        decimal discountPercentage = Math.Round(discountRatio * 100m, 2);
-                        var today = DateOnly.FromDateTime(DateTime.UtcNow);
-
-                        var testIds = visit.Orders
-                            .Where(o => o.Status != OrderStatus.Cancelled && o.TestId != Guid.Empty)
-                            .Select(o => o.TestId)
-                            .Distinct()
-                            .ToList();
-
-                        foreach (var testId in testIds)
-                        {
-                            var existingRules = await _context.ReferralCommissionRules
-                                .Where(r => r.ReferralPartnerId == effectivePartnerId.Value && r.TestId == testId)
-                                .ToListAsync();
-
-                            var ruleForToday = existingRules.FirstOrDefault(r => r.EffectiveFrom == today);
-                            if (ruleForToday != null)
-                            {
-                                ruleForToday.CommissionType = SynOS.Models.Enums.Referral.CommissionType.Percentage;
-                                ruleForToday.CommissionValue = discountPercentage;
-                                ruleForToday.IsActive = true;
-                            }
-                            else
-                            {
-                                var activeRule = existingRules.FirstOrDefault(r => r.IsActive);
-                                if (activeRule != null)
-                                {
-                                    activeRule.CommissionType = SynOS.Models.Enums.Referral.CommissionType.Percentage;
-                                    activeRule.CommissionValue = discountPercentage;
-                                }
-                                else
-                                {
-                                    _context.ReferralCommissionRules.Add(new ReferralCommissionRule
-                                    {
-                                        RuleId = Guid.NewGuid(),
-                                        ReferralPartnerId = effectivePartnerId.Value,
-                                        TestId = testId,
-                                        CommissionType = SynOS.Models.Enums.Referral.CommissionType.Percentage,
-                                        CommissionValue = discountPercentage,
-                                        EffectiveFrom = today,
-                                        IsActive = true
-                                    });
-                                }
-                            }
-                        }
-                    }
-                }
-                catch (Exception learnEx)
-                {
-                    _logger.LogWarning(learnEx, "Non-fatal: Failed to auto-learn referral rate rule for partner {PartnerId}", effectivePartnerId);
-                }
-            }
 
             // If a ReceivableFact already exists for this visit, adjust its amount in-place (no delete/re-insert to prevent unique key violation)
             var receivable = await _context.ReceivableFacts.FirstOrDefaultAsync(r => r.SourceVisitId == visitId);

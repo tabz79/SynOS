@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using SynOS.Data;
 using SynOS.Models.Entities;
 using SynOS.Models.Entities.Referral;
+using SynOS.Models.Enums;
 using SynOS.Models.Enums.Referral;
 
 namespace SynOS.Services.Referral
@@ -35,7 +36,7 @@ namespace SynOS.Services.Referral
                 return;
             }
 
-            if (!visit.IsReferred || visit.ReferralPartnerId == null)
+            if (!visit.IsReferred || (visit.ReferralPartnerId == null && visit.SecondaryReferralPartnerId == null))
             {
                 return;
             }
@@ -83,7 +84,10 @@ namespace SynOS.Services.Referral
                 .Include(v => v.Invoices)
                 .Include(v => v.ReferralPartner)
                 .Where(v => v.IsReferred 
-                         && v.ReferralPartnerId != null 
+                         && (v.ReferralPartnerId != null || v.SecondaryReferralPartnerId != null)
+                         && v.Status != VisitStatus.Cancelled
+                         && (v.Token == null || !v.Token.StartsWith("D-"))
+                         && v.PaymentCollectionModel != "PartnerCollects"
                          && !_context.ReferralPayableFacts.Any(f => f.SourceVisitId == v.VisitId)
                          && !_context.ReceivableFacts.Any(f => f.SourceVisitId == v.VisitId))
                 .ToListAsync();

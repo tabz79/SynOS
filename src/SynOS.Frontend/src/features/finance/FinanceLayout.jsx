@@ -101,14 +101,13 @@ export function FinanceLayout() {
             path: "/finance/referrals",
             icon: Users,
             subItems: [
-                { name: "Overview", path: "/finance/referrals/overview" },
-                { name: "Referral Commissions", path: "/finance/referrals/rate-queue" },
-                { name: "Doctor Registry", path: "/finance/referrals/registry" },
-                { name: "RMP Partners", path: "/finance/referrals/rmp" },
-                { name: "Pending Payouts", path: "/finance/referrals/payouts" },
-                { name: "Partner Receivables", path: "/finance/referrals/receivables" },
+                { name: "Partner Performance", path: "/finance/referrals/performance" },
+                { name: "Commission Payouts", path: "/finance/referrals/payouts" },
+                { name: "Rate Cards & Rules", path: "/finance/referrals/rules" },
+                { name: "Referral Visits", path: "/finance/referrals/visits" },
                 { name: "Settlement History", path: "/finance/referrals/history" },
-                { name: "Commission Rules", path: "/finance/referrals/rules" }
+                { name: "Doctor Registry", path: "/finance/referrals/registry" },
+                { name: "Partner Receivables", path: "/finance/referrals/receivables" }
             ]
         },
         {

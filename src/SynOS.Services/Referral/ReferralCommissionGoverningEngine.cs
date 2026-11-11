@@ -226,8 +226,9 @@ namespace SynOS.Services.Referral
 
         public async Task<int> RecalculatePartnerPendingVisitsAsync(Guid partnerId)
         {
+            // Exact Commission Recipient Rule: Secondary partner receives commission if assigned; otherwise primary partner.
             var visits = await _context.Visits
-                .Where(v => v.ReferralPartnerId == partnerId && v.IsReferred)
+                .Where(v => (v.SecondaryReferralPartnerId == partnerId || (v.SecondaryReferralPartnerId == null && v.ReferralPartnerId == partnerId)) && v.IsReferred)
                 .OrderBy(v => v.CreatedAt)
                 .ToListAsync();
 
