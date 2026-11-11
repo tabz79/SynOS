@@ -171,7 +171,10 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
               <div className="w-px h-3.5 bg-black/10 dark:bg-white/10 shrink-0" />
 
               <button 
-                onClick={() => navigate('/admin')}
+                onClick={() => {
+                  sessionStorage.removeItem('synos_finance_source');
+                  navigate('/admin');
+                }}
                 className="flex items-center gap-1 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:text-black dark:hover:text-white transition-colors cursor-pointer whitespace-nowrap group"
                 title="Exit Role → Return to Control Tower"
               >
@@ -184,7 +187,7 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
         )}
 
         {/* Return to Reception for My-HR, Patient Directory, or Reception-launched Finance pages */}
-        {(location.pathname.startsWith('/my-hr') || location.pathname.startsWith('/patients') || (location.pathname.startsWith('/finance') && (user?.role === 'Receptionist' || location.search.includes('source=reception') || sessionStorage.getItem('synos_finance_source') === 'reception'))) && (
+        {(location.pathname.startsWith('/my-hr') || location.pathname.startsWith('/patients') || (location.pathname.startsWith('/finance') && (user?.role === 'Receptionist' || location.search.includes('source=reception')))) && (
           <div className="flex items-center gap-1.5 sm:gap-2.5">
             <div className="h-4 w-px bg-zinc-300 dark:bg-zinc-700 hidden sm:block shrink-0" />
             

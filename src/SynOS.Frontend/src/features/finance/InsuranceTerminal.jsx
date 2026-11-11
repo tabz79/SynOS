@@ -42,8 +42,7 @@ export function InsuranceTerminal({ forcedTab }) {
     const navigate = useNavigate();
     const { user } = useAuth();
     const isReceptionView = user?.role === 'Receptionist' || 
-                            (typeof window !== 'undefined' && window.location.search.includes('source=reception')) || 
-                            (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('synos_finance_source') === 'reception');
+                            (typeof window !== 'undefined' && window.location.search.includes('source=reception'));
 
     useEffect(() => {
         if (isReceptionView && tab === 'overview') {

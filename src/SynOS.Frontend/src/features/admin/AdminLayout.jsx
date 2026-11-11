@@ -227,6 +227,11 @@ function SidebarLink({ item }) {
         <NavLink
             to={item.path}
             end={item.exact}
+            onClick={() => {
+                if (item.path === '/finance' || item.path === '/admin') {
+                    sessionStorage.removeItem('synos_finance_source');
+                }
+            }}
             className={({ isActive }) => `
                 flex items-center gap-3 px-3.5 py-2.5 rounded-lg transition-all duration-150 group border
                 ${isActive 
