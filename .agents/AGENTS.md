@@ -77,3 +77,12 @@
   * Any edit touching `dbo.Payments` (voids, cancellations, prepaid switches) MUST emit or reverse the corresponding fact in `dbo.RevenueFacts`.
   * Before completing any task touching finance, the agent must verify all 8 Finance tabs remain functional with zero regressions.
 
+---
+
+### Rule 8: Branch Switching Architecture: Admin Oversight vs Multi-Branch Staff Invariant
+* **Goal:** Prevent accidental branch cross-contamination and enforce strict role boundaries between executive multi-branch audit and front-line facility operations.
+* **Implementation Details:**
+  * **Admin Users:** Possess global cross-facility oversight. Admins can switch branches on the fly directly inside the Finance Filter Bar (`All Branches` consolidated view or single branch dropdown in `StandardFilterBar.jsx`) without altering their terminal's global operating facility.
+  * **Non-Admin Multi-Branch Users (Receptionists, Phlebotomists, Lab Techs):** Strictly restricted from in-page consolidated multi-branch switching in the Finance Hub (`{showBranches && isAdmin && ...}`). They are bound to one active facility at a time. Staff with multi-branch access must switch their working facility globally from the top navigation bar (`SystemBar.jsx`), which updates their active facility context for the entire application session.
+
+
