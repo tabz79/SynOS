@@ -53,35 +53,89 @@ export const CommercialDocumentViewer = ({
     };
 
     const modalContent = (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-xs p-2 sm:p-4 overflow-y-auto print:p-0 print:bg-white print:overflow-visible animate-in fade-in duration-300">
+        <div className="synos-commercial-modal-backdrop fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-xs p-2 sm:p-4 overflow-y-auto print:p-0 print:bg-white print:overflow-visible animate-in fade-in duration-300">
             {/* INLINE PRINT STYLESHEET */}
             <style>{`
                 @media print {
-                    body * {
-                        visibility: hidden !important;
+                    /* Completely hide background web app from print layout so it occupies zero space */
+                    #root {
+                        display: none !important;
                     }
-                    #synos-commercial-sheet, #synos-commercial-sheet * {
-                        visibility: visible !important;
+
+                    /* Reset html and body to clean printable canvas */
+                    html, body {
+                        background: white !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        overflow: visible !important;
+                        height: auto !important;
+                        min-height: 0 !important;
                     }
+
+                    /* Remove modal overlay constraints in print */
+                    .synos-commercial-modal-backdrop {
+                        position: static !important;
+                        display: block !important;
+                        padding: 0 !important;
+                        margin: 0 !important;
+                        background: white !important;
+                        overflow: visible !important;
+                        height: auto !important;
+                        min-height: 0 !important;
+                        max-height: none !important;
+                    }
+
+                    /* Remove modal card boundaries in print */
+                    .synos-commercial-modal-dialog {
+                        position: static !important;
+                        display: block !important;
+                        width: 100% !important;
+                        max-width: none !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        box-shadow: none !important;
+                        border: none !important;
+                        background: white !important;
+                        overflow: visible !important;
+                        max-height: none !important;
+                        border-radius: 0 !important;
+                    }
+
+                    /* Remove preview scroll container in print */
+                    .synos-commercial-scroll-area {
+                        position: static !important;
+                        display: block !important;
+                        padding: 0 !important;
+                        margin: 0 !important;
+                        background: white !important;
+                        overflow: visible !important;
+                    }
+
+                    /* Printable commercial sheet */
                     #synos-commercial-sheet {
-                        position: absolute !important;
-                        left: 0 !important;
-                        top: 0 !important;
+                        position: static !important;
+                        display: block !important;
                         width: 100% !important;
                         max-width: none !important;
                         margin: 0 !important;
                         padding: ${isThermal ? '2mm 3mm' : '0'} !important;
+                        min-height: 0 !important;
+                        height: auto !important;
                         box-shadow: none !important;
                         border: none !important;
                         background: white !important;
+                        overflow: visible !important;
                     }
+
                     .no-print {
                         display: none !important;
                     }
+
                     @page {
                         size: ${isThermal ? 'auto' : 'A4 portrait'};
                         margin: ${isThermal ? '0' : '8mm 10mm 10mm 10mm'};
                     }
+
                     thead {
                         display: table-header-group !important;
                     }
@@ -100,7 +154,7 @@ export const CommercialDocumentViewer = ({
             `}</style>
 
             <div className={cn(
-                "relative w-full bg-zinc-100 dark:bg-zinc-900 rounded-3xl shadow-2xl border border-zinc-200 dark:border-zinc-800 flex flex-col max-h-[96vh] overflow-hidden print:max-h-none print:border-none print:shadow-none print:bg-white print:rounded-none",
+                "synos-commercial-modal-dialog relative w-full bg-zinc-100 dark:bg-zinc-900 rounded-3xl shadow-2xl border border-zinc-200 dark:border-zinc-800 flex flex-col max-h-[96vh] overflow-hidden print:max-h-none print:border-none print:shadow-none print:bg-white print:rounded-none",
                 isThermal ? "max-w-xl" : "max-w-5xl"
             )}>
                 
@@ -224,7 +278,7 @@ export const CommercialDocumentViewer = ({
                 </div>
 
                 {/* DOCUMENT PREVIEW CONTAINER (SCROLLABLE) */}
-                <div className="flex-1 overflow-y-auto p-4 sm:p-8 flex justify-center bg-zinc-200/70 dark:bg-zinc-950/70 print:p-0 print:bg-white">
+                <div className="synos-commercial-scroll-area flex-1 overflow-y-auto p-4 sm:p-8 flex justify-center bg-zinc-200/70 dark:bg-zinc-950/70 print:p-0 print:bg-white">
                     <div 
                         id="synos-commercial-sheet"
                         ref={printAreaRef}
