@@ -3032,3 +3032,51 @@ In split payment workflows where a patient settles a bill using a combination of
   - **When "All Branches" is Selected:** `isConsolidated && isAdmin` is true, so `branchId` is omitted (`undefined`). The backend leaves `effectiveBranchId = null`, eliminating the previous guessing trap and querying all branches.
   - **Zero Heuristics Guarantee:** No hardcoded GUIDs, no synthetic data mocking, and no user profile fallback guessing. All three filter dimensions are strictly wired end-to-end.
 
+---
+
+## 45. Role-Based Visibility Audit: Why Branch Selector Hides Under Cashier/Staff Accounts (`Moin` vs `Tabrez Developer`) — [AUDITED & VERIFIED]
+
+### Problem Statement & User Observation
+* In the latest screenshot of the **Bills & Collections** screen, the branch selector buttons (`All Branches` and `Branch View: Main Lab`) are missing next to the date filter bar (`Today | This Month | This Quarter | This Year | Custom Range`).
+* The user inquired why the branch selector was removed from the screen.
+
+### Forensic Git & Codebase Audit Findings
+1. **The Branch Selector Was NOT Removed in Recent Commits:**
+   * Inspection of git commit history proves `StandardFilterBar.jsx` was **not touched** by recent commits (`36ac15fb`, `2171340c`, `b63239ae`, or `5a99be4f`).
+   * The condition controlling branch visibility was authored in commit `c9af52f8` on **Nov 1, 2026**:
+     ```jsx
+     // src/SynOS.Frontend/src/components/layout/StandardFilterBar.jsx (Line 206)
+     {/* Branch Horizon Segment (Consolidated vs Branch View) */}
+     {showBranches && isAdmin && (
+     ```
+
+2. **The Root Cause: User Role Context (`isAdmin` Evaluation):**
+   * In [`GlobalFilterContext.jsx`](file:///src/SynOS.Frontend/src/context/GlobalFilterContext.jsx#L9):
+     ```javascript
+     const isAdmin = user?.role === 'Admin' || user?.role === 'SystemAdmin';
+     ```
+   * **In Previous Screenshot (`af291207.png`):** The logged-in user in the top system bar was **`Tabrez Developer`** (`user.role = 'Admin'`).
+     - `isAdmin` evaluated to `true`.
+     - The `All Branches` and `Branch View: Main Lab` selector **WAS rendered**.
+   * **In Current Screenshot (`798f99d9.jpg`):** The logged-in user in the top system bar is **`Moin`** (`user.role = 'Receptionist'`).
+     - `isAdmin` evaluates to `false`.
+     - `StandardFilterBar.jsx` strictly suppresses multi-branch oversight controls (`{showBranches && isAdmin && ...}`) for non-admin staff by design.
+     - Cashiers/receptionists are scoped strictly to their active facility.
+
+3. **Inconsistency Between SystemBar & StandardFilterBar:**
+   * In [`SystemBar.jsx`](file:///src/SynOS.Frontend/src/components/layout/SystemBar.jsx#L76), multi-branch switching is permitted if:
+     ```javascript
+     const canSwitchBranches = isAdmin || availableBranches.length > 1;
+     ```
+   * In [`StandardFilterBar.jsx`](file:///src/SynOS.Frontend/src/components/layout/StandardFilterBar.jsx#L206), the condition is strictly:
+     ```jsx
+     {showBranches && isAdmin && (
+     ```
+   * As a result, staff with multi-branch access see the branch dropdown in the top global navigation bar, but cannot switch branches inside the Finance Hub filter bar unless they possess an Admin role.
+
+### Recommendation (For Future Consideration)
+* If receptionists or multi-branch staff should be allowed to filter financial views across authorized branches, update `StandardFilterBar.jsx` line 206 to match `SystemBar.jsx`:
+  `{showBranches && (isAdmin || branches.length > 1) && (`
+  *(Per user directive, no code changes have been applied; this is audited and reported only).*
+
+
