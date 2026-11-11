@@ -66,3 +66,14 @@
   * In `ReceptionScreen.jsx`, the payment column enforces a canonical 6-state hierarchy: `DRAFT` -> `PREPAID` -> `OVERPAID` -> `PARTIAL DUE` -> `FULL DUE` -> `PAID`.
   * `isOverpaid` MUST be scoped with `!isPrepaid && !isDraft` to strictly apply only to retail direct desk collections where money taken exceeds the bill.
   * Corporate B2B Prepaid visits MUST remain rendered as `PREPAID` with the partner doctor/hospital name as subtext, never corrupted with `OVERPAID` or `Refund Due` notices.
+
+---
+
+### Rule 7: Finance Hub 8-Tab Truth Engine & Cash Drawer Parity Invariant
+* **Goal:** Ensure complete, unbreakable parity between `Collection History` and `Cash Drawer Shift Ledgers`, preventing zero-transaction wipes or cross-branch leakage across all 8 Finance tabs (`Bills & Collections`, `Due Bills`, `Pending Receivables`, `Visit Corrections`, `Cancellations & Refunds`, `Due Change & Patient Refunds`, `Collection History`, `Cash Drawer Ledgers`).
+* **Implementation Details:**
+  * In `FinanceBillsController.cs` (`GetMyCashDrawerLedger`), cashier attribution MUST NOT rely solely on `p.ReceivedByUserId == effectiveUserId`. It MUST observe the canonical 4-tier attribution hierarchy (`p.ReceivedByUserId == effectiveUserId || p.Invoice.Visit.AssignedReceptionistId == effectiveUserId || p.Invoice.Visit.CreatedByUserId == effectiveUserId`), matching `EconomicsIntelligenceService.cs`.
+  * Never filter by a blind single-branch user fallback (e.g. `ubr.BranchId`). If no branch is explicitly passed or `All Branches` is active, never drop visits with null or alternate branch IDs.
+  * Any edit touching `dbo.Payments` (voids, cancellations, prepaid switches) MUST emit or reverse the corresponding fact in `dbo.RevenueFacts`.
+  * Before completing any task touching finance, the agent must verify all 8 Finance tabs remain functional with zero regressions.
+

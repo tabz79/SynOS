@@ -211,8 +211,12 @@ export const FinanceApi = {
         if (params.preset) query.append('preset', params.preset);
         if (params.range) query.append('range', params.range);
         if (params.userId) query.append('userId', params.userId);
+        if (params.branchId) query.append('branchId', params.branchId);
         const qs = query.toString() ? `?${query.toString()}` : '';
-        const url = FinanceApi.withBranchId(`/api/v1/finance/bills/cash-drawer/my-ledger${qs}`);
+        let url = `/api/v1/finance/bills/cash-drawer/my-ledger${qs}`;
+        if (!params.branchId && !params.isConsolidated) {
+            url = FinanceApi.withBranchId(url);
+        }
         const response = await fetch(url, {
             headers: FinanceApi.getHeaders()
         });

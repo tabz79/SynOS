@@ -1,5 +1,13 @@
 # SynOS Operational Audit & Fix Registry
 
+> 🚨 **MANDATORY CODING AGENT & DEVELOPER DIRECTIVE (READ BEFORE EDITING):**
+> Before executing ANY code modification, refactor, bugfix, or feature addition in this repository—especially touching **Financials, Billing, Reception Action Queue, Cash Drawers, Collection History, Shift Ledgers, Printing, or PDF Generation**—all AI coding agents and developers **MUST FIRST READ AND STRICTLY COMPLY WITH:**
+> 1. [`AGENTS.md`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/AGENTS.md) — Root Architectural Contracts & Invariants (Document Engine Rules, Payer Modes, Reception Intake Walk-In Metrics, and Finance Hub 8-Tab Truth Engine Parity).
+> 2. [`.agents/AGENTS.md`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/.agents/AGENTS.md) — 7 Critical Non-Negotiable System Guardrails & Regression Preventions.
+> 
+> **ZERO-TOLERANCE REGRESSION RULE:**
+> Under NO circumstances may an agent perform ad-hoc SQL filtering, rename payer modes, modify discount formulas, or guess branch IDs (e.g., via blind `UserBranchRoles` fallback). Every change must preserve 100% parity across all 8 Finance Hub tabs (`Bills & Collections`, `Due Bills`, `Pending Receivables`, `Visit Corrections`, `Cancellations & Refunds`, `Due Change & Patient Refunds`, `Collection History`, and `Cash Drawer Shift Ledgers`).
+
 **Date:** 2026-11-04  
 **Branch:** `cloud-testing-2`  
 **Reference Video:** `/Users/tabrez/Blip/20261027_160956.mp4`, `export-1793783131438.mp4`
@@ -2892,3 +2900,121 @@ In split payment workflows where a patient settles a bill using a combination of
 ### Verification & Resolution Details
 * **Zero Cross-Contamination:** A ₹2,000 bill settled with ₹500 Cash + ₹1,500 UPI credits exactly ₹500 to the physical cash drawer and ₹1,500 to digital accounts.
 * **Ledger Consistency:** Collection history, shift drawer ledgers, and live metrics reflect matching, reconciled numbers.
+
+---
+
+## 44. Cash Drawer Zero-Transaction Disconnect vs Collection History (Cashier Attribution Gap, Fragile Branch Scoping & Dual-Ledger Divergence) — [AUDITED & ROOT CAUSE IDENTIFIED]
+### Severity: Critical / Core Financial Truth Failure & Cash Drawer Ledger Disconnect
+### Impacted Modules & Files
+* **Cash Drawer Ledger Controller:** [`FinanceBillsController.cs`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Controllers/FinanceBillsController.cs) (lines 1579–1596, 1619–1645)
+* **Cash Drawer Ledger UI:** [`RevenueScreens.jsx`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/finance/RevenueScreens.jsx) (lines 4609–4656)
+* **Economics Revenue Facts Query:** [`EconomicsIntelligenceService.cs`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/EconomicsIntelligence/EconomicsIntelligenceService.cs) (lines 1063–1080)
+
+### Incident Evidence
+* **Incident Scenario:** Today (2026-11-11), front-desk cashier `Moin` completed 7 cash billing transactions between 06:33 AM and 07:45 AM:
+  - `MAI001-261111 RAMCHARAN`: ₹600 Cash
+  - `MAI002-261111 SK RAFI`: ₹100 Cash
+  - `MAI003-261111 ANJUM`: ₹500 Cash
+  - `MAI004-261111 TABASSUM FATHIMA`: ₹1,200 Cash
+  - `MAI005-261111 MUJEEB`: ₹750 Cash
+  - `MAI006-261111 SONDHU MIYA`: ₹1,100 Cash
+  - `MAI001-261111 ANJUM`: -₹1,100 Cash (Visit Refund Disbursed)
+  - **Net Total Today:** **₹3,150.00** across 7 transactions.
+* **The Discrepancy:**
+  - **In Collection History (Screenshot 2):** Under cashier `Moin`, all 7 transactions are displayed chronologically, with `Total Collections: ₹3,150` and `Cash Collections: ₹3,150`.
+  - **In Cash Drawer Shift Ledgers (Screenshot 1):** Under cashier `Moin`, the screen displays **`No Cash Drawer Transactions Recorded`**, with `Total Cash Inflow: +₹0.00`, `Total Cash Outflow: -₹0.00`, and `Net Cash in Hand / Drawer: ₹0.00`!
+
+### Detailed Root Cause Analysis
+
+#### 1. Why Did This Break? The Fragile Branch Scoping Added in Commit `b63239ae`
+* In commit `b63239ae`, an ad-hoc branch filter was added to `FinanceBillsController.cs`:
+  ```csharp
+  Guid? effectiveBranchId = null;
+  if (branchId.HasValue && branchId.Value != Guid.Empty)
+  {
+      effectiveBranchId = branchId.Value;
+  }
+  else if (Request.Headers.TryGetValue("X-Branch-Id", out var headerBranch) && Guid.TryParse(headerBranch, out var bId))
+  {
+      effectiveBranchId = bId;
+  }
+  else
+  {
+      var ubr = await _context.UserBranchRoles.AsNoTracking().FirstOrDefaultAsync(ub => ub.UserId == effectiveUserId);
+      if (ubr != null && ubr.BranchId != Guid.Empty)
+      {
+          effectiveBranchId = ubr.BranchId;
+      }
+  }
+  ...
+  if (effectiveBranchId.HasValue && effectiveBranchId.Value != Guid.Empty)
+  {
+      cashPaymentsQuery = cashPaymentsQuery.Where(p => p.Invoice.Visit == null || p.Invoice.Visit.BranchId == effectiveBranchId.Value);
+  }
+  ```
+* **The Fatal Trap:**
+  1. When `RevenueScreens.jsx` (`loadLedger`) fetches shift drawer data, it calls `FinanceApi.getMyCashDrawerLedger`.
+  2. If `localStorage.getItem('activeBranchId')` is not set or empty during initial load or branch handover, `branchId` is passed as `null`.
+  3. `Request.Headers["X-Branch-Id"]` is never populated by `FinanceApi.getHeaders()`.
+  4. The code falls into the dangerous fallback:
+     `var ubr = await _context.UserBranchRoles.AsNoTracking().FirstOrDefaultAsync(ub => ub.UserId == effectiveUserId);`
+  5. In diagnostic setups, cashier Moin's `UserBranchRole` row points to `MRI Branch` (or an alternate branch).
+  6. As a result, `effectiveBranchId` resolves to `MRI Branch`!
+  7. The query then executes:
+     `cashPaymentsQuery.Where(p => p.Invoice.Visit == null || p.Invoice.Visit.BranchId == MRI_BRANCH_ID)`
+  8. Since today's 7 visits (`MAI-001` through `MAI-006`) belong to `MAIN LAB`, **every single visit is filtered out**, wiping the drawer ledger to zero!
+
+#### 2. Cashier Attribution Disconnect (`ReceivedByUserId` vs 4-Tier Hierarchy)
+* In `FinanceBillsController.cs`, the query strictly checks:
+  `p.ReceivedByUserId == effectiveUserId`
+* In contrast, `EconomicsIntelligenceService.cs` (`Collection History`) uses a resilient 4-tier attribution hierarchy:
+  `f.DeclaredByUserId -> payment.ReceivedByUserId -> visit.AssignedReceptionistId -> visit.CreatedByUserId`.
+* When reception desks operate with admin/station JWT tokens (e.g. `Tabrez Developer`) while a receptionist (e.g. `Moin`) registers the visit:
+  - `p.ReceivedByUserId` is stamped as `Tabrez Developer`.
+  - `Collection History` correctly attributes the payment to `Moin` via `visit.AssignedReceptionistId`.
+  - `Cash Drawer Shift Ledgers` checks only `p.ReceivedByUserId == Moin`, finds nothing, and reports zero!
+
+#### 3. Why Does the Finance Module Keep Regressing After Every Code Edit?
+1. **Divergent Truth Sources:**
+   `Collection History` reads from `dbo.RevenueFacts` (immutable facts), while `Cash Drawer Ledgers` reads from `dbo.Payments` (operational rows). When an agent fixes an issue in one ledger, the other query is left completely untouched.
+2. **Siloed Agent "Quick-Fixes":**
+   Agents receive a prompt like *"MRI payments are leaking"*, and immediately write a restrictive `.Where(...)` clause in a single endpoint without checking whether frontend callers pass that parameter or how other tabs depend on it.
+3. **Zero Automated Tests for Finance Tabs:**
+   Existing tests only check isolated mathematical formulas (like ₹100 discount deduction). There is **zero integration test** verifying that a payment made at reception appears simultaneously in `Bills & Collections`, `Collection History`, AND `Cash Drawer Ledgers`. Without tests, breaking changes pass `dotnet test` silently.
+
+---
+
+### Architectural Fix & Anti-Regression Solution
+
+1. **Remove Blind `UserBranchRole` Fallback in `FinanceBillsController.cs`:**
+   - Only filter by branch if an explicit `branchId` was passed in the query or header.
+   - If `branchId` is omitted, do NOT guess the branch using `ubr.BranchId`; allow all visits for that cashier to be included.
+   ```csharp
+   if (branchId.HasValue && branchId.Value != Guid.Empty)
+   {
+       cashPaymentsQuery = cashPaymentsQuery.Where(p => p.Invoice.Visit == null || p.Invoice.Visit.BranchId == branchId.Value);
+   }
+   ```
+
+2. **Unify Cashier Attribution Hierarchy (`FinanceBillsController.cs`):**
+   - Align `FinanceBillsController.cs` with `EconomicsIntelligenceService.cs`:
+   ```csharp
+   cashPaymentsQuery = cashPaymentsQuery.Where(p => 
+       (p.ReceivedByUserId == effectiveUserId 
+        || (p.Invoice.Visit != null && p.Invoice.Visit.AssignedReceptionistId == effectiveUserId)
+        || (p.Invoice.Visit != null && p.Invoice.Visit.CreatedByUserId == effectiveUserId))
+       && p.Method.ToLower().Contains("cash")
+       && p.ReceivedAt >= startUtc && p.ReceivedAt < endUtc);
+   ```
+
+3. **Pass `effectiveBranchId` Explicitly from `RevenueScreens.jsx`:**
+   - In `RevenueScreens.jsx` (`loadLedger`), explicitly pass `branchId: isConsolidated && isAdmin ? undefined : effectiveBranchId`.
+
+4. **Permanent Guardrail Enshrinement in `AGENTS.md` and `.agents/AGENTS.md`:**
+   - Added **Section III: Finance Hub Truth Engine & Ledger Parity Invariants** to [`AGENTS.md`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/AGENTS.md).
+   - Added **Rule 7: Finance Hub 8-Tab Truth Engine & Cash Drawer Parity Invariant** to [`.agents/AGENTS.md`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/.agents/AGENTS.md).
+
+5. **Mandatory Coding Agent Protocol — Pre-Task File Inspection:**
+   - **Protocol Rule:** Any future AI coding agent (or developer) operating on this repository **MUST inspect `AGENTS.md` and `.agents/AGENTS.md`** before planning or executing any task touching billing, reception, finance, cash drawers, reports, or prints.
+   - **Reason:** Previous agents performed isolated "one-off" fixes (such as adding restrictive branch filters or changing cashier matching) that solved a localized symptom but broke other tabs (such as wiping Cash Drawer transactions to zero while Collection History had 7 transactions). Consulting `AGENTS.md` prevents breaking the architectural invariants and guarantees zero regressions across the 8 Finance Hub tabs.
+

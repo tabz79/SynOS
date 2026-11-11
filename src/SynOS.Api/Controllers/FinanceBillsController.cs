@@ -1585,14 +1585,10 @@ namespace SynOS.Api.Controllers
             {
                 effectiveBranchId = bId;
             }
-            else
-            {
-                var ubr = await _context.UserBranchRoles.AsNoTracking().FirstOrDefaultAsync(ub => ub.UserId == effectiveUserId);
-                if (ubr != null && ubr.BranchId != Guid.Empty)
-                {
-                    effectiveBranchId = ubr.BranchId;
-                }
-            }
+            // CRITICAL ANTI-DROP RULE (Section III AGENTS.md):
+            // Never guess effectiveBranchId via blind UserBranchRoles fallback when branchId is omitted.
+            // Cashiers cross-cover branches (e.g. assigned to MRI Branch in DB while working Main Lab desk).
+            // Blindly defaulting to ubr.BranchId drops valid transactions and wipes shift ledgers to zero.
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.UserId == effectiveUserId);
             var userName = user != null && !string.IsNullOrEmpty(user.Name) ? user.Name : (user?.Username ?? "Desk Cashier");
@@ -1615,7 +1611,7 @@ namespace SynOS.Api.Controllers
                 endUtc = startUtc.AddDays(1);
             }
 
-            // 3. Query all Cash Payments received by this user today
+            // 3. Query all Cash Payments received or attributed to this cashier today (Canonical 4-tier hierarchy)
             var cashPaymentsQuery = _context.Payments
                 .Include(p => p.Invoice)
                     .ThenInclude(i => i.Payments)
@@ -1629,7 +1625,9 @@ namespace SynOS.Api.Controllers
                     .ThenInclude(i => i.Visit)
                         .ThenInclude(v => v.Orders)
                             .ThenInclude(o => o.Test)
-                .Where(p => p.ReceivedByUserId == effectiveUserId 
+                .Where(p => (p.ReceivedByUserId == effectiveUserId 
+                             || (p.Invoice.Visit != null && p.Invoice.Visit.AssignedReceptionistId == effectiveUserId)
+                             || (p.Invoice.Visit != null && p.Invoice.Visit.CreatedByUserId == effectiveUserId))
                          && p.Method.ToLower().Contains("cash")
                          && p.ReceivedAt >= startUtc && p.ReceivedAt < endUtc);
 

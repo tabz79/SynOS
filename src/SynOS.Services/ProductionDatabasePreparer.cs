@@ -242,6 +242,7 @@ namespace SynOS.Services
                 name == "ReferenceLab" || name == "ReferenceLabRateRule" ||
                 name == "ParameterMaster" || name == "DerivedParameterRule" || name == "AnalyzerParameterMap" || name.StartsWith("Range") ||
                 name == "CorporateAccount" || name == "CorporateRateRule" || name == "InsuranceCompany" ||
+                name == "HealthCardPlanMaster" ||
                 name == "MedicalMacro" || name == "TimePeriod")
             {
                 return EntityCategory.MasterData;
@@ -252,6 +253,7 @@ namespace SynOS.Services
                 name.EndsWith("Payable") ||
                 name == "LeaveRequest" ||
                 name == "Patient" || name == "PatientPhoneHistory" || name == "PatientAlias" || name == "PatientReferrerLink" ||
+                name == "PatientHealthCard" || name == "HealthCardBeneficiary" || name == "HealthCardUsageLedger" ||
                 name == "Appointment" || name == "VisitDayGroup" || name == "Visit" || name == "VisitCancellation" ||
                 name == "Order" || name == "Specimen" || name == "Invoice" || name == "Payment" || name == "PartialPayment" || name == "CreditNote" || name == "CashierShiftClosing" ||
                 name == "Result" || name == "ResultFlag" || name == "ResultLink" || name == "ResultChangeAudit" || name == "DeltaCheckEvent" || name == "AutosaveBuffer" ||

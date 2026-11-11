@@ -4641,13 +4641,16 @@ export const CashDrawerLedgersScreen = () => {
     // 2. Load Drawer Ledger for selected cashier and date/range
     useEffect(() => {
         loadLedger();
-    }, [selectedUserId, selectedDate, useCustomSingleDate, presetRange, customDates]);
+    }, [selectedUserId, selectedDate, useCustomSingleDate, presetRange, customDates, isConsolidated, effectiveBranchId]);
 
     const loadLedger = async () => {
         try {
             setLoading(true);
+            const bId = isConsolidated && isAdmin ? undefined : (effectiveBranchId || undefined);
             const data = await FinanceApi.getMyCashDrawerLedger({
                 userId: selectedUserId || undefined,
+                branchId: bId,
+                isConsolidated: isConsolidated && isAdmin,
                 date: useCustomSingleDate ? selectedDate : undefined,
                 preset: !useCustomSingleDate ? presetRange : undefined,
                 startDate: (!useCustomSingleDate && customDates?.from) ? (customDates.from instanceof Date ? customDates.from.toISOString() : customDates.from) : undefined,

@@ -127,6 +127,48 @@ The reception intake pipeline operates on three distinct, production-locked bill
 
 ---
 
+## 🏛️ Section III: Finance Hub Truth Engine & Ledger Parity Invariants (The 8 Canonical Tabs)
+
+The Finance Hub (`RevenueScreens.jsx`) houses the ultimate diagnostic and legal truth of all clinical revenue, cash drawers, and partner receivables across 8 canonical tabs:
+1. `Bills & Collections`
+2. `Due Bills`
+3. `Pending Receivables`
+4. `Visit Corrections`
+5. `Cancellations & Refunds`
+6. `Due Change & Patient Refunds`
+7. `Collection History`
+8. `Cash Drawer Shift Ledgers` (`#POS-DRAWER`)
+
+### 1. The Cash Drawer & Collection History 100% Parity Contract
+* **Invariant:** Any physical cash transaction attributed to a cashier in `Collection History` MUST appear in `Cash Drawer Shift Ledgers` for that same cashier and date range. The net cash in hand target must match the drawer ledger to the paisa.
+* **Cashier Attribution Hierarchy:**
+  - AI agents and developers MUST NOT restrict cashier matching to a single raw field like `p.ReceivedByUserId == effectiveUserId`.
+  - Cashier identification MUST consistently observe the canonical 4-tier attribution hierarchy:
+    ```csharp
+    p.ReceivedByUserId == effectiveUserId 
+    || p.Invoice.Visit.AssignedReceptionistId == effectiveUserId 
+    || p.Invoice.Visit.CreatedByUserId == effectiveUserId
+    ```
+  - When visits are confirmed under an admin/station token while a receptionist created the visit, the transaction belongs to the receptionist's shift cash drawer.
+
+### 2. Multi-Branch Safe Scoping (Anti-Drop Invariant)
+* **Invariant:** Never use blind single-branch user fallbacks (e.g. `UserBranchRoles.FirstOrDefault().BranchId`) to filter drawer payments.
+* **Prohibitions:**
+  - If a query does not explicitly receive a valid `branchId`, or when `All Branches` / consolidated mode is active, the query MUST NOT discard transactions with null branch IDs or alternate branch IDs.
+  - Applying an unverified branch filter drops legitimate transactions and wipes cash drawer ledgers to zero.
+
+### 3. Dual-Ledger Synchronization (`Payments` vs `RevenueFacts`)
+* **Invariant:** Operational payments (`dbo.Payments`) and immutable accounting facts (`dbo.RevenueFacts`) MUST remain in lockstep.
+* **Rule:** Any operation that deletes, voids, cancels, or switches a payment mode (such as converting a Cash visit to Corporate B2B Prepaid in `VisitService.cs`) MUST explicitly declare a `Reversal` fact in `RevenueFacts`.
+* **Prohibition:** NEVER delete from `dbo.Payments` without declaring the corresponding reversal fact. Orphaned facts create phantom cash liabilities in `Collection History`.
+
+### 4. Zero-Tolerance Regression Shield for Finance Tabs
+* **Invariant:** Whenever an AI agent or developer modifies any file touching billing, invoices, payments, revenue facts, or finance screens:
+  - You MUST verify that changes do not break or zero out any of the other 7 tabs.
+  - You MUST NOT introduce ad-hoc SQL filters or property path mutations without verifying frontend DTO consumption.
+
+---
+
 ## 🛠️ Build & Verification Protocol
 
 When making modifications to the frontend or document pipelines:
