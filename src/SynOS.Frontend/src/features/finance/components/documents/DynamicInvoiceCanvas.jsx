@@ -1051,14 +1051,14 @@ export const DynamicInvoiceCanvas = ({
                     onDeleteBox={() => deleteBox('partyDetails')}
                     onAddCustomLine={(line) => addCustomLine('partyDetails', line)}
                 >
-                    <div className={isThermal ? "border-b border-dashed border-black pb-1 mb-1 text-[10.5px] leading-tight text-black" : "rounded-xl border border-zinc-200 overflow-hidden mb-3.5 bg-white shadow-2xs"}>
+                    <div className={isThermal ? "border-b border-dashed border-black pb-1 mb-1 text-[10.5px] leading-tight text-black" : "rounded-xl border border-zinc-200 overflow-hidden mb-3 bg-white shadow-2xs"}>
                         <div className={isThermal ? "mb-0.5" : "bg-slate-100/90 px-3.5 py-1.5 border-b border-zinc-200 flex justify-between items-center"}>
                             <span className={isThermal ? "text-[9.5px] font-black uppercase text-black tracking-wider block" : "text-[10.5px] font-black uppercase text-zinc-700 tracking-wider"}>
                                 {boxes.partyDetails.title || "Party Particulars"}
                             </span>
                         </div>
 
-                        <div className={`grid ${isThermal ? 'grid-cols-1 gap-y-0.5' : 'grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1.5 p-3.5'} text-[11px]`}>
+                        <div className={`grid ${isThermal ? 'grid-cols-1 gap-y-0.5' : 'grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1 px-4 py-2.5'} text-[11px]`}>
                             {Object.entries(boxes.partyDetails.fields || {}).map(([key, field]) => {
                                 if (!field.enabled) return null;
                                 const isName = key === 'fullName';
@@ -1069,7 +1069,7 @@ export const DynamicInvoiceCanvas = ({
                                         <EditableField 
                                             label={displayLabel}
                                             value={field.value}
-                                            isBlock={!isThermal}
+                                            isBlock={false}
                                             onSave={(lbl, val) => updateField('partyDetails', key, lbl, val)}
                                             onDelete={() => deleteField('partyDetails', key)}
                                             labelClassName={isThermal ? (isMrn ? "text-black font-black uppercase text-[10px]" : "text-black font-medium") : "text-zinc-500 font-medium"}
@@ -1097,7 +1097,7 @@ export const DynamicInvoiceCanvas = ({
                                     <EditableField 
                                         label={line.label}
                                         value={line.value}
-                                        isBlock={true}
+                                        isBlock={false}
                                         onSave={(lbl, val) => {
                                             const nextLines = boxes.partyDetails.customLines.map(l => l.id === line.id ? { ...l, label: lbl, value: val } : l);
                                             updateSchema({ ...schema, boxes: { ...boxes, partyDetails: { ...boxes.partyDetails, customLines: nextLines } } });
@@ -1156,7 +1156,7 @@ export const DynamicInvoiceCanvas = ({
                                         <EditableField 
                                             label={field.label}
                                             value={field.value}
-                                            isBlock={!isThermal}
+                                            isBlock={false}
                                             onSave={(lbl, val) => updateField('billerDetails', key, lbl, val)}
                                             onDelete={() => deleteField('billerDetails', key)}
                                             labelClassName={isThermal ? "text-black font-normal" : "text-zinc-500 font-medium"}
@@ -1172,7 +1172,7 @@ export const DynamicInvoiceCanvas = ({
                                     <EditableField 
                                         label={line.label}
                                         value={line.value}
-                                        isBlock={true}
+                                        isBlock={false}
                                         onSave={(lbl, val) => {
                                             const nextLines = boxes.billerDetails.customLines.map(l => l.id === line.id ? { ...l, label: lbl, value: val } : l);
                                             updateSchema({ ...schema, boxes: { ...boxes, billerDetails: { ...boxes.billerDetails, customLines: nextLines } } });

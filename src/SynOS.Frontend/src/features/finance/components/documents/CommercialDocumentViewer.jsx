@@ -70,7 +70,7 @@ export const CommercialDocumentViewer = ({
                         width: 100% !important;
                         max-width: none !important;
                         margin: 0 !important;
-                        padding: ${isThermal ? '2mm 3mm' : '8mm 10mm'} !important;
+                        padding: ${isThermal ? '2mm 3mm' : '0'} !important;
                         box-shadow: none !important;
                         border: none !important;
                         background: white !important;
@@ -80,7 +80,7 @@ export const CommercialDocumentViewer = ({
                     }
                     @page {
                         size: ${isThermal ? 'auto' : 'A4 portrait'};
-                        margin: ${isThermal ? '0' : '10mm 10mm 12mm 10mm'};
+                        margin: ${isThermal ? '0' : '8mm 10mm 10mm 10mm'};
                     }
                     thead {
                         display: table-header-group !important;
@@ -234,7 +234,7 @@ export const CommercialDocumentViewer = ({
                             boxSizing: 'border-box'
                         }}
                         className={cn(
-                            "bg-white text-zinc-900 shadow-xl border border-zinc-300 rounded-sm p-8 sm:p-12 relative flex flex-col justify-between print:shadow-none print:border-none print:p-0 print:w-full",
+                            "bg-white text-zinc-900 shadow-xl border border-zinc-300 rounded-sm p-6 sm:p-8 relative flex flex-col justify-between print:shadow-none print:border-none print:p-0 print:w-full",
                             isThermal && "max-w-[340px] p-4 sm:p-5 font-mono text-xs shadow-md border-dashed border-zinc-300 rounded-lg justify-start"
                         )}
                     >

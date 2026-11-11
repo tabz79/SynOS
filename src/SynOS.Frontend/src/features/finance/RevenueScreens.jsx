@@ -1365,15 +1365,15 @@ export const BillsCollectionsScreen = () => {
                                                 {bill.prepaidAmount > 0 && <span>Prepaid: ₹{bill.prepaidAmount.toLocaleString()}</span>}
                                             </div>
                                         </td>
-                                        <td className="p-4 text-xs font-black text-right text-rose-500">
-                                            <p className="font-mono">₹{bill.pendingAmount.toLocaleString()}</p>
-                                            {bill.pendingAmount > 0 && !bill.isCancelled && (
-                                                <span className="text-[9px] font-bold block mt-0.5 tracking-tight text-zinc-400">
-                                                    {payerInfo.isCorporate
-                                                        ? `Due: ${bill.partnerName}` 
-                                                        : (payerInfo.isInsurance ? `Claim: ${bill.partnerName}` : 'Due at Counter')}
-                                                </span>
-                                            )}
+                                        <td className="p-4 text-right whitespace-nowrap">
+                                            <span className={cn(
+                                                "text-sm font-bold block",
+                                                bill.pendingAmount > 0 
+                                                    ? "text-rose-600 dark:text-rose-400" 
+                                                    : "text-zinc-400 dark:text-zinc-500 font-medium"
+                                            )}>
+                                                ₹{bill.pendingAmount.toLocaleString()}
+                                            </span>
                                         </td>
                                         <td className="p-4 text-center">
                                             <StatusBadge status={bill.status} />
