@@ -126,6 +126,7 @@ export function IntentPanel({ onVisitUpdated }) {
     // Active Health Card state in IntentPanel
     const [healthCardEligibility, setHealthCardEligibility] = useState(null);
     const [isRenewingHealthCard, setIsRenewingHealthCard] = useState(false);
+    const [stationerySync, setStationerySync] = useState(0);
 
     // Support custom event listener for immediate inter-component updates
     useEffect(() => {
@@ -1325,26 +1326,6 @@ export function IntentPanel({ onVisitUpdated }) {
         };
     };
 
-    const [stationerySync, setStationerySync] = useState(0);
-
-    // Synchronize latest branding & logo from server whenever print dispatch is active
-    useEffect(() => {
-        if (isOpen && isPostProcessingView) {
-            FinanceApi.getStationerySettings().then(settings => {
-                if (settings && typeof window !== 'undefined') {
-                    window.__synos_stationery_settings = settings;
-                    if (window.localStorage) {
-                        window.localStorage.setItem('synos_stationery_settings', JSON.stringify(settings));
-                        if (settings.logoUrl) {
-                            window.localStorage.setItem('synos_lab_logo', settings.logoUrl);
-                        }
-                    }
-                    setStationerySync(v => v + 1);
-                }
-            }).catch(() => {});
-        }
-    }, [isOpen, isPostProcessingView]);
-
     const thermalHtml = useMemo(() => {
         try {
             const payload = buildThermalPayload();
@@ -1892,6 +1873,24 @@ export function IntentPanel({ onVisitUpdated }) {
         ? !userPayerExpandedState
         : Boolean(isVisitFinalized);
     const isPostProcessingView = Boolean(postProcessingSession) || (isVisitFinalized && !isCorrectionIntent);
+
+    // Synchronize latest branding & logo from server whenever print dispatch is active
+    useEffect(() => {
+        if (isOpen && isPostProcessingView) {
+            FinanceApi.getStationerySettings().then(settings => {
+                if (settings && typeof window !== 'undefined') {
+                    window.__synos_stationery_settings = settings;
+                    if (window.localStorage) {
+                        window.localStorage.setItem('synos_stationery_settings', JSON.stringify(settings));
+                        if (settings.logoUrl) {
+                            window.localStorage.setItem('synos_lab_logo', settings.logoUrl);
+                        }
+                    }
+                    setStationerySync(v => v + 1);
+                }
+            }).catch(() => {});
+        }
+    }, [isOpen, isPostProcessingView]);
 
     const postNet = stagedNet !== undefined ? stagedNet : (snapshot?.billing?.netAmount || snapshot?.billing?.totalAmount || 0);
     const postPaid = postProcessingSession?.paidAmount !== undefined 
