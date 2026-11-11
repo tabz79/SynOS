@@ -113,7 +113,11 @@ namespace SynOS.Api.Controllers.AR
             if (!string.IsNullOrWhiteSpace(type))
             {
                 var lowerType = type.Trim().ToLowerInvariant();
-                if (lowerType == "partner")
+                if (lowerType == "b2b")
+                {
+                    baseQuery = baseQuery.Where(r => r.DebtorType == DebtorType.Partner || r.DebtorType == DebtorType.Corporate);
+                }
+                else if (lowerType == "partner")
                 {
                     baseQuery = baseQuery.Where(r => r.DebtorType == DebtorType.Partner);
                 }

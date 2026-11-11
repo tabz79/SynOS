@@ -733,6 +733,39 @@ export const FinanceApi = {
         return response.json();
     },
 
+    getB2BReceivablesDashboard: async (branchId, isConsolidated, preset = null, startDate = null, endDate = null) => {
+        const q = [];
+        if (branchId) q.push(`branchId=${branchId}`);
+        if (isConsolidated) q.push(`isConsolidated=true`);
+        if (preset && preset !== 'all' && preset !== 'custom') q.push(`preset=${preset}`);
+        if (startDate) q.push(`startDate=${startDate}`);
+        if (endDate) q.push(`endDate=${endDate}`);
+        const qs = q.length ? '?' + q.join('&') : '';
+        let url = `/api/v1/admin/b2b-receivables/dashboard${qs}`;
+        if (!branchId && !isConsolidated) {
+            url = FinanceApi.withBranchId(url);
+        }
+        const response = await fetch(url, {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load B2B receivables dashboard");
+        return response.json();
+    },
+
+    getB2BAccountDetail: async (accountId, preset = null, startDate = null, endDate = null) => {
+        const q = [];
+        if (preset && preset !== 'all' && preset !== 'custom') q.push(`preset=${preset}`);
+        if (startDate) q.push(`startDate=${startDate}`);
+        if (endDate) q.push(`endDate=${endDate}`);
+        const qs = q.length ? '?' + q.join('&') : '';
+        const url = `/api/v1/admin/b2b-receivables/account/${accountId}${qs}`;
+        const response = await fetch(url, {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load B2B account details");
+        return response.json();
+    },
+
     settleReferralPayout: async (data) => {
         const response = await fetch('/api/v1/admin/referral-settle/payout', {
             method: 'POST',

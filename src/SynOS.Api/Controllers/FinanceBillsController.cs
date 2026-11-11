@@ -3045,18 +3045,39 @@ namespace SynOS.Api.Controllers
                 .AsNoTracking()
                 .FirstOrDefaultAsync(p => p.ReferralPartnerId == request.PartnerId);
 
+            CorporateAccount? corpAccount = null;
             if (partner == null)
             {
-                return NotFound(new { message = "Referral Partner not found." });
+                corpAccount = await _context.CorporateAccounts
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(c => c.CorporateAccountId == request.PartnerId);
+
+                if (corpAccount != null)
+                {
+                    partner = new SynOS.Models.Entities.Referral.ReferralPartner
+                    {
+                        ReferralPartnerId = corpAccount.CorporateAccountId,
+                        Name = corpAccount.CompanyName,
+                        ClinicName = corpAccount.CompanyName,
+                        Location = corpAccount.BillingAddress ?? "Corporate Office",
+                        ContactInfo = corpAccount.ContactPhone ?? corpAccount.ContactEmail,
+                        PaymentCollectionModel = "CorporateCredit"
+                    };
+                }
+            }
+
+            if (partner == null)
+            {
+                return NotFound(new { message = "Referral Partner or Corporate Account not found." });
             }
 
             var lab = await _context.LabProfiles.AsNoTracking().FirstOrDefaultAsync();
             var settings = await GetStationerySettingsInternalAsync(lab);
 
-            // Query ReceivableFacts directly for this partner
+            // Query ReceivableFacts directly for this partner or corporate debtor
             var factQuery = _context.ReceivableFacts
                 .AsNoTracking()
-                .Where(r => r.ReferralPartnerId == request.PartnerId);
+                .Where(r => r.ReferralPartnerId == request.PartnerId || r.DebtorId == request.PartnerId);
 
             if (request.ReceivableFactIds != null && request.ReceivableFactIds.Count > 0)
             {
