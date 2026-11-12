@@ -21,6 +21,7 @@ import {
     ClipboardList,
     Building2
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { FinanceApi } from '@/api/finance';
 import { FinancePrintableSummaryModal } from './components/FinancePrintableSummaryModal';
 import { formatCanonicalBillNo, isWithinTimeRange, isDraftEntity } from './components/FinanceUtils';
@@ -504,15 +505,15 @@ export const ReferralTerminal = () => {
     const printConfig = getPrintSummaryConfig();
 
     return (
-        <div className="flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-300">
-            {/* TERMINAL HEADER MATCHING SYNOS UNBOXED CANVAS STYLE */}
-            <div className="px-8 pt-8 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="px-5 sm:px-6 py-3.5 sm:py-4 w-full flex-1 flex flex-col justify-start gap-3 sm:gap-3.5 pb-16 animate-in fade-in duration-500 relative bg-[#CBD5E1] dark:bg-zinc-950 overflow-y-auto custom-scrollbar">
+            {/* TERMINAL HEADER MATCHING FINANCE HUB & DISCOUNT MASTER STANDARD */}
+            <div className="shrink-0 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3 min-h-[44px]">
                 <div className="flex items-center gap-3.5">
                     <div>
-                        <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">
+                        <h1 className="text-3xl sm:text-4xl font-extrabold dark:text-white text-slate-900 tracking-normal leading-tight">
                             Referral Partners
                         </h1>
-                        <p className="text-xs text-zinc-500 font-medium mt-1">
+                        <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 font-medium mt-0.5 leading-normal">
                             Doctor & referral partner commissions, B2B institutional receivables, and rate governance
                         </p>
                     </div>
@@ -528,70 +529,69 @@ export const ReferralTerminal = () => {
                     )}
                 </div>
 
-                <div className="flex items-center gap-3 flex-wrap">
+                <div className="flex items-center gap-2.5 flex-wrap">
                     {/* Unified Standard Filter Bar (Today, This Month, This Quarter, This Year, Custom Range & Branch Selectors) */}
                     <StandardFilterBar />
 
                     {summary && (
-                        <div className="flex items-center gap-3 bg-slate-200/50 dark:bg-zinc-800/60 p-1.5 px-3 rounded-xl border border-slate-300/40 dark:border-zinc-700/40">
+                        <div className="flex items-center gap-3 bg-white/80 dark:bg-zinc-900/80 p-1.5 px-3 rounded-xl border border-white/90 dark:border-zinc-800 shadow-2xs backdrop-blur-xs">
                             <div className="text-right">
-                                <span className="text-[9px] text-zinc-500 uppercase font-black tracking-wider block">Payout Due</span>
-                                <span className="text-xs font-black text-rose-600 dark:text-rose-400">₹{Number(summary.totalPendingPayouts || 0).toLocaleString()}</span>
+                                <span className="text-[9px] text-slate-400 dark:text-zinc-500 uppercase font-bold tracking-wider block">Payout Due</span>
+                                <span className="text-xs font-black text-rose-600 dark:text-rose-400 tabular-nums">₹{Number(summary.totalPendingPayouts || 0).toLocaleString()}</span>
                             </div>
-                            <div className="w-px h-6 bg-zinc-300 dark:bg-zinc-700" />
+                            <div className="w-px h-6 bg-slate-200 dark:bg-zinc-800" />
                             <div className="text-right">
-                                <span className="text-[9px] text-zinc-500 uppercase font-black tracking-wider block">Receivables</span>
-                                <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">₹{Number(summary.totalPendingReceivables || b2bDashboardData?.kpis?.outstandingBalance || 0).toLocaleString()}</span>
+                                <span className="text-[9px] text-slate-400 dark:text-zinc-500 uppercase font-bold tracking-wider block">Receivables</span>
+                                <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 tabular-nums">₹{Number(summary.totalPendingReceivables || b2bDashboardData?.kpis?.outstandingBalance || 0).toLocaleString()}</span>
                             </div>
                         </div>
                     )}
 
-                    <div className="flex items-center gap-2">
-                        <button 
-                            onClick={handleDownloadTabSummary}
-                            className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl text-xs font-bold transition-all border border-slate-200 dark:border-zinc-700 shadow-sm cursor-pointer"
-                            title="Download CSV"
-                        >
-                            <Download size={14} className="text-zinc-500" />
-                            <span>Download CSV</span>
-                        </button>
-                        <button 
-                            onClick={() => setIsPrintSummaryOpen(true)}
-                            className="flex items-center gap-1.5 px-3 py-2 bg-slate-900 dark:bg-zinc-100 hover:bg-slate-800 dark:hover:bg-white text-white dark:text-zinc-900 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
-                            title="Print Report"
-                        >
-                            <Printer size={14} />
-                            <span>Print Report</span>
-                        </button>
-                        <button 
-                            onClick={loadDashboardData} 
-                            className="p-2 border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 rounded-xl transition-all cursor-pointer" 
-                            title="Refresh Data"
-                        >
-                            <History size={16} className="text-zinc-500" />
-                        </button>
-                    </div>
+                    <button 
+                        onClick={handleDownloadTabSummary}
+                        className="flex items-center gap-1.5 px-3.5 py-1.5 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 rounded-xl text-xs sm:text-sm font-semibold transition-all border border-slate-200/80 dark:border-zinc-700 shadow-xs cursor-pointer"
+                        title="Download CSV"
+                    >
+                        <Download size={15} className="text-slate-500" />
+                        <span>Download CSV</span>
+                    </button>
+                    <button 
+                        onClick={() => setIsPrintSummaryOpen(true)}
+                        className="flex items-center gap-1.5 px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-xs cursor-pointer"
+                        title="Print Report"
+                    >
+                        <Printer size={15} />
+                        <span>Print Report</span>
+                    </button>
+                    <button 
+                        onClick={loadDashboardData} 
+                        className="p-2 border border-slate-200/80 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 rounded-xl transition-all cursor-pointer shadow-xs" 
+                        title="Refresh Data"
+                    >
+                        <History size={16} className="text-slate-500" />
+                    </button>
                 </div>
             </div>
 
-            {/* TAB NAVIGATION (SEGMENTED PILL: COMMISSIONS FIRST, B2B RECEIVABLES SECOND, THEN ALL EXISTING OPERATIONAL TABS) */}
-            <div ref={tabsRef} className="px-8 pb-2 flex items-center gap-1 overflow-x-auto scrollbar-thin">
-                <div className="flex items-center bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
+            {/* TAB NAVIGATION (SEGMENTED PILL MATCHING DISCOUNT MASTER) */}
+            <div ref={tabsRef} className="flex items-center gap-1 overflow-x-auto scrollbar-thin">
+                <div className="flex items-center bg-[#D6E3EF] dark:bg-zinc-800/80 p-1.5 rounded-[14px] shadow-[inset_0_1px_2px_rgba(15,35,60,0.12)] border border-white/60 dark:border-zinc-700">
                     {tabs.map(t => (
                         <button
                             key={t.id}
                             onClick={() => setActiveTab(t.id)}
                             data-active-tab={effectiveTab === t.id ? "true" : "false"}
-                            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
-                                effectiveTab === t.id 
-                                ? 'bg-white dark:bg-zinc-700 text-synos-primary shadow-sm' 
-                                : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
-                            }`}
+                            className={cn(
+                                "flex items-center gap-2 px-3.5 py-1.5 rounded-[10px] text-xs sm:text-sm font-semibold transition-all cursor-pointer whitespace-nowrap",
+                                effectiveTab === t.id
+                                    ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-[0_2px_8px_rgba(15,35,60,0.12),inset_0_1px_0_#FFFFFF] font-bold"
+                                    : "text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
+                            )}
                         >
-                            <t.icon size={14} />
+                            <t.icon size={15} className={effectiveTab === t.id ? "text-synos-primary" : "text-slate-500"} />
                             <span>{t.label}</span>
                             {Boolean(t.badge && t.badge > 0) && (
-                                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-500 text-white shadow-xs">
+                                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-500 text-white shadow-2xs">
                                     {t.badge}
                                 </span>
                             )}
@@ -601,7 +601,7 @@ export const ReferralTerminal = () => {
             </div>
 
             {/* MAIN CONTENT AREA */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar">
+            <div className="flex-1 w-full space-y-3 sm:space-y-3.5">
                 {effectiveTab === 'overview' && (
                     <PartnerPerformanceTab 
                         dashboardData={dashboardData}
@@ -621,13 +621,41 @@ export const ReferralTerminal = () => {
                         onGenerateStatement={handleGenerateStatement}
                     />
                 )}
-                {effectiveTab === 'rate-queue' && <ReferralRateQueueTab onUpdateCount={setUnmappedQueueCount} />}
-                {effectiveTab === 'registry' && <PartnerRegistryTab />}
-                {effectiveTab === 'rmp' && <PartnerRegistryTab isRmpOnly={true} defaultPartnerType="RMP" />}
-                {effectiveTab === 'payouts' && <PendingPayoutsTab />}
-                {effectiveTab === 'history' && <SettlementHistoryTab />}
-                {effectiveTab === 'rules' && <CommissionRulesTab />}
-                {effectiveTab === 'visits' && <ReferralVisitsTab />}
+                {effectiveTab === 'rate-queue' && (
+                    <div className="p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)]">
+                        <ReferralRateQueueTab onUpdateCount={setUnmappedQueueCount} />
+                    </div>
+                )}
+                {effectiveTab === 'registry' && (
+                    <div className="p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)]">
+                        <PartnerRegistryTab />
+                    </div>
+                )}
+                {effectiveTab === 'rmp' && (
+                    <div className="p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)]">
+                        <PartnerRegistryTab isRmpOnly={true} defaultPartnerType="RMP" />
+                    </div>
+                )}
+                {effectiveTab === 'payouts' && (
+                    <div className="p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)]">
+                        <PendingPayoutsTab />
+                    </div>
+                )}
+                {effectiveTab === 'history' && (
+                    <div className="p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)]">
+                        <SettlementHistoryTab />
+                    </div>
+                )}
+                {effectiveTab === 'rules' && (
+                    <div className="p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)]">
+                        <CommissionRulesTab />
+                    </div>
+                )}
+                {effectiveTab === 'visits' && (
+                    <div className="p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)]">
+                        <ReferralVisitsTab />
+                    </div>
+                )}
             </div>
 
             {/* PRINTABLE SUMMARY MODAL */}
@@ -662,3 +690,4 @@ export const ReferralTerminal = () => {
         </div>
     );
 };
+
