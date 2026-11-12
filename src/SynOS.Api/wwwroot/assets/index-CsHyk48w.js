@@ -2282,7 +2282,7 @@ Error generating stack: ` + K.message + `
       var D = sa(y);
       if (Zi(D)) return y;
     }
-    function Oi(y, D) {
+    function _i(y, D) {
       if (y === "change") return D;
     }
     var Va = false;
@@ -4398,9 +4398,9 @@ Error generating stack: ` + K.message + `
       }
       var qe = L.stateNode;
       qe !== null && typeof qe.componentDidCatch == "function" && (y.callback = function() {
-        Iy(D, L, K), typeof he != "function" && (_i === null ? _i = /* @__PURE__ */ new Set([
+        Iy(D, L, K), typeof he != "function" && (Hi === null ? Hi = /* @__PURE__ */ new Set([
           this
-        ]) : _i.add(this));
+        ]) : Hi.add(this));
         var ft = K.stack;
         this.componentDidCatch(K.value, {
           componentStack: ft !== null ? ft : ""
@@ -4448,7 +4448,7 @@ Error generating stack: ` + K.message + `
           case 3:
             return L.flags |= 65536, y = he & -he, L.lanes |= y, y = Xg(L.stateNode, K, y), Kb(L, y), false;
           case 1:
-            if (D = L.type, Be = L.stateNode, (L.flags & 128) === 0 && (typeof D.getDerivedStateFromError == "function" || Be !== null && typeof Be.componentDidCatch == "function" && (_i === null || !_i.has(Be)))) return L.flags |= 65536, he &= -he, L.lanes |= he, he = PC(he), OC(he, y, L, K), Kb(L, he), false;
+            if (D = L.type, Be = L.stateNode, (L.flags & 128) === 0 && (typeof D.getDerivedStateFromError == "function" || Be !== null && typeof Be.componentDidCatch == "function" && (Hi === null || !Hi.has(Be)))) return L.flags |= 65536, he &= -he, L.lanes |= he, he = PC(he), OC(he, y, L, K), Kb(L, he), false;
         }
         L = L.return;
       } while (L !== null);
@@ -6173,7 +6173,7 @@ Error generating stack: ` + K.message + `
       cacheSignal: function() {
         return aA(ko).controller.signal;
       }
-    }, x2 = typeof WeakMap == "function" ? WeakMap : Map, gs = 0, ys = null, vi = null, Ii = 0, yr = 0, Tr = null, Wc = false, xl = false, zy = false, n0 = 0, ho = 0, iu = 0, Cc = 0, XC = 0, Jl = 0, Bc = 0, bh = null, Cl = null, su = false, Jf = 0, Ly = 0, nI = 1 / 0, yh = null, _i = null, jo = 0, qc = null, Kf = null, r0 = 0, rI = 0, Vf = null, eB = null, Ag = 0, tB = null;
+    }, x2 = typeof WeakMap == "function" ? WeakMap : Map, gs = 0, ys = null, vi = null, Ii = 0, yr = 0, Tr = null, Wc = false, xl = false, zy = false, n0 = 0, ho = 0, iu = 0, Cc = 0, XC = 0, Jl = 0, Bc = 0, bh = null, Cl = null, su = false, Jf = 0, Ly = 0, nI = 1 / 0, yh = null, Hi = null, jo = 0, qc = null, Kf = null, r0 = 0, rI = 0, Vf = null, eB = null, Ag = 0, tB = null;
     function Ro() {
       return (gs & 2) !== 0 && Ii !== 0 ? Ii & -Ii : ne.T !== null ? cB() : nt();
     }
@@ -6627,7 +6627,7 @@ Error generating stack: ` + K.message + `
         var y = qc, D = Kf, L = r0, K = eB;
         (D.subtreeFlags & 10256) !== 0 || (D.flags & 10256) !== 0 ? jo = 5 : (jo = 0, Kf = qc = null, oB(y, y.pendingLanes));
         var he = y.pendingLanes;
-        if (he === 0 && (_i = null), cr(L), D = D.stateNode, Ye && typeof Ye.onCommitFiberRoot == "function") try {
+        if (he === 0 && (Hi = null), cr(L), D = D.stateNode, Ye && typeof Ye.onCommitFiberRoot == "function") try {
           Ye.onCommitFiberRoot(Te, D, void 0, (D.current.flags & 128) === 128);
         } catch {
         }
@@ -6683,7 +6683,7 @@ Error generating stack: ` + K.message + `
           break;
         } else if (D.tag === 1) {
           var K = D.stateNode;
-          if (typeof D.type.getDerivedStateFromError == "function" || typeof K.componentDidCatch == "function" && (_i === null || !_i.has(K))) {
+          if (typeof D.type.getDerivedStateFromError == "function" || typeof K.componentDidCatch == "function" && (Hi === null || !Hi.has(K))) {
             y = YA(L, y), L = PC(2), K = eg(D, L, 2), K !== null && (OC(L, K, D, y), je(K, 2), cg(K));
             break;
           }
@@ -7098,13 +7098,13 @@ Error generating stack: ` + K.message + `
             }
           }
           e: {
-            if (xn = hn ? sa(hn) : window, vn = xn.nodeName && xn.nodeName.toLowerCase(), vn === "select" || vn === "input" && xn.type === "file") var ss = Oi;
+            if (xn = hn ? sa(hn) : window, vn = xn.nodeName && xn.nodeName.toLowerCase(), vn === "select" || vn === "input" && xn.type === "file") var ss = _i;
             else if (dn(xn)) if (Va) ss = Lg;
             else {
               ss = _c;
               var qr = dc;
             }
-            else vn = xn.nodeName, !vn || vn.toLowerCase() !== "input" || xn.type !== "checkbox" && xn.type !== "radio" ? hn && Bs(hn.elementType) && (ss = Oi) : ss = pd;
+            else vn = xn.nodeName, !vn || vn.toLowerCase() !== "input" || xn.type !== "checkbox" && xn.type !== "radio" ? hn && Bs(hn.elementType) && (ss = _i) : ss = pd;
             if (ss && (ss = ss(y, hn))) {
               tr(Yn, ss, L, Rn);
               break e;
@@ -11221,7 +11221,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
         key: "qrunsl"
       }
     ]
-  ], Ji = nn("chevron-down", pfe);
+  ], Ki = nn("chevron-down", pfe);
   const mfe = [
     [
       "path",
@@ -15314,7 +15314,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
         key: "nufk8"
       }
     ]
-  ], Ki = nn("users", LIe);
+  ], Pi = nn("users", LIe);
   const GIe = [
     [
       "rect",
@@ -15938,7 +15938,7 @@ Please change the parent <Route path="${C}"> to <Route path="${C === "/" ? "*" :
       children: t
     });
   }
-  const Pi = () => {
+  const Oi = () => {
     const t = F.useContext(PW);
     if (t === void 0) throw new Error("useTheme must be used within a ThemeProvider");
     return t;
@@ -19859,7 +19859,7 @@ Details: ${A.inner}`);
   };
   function Vd({ serverTime: t, syncStatus: e = "Not Synced" }) {
     var _a, _b;
-    const { user: r, logout: a, activeOversightBranchId: i, setOversightBranch: s } = Aa(), o = Os(), A = Lc(), { theme: l, setTheme: c } = Pi(), [g, d] = F.useState(/* @__PURE__ */ new Date()), [u, h] = F.useState(null), [f, m] = F.useState([]), x = F.useRef(null), B = F.useRef(null);
+    const { user: r, logout: a, activeOversightBranchId: i, setOversightBranch: s } = Aa(), o = Os(), A = Lc(), { theme: l, setTheme: c } = Oi(), [g, d] = F.useState(/* @__PURE__ */ new Date()), [u, h] = F.useState(null), [f, m] = F.useState([]), x = F.useRef(null), B = F.useRef(null);
     c1(x, u === "facility", () => h(null)), c1(B, u === "role", () => h(null));
     const C = (r == null ? void 0 : r.role) === "Admin" || (r == null ? void 0 : r.role) === "SystemAdmin" || Array.isArray(r == null ? void 0 : r.role) && (r.role.includes("Admin") || r.role.includes("SystemAdmin")), E = A.pathname, N = ((ee) => C ? ee.startsWith("/reception") ? "Reception" : ee.startsWith("/phlebotomist") ? "Phlebotomy" : ee.startsWith("/workbench") ? "Workbench" : ee.startsWith("/pathologist") ? "Pathologist" : ee.startsWith("/typist") ? "Typist" : ee.startsWith("/delivery") ? "Delivery Desk" : ee.startsWith("/inventory") ? "Inventory" : ee.startsWith("/finance") ? "Finance" : ee.startsWith("/xraytech") ? "X-Ray Tech" : ee.startsWith("/mritech") ? "MRI Tech" : ee.startsWith("/cttech") ? "CT Tech" : ee.startsWith("/ustech") ? "US Tech" : ee.startsWith("/radiologist") ? "Radiologist" : ee.startsWith("/patient") ? "Patient Directory" : null : null)(E), v = !!N;
     F.useEffect(() => {
@@ -20025,7 +20025,7 @@ Details: ${A.inner}`);
                       className: "max-w-[100px] sm:max-w-[150px] truncate font-semibold",
                       children: G
                     }),
-                    T && n.jsx(Ji, {
+                    T && n.jsx(Ki, {
                       className: "w-3 h-3 opacity-60 shrink-0"
                     })
                   ]
@@ -20094,7 +20094,7 @@ Details: ${A.inner}`);
                       className: "max-w-[90px] sm:max-w-[140px] truncate",
                       children: (r == null ? void 0 : r.name) || "User"
                     }),
-                    n.jsx(Ji, {
+                    n.jsx(Ki, {
                       className: "w-3 h-3 opacity-50 shrink-0"
                     })
                   ]
@@ -30726,7 +30726,7 @@ Minimum version required to store current data is: ` + U + `.
     return o === "ML" && e === "mL" || o === "G" && e === "g" || o === "MG" && e === "mg" ? a : Number((a * s.factorToBase).toFixed(6));
   }
   function aC({ isOpen: t, onClose: e, screenName: r, onBack: a = null }) {
-    const { user: i } = Aa(), { theme: s } = Pi(), o = s === "dark", [A, l] = F.useState(false), [c, g] = F.useState(false), [d, u] = F.useState([]), [h, f] = F.useState([]), [m, x] = F.useState("role"), [B, C] = F.useState(""), [E, w] = F.useState(null), [N, v] = F.useState(1), [T, M] = F.useState("units"), [G, O] = F.useState(false), [U, _] = F.useState(null), [H, Y] = F.useState(false), ee = F.useRef(null);
+    const { user: i } = Aa(), { theme: s } = Oi(), o = s === "dark", [A, l] = F.useState(false), [c, g] = F.useState(false), [d, u] = F.useState([]), [h, f] = F.useState([]), [m, x] = F.useState("role"), [B, C] = F.useState(""), [E, w] = F.useState(null), [N, v] = F.useState(1), [T, M] = F.useState("units"), [G, O] = F.useState(false), [U, _] = F.useState(null), [H, Y] = F.useState(false), ee = F.useRef(null);
     L9(ee, t), c1(ee, t, e);
     const ne = () => {
       if (r) return r;
@@ -31159,7 +31159,7 @@ Minimum version required to store current data is: ` + U + `.
     }) : null;
   }
   function uBe({ value: t, label: e, shortLabel: r, qualifier: a, icon: i, color: s = "default", id: o, style: A, isHidden: l, isCollapsed: c, isPool: g, scopeBadge: d, isDual: u, individualValue: h, poolLabel: f = "Pool Total", individualLabel: m = "You" }) {
-    const { theme: x } = Pi(), B = x === "dark", C = {
+    const { theme: x } = Oi(), B = x === "dark", C = {
       card: B ? "bg-white/95 border-white/10 shadow-lg" : "bg-white shadow-[0_4px_12px_rgba(0,0,0,0.04),inset_0_1px_0_rgba(255,255,255,1)] border border-black/[0.1] hover:bg-white",
       text: "text-zinc-900"
     }, E = c && r ? r : e, w = c ? `${e}${a ? ` (${a})` : ""}` : void 0;
@@ -31243,7 +31243,7 @@ Minimum version required to store current data is: ` + U + `.
                   title: "Branch Pool: Consolidated across all reception desks",
                   className: "inline-flex items-center gap-1 text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 shrink-0 truncate",
                   children: [
-                    n.jsx(Ki, {
+                    n.jsx(Pi, {
                       className: "w-2.5 h-2.5"
                     }),
                     "Pool"
@@ -31373,7 +31373,7 @@ Minimum version required to store current data is: ` + U + `.
     });
   }
   function U9({ columns: t, data: e, onAction: r }) {
-    const { theme: a } = Pi(), [i, s] = F.useState(null), o = F.useRef([]);
+    const { theme: a } = Oi(), [i, s] = F.useState(null), o = F.useRef([]);
     F.useEffect(() => {
       o.current = o.current.slice(0, e.length);
     }, [
@@ -31504,7 +31504,7 @@ Minimum version required to store current data is: ` + U + `.
       } catch {
         return true;
       }
-    }), { user: s } = Aa(), { theme: o } = Pi(), A = o === "dark", l = async () => {
+    }), { user: s } = Aa(), { theme: o } = Oi(), A = o === "dark", l = async () => {
       try {
         const C = (await Zt.getActivityStream()).filter((E) => {
           var _a, _b;
@@ -32093,7 +32093,7 @@ Minimum version required to store current data is: ` + U + `.
     mBe(B, E);
     const N = c.gender || c.Gender || c.sex || c.Sex || "", v = N ? N.charAt(0).toUpperCase() : "P", T = N || "-", M = c.lastVisitDate || c.LastVisitDate, G = c.lastVisitTestCodes || c.LastVisitTestCodes || c.testCodes || c.TestCodes || c.tests || c.Tests || c.lastVisit && (c.lastVisit.testCodes || c.lastVisit.TestCodes);
     g && g.endsWith(" Patient") && (g = g.replace(" Patient", "")), g && typeof g == "string" && (g = g.replace(/<[^>]*>?/gm, "").trim() || g);
-    const { theme: O } = Pi(), U = O === "dark", _ = U ? {
+    const { theme: O } = Oi(), U = O === "dark", _ = U ? {
       locked: "bg-transparent cursor-default p-0 shadow-none border-0",
       inactive: "bg-zinc-900/60 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 cursor-pointer rounded-2xl p-4 shadow-xs",
       name: s ? "text-white font-bold" : "text-zinc-200 group-hover:text-white",
@@ -32550,7 +32550,7 @@ Minimum version required to store current data is: ` + U + `.
           v(false);
         }
       }
-    }, { theme: U } = Pi(), _ = U === "dark", H = _ ? {
+    }, { theme: U } = Oi(), _ = U === "dark", H = _ ? {
       headerText: {
         active: "text-xl font-bold text-white tracking-normal",
         inactive: "text-xl font-bold text-zinc-400 tracking-normal"
@@ -33039,7 +33039,7 @@ Minimum version required to store current data is: ` + U + `.
       name: "",
       mobile: r,
       gender: "Male"
-    }), [o, A] = F.useState(!!a), [l, c] = F.useState("Elderly / Senior"), [g, d] = F.useState("dob"), [u, h] = F.useState(""), [f, m] = F.useState(""), [x, B] = F.useState("Years"), [C, E] = F.useState(null), [w, N] = F.useState(false), [v, T] = F.useState(false), [M, G] = F.useState(wN), [O, U] = F.useState(wN[0].planId), [_, H] = F.useState("Percentage"), [Y, ee] = F.useState("30"), [ne, oe] = F.useState("Cash"), [re, se] = F.useState([]), [Z, de] = F.useState(false), { theme: Ie } = Pi(), we = Ie === "dark";
+    }), [o, A] = F.useState(!!a), [l, c] = F.useState("Elderly / Senior"), [g, d] = F.useState("dob"), [u, h] = F.useState(""), [f, m] = F.useState(""), [x, B] = F.useState("Years"), [C, E] = F.useState(null), [w, N] = F.useState(false), [v, T] = F.useState(false), [M, G] = F.useState(wN), [O, U] = F.useState(wN[0].planId), [_, H] = F.useState("Percentage"), [Y, ee] = F.useState("30"), [ne, oe] = F.useState("Cash"), [re, se] = F.useState([]), [Z, de] = F.useState(false), { theme: Ie } = Oi(), we = Ie === "dark";
     F.useEffect(() => {
       sA.getPlans().then((Ne) => {
         Ne && Ne.length > 0 && (G(Ne), U((ye) => Ne.some((ce) => ce.planId === ye) ? ye : Ne[0].planId));
@@ -34430,7 +34430,7 @@ Minimum version required to store current data is: ` + U + `.
                     o && A && n.jsx("div", {
                       className: "w-6 h-6 rounded-full flex items-center justify-center bg-blue-500/10 dark:bg-blue-400/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 transition-colors",
                       title: "Click to reveal other payer modes",
-                      children: n.jsx(Ji, {
+                      children: n.jsx(Ki, {
                         className: "w-3.5 h-3.5"
                       })
                     }),
@@ -34846,7 +34846,7 @@ Minimum version required to store current data is: ` + U + `.
                 onClick: () => B((ye) => !ye),
                 className: "inline-flex items-center gap-1.5 text-[11px] font-medium text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors cursor-pointer py-0.5 select-none",
                 children: [
-                  x ? n.jsx(Ji, {
+                  x ? n.jsx(Ki, {
                     size: 13,
                     className: "text-zinc-400"
                   }) : n.jsx(Ps, {
@@ -35898,7 +35898,7 @@ Minimum version required to store current data is: ` + U + `.
       Oe,
       me == null ? void 0 : me.paymentCollectionModel
     ]);
-    const { theme: Ye } = Pi(), st = Ye === "dark", Ct = st ? {
+    const { theme: Ye } = Oi(), st = Ye === "dark", Ct = st ? {
       indicator: "bg-slate-600 text-white border-transparent",
       headerText: "text-base sm:text-lg font-bold text-white tracking-normal",
       section: "rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-xl p-3.5 sm:p-4 space-y-2.5",
@@ -36410,7 +36410,7 @@ Minimum version required to store current data is: ` + U + `.
                         n.jsx("span", {
                           children: "Change"
                         }),
-                        n.jsx(Ji, {
+                        n.jsx(Ki, {
                           className: "w-3.5 h-3.5"
                         })
                       ]
@@ -36423,7 +36423,7 @@ Minimum version required to store current data is: ` + U + `.
                         n.jsx("span", {
                           children: "Minimize"
                         }),
-                        n.jsx(Ji, {
+                        n.jsx(Ki, {
                           className: "w-3.5 h-3.5 rotate-180 transition-transform duration-200"
                         })
                       ]
@@ -37869,7 +37869,7 @@ Minimum version required to store current data is: ` + U + `.
         H && H.focus();
       }
       else _.key === "Escape" && (_.preventDefault(), _.stopPropagation(), x(false));
-    }, { theme: G } = Pi(), O = G === "dark", U = O ? {
+    }, { theme: G } = Oi(), O = G === "dark", U = O ? {
       input: "bg-zinc-900 border-synos-border type-body focus:border-synos-primary",
       suggestionBox: "bg-zinc-900 border-synos-border shadow-xl"
     } : {
@@ -37963,7 +37963,7 @@ Minimum version required to store current data is: ` + U + `.
     500
   ];
   function SBe({ billAmount: t = 0, tenderedAmount: e = "", onTenderChange: r, changeReturnedNow: a = "", onChangeReturnedNowChange: i, isChangeRetainedAsDue: s = false, onToggleChangeRetained: o, isSplitPayment: A = false, onToggleSplitPayment: l, splitCashAmount: c = "", onSplitCashChange: g, splitUpiAmount: d = "", onSplitUpiChange: u, isPartialPayment: h = false, disabled: f = false }) {
-    const { isDark: m } = Pi(), x = Math.max(0, Number(t) || 0), B = Number(e) || 0, C = F.useMemo(() => {
+    const { isDark: m } = Oi(), x = Math.max(0, Number(t) || 0), B = Number(e) || 0, C = F.useMemo(() => {
       if (x <= 0) return [];
       const U = /* @__PURE__ */ new Set();
       U.add(x);
@@ -38545,7 +38545,7 @@ Minimum version required to store current data is: ` + U + `.
       cn == null ? void 0 : cn.appliedDiscount,
       cn == null ? void 0 : cn.discountAmount
     ]);
-    const { theme: $r } = Pi(), mn = $r === "dark", Kn = mn ? {
+    const { theme: $r } = Oi(), mn = $r === "dark", Kn = mn ? {
       indicator: "bg-slate-600 text-white border-transparent",
       headerText: "text-base sm:text-lg font-bold text-white tracking-normal",
       container: "rounded-2xl bg-zinc-900 border border-zinc-800 shadow-xl p-3.5 sm:p-4 space-y-2.5",
@@ -38954,7 +38954,7 @@ Minimum version required to store current data is: ` + U + `.
                         className: "text-[10px] font-semibold opacity-60 group-hover:opacity-100 transition-opacity",
                         children: "Change"
                       }),
-                      n.jsx(Ji, {
+                      n.jsx(Ki, {
                         className: "w-3 h-3 opacity-60 group-hover:opacity-100 transition-transform group-hover:translate-y-0.5"
                       })
                     ]
@@ -39120,7 +39120,7 @@ Minimum version required to store current data is: ` + U + `.
                               n.jsx("span", {
                                 children: xt ? "Edit B2B Discount" : "+ B2B Discount"
                               }),
-                              n.jsx(Ji, {
+                              n.jsx(Ki, {
                                 className: Ce("w-3 h-3 transition-transform duration-200", Rt && "rotate-180")
                               })
                             ]
@@ -39173,7 +39173,7 @@ Minimum version required to store current data is: ` + U + `.
                               n.jsx("span", {
                                 children: xt ? "Edit Discount" : "+ Discount"
                               }),
-                              ca && n.jsx(Ji, {
+                              ca && n.jsx(Ki, {
                                 className: Ce("w-3 h-3 transition-transform duration-200", Xr && "rotate-180")
                               })
                             ]
@@ -39386,7 +39386,7 @@ Minimum version required to store current data is: ` + U + `.
                               n.jsx("span", {
                                 children: "Minimize"
                               }),
-                              n.jsx(Ji, {
+                              n.jsx(Ki, {
                                 className: "w-3.5 h-3.5 rotate-180 transition-transform duration-200"
                               })
                             ]
@@ -39541,7 +39541,7 @@ Minimum version required to store current data is: ` + U + `.
                                           Jt.preventDefault(), st((In) => !In);
                                         },
                                         className: "absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 cursor-pointer",
-                                        children: n.jsx(Ji, {
+                                        children: n.jsx(Ki, {
                                           className: "w-4 h-4"
                                         })
                                       }),
@@ -39607,7 +39607,7 @@ Minimum version required to store current data is: ` + U + `.
                           n.jsx("span", {
                             children: "+ Secondary Discount / Write Off"
                           }),
-                          n.jsx(Ji, {
+                          n.jsx(Ki, {
                             className: "w-3.5 h-3.5"
                           })
                         ]
@@ -39693,7 +39693,7 @@ Minimum version required to store current data is: ` + U + `.
                                     n.jsx("span", {
                                       children: "Minimize"
                                     }),
-                                    n.jsx(Ji, {
+                                    n.jsx(Ki, {
                                       className: "w-3.5 h-3.5 rotate-180"
                                     })
                                   ]
@@ -39931,7 +39931,7 @@ Minimum version required to store current data is: ` + U + `.
                                             tt.preventDefault(), Qe((vt) => !vt);
                                           },
                                           className: "absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 cursor-pointer",
-                                          children: n.jsx(Ji, {
+                                          children: n.jsx(Ki, {
                                             className: "w-4 h-4"
                                           })
                                         }),
@@ -40254,7 +40254,7 @@ Minimum version required to store current data is: ` + U + `.
                               n.jsx("span", {
                                 children: "Minimize"
                               }),
-                              n.jsx(Ji, {
+                              n.jsx(Ki, {
                                 className: "w-3.5 h-3.5 rotate-180"
                               })
                             ]
@@ -40523,7 +40523,7 @@ Minimum version required to store current data is: ` + U + `.
                                 Jt.preventDefault(), Xn((In) => !In);
                               },
                               className: "absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer",
-                              children: n.jsx(Ji, {
+                              children: n.jsx(Ki, {
                                 className: "w-3.5 h-3.5"
                               })
                             }),
@@ -41288,7 +41288,7 @@ Minimum version required to store current data is: ` + U + `.
                         }),
                         n.jsx("div", {
                           className: "p-1 rounded-md text-slate-400 group-hover:text-slate-700 dark:group-hover:text-white transition-colors",
-                          children: n.jsx(Ji, {
+                          children: n.jsx(Ki, {
                             className: Ce("w-4 h-4 transition-transform duration-200", d && "rotate-180")
                           })
                         })
@@ -45661,7 +45661,7 @@ Minimum version required to store current data is: ` + U + `.
     ]), Mn = (Je) => {
       const bt = Je.target.value;
       ka(bt), typeof window < "u" && localStorage.setItem("synos_receipt_printer_name", bt);
-    }, { theme: mr } = Pi(), nr = mr === "dark", la = nr ? {
+    }, { theme: mr } = Oi(), nr = mr === "dark", la = nr ? {
       panel: "bg-zinc-950 border border-zinc-800 shadow-2xl z-20",
       header: "bg-zinc-900/80 backdrop-blur-md border-b border-zinc-800",
       footer: "bg-zinc-900/80 backdrop-blur-md border-t border-zinc-800 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.5)]",
@@ -45706,10 +45706,10 @@ Minimum version required to store current data is: ` + U + `.
             visitId: dn || null,
             paymentCollectionModel: "LabCollects",
             tests: []
-          }, Oi = (tr == null ? void 0 : tr.patient) || (ra == null ? void 0 : ra.patient);
+          }, _i2 = (tr == null ? void 0 : tr.patient) || (ra == null ? void 0 : ra.patient);
           return {
             ...tr,
-            patient: Oi,
+            patient: _i2,
             visit: Ma,
             billing: (tr == null ? void 0 : tr.billing) || (ra == null ? void 0 : ra.billing) || {
               netAmount: 0,
@@ -45936,7 +45936,7 @@ Minimum version required to store current data is: ` + U + `.
         var _a2;
         if (!bt || !bt.visit) return bt;
         const Ft = bt.visit.tests || [], gn = Je.testCode || Je.code;
-        if (Ft.some((Oi) => (Oi.testCode || Oi.code) === gn)) return bt;
+        if (Ft.some((_i2) => (_i2.testCode || _i2.code) === gn)) return bt;
         const dn = "opt-" + Date.now(), tr = {
           ...Je,
           orderId: dn,
@@ -45952,7 +45952,7 @@ Minimum version required to store current data is: ` + U + `.
         }, lr = [
           ...Ft,
           tr
-        ], Er = lr.reduce((Oi, Va) => Oi + (Number(Va.price || Va.basePrice) || 0), 0), ra = ((_a2 = bt.billing) == null ? void 0 : _a2.discountAmount) || 0, Ma = Math.max(0, Er - ra);
+        ], Er = lr.reduce((_i2, Va) => _i2 + (Number(Va.price || Va.basePrice) || 0), 0), ra = ((_a2 = bt.billing) == null ? void 0 : _a2.discountAmount) || 0, Ma = Math.max(0, Er - ra);
         return {
           ...bt,
           visit: {
@@ -46102,9 +46102,9 @@ Minimum version required to store current data is: ` + U + `.
           }
         };
       }));
-      const Ma = Number(bt.configuredDiscountValue || 30), Oi = bt.configuredDiscountType === "Flat" ? "Flat" : "Percentage";
+      const Ma = Number(bt.configuredDiscountValue || 30), _i2 = bt.configuredDiscountType === "Flat" ? "Flat" : "Percentage";
       xe({
-        type: Oi,
+        type: _i2,
         value: Ma,
         reason: `Health Card (${Ft}) - Renewed`,
         cardId: bt.cardId,
@@ -46220,8 +46220,8 @@ Minimum version required to store current data is: ` + U + `.
       Je.rawType === "PERCENTAGE" ? zt = Math.round(_t * (Je.rawVal / 100) * 100) / 100 : zt = Math.min(_t, Je.rawAmount || Je.rawVal || 0);
     } else zt = ((_g = Z == null ? void 0 : Z.billing) == null ? void 0 : _g.appliedDiscount) && Number((_h2 = Z == null ? void 0 : Z.billing) == null ? void 0 : _h2.discountAmount) || 0;
     const Jt = Math.max(0, _t - zt), In = x ? 0 : Number(((_i = Z == null ? void 0 : Z.billing) == null ? void 0 : _i.totalPaid) ?? ((_j = Z == null ? void 0 : Z.billing) == null ? void 0 : _j.netAmount) ?? 0), pn = x ? 0 : Jt - In, Un = ce.length + le.length + (me ? 1 : 0) + (Ae ? 1 : 0) + (Ee !== void 0 ? 1 : 0) + (Qe !== void 0 ? 1 : 0), tt = () => {
-      var _a2, _b2, _c3, _d3, _e3, _f2, _g2, _h3, _i2;
-      const Je = Z == null ? void 0 : Z.visit, bt = be || (Z == null ? void 0 : Z.patient), Ft = Z == null ? void 0 : Z.billing, gn = _t !== void 0 ? _t : (Ft == null ? void 0 : Ft.grossAmount) || (Ft == null ? void 0 : Ft.netAmount) || 0, dn = zt !== void 0 ? zt : (Ft == null ? void 0 : Ft.discountAmount) || 0, tr = Jt !== void 0 ? Jt : (Ft == null ? void 0 : Ft.netAmount) || 0, lr = x ? 0 : (Ft == null ? void 0 : Ft.totalPaid) !== void 0 ? Number(Ft.totalPaid) : 0, Er = x ? 0 : Math.max(0, tr - lr), ra = f === "Corporate" || (Je == null ? void 0 : Je.billingType) === "Corporate" || !!(Je == null ? void 0 : Je.corporateAccountId), Ma = f === "Insurance" || (Je == null ? void 0 : Je.billingType) === "Insurance" || !!(Je == null ? void 0 : Je.insuranceCompanyId), Oi = x || !!(Je == null ? void 0 : Je.referralPartnerId) || Ee !== void 0, Va = ((_a2 = Je == null ? void 0 : Je.corporateAccount) == null ? void 0 : _a2.companyName) || ((_b2 = Je == null ? void 0 : Je.corporateAccount) == null ? void 0 : _b2.name) || (ra ? "Corporate Client" : ""), Vs = ((_c3 = Je == null ? void 0 : Je.corporateAccount) == null ? void 0 : _c3.corporateCode) || "", dA = (Je == null ? void 0 : Je.employeeId) || "", bs = ((_d3 = Je == null ? void 0 : Je.insuranceCompany) == null ? void 0 : _d3.name) || (Ma ? "Insurance Provider" : ""), No = ((_e3 = Je == null ? void 0 : Je.insuranceCompany) == null ? void 0 : _e3.tpaName) || "", _A2 = (Je == null ? void 0 : Je.policyNumber) || "", dc = (Je == null ? void 0 : Je.preAuthApprovalNumber) || "", _c2 = (Je == null ? void 0 : Je.insuranceCoPayAmount) || 0, pd = Ee !== void 0 ? Ee ? De.find((Ur) => (Ur.referralPartnerId || Ur.id) === Ee) || (Je == null ? void 0 : Je.referralPartner) || ((_f2 = Ft == null ? void 0 : Ft.referral) == null ? void 0 : _f2.partner) : null : (Je == null ? void 0 : Je.referralPartner) || ((_g2 = Ft == null ? void 0 : Ft.referral) == null ? void 0 : _g2.partner), Lg = (pd == null ? void 0 : pd.name) || (pd == null ? void 0 : pd.displayName) || (Oi ? "Referral Partner" : "Self / Direct"), Y0 = (pd == null ? void 0 : pd.clinicName) || "", zs = (pd == null ? void 0 : pd.code) || "", gA = [
+      var _a2, _b2, _c3, _d3, _e3, _f2, _g2, _h3, _i3;
+      const Je = Z == null ? void 0 : Z.visit, bt = be || (Z == null ? void 0 : Z.patient), Ft = Z == null ? void 0 : Z.billing, gn = _t !== void 0 ? _t : (Ft == null ? void 0 : Ft.grossAmount) || (Ft == null ? void 0 : Ft.netAmount) || 0, dn = zt !== void 0 ? zt : (Ft == null ? void 0 : Ft.discountAmount) || 0, tr = Jt !== void 0 ? Jt : (Ft == null ? void 0 : Ft.netAmount) || 0, lr = x ? 0 : (Ft == null ? void 0 : Ft.totalPaid) !== void 0 ? Number(Ft.totalPaid) : 0, Er = x ? 0 : Math.max(0, tr - lr), ra = f === "Corporate" || (Je == null ? void 0 : Je.billingType) === "Corporate" || !!(Je == null ? void 0 : Je.corporateAccountId), Ma = f === "Insurance" || (Je == null ? void 0 : Je.billingType) === "Insurance" || !!(Je == null ? void 0 : Je.insuranceCompanyId), _i2 = x || !!(Je == null ? void 0 : Je.referralPartnerId) || Ee !== void 0, Va = ((_a2 = Je == null ? void 0 : Je.corporateAccount) == null ? void 0 : _a2.companyName) || ((_b2 = Je == null ? void 0 : Je.corporateAccount) == null ? void 0 : _b2.name) || (ra ? "Corporate Client" : ""), Vs = ((_c3 = Je == null ? void 0 : Je.corporateAccount) == null ? void 0 : _c3.corporateCode) || "", dA = (Je == null ? void 0 : Je.employeeId) || "", bs = ((_d3 = Je == null ? void 0 : Je.insuranceCompany) == null ? void 0 : _d3.name) || (Ma ? "Insurance Provider" : ""), No = ((_e3 = Je == null ? void 0 : Je.insuranceCompany) == null ? void 0 : _e3.tpaName) || "", _A2 = (Je == null ? void 0 : Je.policyNumber) || "", dc = (Je == null ? void 0 : Je.preAuthApprovalNumber) || "", _c2 = (Je == null ? void 0 : Je.insuranceCoPayAmount) || 0, pd = Ee !== void 0 ? Ee ? De.find((Ur) => (Ur.referralPartnerId || Ur.id) === Ee) || (Je == null ? void 0 : Je.referralPartner) || ((_f2 = Ft == null ? void 0 : Ft.referral) == null ? void 0 : _f2.partner) : null : (Je == null ? void 0 : Je.referralPartner) || ((_g2 = Ft == null ? void 0 : Ft.referral) == null ? void 0 : _g2.partner), Lg = (pd == null ? void 0 : pd.name) || (pd == null ? void 0 : pd.displayName) || (_i2 ? "Referral Partner" : "Self / Direct"), Y0 = (pd == null ? void 0 : pd.clinicName) || "", zs = (pd == null ? void 0 : pd.code) || "", gA = [
         ...xt,
         ...ce.map((Ur) => ({
           ...Ur,
@@ -46229,7 +46229,7 @@ Minimum version required to store current data is: ` + U + `.
           name: Ur.testName || Ur.name || Ur.testCode,
           price: Number(Ur.basePrice || Ur.price || Ur.Price) || 0
         }))
-      ], md = gA.some((Ur) => Ur.isOutsourced || !!Ur.referenceLabName), Id = gA.filter((Ur) => Ur.isOutsourced && Ur.referenceLabName).map((Ur) => Ur.referenceLabName), _l2 = (me == null ? void 0 : me.remove) ? "" : (me == null ? void 0 : me.reason) || (me == null ? void 0 : me.name) || ((_h3 = Ft == null ? void 0 : Ft.appliedDiscount) == null ? void 0 : _h3.reason) || ((_i2 = Ft == null ? void 0 : Ft.appliedDiscount) == null ? void 0 : _i2.name) || "", qd = (Je == null ? void 0 : Je.billedBy) || (Ft == null ? void 0 : Ft.billedBy) || ((e == null ? void 0 : e.name) ? `${e.name}` : "Staff Desk"), gc = (Je == null ? void 0 : Je.visitToken) || (Je == null ? void 0 : Je.token);
+      ], md = gA.some((Ur) => Ur.isOutsourced || !!Ur.referenceLabName), Id = gA.filter((Ur) => Ur.isOutsourced && Ur.referenceLabName).map((Ur) => Ur.referenceLabName), _l2 = (me == null ? void 0 : me.remove) ? "" : (me == null ? void 0 : me.reason) || (me == null ? void 0 : me.name) || ((_h3 = Ft == null ? void 0 : Ft.appliedDiscount) == null ? void 0 : _h3.reason) || ((_i3 = Ft == null ? void 0 : Ft.appliedDiscount) == null ? void 0 : _i3.name) || "", qd = (Je == null ? void 0 : Je.billedBy) || (Ft == null ? void 0 : Ft.billedBy) || ((e == null ? void 0 : e.name) ? `${e.name}` : "Staff Desk"), gc = (Je == null ? void 0 : Je.visitToken) || (Je == null ? void 0 : Je.token);
       return {
         billNumber: (!gc || gc.startsWith("DRAFT") || gc.startsWith("D-") ? "" : gc) || "INV-REC-001",
         date: (/* @__PURE__ */ new Date()).toISOString(),
@@ -46252,7 +46252,7 @@ Minimum version required to store current data is: ` + U + `.
           policyNumber: _A2,
           preAuthApprovalNumber: dc,
           insuranceCoPayAmount: _c2,
-          isReferred: Oi,
+          isReferred: _i2,
           referralPartnerName: Lg,
           referralPartnerClinic: Y0,
           referralPartnerCode: zs,
@@ -46296,8 +46296,8 @@ Minimum version required to store current data is: ` + U + `.
         }
       };
     }, vt = (Je, bt) => {
-      var _a2, _b2, _c3, _d3, _e3, _f2, _g2, _h3, _i2, _j2, _k3, _l3, _m2, _n3, _o3, _p3, _q3, _r3, _s2, _t3, _u3, _v3, _w3, _x3;
-      const Ft = Z == null ? void 0 : Z.visit, gn = be || (Z == null ? void 0 : Z.patient), dn = (Bn == null ? void 0 : Bn.token) || (Ft == null ? void 0 : Ft.visitToken) || (Ft == null ? void 0 : Ft.token), lr = !dn || dn.startsWith("DRAFT") || dn.startsWith("D-") ? (Ft == null ? void 0 : Ft.visitToken) || "REC-2026" : dn, Er = _t !== void 0 ? _t : ((_a2 = Z == null ? void 0 : Z.billing) == null ? void 0 : _a2.grossAmount) || 0, ra = zt !== void 0 ? zt : ((_b2 = Z == null ? void 0 : Z.billing) == null ? void 0 : _b2.discountAmount) || 0, Ma = Jt !== void 0 ? Jt : ((_c3 = Z == null ? void 0 : Z.billing) == null ? void 0 : _c3.netAmount) || 0, Oi = (Bn == null ? void 0 : Bn.paidAmount) !== void 0 ? Bn.paidAmount : x ? 0 : ((_d3 = Z == null ? void 0 : Z.billing) == null ? void 0 : _d3.totalPaid) !== void 0 ? Number(Z.billing.totalPaid) : Ma, Va = (me == null ? void 0 : me.remove) ? "" : (me == null ? void 0 : me.reason) || (me == null ? void 0 : me.name) || ((_f2 = (_e3 = Z == null ? void 0 : Z.billing) == null ? void 0 : _e3.appliedDiscount) == null ? void 0 : _f2.reason) || ((_h3 = (_g2 = Z == null ? void 0 : Z.billing) == null ? void 0 : _g2.appliedDiscount) == null ? void 0 : _h3.name) || "", Vs = (Ft == null ? void 0 : Ft.billedBy) || ((_i2 = Z == null ? void 0 : Z.billing) == null ? void 0 : _i2.billedBy) || ((e == null ? void 0 : e.name) ? `${e.name}` : "Staff Desk"), dA = [
+      var _a2, _b2, _c3, _d3, _e3, _f2, _g2, _h3, _i3, _j2, _k3, _l3, _m2, _n3, _o3, _p3, _q3, _r3, _s2, _t3, _u3, _v3, _w3, _x3;
+      const Ft = Z == null ? void 0 : Z.visit, gn = be || (Z == null ? void 0 : Z.patient), dn = (Bn == null ? void 0 : Bn.token) || (Ft == null ? void 0 : Ft.visitToken) || (Ft == null ? void 0 : Ft.token), lr = !dn || dn.startsWith("DRAFT") || dn.startsWith("D-") ? (Ft == null ? void 0 : Ft.visitToken) || "REC-2026" : dn, Er = _t !== void 0 ? _t : ((_a2 = Z == null ? void 0 : Z.billing) == null ? void 0 : _a2.grossAmount) || 0, ra = zt !== void 0 ? zt : ((_b2 = Z == null ? void 0 : Z.billing) == null ? void 0 : _b2.discountAmount) || 0, Ma = Jt !== void 0 ? Jt : ((_c3 = Z == null ? void 0 : Z.billing) == null ? void 0 : _c3.netAmount) || 0, _i2 = (Bn == null ? void 0 : Bn.paidAmount) !== void 0 ? Bn.paidAmount : x ? 0 : ((_d3 = Z == null ? void 0 : Z.billing) == null ? void 0 : _d3.totalPaid) !== void 0 ? Number(Z.billing.totalPaid) : Ma, Va = (me == null ? void 0 : me.remove) ? "" : (me == null ? void 0 : me.reason) || (me == null ? void 0 : me.name) || ((_f2 = (_e3 = Z == null ? void 0 : Z.billing) == null ? void 0 : _e3.appliedDiscount) == null ? void 0 : _f2.reason) || ((_h3 = (_g2 = Z == null ? void 0 : Z.billing) == null ? void 0 : _g2.appliedDiscount) == null ? void 0 : _h3.name) || "", Vs = (Ft == null ? void 0 : Ft.billedBy) || ((_i3 = Z == null ? void 0 : Z.billing) == null ? void 0 : _i3.billedBy) || ((e == null ? void 0 : e.name) ? `${e.name}` : "Staff Desk"), dA = [
         ...xt,
         ...ce.map((Ur) => ({
           ...Ur,
@@ -46305,7 +46305,7 @@ Minimum version required to store current data is: ` + U + `.
           name: Ur.testName || Ur.name || Ur.testCode,
           price: Number(Ur.basePrice || Ur.price || Ur.Price) || 0
         }))
-      ], bs = Ee !== void 0 ? Ee ? De.find((Ur) => (Ur.referralPartnerId || Ur.id) === Ee) || (Ft == null ? void 0 : Ft.referralPartner) || ((_k3 = (_j2 = Z == null ? void 0 : Z.billing) == null ? void 0 : _j2.referral) == null ? void 0 : _k3.partner) : null : (Ft == null ? void 0 : Ft.referralPartner) || ((_m2 = (_l3 = Z == null ? void 0 : Z.billing) == null ? void 0 : _l3.referral) == null ? void 0 : _m2.partner), No = Number((Bn == null ? void 0 : Bn.changeDue) || ((_n3 = Z == null ? void 0 : Z.billing) == null ? void 0 : _n3.changeDue) || 0), _A2 = Math.max(0, Number(Oi || 0) - Number(Ma || 0)), dc = Math.max(No, _A2), _c2 = /* @__PURE__ */ new Date(), pd = `${String(_c2.getFullYear()).slice(-2)}${String(_c2.getMonth() + 1).padStart(2, "0")}${String(_c2.getDate()).padStart(2, "0")}`, Y0 = `${lr ? String(lr).replace(/[^a-zA-Z0-9]/g, "").toUpperCase() : "MAI000"}-${pd}`, zs = ((_o3 = Z == null ? void 0 : Z.billing) == null ? void 0 : _o3.billNumber) || ((_p3 = Z == null ? void 0 : Z.visit) == null ? void 0 : _p3.billNumber) || Y0, gA = !!((gn == null ? void 0 : gn.hasActiveHealthCard) || (Wt == null ? void 0 : Wt.hasActiveCard) && (Wt == null ? void 0 : Wt.isPatientEnrolledBeneficiary) || Va && Va.toLowerCase().includes("health card")), md = gA ? (((_r3 = (_q3 = Wt == null ? void 0 : Wt.card) == null ? void 0 : _q3.cardNumber) == null ? void 0 : _r3.startsWith("HC-")) ? null : (_s2 = Wt == null ? void 0 : Wt.card) == null ? void 0 : _s2.cardNumber) || (gn == null ? void 0 : gn.healthCardNumber) || ((gn == null ? void 0 : gn.mrn) ? `${gn.mrn}-HC` : null) : null, Id = gA ? ((_t3 = Wt == null ? void 0 : Wt.card) == null ? void 0 : _t3.planName) || (gn == null ? void 0 : gn.healthCardPlanName) || "Health Card" : null, _l2 = O && Number(_) > 0 && Number(Y) > 0 ? [
+      ], bs = Ee !== void 0 ? Ee ? De.find((Ur) => (Ur.referralPartnerId || Ur.id) === Ee) || (Ft == null ? void 0 : Ft.referralPartner) || ((_k3 = (_j2 = Z == null ? void 0 : Z.billing) == null ? void 0 : _j2.referral) == null ? void 0 : _k3.partner) : null : (Ft == null ? void 0 : Ft.referralPartner) || ((_m2 = (_l3 = Z == null ? void 0 : Z.billing) == null ? void 0 : _l3.referral) == null ? void 0 : _m2.partner), No = Number((Bn == null ? void 0 : Bn.changeDue) || ((_n3 = Z == null ? void 0 : Z.billing) == null ? void 0 : _n3.changeDue) || 0), _A2 = Math.max(0, Number(_i2 || 0) - Number(Ma || 0)), dc = Math.max(No, _A2), _c2 = /* @__PURE__ */ new Date(), pd = `${String(_c2.getFullYear()).slice(-2)}${String(_c2.getMonth() + 1).padStart(2, "0")}${String(_c2.getDate()).padStart(2, "0")}`, Y0 = `${lr ? String(lr).replace(/[^a-zA-Z0-9]/g, "").toUpperCase() : "MAI000"}-${pd}`, zs = ((_o3 = Z == null ? void 0 : Z.billing) == null ? void 0 : _o3.billNumber) || ((_p3 = Z == null ? void 0 : Z.visit) == null ? void 0 : _p3.billNumber) || Y0, gA = !!((gn == null ? void 0 : gn.hasActiveHealthCard) || (Wt == null ? void 0 : Wt.hasActiveCard) && (Wt == null ? void 0 : Wt.isPatientEnrolledBeneficiary) || Va && Va.toLowerCase().includes("health card")), md = gA ? (((_r3 = (_q3 = Wt == null ? void 0 : Wt.card) == null ? void 0 : _q3.cardNumber) == null ? void 0 : _r3.startsWith("HC-")) ? null : (_s2 = Wt == null ? void 0 : Wt.card) == null ? void 0 : _s2.cardNumber) || (gn == null ? void 0 : gn.healthCardNumber) || ((gn == null ? void 0 : gn.mrn) ? `${gn.mrn}-HC` : null) : null, Id = gA ? ((_t3 = Wt == null ? void 0 : Wt.card) == null ? void 0 : _t3.planName) || (gn == null ? void 0 : gn.healthCardPlanName) || "Health Card" : null, _l2 = O && Number(_) > 0 && Number(Y) > 0 ? [
         {
           amount: Number(_),
           method: "Cash"
@@ -46352,7 +46352,7 @@ Minimum version required to store current data is: ` + U + `.
           discountAmount: ra,
           discountReason: Va,
           netAmount: Ma,
-          totalPaid: Oi,
+          totalPaid: _i2,
           changeDue: dc,
           tenderedAmount: Number(w || (Bn == null ? void 0 : Bn.tenderedAmount) || 0),
           paymentMethod: nA,
@@ -46632,14 +46632,14 @@ Minimum version required to store current data is: ` + U + `.
               discountAmount: zt,
               netAmount: Jt
             }).catch((No) => console.error("HealthCard usage log failed:", No));
-            const Oi = ((_i2 = Z == null ? void 0 : Z.billing) == null ? void 0 : _i2.totalPaid) || 0;
+            const _i3 = ((_i2 = Z == null ? void 0 : Z.billing) == null ? void 0 : _i2.totalPaid) || 0;
             await Hn();
             const Va = Number(w || 0), Vs = Number(v || 0), dA = Math.max(0, Va - dn - Vs), bs = M ? dA : 0;
             tn(false), er(""), ue("FULL"), N(""), T(""), G(false), U(false), H(""), ee(""), cn({
               visitId: Z.visit.visitId,
               token: (Ma == null ? void 0 : Ma.token) || Z.visit.token || Z.visit.visitToken,
               billingMode: "Standard",
-              paidAmount: Oi + ra,
+              paidAmount: _i3 + ra,
               changeDue: bs,
               tenderedAmount: Va,
               isChangeRetainedAsDue: bs > 0,
@@ -48106,7 +48106,7 @@ Minimum version required to store current data is: ` + U + `.
                                           n.jsx("span", {
                                             children: "Expand"
                                           }),
-                                          n.jsx(Ji, {
+                                          n.jsx(Ki, {
                                             className: "w-3.5 h-3.5"
                                           })
                                         ]
@@ -48392,7 +48392,7 @@ Minimum version required to store current data is: ` + U + `.
                                           n.jsx("span", {
                                             children: "Change"
                                           }),
-                                          n.jsx(Ji, {
+                                          n.jsx(Ki, {
                                             className: "w-3.5 h-3.5"
                                           })
                                         ]
@@ -48405,7 +48405,7 @@ Minimum version required to store current data is: ` + U + `.
                                           n.jsx("span", {
                                             children: "Minimize"
                                           }),
-                                          n.jsx(Ji, {
+                                          n.jsx(Ki, {
                                             className: "w-3.5 h-3.5 rotate-180 transition-transform duration-200"
                                           })
                                         ]
@@ -49445,7 +49445,7 @@ Minimum version required to store current data is: ` + U + `.
                           const lr = Math.max(0, dn - tr), Er = lr - gn;
                           let ra = ((_d3 = (_c2 = (_b2 = Z == null ? void 0 : Z.billing) == null ? void 0 : _b2.referral) == null ? void 0 : _c2.partner) == null ? void 0 : _d3.name) || ((_f2 = (_e3 = Z == null ? void 0 : Z.visit) == null ? void 0 : _e3.referralPartner) == null ? void 0 : _f2.name) || ((_h3 = (_g2 = Z == null ? void 0 : Z.visit) == null ? void 0 : _g2.secondaryReferralPartner) == null ? void 0 : _h3.name) || "Doctor / Partner";
                           if (Ee !== void 0) if (Ee) {
-                            const Ma = De.find((Oi) => (Oi.referralPartnerId || Oi.id) === Ee);
+                            const Ma = De.find((_i2) => (_i2.referralPartnerId || _i2.id) === Ee);
                             Ma && (ra = Ma.name || Ma.displayName);
                           } else ra = "Self / Direct (Removed)";
                           return n.jsxs("div", {
@@ -50000,7 +50000,7 @@ Minimum version required to store current data is: ` + U + `.
   }
   const vN = "synos_reception_expense_draft";
   function Iq({ isOpen: t, onClose: e, embedded: r = false, onBack: a = null }) {
-    const { user: i } = Aa(), { theme: s } = Pi(), o = s === "dark", A = o ? {
+    const { user: i } = Aa(), { theme: s } = Oi(), o = s === "dark", A = o ? {
       panel: "bg-zinc-950 border-l border-zinc-800 shadow-2xl z-30",
       header: "bg-zinc-900/80 backdrop-blur-md border-b border-zinc-800",
       footer: "bg-zinc-900/80 backdrop-blur-md border-t border-zinc-800 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.5)]",
@@ -50758,7 +50758,7 @@ Minimum version required to store current data is: ` + U + `.
                                               type: "button",
                                               onClick: () => Ve((Me) => !Me),
                                               className: "absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 transition-colors cursor-pointer",
-                                              children: n.jsx(Ji, {
+                                              children: n.jsx(Ki, {
                                                 className: Ce("w-4 h-4 transition-transform", _e && "rotate-180")
                                               })
                                             })
@@ -52052,7 +52052,7 @@ Minimum version required to store current data is: ` + U + `.
   ];
   function xq({ isOpen: t, onClose: e, embedded: r = false, onBack: a = null }) {
     var _a;
-    const { user: i } = Aa(), { theme: s } = Pi(), o = s === "dark", A = o ? {
+    const { user: i } = Aa(), { theme: s } = Oi(), o = s === "dark", A = o ? {
       panel: "bg-zinc-950 border-l border-zinc-800 shadow-2xl z-30",
       header: "bg-zinc-900/80 backdrop-blur-md border-b border-zinc-800",
       card: "rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-xl",
@@ -52750,7 +52750,7 @@ Minimum version required to store current data is: ` + U + `.
                                           className: "p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-400 transition-colors cursor-pointer",
                                           children: st ? n.jsx(fv, {
                                             className: "w-4 h-4"
-                                          }) : n.jsx(Ji, {
+                                          }) : n.jsx(Ki, {
                                             className: "w-4 h-4"
                                           })
                                         })
@@ -53931,7 +53931,7 @@ Minimum version required to store current data is: ` + U + `.
     });
   }
   function TBe({ isOpen: t, embedded: e = false, onClose: r, onBack: a, onDataUpdated: i }) {
-    const { isDark: s } = Pi(), [o, A] = F.useState([]), [l, c] = F.useState(true), [g, d] = F.useState("Pending"), [u, h] = F.useState(""), [f, m] = F.useState(null), [x, B] = F.useState(""), [C, E] = F.useState("Cash"), [w, N] = F.useState(""), [v, T] = F.useState(false), [M, G] = F.useState(null);
+    const { isDark: s } = Oi(), [o, A] = F.useState([]), [l, c] = F.useState(true), [g, d] = F.useState("Pending"), [u, h] = F.useState(""), [f, m] = F.useState(null), [x, B] = F.useState(""), [C, E] = F.useState("Cash"), [w, N] = F.useState(""), [v, T] = F.useState(false), [M, G] = F.useState(null);
     F.useEffect(() => {
       t && O();
     }, [
@@ -54826,7 +54826,7 @@ Minimum version required to store current data is: ` + U + `.
   }
   function zBe({ isOpen: t, embedded: e = false, onClose: r, onBack: a, onDataUpdated: i }) {
     var _a, _b, _c, _d2, _e, _f, _g, _h2;
-    const { isDark: s } = Pi(), { user: o } = Aa(), [A, l] = F.useState(null), [c, g] = F.useState(true), [d, u] = F.useState("All"), [h, f] = F.useState(""), [m, x] = F.useState(false);
+    const { isDark: s } = Oi(), { user: o } = Aa(), [A, l] = F.useState(null), [c, g] = F.useState(true), [d, u] = F.useState("All"), [h, f] = F.useState(""), [m, x] = F.useState(false);
     F.useEffect(() => {
       t && B();
     }, [
@@ -55509,7 +55509,7 @@ Minimum version required to store current data is: ` + U + `.
   }
   function LBe({ isOpen: t, embedded: e = false, onClose: r, onBack: a, onDataUpdated: i }) {
     var _a, _b, _c, _d2, _e2, _f, _g, _h2, _i, _j, _k2, _l, _m, _n2, _o2, _p2, _q2, _r, _s;
-    const { isDark: s } = Pi(), { user: o, logout: A } = Aa(), [l, c] = F.useState(true), [g, d] = F.useState(false), [u, h] = F.useState(null), [f, m] = F.useState(null), [x, B] = F.useState(0), [C, E] = F.useState("Day Shift"), [w, N] = F.useState(""), [v, T] = F.useState(""), [M, G] = F.useState({}), [O, U] = F.useState(null), [_, H] = F.useState({
+    const { isDark: s } = Oi(), { user: o, logout: A } = Aa(), [l, c] = F.useState(true), [g, d] = F.useState(false), [u, h] = F.useState(null), [f, m] = F.useState(null), [x, B] = F.useState(0), [C, E] = F.useState("Day Shift"), [w, N] = F.useState(""), [v, T] = F.useState(""), [M, G] = F.useState({}), [O, U] = F.useState(null), [_, H] = F.useState({
       newVal: "",
       reason: "",
       presetReason: ""
@@ -57551,7 +57551,7 @@ Minimum version required to store current data is: ` + U + `.
     });
   }
   function Cq({ isOpen: t, onClose: e, onCardIssued: r, embedded: a = false }) {
-    const i = Os(), { isDark: s } = Pi(), [o, A] = F.useState("directory"), [l, c] = F.useState([]), [g, d] = F.useState(false), [u, h] = F.useState(""), [f, m] = F.useState([]), [x, B] = F.useState(null), [C, E] = F.useState({
+    const i = Os(), { isDark: s } = Oi(), [o, A] = F.useState("directory"), [l, c] = F.useState([]), [g, d] = F.useState(false), [u, h] = F.useState(""), [f, m] = F.useState([]), [x, B] = F.useState(null), [C, E] = F.useState({
       name: "",
       age: "",
       gender: "Female",
@@ -57869,7 +57869,7 @@ Minimum version required to store current data is: ` + U + `.
                 },
                 className: Ce("flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer", o === "directory" ? "bg-white dark:bg-zinc-900 text-blue-600 dark:text-blue-400 shadow-2xs font-extrabold" : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white"),
                 children: [
-                  n.jsx(Ki, {
+                  n.jsx(Pi, {
                     className: "w-3.5 h-3.5"
                   }),
                   n.jsxs("span", {
@@ -59437,7 +59437,7 @@ Minimum version required to store current data is: ` + U + `.
     });
   }
   function GBe({ isOpen: t, onClose: e, onOpenPatientDirectory: r, onOpenMyHr: a, pendingB2BCount: i = 0, onDataUpdated: s = null, initialView: o = "menu" }) {
-    const { isDark: A } = Pi(), { user: l } = Aa(), { toastsEnabled: c, toggleToastsEnabled: g } = i3(), d = F.useRef(null), [u, h] = F.useState(o || "menu"), [f, m] = F.useState(null), [x, B] = F.useState(""), C = F.useRef(null);
+    const { isDark: A } = Oi(), { user: l } = Aa(), { toastsEnabled: c, toggleToastsEnabled: g } = i3(), d = F.useRef(null), [u, h] = F.useState(o || "menu"), [f, m] = F.useState(null), [x, B] = F.useState(""), C = F.useRef(null);
     F.useEffect(() => {
       t && h(o || "menu");
     }, [
@@ -59564,7 +59564,7 @@ Minimum version required to store current data is: ` + U + `.
             id: "referrals",
             title: "Referral Partners",
             path: "/finance/referrals/rate-queue?source=reception",
-            icon: Ki,
+            icon: Pi,
             iconBg: "bg-blue-500/10 text-blue-600 dark:text-blue-400"
           },
           {
@@ -59592,7 +59592,7 @@ Minimum version required to store current data is: ` + U + `.
           {
             id: "patient-directory",
             title: "Patient Directory",
-            icon: Ki,
+            icon: Pi,
             iconBg: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
             onClick: r
           },
@@ -60669,7 +60669,7 @@ Minimum version required to store current data is: ` + U + `.
   }
   function YBe() {
     var _a, _b;
-    const t = Os(), { theme: e } = Pi(), { user: r } = Aa(), a = (r == null ? void 0 : r.role) === "Receptionist", [i, s] = F.useState("pending"), [o, A] = F.useState(() => {
+    const t = Os(), { theme: e } = Oi(), { user: r } = Aa(), a = (r == null ? void 0 : r.role) === "Receptionist", [i, s] = F.useState("pending"), [o, A] = F.useState(() => {
       try {
         const Oe = localStorage.getItem("synos_cached_reality_summary");
         return Oe ? JSON.parse(Oe) : null;
@@ -60885,7 +60885,7 @@ Minimum version required to store current data is: ` + U + `.
         value: Ae.toString(),
         label: "Walk-Ins",
         qualifier: "Paid/Credit",
-        icon: Ki,
+        icon: Pi,
         color: "zinc",
         isPool: a ? true : void 0
       },
@@ -60950,7 +60950,7 @@ Minimum version required to store current data is: ` + U + `.
         value: "\u2014",
         label: "Walk-Ins",
         qualifier: "(Paid/Credit)",
-        icon: Ki,
+        icon: Pi,
         color: "default",
         isPool: a ? true : void 0
       },
@@ -61183,7 +61183,7 @@ Minimum version required to store current data is: ` + U + `.
                               onClick: () => le(!W),
                               className: "text-zinc-500 hover:text-zinc-300 transition-colors p-1 rounded-md hover:bg-white/5",
                               title: W ? "Expand View" : "Collapse View",
-                              children: n.jsx(Ji, {
+                              children: n.jsx(Ki, {
                                 className: Ce("w-4 h-4 transition-transform duration-300", W && "-rotate-90")
                               })
                             })
@@ -66540,7 +66540,7 @@ Minimum version required to store current data is: ` + U + `.
     ...Uwe
   }, cx = iwe(Pwe, swe);
   function Owe({ instruction: t, index: e }) {
-    const { theme: r } = Pi(), a = r === "dark", [i, s] = F.useState(false), o = (t == null ? void 0 : t.tubeName) || "Unknown Tube", A = (t == null ? void 0 : t.specimenName) || (t == null ? void 0 : t.specimenType) || "Unknown Specimen", l = (t == null ? void 0 : t.requiredTubes) || 1, c = (t == null ? void 0 : t.tests) || [], g = (t == null ? void 0 : t.color) || "#94a3b8", d = a ? {
+    const { theme: r } = Oi(), a = r === "dark", [i, s] = F.useState(false), o = (t == null ? void 0 : t.tubeName) || "Unknown Tube", A = (t == null ? void 0 : t.specimenName) || (t == null ? void 0 : t.specimenType) || "Unknown Specimen", l = (t == null ? void 0 : t.requiredTubes) || 1, c = (t == null ? void 0 : t.tests) || [], g = (t == null ? void 0 : t.color) || "#94a3b8", d = a ? {
       card: "bg-zinc-900 border border-white/10 rounded-xl overflow-hidden shadow-lg",
       header: "bg-zinc-800/50 p-3 flex items-center gap-3 cursor-pointer hover:bg-zinc-800 transition-colors",
       tubeIconBox: "bg-zinc-900 border border-white/10 shrink-0",
@@ -66642,7 +66642,7 @@ Minimum version required to store current data is: ` + U + `.
             }),
             n.jsx("div", {
               className: "shrink-0 text-zinc-400",
-              children: n.jsx(Ji, {
+              children: n.jsx(Ki, {
                 className: Ce("w-4 h-4 transition-transform duration-200", i && "rotate-180")
               })
             })
@@ -66732,7 +66732,7 @@ Minimum version required to store current data is: ` + U + `.
   }
   function Hwe({ isOpen: t, visitId: e, closePanel: r, queueItem: a, onUpdateLocalState: i }) {
     var _a, _b, _c, _d2;
-    const { theme: s } = Pi(), o = s === "dark", { user: A } = Aa(), [l, c] = F.useState(false), [g, d] = F.useState(null), [u, h] = F.useState(false), [f, m] = F.useState(false), [x, B] = F.useState(false), [C, E] = F.useState(null), [w, N] = F.useState([]), [v, T] = F.useState(false), M = a && !a.assignedPhlebotomistId, G = !!(a == null ? void 0 : a.assignedPhlebotomistId) && (a.assignedPhlebotomistId.toLowerCase() === ((_a = A == null ? void 0 : A.id) == null ? void 0 : _a.toLowerCase()) || a.assignedPhlebotomistId.toLowerCase() === ((_b = A == null ? void 0 : A.resourceId) == null ? void 0 : _b.toLowerCase()) || !!a.assignedPhlebotomistName && !!(A == null ? void 0 : A.name) && a.assignedPhlebotomistName.toLowerCase() === A.name.toLowerCase());
+    const { theme: s } = Oi(), o = s === "dark", { user: A } = Aa(), [l, c] = F.useState(false), [g, d] = F.useState(null), [u, h] = F.useState(false), [f, m] = F.useState(false), [x, B] = F.useState(false), [C, E] = F.useState(null), [w, N] = F.useState([]), [v, T] = F.useState(false), M = a && !a.assignedPhlebotomistId, G = !!(a == null ? void 0 : a.assignedPhlebotomistId) && (a.assignedPhlebotomistId.toLowerCase() === ((_a = A == null ? void 0 : A.id) == null ? void 0 : _a.toLowerCase()) || a.assignedPhlebotomistId.toLowerCase() === ((_b = A == null ? void 0 : A.resourceId) == null ? void 0 : _b.toLowerCase()) || !!a.assignedPhlebotomistName && !!(A == null ? void 0 : A.name) && a.assignedPhlebotomistName.toLowerCase() === A.name.toLowerCase());
     F.useEffect(() => {
       let Y = true;
       return h(false), m(false), B(false), T(false), t && e ? (async () => {
@@ -67112,7 +67112,7 @@ Minimum version required to store current data is: ` + U + `.
     });
   }
   function Ywe() {
-    const { theme: t } = Pi(), [e, r] = F.useState(false), [a, i] = F.useState(false), [s, o] = F.useState(false), [A, l] = F.useState([]), [c, g] = F.useState(true), [d, u] = F.useState(null), [h, f] = F.useState((/* @__PURE__ */ new Date()).toISOString()), [m, x] = F.useState("Not Synced"), { user: B } = Aa(), [C, E] = F.useState("available"), [w, N] = F.useState(null), v = F.useRef(null), T = F.useRef(null);
+    const { theme: t } = Oi(), [e, r] = F.useState(false), [a, i] = F.useState(false), [s, o] = F.useState(false), [A, l] = F.useState([]), [c, g] = F.useState(true), [d, u] = F.useState(null), [h, f] = F.useState((/* @__PURE__ */ new Date()).toISOString()), [m, x] = F.useState("Not Synced"), { user: B } = Aa(), [C, E] = F.useState("available"), [w, N] = F.useState(null), v = F.useRef(null), T = F.useRef(null);
     z9([
       v,
       T
@@ -67306,7 +67306,7 @@ Minimum version required to store current data is: ` + U + `.
                             onClick: () => i(!a),
                             className: "text-zinc-500 hover:text-zinc-300 transition-colors p-1 rounded-md hover:bg-white/5",
                             title: a ? "Expand View" : "Collapse View",
-                            children: n.jsx(Ji, {
+                            children: n.jsx(Ki, {
                               className: Ce("w-4 h-4 transition-transform duration-300", a && "-rotate-90")
                             })
                           })
@@ -68264,7 +68264,7 @@ Minimum version required to store current data is: ` + U + `.
     }) : null;
   }
   function $we() {
-    const { theme: t } = Pi(), { user: e } = Aa(), [r, a] = F.useState(false), { queue: i, summary: s, isLoading: o, updateLocalState: A } = Jwe(r), [l, c] = F.useState(false), [g, d] = F.useState(false), [u, h] = F.useState("available"), [f, m] = F.useState(null), [x, B] = F.useState(false), [C, E] = F.useState(false), [w, N] = F.useState(null), [v, T] = F.useState(false), M = F.useRef(null), G = F.useRef(null);
+    const { theme: t } = Oi(), { user: e } = Aa(), [r, a] = F.useState(false), { queue: i, summary: s, isLoading: o, updateLocalState: A } = Jwe(r), [l, c] = F.useState(false), [g, d] = F.useState(false), [u, h] = F.useState("available"), [f, m] = F.useState(null), [x, B] = F.useState(false), [C, E] = F.useState(false), [w, N] = F.useState(null), [v, T] = F.useState(false), M = F.useRef(null), G = F.useRef(null);
     z9([
       M,
       G
@@ -68383,7 +68383,7 @@ Minimum version required to store current data is: ` + U + `.
                           n.jsx("button", {
                             onClick: () => d(!g),
                             className: "text-zinc-500 hover:text-zinc-300 p-1 rounded-md",
-                            children: n.jsx(Ji, {
+                            children: n.jsx(Ki, {
                               className: Ce("w-4 h-4 transition-transform", g && "-rotate-90")
                             })
                           })
@@ -71563,7 +71563,7 @@ C:\\ProgramData\\TBZ Labs\\SynOS\\Logs\\install.log`);
   };
   function k$({ report: t, isSelected: e, onClick: r }) {
     var _a, _b;
-    const { theme: a } = Pi(), s = a === "dark" ? {
+    const { theme: a } = Oi(), s = a === "dark" ? {
       card: e ? "border-2 border-synos-primary bg-synos-primary/10 ring-1 ring-synos-primary/20 shadow-lg" : "synos-item-card",
       name: "text-zinc-100 group-hover:text-white",
       ageSex: "bg-white/5 text-zinc-400 border-white/10",
@@ -92164,7 +92164,7 @@ ${r}
                     n.jsxs("span", {
                       className: "text-[10px] font-black uppercase text-zinc-550 dark:text-zinc-400 tracking-wider flex items-center gap-1.5",
                       children: [
-                        n.jsx(Ki, {
+                        n.jsx(Pi, {
                           className: "w-3.5 h-3.5"
                         }),
                         "Operator Calling"
@@ -92289,7 +92289,7 @@ ${r}
   };
   function A4e() {
     var _a, _b, _c, _d2, _e2;
-    const { user: t } = Aa(), { theme: e } = Pi(), r = e === "dark", [a, i] = F.useState([]), [s, o] = F.useState(false), [A, l] = F.useState(null), [c, g] = F.useState(null), [d, u] = F.useState(false), [h, f] = F.useState(false), [m, x] = F.useState({
+    const { user: t } = Aa(), { theme: e } = Oi(), r = e === "dark", [a, i] = F.useState([]), [s, o] = F.useState(false), [A, l] = F.useState(null), [c, g] = F.useState(null), [d, u] = F.useState(false), [h, f] = F.useState(false), [m, x] = F.useState({
       interpretation: "",
       comments: ""
     }), [B, C] = F.useState(null), [E, w] = F.useState(false), [N, v] = F.useState(null), [T, M] = F.useState(false), [G, O] = F.useState(""), [U, _] = F.useState({}), [H, Y] = F.useState(null), [ee, ne] = F.useState(false), [oe, re] = F.useState(false), [se, Z] = F.useState(false), [de, Ie] = F.useState(false), [we, _e] = F.useState({
@@ -94224,7 +94224,7 @@ ${r}
                               n.jsxs("div", {
                                 className: "flex items-center gap-2",
                                 children: [
-                                  n.jsx(Ki, {
+                                  n.jsx(Pi, {
                                     className: "h-4 w-4 text-emerald-400 animate-pulse"
                                   }),
                                   n.jsx("h3", {
@@ -94424,7 +94424,7 @@ ${r}
               }) : n.jsxs("div", {
                 className: "h-full flex flex-col items-center justify-center p-8 text-center dark:text-zinc-550 text-zinc-400",
                 children: [
-                  n.jsx(Ki, {
+                  n.jsx(Pi, {
                     className: "h-10 w-10 mb-2 dark:text-zinc-750 text-zinc-300"
                   }),
                   n.jsx("h3", {
@@ -94531,7 +94531,7 @@ ${r}
   };
   function g4e() {
     var _a, _b, _c, _d2, _e2;
-    const { user: t } = Aa(), { theme: e } = Pi(), [r, a] = F.useState("pathology"), [i, s] = F.useState([]), [o, A] = F.useState(false), [l, c] = F.useState(null), [g, d] = F.useState(null), [u, h] = F.useState(null), [f, m] = F.useState({}), [x, B] = F.useState(false), [C, E] = F.useState(false), [w, N] = F.useState({
+    const { user: t } = Aa(), { theme: e } = Oi(), [r, a] = F.useState("pathology"), [i, s] = F.useState([]), [o, A] = F.useState(false), [l, c] = F.useState(null), [g, d] = F.useState(null), [u, h] = F.useState(null), [f, m] = F.useState({}), [x, B] = F.useState(false), [C, E] = F.useState(false), [w, N] = F.useState({
       interpretation: "",
       comments: ""
     }), [v, T] = F.useState(false), [M, G] = F.useState(null), [O, U] = F.useState(false), [_, H] = F.useState(false), [Y, ee] = F.useState(""), [ne, oe] = F.useState(false), [re, se] = F.useState(false), [Z, de] = F.useState(0.6), [Ie, we] = F.useState({
@@ -95644,7 +95644,7 @@ ${r}
   }
   function h4e() {
     var _a, _b;
-    const { user: t } = Aa(), { theme: e } = Pi(), r = F.useRef(null), [a, i] = F.useState(0.92), [s, o] = F.useState(() => localStorage.getItem("synos_delivery_department") || "Pathology"), [A, l] = F.useState([]), [c, g] = F.useState(false), [d, u] = F.useState(null), [h, f] = F.useState(null), [m, x] = F.useState(null), [B, C] = F.useState(false), [E, w] = F.useState(false), [N, v] = F.useState(false), [T, M] = F.useState(false), [G, O] = F.useState(""), [U, _] = F.useState(false), [H, Y] = F.useState(null), [ee, ne] = F.useState(false), [oe, re] = F.useState(""), [se, Z] = F.useState(true), [de, Ie] = F.useState(null), we = (Oe, Qe = "success") => {
+    const { user: t } = Aa(), { theme: e } = Oi(), r = F.useRef(null), [a, i] = F.useState(0.92), [s, o] = F.useState(() => localStorage.getItem("synos_delivery_department") || "Pathology"), [A, l] = F.useState([]), [c, g] = F.useState(false), [d, u] = F.useState(null), [h, f] = F.useState(null), [m, x] = F.useState(null), [B, C] = F.useState(false), [E, w] = F.useState(false), [N, v] = F.useState(false), [T, M] = F.useState(false), [G, O] = F.useState(""), [U, _] = F.useState(false), [H, Y] = F.useState(null), [ee, ne] = F.useState(false), [oe, re] = F.useState(""), [se, Z] = F.useState(true), [de, Ie] = F.useState(null), we = (Oe, Qe = "success") => {
       Y({
         message: Oe,
         type: Qe
@@ -96597,7 +96597,7 @@ ${r}
     ], s = [
       {
         name: "Patient Directory",
-        icon: Ki,
+        icon: Pi,
         path: "/admin/patients"
       },
       {
@@ -96627,7 +96627,7 @@ ${r}
       },
       {
         name: "Staff Master (Identity)",
-        icon: Ki,
+        icon: Pi,
         path: "/admin/staff"
       },
       {
@@ -96721,7 +96721,7 @@ ${r}
                               className: "text-xs sm:text-sm font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 group-hover:text-synos-primary transition-colors",
                               children: o.title
                             }),
-                            n.jsx(Ji, {
+                            n.jsx(Ki, {
                               className: "w-3.5 h-3.5 text-zinc-400 dark:text-zinc-600"
                             })
                           ]
@@ -97046,7 +97046,7 @@ ${r}
                       m
                     ]
                   }),
-                  n.jsx(Ji, {
+                  n.jsx(Ki, {
                     className: Ce("w-3.5 h-3.5 transition-transform duration-200", E && "rotate-180")
                   })
                 ]
@@ -97235,7 +97235,7 @@ ${r}
   }
   function F4e() {
     var _a, _b, _c, _d2, _e, _f, _g, _h2, _i, _j, _k2;
-    const { theme: t } = Pi(), { user: e } = Aa(), { isConsolidated: r, effectiveBranchId: a, currentBranchName: i, isAdmin: s } = Uo(), [o, A] = F.useState(null), [l, c] = F.useState(true), g = Os(), [d, u] = F.useState(null), [h, f] = F.useState(false);
+    const { theme: t } = Oi(), { user: e } = Aa(), { isConsolidated: r, effectiveBranchId: a, currentBranchName: i, isAdmin: s } = Uo(), [o, A] = F.useState(null), [l, c] = F.useState(true), g = Os(), [d, u] = F.useState(null), [h, f] = F.useState(false);
     F.useEffect(() => {
       s && C();
     }, [
@@ -98824,7 +98824,7 @@ ${r}
     "DEXA"
   ];
   function NFe() {
-    const { theme: t } = Pi(), [e, r] = F.useState("roles"), [a, i] = F.useState(true), [s, o] = F.useState([]), [A, l] = F.useState([]), [c, g] = F.useState([]), [d, u] = F.useState([]), [h, f] = F.useState(null), [m, x] = F.useState([]), [B, C] = F.useState(false), [E, w] = F.useState(""), [N, v] = F.useState("ALL"), [T, M] = F.useState("ALL"), [G, O] = F.useState("ALL"), [U, _] = F.useState("ALL"), [H, Y] = F.useState(null), [ee, ne] = F.useState([]), [oe, re] = F.useState([]), [se, Z] = F.useState(false), [de, Ie] = F.useState(""), [we, _e] = F.useState(""), [Ve, He] = F.useState(1), [Ue, Ne] = F.useState(0);
+    const { theme: t } = Oi(), [e, r] = F.useState("roles"), [a, i] = F.useState(true), [s, o] = F.useState([]), [A, l] = F.useState([]), [c, g] = F.useState([]), [d, u] = F.useState([]), [h, f] = F.useState(null), [m, x] = F.useState([]), [B, C] = F.useState(false), [E, w] = F.useState(""), [N, v] = F.useState("ALL"), [T, M] = F.useState("ALL"), [G, O] = F.useState("ALL"), [U, _] = F.useState("ALL"), [H, Y] = F.useState(null), [ee, ne] = F.useState([]), [oe, re] = F.useState([]), [se, Z] = F.useState(false), [de, Ie] = F.useState(""), [we, _e] = F.useState(""), [Ve, He] = F.useState(1), [Ue, Ne] = F.useState(0);
     F.useEffect(() => {
       ye();
     }, []), F.useEffect(() => {
@@ -102060,7 +102060,7 @@ ${r}
         });
       };
       document.addEventListener("pointermove", Ar), document.addEventListener("pointerup", za);
-    }, [on, gr] = F.useState((a == null ? void 0 : a.name) || ""), [ka, $r] = F.useState((a == null ? void 0 : a.code) || ""), [mn, Kn] = F.useState((a == null ? void 0 : a.department) || ""), [Sr, sa] = F.useState((a == null ? void 0 : a.isProfile) || false), [Ua, Br] = F.useState((a == null ? void 0 : a.specimenTypeCode) || "SERUM"), [Nt, Kt] = F.useState((a == null ? void 0 : a.category) || "General"), [an, Dn] = F.useState((a == null ? void 0 : a.modalityId) || ""), [Mn, mr] = F.useState(false), [nr, la] = F.useState("formula"), [Hn, jr] = F.useState(""), [Ra, oa] = F.useState(""), [$a, rr] = F.useState(false), [Qi, Zi] = F.useState(""), [Xt, Vi] = F.useState(false), [Ut, En] = F.useState(""), [Vn, dr] = F.useState(""), [Gr, Jr] = F.useState(false), [Da, ta] = F.useState(""), [Sa, di] = F.useState(""), [na, Bs] = F.useState(false), [_r, Hr] = F.useState(""), [ca, Xr] = F.useState(""), [ti, be] = F.useState(false), [Pe, Xe] = F.useState(""), [At, It] = F.useState(""), [xt, Lt] = F.useState(false), [Qt, _t] = F.useState(""), [zt, Jt] = F.useState(""), [In, pn] = F.useState(""), [Un, tt] = F.useState(""), [vt, un] = F.useState(""), [Ln, fr] = F.useState(false), [wr, Bi] = F.useState(""), [ni, Fa] = F.useState(""), [ri, xa] = F.useState(""), [Pa, pi] = F.useState(false), [fa, cs] = F.useState(""), [Rr, Cr] = F.useState(""), [Mi, Es] = F.useState(""), [Xa, oo] = F.useState(false), [LA, Gl] = F.useState(""), [cA, GA] = F.useState(""), [Ul, Ms] = F.useState(""), [tA, Pl] = F.useState(false), [Po, Wd] = F.useState(""), [UA, gl] = F.useState(""), [zg, yA] = F.useState(""), [QA, wA] = F.useState(false), [Uc, H0] = F.useState(""), [Ao, Ol] = F.useState(""), [Pc, vo] = F.useState(""), [PA, Oc] = F.useState(false), [rs, Ts] = F.useState(""), [OA, Le] = F.useState(""), [Je, bt] = F.useState(""), [Ft, gn] = F.useState(false), [dn, tr] = F.useState(""), [lr, Er] = F.useState(""), [ra, Ma] = F.useState(""), [Oi, Va] = F.useState(false), [Vs, dA] = F.useState(""), [bs, No] = F.useState(""), [_A, dc] = F.useState(""), _c = (it) => {
+    }, [on, gr] = F.useState((a == null ? void 0 : a.name) || ""), [ka, $r] = F.useState((a == null ? void 0 : a.code) || ""), [mn, Kn] = F.useState((a == null ? void 0 : a.department) || ""), [Sr, sa] = F.useState((a == null ? void 0 : a.isProfile) || false), [Ua, Br] = F.useState((a == null ? void 0 : a.specimenTypeCode) || "SERUM"), [Nt, Kt] = F.useState((a == null ? void 0 : a.category) || "General"), [an, Dn] = F.useState((a == null ? void 0 : a.modalityId) || ""), [Mn, mr] = F.useState(false), [nr, la] = F.useState("formula"), [Hn, jr] = F.useState(""), [Ra, oa] = F.useState(""), [$a, rr] = F.useState(false), [Qi, Zi] = F.useState(""), [Xt, Vi] = F.useState(false), [Ut, En] = F.useState(""), [Vn, dr] = F.useState(""), [Gr, Jr] = F.useState(false), [Da, ta] = F.useState(""), [Sa, di] = F.useState(""), [na, Bs] = F.useState(false), [_r, Hr] = F.useState(""), [ca, Xr] = F.useState(""), [ti, be] = F.useState(false), [Pe, Xe] = F.useState(""), [At, It] = F.useState(""), [xt, Lt] = F.useState(false), [Qt, _t] = F.useState(""), [zt, Jt] = F.useState(""), [In, pn] = F.useState(""), [Un, tt] = F.useState(""), [vt, un] = F.useState(""), [Ln, fr] = F.useState(false), [wr, Bi] = F.useState(""), [ni, Fa] = F.useState(""), [ri, xa] = F.useState(""), [Pa, pi] = F.useState(false), [fa, cs] = F.useState(""), [Rr, Cr] = F.useState(""), [Mi, Es] = F.useState(""), [Xa, oo] = F.useState(false), [LA, Gl] = F.useState(""), [cA, GA] = F.useState(""), [Ul, Ms] = F.useState(""), [tA, Pl] = F.useState(false), [Po, Wd] = F.useState(""), [UA, gl] = F.useState(""), [zg, yA] = F.useState(""), [QA, wA] = F.useState(false), [Uc, H0] = F.useState(""), [Ao, Ol] = F.useState(""), [Pc, vo] = F.useState(""), [PA, Oc] = F.useState(false), [rs, Ts] = F.useState(""), [OA, Le] = F.useState(""), [Je, bt] = F.useState(""), [Ft, gn] = F.useState(false), [dn, tr] = F.useState(""), [lr, Er] = F.useState(""), [ra, Ma] = F.useState(""), [_i, Va] = F.useState(false), [Vs, dA] = F.useState(""), [bs, No] = F.useState(""), [_A, dc] = F.useState(""), _c = (it) => {
       i(it), localStorage.setItem("synos_selected_test_id", it.id), gr(it.name), $r(it.code), Kn(it.department), sa(it.isProfile), Br(it.specimenTypeCode || "SERUM"), Kt(it.category || "General"), Dn(it.modalityId || ""), cn(false), mr(false), !it.isProfile && wt === "profile-builder" && ln("parameters");
     }, pd = () => {
       const it = ne.find((Sn) => Sn.name === mn), Gt = it ? it.macroDepartment === "Radiology" : mn === "Radiology" || mn === "RAD";
@@ -102313,9 +102313,9 @@ IMPRESSION:`,
         useChild: QA || PA,
         childMin: QA ? Uc !== "" ? Number(Uc) : null : PA && rs !== "" ? Number(rs) : null,
         childMax: QA ? Ao !== "" ? Number(Ao) : null : PA && OA !== "" ? Number(OA) : null,
-        useAdult: Ft || Oi,
-        adultMin: Ft ? dn !== "" ? Number(dn) : null : Oi && Vs !== "" ? Number(Vs) : null,
-        adultMax: Ft ? lr !== "" ? Number(lr) : null : Oi && bs !== "" ? Number(bs) : null,
+        useAdult: Ft || _i,
+        adultMin: Ft ? dn !== "" ? Number(dn) : null : _i && Vs !== "" ? Number(Vs) : null,
+        adultMax: Ft ? lr !== "" ? Number(lr) : null : _i && bs !== "" ? Number(bs) : null,
         useNewbornMale: Ln,
         newbornMaleMin: Ln && wr !== "" ? Number(wr) : null,
         newbornMaleMax: Ln && ni !== "" ? Number(ni) : null,
@@ -102344,15 +102344,15 @@ IMPRESSION:`,
         adultMaleMin: Ft && dn !== "" ? Number(dn) : null,
         adultMaleMax: Ft && lr !== "" ? Number(lr) : null,
         adultMaleText: Ft ? ra : null,
-        useAdultFemale: Oi,
-        adultFemaleMin: Oi && Vs !== "" ? Number(Vs) : null,
-        adultFemaleMax: Oi && bs !== "" ? Number(bs) : null,
-        adultFemaleText: Oi ? _A : null,
+        useAdultFemale: _i,
+        adultFemaleMin: _i && Vs !== "" ? Number(Vs) : null,
+        adultFemaleMax: _i && bs !== "" ? Number(bs) : null,
+        adultFemaleText: _i ? _A : null,
         genderRanges: {
           maleMin: Ft && Number(dn) || 0,
           maleMax: Ft && Number(lr) || 0,
-          femaleMin: Oi && Number(Vs) || 0,
-          femaleMax: Oi && Number(bs) || 0
+          femaleMin: _i && Number(Vs) || 0,
+          femaleMax: _i && Number(bs) || 0
         }
       } : Jn), Gt = {
         ...a,
@@ -105431,7 +105431,7 @@ Would you like to switch to "${jn.childTestName}" now?`) && _c(ya) : alert(`Chil
                         setMaleMax: Er,
                         maleText: ra,
                         setMaleText: Ma,
-                        useFemale: Oi,
+                        useFemale: _i,
                         setUseFemale: Va,
                         femaleMin: Vs,
                         setFemaleMin: dA,
@@ -110110,7 +110110,7 @@ Would you like to switch to "${jn.childTestName}" now?`) && _c(ya) : alert(`Chil
                           title: a ? "Collapse Guide" : "Expand Guide",
                           children: a ? n.jsx(fv, {
                             className: "w-4 h-4"
-                          }) : n.jsx(Ji, {
+                          }) : n.jsx(Ki, {
                             className: "w-4 h-4"
                           })
                         })
@@ -112716,7 +112716,7 @@ Would you like to switch to "${jn.childTestName}" now?`) && _c(ya) : alert(`Chil
                                               ")"
                                             ]
                                           }),
-                                          Ne ? n.jsx(Ji, {
+                                          Ne ? n.jsx(Ki, {
                                             size: 12
                                           }) : n.jsx(Ps, {
                                             size: 12
@@ -113722,7 +113722,7 @@ Would you like to switch to "${jn.childTestName}" now?`) && _c(ya) : alert(`Chil
   }
   function UFe() {
     var _a;
-    const { theme: t, fontSize: e, setFontSize: r } = Pi(), [a, i] = CW(), s = a.get("tab") || "settings", [o, A] = F.useState(s), [l, c] = F.useState(true), [g, d] = F.useState(false), [u, h] = F.useState(false), [f, m] = F.useState(null), [x, B] = F.useState(null), [C, E] = F.useState([]), [w, N] = F.useState(false), [v, T] = F.useState(null), [M, G] = F.useState(false), [O, U] = F.useState(false), [_, H] = F.useState("operational"), [Y, ee] = F.useState(""), [ne, oe] = F.useState(""), [re, se] = F.useState(false), [Z, de] = F.useState(""), [Ie, we] = F.useState(""), [_e, Ve] = F.useState(false), [He, Ue] = F.useState([]), [Ne, ye] = F.useState(false), [ce, W] = F.useState(""), [le, te] = F.useState(""), [me, xe] = F.useState("Medium"), [Ae, Fe] = F.useState("General"), [Ee, Oe] = F.useState(null), [Qe, fe] = F.useState(false), [De, Me] = F.useState(false), [ke, $e] = F.useState(null), [rt, ze] = F.useState(null), [jt, Tt] = F.useState(false), [Dt, ht] = F.useState(JSON.stringify({
+    const { theme: t, fontSize: e, setFontSize: r } = Oi(), [a, i] = CW(), s = a.get("tab") || "settings", [o, A] = F.useState(s), [l, c] = F.useState(true), [g, d] = F.useState(false), [u, h] = F.useState(false), [f, m] = F.useState(null), [x, B] = F.useState(null), [C, E] = F.useState([]), [w, N] = F.useState(false), [v, T] = F.useState(null), [M, G] = F.useState(false), [O, U] = F.useState(false), [_, H] = F.useState("operational"), [Y, ee] = F.useState(""), [ne, oe] = F.useState(""), [re, se] = F.useState(false), [Z, de] = F.useState(""), [Ie, we] = F.useState(""), [_e, Ve] = F.useState(false), [He, Ue] = F.useState([]), [Ne, ye] = F.useState(false), [ce, W] = F.useState(""), [le, te] = F.useState(""), [me, xe] = F.useState("Medium"), [Ae, Fe] = F.useState("General"), [Ee, Oe] = F.useState(null), [Qe, fe] = F.useState(false), [De, Me] = F.useState(false), [ke, $e] = F.useState(null), [rt, ze] = F.useState(null), [jt, Tt] = F.useState(false), [Dt, ht] = F.useState(JSON.stringify({
       TargetArchitecture: "x64",
       RequiredDiskSpaceGB: 10,
       DatabaseVersion: "LocalDB v15.0"
@@ -124202,7 +124202,7 @@ Inventory Dept.`, T = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
       {
         name: "Referral Partners",
         path: "/finance/referrals",
-        icon: Ki,
+        icon: Pi,
         subItems: [
           {
             name: "Commissions",
@@ -125171,7 +125171,7 @@ Inventory Dept.`, T = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
               children: [
                 n.jsx("div", {
                   className: "w-6 h-6 sm:w-7 sm:h-7 rounded-[7px] bg-[#FAF5FF] text-[#A855F7] dark:bg-purple-950/40 dark:text-purple-400 border border-purple-100/90 dark:border-purple-800/40 flex items-center justify-center shrink-0 shadow-2xs",
-                  children: n.jsx(Ki, {
+                  children: n.jsx(Pi, {
                     size: 14,
                     strokeWidth: 2.3
                   })
@@ -126214,7 +126214,7 @@ Inventory Dept.`, T = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
                     }),
                     n.jsx("div", {
                       className: "w-7 h-7 rounded-[8px] bg-[#FAF5FF] text-[#7C3AED] dark:bg-purple-950/40 dark:text-purple-400 border border-purple-100/90 dark:border-purple-800/40 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform",
-                      children: n.jsx(Ki, {
+                      children: n.jsx(Pi, {
                         size: 14,
                         strokeWidth: 2.4
                       })
@@ -127321,7 +127321,7 @@ Inventory Dept.`, T = `https://wa.me/${((_b2 = r.supplier) == null ? void 0 : _b
         description: "Dr. K. Sneha (Pathologist) requested 1-day casual leave for tomorrow (Personal).",
         actionLabel: "Review Leave",
         route: "/finance/workforce/attendance",
-        icon: Ki,
+        icon: Pi,
         iconColor: "text-purple-500",
         iconBg: "bg-purple-500/10",
         badgeStyle: "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/25"
@@ -144202,7 +144202,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                   n.jsx("span", {
                     children: m ? "Show Less" : `Load More (${M.length - 6} more)`
                   }),
-                  n.jsx(Ji, {
+                  n.jsx(Ki, {
                     size: 14,
                     className: Ce("text-slate-400 group-hover:text-synos-primary transition-transform duration-200", m && "rotate-180")
                   })
@@ -145064,7 +145064,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                           className: "type-label",
                           children: "Total Registered Doctors"
                         }),
-                        n.jsx(Ki, {
+                        n.jsx(Pi, {
                           className: "w-4 h-4 text-zinc-500"
                         })
                       ]
@@ -146305,7 +146305,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
                         className: "text-[10px] font-extrabold uppercase tracking-wider",
                         children: "Patients"
                       }),
-                      n.jsx(Ki, {
+                      n.jsx(Pi, {
                         size: 14,
                         className: "text-blue-500"
                       })
@@ -148978,7 +148978,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
                     M.stopPropagation(), r();
                   },
                   className: "p-1.5 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors shrink-0 mt-0.5 sm:mt-0",
-                  children: e ? n.jsx(Ji, {
+                  children: e ? n.jsx(Ki, {
                     size: 18
                   }) : n.jsx(fv, {
                     size: 18
@@ -149469,7 +149469,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
                     v.stopPropagation(), r();
                   },
                   className: "p-1.5 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors shrink-0 mt-0.5 sm:mt-0",
-                  children: e ? n.jsx(Ji, {
+                  children: e ? n.jsx(Ki, {
                     size: 18
                   }) : n.jsx(fv, {
                     size: 18
@@ -152486,7 +152486,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
                   n.jsx("span", {
                     children: w ? "Show Less" : `Load More (${Y.length - 6} more)`
                   }),
-                  n.jsx(Ji, {
+                  n.jsx(Ki, {
                     size: 14,
                     className: Ce("text-slate-400 group-hover:text-synos-primary transition-transform duration-200", w && "rotate-180")
                   })
@@ -152879,12 +152879,12 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
       {
         id: "registry",
         label: "Doctor Registry",
-        icon: Ki
+        icon: Pi
       },
       {
         id: "rmp",
         label: "RMP Partners",
-        icon: Ki
+        icon: Pi
       },
       {
         id: "payouts",
@@ -153818,7 +153818,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
     });
   };
   function pT({ forcedTab: t, hideHeader: e = false }) {
-    const { tab: r = "overview" } = G0(), a = t || r, i = Os(), { theme: s } = Pi(), o = s === "dark", { presetRange: A, customDates: l, isConsolidated: c, effectiveBranchId: g, isAdmin: d } = Uo(), [u, h] = F.useState([]), [f, m] = F.useState([]), [x, B] = F.useState([]), [C, E] = F.useState(true), [w, N] = F.useState(false), [v, T] = F.useState(""), [M, G] = F.useState(""), [O, U] = F.useState([]), [_, H] = F.useState(false), [Y, ee] = F.useState(null), [ne, oe] = F.useState(false), [re, se] = F.useState(null), [Z, de] = F.useState(false), [Ie, we] = F.useState(false), [_e, Ve] = F.useState(false), [He, Ue] = F.useState(null), [Ne, ye] = F.useState(""), [ce, W] = F.useState("ALL"), [le, te] = F.useState("ALL"), [me, xe] = F.useState("ALL"), [Ae, Fe] = F.useState(1), [Ee, Oe] = F.useState(15), [Qe, fe] = F.useState(null), [De, Me] = F.useState(""), [ke, $e] = F.useState(false), rt = [
+    const { tab: r = "overview" } = G0(), a = t || r, i = Os(), { theme: s } = Oi(), o = s === "dark", { presetRange: A, customDates: l, isConsolidated: c, effectiveBranchId: g, isAdmin: d } = Uo(), [u, h] = F.useState([]), [f, m] = F.useState([]), [x, B] = F.useState([]), [C, E] = F.useState(true), [w, N] = F.useState(false), [v, T] = F.useState(""), [M, G] = F.useState(""), [O, U] = F.useState([]), [_, H] = F.useState(false), [Y, ee] = F.useState(null), [ne, oe] = F.useState(false), [re, se] = F.useState(null), [Z, de] = F.useState(false), [Ie, we] = F.useState(false), [_e, Ve] = F.useState(false), [He, Ue] = F.useState(null), [Ne, ye] = F.useState(""), [ce, W] = F.useState("ALL"), [le, te] = F.useState("ALL"), [me, xe] = F.useState("ALL"), [Ae, Fe] = F.useState(1), [Ee, Oe] = F.useState(15), [Qe, fe] = F.useState(null), [De, Me] = F.useState(""), [ke, $e] = F.useState(false), rt = [
       {
         id: "overview",
         label: "Overview",
@@ -156696,7 +156696,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
       s,
       r
     ]);
-    const { theme: o } = Pi(), A = o === "dark", { presetRange: l, customDates: c, isConsolidated: g, effectiveBranchId: d, isAdmin: u } = Uo(), [h, f] = F.useState([]), [m, x] = F.useState([]), [B, C] = F.useState(true), [E, w] = F.useState(false), [N, v] = F.useState(""), [T, M] = F.useState("ALL"), [G, O] = F.useState(false), [U, _] = F.useState(null), [H, Y] = F.useState(false), ee = [
+    const { theme: o } = Oi(), A = o === "dark", { presetRange: l, customDates: c, isConsolidated: g, effectiveBranchId: d, isAdmin: u } = Uo(), [h, f] = F.useState([]), [m, x] = F.useState([]), [B, C] = F.useState(true), [E, w] = F.useState(false), [N, v] = F.useState(""), [T, M] = F.useState("ALL"), [G, O] = F.useState(false), [U, _] = F.useState(null), [H, Y] = F.useState(false), ee = [
       {
         id: "overview",
         label: "Overview",
@@ -159218,7 +159218,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
       children: [
         n.jsx("div", {
           className: "w-10 h-10 rounded-2xl bg-slate-100 dark:bg-zinc-800 text-slate-400 flex items-center justify-center mb-2",
-          children: n.jsx(Ki, {
+          children: n.jsx(Pi, {
             size: 20
           })
         }),
@@ -159447,7 +159447,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
   }
   function VY() {
     var _a;
-    const { tab: t = "intelligence" } = G0(), e = Os(), { theme: r } = Pi(), { user: a, activeOversightBranchId: i } = Aa(), s = (a == null ? void 0 : a.role) === "Admin" || (a == null ? void 0 : a.role) === "SystemAdmin", { presetRange: o, customDates: A, isConsolidated: l, setIsConsolidated: c, effectiveBranchId: g, currentBranchName: d } = Uo(), u = t === "reasons" || t === "history" || t === "staff" || t === "codes" ? t : "intelligence", h = F.useRef({}), [f, m] = F.useState(WB), [x, B] = F.useState(false), [C, E] = F.useState([]), [w, N] = F.useState(true), [v, T] = F.useState(""), [M, G] = F.useState("ALL"), [O, U] = F.useState(false), [_, H] = F.useState(null), [Y, ee] = F.useState([]), [ne, oe] = F.useState(false), [re, se] = F.useState(""), [Z, de] = F.useState("ALL"), [Ie, we] = F.useState("ALL"), [_e, Ve] = F.useState("ALL"), [He, Ue] = F.useState("HIGHEST_DISCOUNT"), [Ne, ye] = F.useState(false), [ce, W] = F.useState(null), [le, te] = F.useState([]), [me, xe] = F.useState(false), [Ae, Fe] = F.useState("All"), [Ee, Oe] = F.useState(""), [Qe, fe] = F.useState(false), De = (Bt) => {
+    const { tab: t = "intelligence" } = G0(), e = Os(), { theme: r } = Oi(), { user: a, activeOversightBranchId: i } = Aa(), s = (a == null ? void 0 : a.role) === "Admin" || (a == null ? void 0 : a.role) === "SystemAdmin", { presetRange: o, customDates: A, isConsolidated: l, setIsConsolidated: c, effectiveBranchId: g, currentBranchName: d } = Uo(), u = t === "reasons" || t === "history" || t === "staff" || t === "codes" ? t : "intelligence", h = F.useRef({}), [f, m] = F.useState(WB), [x, B] = F.useState(false), [C, E] = F.useState([]), [w, N] = F.useState(true), [v, T] = F.useState(""), [M, G] = F.useState("ALL"), [O, U] = F.useState(false), [_, H] = F.useState(null), [Y, ee] = F.useState([]), [ne, oe] = F.useState(false), [re, se] = F.useState(""), [Z, de] = F.useState("ALL"), [Ie, we] = F.useState("ALL"), [_e, Ve] = F.useState("ALL"), [He, Ue] = F.useState("HIGHEST_DISCOUNT"), [Ne, ye] = F.useState(false), [ce, W] = F.useState(null), [le, te] = F.useState([]), [me, xe] = F.useState(false), [Ae, Fe] = F.useState("All"), [Ee, Oe] = F.useState(""), [Qe, fe] = F.useState(false), De = (Bt) => {
       Bt && (Oe(Bt), e("/finance/discounts/history"));
     }, Me = [
       {
@@ -159468,7 +159468,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
       {
         id: "staff",
         label: "Staff Summary",
-        icon: Ki
+        icon: Pi
       },
       {
         id: "codes",
@@ -160575,7 +160575,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
                       children: [
                         n.jsx("div", {
                           className: "w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/80 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs",
-                          children: n.jsx(Ki, {
+                          children: n.jsx(Pi, {
                             size: 16,
                             strokeWidth: 2.4
                           })
@@ -161741,7 +161741,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
                         }),
                         n.jsx("div", {
                           className: "w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0",
-                          children: n.jsx(Ki, {
+                          children: n.jsx(Pi, {
                             size: 17
                           })
                         })
@@ -162001,7 +162001,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
                         }),
                         n.jsx("div", {
                           className: "w-9 h-9 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0",
-                          children: n.jsx(Ki, {
+                          children: n.jsx(Pi, {
                             size: 17
                           })
                         })
@@ -162144,7 +162144,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
                 }) : wt.length === 0 ? n.jsxs("div", {
                   className: "flex flex-col items-center justify-center p-16 gap-2 text-zinc-400",
                   children: [
-                    n.jsx(Ki, {
+                    n.jsx(Pi, {
                       className: "w-8 h-8 opacity-40 mb-1"
                     }),
                     n.jsx("p", {
@@ -164466,7 +164466,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
                   children: [
                     n.jsx("div", {
                       className: "w-9 h-9 rounded-xl bg-[#E0F2FE] text-[#0284C7] dark:bg-sky-950/40 dark:text-sky-400 border border-[#BAE6FD] dark:border-sky-800/60 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-110 transition-transform",
-                      children: n.jsx(Ki, {
+                      children: n.jsx(Pi, {
                         size: 18,
                         strokeWidth: 2.4
                       })
@@ -165253,7 +165253,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
                       onClick: () => i("/finance/workforce/attendance"),
                       className: "w-full flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white/80 dark:bg-zinc-800/80 border border-slate-200/80 dark:border-zinc-700/80 text-xs font-bold text-slate-800 dark:text-zinc-200 hover:bg-synos-primary hover:text-white hover:border-synos-primary transition-all cursor-pointer shadow-2xs group",
                       children: [
-                        n.jsx(Ki, {
+                        n.jsx(Pi, {
                           size: 14,
                           className: "text-[#9333EA] group-hover:text-white transition-colors"
                         }),
@@ -166186,7 +166186,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
                       children: [
                         n.jsx("div", {
                           className: "w-6 h-6 rounded-[7px] bg-[#FAF5FF] text-[#9333EA] dark:bg-purple-950/40 dark:text-purple-400 border border-[#F3E8FF] flex items-center justify-center shrink-0 shadow-2xs",
-                          children: n.jsx(Users, {
+                          children: n.jsx(Pi, {
                             size: 13,
                             strokeWidth: 2.3
                           })
@@ -166397,7 +166397,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
                       n.jsx("span", {
                         children: c ? "Show Less" : `Load More (${M.length - 6} more)`
                       }),
-                      n.jsx(Ji, {
+                      n.jsx(Ki, {
                         size: 14,
                         className: Ce("text-slate-400 group-hover:text-synos-primary transition-transform duration-200", c && "rotate-180")
                       })
@@ -167062,7 +167062,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
             n.jsx(Ak, {
               label: "Total Headcount",
               value: i.headcount,
-              icon: Ki,
+              icon: Pi,
               trend: "+2 this month",
               color: "primary"
             }),
@@ -169740,7 +169740,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
               children: [
                 n.jsx("div", {
                   className: "p-3 rounded-xl bg-synos-primary/10 text-synos-primary",
-                  children: n.jsx(Ki, {
+                  children: n.jsx(Pi, {
                     className: "w-5 h-5"
                   })
                 }),
@@ -171630,7 +171630,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
                   children: [
                     n.jsx("div", {
                       className: Ce("w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors", a === "operational" ? "bg-[#E0F2FE] text-[#0284C7] dark:bg-sky-950/40 dark:text-sky-400" : "bg-slate-300/50 dark:bg-zinc-700/50 text-slate-500"),
-                      children: n.jsx(Ki, {
+                      children: n.jsx(Pi, {
                         size: 15
                       })
                     }),
@@ -171731,7 +171731,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
       {
         id: "staff",
         label: "Staff Registry",
-        icon: Ki
+        icon: Pi
       },
       {
         id: "identity",
@@ -172310,7 +172310,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
               children: [
                 n.jsx("div", {
                   className: "p-2.5 bg-synos-primary/10 text-synos-primary rounded-xl",
-                  children: n.jsx(Ki, {
+                  children: n.jsx(Pi, {
                     size: 24
                   })
                 }),
@@ -173345,7 +173345,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
     return new Date(t.getTime() - e * 60 * 1e3).toISOString().split("T")[0];
   };
   function q8e() {
-    const { theme: t } = Pi(), e = F.useRef(null), [r, a] = F.useState(0.92), [i, s] = F.useState(""), [o, A] = F.useState(""), [l, c] = F.useState(""), [g, d] = F.useState([
+    const { theme: t } = Oi(), e = F.useRef(null), [r, a] = F.useState(0.92), [i, s] = F.useState(""), [o, A] = F.useState(""), [l, c] = F.useState(""), [g, d] = F.useState([
       "Signed",
       "ManualVerified",
       "Delivered"
@@ -174096,7 +174096,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
     });
   }
   function $Y() {
-    const { theme: t, isDark: e } = Pi(), r = Os(), a = Lc(), [i, s] = F.useState(""), [o, A] = F.useState([]), [l, c] = F.useState(true), [g, d] = F.useState(null), [u, h] = F.useState(null), [f, m] = F.useState(10), [x, B] = F.useState(1);
+    const { theme: t, isDark: e } = Oi(), r = Os(), a = Lc(), [i, s] = F.useState(""), [o, A] = F.useState([]), [l, c] = F.useState(true), [g, d] = F.useState(null), [u, h] = F.useState(null), [f, m] = F.useState(10), [x, B] = F.useState(1);
     F.useEffect(() => {
       const N = setTimeout(() => {
         C(i, x, f, u);
@@ -174139,7 +174139,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
                 children: [
                   n.jsx("div", {
                     className: "w-9 h-9 rounded-xl bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold border border-blue-200 dark:border-blue-800 shadow-2xs",
-                    children: n.jsx(Ki, {
+                    children: n.jsx(Pi, {
                       className: "w-5 h-5"
                     })
                   }),
@@ -174194,7 +174194,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
                   },
                   className: Ce("px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs", u === null ? "bg-blue-600 text-white border border-blue-600 shadow-xs font-extrabold" : "bg-white dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 border border-slate-300 dark:border-zinc-700 hover:border-slate-400"),
                   children: [
-                    n.jsx(Ki, {
+                    n.jsx(Pi, {
                       className: "w-3.5 h-3.5"
                     }),
                     n.jsx("span", {
@@ -174234,7 +174234,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
                 n.jsxs("div", {
                   className: "flex items-center gap-2",
                   children: [
-                    n.jsx(Ki, {
+                    n.jsx(Pi, {
                       className: "w-4 h-4 text-blue-600"
                     }),
                     n.jsxs("h3", {
@@ -174316,7 +174316,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
                         colSpan: "6",
                         className: "px-6 py-16 text-center text-xs text-slate-500 dark:text-zinc-400 space-y-2",
                         children: [
-                          n.jsx(Ki, {
+                          n.jsx(Pi, {
                             className: "w-8 h-8 text-slate-300 dark:text-zinc-600 mx-auto"
                           }),
                           n.jsx("p", {
@@ -174636,7 +174636,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
   }
   function XY() {
     var _a, _b;
-    const { id: t } = G0(), e = Os(), r = Lc(), { theme: a } = Pi(), s = new URLSearchParams(r.search).get("tab") || "profile", [o, A] = F.useState(s), [l, c] = F.useState(false), [g, d] = F.useState(null), [u, h] = F.useState(null), [f, m] = F.useState(null), [x, B] = F.useState([]), [C, E] = F.useState(false), [w, N] = F.useState({}), [v, T] = F.useState(null), [M, G] = F.useState(false), [O, U] = F.useState(false), [_, H] = F.useState(null), [Y, ee] = F.useState({
+    const { id: t } = G0(), e = Os(), r = Lc(), { theme: a } = Oi(), s = new URLSearchParams(r.search).get("tab") || "profile", [o, A] = F.useState(s), [l, c] = F.useState(false), [g, d] = F.useState(null), [u, h] = F.useState(null), [f, m] = F.useState(null), [x, B] = F.useState([]), [C, E] = F.useState(false), [w, N] = F.useState({}), [v, T] = F.useState(null), [M, G] = F.useState(false), [O, U] = F.useState(false), [_, H] = F.useState(null), [Y, ee] = F.useState({
       discountType: "Percentage",
       discountValue: 30,
       validityDays: 365,
@@ -263955,7 +263955,7 @@ Input: ` + this.err.str);
             drawEllipse: () => dge,
             drawEllipseByCoordinates: () => Yj,
             drawHandle: () => yh,
-            drawHandles: () => _i,
+            drawHandles: () => Hi,
             drawHeight: () => iP,
             drawLine: () => ui,
             drawLinkedTextBox: () => kA,
@@ -265131,7 +265131,7 @@ Input: ` + this.err.str);
           function Ma(j) {
             return Math.abs(j[0]) + Math.abs(j[1]) > Ft;
           }
-          function Oi() {
+          function _i() {
             dn.isClickEvent = false;
           }
           function Va() {
@@ -265199,7 +265199,7 @@ Input: ` + this.err.str);
             if (tr.doubleClickTimeout) return j.buttons === tr.mouseDownEvent.buttons ? void 0 : (tr.mouseDownEvent = j, void Va());
             tr.doubleClickTimeout = setTimeout(Va, j.buttons === 1 ? 400 : 150), tr.mouseDownEvent = j, tr.ignoreDoubleClick = false, dn.element = j.currentTarget, dn.mouseButton = j.buttons;
             const I = (0, ue.getEnabledElement)(dn.element), { renderingEngineId: b, viewportId: Q } = I;
-            dn.renderingEngineId = b, dn.viewportId = Q, dn.preventClickTimeout = setTimeout(Oi, dn.clickDelay), dn.element.removeEventListener("mousemove", rs);
+            dn.renderingEngineId = b, dn.viewportId = Q, dn.preventClickTimeout = setTimeout(_i, dn.clickDelay), dn.element.removeEventListener("mousemove", rs);
             const k = vo(j, dn.element);
             dn.startPoints = bs(k), dn.lastPoints = bs(k), document.addEventListener("mouseup", Er), document.addEventListener("mousemove", lr);
           };
@@ -271511,7 +271511,7 @@ Input: ` + this.err.str);
               const Se = document.createElementNS("http://www.w3.org/2000/svg", q);
               xc(pe, Se), j.appendNode(Se, ge);
             }
-          }, _i = function(j, I, b, Q) {
+          }, Hi = function(j, I, b, Q) {
             let k = arguments.length > 4 && arguments[4] !== void 0 ? arguments[4] : {};
             Q.forEach(((S, R) => {
               yh(j, I, b, S, k, R);
@@ -272494,7 +272494,7 @@ Input: ` + this.err.str);
                   if (!an(ge)) continue;
                   Cn(ie) || this.editData || Se === null || (mt = [
                     Re[Se]
-                  ]), mt && _i(b, ge, "0", mt, {
+                  ]), mt && Hi(b, ge, "0", mt, {
                     color: Ge
                   }), jo(b, ge, "0", Re, {
                     color: Ge,
@@ -272723,7 +272723,7 @@ Input: ` + this.err.str);
                   let Ke;
                   Gr(q, z), an($) && (Cn(q) || this.editData || pe === null || (Ke = [
                     ve[pe]
-                  ]), Ke && _i(b, $, "0", Ke, {
+                  ]), Ke && Hi(b, $, "0", Ke, {
                     color: Ge
                   }), qc(b, $, "0", ve[0], ve[3], {
                     color: Ge,
@@ -272890,7 +272890,7 @@ Input: ` + this.err.str);
                   if (!an(V)) continue;
                   Cn(J) || this.editData || pe === null || !yt || (Ot = [
                     ve[pe]
-                  ]), Ot && _i(b, V, "0", Ot, {
+                  ]), Ot && Hi(b, V, "0", Ot, {
                     color: Ge
                   });
                   let Mt = Re;
@@ -273707,7 +273707,7 @@ Input: ` + this.err.str);
                   if (!an(ge)) continue;
                   Cn(ie) || this.editData || Se === null || (ct = [
                     Re[Se]
-                  ]), ct && _i(b, ge, "0", ct, {
+                  ]), ct && Hi(b, ge, "0", ct, {
                     color: Ge
                   });
                   const mt = "".concat(ge, "-line-1"), Et = "".concat(ge, "-line-2");
@@ -276570,14 +276570,14 @@ Input: ` + this.err.str);
                 R[0],
                 R[R.length - 1]
               ];
-              z === 0 ? V.shift() : z === 1 && V.pop(), _i(I, b.annotationUID, J, V, {
+              z === 0 ? V.shift() : z === 1 && V.pop(), Hi(I, b.annotationUID, J, V, {
                 color: S.color,
                 handleRadius: P
               });
             }
             if (z !== null) {
               const J = R[z === 0 ? 0 : R.length - 1];
-              _i(I, b.annotationUID, "1", [
+              Hi(I, b.annotationUID, "1", [
                 J
               ], {
                 color: S.color
@@ -276616,7 +276616,7 @@ Input: ` + this.err.str);
               Oce(R, z, this.configuration.closeContourProximity) ? fu(I, b.annotationUID, "2", [
                 z,
                 R
-              ], Q) : _i(I, b.annotationUID, "0", [
+              ], Q) : Hi(I, b.annotationUID, "0", [
                 R
               ], {
                 color: Q.color,
@@ -278479,7 +278479,7 @@ Input: ` + this.err.str);
               return "".concat(I, "-").concat(ue.utilities.getRuntimeId(mQ));
             }
           }
-          const Hi = {
+          const Yi = {
             iconContent: "",
             iconSize: 16,
             viewBox: {
@@ -278503,7 +278503,7 @@ Input: ` + this.err.str);
 <rect fill="{{color}}" x="80.19" y="25.03" width="47.14" height="15.85"/>
 <rect fill="{{color}}" x="95.84" y="9.38" width="15.85" height="47.14"/>
 `, iN = '<path fill="{{color}}" d="M82.89,10a12.09,12.09,0,0,0-16.8-2.5l-27.5,20.4-8.5-6.3a2.93,2.93,0,0,1-1.1-3,14.66,14.66,0,0,0,.1-6.6,14.08,14.08,0,1,0-6.5,15.2,2.87,2.87,0,0,1,3.2.2l8.2,6.1-8.2,6.1a2.87,2.87,0,0,1-3.2.2,14.16,14.16,0,1,0,6.7,14.4,14,14,0,0,0-.3-5.8,2.93,2.93,0,0,1,1.1-3l8.5-6.3,27.5,20.4A11.91,11.91,0,0,0,82.89,57l-31.7-23.5ZM15.29,21a5.9,5.9,0,1,1,5.9-5.9A5.91,5.91,0,0,1,15.29,21Zm0,36.8a5.9,5.9,0,1,1,5.9-5.9A5.91,5.91,0,0,1,15.29,57.77Zm28.3-21.5a2.8,2.8,0,1,1,2.8-2.8A2.8,2.8,0,0,1,43.59,36.27Z" transform="translate(-1.17 -0.96)"/>', GB = '<path fill="{{color}}" d="M8.86,2.25V66.08H72.69V2.25H8.86ZM65.28,58.67h-49v-49h49v49Z" transform="translate(-8.86 -2.25)"/>', sN = '<path fill="{{color}}" d="M40.77,2.25A31.92,31.92,0,1,0,72.69,34.16,31.92,31.92,0,0,0,40.77,2.25Zm0,57.63A25.71,25.71,0,1,1,66.48,34.16,25.71,25.71,0,0,1,40.77,59.87Z" transform="translate(-8.86 -2.25)"/>', oN = {
-            Angle: Yi(Hi, {
+            Angle: Ji(Yi, {
               iconContent: `<path fill="{{color}}" d="M1203 544q0 13-10 23l-393 393 393 393q10 10 10 23t-10 23l-50
     50q-10 10-23 10t-23-10l-466-466q-10-10-10-23t10-23l466-466q10-10 23-10t23
     10l50 50q10 10 10 23z" />`,
@@ -278512,7 +278512,7 @@ Input: ` + this.err.str);
                 y: 1792
               }
             }),
-            ArrowAnnotate: Yi(Hi, {
+            ArrowAnnotate: Ji(Yi, {
               iconContent: `<g id="arrowAnnotate-group" fill="none" stroke-width="1" stroke="{{color}}" stroke-linecap="round" stroke-linejoin="round">
     <path id="arrowAnnotate-arrow" d="M23,7 l-15,15 M7,17 l0,6 6,0" stroke-width="2" />
   </g>`,
@@ -278521,7 +278521,7 @@ Input: ` + this.err.str);
                 y: 24
               }
             }),
-            Bidirectional: Yi(Hi, {
+            Bidirectional: Ji(Yi, {
               iconContent: `<g fill="{{color}}" stroke-width="3" stroke="{{color}}">
     <path d="M27.63 3.21L3.12 28.81"></path>
     <path d="M27.63 15.75L15.27 4.43"></path>
@@ -278535,7 +278535,7 @@ Input: ` + this.err.str);
                 y: 48
               }
             }),
-            CobbAngle: Yi(Hi, {
+            CobbAngle: Ji(Yi, {
               iconContent: `<g stroke="{{color}}" stroke-width="3">
     <path d="M28.59 2.34L3.82 12.32"></path>
     <path d="M28.59 29.66L3.82 19.68"></path>
@@ -278549,14 +278549,14 @@ Input: ` + this.err.str);
                 y: 32
               }
             }),
-            CircleROI: Yi(Hi, {
+            CircleROI: Ji(Yi, {
               iconContent: '<circle stroke="{{color}}" fill="none" stroke-width="3" cx="16" cy="16" r="14" />',
               viewBox: {
                 x: 32,
                 y: 32
               }
             }),
-            EllipticalROI: Yi(Hi, {
+            EllipticalROI: Ji(Yi, {
               iconContent: `<path stroke="{{color}}" fill="none" stroke-width="3" d="M30.74 15.76C30.74 20.99 24.14 25.23 16
     25.23C7.86 25.23 1.26 20.99 1.26 15.76C1.26 10.54 7.86 6.3 16 6.3C24.14
     6.3 30.74 10.54 30.74 15.76Z" />`,
@@ -278565,7 +278565,7 @@ Input: ` + this.err.str);
                 y: 32
               }
             }),
-            FreehandROI: Yi(Hi, {
+            FreehandROI: Ji(Yi, {
               iconContent: `<g fill="{{color}}" stroke="{{color}}" stroke-width="2">
     <ellipse ry="1" rx="1" id="svg_3" cy="4.240343" cx="14.306499"/>
     <line id="svg_4" y2="3.58462" x2="12.242186" y1="3.997482" x1="13.432202"/>
@@ -278603,7 +278603,7 @@ Input: ` + this.err.str);
                 y: 18
               }
             }),
-            FreehandROISculptor: Yi(Hi, {
+            FreehandROISculptor: Ji(Yi, {
               iconContent: `<g id="icon-freehand-sculpt" fill="none" stroke-width="1.5" stroke="{{color}}" stroke-linecap="round" stroke-linejoin="round">
     <line id="svg_1" y2="2.559367" x2="10.184807" y1="4.467781" x1="8.81711"/>
     <line id="svg_4" y2="1.493836" x2="11.727442" y1="2.766112" x1="10.089386"/>
@@ -278643,7 +278643,7 @@ Input: ` + this.err.str);
                 y: 18
               }
             }),
-            Length: Yi(Hi, {
+            Length: Ji(Yi, {
               iconContent: `<g id="length-group" fill="none" stroke-width="1" stroke="{{color}}" stroke-linecap="round" stroke-linejoin="round">
     <path id="length-dashes" d="m22.5,6 -16.5,16.5" stroke-width="3" stroke-dasharray="0.6666,5" />
   </g>`,
@@ -278652,14 +278652,14 @@ Input: ` + this.err.str);
                 y: 24
               }
             }),
-            Height: Yi(Hi, {
+            Height: Ji(Yi, {
               iconContent: '<path d="m 6 22 l 8.5 0 v -16 h 8" stroke-width="3" fill="none" stroke="{{color}}" />',
               viewBox: {
                 x: 24,
                 y: 24
               }
             }),
-            Probe: Yi(Hi, {
+            Probe: Ji(Yi, {
               iconContent: `<path fill="{{color}}" d="M1152 896q0 106-75 181t-181 75-181-75-75-181 75-181 181-75 181 75
     75 181zm-256-544q-148 0-273 73t-198 198-73 273 73 273 198 198 273 73 273-73
     198-198 73-273-73-273-198-198-273-73zm768 544q0 209-103 385.5t-279.5
@@ -278670,7 +278670,7 @@ Input: ` + this.err.str);
                 y: 1792
               }
             }),
-            RectangleROI: Yi(Hi, {
+            RectangleROI: Ji(Yi, {
               iconContent: `<path fill="{{color}}" d="M1312 256h-832q-66 0-113 47t-47 113v832q0 66 47
     113t113 47h832q66 0 113-47t47-113v-832q0-66-47-113t-113-47zm288 160v832q0
     119-84.5 203.5t-203.5 84.5h-832q-119 0-203.5-84.5t-84.5-203.5v-832q0-119
@@ -278680,7 +278680,7 @@ Input: ` + this.err.str);
                 y: 1792
               }
             }),
-            TextMarker: Yi(Hi, {
+            TextMarker: Ji(Yi, {
               iconContent: `<path fill="{{color}}" d="M789 559l-170 450q33 0 136.5 2t160.5 2q19 0
     57-2-87-253-184-452zm-725 1105l2-79q23-7 56-12.5t57-10.5 49.5-14.5 44.5-29
     31-50.5l237-616 280-724h128q8 14 11 21l205 480q33 78 106 257.5t114 274.5q15
@@ -278695,7 +278695,7 @@ Input: ` + this.err.str);
                 y: 1792
               }
             }),
-            Crosshairs: Yi(Hi, {
+            Crosshairs: Ji(Yi, {
               iconContent: `<path fill="{{color}}" d="M1325 1024h-109q-26 0-45-19t-19-45v-128q0-26
     19-45t45-19h109q-32-108-112.5-188.5t-188.5-112.5v109q0 26-19 45t-45
     19h-128q-26 0-45-19t-19-45v-109q-108 32-188.5 112.5t-112.5 188.5h109q26
@@ -278712,7 +278712,7 @@ Input: ` + this.err.str);
                 y: 1792
               }
             }),
-            Eraser: Yi(Hi, {
+            Eraser: Ji(Yi, {
               iconContent: `<path transform="translate(0,1792) scale(1,-1)" fill="{{color}}" d="M960 1408l336-384h-768l-336 384h768zm1013-1077q15
     34 9.5 71.5t-30.5 65.5l-896 1024q-38 44-96 44h-768q-38
     0-69.5-20.5t-47.5-54.5q-15-34-9.5-71.5t30.5-65.5l896-1024q38-44 96-44h768q38
@@ -278722,7 +278722,7 @@ Input: ` + this.err.str);
                 y: 1792
               }
             }),
-            Magnify: Yi(Hi, {
+            Magnify: Ji(Yi, {
               iconContent: `<path fill="{{color}}" d="M508.5 481.6l-129-129c-2.3-2.3-5.3-3.5-8.5-3.5h-10.3C395
     312 416 262.5 416 208 416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c54.5
     0 104-21 141.1-55.2V371c0 3.2 1.3 6.2 3.5 8.5l129 129c4.7 4.7 12.3 4.7 17
@@ -278733,7 +278733,7 @@ Input: ` + this.err.str);
                 y: 512
               }
             }),
-            Pan: Yi(Hi, {
+            Pan: Ji(Yi, {
               iconContent: `<path fill="{{color}}" d="M1411 541l-355 355 355 355 144-144q29-31 70-14 39 17
     39 59v448q0 26-19 45t-45 19h-448q-42 0-59-40-17-39 14-69l144-144-355-355-355
     355 144 144q31 30 14 69-17 40-59 40h-448q-26 0-45-19t-19-45v-448q0-42 40-59
@@ -278746,7 +278746,7 @@ Input: ` + this.err.str);
                 y: 1792
               }
             }),
-            Rotate: Yi(Hi, {
+            Rotate: Ji(Yi, {
               iconContent: `<path fill="{{color}}" d="M1664 256v448q0 26-19 45t-45 19h-448q-42 0-59-40-17-39
     14-69l138-138q-148-137-349-137-104 0-198.5 40.5t-163.5 109.5-109.5
     163.5-40.5 198.5 40.5 198.5 109.5 163.5 163.5 109.5 198.5 40.5q119 0
@@ -278759,7 +278759,7 @@ Input: ` + this.err.str);
                 y: 1792
               }
             }),
-            StackScroll: Yi(Hi, {
+            StackScroll: Ji(Yi, {
               iconContent: `<path fill="{{color}}" d="M24 21v2c0 0.547-0.453 1-1 1h-22c-0.547
     0-1-0.453-1-1v-2c0-0.547 0.453-1 1-1h22c0.547 0 1 0.453 1 1zM24 13v2c0
     0.547-0.453 1-1 1h-22c-0.547 0-1-0.453-1-1v-2c0-0.547 0.453-1 1-1h22c0.547
@@ -278770,7 +278770,7 @@ Input: ` + this.err.str);
                 y: 28
               }
             }),
-            WindowLevelRegion: Yi(Hi, {
+            WindowLevelRegion: Ji(Yi, {
               iconContent: `<path fill="{{color}}" d="M1664 416v960q0 119-84.5 203.5t-203.5 84.5h-960q-119
     0-203.5-84.5t-84.5-203.5v-960q0-119 84.5-203.5t203.5-84.5h960q119 0 203.5
     84.5t84.5 203.5z" />`,
@@ -278779,7 +278779,7 @@ Input: ` + this.err.str);
                 y: 1792
               }
             }),
-            WindowLevel: Yi(Hi, {
+            WindowLevel: Ji(Yi, {
               iconContent: `
     <path fill="{{color}}" d="M14.5,3.5 a1 1 0 0 1 -11,11 Z" stroke="none" opacity="0.8" />
     <circle cx="9" cy="9" r="8" fill="none" stroke-width="2" stroke="{{color}}" />`,
@@ -278788,7 +278788,7 @@ Input: ` + this.err.str);
                 y: 18
               }
             }),
-            Zoom: Yi(Hi, {
+            Zoom: Ji(Yi, {
               iconContent: `
   <path fill="{{color}}" d="M508.5 481.6l-129-129c-2.3-2.3-5.3-3.5-8.5-3.5h-10.3C395
     312 416 262.5 416 208 416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c54.5
@@ -278804,68 +278804,68 @@ Input: ` + this.err.str);
                 y: 512
               }
             }),
-            SegmentationFreeHandEraseInside: Yi(Hi, {
+            SegmentationFreeHandEraseInside: Ji(Yi, {
               iconContent: "".concat(iN, " ").concat(LB),
               viewBox: ed
             }),
-            SegmentationFreeHandFillInside: Yi(Hi, {
+            SegmentationFreeHandFillInside: Ji(Yi, {
               iconContent: "".concat(iN, " ").concat(lp),
               viewBox: ed
             }),
-            SegmentationFreeHandEraseOutside: Yi(Hi, {
+            SegmentationFreeHandEraseOutside: Ji(Yi, {
               iconContent: "".concat(iN, " ").concat(LB),
               viewBox: ed
             }),
-            SegmentationFreeHandFillOutside: Yi(Hi, {
+            SegmentationFreeHandFillOutside: Ji(Yi, {
               iconContent: "".concat(iN, " ").concat(lp),
               viewBox: ed
             }),
-            SegmentationRectangleEraseInside: Yi(Hi, {
+            SegmentationRectangleEraseInside: Ji(Yi, {
               iconContent: "".concat(GB, " ").concat(LB),
               viewBox: ed
             }),
-            RectangleScissor: Yi(Hi, {
+            RectangleScissor: Ji(Yi, {
               iconContent: "".concat(GB, " ").concat(lp),
               viewBox: ed
             }),
-            "RectangleScissor.FILL_INSIDE": Yi(Hi, {
+            "RectangleScissor.FILL_INSIDE": Ji(Yi, {
               iconContent: "".concat(GB, " ").concat(lp),
               viewBox: ed
             }),
-            "RectangleScissor.FILL_OUTSIDE": Yi(Hi, {
+            "RectangleScissor.FILL_OUTSIDE": Ji(Yi, {
               iconContent: "".concat(GB, " ").concat(lp),
               viewBox: ed
             }),
-            "RectangleScissor.ERASE_OUTSIDE": Yi(Hi, {
+            "RectangleScissor.ERASE_OUTSIDE": Ji(Yi, {
               iconContent: "".concat(GB, " ").concat(LB),
               viewBox: ed
             }),
-            "RectangleScissor.ERASE_INSIDE": Yi(Hi, {
+            "RectangleScissor.ERASE_INSIDE": Ji(Yi, {
               iconContent: "".concat(GB, " ").concat(LB),
               viewBox: ed
             }),
-            CircleScissor: Yi(Hi, {
+            CircleScissor: Ji(Yi, {
               iconContent: "".concat(sN, " ").concat(lp),
               viewBox: ed
             }),
-            "CircleScissor.FILL_INSIDE": Yi(Hi, {
+            "CircleScissor.FILL_INSIDE": Ji(Yi, {
               iconContent: "".concat(sN, " ").concat(lp),
               viewBox: ed
             }),
-            "CircleScissor.ERASE_OUTSIDE": Yi(Hi, {
+            "CircleScissor.ERASE_OUTSIDE": Ji(Yi, {
               iconContent: "".concat(sN, " ").concat(LB),
               viewBox: ed
             }),
-            "CircleScissor.FILL_OUTSIDE": Yi(Hi, {
+            "CircleScissor.FILL_OUTSIDE": Ji(Yi, {
               iconContent: "".concat(sN, " ").concat(lp),
               viewBox: ed
             })
           };
-          function Yi(j, I) {
+          function Ji(j, I) {
             return Object.assign(Object.create(j), I);
           }
           function Lde(j, I, b) {
-            oN[j] = Yi(Hi, {
+            oN[j] = Ji(Yi, {
               iconContent: I,
               viewBox: b
             });
@@ -279763,7 +279763,7 @@ Input: ` + this.err.str);
                     value: null
                   }, this._calculateCachedStats(ie, V, I);
                   if (!R.getRenderingEngine()) return console.warn("Rendering Engine has been destroyed"), S;
-                  _i(b, ge, "0", [
+                  Hi(b, ge, "0", [
                     Se
                   ], {
                     color: Re
@@ -279929,7 +279929,7 @@ Input: ` + this.err.str);
                   index: null,
                   value: null
                 }, this._calculateCachedStats(J, z, I)), !k.getRenderingEngine()) return console.warn("Rendering Engine has been destroyed"), Q;
-                _i(b, V, "0", [
+                Hi(b, V, "0", [
                   ie
                 ], {
                   color: ge
@@ -280689,7 +280689,7 @@ Input: ` + this.err.str);
                   }, this._calculateCachedStats(ie, V, I)), !an(ge)) continue;
                   Cn(ie) || this.editData || Se === null || (ct = [
                     ot[Se]
-                  ]), ct && _i(b, ge, "0", ot, {
+                  ]), ct && Hi(b, ge, "0", ot, {
                     color: Re,
                     lineDash: Ke,
                     lineWidth: Ge
@@ -280995,7 +280995,7 @@ Input: ` + this.err.str);
                   }, this._calculateCachedStats(ie, V, I)), !an(ge)) continue;
                   if (Cn(ie) || this.editData || Se === null || (ct = [
                     ot[Se]
-                  ]), ct && _i(b, ge, "0", ot, {
+                  ]), ct && Hi(b, ge, "0", ot, {
                     color: Re,
                     lineDash: Ke,
                     lineWidth: Ge
@@ -281468,12 +281468,12 @@ Input: ` + this.err.str);
                     if (St.push(hN, fN, TR, d0), (Ir || (Ha = this.configuration.mobile) !== null && Ha !== void 0 && Ha.enabled) && !Fh && !SI && $n && ir) {
                       var Ba, xi, bi, Fo, el, yc, jd, dp;
                       let wc = "".concat(Mt, "One");
-                      _i(z, pe, wc, DI, {
+                      Hi(z, pe, wc, DI, {
                         color: Qr,
                         handleRadius: (Ba = this.configuration.mobile) !== null && Ba !== void 0 && Ba.enabled ? (xi = this.configuration.mobile) === null || xi === void 0 ? void 0 : xi.handleRadius : 3,
                         opacity: (bi = this.configuration.mobile) !== null && bi !== void 0 && bi.enabled ? (Fo = this.configuration.mobile) === null || Fo === void 0 ? void 0 : Fo.opacity : 1,
                         type: "circle"
-                      }), wc = "".concat(Mt, "Two"), _i(z, pe, wc, QQ, {
+                      }), wc = "".concat(Mt, "Two"), Hi(z, pe, wc, QQ, {
                         color: Qr,
                         handleRadius: (el = this.configuration.mobile) !== null && el !== void 0 && el.enabled ? (yc = this.configuration.mobile) === null || yc === void 0 ? void 0 : yc.handleRadius : 3,
                         opacity: (jd = this.configuration.mobile) !== null && jd !== void 0 && jd.enabled ? (dp = this.configuration.mobile) === null || dp === void 0 ? void 0 : dp.opacity : 1,
@@ -281482,7 +281482,7 @@ Input: ` + this.err.str);
                     } else if (Ir && !Fh && !SI && $n) {
                       var Qc, td, NI, kI;
                       const wc = "".concat(Mt);
-                      _i(z, pe, wc, DI, {
+                      Hi(z, pe, wc, DI, {
                         color: Qr,
                         handleRadius: (Qc = this.configuration.mobile) !== null && Qc !== void 0 && Qc.enabled ? (td = this.configuration.mobile) === null || td === void 0 ? void 0 : td.handleRadius : 3,
                         opacity: (NI = this.configuration.mobile) !== null && NI !== void 0 && NI.enabled ? (kI = this.configuration.mobile) === null || kI === void 0 ? void 0 : kI.opacity : 1,
@@ -281491,7 +281491,7 @@ Input: ` + this.err.str);
                     } else if (Fr && !Fh && !SI && ir) {
                       var Rh, PB, OB, nd;
                       const wc = "".concat(Mt);
-                      _i(z, pe, wc, QQ, {
+                      Hi(z, pe, wc, QQ, {
                         color: Qr,
                         handleRadius: (Rh = this.configuration.mobile) !== null && Rh !== void 0 && Rh.enabled ? (PB = this.configuration.mobile) === null || PB === void 0 ? void 0 : PB.handleRadius : 3,
                         opacity: (OB = this.configuration.mobile) !== null && OB !== void 0 && OB.enabled ? (nd = this.configuration.mobile) === null || nd === void 0 ? void 0 : nd.opacity : 1,
@@ -281499,13 +281499,13 @@ Input: ` + this.err.str);
                       });
                     } else if (Fh && $n) {
                       const wc = "".concat(Mt);
-                      _i(z, pe, wc, DI, {
+                      Hi(z, pe, wc, DI, {
                         color: Qr,
                         handleRadius: 2,
                         fill: Qr,
                         type: "circle"
                       });
-                    } else SI && Fr && ir && _i(z, pe, zr, QQ, {
+                    } else SI && Fr && ir && Hi(z, pe, zr, QQ, {
                       color: Qr,
                       handleRadius: 2,
                       fill: Qr,
@@ -282716,7 +282716,7 @@ Input: ` + this.err.str);
                   if (!an(ge)) continue;
                   Cn(ie) || this.editData || Re === null || (Et = [
                     ot[Re]
-                  ]), Et && _i(b, ge, "0", Et, {
+                  ]), Et && Hi(b, ge, "0", Et, {
                     color: Ge
                   });
                   const St = "".concat(ge, "-ellipse"), kt = "0";
@@ -283124,7 +283124,7 @@ Input: ` + this.err.str);
                   if (!an(ge)) continue;
                   Cn(ie) || this.editData || Re === null || (kt = [
                     ot[Re]
-                  ]), kt && _i(b, ge, "0", kt, {
+                  ]), kt && Hi(b, ge, "0", kt, {
                     color: Ge
                   });
                   const Ot = "".concat(ge, "-circle"), yt = "0";
@@ -284041,7 +284041,7 @@ Input: ` + this.err.str);
                 areaUnit: null
               }, this._calculateCachedStats($, q)), ct || this.editData || Re === null || (Mt = [
                 mt[Re]
-              ]), (Mt || Ge || pe) && _i(z, ie, "0", mt, {
+              ]), (Mt || Ge || pe) && Hi(z, ie, "0", mt, {
                 color: ot,
                 lineWidth: Math.max(1, Ke),
                 handleRadius: "3"
@@ -284726,7 +284726,7 @@ Input: ` + this.err.str);
               const { annotation: k, enabledElement: S, svgDrawingHelper: R, annotationStyle: z, targetId: P } = I, { viewport: J } = S, { element: V } = J, { worldToCanvas: q } = J, { annotationUID: $, data: ie, highlighted: ge } = k, { handles: pe } = ie, ve = (b = this.editData) === null || b === void 0 ? void 0 : b.newAnnotation, { lineWidth: Se, lineDash: Re, color: Ge } = z;
               if (ge || ve && k.annotationUID === ((Q = this.editData) === null || Q === void 0 || (Q = Q.annotation) === null || Q === void 0 ? void 0 : Q.annotationUID)) {
                 const Ze = pe.points.map(q);
-                _i(R, $, "0", Ze, {
+                Hi(R, $, "0", Ze, {
                   color: Ge,
                   lineDash: Re,
                   lineWidth: Se
@@ -285017,7 +285017,7 @@ Input: ` + this.err.str);
                   let ot;
                   Cn(q) || this.editData || Se === null || (ot = [
                     Ze[Se]
-                  ]), ot && _i(b, $, "0", Ze, {
+                  ]), ot && Hi(b, $, "0", Ze, {
                     color: Re,
                     lineWidth: Ge
                   });
@@ -285340,7 +285340,7 @@ Input: ` + this.err.str);
                   }, this._calculateCachedStats(ge, V, I)), Cn(ge) || this.editData || Re === null || (ct = [
                     ot[Re]
                   ]), !R.getRenderingEngine()) return console.warn("Rendering Engine has been destroyed"), S;
-                  ct && _i(b, pe, "0", ot, {
+                  ct && Hi(b, pe, "0", ot, {
                     color: Ge,
                     lineDash: Ze,
                     lineWidth: Ke
@@ -285697,7 +285697,7 @@ Input: ` + this.err.str);
                   }, this._calculateCachedStats(pe, q, b)), Cn(pe) || this.editData || Ge === null || (mt = [
                     ct[Ge]
                   ]), !z.getRenderingEngine()) return console.warn("Rendering Engine has been destroyed"), R;
-                  mt && _i(Q, ve, "0", ct, {
+                  mt && Hi(Q, ve, "0", ct, {
                     color: Ke,
                     lineDash: ot,
                     lineWidth: Ze
@@ -287054,7 +287054,7 @@ Input: ` + this.err.str);
                   if (!an(ie)) continue;
                   Cn($) || this.editData || Ge === null || (kt = [
                     Ze[Ge]
-                  ]), kt && _i(b, ie, "0", kt, {
+                  ]), kt && Hi(b, ie, "0", kt, {
                     color: Ke
                   });
                   const Ot = "".concat(ie, "-advancedMagnify");
@@ -288613,7 +288613,7 @@ Input: ` + this.err.str);
                   if (!an(V)) continue;
                   Cn(J) || this.editData || pe === null || !qn || (yn = [
                     Ge[pe]
-                  ]), yn && _i(b, V, "0", yn, {
+                  ]), yn && Hi(b, V, "0", yn, {
                     color: Re
                   });
                   let Zn = ve, $n = Se;
@@ -289355,7 +289355,7 @@ Input: ` + this.err.str);
                   let Ze;
                   this.editData || ve === null || (Ze = [
                     Se[ve]
-                  ]), Ze && _i(Q, ie, "0", Ze, {
+                  ]), Ze && Hi(Q, ie, "0", Ze, {
                     color: Ke
                   }), sP(Q, ie, "0", Se[0], Se[3], {
                     color: "black",
@@ -294496,7 +294496,7 @@ Input: ` + this.err.str);
                               children: [
                                 Oe,
                                 " ",
-                                n.jsx(Ji, {
+                                n.jsx(Ki, {
                                   className: "w-3 h-3 ml-0.5"
                                 })
                               ]
@@ -294712,7 +294712,7 @@ Input: ` + this.err.str);
                           className: "flex items-center",
                           children: [
                             "More ",
-                            n.jsx(Ji, {
+                            n.jsx(Ki, {
                               className: "w-3 h-3 ml-0.5"
                             })
                           ]
@@ -297466,7 +297466,7 @@ Input: ` + this.err.str);
                   s.studyStatus === "AwaitingSignature" && n.jsxs("div", {
                     className: "bg-emerald-500/10 border-b border-emerald-500/20 px-4 py-2 text-[11px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-300 shrink-0",
                     children: [
-                      n.jsx(Ki, {
+                      n.jsx(Pi, {
                         className: "h-3.5 w-3.5 animate-pulse text-emerald-500"
                       }),
                       "Typist has requested digital signature review"

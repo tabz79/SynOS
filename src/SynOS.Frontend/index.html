@@ -4,6 +4,15 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/assets/logo-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <script>
+      if (typeof window !== 'undefined' && typeof window.reportError !== 'function') {
+        window.reportError = function (e) { console.error(e); };
+      }
+      if (typeof globalThis !== 'undefined' && typeof globalThis.reportError !== 'function') {
+        globalThis.reportError = function (e) { console.error(e); };
+      }
+    </script>
     
     <!-- FONTS: Inter Variable + JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
