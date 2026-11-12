@@ -19,7 +19,8 @@ import {
     Receipt,
     RefreshCw,
     Percent,
-    Banknote
+    Banknote,
+    ChevronDown
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { B2BAccountDetailDrawer } from './B2BAccountDetailDrawer';
@@ -40,6 +41,7 @@ export const B2BAccountsOverviewTab = ({
     const [searchQuery, setSearchQuery] = useState('');
     const [typeFilter, setTypeFilter] = useState('All');
     const [hoveredTrendIndex, setHoveredTrendIndex] = useState(null);
+    const [isTableExpanded, setIsTableExpanded] = useState(false);
 
     const kpis = dashboardData?.kpis || {};
     const ageing = dashboardData?.ageing || {};
@@ -66,6 +68,11 @@ export const B2BAccountsOverviewTab = ({
             return matchesSearch && matchesType;
         });
     }, [accounts, searchQuery, typeFilter]);
+
+    // Initial 6 rows at a glance, expandable via Load More
+    const visibleAccounts = useMemo(() => {
+        return isTableExpanded ? filteredAccounts : filteredAccounts.slice(0, 6);
+    }, [filteredAccounts, isTableExpanded]);
 
     const handleAccountClick = (a) => {
         setSelectedAccountId(a.accountId);
@@ -220,25 +227,26 @@ export const B2BAccountsOverviewTab = ({
     const recPct = Math.min(1, Math.max(0, (recoveryRate?.ratePct || 77.8) / 100));
     const recStroke = recPct * recoveryCircumference;
 
+    // Soothing pastel badges
     const typeBadgeStyles = {
-        Hospital: "bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300 border border-sky-200/70",
-        Clinic: "bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300 border border-purple-200/70",
-        Corporate: "bg-teal-50 text-teal-700 dark:bg-teal-950/50 dark:text-teal-300 border border-teal-200/70"
+        Hospital: "bg-[#E0F2FE] text-[#0369A1] dark:bg-sky-950/40 dark:text-sky-300 border border-[#BAE6FD]/70",
+        Clinic: "bg-[#F3E8FF] text-[#7E22CE] dark:bg-purple-950/40 dark:text-purple-300 border border-[#E9D5FF]/70",
+        Corporate: "bg-[#CCFBF1] text-[#0F766E] dark:bg-teal-950/40 dark:text-teal-300 border border-[#99F6E4]/70"
     };
 
     return (
         <div className="space-y-3 sm:space-y-3.5 w-full animate-in fade-in duration-300">
             {/* ROW 1: SIGNATURE HERO SPLIT POD (TOTAL B2B NET BILLED HERO + AMOUNT RECOVERED VS OUTSTANDING BALANCE) */}
-            <div className="min-h-[95px] p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] grid grid-cols-1 lg:grid-cols-12 gap-3.5 lg:gap-4 items-center">
+            <div className="min-h-[85px] p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] grid grid-cols-1 lg:grid-cols-12 gap-3.5 lg:gap-4 items-center">
                 
                 {/* Section 1 (4 Cols): Total B2B Net Billed Hero Metric */}
                 <div 
                     onClick={onNavigateToBills}
-                    className="lg:col-span-4 flex items-center gap-3 min-w-0 pr-0 lg:pr-2 cursor-pointer p-1.5 -m-1.5 rounded-xl hover:bg-white/70 dark:hover:bg-zinc-800/70 transition-all group"
+                    className="lg:col-span-4 flex items-center gap-3 min-w-0 pr-0 lg:pr-2 cursor-pointer p-1 -m-1 rounded-xl hover:bg-white/70 dark:hover:bg-zinc-800/70 transition-all group"
                     title="Click to view all B2B invoices and bills"
                 >
-                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-b from-[#EBF5FF] to-[#D6EBFE] border border-white/90 dark:border-white/10 shadow-[0_4px_12px_rgba(37,99,235,0.12)] flex items-center justify-center text-[#1C6CF2] dark:text-sky-400 shrink-0 group-hover:scale-105 transition-transform">
-                        <Building2 size={22} strokeWidth={2.2} />
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#EFF6FF] border border-[#DBEAFE] text-[#38BDF8] dark:bg-sky-950/40 dark:text-sky-400 shadow-2xs flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                        <Building2 size={20} strokeWidth={2.2} />
                     </div>
 
                     <div className="space-y-0.5 min-w-0 flex-1">
@@ -250,11 +258,8 @@ export const B2BAccountsOverviewTab = ({
                                 {kpis.recoveryRatePct || 77.8}% Recovery Rate
                             </span>
                         </div>
-                        <p className="text-xl sm:text-2xl lg:text-[28px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums">
+                        <p className="text-xl sm:text-2xl lg:text-[26px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums">
                             ₹{(kpis.netBilled || 0).toLocaleString()}
-                        </p>
-                        <p className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400 truncate">
-                            ₹{(kpis.grossTariff || 0).toLocaleString()} Gross Tariff &nbsp;•&nbsp; ₹{(kpis.concessionsGranted || 0).toLocaleString()} Concessions ({kpis.concessionsPct || 11.9}%)
                         </p>
                     </div>
                 </div>
@@ -273,45 +278,43 @@ export const B2BAccountsOverviewTab = ({
                         </div>
                     </div>
 
-                    {/* Sleek Dual-Channel Split Bar */}
-                    <div className="relative h-[12px] sm:h-[14px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 flex items-center overflow-visible shadow-inner">
+                    {/* Sleek Pastel Split Bar */}
+                    <div className="relative h-[11px] sm:h-[13px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 flex items-center overflow-visible shadow-inner">
                         <div 
-                            className="h-full bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-300 rounded-l-full transition-all duration-500 shadow-[0_2px_8px_rgba(16,185,129,0.25)]"
+                            className="h-full bg-gradient-to-r from-[#A7F3D0] via-[#6EE7B7] to-[#34D399] rounded-l-full transition-all duration-500 shadow-[0_2px_8px_rgba(52,211,153,0.25)]"
                             style={{ width: `${recoveredShare}%` }}
                         />
                         <div 
-                            className="h-full bg-gradient-to-r from-[#FCA5A5] via-[#FDA4AF] to-[#FECDD3] rounded-r-full transition-all duration-500 shadow-[0_2px_8px_rgba(253,164,175,0.25)]"
+                            className="h-full bg-gradient-to-r from-[#FECDD3] via-[#FDA4AF] to-[#FCA5A5] rounded-r-full transition-all duration-500 shadow-[0_2px_8px_rgba(253,164,175,0.25)]"
                             style={{ width: `${outstandingShare}%` }}
                         />
                         <div 
-                            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-full bg-white dark:bg-zinc-100 shadow-[0_2px_8px_rgba(15,35,60,0.22),0_0_0_2px_#FFFFFF] border border-slate-100 pointer-events-none transition-all duration-500 z-10 flex items-center justify-center"
+                            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-white dark:bg-zinc-100 shadow-[0_2px_8px_rgba(15,35,60,0.22),0_0_0_2px_#FFFFFF] border border-slate-100 pointer-events-none transition-all duration-500 z-10 flex items-center justify-center"
                             style={{ left: `${recoveredShare}%` }}
                         >
-                            <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
+                            <div className="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
                         </div>
                     </div>
 
-                    {/* Two Channel Stat Pods Below */}
+                    {/* Two Channel Stat Pods Below (Clean, No Subtext) */}
                     <div className="flex items-center justify-between pt-0.5">
                         {/* Left Stat Pod: Amount Recovered */}
                         <div 
                             onClick={onNavigateToRecoveries}
-                            className="flex items-center gap-2 cursor-pointer p-1.5 -m-1.5 rounded-xl hover:bg-white/70 dark:hover:bg-zinc-800/70 transition-all group"
+                            className="flex items-center gap-2 cursor-pointer p-1 -m-1 rounded-xl hover:bg-white/70 dark:hover:bg-zinc-800/70 transition-all group"
                             title="Click to view Recoveries & Settlements"
                         >
-                            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-[8px] bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-100/90 dark:border-emerald-800/40 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
-                                <Wallet size={14} strokeWidth={2.3} />
+                            <div className="w-6 h-6 rounded-[7px] bg-[#ECFDF5] text-[#34D399] dark:bg-emerald-950/40 dark:text-emerald-400 border border-[#D1FAE5] flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                                <Wallet size={13} strokeWidth={2.3} />
                             </div>
-                            <div>
-                                <div className="flex items-baseline gap-1.5">
-                                    <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none group-hover:text-emerald-600 transition-colors">
-                                        ₹{(kpis.amountRecovered || 0).toLocaleString()}
-                                    </span>
-                                    <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1 py-0.2 rounded-md border border-emerald-200/60 tabular-nums">
-                                        {recoveredShare}%
-                                    </span>
-                                </div>
-                                <span className="text-[10px] sm:text-[11px] text-slate-600 dark:text-zinc-400 font-bold block">
+                            <div className="flex items-baseline gap-1.5">
+                                <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none group-hover:text-emerald-600 transition-colors">
+                                    ₹{(kpis.amountRecovered || 0).toLocaleString()}
+                                </span>
+                                <span className="text-[10px] font-bold text-[#065F46] dark:text-emerald-300 bg-[#D1FAE5] dark:bg-emerald-950/60 px-1 py-0.2 rounded-md border border-[#A7F3D0] tabular-nums">
+                                    {recoveredShare}%
+                                </span>
+                                <span className="text-xs text-slate-600 dark:text-zinc-400 font-bold ml-1">
                                     Amount Recovered
                                 </span>
                             </div>
@@ -320,40 +323,38 @@ export const B2BAccountsOverviewTab = ({
                         {/* Right Stat Pod: Outstanding Balance */}
                         <div 
                             onClick={onNavigateToBills}
-                            className="flex items-center gap-2 text-right cursor-pointer p-1.5 -m-1.5 rounded-xl hover:bg-white/70 dark:hover:bg-zinc-800/70 transition-all group"
+                            className="flex items-center gap-2 text-right cursor-pointer p-1 -m-1 rounded-xl hover:bg-white/70 dark:hover:bg-zinc-800/70 transition-all group"
                             title="Click to view Outstanding Bills"
                         >
-                            <div>
-                                <div className="flex items-baseline gap-1.5 justify-end">
-                                    <span className="text-[10px] font-bold text-[#E11D48] dark:text-rose-400 bg-[#FFF1F2] dark:bg-rose-950/60 px-1 py-0.2 rounded-md border border-rose-100 dark:border-rose-800/40 tabular-nums">
-                                        {outstandingShare}%
-                                    </span>
-                                    <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
-                                        ₹{(kpis.outstandingBalance || 0).toLocaleString()}
-                                    </span>
-                                </div>
-                                <span className="text-[10px] sm:text-[11px] text-slate-600 dark:text-zinc-400 font-bold block">
-                                    Outstanding Due ({kpis.accountsCount || 0} Partners • {kpis.unpaidBillsCount || 0} Bills)
+                            <div className="flex items-baseline gap-1.5 justify-end">
+                                <span className="text-xs text-slate-600 dark:text-zinc-400 font-bold mr-1">
+                                    Outstanding Due
+                                </span>
+                                <span className="text-[10px] font-bold text-[#9F1239] dark:text-rose-300 bg-[#FFE4E6] dark:bg-rose-950/60 px-1 py-0.2 rounded-md border border-[#FECDD3] tabular-nums">
+                                    {outstandingShare}%
+                                </span>
+                                <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
+                                    ₹{(kpis.outstandingBalance || 0).toLocaleString()}
                                 </span>
                             </div>
-                            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-[8px] bg-[#FFF1F2] text-[#FB7185] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
-                                <Hourglass size={14} strokeWidth={2.3} />
+                            <div className="w-6 h-6 rounded-[7px] bg-[#FFF1F2] text-[#FB7185] dark:bg-rose-950/40 dark:text-rose-400 border border-[#FFE4E6] flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                                <Hourglass size={13} strokeWidth={2.3} />
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* ROW 2: 5 ESSENTIAL B2B KPI CARDS (GROSS TARIFF, CONCESSIONS, NET BILLED, AMOUNT RECOVERED, OUTSTANDING BALANCE) */}
+            {/* ROW 2: 5 ESSENTIAL B2B KPI CARDS (CLEAN PASTEL LOOK, NO CLUTTERING SUBTEXT) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-3.5">
                 {/* 1. Gross Tariff (B2B) */}
                 <div 
                     onClick={onNavigateToBills}
-                    className="p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex flex-col justify-between cursor-pointer hover:shadow-[0_10px_28px_rgba(15,23,42,0.1)] transition-all group"
+                    className="p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex flex-col justify-between cursor-pointer hover:shadow-[0_10px_28px_rgba(15,23,42,0.1)] transition-all group"
                 >
                     <div className="flex items-center justify-between">
-                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
-                            <Layers size={15} strokeWidth={2.3} />
+                        <div className="w-7 h-7 rounded-[8px] bg-[#EFF6FF] text-[#38BDF8] dark:bg-sky-950/40 dark:text-sky-400 border border-[#DBEAFE] flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                            <Layers size={14} strokeWidth={2.3} />
                         </div>
                         <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]/70 dark:bg-emerald-950/50 dark:text-emerald-400 shadow-2xs tabular-nums">
                             {kpis.grossTariffChangePct !== undefined ? `${kpis.grossTariffChangePct >= 0 ? '+' : ''}${kpis.grossTariffChangePct}%` : '+14.8%'}
@@ -366,22 +367,19 @@ export const B2BAccountsOverviewTab = ({
                         <div className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-tight my-0.5 group-hover:text-synos-primary transition-colors">
                             ₹{(kpis.grossTariff || 0).toLocaleString()}
                         </div>
-                        <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400 block truncate">
-                            From {(kpis.visitsCount || 0).toLocaleString()} visits • {(kpis.testsCount || 0).toLocaleString()} tests
-                        </span>
                     </div>
                 </div>
 
                 {/* 2. Concessions Granted */}
                 <div 
                     onClick={onNavigateToBills}
-                    className="p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex flex-col justify-between cursor-pointer hover:shadow-[0_10px_28px_rgba(15,23,42,0.1)] transition-all group"
+                    className="p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex flex-col justify-between cursor-pointer hover:shadow-[0_10px_28px_rgba(15,23,42,0.1)] transition-all group"
                 >
                     <div className="flex items-center justify-between">
-                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] bg-[#FAF5FF] text-[#A855F7] dark:bg-purple-950/40 dark:text-purple-400 border border-purple-100/90 dark:border-purple-800/40 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
-                            <Tag size={15} strokeWidth={2.3} />
+                        <div className="w-7 h-7 rounded-[8px] bg-[#FAF5FF] text-[#C084FC] dark:bg-purple-950/40 dark:text-purple-400 border border-[#F3E8FF] flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                            <Tag size={14} strokeWidth={2.3} />
                         </div>
-                        <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#FFF1F2] text-[#E11D48] border border-rose-200/60 dark:bg-rose-950/40 dark:text-rose-400 shadow-2xs tabular-nums">
+                        <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#FFE4E6] text-[#BE123C] border border-[#FECDD3]/70 dark:bg-rose-950/40 dark:text-rose-400 shadow-2xs tabular-nums">
                             {kpis.concessionsPct || 42.7}%
                         </span>
                     </div>
@@ -392,20 +390,17 @@ export const B2BAccountsOverviewTab = ({
                         <div className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-tight my-0.5 group-hover:text-purple-600 transition-colors">
                             ₹{(kpis.concessionsGranted || 0).toLocaleString()}
                         </div>
-                        <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400 block truncate">
-                            Of gross tariff value
-                        </span>
                     </div>
                 </div>
 
                 {/* 3. Net Billed */}
                 <div 
                     onClick={onNavigateToBills}
-                    className="p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex flex-col justify-between cursor-pointer hover:shadow-[0_10px_28px_rgba(15,23,42,0.1)] transition-all group"
+                    className="p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex flex-col justify-between cursor-pointer hover:shadow-[0_10px_28px_rgba(15,23,42,0.1)] transition-all group"
                 >
                     <div className="flex items-center justify-between">
-                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
-                            <FileText size={15} strokeWidth={2.3} />
+                        <div className="w-7 h-7 rounded-[8px] bg-[#EFF6FF] text-[#38BDF8] dark:bg-sky-950/40 dark:text-sky-400 border border-[#DBEAFE] flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                            <FileText size={14} strokeWidth={2.3} />
                         </div>
                         <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]/70 dark:bg-emerald-950/50 dark:text-emerald-400 shadow-2xs tabular-nums">
                             {kpis.netBilledChangePct !== undefined ? `${kpis.netBilledChangePct >= 0 ? '+' : ''}${kpis.netBilledChangePct}%` : '+233%'}
@@ -418,20 +413,17 @@ export const B2BAccountsOverviewTab = ({
                         <div className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-tight my-0.5 group-hover:text-synos-primary transition-colors">
                             ₹{(kpis.netBilled || 0).toLocaleString()}
                         </div>
-                        <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400 block truncate">
-                            Billable after concessions
-                        </span>
                     </div>
                 </div>
 
                 {/* 4. Amount Recovered */}
                 <div 
                     onClick={onNavigateToRecoveries}
-                    className="p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex flex-col justify-between cursor-pointer hover:shadow-[0_10px_28px_rgba(15,23,42,0.1)] transition-all group"
+                    className="p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex flex-col justify-between cursor-pointer hover:shadow-[0_10px_28px_rgba(15,23,42,0.1)] transition-all group"
                 >
                     <div className="flex items-center justify-between">
-                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] bg-[#FAF5FF] text-[#A855F7] dark:bg-purple-950/40 dark:text-purple-400 border border-purple-100/90 dark:border-purple-800/40 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
-                            <Wallet size={15} strokeWidth={2.3} />
+                        <div className="w-7 h-7 rounded-[8px] bg-[#ECFDF5] text-[#34D399] dark:bg-emerald-950/40 dark:text-emerald-400 border border-[#D1FAE5] flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                            <Wallet size={14} strokeWidth={2.3} />
                         </div>
                         <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]/70 dark:bg-emerald-950/50 dark:text-emerald-400 shadow-2xs tabular-nums">
                             {kpis.recoveryRatePct || 163.2}%
@@ -444,22 +436,19 @@ export const B2BAccountsOverviewTab = ({
                         <div className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-tight my-0.5 group-hover:text-emerald-600 transition-colors">
                             ₹{(kpis.amountRecovered || 0).toLocaleString()}
                         </div>
-                        <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400 block truncate">
-                            Recovery rate (of net billed)
-                        </span>
                     </div>
                 </div>
 
                 {/* 5. Outstanding Balance */}
                 <div 
                     onClick={onNavigateToBills}
-                    className="p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex flex-col justify-between cursor-pointer hover:shadow-[0_10px_28px_rgba(15,23,42,0.1)] transition-all group"
+                    className="p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex flex-col justify-between cursor-pointer hover:shadow-[0_10px_28px_rgba(15,23,42,0.1)] transition-all group"
                 >
                     <div className="flex items-center justify-between">
-                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] bg-[#FAF5FF] text-[#A855F7] dark:bg-purple-950/40 dark:text-purple-400 border border-purple-100/90 dark:border-purple-800/40 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
-                            <Hourglass size={15} strokeWidth={2.3} />
+                        <div className="w-7 h-7 rounded-[8px] bg-[#FFF1F2] text-[#FB7185] dark:bg-rose-950/40 dark:text-rose-400 border border-[#FFE4E6] flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                            <Hourglass size={14} strokeWidth={2.3} />
                         </div>
-                        <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#FFF1F2] text-[#E11D48] border border-rose-200/60 dark:bg-rose-950/40 dark:text-rose-400 shadow-2xs tabular-nums">
+                        <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#FFE4E6] text-[#BE123C] border border-[#FECDD3]/70 dark:bg-rose-950/40 dark:text-rose-400 shadow-2xs tabular-nums">
                             {kpis.outstandingPct || 95.1}%
                         </span>
                     </div>
@@ -470,9 +459,6 @@ export const B2BAccountsOverviewTab = ({
                         <div className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-tight my-0.5 group-hover:text-rose-600 transition-colors">
                             ₹{(kpis.outstandingBalance || 0).toLocaleString()}
                         </div>
-                        <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400 block truncate">
-                            {(kpis.accountsCount || 0).toLocaleString()} partners • {(kpis.unpaidBillsCount || 0).toLocaleString()} unpaid bills
-                        </span>
                     </div>
                 </div>
             </div>
@@ -487,7 +473,7 @@ export const B2BAccountsOverviewTab = ({
                                 <Clock size={13} strokeWidth={2.3} />
                             </div>
                             <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal">
-                                Receivables Ageing <span className="text-[11px] font-normal text-slate-400 dark:text-zinc-500">(Due ₹{(kpis.outstandingBalance || 0).toLocaleString()})</span>
+                                Receivables Ageing
                             </h3>
                         </div>
 
@@ -511,7 +497,7 @@ export const B2BAccountsOverviewTab = ({
                                         cy="65"
                                         r="52"
                                         fill="transparent"
-                                        stroke="#38BDF8"
+                                        stroke="#7DD3FC"
                                         strokeWidth="15"
                                         strokeDasharray={`${s0_dash} ${ageingCircumference}`}
                                         strokeDashoffset="0"
@@ -522,7 +508,7 @@ export const B2BAccountsOverviewTab = ({
                                         cy="65"
                                         r="52"
                                         fill="transparent"
-                                        stroke="#A855F7"
+                                        stroke="#C084FC"
                                         strokeWidth="15"
                                         strokeDasharray={`${s1_dash} ${ageingCircumference}`}
                                         strokeDashoffset={s1_offset}
@@ -533,18 +519,18 @@ export const B2BAccountsOverviewTab = ({
                                         cy="65"
                                         r="52"
                                         fill="transparent"
-                                        stroke="#FB7185"
+                                        stroke="#FDA4AF"
                                         strokeWidth="15"
                                         strokeDasharray={`${s2_dash} ${ageingCircumference}`}
                                         strokeDashoffset={s2_offset}
                                     />
-                                    {/* >90 days (Crimson) */}
+                                    {/* >90 days (Red) */}
                                     <circle
                                         cx="65"
                                         cy="65"
                                         r="52"
                                         fill="transparent"
-                                        stroke="#E11D48"
+                                        stroke="#F87171"
                                         strokeWidth="15"
                                         strokeDasharray={`${s3_dash} ${ageingCircumference}`}
                                         strokeDashoffset={s3_offset}
@@ -564,7 +550,7 @@ export const B2BAccountsOverviewTab = ({
                             <div className="flex-1 space-y-1.5 text-xs">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-1.5">
-                                        <span className="w-2 h-2 rounded-full bg-[#38BDF8] shrink-0" />
+                                        <span className="w-2 h-2 rounded-full bg-[#7DD3FC] shrink-0" />
                                         <span className="font-semibold text-slate-700 dark:text-zinc-300 text-[11px]">0 - 30 Days</span>
                                     </div>
                                     <span className="font-bold text-slate-900 dark:text-white tabular-nums text-[11px]">
@@ -574,7 +560,7 @@ export const B2BAccountsOverviewTab = ({
 
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-1.5">
-                                        <span className="w-2 h-2 rounded-full bg-[#A855F7] shrink-0" />
+                                        <span className="w-2 h-2 rounded-full bg-[#C084FC] shrink-0" />
                                         <span className="font-semibold text-slate-700 dark:text-zinc-300 text-[11px]">31 - 60 Days</span>
                                     </div>
                                     <span className="font-bold text-slate-900 dark:text-white tabular-nums text-[11px]">
@@ -584,7 +570,7 @@ export const B2BAccountsOverviewTab = ({
 
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-1.5">
-                                        <span className="w-2 h-2 rounded-full bg-[#FB7185] shrink-0" />
+                                        <span className="w-2 h-2 rounded-full bg-[#FDA4AF] shrink-0" />
                                         <span className="font-semibold text-slate-700 dark:text-zinc-300 text-[11px]">61 - 90 Days</span>
                                     </div>
                                     <span className="font-bold text-slate-900 dark:text-white tabular-nums text-[11px]">
@@ -594,7 +580,7 @@ export const B2BAccountsOverviewTab = ({
 
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-1.5">
-                                        <span className="w-2 h-2 rounded-full bg-[#E11D48] shrink-0" />
+                                        <span className="w-2 h-2 rounded-full bg-[#F87171] shrink-0" />
                                         <span className="font-semibold text-slate-700 dark:text-zinc-300 text-[11px]">&gt; 90 Days</span>
                                     </div>
                                     <span className="font-bold text-slate-900 dark:text-white tabular-nums text-[11px]">
@@ -606,37 +592,32 @@ export const B2BAccountsOverviewTab = ({
                     </div>
                 </div>
 
-                {/* Pod 2: Billing & Recovery Trend with Day Pillars (5 cols) */}
+                {/* Pod 2: Billing & Recovery Trend with Pastel Day Pillars (5 cols) */}
                 <div className="lg:col-span-5 p-3.5 sm:p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex flex-col justify-between">
                     <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-zinc-800">
                         <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-[7px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                            <div className="w-6 h-6 rounded-[7px] bg-[#EBF5FF] text-[#38BDF8] dark:bg-sky-950/40 dark:text-sky-400 border border-[#DBEAFE] flex items-center justify-center shrink-0 shadow-2xs">
                                 <TrendingUp size={13} strokeWidth={2.3} />
                             </div>
-                            <div>
-                                <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal leading-tight">
-                                    Billing & Recovery Trend
-                                </h3>
-                                <p className="text-[10px] text-slate-500 dark:text-zinc-400 leading-none">
-                                    7-day trajectory & recovery velocity
-                                </p>
-                            </div>
+                            <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal leading-tight">
+                                Billing & Recovery Trend
+                            </h3>
                         </div>
 
                         {/* Legend */}
                         <div className="flex items-center gap-3 text-xs font-semibold">
                             <div className="flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full bg-[#2563EB]" />
+                                <span className="w-2 h-2 rounded-full bg-[#38BDF8]" />
                                 <span className="text-[11px] text-slate-600 dark:text-zinc-300 font-bold">Net Billed</span>
                             </div>
                             <div className="flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full bg-[#10B981]" />
+                                <span className="w-2 h-2 rounded-full bg-[#34D399]" />
                                 <span className="text-[11px] text-slate-600 dark:text-zinc-300 font-bold">Recovered</span>
                             </div>
                         </div>
                     </div>
 
-                    {/* SVG Chart with Signature Day Pillars */}
+                    {/* SVG Chart with Safe Pastel Day Pillars */}
                     <div className="relative w-full h-[150px] mt-1 select-none">
                         <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full h-full overflow-visible">
                             {/* Horizontal Grid lines */}
@@ -649,9 +630,8 @@ export const B2BAccountsOverviewTab = ({
                                             y1={y} 
                                             x2={chartWidth - paddingX + 15} 
                                             y2={y} 
-                                            stroke="currentColor" 
+                                            stroke="#E2ECF6" 
                                             strokeDasharray="2 3"
-                                            className="text-slate-200 dark:text-zinc-800"
                                             strokeWidth="1"
                                         />
                                         <text 
@@ -666,11 +646,14 @@ export const B2BAccountsOverviewTab = ({
                                 );
                             })}
 
-                            {/* Tactile Day Pillars (Capsule columns behind each day) */}
+                            {/* Safe Pastel Day Pillars (Never renders black) */}
                             {trend.map((t, idx) => {
                                 const x = paddingX + (idx / Math.max(1, trend.length - 1)) * (chartWidth - paddingX * 2);
                                 const isHovered = hoveredTrendIndex === idx;
                                 const isLast = idx === trend.length - 1;
+                                const pillarFill = isHovered 
+                                    ? "#E0F2FE" 
+                                    : (isLast ? "#E0F2FE" : "#F1F5F9");
                                 return (
                                     <rect 
                                         key={`pillar-${idx}`}
@@ -679,23 +662,18 @@ export const B2BAccountsOverviewTab = ({
                                         width={28} 
                                         height={chartHeight - paddingY * 2 + 16} 
                                         rx={10} 
-                                        className={cn(
-                                            "transition-colors",
-                                            isHovered 
-                                                ? "fill-sky-500/15 dark:fill-sky-400/20" 
-                                                : isLast 
-                                                    ? "fill-blue-500/8 dark:fill-blue-500/15" 
-                                                    : "fill-slate-200/40 dark:fill-zinc-800/30"
-                                        )}
+                                        fill={pillarFill}
+                                        fillOpacity={isHovered ? 0.75 : (isLast ? 0.65 : 0.45)}
+                                        className="transition-all"
                                     />
                                 );
                             })}
 
-                            {/* Net Billed Smooth Curve */}
-                            <path d={billedPath} fill="none" stroke="#2563EB" strokeWidth="2.5" strokeLinecap="round" />
+                            {/* Net Billed Smooth Curve (Pastel Ocean Blue) */}
+                            <path d={billedPath} fill="none" stroke="#38BDF8" strokeWidth="2.5" strokeLinecap="round" />
 
-                            {/* Recovered Smooth Curve */}
-                            <path d={recoveredPath} fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" />
+                            {/* Recovered Smooth Curve (Pastel Mint Green) */}
+                            <path d={recoveredPath} fill="none" stroke="#34D399" strokeWidth="2.5" strokeLinecap="round" />
 
                             {/* Data points */}
                             {billedPoints.map((pt, idx) => (
@@ -704,7 +682,9 @@ export const B2BAccountsOverviewTab = ({
                                     cx={pt.x} 
                                     cy={pt.y} 
                                     r={hoveredTrendIndex === idx ? 5 : 3.5}
-                                    className="fill-white dark:fill-zinc-900 stroke-blue-600 transition-all cursor-pointer"
+                                    fill="#ffffff"
+                                    stroke="#38BDF8"
+                                    className="transition-all cursor-pointer"
                                     strokeWidth="2.5"
                                     onMouseEnter={() => setHoveredTrendIndex(idx)}
                                     onMouseLeave={() => setHoveredTrendIndex(null)}
@@ -717,17 +697,19 @@ export const B2BAccountsOverviewTab = ({
                                     cx={pt.x} 
                                     cy={pt.y} 
                                     r={hoveredTrendIndex === idx ? 5 : 3.5}
-                                    className="fill-white dark:fill-zinc-900 stroke-emerald-500 transition-all cursor-pointer"
+                                    fill="#ffffff"
+                                    stroke="#34D399"
+                                    className="transition-all cursor-pointer"
                                     strokeWidth="2.5"
                                     onMouseEnter={() => setHoveredTrendIndex(idx)}
                                     onMouseLeave={() => setHoveredTrendIndex(null)}
                                 />
                             ))}
 
-                            {/* Callout badges on last points */}
+                            {/* Callout badges on last points (Pastel) */}
                             {lastBilled && (
                                 <g transform={`translate(${lastBilled.x + 8}, ${lastBilled.y - 12})`}>
-                                    <rect x="0" y="0" width="52" height="20" rx="6" fill="#2563EB" />
+                                    <rect x="0" y="0" width="52" height="20" rx="6" fill="#38BDF8" />
                                     <text x="26" y="13" textAnchor="middle" fill="#ffffff" className="text-[10px] font-bold font-mono">
                                         ₹{(lastBilled.netBilled >= 100000 ? `${(lastBilled.netBilled / 100000).toFixed(2)}L` : `${Math.round(lastBilled.netBilled / 1000)}K`)}
                                     </text>
@@ -736,7 +718,7 @@ export const B2BAccountsOverviewTab = ({
 
                             {lastRecovered && (
                                 <g transform={`translate(${lastRecovered.x + 8}, ${lastRecovered.y + 2})`}>
-                                    <rect x="0" y="0" width="52" height="20" rx="6" fill="#10B981" />
+                                    <rect x="0" y="0" width="52" height="20" rx="6" fill="#34D399" />
                                     <text x="26" y="13" textAnchor="middle" fill="#ffffff" className="text-[10px] font-bold font-mono">
                                         ₹{(lastRecovered.recovered >= 100000 ? `${(lastRecovered.recovered / 100000).toFixed(2)}L` : `${Math.round(lastRecovered.recovered / 1000)}K`)}
                                     </text>
@@ -755,7 +737,7 @@ export const B2BAccountsOverviewTab = ({
                                         textAnchor="middle" 
                                         className={cn(
                                             "text-[9px] font-semibold",
-                                            isLast ? "fill-blue-600 font-bold" : "fill-slate-400 dark:fill-zinc-500"
+                                            isLast ? "fill-sky-600 font-bold" : "fill-slate-400 dark:fill-zinc-500"
                                         )}
                                     >
                                         {t.day} {t.label ? t.label.split(' ')[0] : ''}
@@ -768,7 +750,7 @@ export const B2BAccountsOverviewTab = ({
                         {hoveredTrendIndex !== null && trend[hoveredTrendIndex] && (
                             <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-slate-900/90 text-white text-[10px] px-3 py-1.5 rounded-lg shadow-lg pointer-events-none z-10 flex items-center gap-3 backdrop-blur-xs">
                                 <span className="font-bold">{trend[hoveredTrendIndex].date}</span>
-                                <span className="text-blue-300">Net Billed: ₹{(trend[hoveredTrendIndex].netBilled || 0).toLocaleString()}</span>
+                                <span className="text-sky-300">Net Billed: ₹{(trend[hoveredTrendIndex].netBilled || 0).toLocaleString()}</span>
                                 <span className="text-emerald-300">Recovered: ₹{(trend[hoveredTrendIndex].recovered || 0).toLocaleString()}</span>
                             </div>
                         )}
@@ -779,7 +761,7 @@ export const B2BAccountsOverviewTab = ({
                 <div className="lg:col-span-3 p-3.5 sm:p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex flex-col justify-between">
                     <div>
                         <div className="flex items-center gap-2 pb-2.5 border-b border-slate-200 dark:border-zinc-800">
-                            <div className="w-6 h-6 rounded-[7px] bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                            <div className="w-6 h-6 rounded-[7px] bg-[#ECFDF5] text-[#34D399] dark:bg-emerald-950/40 dark:text-emerald-400 border border-[#D1FAE5] flex items-center justify-center shrink-0 shadow-2xs">
                                 <PieChart size={13} strokeWidth={2.3} />
                             </div>
                             <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal">
@@ -805,7 +787,7 @@ export const B2BAccountsOverviewTab = ({
                                         cy="60"
                                         r="50"
                                         fill="transparent"
-                                        stroke="#10B981"
+                                        stroke="#34D399"
                                         strokeWidth="12"
                                         strokeDasharray={`${recStroke} ${recoveryCircumference}`}
                                         strokeDashoffset="0"
@@ -825,7 +807,7 @@ export const B2BAccountsOverviewTab = ({
                             <div className="space-y-2 text-xs flex-1">
                                 <div>
                                     <div className="flex items-center gap-1.5">
-                                        <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                                        <span className="w-2 h-2 rounded-full bg-[#34D399] shrink-0" />
                                         <span className="font-semibold text-slate-700 dark:text-zinc-300 text-[11px]">Recovered</span>
                                     </div>
                                     <span className="font-extrabold text-slate-900 dark:text-white tabular-nums text-xs pl-3.5 block mt-0.5">
@@ -835,7 +817,7 @@ export const B2BAccountsOverviewTab = ({
 
                                 <div>
                                     <div className="flex items-center gap-1.5">
-                                        <span className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
+                                        <span className="w-2 h-2 rounded-full bg-[#FDA4AF] shrink-0" />
                                         <span className="font-semibold text-slate-700 dark:text-zinc-300 text-[11px]">Outstanding</span>
                                     </div>
                                     <span className="font-extrabold text-slate-900 dark:text-white tabular-nums text-xs pl-3.5 block mt-0.5">
@@ -845,14 +827,10 @@ export const B2BAccountsOverviewTab = ({
                             </div>
                         </div>
                     </div>
-
-                    <p className="text-[10px] text-slate-500 dark:text-zinc-400 text-center pt-1.5 border-t border-slate-200 dark:border-zinc-800">
-                        Of ₹{(recoveryRate.totalNetBilled || 0).toLocaleString()} net billed
-                    </p>
                 </div>
             </div>
 
-            {/* ROW 3: MAIN TABLE — B2B PARTNER ACCOUNTS (HOSPITALS, CLINICS & CORPORATE) */}
+            {/* ROW 3: MAIN TABLE — B2B PARTNER ACCOUNTS (INITIAL 6 ROWS WITH LOAD MORE FLOATING BUTTON) */}
             <div className="p-4 sm:p-5 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] space-y-3.5">
                 {/* Header with Filters & Search */}
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
@@ -931,14 +909,14 @@ export const B2BAccountsOverviewTab = ({
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200/70 dark:divide-zinc-800/60">
-                            {filteredAccounts.length === 0 ? (
+                            {visibleAccounts.length === 0 ? (
                                 <tr>
                                     <td colSpan={13} className="py-12 text-center text-slate-400 dark:text-zinc-500">
                                         No B2B accounts found matching criteria.
                                     </td>
                                 </tr>
                             ) : (
-                                filteredAccounts.map((a) => (
+                                visibleAccounts.map((a) => (
                                     <tr 
                                         key={a.accountId}
                                         className="hover:bg-slate-200/40 dark:hover:bg-zinc-800/40 transition-colors group cursor-pointer"
@@ -947,7 +925,7 @@ export const B2BAccountsOverviewTab = ({
                                         {/* Partner / Institution */}
                                         <td className="py-3 px-3">
                                             <div className="flex items-center gap-2.5">
-                                                <div className="w-6 h-6 rounded-full bg-[#EBF5FF] dark:bg-sky-950/40 text-[#1C6CF2] dark:text-sky-400 flex items-center justify-center shrink-0">
+                                                <div className="w-6 h-6 rounded-full bg-[#EBF5FF] dark:bg-sky-950/40 text-[#38BDF8] dark:text-sky-400 flex items-center justify-center shrink-0">
                                                     <Building2 size={12} />
                                                 </div>
                                                 <span className="font-bold text-slate-900 dark:text-zinc-100 group-hover:text-synos-primary transition-colors">
@@ -989,7 +967,7 @@ export const B2BAccountsOverviewTab = ({
                                         </td>
 
                                         {/* Recovered */}
-                                        <td className="py-3 px-2 text-right font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                                        <td className="py-3 px-2 text-right font-semibold text-[#059669] dark:text-emerald-400 tabular-nums">
                                             ₹{(a.recovered || 0).toLocaleString()}
                                         </td>
 
@@ -998,8 +976,8 @@ export const B2BAccountsOverviewTab = ({
                                             <span className={cn(
                                                 "px-2 py-0.5 rounded-full text-[10px] font-black tabular-nums border",
                                                 a.outstanding > 0 
-                                                    ? 'bg-[#FFF1F2] text-[#E11D48] border-rose-200/60 dark:bg-rose-950/40 dark:text-rose-400' 
-                                                    : 'bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-400'
+                                                    ? 'bg-[#FFE4E6] text-[#BE123C] border-[#FECDD3]/70 dark:bg-rose-950/40 dark:text-rose-400' 
+                                                    : 'bg-[#D1FAE5] text-[#047857] border-[#A7F3D0]/70 dark:bg-emerald-950/40 dark:text-emerald-400'
                                             )}>
                                                 ₹{(a.outstanding || 0).toLocaleString()}
                                             </span>
@@ -1012,7 +990,7 @@ export const B2BAccountsOverviewTab = ({
                                                     {a.recoveryRate || 0}%
                                                 </span>
                                                 <div className="w-10 h-1.5 rounded-full bg-[#E2ECF6] dark:bg-zinc-800 overflow-hidden shrink-0">
-                                                    <div className="h-full rounded-full bg-emerald-500" style={{ width: `${Math.min(100, a.recoveryRate || 0)}%` }} />
+                                                    <div className="h-full rounded-full bg-[#34D399]" style={{ width: `${Math.min(100, a.recoveryRate || 0)}%` }} />
                                                 </div>
                                             </div>
                                         </td>
@@ -1046,6 +1024,19 @@ export const B2BAccountsOverviewTab = ({
                         </tbody>
                     </table>
                 </div>
+
+                {/* Floating Load More Button (Top 6 rows at a glance initially) */}
+                {filteredAccounts.length > 6 && (
+                    <div className="pt-2 flex justify-center">
+                        <button
+                            onClick={() => setIsTableExpanded(!isTableExpanded)}
+                            className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white/90 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 shadow-2xs hover:shadow-xs hover:bg-slate-50 dark:hover:bg-zinc-700 text-xs font-bold text-slate-700 dark:text-zinc-200 transition-all cursor-pointer group"
+                        >
+                            <span>{isTableExpanded ? 'Show Less' : `Load More (${filteredAccounts.length - 6} more)`}</span>
+                            <ChevronDown size={14} className={cn("text-slate-400 group-hover:text-synos-primary transition-transform duration-200", isTableExpanded && "rotate-180")} />
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* ROW 4: 3 BOTTOM TACTILE PODS (CONCESSION ANALYSIS, TOP ACCOUNTS, RECENT ACTIVITY) */}
@@ -1055,7 +1046,7 @@ export const B2BAccountsOverviewTab = ({
                     <div>
                         <div className="flex items-center justify-between pb-2.5 border-b border-slate-200 dark:border-zinc-800">
                             <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 rounded-[7px] bg-[#FAF5FF] text-[#A855F7] dark:bg-purple-950/40 dark:text-purple-400 border border-purple-100 dark:border-purple-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                                <div className="w-6 h-6 rounded-[7px] bg-[#FAF5FF] text-[#C084FC] dark:bg-purple-950/40 dark:text-purple-400 border border-[#F3E8FF] flex items-center justify-center shrink-0 shadow-2xs">
                                     <Tag size={13} strokeWidth={2.3} />
                                 </div>
                                 <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal">
@@ -1069,19 +1060,16 @@ export const B2BAccountsOverviewTab = ({
                                 <span className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight">
                                     ₹{(concessionAnalysis.totalConcessions || 0).toLocaleString()}
                                 </span>
-                                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#FFF1F2] text-[#E11D48] border border-rose-200/60 dark:bg-rose-950/40 dark:text-rose-400">
+                                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#FFE4E6] text-[#BE123C] border border-[#FECDD3]/70 dark:bg-rose-950/40 dark:text-rose-400">
                                     {concessionAnalysis.concessionsPct || 11.9}%
                                 </span>
                             </div>
-                            <p className="text-[10px] text-slate-500 dark:text-zinc-400 mt-0.5">
-                                Total concessions on ₹{(concessionAnalysis.grossTariff || 0).toLocaleString()} gross tariff
-                            </p>
 
                             {/* Split Progress Bar */}
                             <div className="w-full h-2 rounded-full bg-[#E2ECF6] dark:bg-zinc-800 flex overflow-hidden my-3 shadow-inner">
                                 <div className="bg-[#38BDF8] h-full" style={{ width: `${concessionAnalysis.negotiatedPct || 70.6}%` }} />
-                                <div className="bg-[#A855F7] h-full" style={{ width: `${concessionAnalysis.adHocPct || 23.1}%` }} />
-                                <div className="bg-[#2DD4BF] h-full" style={{ width: `${concessionAnalysis.otherAdjustmentsPct || 6.3}%` }} />
+                                <div className="bg-[#C084FC] h-full" style={{ width: `${concessionAnalysis.adHocPct || 23.1}%` }} />
+                                <div className="bg-[#34D399] h-full" style={{ width: `${concessionAnalysis.otherAdjustmentsPct || 6.3}%` }} />
                             </div>
 
                             {/* Breakdown List */}
@@ -1098,7 +1086,7 @@ export const B2BAccountsOverviewTab = ({
 
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-1.5">
-                                        <span className="w-2 h-2 rounded-full bg-[#A855F7] shrink-0" />
+                                        <span className="w-2 h-2 rounded-full bg-[#C084FC] shrink-0" />
                                         <span className="font-semibold text-slate-700 dark:text-zinc-300 text-[11px]">Ad-hoc (Reception)</span>
                                     </div>
                                     <span className="font-bold text-slate-900 dark:text-white tabular-nums text-[11px]">
@@ -1108,7 +1096,7 @@ export const B2BAccountsOverviewTab = ({
 
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-1.5">
-                                        <span className="w-2 h-2 rounded-full bg-[#2DD4BF] shrink-0" />
+                                        <span className="w-2 h-2 rounded-full bg-[#34D399] shrink-0" />
                                         <span className="font-semibold text-slate-700 dark:text-zinc-300 text-[11px]">Other Adjustments</span>
                                     </div>
                                     <span className="font-bold text-slate-900 dark:text-white tabular-nums text-[11px]">
@@ -1145,7 +1133,7 @@ export const B2BAccountsOverviewTab = ({
                                         className="py-2 flex items-center justify-between gap-3 hover:bg-slate-200/40 dark:hover:bg-zinc-800/40 rounded-lg px-1 transition-colors cursor-pointer group"
                                     >
                                         <div className="flex items-center gap-2 min-w-0 flex-1">
-                                            <div className="w-5.5 h-5.5 rounded-full bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 flex items-center justify-center shrink-0 shadow-2xs">
+                                            <div className="w-5.5 h-5.5 rounded-full bg-[#EBF5FF] text-[#38BDF8] dark:bg-sky-950/40 dark:text-sky-400 flex items-center justify-center shrink-0 shadow-2xs">
                                                 <Building2 size={11} />
                                             </div>
                                             <span className="font-bold text-slate-800 dark:text-zinc-200 truncate group-hover:text-synos-primary transition-colors text-xs">
@@ -1154,7 +1142,7 @@ export const B2BAccountsOverviewTab = ({
                                         </div>
 
                                         <div className="w-16 h-1.5 rounded-full bg-[#E2ECF6] dark:bg-zinc-800 overflow-hidden shrink-0 shadow-inner">
-                                            <div className="h-full rounded-full bg-rose-500" style={{ width: `${Math.min(100, a.sharePct || 20)}%` }} />
+                                            <div className="h-full rounded-full bg-[#FDA4AF]" style={{ width: `${Math.min(100, a.sharePct || 20)}%` }} />
                                         </div>
 
                                         <span className="text-xs font-extrabold text-slate-900 dark:text-white tabular-nums shrink-0">
@@ -1172,7 +1160,7 @@ export const B2BAccountsOverviewTab = ({
                     <div>
                         <div className="flex items-center justify-between pb-2.5 border-b border-slate-200 dark:border-zinc-800">
                             <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 rounded-[7px] bg-[#ECFDF5] text-[#059669] dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                                <div className="w-6 h-6 rounded-[7px] bg-[#ECFDF5] text-[#34D399] dark:bg-emerald-950/40 dark:text-emerald-400 border border-[#D1FAE5] flex items-center justify-center shrink-0 shadow-2xs">
                                     <Receipt size={13} strokeWidth={2.3} />
                                 </div>
                                 <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal">
@@ -1197,7 +1185,7 @@ export const B2BAccountsOverviewTab = ({
                             ) : (
                                 recentActivity.slice(0, 3).map((act, idx) => (
                                     <div key={act.id || idx} className="py-2 flex items-start gap-2.5">
-                                        <div className="w-6 h-6 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
+                                        <div className="w-6 h-6 rounded-lg bg-[#D1FAE5] dark:bg-emerald-950/50 text-[#047857] dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
                                             <CreditCard size={13} />
                                         </div>
                                         <div className="min-w-0 flex-1">
@@ -1217,10 +1205,6 @@ export const B2BAccountsOverviewTab = ({
                                 ))
                             )}
                         </div>
-                    </div>
-
-                    <div className="pt-2 text-[10px] text-slate-500 dark:text-zinc-400 text-center border-t border-slate-200 dark:border-zinc-800">
-                        Audited B2B receivables ledger & payment recoveries
                     </div>
                 </div>
             </div>

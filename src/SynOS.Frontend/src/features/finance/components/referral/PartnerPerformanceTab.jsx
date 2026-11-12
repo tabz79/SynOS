@@ -36,6 +36,7 @@ export const PartnerPerformanceTab = ({
     const [searchQuery, setSearchQuery] = useState('');
     const [typeFilter, setTypeFilter] = useState('All');
     const [hoveredTrendIndex, setHoveredTrendIndex] = useState(null);
+    const [isTableExpanded, setIsTableExpanded] = useState(false);
 
     const kpis = dashboardData?.kpis || {};
     const trend = dashboardData?.trend || [];
@@ -62,6 +63,11 @@ export const PartnerPerformanceTab = ({
             return matchesSearch && matchesType;
         });
     }, [partners, searchQuery, typeFilter]);
+
+    // Initial 6 rows at a glance, expandable via Load More
+    const visiblePartners = useMemo(() => {
+        return isTableExpanded ? filteredPartners : filteredPartners.slice(0, 6);
+    }, [filteredPartners, isTableExpanded]);
 
     const handlePartnerClick = (p) => {
         setSelectedPartner(p);
@@ -201,25 +207,25 @@ export const PartnerPerformanceTab = ({
     const beforeOffset = -afterStroke;
 
     const partnerTypeBadgeStyles = {
-        Doctor: "bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300 border border-sky-200/70",
-        Hospital: "bg-indigo-50 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300 border border-indigo-200/70",
-        Clinic: "bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300 border border-purple-200/70",
-        RMP: "bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 border border-amber-200/70"
+        Doctor: "bg-[#E0F2FE] text-[#0369A1] dark:bg-sky-950/40 dark:text-sky-300 border border-[#BAE6FD]/70",
+        Hospital: "bg-[#EEF2FF] text-[#4338CA] dark:bg-indigo-950/40 dark:text-indigo-300 border border-[#C7D2FE]/70",
+        Clinic: "bg-[#F3E8FF] text-[#7E22CE] dark:bg-purple-950/40 dark:text-purple-300 border border-[#E9D5FF]/70",
+        RMP: "bg-[#FEF3C7] text-[#92400E] dark:bg-amber-950/40 dark:text-amber-300 border border-[#FDE68A]/70"
     };
 
     return (
         <div className="space-y-3 sm:space-y-3.5 w-full animate-in fade-in duration-300">
             {/* ROW 1: SIGNATURE HERO SPLIT POD (TOTAL COMMISSION ACCRUED HERO + COMMISSION PAID VS PENDING LIABILITY) */}
-            <div className="min-h-[95px] p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] grid grid-cols-1 lg:grid-cols-12 gap-3.5 lg:gap-4 items-center">
+            <div className="min-h-[85px] p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] grid grid-cols-1 lg:grid-cols-12 gap-3.5 lg:gap-4 items-center">
                 
                 {/* Section 1 (4 Cols): Total Commission Accrued Hero Metric */}
                 <div 
                     onClick={onNavigateToVisits}
-                    className="lg:col-span-4 flex items-center gap-3 min-w-0 pr-0 lg:pr-2 cursor-pointer p-1.5 -m-1.5 rounded-xl hover:bg-white/70 dark:hover:bg-zinc-800/70 transition-all group"
+                    className="lg:col-span-4 flex items-center gap-3 min-w-0 pr-0 lg:pr-2 cursor-pointer p-1 -m-1 rounded-xl hover:bg-white/70 dark:hover:bg-zinc-800/70 transition-all group"
                     title="Click to view all referral visits"
                 >
-                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-b from-[#EBF5FF] to-[#D6EBFE] border border-white/90 dark:border-white/10 shadow-[0_4px_12px_rgba(37,99,235,0.12)] flex items-center justify-center text-[#1C6CF2] dark:text-sky-400 shrink-0 group-hover:scale-105 transition-transform">
-                        <Layers size={22} strokeWidth={2.2} />
+                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#EFF6FF] border border-[#DBEAFE] text-[#38BDF8] dark:bg-sky-950/40 dark:text-sky-400 shadow-2xs flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                        <Layers size={20} strokeWidth={2.2} />
                     </div>
 
                     <div className="space-y-0.5 min-w-0 flex-1">
@@ -231,11 +237,8 @@ export const PartnerPerformanceTab = ({
                                 {kpis.effectiveCommissionRate || 0}% Effective Rate
                             </span>
                         </div>
-                        <p className="text-xl sm:text-2xl lg:text-[28px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums">
+                        <p className="text-xl sm:text-2xl lg:text-[26px] font-extrabold text-slate-900 dark:text-white tracking-tight leading-none my-0.5 tabular-nums">
                             ₹{(kpis.commissionAccrued || 0).toLocaleString()}
-                        </p>
-                        <p className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400 truncate">
-                            From {(kpis.eligibleVisitCount || 0).toLocaleString()} eligible visits across {(kpis.settledPartnerCount || 0)} partners
                         </p>
                     </div>
                 </div>
@@ -254,46 +257,44 @@ export const PartnerPerformanceTab = ({
                         </div>
                     </div>
 
-                    {/* Sleek Dual-Channel Split Bar */}
-                    <div className="relative h-[12px] sm:h-[14px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 flex items-center overflow-visible shadow-inner">
+                    {/* Sleek Pastel Split Bar */}
+                    <div className="relative h-[11px] sm:h-[13px] rounded-full bg-[#E2ECF6] dark:bg-zinc-800 flex items-center overflow-visible shadow-inner">
                         <div 
-                            className="h-full bg-gradient-to-r from-[#60A5FA] via-[#7BB3F0] to-[#93C5FD] rounded-l-full transition-all duration-500 shadow-[0_2px_8px_rgba(96,165,250,0.25)]"
+                            className="h-full bg-gradient-to-r from-[#93C5FD] via-[#60A5FA] to-[#38BDF8] rounded-l-full transition-all duration-500 shadow-[0_2px_8px_rgba(56,189,248,0.25)]"
                             style={{ width: `${paidShare}%` }}
                         />
                         <div 
-                            className="h-full bg-gradient-to-r from-[#FCA5A5] via-[#FDA4AF] to-[#FECDD3] rounded-r-full transition-all duration-500 shadow-[0_2px_8px_rgba(253,164,175,0.25)]"
+                            className="h-full bg-gradient-to-r from-[#FECDD3] via-[#FDA4AF] to-[#FCA5A5] rounded-r-full transition-all duration-500 shadow-[0_2px_8px_rgba(253,164,175,0.25)]"
                             style={{ width: `${pendingShare}%` }}
                         />
                         <div 
-                            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 sm:w-4.5 sm:h-4.5 rounded-full bg-white dark:bg-zinc-100 shadow-[0_2px_8px_rgba(15,35,60,0.22),0_0_0_2px_#FFFFFF] border border-slate-100 pointer-events-none transition-all duration-500 z-10 flex items-center justify-center"
+                            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-white dark:bg-zinc-100 shadow-[0_2px_8px_rgba(15,35,60,0.22),0_0_0_2px_#FFFFFF] border border-slate-100 pointer-events-none transition-all duration-500 z-10 flex items-center justify-center"
                             style={{ left: `${paidShare}%` }}
                         >
-                            <div className="w-1.5 h-1.5 rounded-full bg-slate-400"></div>
+                            <div className="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
                         </div>
                     </div>
 
-                    {/* Two Channel Stat Pods Below */}
+                    {/* Two Channel Stat Pods Below (Clean, No Subtext) */}
                     <div className="flex items-center justify-between pt-0.5">
                         {/* Left Stat Pod: Commission Paid */}
                         <div 
                             onClick={onNavigateToPayouts}
-                            className="flex items-center gap-2 cursor-pointer p-1.5 -m-1.5 rounded-xl hover:bg-white/70 dark:hover:bg-zinc-800/70 transition-all group"
+                            className="flex items-center gap-2 cursor-pointer p-1 -m-1 rounded-xl hover:bg-white/70 dark:hover:bg-zinc-800/70 transition-all group"
                             title="Click to view Commission Settlements & Payouts"
                         >
-                            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-[8px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
-                                <Wallet size={14} strokeWidth={2.3} />
+                            <div className="w-6 h-6 rounded-[7px] bg-[#EFF6FF] text-[#38BDF8] dark:bg-sky-950/40 dark:text-sky-400 border border-[#DBEAFE] flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                                <Wallet size={13} strokeWidth={2.3} />
                             </div>
-                            <div>
-                                <div className="flex items-baseline gap-1.5">
-                                    <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none group-hover:text-synos-primary transition-colors">
-                                        ₹{(kpis.commissionPaid || 0).toLocaleString()}
-                                    </span>
-                                    <span className="text-[10px] font-bold text-[#1C6CF2] dark:text-sky-400 bg-[#EBF5FF] dark:bg-sky-950/60 px-1 py-0.2 rounded-md border border-sky-100 dark:border-sky-800/40 tabular-nums">
-                                        {paidShare}%
-                                    </span>
-                                </div>
-                                <span className="text-[10px] sm:text-[11px] text-slate-600 dark:text-zinc-400 font-bold block">
-                                    Commission Paid ({kpis.settlementCount || 0} settlements)
+                            <div className="flex items-baseline gap-1.5">
+                                <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none group-hover:text-synos-primary transition-colors">
+                                    ₹{(kpis.commissionPaid || 0).toLocaleString()}
+                                </span>
+                                <span className="text-[10px] font-bold text-[#0369A1] dark:text-sky-300 bg-[#E0F2FE] dark:bg-sky-950/60 px-1 py-0.2 rounded-md border border-[#BAE6FD] tabular-nums">
+                                    {paidShare}%
+                                </span>
+                                <span className="text-xs text-slate-600 dark:text-zinc-400 font-bold ml-1">
+                                    Commission Paid
                                 </span>
                             </div>
                         </div>
@@ -301,24 +302,22 @@ export const PartnerPerformanceTab = ({
                         {/* Right Stat Pod: Pending Commission */}
                         <div 
                             onClick={onNavigateToPayouts}
-                            className="flex items-center gap-2 text-right cursor-pointer p-1.5 -m-1.5 rounded-xl hover:bg-white/70 dark:hover:bg-zinc-800/70 transition-all group"
+                            className="flex items-center gap-2 text-right cursor-pointer p-1 -m-1 rounded-xl hover:bg-white/70 dark:hover:bg-zinc-800/70 transition-all group"
                             title="Click to view Pending Payouts"
                         >
-                            <div>
-                                <div className="flex items-baseline gap-1.5 justify-end">
-                                    <span className="text-[10px] font-bold text-[#E11D48] dark:text-rose-400 bg-[#FFF1F2] dark:bg-rose-950/60 px-1 py-0.2 rounded-md border border-rose-100 dark:border-rose-800/40 tabular-nums">
-                                        {pendingShare}%
-                                    </span>
-                                    <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
-                                        ₹{(kpis.pendingCommission || 0).toLocaleString()}
-                                    </span>
-                                </div>
-                                <span className="text-[10px] sm:text-[11px] text-slate-600 dark:text-zinc-400 font-bold block">
-                                    Pending Liability ({kpis.pendingPctOfAccrued || 0}% of accrued)
+                            <div className="flex items-baseline gap-1.5 justify-end">
+                                <span className="text-xs text-slate-600 dark:text-zinc-400 font-bold mr-1">
+                                    Pending Liability
+                                </span>
+                                <span className="text-[10px] font-bold text-[#9F1239] dark:text-rose-300 bg-[#FFE4E6] dark:bg-rose-950/60 px-1 py-0.2 rounded-md border border-[#FECDD3] tabular-nums">
+                                    {pendingShare}%
+                                </span>
+                                <span className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-none group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
+                                    ₹{(kpis.pendingCommission || 0).toLocaleString()}
                                 </span>
                             </div>
-                            <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-[8px] bg-[#FFF1F2] text-[#FB7185] dark:bg-rose-950/40 dark:text-rose-400 border border-rose-100/90 dark:border-rose-800/40 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
-                                <Hourglass size={14} strokeWidth={2.3} />
+                            <div className="w-6 h-6 rounded-[7px] bg-[#FFF1F2] text-[#FB7185] dark:bg-rose-950/40 dark:text-rose-400 border border-[#FFE4E6] flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                                <Hourglass size={13} strokeWidth={2.3} />
                             </div>
                         </div>
                     </div>
@@ -327,38 +326,33 @@ export const PartnerPerformanceTab = ({
 
             {/* ROW 2: COMMISSION TREND POD (7 COLS) & TOP REFERRAL PARTNERS POD (5 COLS) */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-3.5 items-stretch">
-                {/* Left Pod: Commission Trend with Day Pillars (7 cols) */}
+                {/* Left Pod: Commission Trend with Safe Pastel Day Pillars (7 cols) */}
                 <div className="lg:col-span-7 p-3.5 sm:p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex flex-col justify-between">
                     {/* Header */}
                     <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-zinc-800">
                         <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-[7px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                            <div className="w-6 h-6 rounded-[7px] bg-[#EFF6FF] text-[#38BDF8] dark:bg-sky-950/40 dark:text-sky-400 border border-[#DBEAFE] flex items-center justify-center shrink-0 shadow-2xs">
                                 <TrendingUp size={13} strokeWidth={2.3} />
                             </div>
-                            <div>
-                                <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal leading-tight">
-                                    Commission Trend
-                                </h3>
-                                <p className="text-[10px] text-slate-500 dark:text-zinc-400 leading-none">
-                                    Commission accrued vs paid (last 7 days)
-                                </p>
-                            </div>
+                            <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal leading-tight">
+                                Commission Trend
+                            </h3>
                         </div>
 
                         {/* Legend */}
                         <div className="flex items-center gap-3 text-xs font-semibold">
                             <div className="flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full bg-[#0284C7]" />
+                                <span className="w-2 h-2 rounded-full bg-[#38BDF8]" />
                                 <span className="text-[11px] text-slate-600 dark:text-zinc-300 font-bold">Accrued</span>
                             </div>
                             <div className="flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full bg-[#9333EA]" />
+                                <span className="w-2 h-2 rounded-full bg-[#C084FC]" />
                                 <span className="text-[11px] text-slate-600 dark:text-zinc-300 font-bold">Paid</span>
                             </div>
                         </div>
                     </div>
 
-                    {/* SVG Curve Chart with Day Pillars */}
+                    {/* SVG Curve Chart with Safe Day Pillars */}
                     <div className="relative w-full h-[160px] mt-1 select-none">
                         <svg 
                             viewBox={`0 0 ${chartWidth} ${chartHeight}`} 
@@ -374,9 +368,8 @@ export const PartnerPerformanceTab = ({
                                             y1={y} 
                                             x2={chartWidth - paddingX + 15} 
                                             y2={y} 
-                                            stroke="currentColor" 
+                                            stroke="#E2ECF6" 
                                             strokeDasharray="2 3"
-                                            className="text-slate-200 dark:text-zinc-800"
                                             strokeWidth="1"
                                         />
                                         <text 
@@ -391,11 +384,14 @@ export const PartnerPerformanceTab = ({
                                 );
                             })}
 
-                            {/* Tactile Day Pillars (Capsule columns behind each day) */}
+                            {/* Safe Pastel Day Pillars (Never renders black) */}
                             {trend.map((t, idx) => {
                                 const x = paddingX + (idx / Math.max(1, trend.length - 1)) * (chartWidth - paddingX * 2);
                                 const isHovered = hoveredTrendIndex === idx;
                                 const isLast = idx === trend.length - 1;
+                                const pillarFill = isHovered 
+                                    ? "#E0F2FE" 
+                                    : (isLast ? "#E0F2FE" : "#F1F5F9");
                                 return (
                                     <rect 
                                         key={`pillar-${idx}`}
@@ -404,32 +400,27 @@ export const PartnerPerformanceTab = ({
                                         width={28} 
                                         height={chartHeight - paddingY * 2 + 16} 
                                         rx={10} 
-                                        className={cn(
-                                            "transition-colors",
-                                            isHovered 
-                                                ? "fill-sky-500/15 dark:fill-sky-400/20" 
-                                                : isLast 
-                                                    ? "fill-sky-500/10 dark:fill-sky-500/20" 
-                                                    : "fill-slate-200/40 dark:fill-zinc-800/30"
-                                        )}
+                                        fill={pillarFill}
+                                        fillOpacity={isHovered ? 0.75 : (isLast ? 0.65 : 0.45)}
+                                        className="transition-all"
                                     />
                                 );
                             })}
 
-                            {/* Accrued Smooth Curve */}
+                            {/* Accrued Smooth Curve (Pastel Sky) */}
                             <path 
                                 d={accruedPath} 
                                 fill="none" 
-                                stroke="#0284C7" 
+                                stroke="#38BDF8" 
                                 strokeWidth="2.5" 
                                 strokeLinecap="round"
                             />
 
-                            {/* Paid Smooth Curve */}
+                            {/* Paid Smooth Curve (Pastel Purple) */}
                             <path 
                                 d={paidPath} 
                                 fill="none" 
-                                stroke="#9333EA" 
+                                stroke="#C084FC" 
                                 strokeWidth="2.5" 
                                 strokeLinecap="round"
                             />
@@ -441,7 +432,9 @@ export const PartnerPerformanceTab = ({
                                     cx={pt.x} 
                                     cy={pt.y} 
                                     r={hoveredTrendIndex === idx ? 5 : 3.5}
-                                    className="fill-white dark:fill-zinc-900 stroke-sky-600 transition-all cursor-pointer"
+                                    fill="#ffffff"
+                                    stroke="#38BDF8"
+                                    className="transition-all cursor-pointer"
                                     strokeWidth="2.5"
                                     onMouseEnter={() => setHoveredTrendIndex(idx)}
                                     onMouseLeave={() => setHoveredTrendIndex(null)}
@@ -455,7 +448,9 @@ export const PartnerPerformanceTab = ({
                                     cx={pt.x} 
                                     cy={pt.y} 
                                     r={hoveredTrendIndex === idx ? 5 : 3.5}
-                                    className="fill-white dark:fill-zinc-900 stroke-purple-600 transition-all cursor-pointer"
+                                    fill="#ffffff"
+                                    stroke="#C084FC"
+                                    className="transition-all cursor-pointer"
                                     strokeWidth="2.5"
                                     onMouseEnter={() => setHoveredTrendIndex(idx)}
                                     onMouseLeave={() => setHoveredTrendIndex(null)}
@@ -471,7 +466,7 @@ export const PartnerPerformanceTab = ({
                                         width="52" 
                                         height="20" 
                                         rx="6" 
-                                        fill="#0284C7" 
+                                        fill="#38BDF8" 
                                     />
                                     <text 
                                         x="26" 
@@ -493,7 +488,7 @@ export const PartnerPerformanceTab = ({
                                         width="52" 
                                         height="20" 
                                         rx="6" 
-                                        fill="#9333EA" 
+                                        fill="#C084FC" 
                                     />
                                     <text 
                                         x="26" 
@@ -545,7 +540,7 @@ export const PartnerPerformanceTab = ({
                 <div className="lg:col-span-5 p-3.5 sm:p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex flex-col justify-between">
                     <div>
                         <div className="flex items-center gap-2 pb-2.5 border-b border-slate-200 dark:border-zinc-800">
-                            <div className="w-6 h-6 rounded-[7px] bg-[#FAF5FF] text-[#A855F7] dark:bg-purple-950/40 dark:text-purple-400 border border-purple-100 dark:border-purple-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                            <div className="w-6 h-6 rounded-[7px] bg-[#FAF5FF] text-[#C084FC] dark:bg-purple-950/40 dark:text-purple-400 border border-[#F3E8FF] flex items-center justify-center shrink-0 shadow-2xs">
                                 <User size={13} strokeWidth={2.3} />
                             </div>
                             <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal">
@@ -577,7 +572,7 @@ export const PartnerPerformanceTab = ({
                                     >
                                         {/* Partner Name + Avatar */}
                                         <div className="col-span-4 flex items-center gap-1.5 min-w-0">
-                                            <div className="w-5.5 h-5.5 rounded-full bg-[#FAF5FF] text-[#A855F7] dark:bg-purple-950/50 dark:text-purple-400 flex items-center justify-center text-[10px] font-extrabold shrink-0 shadow-2xs">
+                                            <div className="w-5.5 h-5.5 rounded-full bg-[#FAF5FF] text-[#C084FC] dark:bg-purple-950/50 dark:text-purple-400 flex items-center justify-center text-[10px] font-extrabold shrink-0 shadow-2xs">
                                                 {p.name ? p.name.charAt(0) : 'D'}
                                             </div>
                                             <span className="font-bold text-slate-800 dark:text-zinc-200 truncate group-hover:text-synos-primary transition-colors text-xs">
@@ -606,7 +601,7 @@ export const PartnerPerformanceTab = ({
                                         <div className="col-span-2 flex items-center justify-end gap-1.5">
                                             <div className="w-9 h-1.5 rounded-full bg-[#E2ECF6] dark:bg-zinc-800 overflow-hidden shadow-inner">
                                                 <div 
-                                                    className="h-full rounded-full bg-sky-500" 
+                                                    className="h-full rounded-full bg-[#38BDF8]" 
                                                     style={{ width: `${Math.min(100, p.share || 0)}%` }} 
                                                 />
                                             </div>
@@ -622,13 +617,13 @@ export const PartnerPerformanceTab = ({
                 </div>
             </div>
 
-            {/* ROW 3: MAIN TABLE — REFERRAL PARTNER PERFORMANCE */}
+            {/* ROW 3: MAIN TABLE — REFERRAL PARTNER PERFORMANCE (INITIAL 6 ROWS WITH LOAD MORE) */}
             <div className="p-4 sm:p-5 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] space-y-3.5">
                 {/* Table Header with Filters & Search */}
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
                     {/* Title */}
                     <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-[8px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                        <div className="w-7 h-7 rounded-[8px] bg-[#EFF6FF] text-[#38BDF8] dark:bg-sky-950/40 dark:text-sky-400 border border-[#DBEAFE] flex items-center justify-center shrink-0 shadow-2xs">
                             <Layers size={15} strokeWidth={2.3} />
                         </div>
                         <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white tracking-normal">
@@ -703,14 +698,14 @@ export const PartnerPerformanceTab = ({
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200/70 dark:divide-zinc-800/60">
-                            {filteredPartners.length === 0 ? (
+                            {visiblePartners.length === 0 ? (
                                 <tr>
                                     <td colSpan={14} className="py-12 text-center text-slate-400 dark:text-zinc-500">
                                         No referral partner records found.
                                     </td>
                                 </tr>
                             ) : (
-                                filteredPartners.map((p) => (
+                                visiblePartners.map((p) => (
                                     <tr 
                                         key={p.partnerId}
                                         className="hover:bg-slate-200/40 dark:hover:bg-zinc-800/40 transition-colors group cursor-pointer"
@@ -719,7 +714,7 @@ export const PartnerPerformanceTab = ({
                                         {/* Partner Organization */}
                                         <td className="py-3 px-3">
                                             <div className="flex items-center gap-2.5">
-                                                <div className="w-6 h-6 rounded-full bg-[#FAF5FF] dark:bg-purple-950/40 text-[#A855F7] dark:text-purple-400 flex items-center justify-center shrink-0 shadow-2xs">
+                                                <div className="w-6 h-6 rounded-full bg-[#FAF5FF] dark:bg-purple-950/40 text-[#C084FC] dark:text-purple-400 flex items-center justify-center shrink-0 shadow-2xs">
                                                     <User size={12} />
                                                 </div>
                                                 <span className="font-bold text-slate-900 dark:text-zinc-100 group-hover:text-synos-primary transition-colors">
@@ -780,8 +775,8 @@ export const PartnerPerformanceTab = ({
                                             <span className={cn(
                                                 "px-2 py-0.5 rounded-full text-[10px] font-black tabular-nums border",
                                                 p.outstanding > 0 
-                                                    ? 'bg-[#FFF1F2] text-[#E11D48] border-rose-200/60 dark:bg-rose-950/40 dark:text-rose-400' 
-                                                    : 'bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/40 dark:text-emerald-400'
+                                                    ? 'bg-[#FFE4E6] text-[#BE123C] border-[#FECDD3]/70 dark:bg-rose-950/40 dark:text-rose-400' 
+                                                    : 'bg-[#D1FAE5] text-[#047857] border-[#A7F3D0]/70 dark:bg-emerald-950/40 dark:text-emerald-400'
                                             )}>
                                                 ₹{(p.outstanding || 0).toLocaleString()}
                                             </span>
@@ -816,6 +811,19 @@ export const PartnerPerformanceTab = ({
                         </tbody>
                     </table>
                 </div>
+
+                {/* Floating Load More Button (Top 6 rows at a glance initially) */}
+                {filteredPartners.length > 6 && (
+                    <div className="pt-2 flex justify-center">
+                        <button
+                            onClick={() => setIsTableExpanded(!isTableExpanded)}
+                            className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-white/90 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 shadow-2xs hover:shadow-xs hover:bg-slate-50 dark:hover:bg-zinc-700 text-xs font-bold text-slate-700 dark:text-zinc-200 transition-all cursor-pointer group"
+                        >
+                            <span>{isTableExpanded ? 'Show Less' : `Load More (${filteredPartners.length - 6} more)`}</span>
+                            <ChevronDown size={14} className={cn("text-slate-400 group-hover:text-synos-primary transition-transform duration-200", isTableExpanded && "rotate-180")} />
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* ROW 4: 3 BOTTOM TACTILE PODS */}
@@ -824,7 +832,7 @@ export const PartnerPerformanceTab = ({
                 <div className="p-3.5 sm:p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex flex-col justify-between">
                     <div>
                         <div className="flex items-center gap-2 pb-2.5 border-b border-slate-200 dark:border-zinc-800">
-                            <div className="w-6 h-6 rounded-[7px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                            <div className="w-6 h-6 rounded-[7px] bg-[#EFF6FF] text-[#38BDF8] dark:bg-sky-950/40 dark:text-sky-400 border border-[#DBEAFE] flex items-center justify-center shrink-0 shadow-2xs">
                                 <FlaskConical size={13} strokeWidth={2.3} />
                             </div>
                             <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal">
@@ -854,7 +862,7 @@ export const PartnerPerformanceTab = ({
                                         <div className="col-span-3 flex items-center justify-center gap-1.5">
                                             <div className="w-9 h-1.5 rounded-full bg-[#E2ECF6] dark:bg-zinc-800 overflow-hidden shadow-inner">
                                                 <div 
-                                                    className="h-full rounded-full bg-sky-500" 
+                                                    className="h-full rounded-full bg-[#38BDF8]" 
                                                     style={{ width: `${Math.min(100, (t.volume / (topInvestigations[0]?.volume || 1)) * 100)}%` }} 
                                                 />
                                             </div>
@@ -910,7 +918,7 @@ export const PartnerPerformanceTab = ({
                                         cy="65"
                                         r="52"
                                         fill="transparent"
-                                        stroke="#38BDF8"
+                                        stroke="#7DD3FC"
                                         strokeWidth="15"
                                         strokeDasharray={`${afterStroke} ${donutCircumference}`}
                                         strokeDashoffset="0"
@@ -941,7 +949,7 @@ export const PartnerPerformanceTab = ({
                             <div className="flex-1 space-y-2.5 text-xs">
                                 <div>
                                     <div className="flex items-center gap-1.5">
-                                        <span className="w-2 h-2 rounded-full bg-[#38BDF8] shrink-0" />
+                                        <span className="w-2 h-2 rounded-full bg-[#7DD3FC] shrink-0" />
                                         <span className="font-extrabold text-slate-800 dark:text-zinc-200 text-[11px]">
                                             After Discount (Net Rev)
                                         </span>
@@ -978,7 +986,7 @@ export const PartnerPerformanceTab = ({
                     <div>
                         <div className="flex items-center justify-between pb-2.5 border-b border-slate-200 dark:border-zinc-800">
                             <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 rounded-[7px] bg-[#FAF5FF] text-[#A855F7] dark:bg-purple-950/40 dark:text-purple-400 border border-purple-100 dark:border-purple-800/40 flex items-center justify-center shrink-0 shadow-2xs">
+                                <div className="w-6 h-6 rounded-[7px] bg-[#FAF5FF] text-[#C084FC] dark:bg-purple-950/40 dark:text-purple-400 border border-[#F3E8FF] flex items-center justify-center shrink-0 shadow-2xs">
                                     <FileText size={13} strokeWidth={2.3} />
                                 </div>
                                 <h3 className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white tracking-normal">
@@ -1005,8 +1013,8 @@ export const PartnerPerformanceTab = ({
                                     <div key={act.id || idx} className="py-2 flex items-start gap-2.5">
                                         <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
                                             act.type === 'Settled'
-                                                ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400'
-                                                : 'bg-[#FAF5FF] dark:bg-purple-950/50 text-[#A855F7] dark:text-purple-400'
+                                                ? 'bg-[#D1FAE5] dark:bg-emerald-950/50 text-[#047857] dark:text-emerald-400'
+                                                : 'bg-[#FAF5FF] dark:bg-purple-950/50 text-[#C084FC] dark:text-purple-400'
                                         }`}>
                                             {act.type === 'Settled' ? <ShieldCheck size={13} /> : <Layers size={13} />}
                                         </div>
@@ -1027,10 +1035,6 @@ export const PartnerPerformanceTab = ({
                                 ))
                             )}
                         </div>
-                    </div>
-
-                    <div className="pt-2 text-[10px] text-slate-500 dark:text-zinc-400 text-center border-t border-slate-200 dark:border-zinc-800">
-                        Audited laboratory commission ledger & real-time accruals
                     </div>
                 </div>
             </div>
