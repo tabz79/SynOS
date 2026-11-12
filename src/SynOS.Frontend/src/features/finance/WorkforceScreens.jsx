@@ -30,7 +30,8 @@ import {
     Check,
     X,
     Unlock,
-    Printer
+    Printer,
+    RotateCw
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
 import { AdminApi } from '@/api/admin';
@@ -41,6 +42,8 @@ import { AdvanceRequestModal } from './components/workforce/AdvanceRequestModal'
 import { StatutoryConfigModal } from './components/workforce/StatutoryConfigModal';
 import { AttendanceExceptionModal } from './components/workforce/AttendanceExceptionModal';
 import { WorkforcePolicyModal } from './components/workforce/WorkforcePolicyModal';
+import { WorkforceOperationalOverview } from './components/workforce/WorkforceOperationalOverview';
+import { PayrollCompensationOverview } from './components/workforce/PayrollCompensationOverview';
 import { cn } from '@/lib/utils';
 import { useGlobalFilter } from '@/context/GlobalFilterContext';
 import { StandardFilterBar } from '@/components/layout/StandardFilterBar';
@@ -3499,128 +3502,155 @@ function ManageBranchRolesModal({ user, branches, roles, onClose, onSuccess }) {
 import { useParams, useNavigate } from 'react-router-dom';
 
 export const WorkforceOverviewTab = () => {
-    const [stats, setStats] = useState(null);
+    const { presetRange, customDates, effectiveBranchId } = useGlobalFilter();
+    const [activeMode, setActiveMode] = useState(presetRange === 'today' ? 'operational' : 'financial');
+    const [dashboardData, setDashboardData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [lastUpdated, setLastUpdated] = useState('');
+
+    // Keep activeMode in sync with presetRange whenever user clicks Today vs This Month/Quarter/Year in StandardFilterBar
+    useEffect(() => {
+        if (presetRange === 'today') {
+            setActiveMode('operational');
+        } else {
+            setActiveMode('financial');
+        }
+    }, [presetRange]);
+
+    const loadDashboard = async (silent = false) => {
+        try {
+            if (!silent) setLoading(true);
+            else setIsRefreshing(true);
+
+            const res = await WorkforceApi.getDashboard({
+                preset: presetRange,
+                start: customDates?.start,
+                end: customDates?.end,
+                branchId: effectiveBranchId
+            });
+            setDashboardData(res);
+            const now = new Date();
+            setLastUpdated(now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }) + ', ' + now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }));
+        } catch (err) {
+            console.error("Failed to load workforce dashboard data:", err);
+        } finally {
+            setLoading(false);
+            setIsRefreshing(false);
+        }
+    };
 
     useEffect(() => {
-        const load = async () => {
-            try {
-                setLoading(true);
-                const [staff, advances, runs] = await Promise.all([
-                    WorkforceApi.getStaff().catch(() => []),
-                    WorkforceApi.getAdvances().catch(() => []),
-                    WorkforceApi.getRuns().catch(() => [])
-                ]);
+        loadDashboard();
+    }, [presetRange, customDates?.start, customDates?.end, effectiveBranchId]);
 
-                const calculated = {
-                    staffCount: staff.length,
-                    activeAdvances: advances.filter(a => a.status === 'Pending').length,
-                    totalAdvancesAmt: advances.reduce((acc, a) => acc + a.amount, 0),
-                    payrollRunsCount: runs.length,
-                    staff: staff.slice(0, 5),
-                    advances: advances.slice(0, 5)
-                };
-                setStats(calculated);
-            } catch (err) {
-                console.error("Failed to load workforce overview stats:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        load();
-    }, []);
+    const handleRefresh = () => {
+        loadDashboard(true);
+    };
 
-    if (loading || !stats) return <div className="py-20 text-center animate-pulse text-zinc-500 font-bold uppercase tracking-widest text-[10px]">Syncing human resources ledger...</div>;
-
-    const cards = [
-        { title: "Active Employees", value: stats.staffCount.toString(), icon: Users, color: "text-blue-500", bg: "bg-blue-500/10", description: "Registered operational members" },
-        { title: "Active Advances", value: stats.activeAdvances.toString(), type: stats.activeAdvances > 0 ? "warning" : "neutral", icon: Wallet, color: "text-rose-500", bg: "bg-rose-500/10", description: "Salary advances awaiting settlement" },
-        { title: "Total Loans Issued", value: `₹${stats.totalAdvancesAmt.toLocaleString()}`, icon: CreditCard, color: "text-emerald-500", bg: "bg-emerald-500/10", description: "Cumulative outstanding loans" },
-        { title: "Payroll Runs", value: stats.payrollRunsCount.toString(), icon: Calculator, color: "text-amber-500", bg: "bg-amber-500/10", description: "Completed salary processing runs" }
-    ];
+    if (loading && !dashboardData) {
+        return (
+            <div className="p-8 space-y-4">
+                <div className="h-14 bg-slate-100 dark:bg-zinc-800/50 rounded-2xl animate-pulse" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                        <div key={i} className="h-28 bg-slate-100 dark:bg-zinc-800/50 rounded-[22px] animate-pulse" />
+                    ))}
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-3.5">
+                    <div className="lg:col-span-5 h-56 bg-slate-100 dark:bg-zinc-800/50 rounded-[22px] animate-pulse" />
+                    <div className="lg:col-span-4 h-56 bg-slate-100 dark:bg-zinc-800/50 rounded-[22px] animate-pulse" />
+                    <div className="lg:col-span-3 h-56 bg-slate-100 dark:bg-zinc-800/50 rounded-[22px] animate-pulse" />
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className="p-8 space-y-8 animate-in slide-in-from-bottom-4 duration-500">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {cards.map((card, idx) => (
-                    <div key={idx} className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between">
-                        <div className="flex justify-between items-start mb-4">
-                            <div className={`p-3 rounded-2xl ${card.bg} ${card.color}`}>
-                                <card.icon size={20} />
-                            </div>
-                            {card.type === 'warning' && <Clock className="w-4 h-4 text-amber-500 animate-none" />}
+        <div className="p-8 space-y-4 animate-in fade-in duration-300">
+            {/* SUB-HEADER: TOGGLE PILL & LAST UPDATED / REFRESH */}
+            <div className="flex items-center justify-between pb-1 flex-wrap gap-3">
+                {/* Segmented Mode Selector: Workforce Overview vs Payroll Overview */}
+                <div className="flex items-center gap-1.5 p-1 bg-slate-200/60 dark:bg-zinc-800/80 rounded-2xl">
+                    <button
+                        onClick={() => setActiveMode('operational')}
+                        className={cn(
+                            "flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-left transition-all cursor-pointer",
+                            activeMode === 'operational'
+                                ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-xs"
+                                : "text-slate-500 hover:text-slate-900 dark:hover:text-zinc-200"
+                        )}
+                    >
+                        <div className={cn(
+                            "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+                            activeMode === 'operational'
+                                ? "bg-[#E0F2FE] text-[#0284C7] dark:bg-sky-950/40 dark:text-sky-400"
+                                : "bg-slate-300/50 dark:bg-zinc-700/50 text-slate-500"
+                        )}>
+                            <Users size={15} />
                         </div>
-                        <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{card.title}</h3>
-                        <p className="text-2xl font-black dark:text-white text-zinc-900 mt-1">{card.value}</p>
-                        <p className="text-[10px] text-zinc-400 mt-2 font-medium">{card.description}</p>
+                        <div>
+                            <div className="text-xs font-extrabold leading-tight">Workforce Overview</div>
+                            <div className="text-[10px] text-slate-400 font-medium">People, attendance and workforce health</div>
+                        </div>
+                    </button>
+
+                    <button
+                        onClick={() => setActiveMode('financial')}
+                        className={cn(
+                            "flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-left transition-all cursor-pointer",
+                            activeMode === 'financial'
+                                ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-xs"
+                                : "text-slate-500 hover:text-slate-900 dark:hover:text-zinc-200"
+                        )}
+                    >
+                        <div className={cn(
+                            "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+                            activeMode === 'financial'
+                                ? "bg-[#FAF5FF] text-[#9333EA] dark:bg-purple-950/40 dark:text-purple-400"
+                                : "bg-slate-300/50 dark:bg-zinc-700/50 text-slate-500"
+                        )}>
+                            <Wallet size={15} />
+                        </div>
+                        <div>
+                            <div className="text-xs font-extrabold leading-tight">Payroll Overview</div>
+                            <div className="text-[10px] text-slate-400 font-medium">Salaries, costs and financials</div>
+                        </div>
+                    </button>
+                </div>
+
+                {/* Right Side: Last Updated and Refresh */}
+                <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-zinc-400 font-medium">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse" />
+                        <span>Last Updated: {lastUpdated || 'Today'}</span>
                     </div>
-                ))}
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 synos-dept-card rounded-2xl p-6">
-                    <h2 className="text-lg font-bold dark:text-white text-zinc-900 mb-6">Staff Distribution</h2>
-                    {stats.staff.length === 0 ? (
-                        <div className="py-16 text-center text-zinc-400 border border-dashed dark:border-zinc-800 rounded-2xl">
-                            <p className="text-xs font-semibold">No registered staff members found.</p>
-                        </div>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left text-xs border-collapse">
-                                <thead>
-                                    <tr className="border-b dark:border-zinc-900 border-zinc-100 pb-2 text-[10px] uppercase font-bold text-zinc-400">
-                                        <th className="pb-3">Name</th>
-                                        <th className="pb-3">Designation</th>
-                                        <th className="pb-3 text-right">Base Salary</th>
-                                        <th className="pb-3 text-center">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {stats.staff.map((s, idx) => (
-                                        <tr key={idx} className="border-b dark:border-zinc-900/50 border-zinc-100/50 last:border-0 hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors">
-                                            <td className="py-3 font-semibold dark:text-zinc-200">{s.fullName}</td>
-                                            <td className="py-3 text-zinc-500">{s.designation}</td>
-                                            <td className="py-3 text-right font-black text-zinc-900 dark:text-zinc-100">₹{s.baseSalary?.toLocaleString()}</td>
-                                            <td className="py-3 text-center">
-                                                <span className={`px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider font-bold border ${
-                                                    s.isActive 
-                                                        ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' 
-                                                        : 'bg-zinc-500/10 text-zinc-500 border-zinc-500/20'
-                                                }`}>
-                                                    {s.isActive ? 'Active' : 'Inactive'}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </div>
-
-                <div className="synos-dept-card rounded-2xl p-6">
-                    <h2 className="text-lg font-bold dark:text-white text-zinc-900 mb-6">Recent Advances</h2>
-                    {stats.advances.length === 0 ? (
-                        <div className="py-10 text-center text-zinc-400 border border-dashed dark:border-zinc-800 rounded-2xl text-xs font-semibold">
-                            No active salary advance requests.
-                        </div>
-                    ) : (
-                        <div className="space-y-4">
-                            {stats.advances.map((a, idx) => (
-                                <div key={idx} className="p-4 bg-zinc-50 dark:bg-zinc-900/40 rounded-2xl border dark:border-zinc-800/50 border-zinc-200/50 flex items-center justify-between">
-                                    <div>
-                                        <p className="text-xs font-bold dark:text-zinc-200">{a.staffName || 'Employee advance'}</p>
-                                        <p className="text-[9px] text-zinc-400 uppercase tracking-tighter mt-1">{a.status}</p>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="text-xs font-black text-rose-500">₹{a.amount?.toLocaleString()}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
+                    <button
+                        onClick={handleRefresh}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:bg-slate-50 cursor-pointer shadow-2xs transition-colors"
+                    >
+                        <RotateCw size={13} className={cn(isRefreshing && "animate-spin text-synos-primary")} />
+                        <span>Refresh</span>
+                    </button>
                 </div>
             </div>
+
+            {/* Render Operational Dashboard (Image 1) or Financial Dashboard (Image 2) */}
+            {activeMode === 'operational' ? (
+                <WorkforceOperationalOverview 
+                    data={dashboardData} 
+                    loading={loading} 
+                    onRefresh={handleRefresh} 
+                    lastUpdated={lastUpdated} 
+                />
+            ) : (
+                <PayrollCompensationOverview 
+                    data={dashboardData} 
+                    loading={loading} 
+                    onRefresh={handleRefresh} 
+                    lastUpdated={lastUpdated} 
+                />
+            )}
         </div>
     );
 };
@@ -3924,10 +3954,10 @@ export const WorkforceTerminal = () => {
                     </div>
                     <div>
                         <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">
-                            Workforce Hub
+                            Workforce & Payroll
                         </h1>
                         <p className="text-xs text-zinc-500 font-medium mt-0.5">
-                            Coordinate employee rosters, system provisioning, attendance tracking, and monthly payroll calculation.
+                            Manage people, track payroll and monitor workforce health
                         </p>
                     </div>
 

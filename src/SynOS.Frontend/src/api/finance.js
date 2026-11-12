@@ -1310,6 +1310,22 @@ export const FinanceApi = {
      * WORKFORCE & PAYROLL API
      */
     WorkforceApi: {
+        // Unified Overview Dashboard (Today & Period/Financial)
+        getDashboard: async (params = {}) => {
+            const queryParams = new URLSearchParams();
+            if (params.preset) queryParams.append('preset', params.preset);
+            if (params.start) queryParams.append('start', params.start);
+            if (params.end) queryParams.append('end', params.end);
+            if (params.branchId) queryParams.append('branchId', params.branchId);
+
+            const qs = queryParams.toString() ? `?${queryParams.toString()}` : '';
+            const response = await fetch(FinanceApi.withBranchId(`/api/v1/workforce-admin/dashboard${qs}`), {
+                headers: FinanceApi.getHeaders()
+            });
+            if (!response.ok) throw new Error("Failed to load workforce dashboard data");
+            return response.json();
+        },
+
         // Staff Registry
         getStaff: async () => {
             const response = await fetch('/api/v1/staff', { headers: FinanceApi.getHeaders() });
