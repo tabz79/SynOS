@@ -18,7 +18,8 @@ import {
     Download,
     Loader2,
     Calendar,
-    ClipboardList
+    ClipboardList,
+    Building2
 } from 'lucide-react';
 import { FinanceApi } from '@/api/finance';
 import { FinancePrintableSummaryModal } from './components/FinancePrintableSummaryModal';
@@ -27,42 +28,47 @@ import { PartnerPerformanceTab } from './components/referral/PartnerPerformanceT
 import { ReferralVisitsTab } from './components/referral/ReferralVisitsTab';
 import { PartnerRegistryTab } from './components/referral/PartnerRegistryTab';
 import { PendingPayoutsTab } from './components/referral/PendingPayoutsTab';
-import { PartnerReceivablesTab } from './components/referral/PartnerReceivablesTab';
 import { SettlementHistoryTab } from './components/referral/SettlementHistoryTab';
 import { CommissionRulesTab } from './components/referral/CommissionRulesTab';
 import { ReferralRateQueueTab } from './components/referral/ReferralRateQueueTab';
+import { B2BAccountsOverviewTab } from './components/b2b/B2BAccountsOverviewTab';
+import { CommercialDocumentViewer } from './components/documents/CommercialDocumentViewer';
+import { DynamicDocumentRenderer } from './components/documents/DynamicDocumentRenderer';
 import { useGlobalFilter } from '@/context/GlobalFilterContext';
 import { StandardFilterBar } from '@/components/layout/StandardFilterBar';
 import { useAuth } from '@/context/AuthContext';
 
 /**
- * Referral Commissions Management Terminal
- * Owner-focused financial oversight screen for understanding referral commissions,
- * partner volume, commission accruals, payables, and disbursements.
+ * Referral Terminal
+ * Doctor & Referral Partner Commissions, B2B Institutional Receivables, and Rate Governance
  */
 export const ReferralTerminal = () => {
-    const { tab = 'performance' } = useParams();
+    const { tab = 'overview' } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
     const isReceptionView = user?.role === 'Receptionist' || 
                             (typeof window !== 'undefined' && window.location.search.includes('source=reception'));
 
-    // Normalized effective tab ('overview' redirects to 'performance')
-    const effectiveTab = tab === 'overview' ? 'performance' : tab;
+    // Normalize tab: 'performance' or 'commissions' -> 'overview'
+    const effectiveTab = (tab === 'performance' || tab === 'commissions') ? 'overview' : tab;
 
     useEffect(() => {
-        if (isReceptionView && effectiveTab === 'performance') {
+        if (isReceptionView && (effectiveTab === 'overview' || effectiveTab === 'receivables')) {
             navigate('/finance/referrals/rate-queue', { replace: true });
         }
     }, [isReceptionView, effectiveTab]);
 
     const { presetRange, customDates, isConsolidated, effectiveBranchId, isAdmin } = useGlobalFilter();
     const [dashboardData, setDashboardData] = useState(null);
+    const [b2bDashboardData, setB2bDashboardData] = useState(null);
+    const [b2bLoading, setB2bLoading] = useState(false);
     const [summary, setSummary] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isUpdating, setIsUpdating] = useState(false);
     const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
     const [unmappedQueueCount, setUnmappedQueueCount] = useState(0);
+    const [claimDocData, setClaimDocData] = useState(null);
+    const [isClaimDocOpen, setIsClaimDocOpen] = useState(false);
     const [tabData, setTabData] = useState({
         registry: [],
         payouts: [],
@@ -73,17 +79,21 @@ export const ReferralTerminal = () => {
     });
     const tabsRef = useRef(null);
 
+    // 8 Core Tabs in exact order: 2 new visual dashboards first, followed by all preserved operational tools
     const rawTabs = [
-        { id: 'performance', label: 'Partner Performance', icon: LayoutDashboard },
-        { id: 'payouts', label: 'Commission Payouts', icon: ArrowUpRight },
-        { id: 'rules', label: 'Rate Cards & Rules', icon: Settings, badge: unmappedQueueCount },
-        { id: 'visits', label: 'Referral Visits', icon: Users },
-        { id: 'history', label: 'Settlement History', icon: History },
+        { id: 'overview', label: 'Commissions', icon: LayoutDashboard },
+        { id: 'receivables', label: 'B2B Receivables', icon: Building2 },
+        { id: 'rate-queue', label: 'Rate Queue', icon: Zap, badge: unmappedQueueCount },
         { id: 'registry', label: 'Doctor Registry', icon: Users },
-        { id: 'receivables', label: 'Partner Receivables', icon: ArrowDownLeft }
+        { id: 'rmp', label: 'RMP Partners', icon: Users },
+        { id: 'payouts', label: 'Pending Payouts', icon: ArrowUpRight },
+        { id: 'history', label: 'Settlement History', icon: History },
+        { id: 'rules', label: 'Commission Rules', icon: Settings },
     ];
 
-    const tabs = isReceptionView ? rawTabs.filter(t => t.id !== 'performance') : rawTabs;
+    const tabs = isReceptionView 
+        ? rawTabs.filter(t => t.id !== 'overview' && t.id !== 'receivables') 
+        : rawTabs;
 
     const loadDashboardData = async () => {
         const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
@@ -116,10 +126,21 @@ export const ReferralTerminal = () => {
         }
     };
 
-    useEffect(() => {
-        loadDashboardData();
-        loadUnmappedCount();
-    }, [isConsolidated, effectiveBranchId, presetRange, customDates?.start, customDates?.end]);
+    const loadB2bDashboard = async () => {
+        const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
+        const isCons = isConsolidated && isAdmin;
+        const start = presetRange === 'custom' ? customDates?.start : null;
+        const end = presetRange === 'custom' ? customDates?.end : null;
+        try {
+            setB2bLoading(true);
+            const res = await FinanceApi.getB2BReceivablesDashboard(bId, isCons, presetRange, start, end);
+            setB2bDashboardData(res);
+        } catch (err) {
+            console.error("Failed to load B2B receivables dashboard", err);
+        } finally {
+            setB2bLoading(false);
+        }
+    };
 
     const loadUnmappedCount = async () => {
         try {
@@ -130,6 +151,14 @@ export const ReferralTerminal = () => {
             console.error("Failed to load rate queue count", e);
         }
     };
+
+    useEffect(() => {
+        loadDashboardData();
+        loadUnmappedCount();
+        if (effectiveTab === 'receivables') {
+            loadB2bDashboard();
+        }
+    }, [isConsolidated, effectiveBranchId, presetRange, customDates?.start, customDates?.end, effectiveTab]);
 
     useEffect(() => {
         if (tabsRef.current) {
@@ -143,7 +172,7 @@ export const ReferralTerminal = () => {
 
     const ensureTabData = async (targetTab = effectiveTab) => {
         try {
-            if (targetTab === 'registry') {
+            if (targetTab === 'registry' || targetTab === 'rmp') {
                 const res = await FinanceApi.getReferralPartners();
                 setTabData(prev => ({ ...prev, registry: res || [] }));
                 return res || [];
@@ -151,19 +180,6 @@ export const ReferralTerminal = () => {
                 const res = await FinanceApi.getReferralPayables();
                 setTabData(prev => ({ ...prev, payouts: res || [] }));
                 return res || [];
-            } else if (targetTab === 'receivables') {
-                const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
-                const start = presetRange === 'custom' ? customDates?.start : null;
-                const end = presetRange === 'custom' ? customDates?.end : null;
-                const res = await FinanceApi.getReceivables('partner', bId, presetRange, start, end);
-                const partnerOnly = (res || []).filter(r => {
-                    if (isDraftEntity(r)) return false;
-                    if (!isWithinTimeRange(r.occurredAt || r.date, presetRange, customDates)) return false;
-                    const dt = String(r.debtorType || '').toLowerCase();
-                    return dt === 'partner' || dt === '1' || (!r.corporateName && !r.corporateAccountId && !r.insuranceName && !r.insuranceCompanyId);
-                });
-                setTabData(prev => ({ ...prev, receivables: partnerOnly }));
-                return partnerOnly;
             } else if (targetTab === 'history') {
                 const res = await FinanceApi.getSettlementHistory();
                 setTabData(prev => ({ ...prev, history: res || [] }));
@@ -185,6 +201,9 @@ export const ReferralTerminal = () => {
                 });
                 setTabData(prev => ({ ...prev, visits: res?.items || [] }));
                 return res?.items || [];
+            } else if (targetTab === 'rate-queue') {
+                const res = await FinanceApi.getPendingLearningQueue();
+                return res || [];
             }
         } catch (e) {
             console.error("Failed to load tab data for", targetTab, e);
@@ -192,12 +211,26 @@ export const ReferralTerminal = () => {
         return tabData[targetTab] || [];
     };
 
+    const handleGenerateStatement = async (account) => {
+        try {
+            const res = await FinanceApi.getPartnerClaimStatement({
+                partnerId: account.accountId,
+                onlyUnsettled: true
+            });
+            setClaimDocData(res);
+            setIsClaimDocOpen(true);
+        } catch (err) {
+            console.error("Failed to generate claim statement", err);
+            alert("Could not generate claim statement: " + err.message);
+        }
+    };
+
     const handleDownloadTabSummary = async () => {
         let headers = [];
         let rows = [];
         let filename = `synos_referral_${effectiveTab}_${new Date().toISOString().slice(0, 10)}.csv`;
 
-        if (effectiveTab === 'performance') {
+        if (effectiveTab === 'overview') {
             const list = dashboardData?.partners || [];
             headers = [
                 "Partner Organization", "Type", "Referred Patients", "Visits", "Investigations",
@@ -219,24 +252,54 @@ export const ReferralTerminal = () => {
                 p.effectiveRate || 0,
                 `"${p.lastReferralDate || ''}"`
             ]);
-        } else if (effectiveTab === 'visits') {
-            const list = await ensureTabData('visits');
+        } else if (effectiveTab === 'receivables') {
+            const list = b2bDashboardData?.accounts || [];
             headers = [
-                "Token", "Date", "Patient Name", "MRN", "Primary Doctor", "Secondary Referral",
-                "Commission Recipient", "Net Bill", "Bill Status", "Commission Accrued", "Commission Status"
+                "Partner / Institution", "Type", "Visits", "Tests", "Gross Tariff",
+                "Concessions", "Net Billed", "Recovered", "Outstanding", "Recovery Rate (%)",
+                "Oldest Unpaid Bill", "Last Payment"
             ];
-            rows = list.map(v => [
-                `"${v.token || ''}"`,
-                `"${v.visitDate || ''}"`,
-                `"${(v.patientName || '').replace(/"/g, '""')}"`,
-                `"${v.patientMrn || ''}"`,
-                `"${(v.primaryDoctorName || '').replace(/"/g, '""')}"`,
-                `"${(v.secondaryDoctorName || 'None').replace(/"/g, '""')}"`,
-                `"${(v.commissionRecipientName || '').replace(/"/g, '""')}"`,
-                v.billNet || 0,
-                `"${v.billPaymentStatus || ''}"`,
-                v.commissionAccrued || 0,
-                `"${v.commissionStatus || ''}"`
+            rows = list.map(a => [
+                `"${(a.accountName || '').replace(/"/g, '""')}"`,
+                `"${a.accountType || ''}"`,
+                a.visits || 0,
+                a.tests || 0,
+                a.grossTariff || 0,
+                a.concessions || 0,
+                a.netBilled || 0,
+                a.recovered || 0,
+                a.outstanding || 0,
+                a.recoveryRate || 0,
+                `"${a.oldestUnpaidBill || ''}"`,
+                `"${a.lastPayment || ''}"`
+            ]);
+        } else if (effectiveTab === 'rate-queue') {
+            const data = await ensureTabData('rate-queue');
+            headers = ["Doctor Name", "Clinic", "Test Name", "Test Code", "Department", "Lab Tariff (INR)", "Times Prescribed"];
+            (data || []).forEach(g => {
+                (g.unmappedTests || []).forEach(t => {
+                    rows.push([
+                        `"${(g.doctorName || '').replace(/"/g, '""')}"`,
+                        `"${(g.clinicName || '').replace(/"/g, '""')}"`,
+                        `"${(t.testName || '').replace(/"/g, '""')}"`,
+                        `"${t.testCode || ''}"`,
+                        `"${t.departmentName || ''}"`,
+                        t.price || 0,
+                        t.prescribedCount || 0
+                    ]);
+                });
+            });
+        } else if (effectiveTab === 'registry') {
+            const data = await ensureTabData('registry');
+            headers = ["Partner Name", "Partner Type", "Clinic / Hospital", "Phone", "Email", "Default Commission (%)", "Status"];
+            rows = (data || []).map(p => [
+                `"${(p.name || '').replace(/"/g, '""')}"`,
+                `"${p.partnerType || 'Doctor'}"`,
+                `"${(p.clinicName || '').replace(/"/g, '""')}"`,
+                `"${p.phone || ''}"`,
+                `"${p.email || ''}"`,
+                p.commissionPercentage ?? p.defaultCommission ?? 0,
+                p.isApproved ? "Active / Approved" : "Pending Approval"
             ]);
         } else if (effectiveTab === 'payouts') {
             const list = await ensureTabData('payouts');
@@ -282,7 +345,7 @@ export const ReferralTerminal = () => {
     };
 
     const getPrintSummaryConfig = () => {
-        if (effectiveTab === 'performance') {
+        if (effectiveTab === 'overview') {
             const partnersList = dashboardData?.partners || [];
             return {
                 title: "Referral Commissions & Partner Performance Statement",
@@ -314,6 +377,38 @@ export const ReferralTerminal = () => {
                     netRevenue: `₹${partnersList.reduce((s, p) => s + Number(p.netRevenue || 0), 0).toLocaleString()}`,
                     commissionAccrued: `₹${partnersList.reduce((s, p) => s + Number(p.commissionAccrued || 0), 0).toLocaleString()}`,
                     outstanding: `₹${partnersList.reduce((s, p) => s + Number(p.outstanding || 0), 0).toLocaleString()}`
+                }
+            };
+        } else if (effectiveTab === 'receivables') {
+            const accountsList = b2bDashboardData?.accounts || [];
+            const kpis = b2bDashboardData?.kpis || {};
+            return {
+                title: "B2B Diagnostic Receivables Statement",
+                subtitle: "Hospital, clinic and corporate accounts — billing, concessions, recoveries, and outstanding balances",
+                categoryLabel: "B2B RECEIVABLES",
+                kpis: [
+                    { label: "Net Billed", value: `₹${Number(kpis.netBilled || 0).toLocaleString()}`, color: "text-blue-600", subtext: "Total billable" },
+                    { label: "Recovered", value: `₹${Number(kpis.amountRecovered || 0).toLocaleString()}`, color: "text-emerald-600", subtext: `${kpis.recoveryRatePct || 0}% recovery` },
+                    { label: "Outstanding", value: `₹${Number(kpis.outstandingBalance || 0).toLocaleString()}`, color: "text-rose-600", subtext: `${kpis.accountsCount || 0} accounts` }
+                ],
+                columns: [
+                    { key: 'accountName', label: 'Account Name' },
+                    { key: 'accountType', label: 'Type' },
+                    { key: 'visits', label: 'Visits', align: 'center' },
+                    { key: 'grossTariff', label: 'Gross (₹)', align: 'right', render: v => `₹${Number(v || 0).toLocaleString()}` },
+                    { key: 'concessions', label: 'Concessions (₹)', align: 'right', render: (v, r) => `₹${Number(v || 0).toLocaleString()} (${r.concessionsPct || 0}%)` },
+                    { key: 'netBilled', label: 'Net Billed (₹)', align: 'right', render: v => `₹${Number(v || 0).toLocaleString()}` },
+                    { key: 'recovered', label: 'Recovered (₹)', align: 'right', render: v => `₹${Number(v || 0).toLocaleString()}` },
+                    { key: 'outstanding', label: 'Outstanding (₹)', align: 'right', render: v => `₹${Number(v || 0).toLocaleString()}` },
+                    { key: 'recoveryRate', label: 'Rate %', align: 'center', render: v => `${v || 0}%` },
+                    { key: 'oldestUnpaidBill', label: 'Oldest Due' }
+                ],
+                data: accountsList,
+                summaryTotals: {
+                    grossTariff: `₹${accountsList.reduce((s, a) => s + Number(a.grossTariff || 0), 0).toLocaleString()}`,
+                    netBilled: `₹${accountsList.reduce((s, a) => s + Number(a.netBilled || 0), 0).toLocaleString()}`,
+                    recovered: `₹${accountsList.reduce((s, a) => s + Number(a.recovered || 0), 0).toLocaleString()}`,
+                    outstanding: `₹${accountsList.reduce((s, a) => s + Number(a.outstanding || 0), 0).toLocaleString()}`
                 }
             };
         } else if (effectiveTab === 'visits') {
@@ -391,9 +486,9 @@ export const ReferralTerminal = () => {
             };
         } else {
             return {
-                title: "Referral Commission Management",
-                subtitle: "Executive financial summary of clinical referral partnerships and commission obligations",
-                categoryLabel: "REFERRAL COMMISSIONS",
+                title: "Referral Management Statement",
+                subtitle: "Executive financial summary of clinical referral partnerships",
+                categoryLabel: "REFERRAL PARTNERS",
                 kpis: [],
                 columns: [],
                 data: [],
@@ -410,15 +505,15 @@ export const ReferralTerminal = () => {
 
     return (
         <div className="flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-300">
-            {/* TERMINAL HEADER MATCHING DESIGN REFERENCE */}
+            {/* TERMINAL HEADER MATCHING SYNOS UNBOXED CANVAS STYLE */}
             <div className="px-8 pt-8 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="flex items-center gap-3.5">
                     <div>
                         <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">
-                            Referral Commissions
+                            Referral Partners
                         </h1>
                         <p className="text-xs text-zinc-500 font-medium mt-1">
-                            Doctor & referral partner performance, commission accruals, payouts, and settlements
+                            Doctor & referral partner commissions, B2B institutional receivables, and rate governance
                         </p>
                     </div>
 
@@ -436,6 +531,20 @@ export const ReferralTerminal = () => {
                 <div className="flex items-center gap-3 flex-wrap">
                     {/* Unified Standard Filter Bar (Today, This Month, This Quarter, This Year, Custom Range & Branch Selectors) */}
                     <StandardFilterBar />
+
+                    {summary && (
+                        <div className="flex items-center gap-3 bg-slate-200/50 dark:bg-zinc-800/60 p-1.5 px-3 rounded-xl border border-slate-300/40 dark:border-zinc-700/40">
+                            <div className="text-right">
+                                <span className="text-[9px] text-zinc-500 uppercase font-black tracking-wider block">Payout Due</span>
+                                <span className="text-xs font-black text-rose-600 dark:text-rose-400">₹{Number(summary.totalPendingPayouts || 0).toLocaleString()}</span>
+                            </div>
+                            <div className="w-px h-6 bg-zinc-300 dark:bg-zinc-700" />
+                            <div className="text-right">
+                                <span className="text-[9px] text-zinc-500 uppercase font-black tracking-wider block">Receivables</span>
+                                <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">₹{Number(summary.totalPendingReceivables || b2bDashboardData?.kpis?.outstandingBalance || 0).toLocaleString()}</span>
+                            </div>
+                        </div>
+                    )}
 
                     <div className="flex items-center gap-2">
                         <button 
@@ -465,7 +574,7 @@ export const ReferralTerminal = () => {
                 </div>
             </div>
 
-            {/* TAB NAVIGATION (SEGMENTED PILL ON NATIVE CANVAS) */}
+            {/* TAB NAVIGATION (SEGMENTED PILL: COMMISSIONS FIRST, B2B RECEIVABLES SECOND, THEN ALL EXISTING OPERATIONAL TABS) */}
             <div ref={tabsRef} className="px-8 pb-2 flex items-center gap-1 overflow-x-auto scrollbar-thin">
                 <div className="flex items-center bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
                     {tabs.map(t => (
@@ -482,7 +591,9 @@ export const ReferralTerminal = () => {
                             <t.icon size={14} />
                             <span>{t.label}</span>
                             {Boolean(t.badge && t.badge > 0) && (
-                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-500 text-white shadow-xs">
+                                    {t.badge}
+                                </span>
                             )}
                         </button>
                     ))}
@@ -491,23 +602,32 @@ export const ReferralTerminal = () => {
 
             {/* MAIN CONTENT AREA */}
             <div className="flex-1 overflow-y-auto custom-scrollbar">
-                {effectiveTab === 'performance' && (
+                {effectiveTab === 'overview' && (
                     <PartnerPerformanceTab 
                         dashboardData={dashboardData}
                         loading={loading}
-                        onNavigateToPayouts={(p) => setActiveTab('payouts')}
+                        onNavigateToPayouts={() => setActiveTab('payouts')}
                         onNavigateToVisits={() => setActiveTab('visits')}
                         onNavigateToHistory={() => setActiveTab('history')}
                     />
                 )}
-                {effectiveTab === 'visits' && <ReferralVisitsTab />}
-                {effectiveTab === 'payouts' && <PendingPayoutsTab />}
-                {effectiveTab === 'rules' && <CommissionRulesTab />}
+                {effectiveTab === 'receivables' && (
+                    <B2BAccountsOverviewTab 
+                        dashboardData={b2bDashboardData}
+                        loading={b2bLoading}
+                        onRefresh={loadB2bDashboard}
+                        onNavigateToBills={() => {}}
+                        onNavigateToRecoveries={() => {}}
+                        onGenerateStatement={handleGenerateStatement}
+                    />
+                )}
                 {effectiveTab === 'rate-queue' && <ReferralRateQueueTab onUpdateCount={setUnmappedQueueCount} />}
-                {effectiveTab === 'history' && <SettlementHistoryTab />}
                 {effectiveTab === 'registry' && <PartnerRegistryTab />}
                 {effectiveTab === 'rmp' && <PartnerRegistryTab isRmpOnly={true} defaultPartnerType="RMP" />}
-                {effectiveTab === 'receivables' && <PartnerReceivablesTab />}
+                {effectiveTab === 'payouts' && <PendingPayoutsTab />}
+                {effectiveTab === 'history' && <SettlementHistoryTab />}
+                {effectiveTab === 'rules' && <CommissionRulesTab />}
+                {effectiveTab === 'visits' && <ReferralVisitsTab />}
             </div>
 
             {/* PRINTABLE SUMMARY MODAL */}
@@ -524,6 +644,21 @@ export const ReferralTerminal = () => {
                 summaryTotals={printConfig.summaryTotals}
                 onDownloadCsv={handleDownloadTabSummary}
             />
+
+            {/* COMMERCIAL A4 CLAIM STATEMENT VIEWER FOR B2B RECEIVABLES */}
+            {claimDocData && (
+                <CommercialDocumentViewer
+                    isOpen={isClaimDocOpen}
+                    onClose={() => setIsClaimDocOpen(false)}
+                    title={`B2B Diagnostic Invoice — ${claimDocData?.partner?.name || 'Account'}`}
+                >
+                    <DynamicDocumentRenderer 
+                        slotId="b2b_tax_invoice" 
+                        documentData={claimDocData} 
+                        customStyles="max-w-[210mm] mx-auto bg-white p-8"
+                    />
+                </CommercialDocumentViewer>
+            )}
         </div>
     );
 };

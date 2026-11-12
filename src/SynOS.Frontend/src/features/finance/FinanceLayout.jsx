@@ -73,24 +73,12 @@ export function FinanceLayout() {
                 { name: "Overview", path: "/finance/revenue/overview" },
                 { name: "Bills & Collections", path: "/finance/revenue/bills" },
                 { name: "Due Bills", path: "/finance/revenue/dues" },
-                { name: "Pending Receivables", path: "/finance/receivables" },
+                { name: "Pending Receivables", path: "/finance/revenue/receivables" },
                 { name: "Visit Corrections", path: "/finance/revenue/corrections" },
                 { name: "Cancellations & Refunds", path: "/finance/revenue/cancellations" },
                 { name: "Change Due & Patient Refunds", path: "/finance/revenue/refunds" },
                 { name: "Collection History", path: "/finance/revenue/history" },
                 { name: "Cash Drawer Ledgers", path: "/finance/revenue/drawers" }
-            ]
-        },
-        {
-            name: "B2B Receivables",
-            path: "/finance/receivables",
-            icon: Building2,
-            subItems: [
-                { name: "Accounts Overview", path: "/finance/receivables/overview" },
-                { name: "Account Ledger", path: "/finance/receivables/ledger" },
-                { name: "Outstanding Bills", path: "/finance/receivables/bills" },
-                { name: "Recoveries & Settlement", path: "/finance/receivables/recoveries" },
-                { name: "Account Statements", path: "/finance/receivables/statements" }
             ]
         },
         {
@@ -113,13 +101,14 @@ export function FinanceLayout() {
             path: "/finance/referrals",
             icon: Users,
             subItems: [
-                { name: "Partner Performance", path: "/finance/referrals/performance" },
-                { name: "Commission Payouts", path: "/finance/referrals/payouts" },
-                { name: "Rate Cards & Rules", path: "/finance/referrals/rules" },
-                { name: "Referral Visits", path: "/finance/referrals/visits" },
-                { name: "Settlement History", path: "/finance/referrals/history" },
+                { name: "Commissions", path: "/finance/referrals/overview" },
+                { name: "B2B Receivables", path: "/finance/referrals/receivables" },
+                { name: "Rate Queue", path: "/finance/referrals/rate-queue" },
                 { name: "Doctor Registry", path: "/finance/referrals/registry" },
-                { name: "Partner Receivables", path: "/finance/receivables" }
+                { name: "RMP Partners", path: "/finance/referrals/rmp" },
+                { name: "Pending Payouts", path: "/finance/referrals/payouts" },
+                { name: "Settlement History", path: "/finance/referrals/history" },
+                { name: "Commission Rules", path: "/finance/referrals/rules" }
             ]
         },
         {

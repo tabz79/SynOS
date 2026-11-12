@@ -30,7 +30,6 @@ import { VendorMasterScreen } from '@/features/finance/VendorMasterScreen'
 import { OverheadExpensesScreen } from '@/features/finance/OverheadScreens'
 import { IntelligenceDashboard } from '@/features/finance/IntelligenceScreens'
 import { ReferralTerminal } from '@/features/finance/ReferralTerminal'
-import { B2BReceivablesTerminal } from '@/features/finance/B2BReceivablesTerminal'
 import { InsuranceTerminal } from '@/features/finance/InsuranceTerminal'
 import { CorporateTerminal } from '@/features/finance/CorporateTerminal'
 import { InstitutionalTerminal } from '@/features/finance/InstitutionalTerminal'
@@ -256,13 +255,6 @@ function App() {
                 {/* Revenue Department */}
                 <Route path="/finance/revenue" element={<RevenueTerminal />} />
                 <Route path="/finance/revenue/:tab" element={<RevenueTerminal />} />
-                <Route path="/finance/revenue/receivables" element={<B2BReceivablesTerminal />} />
-                
-                {/* Unified B2B Receivables Department */}
-                <Route path="/finance/receivables" element={<B2BReceivablesTerminal />} />
-                <Route path="/finance/receivables/:tab" element={<B2BReceivablesTerminal />} />
-                <Route path="/finance/b2b-receivables" element={<B2BReceivablesTerminal />} />
-                <Route path="/finance/b2b-receivables/:tab" element={<B2BReceivablesTerminal />} />
                 
                 {/* Expense Department */}
                 <Route path="/finance/expenses" element={<ExpenseTerminal />} />
@@ -272,8 +264,11 @@ function App() {
 
                 {/* Referral Department */}
                 <Route path="/finance/referrals" element={<ReferralTerminal />} />
-                <Route path="/finance/referrals/receivables" element={<B2BReceivablesTerminal />} />
                 <Route path="/finance/referrals/:tab" element={<ReferralTerminal />} />
+
+                {/* Graceful aliases for direct receivables links */}
+                <Route path="/finance/receivables" element={<Navigate to="/finance/referrals/receivables" replace />} />
+                <Route path="/finance/b2b-receivables" element={<Navigate to="/finance/referrals/receivables" replace />} />
 
                 {/* Insurance / TPA Department */}
                 <Route path="/finance/insurance" element={<InsuranceTerminal />} />
