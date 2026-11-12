@@ -121,6 +121,20 @@ namespace SynOS.Api.Controllers
             }
         }
 
+        [HttpPost("runs/{runId}/reopen")]
+        public async Task<IActionResult> ReopenRun(Guid runId)
+        {
+            try
+            {
+                await _payrollWorkflowService.ReopenOrVoidFinalizedRunAsync(runId);
+                return Ok(new { message = "Payroll run reopened successfully. Draft liabilities and facts reversed." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
         [HttpGet("runs/{runId}/payables")]
         public async Task<IActionResult> GetPayablesForRun(Guid runId)
         {

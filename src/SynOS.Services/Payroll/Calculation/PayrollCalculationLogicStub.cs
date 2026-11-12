@@ -75,28 +75,35 @@ namespace SynOS.Services.Payroll.Calculation
                 decimal prorationRatio = periodTotalDays > 0 ? (decimal)(periodTotalDays - totalDeductionDays) / periodTotalDays : 0;
                 if (prorationRatio < 0) prorationRatio = 0;
 
-                // 3. Apply Adjustments (One-off Bonuses/Deductions)
+                // 3. Apply Adjustments (One-off Bonuses/Earnings)
+                // Filter out advance adjustments to prevent double deduction with SalaryAdvances
                 decimal adjEarning = 0;
-                decimal adjDeduction = 0;
 
                 var empAdjustments = adjustments.Where(a => a.EmployeeId == employee.EmployeeId);
                 foreach (var adj in empAdjustments)
                 {
+                    if (adj.Notes != null && adj.Notes.IndexOf("advance", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        continue; // Handled exclusively via SalaryAdvances
+                    }
+
                     if (componentTypes.TryGetValue(adj.PayComponentId, out var type))
                     {
                         if (type == PayComponentType.Earning) adjEarning += adj.Amount;
-                        else if (type == PayComponentType.Deduction) adjDeduction += adj.Amount;
                     }
                 }
 
-                // 4. Final Calculation (Prorated Base + Full Adjustments)
-                var netPay = (baseSalary * prorationRatio) + (adjEarning - adjDeduction);
+                // 4. Earned Gross Calculation:
+                // Earned Gross is the contracted base salary prorated by attendance + one-off earnings.
+                // Deductions (PF, ESI, TDS, advances) are applied in FinalizePayrollRunAsync against this gross base.
+                decimal earnedGross = (baseSalary * prorationRatio) + adjEarning;
+                if (earnedGross < 0) earnedGross = 0;
 
                 result.ProvisionalResults.Add(new ProvisionalResultDto
                 {
                     EmployeeId = employee.EmployeeId,
                     PayComponentId = Guid.Empty, 
-                    Amount = Math.Round(netPay, 0), // ROUND TO NEAREST RUPEE
+                    Amount = Math.Round(earnedGross, 0), // Earned Gross before deductions
                     LopDays = totalDeductionDays
                 });
             }

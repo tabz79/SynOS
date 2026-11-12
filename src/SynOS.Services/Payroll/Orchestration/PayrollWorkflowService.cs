@@ -259,12 +259,25 @@ namespace SynOS.Services.Payroll.Orchestration
                     
                     var grossSalary = empResult.Amount;
                     
-                    // 1. Statutory Deductions (Employee-Level or Global Fallback)
+                    // 1. Statutory Deductions (with Indian Statutory Wage Ceilings & Eligibility)
+                    // PF Rule: Standard statutory ceiling is ₹15,000 basic wage (12% of 15000 = ₹1,800).
+                    // If grossSalary > 15000 and PF is enabled, cap the calculation base at 15000 unless custom percentage is set.
                     decimal pfRate = emp.PFEnabled ? emp.PFPercentage / 100m : 0;
+                    decimal pfEligibleSalary = grossSalary;
+                    if (emp.PFEnabled && pfRate == 0.12m && pfEligibleSalary > 15000m)
+                    {
+                        pfEligibleSalary = 15000m;
+                    }
+                    var pfDeduction = Math.Round(pfEligibleSalary * pfRate, 2);
+
+                    // ESI Rule: Under ESIC, coverage applies only when gross monthly wages <= ₹21,000.
+                    // If gross salary exceeds ₹21,000, employee is legally exempt from ESI (deduction = 0).
                     decimal esiRate = emp.ESIEnabled ? emp.ESIPercentage / 100m : 0;
-                    
-                    var pfDeduction = Math.Round(grossSalary * pfRate, 2);
-                    var esiDeduction = Math.Round(grossSalary * esiRate, 2);
+                    decimal esiDeduction = 0m;
+                    if (emp.ESIEnabled && grossSalary <= 21000m)
+                    {
+                        esiDeduction = Math.Round(grossSalary * esiRate, 2);
+                    }
                     
                     // 2. TDS Calculation
                     decimal tdsDeduction = 0;
@@ -280,14 +293,83 @@ namespace SynOS.Services.Payroll.Orchestration
                         }
                     }
 
-                    // 3. Deduct Approved Advances
+                    // 3. Ad-hoc Non-Statutory Adjustments (PayrollAdjustments excluding Advances)
+                    // To prevent advance double deduction:
+                    var runAdjustments = await _context.PayrollAdjustments
+                        .AsNoTracking()
+                        .Where(a => a.PayrollRunId == run.PayrollRunId && a.EmployeeId == empId)
+                        .ToListAsync();
+                    var payComponents = await _context.PayComponents
+                        .AsNoTracking()
+                        .ToDictionaryAsync(pc => pc.PayComponentId, pc => pc.ComponentType);
+                    decimal adHocDeductions = 0m;
+                    foreach (var adj in runAdjustments)
+                    {
+                        if (adj.Notes != null && adj.Notes.IndexOf("advance", StringComparison.OrdinalIgnoreCase) >= 0)
+                            continue; // Exclude advance entries from ad-hoc deductions
+                        if (payComponents.TryGetValue(adj.PayComponentId, out var compType) && compType == PayComponentType.Deduction)
+                            adHocDeductions += adj.Amount;
+                    }
+
+                    // 4. Net Salary before Advances (with floor)
+                    decimal netBeforeAdvances = grossSalary - pfDeduction - esiDeduction - tdsDeduction - adHocDeductions;
+                    if (netBeforeAdvances < 0) netBeforeAdvances = 0;
+
+                    // 5. Deduct Approved Advances with "Zero Floor" rule (No Negative Net Salary!)
                     var advances = await _context.SalaryAdvances
                         .Where(a => a.EmployeeId == empId && a.Status == "Approved")
+                        .OrderBy(a => a.IssuedAt)
                         .ToListAsync();
-                    var advanceDeduction = advances.Sum(a => a.Amount);
 
-                    // 4. Final Net Calculation
-                    var netPayable = grossSalary - pfDeduction - esiDeduction - tdsDeduction - advanceDeduction;
+                    decimal advanceDeduction = 0m;
+                    decimal recoveryCapacity = netBeforeAdvances;
+
+                    foreach (var adv in advances)
+                    {
+                        if (recoveryCapacity <= 0)
+                        {
+                            // Net pay would turn negative; leave advance Approved for subsequent pay cycles.
+                            continue;
+                        }
+
+                        if (adv.Amount <= recoveryCapacity)
+                        {
+                            // Full recovery
+                            advanceDeduction += adv.Amount;
+                            recoveryCapacity -= adv.Amount;
+                            adv.Status = "Adjusted";
+                            adv.AdjustedInPayrollRunId = run.PayrollRunId;
+                        }
+                        else
+                        {
+                            // Partial recovery: recover up to available capacity, roll unrecovered remainder to a new Approved advance
+                            decimal partialAmount = recoveryCapacity;
+                            decimal unrecoveredBalance = adv.Amount - partialAmount;
+                            advanceDeduction += partialAmount;
+                            recoveryCapacity = 0;
+
+                            adv.Amount = partialAmount;
+                            adv.Status = "Adjusted";
+                            adv.AdjustedInPayrollRunId = run.PayrollRunId;
+
+                            var remainderAdv = new SalaryAdvance
+                            {
+                                AdvanceId = Guid.NewGuid(),
+                                EmployeeId = empId,
+                                Amount = unrecoveredBalance,
+                                Status = "Approved",
+                                Reason = $"Balance carried forward from advance {adv.AdvanceId} (Run {run.PayrollRunId})",
+                                IssuedAt = adv.IssuedAt,
+                                IssuedBy = adv.IssuedBy,
+                                CreatedAt = DateTime.UtcNow
+                            };
+                            _context.SalaryAdvances.Add(remainderAdv);
+                        }
+                    }
+
+                    // 6. Final Net Calculation - Strictly >= 0
+                    var netPayable = netBeforeAdvances - advanceDeduction;
+                    if (netPayable < 0) netPayable = 0;
 
                     var payable = new EmployeePayable
                     {
@@ -299,7 +381,7 @@ namespace SynOS.Services.Payroll.Orchestration
                         PFDeduction = pfDeduction,
                         ESIDeduction = esiDeduction,
                         TDSDeduction = tdsDeduction,
-                        OtherDeductions = advanceDeduction,
+                        OtherDeductions = advanceDeduction + adHocDeductions,
                         NetPayable = Math.Round(netPayable, 0), // ROUND TO NEAREST RUPEE
                         AmountPaid = 0,
                         Status = "Due",
@@ -308,7 +390,7 @@ namespace SynOS.Services.Payroll.Orchestration
                         // Stability Snapshots (Audit Trail)
                         SnapshotBaseSalary = emp.BaseSalary,
                         SnapshotPFRate = pfRate,
-                        SnapshotESIRate = esiRate,
+                        SnapshotESIRate = (grossSalary <= 21000m) ? esiRate : 0,
                         SnapshotTDSMode = emp.TDSMode,
                         SnapshotTDSValue = emp.TDSValue,
                         LopDaysCount = empResult.LopDays,
@@ -318,13 +400,6 @@ namespace SynOS.Services.Payroll.Orchestration
                     };
 
                     _context.EmployeePayables.Add(payable);
-
-                    // Mark advances as Adjusted
-                    foreach (var adv in advances)
-                    {
-                        adv.Status = "Adjusted";
-                        adv.AdjustedInPayrollRunId = run.PayrollRunId;
-                    }
                 }
 
                 // Update run and period status
@@ -365,6 +440,93 @@ namespace SynOS.Services.Payroll.Orchestration
             await _context.SaveChangesAsync();
 
             // Do NOT change the status of the parent PayrollPeriod.
+        }
+
+        public async Task ReopenOrVoidFinalizedRunAsync(Guid payrollRunId)
+        {
+            var run = await _context.PayrollRuns
+                .Include(r => r.PayrollPeriod)
+                .FirstOrDefaultAsync(r => r.PayrollRunId == payrollRunId);
+
+            if (run == null)
+            {
+                throw new PayrollOrchestrationException($"Payroll Run with ID '{payrollRunId}' not found.");
+            }
+
+            if (run.Status != PayrollRunStatus.Finalized)
+            {
+                throw new PayrollOrchestrationException($"Only finalized payroll runs can be reopened. Current status: '{run.Status}'.");
+            }
+
+            // Safety guard: Check if any payables have already been settled or disbursed
+            var payables = await _context.EmployeePayables
+                .Where(p => p.PayrollRunId == payrollRunId)
+                .ToListAsync();
+
+            if (payables.Any(p => p.AmountPaid > 0 || p.Status == "Settled" || p.Status == "PartiallyPaid"))
+            {
+                throw new PayrollOrchestrationException(
+                    "Cannot reopen this payroll run because one or more salaries have already been settled or disbursed in the finance ledger. " +
+                    "Please record an audited correction adjustment instead.");
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // 1. Reset all adjusted salary advances back to Approved
+                var adjustedAdvances = await _context.SalaryAdvances
+                    .Where(a => a.AdjustedInPayrollRunId == payrollRunId)
+                    .ToListAsync();
+
+                // 2. Find any remainder advances that were created during split
+                var remainderAdvances = await _context.SalaryAdvances
+                    .Where(a => a.Reason != null && a.Reason.Contains(payrollRunId.ToString()))
+                    .ToListAsync();
+
+                foreach (var remainder in remainderAdvances)
+                {
+                    // Restore original amount on the parent advance if matching
+                    var parent = adjustedAdvances.FirstOrDefault(a => remainder.Reason != null && remainder.Reason.Contains(a.AdvanceId.ToString()));
+                    if (parent != null)
+                    {
+                        parent.Amount += remainder.Amount;
+                    }
+                    _context.SalaryAdvances.Remove(remainder);
+                }
+
+                foreach (var adv in adjustedAdvances)
+                {
+                    adv.Status = "Approved";
+                    adv.AdjustedInPayrollRunId = null;
+                }
+
+                // 3. Remove all generated EmployeePayables
+                _context.EmployeePayables.RemoveRange(payables);
+
+                // 4. Remove all PayrollFacts written for this run
+                var facts = await _context.PayrollFacts
+                    .Where(f => f.PayrollRunId == payrollRunId)
+                    .ToListAsync();
+                _context.PayrollFacts.RemoveRange(facts);
+
+                // 5. Reset run status back to Calculated so it can be reviewed, adjusted, or re-calculated
+                run.Status = PayrollRunStatus.Calculated;
+                run.CompletedAt = null;
+
+                // 6. Reset parent period back to Locked
+                if (run.PayrollPeriod != null)
+                {
+                    run.PayrollPeriod.Status = PayrollPeriodStatus.Locked;
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                throw new PayrollOrchestrationException($"Failed to reopen payroll run '{payrollRunId}': {ex.Message}", ex);
+            }
         }
 
         public async Task<System.Collections.Generic.List<PayrollPeriodSummaryView>> GetPeriodSummariesAsync()
