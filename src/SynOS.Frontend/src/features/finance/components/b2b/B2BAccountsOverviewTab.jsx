@@ -344,7 +344,140 @@ export const B2BAccountsOverviewTab = ({
                 </div>
             </div>
 
-            {/* ROW 2: RECEIVABLES AGEING (LEFT), TREND WITH DAY PILLARS (MIDDLE), RECOVERY RATE (RIGHT) */}
+            {/* ROW 2: 5 ESSENTIAL B2B KPI CARDS (GROSS TARIFF, CONCESSIONS, NET BILLED, AMOUNT RECOVERED, OUTSTANDING BALANCE) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-3.5">
+                {/* 1. Gross Tariff (B2B) */}
+                <div 
+                    onClick={onNavigateToBills}
+                    className="p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex flex-col justify-between cursor-pointer hover:shadow-[0_10px_28px_rgba(15,23,42,0.1)] transition-all group"
+                >
+                    <div className="flex items-center justify-between">
+                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                            <Layers size={15} strokeWidth={2.3} />
+                        </div>
+                        <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]/70 dark:bg-emerald-950/50 dark:text-emerald-400 shadow-2xs tabular-nums">
+                            {kpis.grossTariffChangePct !== undefined ? `${kpis.grossTariffChangePct >= 0 ? '+' : ''}${kpis.grossTariffChangePct}%` : '+14.8%'}
+                        </span>
+                    </div>
+                    <div className="mt-3">
+                        <span className="text-xs font-bold text-slate-500 dark:text-zinc-400 block tracking-normal">
+                            Gross Tariff (B2B)
+                        </span>
+                        <div className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-tight my-0.5 group-hover:text-synos-primary transition-colors">
+                            ₹{(kpis.grossTariff || 0).toLocaleString()}
+                        </div>
+                        <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400 block truncate">
+                            From {(kpis.visitsCount || 0).toLocaleString()} visits • {(kpis.testsCount || 0).toLocaleString()} tests
+                        </span>
+                    </div>
+                </div>
+
+                {/* 2. Concessions Granted */}
+                <div 
+                    onClick={onNavigateToBills}
+                    className="p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex flex-col justify-between cursor-pointer hover:shadow-[0_10px_28px_rgba(15,23,42,0.1)] transition-all group"
+                >
+                    <div className="flex items-center justify-between">
+                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] bg-[#FAF5FF] text-[#A855F7] dark:bg-purple-950/40 dark:text-purple-400 border border-purple-100/90 dark:border-purple-800/40 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                            <Tag size={15} strokeWidth={2.3} />
+                        </div>
+                        <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#FFF1F2] text-[#E11D48] border border-rose-200/60 dark:bg-rose-950/40 dark:text-rose-400 shadow-2xs tabular-nums">
+                            {kpis.concessionsPct || 42.7}%
+                        </span>
+                    </div>
+                    <div className="mt-3">
+                        <span className="text-xs font-bold text-slate-500 dark:text-zinc-400 block tracking-normal">
+                            Concessions Granted
+                        </span>
+                        <div className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-tight my-0.5 group-hover:text-purple-600 transition-colors">
+                            ₹{(kpis.concessionsGranted || 0).toLocaleString()}
+                        </div>
+                        <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400 block truncate">
+                            Of gross tariff value
+                        </span>
+                    </div>
+                </div>
+
+                {/* 3. Net Billed */}
+                <div 
+                    onClick={onNavigateToBills}
+                    className="p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex flex-col justify-between cursor-pointer hover:shadow-[0_10px_28px_rgba(15,23,42,0.1)] transition-all group"
+                >
+                    <div className="flex items-center justify-between">
+                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] bg-[#EBF5FF] text-[#1C6CF2] dark:bg-sky-950/40 dark:text-sky-400 border border-sky-100/90 dark:border-sky-800/40 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                            <FileText size={15} strokeWidth={2.3} />
+                        </div>
+                        <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]/70 dark:bg-emerald-950/50 dark:text-emerald-400 shadow-2xs tabular-nums">
+                            {kpis.netBilledChangePct !== undefined ? `${kpis.netBilledChangePct >= 0 ? '+' : ''}${kpis.netBilledChangePct}%` : '+233%'}
+                        </span>
+                    </div>
+                    <div className="mt-3">
+                        <span className="text-xs font-bold text-slate-500 dark:text-zinc-400 block tracking-normal">
+                            Net Billed
+                        </span>
+                        <div className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-tight my-0.5 group-hover:text-synos-primary transition-colors">
+                            ₹{(kpis.netBilled || 0).toLocaleString()}
+                        </div>
+                        <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400 block truncate">
+                            Billable after concessions
+                        </span>
+                    </div>
+                </div>
+
+                {/* 4. Amount Recovered */}
+                <div 
+                    onClick={onNavigateToRecoveries}
+                    className="p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex flex-col justify-between cursor-pointer hover:shadow-[0_10px_28px_rgba(15,23,42,0.1)] transition-all group"
+                >
+                    <div className="flex items-center justify-between">
+                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] bg-[#FAF5FF] text-[#A855F7] dark:bg-purple-950/40 dark:text-purple-400 border border-purple-100/90 dark:border-purple-800/40 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                            <Wallet size={15} strokeWidth={2.3} />
+                        </div>
+                        <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#CCFBF1] text-[#0F766E] border border-[#99F6E4]/70 dark:bg-emerald-950/50 dark:text-emerald-400 shadow-2xs tabular-nums">
+                            {kpis.recoveryRatePct || 163.2}%
+                        </span>
+                    </div>
+                    <div className="mt-3">
+                        <span className="text-xs font-bold text-slate-500 dark:text-zinc-400 block tracking-normal">
+                            Amount Recovered
+                        </span>
+                        <div className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-tight my-0.5 group-hover:text-emerald-600 transition-colors">
+                            ₹{(kpis.amountRecovered || 0).toLocaleString()}
+                        </div>
+                        <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400 block truncate">
+                            Recovery rate (of net billed)
+                        </span>
+                    </div>
+                </div>
+
+                {/* 5. Outstanding Balance */}
+                <div 
+                    onClick={onNavigateToBills}
+                    className="p-3 sm:p-3.5 rounded-[20px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_6px_20px_rgba(15,23,42,0.06)] flex flex-col justify-between cursor-pointer hover:shadow-[0_10px_28px_rgba(15,23,42,0.1)] transition-all group"
+                >
+                    <div className="flex items-center justify-between">
+                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-[8px] bg-[#FAF5FF] text-[#A855F7] dark:bg-purple-950/40 dark:text-purple-400 border border-purple-100/90 dark:border-purple-800/40 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 transition-transform">
+                            <Hourglass size={15} strokeWidth={2.3} />
+                        </div>
+                        <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-[#FFF1F2] text-[#E11D48] border border-rose-200/60 dark:bg-rose-950/40 dark:text-rose-400 shadow-2xs tabular-nums">
+                            {kpis.outstandingPct || 95.1}%
+                        </span>
+                    </div>
+                    <div className="mt-3">
+                        <span className="text-xs font-bold text-slate-500 dark:text-zinc-400 block tracking-normal">
+                            Outstanding Balance
+                        </span>
+                        <div className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tabular-nums tracking-tight leading-tight my-0.5 group-hover:text-rose-600 transition-colors">
+                            ₹{(kpis.outstandingBalance || 0).toLocaleString()}
+                        </div>
+                        <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 dark:text-zinc-400 block truncate">
+                            {(kpis.accountsCount || 0).toLocaleString()} partners • {(kpis.unpaidBillsCount || 0).toLocaleString()} unpaid bills
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            {/* ROW 3: RECEIVABLES AGEING (LEFT), TREND WITH DAY PILLARS (MIDDLE), RECOVERY RATE (RIGHT) */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-3.5 items-stretch">
                 {/* Pod 1: Receivables Ageing (4 cols) */}
                 <div className="lg:col-span-4 p-3.5 sm:p-4 rounded-[22px] bg-gradient-to-br from-[#F5F7FA] via-[#F8FAFC] to-[#EDF1F5] dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-800/80 border border-white/90 dark:border-zinc-800 shadow-[0_8px_24px_rgba(15,23,42,0.08)] flex flex-col justify-between">
