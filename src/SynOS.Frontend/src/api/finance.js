@@ -58,6 +58,25 @@ export const FinanceApi = {
     },
 
     /**
+     * Fetches operational test volume analytics across departments, modalities, and specific tests.
+     */
+    getTestVolumeAnalytics: async (params = {}) => {
+        const query = new URLSearchParams();
+        if (params.branchId) query.set('branchId', params.branchId);
+        if (params.preset) query.set('preset', params.preset);
+        if (params.startDate) query.set('startDate', params.startDate);
+        if (params.endDate) query.set('endDate', params.endDate);
+        if (params.department) query.set('department', params.department);
+        if (params.modality) query.set('modality', params.modality);
+
+        const qs = query.toString() ? `?${query.toString()}` : '';
+        const url = `/api/v1/finance/analytics/test-volume${qs}`;
+        const response = await fetch(url, { headers: FinanceApi.getHeaders() });
+        if (!response.ok) throw new Error("Failed to load test volume analytics");
+        return await response.json();
+    },
+
+    /**
      * Fetches historical revenue facts with branch, preset, date range, and cashier/user support.
      */
     getRevenueHistory: async (branchId, preset, start, end, userId) => {

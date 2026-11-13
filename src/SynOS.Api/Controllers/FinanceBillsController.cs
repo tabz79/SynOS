@@ -812,6 +812,183 @@ namespace SynOS.Api.Controllers
             return Ok(result);
         }
 
+        #region Operational & Clinical Test Volume Analytics
+
+        [HttpGet("analytics/test-volume")]
+        [HttpGet("/api/v1/finance/analytics/test-volume")]
+        public async Task<ActionResult<object>> GetTestVolumeAnalytics(
+            [FromQuery] Guid? branchId = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null,
+            [FromQuery] string? preset = null,
+            [FromQuery] string? department = null,
+            [FromQuery] string? modality = null)
+        {
+            var (startUtc, endUtc) = ResolvePresetDateRange(preset, startDate, endDate);
+
+            var query = _context.Visits
+                .Include(v => v.Patient)
+                .Include(v => v.Branch)
+                .Include(v => v.Orders)
+                    .ThenInclude(o => o.Test)
+                        .ThenInclude(t => t.DepartmentMaster)
+                .Include(v => v.Orders)
+                    .ThenInclude(o => o.Test)
+                        .ThenInclude(t => t.ModalityMaster)
+                .Where(v => v.Status != VisitStatus.Draft &&
+                            v.Status != VisitStatus.Cancelled &&
+                            (v.Token == null || !v.Token.StartsWith("D-")))
+                .AsNoTracking();
+
+            if (startUtc.HasValue)
+            {
+                query = query.Where(v => v.CreatedAt >= startUtc.Value);
+            }
+            if (endUtc.HasValue)
+            {
+                query = query.Where(v => v.CreatedAt <= endUtc.Value);
+            }
+            if (branchId.HasValue && branchId.Value != Guid.Empty)
+            {
+                query = query.Where(v => v.BranchId == branchId.Value);
+            }
+
+            var visits = await query.ToListAsync();
+
+            // Extract all genuine billable tests per visit
+            var allClassifiedTests = new List<(ClassifiedOrderTest Classified, Guid VisitId, Guid? PatientId, decimal Price)>();
+
+            foreach (var v in visits)
+            {
+                var rawOrders = v.Orders?.Where(o => o.Status != OrderStatus.Cancelled).ToList() ?? new List<Order>();
+                if (!rawOrders.Any()) continue;
+
+                var billableOrders = rawOrders.Any(o => o.ParentOrderId != null)
+                    ? rawOrders.Where(o => o.ParentOrderId == null).ToList()
+                    : (rawOrders.Any(o => o.Price > 0) ? rawOrders.Where(o => o.Price > 0).ToList() : rawOrders);
+
+                var classified = billableOrders.Select(o => (Classified: ClassifyOrder(o), Order: o)).ToList();
+
+                var rawNames = classified.Select(c => c.Classified.Name).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+                var hasLft = rawNames.Any(n => n.Contains("LFT", StringComparison.OrdinalIgnoreCase) || n.Contains("Liver", StringComparison.OrdinalIgnoreCase));
+                var hasLipid = rawNames.Any(n => n.Contains("Lipid", StringComparison.OrdinalIgnoreCase));
+                var hasCbc = rawNames.Any(n => n.Contains("CBC", StringComparison.OrdinalIgnoreCase) || n.Contains("Blood Count", StringComparison.OrdinalIgnoreCase) || n.Contains("Hemogram", StringComparison.OrdinalIgnoreCase));
+                var hasKft = rawNames.Any(n => n.Contains("KFT", StringComparison.OrdinalIgnoreCase) || n.Contains("RFT", StringComparison.OrdinalIgnoreCase) || n.Contains("Renal", StringComparison.OrdinalIgnoreCase) || n.Contains("Kidney", StringComparison.OrdinalIgnoreCase));
+
+                var filtered = classified.Where(c =>
+                {
+                    var name = c.Classified.Name;
+                    if (hasLft && (name.Contains("Albumin", StringComparison.OrdinalIgnoreCase) || name.Contains("Globulin", StringComparison.OrdinalIgnoreCase) || name.Contains("Bilirubin", StringComparison.OrdinalIgnoreCase) || name.Contains("SGOT", StringComparison.OrdinalIgnoreCase) || name.Contains("SGPT", StringComparison.OrdinalIgnoreCase) || name.Contains("Alkaline Phos", StringComparison.OrdinalIgnoreCase) || name.Contains("Total Protein", StringComparison.OrdinalIgnoreCase)))
+                        return false;
+                    if (hasLipid && (name.Contains("Cholesterol", StringComparison.OrdinalIgnoreCase) || name.Contains("Triglyceride", StringComparison.OrdinalIgnoreCase) || name.Contains("HDL", StringComparison.OrdinalIgnoreCase) || name.Contains("LDL", StringComparison.OrdinalIgnoreCase) || name.Contains("VLDL", StringComparison.OrdinalIgnoreCase)))
+                        return false;
+                    if (hasCbc && (name.Contains("Hemoglobin", StringComparison.OrdinalIgnoreCase) || name.Contains("Platelet", StringComparison.OrdinalIgnoreCase) || name.Contains("WBC", StringComparison.OrdinalIgnoreCase) || name.Contains("RBC", StringComparison.OrdinalIgnoreCase) || name.Contains("PCV", StringComparison.OrdinalIgnoreCase) || name.Contains("MCV", StringComparison.OrdinalIgnoreCase) || name.Contains("ESR", StringComparison.OrdinalIgnoreCase)))
+                        return false;
+                    if (hasKft && (name.Contains("Urea", StringComparison.OrdinalIgnoreCase) || name.Contains("Creatinine", StringComparison.OrdinalIgnoreCase) || name.Contains("Uric Acid", StringComparison.OrdinalIgnoreCase)))
+                        return false;
+                    return true;
+                }).ToList();
+
+                if (!filtered.Any()) filtered = classified;
+
+                foreach (var item in filtered)
+                {
+                    allClassifiedTests.Add((item.Classified, v.VisitId, v.PatientId, item.Order.Price));
+                }
+            }
+
+            var totalTests = allClassifiedTests.Count;
+            var distinctVisits = allClassifiedTests.Select(x => x.VisitId).Distinct().Count();
+            var distinctPatients = allClassifiedTests.Where(x => x.PatientId.HasValue).Select(x => x.PatientId.Value).Distinct().Count();
+
+            // Modality aggregations
+            var mriCount = allClassifiedTests.Count(x => x.Classified.Modality.Equals("MRI", StringComparison.OrdinalIgnoreCase) || x.Classified.Modality.Contains("MRI", StringComparison.OrdinalIgnoreCase));
+            var ctCount = allClassifiedTests.Count(x => x.Classified.Modality.Equals("CT", StringComparison.OrdinalIgnoreCase) || x.Classified.Modality.Contains("CT", StringComparison.OrdinalIgnoreCase));
+            var xrayCount = allClassifiedTests.Count(x => x.Classified.Modality.Equals("X-Ray", StringComparison.OrdinalIgnoreCase) || x.Classified.Modality.Contains("X-Ray", StringComparison.OrdinalIgnoreCase) || x.Classified.Modality.Contains("XRAY", StringComparison.OrdinalIgnoreCase));
+            var usgCount = allClassifiedTests.Count(x => x.Classified.Modality.Equals("Ultrasound", StringComparison.OrdinalIgnoreCase) || x.Classified.Modality.Contains("Ultra", StringComparison.OrdinalIgnoreCase) || x.Classified.Modality.Contains("US", StringComparison.OrdinalIgnoreCase));
+            var pathologyCount = allClassifiedTests.Count(x => x.Classified.Department.Equals("Pathology", StringComparison.OrdinalIgnoreCase));
+            var otherCount = Math.Max(0, totalTests - (mriCount + ctCount + xrayCount + usgCount + pathologyCount));
+
+            // Department grouping
+            var departmentGroups = allClassifiedTests
+                .GroupBy(x => x.Classified.Department)
+                .Select(g => new
+                {
+                    Department = g.Key,
+                    Count = g.Count(),
+                    Percentage = totalTests > 0 ? Math.Round((double)g.Count() / totalTests * 100, 1) : 0,
+                    Disciplines = g.GroupBy(x => x.Classified.Modality)
+                                   .Select(mg => new {
+                                       Modality = mg.Key,
+                                       Count = mg.Count(),
+                                       Percentage = g.Count() > 0 ? Math.Round((double)mg.Count() / g.Count() * 100, 1) : 0
+                                   })
+                                   .OrderByDescending(mg => mg.Count)
+                                   .ToList()
+                })
+                .OrderByDescending(d => d.Count)
+                .ToList();
+
+            // Modality grouping
+            var modalityGroups = allClassifiedTests
+                .GroupBy(x => x.Classified.Modality)
+                .Select(g => new
+                {
+                    Modality = g.Key,
+                    Department = g.First().Classified.Department,
+                    Count = g.Count(),
+                    Percentage = totalTests > 0 ? Math.Round((double)g.Count() / totalTests * 100, 1) : 0
+                })
+                .OrderByDescending(m => m.Count)
+                .ToList();
+
+            // Test-wise breakdown
+            var testBreakdown = allClassifiedTests
+                .GroupBy(x => new { x.Classified.Name, x.Classified.Code, x.Classified.Department, x.Classified.Modality })
+                .Select(g => {
+                    var count = g.Count();
+                    var deptTotal = allClassifiedTests.Count(x => x.Classified.Department == g.Key.Department);
+                    var modTotal = allClassifiedTests.Count(x => x.Classified.Modality == g.Key.Modality);
+                    return new
+                    {
+                        TestName = g.Key.Name,
+                        TestCode = g.Key.Code,
+                        Department = g.Key.Department,
+                        Modality = g.Key.Modality,
+                        Count = count,
+                        UniquePatients = g.Where(x => x.PatientId.HasValue).Select(x => x.PatientId.Value).Distinct().Count(),
+                        TotalRevenue = g.Sum(x => x.Price),
+                        DepartmentShare = deptTotal > 0 ? Math.Round((double)count / deptTotal * 100, 1) : 0,
+                        ModalityShare = modTotal > 0 ? Math.Round((double)count / modTotal * 100, 1) : 0,
+                        OverallShare = totalTests > 0 ? Math.Round((double)count / totalTests * 100, 1) : 0
+                    };
+                })
+                .OrderByDescending(t => t.Count)
+                .ThenBy(t => t.TestName)
+                .ToList();
+
+            return Ok(new
+            {
+                TotalTests = totalTests,
+                TotalVisits = distinctVisits,
+                TotalPatients = distinctPatients,
+                ModalityCounts = new
+                {
+                    Mri = mriCount,
+                    Ct = ctCount,
+                    Xray = xrayCount,
+                    Usg = usgCount,
+                    Pathology = pathologyCount,
+                    Other = otherCount
+                },
+                Departments = departmentGroups,
+                Modalities = modalityGroups,
+                Tests = testBreakdown
+            });
+        }
+
+        #endregion
+
         #region Due Bills & Counter Collections
 
         [HttpGet("due-bills")]

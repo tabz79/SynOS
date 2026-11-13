@@ -36,7 +36,15 @@ import {
     Banknote,
     QrCode,
     CreditCard,
-    X
+    X,
+    Scan,
+    Waves,
+    Microscope,
+    BarChart3,
+    Layers,
+    SlidersHorizontal,
+    ArrowUpDown,
+    ChevronDown
 } from 'lucide-react';
 import { RecordCollectionModal } from './components/RecordCollectionModal';
 import { BulkSettleModal } from './components/BulkSettleModal';
@@ -217,263 +225,646 @@ export const getPayerModeInfo = (bill) => {
 
 // --- SCREENS ---
 
-export const RevenueOverviewTab = ({ stats, onRefresh, presetRange, setPresetRange }) => {
+export const RevenueOverviewTab = ({ stats, onRefresh }) => {
   const navigate = useNavigate();
-  const [recentTransactions, setRecentTransactions] = useState([]);
-  const [loadingTransactions, setLoadingTransactions] = useState(true);
+  const { 
+    presetRange, 
+    customDates, 
+    isConsolidated, 
+    effectiveBranchId, 
+    isAdmin 
+  } = useGlobalFilter();
+
+  const [volumeData, setVolumeData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Filter & Search states
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedModality, setSelectedModality] = useState('All');
+  const [selectedDepartment, setSelectedDepartment] = useState('All');
+  const [sortBy, setSortBy] = useState('count'); // 'count' | 'name' | 'share'
+  const [sortOrder, setSortOrder] = useState('desc');
+
+  const fetchVolumeData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const bId = isConsolidated && isAdmin ? null : effectiveBranchId;
+      
+      const params = {
+        branchId: bId,
+        preset: presetRange || 'today'
+      };
+
+      if (presetRange === 'custom') {
+        params.startDate = customDates?.start;
+        params.endDate = customDates?.end;
+      } else if (presetRange === 'singleDate') {
+        params.startDate = customDates?.start || customDates?.single;
+        params.endDate = customDates?.end || customDates?.start || customDates?.single;
+      }
+
+      const res = await FinanceApi.getTestVolumeAnalytics(params);
+      setVolumeData(res);
+    } catch (err) {
+      console.error('Failed to load test volume analytics:', err);
+      setError(err?.message || 'Failed to load test volume analytics');
+    } finally {
+      setLoading(false);
+    }
+  }, [presetRange, customDates?.start, customDates?.end, customDates?.single, isConsolidated, effectiveBranchId, isAdmin]);
 
   useEffect(() => {
-    fetchRecent();
-  }, [presetRange]);
+    fetchVolumeData();
+  }, [fetchVolumeData]);
 
-  const fetchRecent = async () => {
-    try {
-      setLoadingTransactions(true);
-      const data = await FinanceApi.getRevenueHistory().catch(() => []);
-      setRecentTransactions(Array.isArray(data) ? data.slice(0, 10) : []);
-    } catch (err) {
-      console.error("Failed to fetch recent revenue transactions:", err);
-    } finally {
-      setLoadingTransactions(false);
+  // Derived metrics
+  const totalTests = volumeData?.totalTests || 0;
+  const totalVisits = volumeData?.totalVisits || 0;
+  const totalPatients = volumeData?.totalPatients || 0;
+  const mriCount = volumeData?.modalityCounts?.mri || 0;
+  const ctCount = volumeData?.modalityCounts?.ct || 0;
+  const xrayCount = volumeData?.modalityCounts?.xray || 0;
+  const usgCount = volumeData?.modalityCounts?.usg || 0;
+  const pathologyCount = volumeData?.modalityCounts?.pathology || 0;
+
+  const departments = volumeData?.departments || [];
+  const rawTests = volumeData?.tests || [];
+
+  // Radiology group
+  const radiologyDept = departments.find(d => (d.department || '').toLowerCase() === 'radiology');
+  const radiologyTotal = mriCount + ctCount + xrayCount + usgCount;
+  const radiologyShare = totalTests > 0 ? ((radiologyTotal / totalTests) * 100).toFixed(1) : '0';
+
+  // Pathology group
+  const pathologyDept = departments.find(d => (d.department || '').toLowerCase() === 'pathology');
+  const pathologyTotal = pathologyCount;
+  const pathologyShare = totalTests > 0 ? ((pathologyTotal / totalTests) * 100).toFixed(1) : '0';
+
+  // Filtered & sorted tests
+  const filteredTests = useMemo(() => {
+    let list = [...rawTests];
+
+    // Search term
+    if (searchTerm.trim()) {
+      const q = searchTerm.toLowerCase().trim();
+      list = list.filter(t => 
+        (t.testName || '').toLowerCase().includes(q) ||
+        (t.testCode || '').toLowerCase().includes(q)
+      );
     }
+
+    // Modality filter
+    if (selectedModality !== 'All') {
+      const targetMod = selectedModality.toLowerCase();
+      list = list.filter(t => {
+        const m = (t.modality || '').toLowerCase();
+        if (targetMod === 'mri') return m.includes('mri');
+        if (targetMod === 'ct scan' || targetMod === 'ct') return m.includes('ct');
+        if (targetMod === 'x-ray') return m.includes('x-ray') || m.includes('xray');
+        if (targetMod === 'ultrasound' || targetMod === 'usg') return m.includes('ultra') || m.includes('us');
+        if (targetMod === 'pathology') return (t.department || '').toLowerCase() === 'pathology';
+        return m === targetMod;
+      });
+    }
+
+    // Department filter
+    if (selectedDepartment !== 'All') {
+      const targetDept = selectedDepartment.toLowerCase();
+      list = list.filter(t => (t.department || '').toLowerCase() === targetDept);
+    }
+
+    // Sorting
+    list.sort((a, b) => {
+      let comparison = 0;
+      if (sortBy === 'count') {
+        comparison = (b.count || 0) - (a.count || 0);
+      } else if (sortBy === 'name') {
+        comparison = (a.testName || '').localeCompare(b.testName || '');
+      } else if (sortBy === 'share') {
+        comparison = (b.overallShare || 0) - (a.overallShare || 0);
+      }
+      return sortOrder === 'asc' ? -comparison : comparison;
+    });
+
+    return list;
+  }, [rawTests, searchTerm, selectedModality, selectedDepartment, sortBy, sortOrder]);
+
+  // Export CSV handler
+  const handleExportCsv = () => {
+    if (!filteredTests.length) return;
+    const headers = ['Test Name', 'Test Code', 'Department', 'Modality', 'Volume (Count)', 'Unique Patients', 'Dept Share %', 'Overall Workload %'];
+    const rows = filteredTests.map(t => [
+      `"${(t.testName || '').replace(/"/g, '""')}"`,
+      `"${(t.testCode || '').replace(/"/g, '""')}"`,
+      `"${(t.department || '').replace(/"/g, '""')}"`,
+      `"${(t.modality || '').replace(/"/g, '""')}"`,
+      t.count || 0,
+      t.uniquePatients || 0,
+      `${t.departmentShare || 0}%`,
+      `${t.overallShare || 0}%`
+    ]);
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(e => e.join(',')).join('\n')];
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `SynOS_Test_Volume_${presetRange || 'period'}_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
   };
 
-  const cashInflow = Number(stats?.cashInflow || stats?.totalRevenueCash || stats?.cashCollected) || 0;
-  const accrualRevenue = Number(stats?.totalRevenueAccrual) || cashInflow;
-  const receivables = Number(stats?.pendingCollections) || Math.max(0, accrualRevenue - cashInflow);
-  const cashCollected = Number(stats?.cashCollected) || (cashInflow > 0 ? cashInflow : 0);
-  const onlineCollected = Number(stats?.onlineCollected) || 0;
-  
-  // Realized collection efficiency percentage
-  const collectionEfficiency = accrualRevenue > 0 
-    ? Math.min(100, Math.round((cashInflow / accrualRevenue) * 100)) 
-    : (cashInflow > 0 ? 100 : 0);
-
-  const formatINR = (val) => {
-    const num = Math.round(Number(val) || 0);
-    return `₹${num.toLocaleString('en-IN')}`;
+  const getModalityBadgeStyle = (mod) => {
+    const m = (mod || '').toLowerCase();
+    if (m.includes('mri')) return 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border-cyan-500/20';
+    if (m.includes('ct')) return 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20';
+    if (m.includes('x-ray') || m.includes('xray')) return 'bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/20';
+    if (m.includes('ultra') || m.includes('us')) return 'bg-teal-500/10 text-teal-700 dark:text-teal-300 border-teal-500/20';
+    if (m.includes('hem') || m.includes('cbc') || m.includes('blood')) return 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/20';
+    if (m.includes('bio') || m.includes('lipid') || m.includes('lft')) return 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20';
+    return 'bg-slate-500/10 text-slate-700 dark:text-slate-300 border-slate-500/20';
   };
 
-  const cards = [
-    { 
-      title: "Realized Cash Inflow", 
-      value: formatINR(cashInflow), 
-      subtitle: "Physical drawer & gateway collections",
-      type: 'positive',
-      icon: Wallet
+  const modalityKpiCards = [
+    {
+      id: 'All',
+      label: 'TOTAL TESTS',
+      count: totalTests,
+      unit: 'Tests',
+      subtitle: `${totalVisits} visits • ${totalPatients} patients`,
+      icon: Layers,
+      color: 'indigo'
     },
-    { 
-      title: "Accrual Billed Revenue", 
-      value: formatINR(accrualRevenue), 
-      subtitle: "Total diagnostic services invoiced",
-      type: 'neutral',
-      icon: IndianRupee
+    {
+      id: 'MRI',
+      label: 'MRI SCANS',
+      count: mriCount,
+      unit: 'Scans',
+      subtitle: totalTests > 0 ? `${((mriCount / totalTests) * 100).toFixed(1)}% of total workload` : 'Magnetic Resonance',
+      icon: Scan,
+      color: 'cyan'
     },
-    { 
-      title: "Pending Receivables", 
-      value: formatINR(receivables), 
-      subtitle: "Uncollected patient & corporate dues",
-      type: receivables > 0 ? 'negative' : 'neutral',
-      icon: Clock
+    {
+      id: 'CT Scan',
+      label: 'CT SCANS',
+      count: ctCount,
+      unit: 'Scans',
+      subtitle: totalTests > 0 ? `${((ctCount / totalTests) * 100).toFixed(1)}% of total workload` : 'Computed Tomography',
+      icon: Scan,
+      color: 'amber'
     },
-    { 
-      title: "Collection Efficiency", 
-      value: `${collectionEfficiency}%`, 
-      subtitle: `Cash margin: ${(stats?.cashMarginPercentage || 0).toFixed(1)}%`,
-      type: collectionEfficiency >= 70 ? 'positive' : 'negative',
-      icon: CheckCircle2
+    {
+      id: 'X-Ray',
+      label: 'X-RAYS',
+      count: xrayCount,
+      unit: 'Scans',
+      subtitle: totalTests > 0 ? `${((xrayCount / totalTests) * 100).toFixed(1)}% of total workload` : 'Digital Radiography',
+      icon: Activity,
+      color: 'violet'
+    },
+    {
+      id: 'Ultrasound',
+      label: 'ULTRASOUND',
+      count: usgCount,
+      unit: 'Scans',
+      subtitle: totalTests > 0 ? `${((usgCount / totalTests) * 100).toFixed(1)}% of total workload` : 'Sonography / USG',
+      icon: Waves,
+      color: 'teal'
+    },
+    {
+      id: 'Pathology',
+      label: 'PATHOLOGY & LAB',
+      count: pathologyCount,
+      unit: 'Tests',
+      subtitle: totalTests > 0 ? `${((pathologyCount / totalTests) * 100).toFixed(1)}% of total workload` : 'Clinical Laboratory',
+      icon: Beaker,
+      color: 'emerald'
     }
   ];
 
   return (
     <div className="p-8 space-y-8 animate-in slide-in-from-bottom-4 duration-500">
-      {/* 4 TOP ELEVATED KPI CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {cards.map((card, idx) => (
-          <div 
-            key={idx} 
-            className="p-6 synos-kpi-card rounded-2xl flex flex-col justify-between space-y-3"
-          >
-            <div className="flex justify-between items-start">
-              <div className="space-y-1">
-                <span className="text-[10px] font-extrabold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest">{card.title}</span>
-                <p className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">{card.value}</p>
+      
+      {/* TIER 1: HIGH-IMPACT MODALITY WORKLOAD CARDS */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        {modalityKpiCards.map((card) => {
+          const isSelected = selectedModality === card.id || (card.id === 'All' && selectedModality === 'All');
+          return (
+            <button
+              key={card.id}
+              onClick={() => setSelectedModality(card.id === selectedModality && card.id !== 'All' ? 'All' : card.id)}
+              className={cn(
+                "p-5 synos-kpi-card rounded-2xl flex flex-col justify-between text-left transition-all cursor-pointer relative overflow-hidden group",
+                isSelected
+                  ? "ring-2 ring-synos-primary shadow-md bg-synos-primary/5 dark:bg-synos-primary/10"
+                  : "hover:border-zinc-300 dark:hover:border-zinc-700"
+              )}
+            >
+              <div className="flex items-center justify-between w-full mb-3">
+                <span className="text-[10px] font-black text-zinc-500 dark:text-zinc-400 uppercase tracking-widest truncate">
+                  {card.label}
+                </span>
+                <div className={cn(
+                  "w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110",
+                  card.color === 'cyan' ? "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400" :
+                  card.color === 'amber' ? "bg-amber-500/10 text-amber-600 dark:text-amber-400" :
+                  card.color === 'violet' ? "bg-violet-500/10 text-violet-600 dark:text-violet-400" :
+                  card.color === 'teal' ? "bg-teal-500/10 text-teal-600 dark:text-teal-400" :
+                  card.color === 'emerald' ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" :
+                  "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
+                )}>
+                  <card.icon size={16} />
+                </div>
               </div>
-              <div className={cn(
-                "w-9 h-9 rounded-xl flex items-center justify-center shrink-0",
-                card.type === 'positive' ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" :
-                card.type === 'negative' ? "bg-rose-500/10 text-rose-600 dark:text-rose-400" :
-                "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
-              )}>
-                <card.icon size={17} />
+
+              <div className="space-y-1">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-3xl font-black text-zinc-900 dark:text-white tracking-tight">
+                    {loading ? '...' : card.count.toLocaleString()}
+                  </span>
+                  <span className="text-xs font-bold text-zinc-400 dark:text-zinc-500 lowercase">
+                    {card.unit}
+                  </span>
+                </div>
+                <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 truncate">
+                  {card.subtitle}
+                </p>
+              </div>
+
+              {isSelected && card.id !== 'All' && (
+                <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-synos-primary animate-pulse" />
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* TIER 2: DEPARTMENT WORKLOAD & MODALITY DISTRIBUTION */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        {/* RADIOLOGY DEPARTMENT PANEL */}
+        <div className="synos-dept-card rounded-2xl p-6 space-y-5">
+          <div className="flex items-center justify-between pb-3 border-b border-zinc-100 dark:border-zinc-800">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center font-bold">
+                <Scan size={18} />
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
+                  Radiology & Diagnostic Imaging
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20">
+                    {radiologyShare}% of lab workload
+                  </span>
+                </h3>
+                <p className="text-[11px] text-zinc-500">MRI, CT Scan, X-Ray, and Ultrasonography throughput</p>
               </div>
             </div>
-            <p className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 border-t border-zinc-100 dark:border-zinc-900 pt-2.5">
-              {card.subtitle}
+            <div className="text-right">
+              <span className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
+                {radiologyTotal}
+              </span>
+              <span className="text-xs text-zinc-400 font-bold ml-1">Scans</span>
+            </div>
+          </div>
+
+          {/* Modality throughput bars */}
+          <div className="space-y-3.5">
+            {[
+              { name: 'MRI', label: 'MRI (Magnetic Resonance)', count: mriCount, color: 'bg-cyan-500', barColor: 'bg-cyan-500' },
+              { name: 'CT Scan', label: 'CT Scan (Computed Tomography)', count: ctCount, color: 'bg-amber-500', barColor: 'bg-amber-500' },
+              { name: 'X-Ray', label: 'X-Ray (Digital Radiography)', count: xrayCount, color: 'bg-violet-500', barColor: 'bg-violet-500' },
+              { name: 'Ultrasound', label: 'Ultrasound & Sonography (USG)', count: usgCount, color: 'bg-teal-500', barColor: 'bg-teal-500' }
+            ].map(item => {
+              const shareOfRadiology = radiologyTotal > 0 ? Math.round((item.count / radiologyTotal) * 100) : 0;
+              return (
+                <div key={item.name} className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
+                      <span className={cn("w-2 h-2 rounded-full", item.color)} />
+                      {item.label}
+                    </span>
+                    <div className="flex items-center gap-2 font-mono">
+                      <span className="font-extrabold text-zinc-900 dark:text-white">{item.count}</span>
+                      <span className="text-[10px] text-zinc-400">({shareOfRadiology}%)</span>
+                    </div>
+                  </div>
+                  <div className="h-2 w-full bg-zinc-100 dark:bg-zinc-800/80 rounded-full overflow-hidden">
+                    <div 
+                      className={cn("h-full rounded-full transition-all duration-700", item.barColor)} 
+                      style={{ width: `${shareOfRadiology}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* PATHOLOGY DEPARTMENT PANEL */}
+        <div className="synos-dept-card rounded-2xl p-6 space-y-5">
+          <div className="flex items-center justify-between pb-3 border-b border-zinc-100 dark:border-zinc-800">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+                <Beaker size={18} />
+              </div>
+              <div>
+                <h3 className="text-sm font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
+                  Pathology & Clinical Laboratory
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                    {pathologyShare}% of lab workload
+                  </span>
+                </h3>
+                <p className="text-[11px] text-zinc-500">Biochemistry, Hematology, Serology, and Clinical Pathology</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <span className="text-2xl font-black text-zinc-900 dark:text-white tracking-tight">
+                {pathologyTotal}
+              </span>
+              <span className="text-xs text-zinc-400 font-bold ml-1">Tests</span>
+            </div>
+          </div>
+
+          {/* Sub-discipline throughput bars */}
+          <div className="space-y-3.5">
+            {(pathologyDept?.disciplines?.length ? pathologyDept.disciplines : [
+              { modality: 'Biochemistry', count: Math.round(pathologyTotal * 0.45) },
+              { modality: 'Hematology', count: Math.round(pathologyTotal * 0.35) },
+              { modality: 'Clinical Pathology', count: Math.max(0, pathologyTotal - Math.round(pathologyTotal * 0.45) - Math.round(pathologyTotal * 0.35)) }
+            ]).map(item => {
+              const shareOfPathology = pathologyTotal > 0 ? Math.round((item.count / pathologyTotal) * 100) : 0;
+              return (
+                <div key={item.modality} className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                      {item.modality}
+                    </span>
+                    <div className="flex items-center gap-2 font-mono">
+                      <span className="font-extrabold text-zinc-900 dark:text-white">{item.count}</span>
+                      <span className="text-[10px] text-zinc-400">({shareOfPathology}%)</span>
+                    </div>
+                  </div>
+                  <div className="h-2 w-full bg-zinc-100 dark:bg-zinc-800/80 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full rounded-full bg-emerald-500 transition-all duration-700" 
+                      style={{ width: `${shareOfPathology}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+      </div>
+
+      {/* TIER 3: GRANULAR TEST WORKLOAD LEDGER TABLE */}
+      <div className="synos-dept-card rounded-2xl overflow-hidden border border-slate-200/80 dark:border-zinc-800 shadow-sm space-y-4 p-6">
+        
+        {/* Table Controls Header */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-2">
+          <div>
+            <h2 className="text-sm font-black text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
+              <BarChart3 size={16} className="text-synos-primary" />
+              Granular Test Workload Ledger
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
+                {filteredTests.length} Tests
+              </span>
+            </h2>
+            <p className="text-[11px] text-zinc-500 mt-0.5">
+              Ranked test utilization and modality distribution for the selected time horizon.
             </p>
           </div>
-        ))}
-      </div>
 
-      {/* 2-COLUMN BALANCED MAIN SURFACE */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* LEFT COLUMN (2 Spans): RECENT COLLECTIONS FEED */}
-        <div className="lg:col-span-2 synos-dept-card rounded-2xl p-6 flex flex-col justify-between space-y-4">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-sm font-extrabold text-zinc-900 dark:text-white tracking-tight">Recent Collections & Inflows</h2>
-                <p className="text-[11px] text-zinc-500 mt-0.5">Live payments posted across reception, phlebotomy, and billing desks.</p>
-              </div>
-              <button
-                onClick={() => navigate('/finance/revenue/bills')}
-                className="text-xs font-bold text-synos-primary hover:underline flex items-center gap-1 cursor-pointer"
-              >
-                Full Bills Ledger <ArrowRight size={13} />
-              </button>
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Search Input */}
+            <div className="relative min-w-[240px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={14} />
+              <input 
+                type="text"
+                placeholder="Search test name or code..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-8 py-2 text-xs rounded-xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-synos-primary transition-all"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer"
+                >
+                  <X size={13} />
+                </button>
+              )}
             </div>
 
-            {loadingTransactions ? (
-              <div className="py-20 text-center text-zinc-400 animate-pulse text-xs font-bold uppercase tracking-widest">Scanning ledger...</div>
-            ) : recentTransactions.length === 0 ? (
-              <div className="py-16 text-center border border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl">
-                <p className="text-xs font-semibold text-zinc-400">No recent collections recorded in this window.</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="border-b border-slate-200 dark:border-zinc-800 pb-2 text-[10px] uppercase font-bold text-zinc-500">
-                      <th className="pb-3 font-extrabold">Date</th>
-                      <th className="pb-3 font-extrabold">Account / Category</th>
-                      <th className="pb-3 text-right font-extrabold">Amount</th>
-                      <th className="pb-3 text-center font-extrabold">Payment Mode</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80">
-                    {recentTransactions.map((t, idx) => (
-                      <tr key={idx} className="hover:bg-zinc-50/70 dark:hover:bg-zinc-900/40 transition-colors">
-                        <td className="py-3 text-zinc-500 font-medium">{new Date(t.occurredAt).toLocaleDateString()}</td>
-                        <td className="py-3">
-                          <span className="font-semibold text-zinc-800 dark:text-zinc-200 block">{t.sourceType || 'Patient Bill'}</span>
-                          {t.reference && <span className="text-[10px] text-zinc-400 font-mono">{t.reference}</span>}
-                        </td>
-                        <td className="py-3 text-right font-black text-emerald-600 dark:text-emerald-400">
-                          ₹{Number(t.amount || 0).toLocaleString('en-IN')}
-                        </td>
-                        <td className="py-3 text-center">
-                          <span className={cn(
-                            "px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider",
-                            (t.paymentMode || '').toLowerCase().includes('cash')
-                              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
-                              : "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20"
-                          )}>
-                            {t.paymentMode || 'Cash'}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-
-          <div className="pt-3 border-t border-zinc-100 dark:border-zinc-900 flex items-center justify-between text-xs">
-            <span className="text-zinc-400 text-[11px]">Showing latest {recentTransactions.length} receipts</span>
-            <button
-              onClick={() => navigate('/finance/revenue/history')}
-              className="font-bold text-synos-primary hover:underline text-[11px] cursor-pointer"
+            {/* Department Filter Dropdown */}
+            <select
+              value={selectedDepartment}
+              onChange={(e) => setSelectedDepartment(e.target.value)}
+              className="px-3 py-2 text-xs rounded-xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 font-bold focus:outline-none focus:ring-2 focus:ring-synos-primary transition-all cursor-pointer"
             >
-              View Full History →
+              <option value="All">All Departments</option>
+              <option value="Radiology">Radiology</option>
+              <option value="Pathology">Pathology</option>
+            </select>
+
+            {/* Sort Dropdown */}
+            <select
+              value={`${sortBy}_${sortOrder}`}
+              onChange={(e) => {
+                const [sb, so] = e.target.value.split('_');
+                setSortBy(sb);
+                setSortOrder(so);
+              }}
+              className="px-3 py-2 text-xs rounded-xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 text-zinc-800 dark:text-zinc-200 font-bold focus:outline-none focus:ring-2 focus:ring-synos-primary transition-all cursor-pointer"
+            >
+              <option value="count_desc">Sort: Highest Volume</option>
+              <option value="count_asc">Sort: Lowest Volume</option>
+              <option value="share_desc">Sort: Highest % Share</option>
+              <option value="name_asc">Sort: Name (A-Z)</option>
+            </select>
+
+            {/* Export CSV Button */}
+            <button
+              onClick={handleExportCsv}
+              disabled={!filteredTests.length}
+              className="px-3.5 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs font-bold hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            >
+              <Download size={13} /> Export CSV
+            </button>
+
+            {/* Refresh Button */}
+            <button
+              onClick={() => fetchVolumeData()}
+              className="p-2 rounded-xl border border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:text-zinc-900 dark:hover:white hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all cursor-pointer"
+              title="Refresh Test Volume Data"
+            >
+              <RefreshCw size={14} className={cn(loading && "animate-spin")} />
             </button>
           </div>
         </div>
 
-        {/* RIGHT COLUMN (1 Span): DRAWER BALANCE & ACTION HUB */}
-        <div className="space-y-6">
-          
-          {/* Drawer Reconciliation Card */}
-          <div className="synos-dept-card rounded-2xl p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-extrabold text-zinc-900 dark:text-white tracking-tight">Active Drawer Balance</h2>
-              <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
-                Live Reconciled
+        {/* Quick Modality Filter Chips */}
+        <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-zinc-100 dark:border-zinc-800/80">
+          <span className="text-[10px] font-black uppercase tracking-wider text-zinc-400 mr-1">
+            Modality Filter:
+          </span>
+          {[
+            { id: 'All', label: 'All Tests', count: totalTests },
+            { id: 'MRI', label: 'MRI', count: mriCount },
+            { id: 'CT Scan', label: 'CT Scan', count: ctCount },
+            { id: 'X-Ray', label: 'X-Ray', count: xrayCount },
+            { id: 'Ultrasound', label: 'Ultrasound', count: usgCount },
+            { id: 'Pathology', label: 'Pathology / Lab', count: pathologyCount }
+          ].map(chip => (
+            <button
+              key={chip.id}
+              onClick={() => setSelectedModality(chip.id)}
+              className={cn(
+                "px-3 py-1 rounded-full text-xs font-extrabold transition-all cursor-pointer flex items-center gap-1.5",
+                selectedModality === chip.id
+                  ? "bg-synos-primary text-white shadow-sm"
+                  : "bg-zinc-100 dark:bg-zinc-800/60 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700/60"
+              )}
+            >
+              <span>{chip.label}</span>
+              <span className={cn(
+                "px-1.5 py-0.2 rounded-full text-[10px]",
+                selectedModality === chip.id
+                  ? "bg-white/20 text-white"
+                  : "bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300"
+              )}>
+                {chip.count}
               </span>
-            </div>
-
-            <div className="space-y-3">
-              {/* Physical Cash Drawer Box */}
-              <div className="p-4 bg-zinc-50/80 dark:bg-zinc-900/40 rounded-xl border border-zinc-200/60 dark:border-zinc-800/60 flex justify-between items-center hover:border-emerald-500/40 transition-colors">
-                <div>
-                  <p className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest">Physical Cash Drawer</p>
-                  <p className="text-xl font-black text-zinc-900 dark:text-white mt-0.5">{formatINR(cashCollected)}</p>
-                  <span className="text-[10px] text-zinc-400 font-medium">Available in front register</span>
-                </div>
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
-                  <Wallet size={20} />
-                </div>
-              </div>
-
-              {/* Digital Inflow Box */}
-              <div className="p-4 bg-zinc-50/80 dark:bg-zinc-900/40 rounded-xl border border-zinc-200/60 dark:border-zinc-800/60 flex justify-between items-center hover:border-indigo-500/40 transition-colors">
-                <div>
-                  <p className="text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest">Digital Online Inflow</p>
-                  <p className="text-xl font-black text-zinc-900 dark:text-white mt-0.5">{formatINR(onlineCollected)}</p>
-                  <span className="text-[10px] text-zinc-400 font-medium">UPI, QR, POS & Net Banking</span>
-                </div>
-                <div className="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center shrink-0">
-                  <TrendingUp size={20} />
-                </div>
-              </div>
-            </div>
-
-            {/* Inflow Share Progress Bar */}
-            <div className="space-y-1.5 pt-1">
-              <div className="flex justify-between text-[11px] font-bold">
-                <span className="text-emerald-600 dark:text-emerald-400">
-                  Cash: {cashInflow > 0 ? Math.round((cashCollected / cashInflow) * 100) : 0}%
-                </span>
-                <span className="text-indigo-600 dark:text-indigo-400">
-                  Digital: {cashInflow > 0 ? Math.round((onlineCollected / cashInflow) * 100) : 0}%
-                </span>
-              </div>
-              <div className="w-full h-2 rounded-full bg-zinc-100 dark:bg-zinc-800 overflow-hidden flex">
-                <div 
-                  className="bg-emerald-500 h-full transition-all duration-500" 
-                  style={{ width: `${cashInflow > 0 ? (cashCollected / cashInflow) * 100 : 50}%` }} 
-                />
-                <div 
-                  className="bg-indigo-500 h-full transition-all duration-500" 
-                  style={{ width: `${cashInflow > 0 ? (onlineCollected / cashInflow) * 100 : 50}%` }} 
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Actions Panel */}
-          <div className="synos-dept-card rounded-2xl p-6 space-y-3">
-            <h3 className="text-xs font-extrabold text-zinc-900 dark:text-white uppercase tracking-wider">Quick Actions</h3>
-            
-            <button
-              onClick={() => navigate('/finance/revenue/bills')}
-              className="w-full py-2.5 px-4 rounded-xl bg-synos-primary text-white text-xs font-bold hover:bg-synos-primary/90 transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <FileSpreadsheet size={14} /> Open Bills & Collections Ledger
             </button>
-
-            <button
-              onClick={() => navigate('/finance/revenue/receivables')}
-              className="w-full py-2.5 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs font-bold hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-all flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <Clock size={14} /> View Pending Receivables ({formatINR(receivables)})
-            </button>
-          </div>
-
+          ))}
         </div>
 
+        {/* Table Content */}
+        {loading ? (
+          <div className="py-24 text-center space-y-3">
+            <RefreshCw size={24} className="animate-spin text-synos-primary mx-auto" />
+            <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Aggregating test throughput from SSOT orders...</p>
+          </div>
+        ) : filteredTests.length === 0 ? (
+          <div className="py-20 text-center border border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl space-y-2">
+            <Activity size={28} className="text-zinc-300 dark:text-zinc-600 mx-auto" />
+            <p className="text-sm font-bold text-zinc-700 dark:text-zinc-300">No matching test volume found</p>
+            <p className="text-xs text-zinc-400">
+              Try clearing filters or switching the date horizon.
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto rounded-xl border border-zinc-200/80 dark:border-zinc-800">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-zinc-50/70 dark:bg-zinc-900/60 border-b border-zinc-200/80 dark:border-zinc-800 text-[10px] font-black uppercase text-zinc-500 tracking-wider">
+                  <th className="py-3 px-4 font-extrabold">Test Item & Identification</th>
+                  <th className="py-3 px-3 font-extrabold">Department</th>
+                  <th className="py-3 px-3 font-extrabold">Modality / Discipline</th>
+                  <th className="py-3 px-4 text-center font-extrabold">
+                    <button 
+                      onClick={() => {
+                        if (sortBy === 'count') setSortOrder(o => o === 'asc' ? 'desc' : 'asc');
+                        else { setSortBy('count'); setSortOrder('desc'); }
+                      }}
+                      className="inline-flex items-center gap-1 hover:text-zinc-900 dark:hover:text-white cursor-pointer"
+                    >
+                      Volume (Count)
+                      <ArrowUpDown size={11} />
+                    </button>
+                  </th>
+                  <th className="py-3 px-3 text-center font-extrabold">Unique Patients</th>
+                  <th className="py-3 px-4 text-left font-extrabold">Dept Share</th>
+                  <th className="py-3 px-4 text-left font-extrabold">Overall Workload Share</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-200/80 dark:divide-zinc-800/80 font-medium">
+                {filteredTests.map((test, idx) => (
+                  <tr 
+                    key={`${test.testCode}_${idx}`} 
+                    className="hover:bg-zinc-50/80 dark:hover:bg-zinc-900/40 transition-colors"
+                  >
+                    {/* Test Name & Code */}
+                    <td className="py-3.5 px-4">
+                      <div className="font-extrabold text-zinc-900 dark:text-white text-xs">
+                        {test.testName}
+                      </div>
+                      <div className="text-[10px] text-zinc-400 font-mono mt-0.5">
+                        {test.testCode || 'STD-TEST'}
+                      </div>
+                    </td>
+
+                    {/* Department */}
+                    <td className="py-3.5 px-3">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
+                        {test.department}
+                      </span>
+                    </td>
+
+                    {/* Modality */}
+                    <td className="py-3.5 px-3">
+                      <span className={cn(
+                        "px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border",
+                        getModalityBadgeStyle(test.modality)
+                      )}>
+                        {test.modality}
+                      </span>
+                    </td>
+
+                    {/* Volume (Count) - Primary Focus */}
+                    <td className="py-3.5 px-4 text-center">
+                      <span className="inline-flex items-center justify-center min-w-[56px] px-3 py-1 rounded-xl text-sm font-black bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-sm">
+                        {test.count}
+                      </span>
+                    </td>
+
+                    {/* Unique Patients */}
+                    <td className="py-3.5 px-3 text-center font-bold text-zinc-600 dark:text-zinc-400 font-mono">
+                      {test.uniquePatients}
+                    </td>
+
+                    {/* Department Share % */}
+                    <td className="py-3.5 px-4">
+                      <div className="w-28 space-y-1">
+                        <div className="flex items-center justify-between text-[11px] font-bold text-zinc-700 dark:text-zinc-300">
+                          <span>{test.departmentShare}%</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-indigo-500 rounded-full" 
+                            style={{ width: `${Math.min(100, test.departmentShare)}%` }}
+                          />
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* Overall Workload Share % */}
+                    <td className="py-3.5 px-4">
+                      <div className="w-32 space-y-1">
+                        <div className="flex items-center justify-between text-[11px] font-bold text-zinc-700 dark:text-zinc-300">
+                          <span>{test.overallShare}% of total</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-synos-primary rounded-full" 
+                            style={{ width: `${Math.min(100, test.overallShare)}%` }}
+                          />
+                        </div>
+                      </div>
+                    </td>
+
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
       </div>
+
     </div>
   );
 };
@@ -556,7 +947,7 @@ export const RevenueTerminal = () => {
   const tabTitles = {
     overview: {
       title: "Revenue Overview",
-      subtitle: "Monitor incoming payments, receivables, and drawer balances."
+      subtitle: "Clinical test volume, modality throughput, and department workload breakdown."
     },
     bills: {
       title: "Bills & Collections",

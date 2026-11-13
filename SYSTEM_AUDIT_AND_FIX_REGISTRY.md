@@ -3915,6 +3915,59 @@ When an administrator creates a new test in **Test Master** (`/admin/test-master
 * **Frontend Build:** `npm run build` passed with **0 Errors** (embedded into `SynOS.Api/wwwroot`).
 * **Git Status:** Verified and ready for deployment.
 
+---
+
+## 57. Revenue Overview Transformation: Clinical & Operational Test Volume Intelligence Engine — [RESOLVED & VERIFIED]
+
+### Severity: Medium-High / Operational Throughput Visibility & Executive Clinical Analytics
+### Impacted Modules & Files
+* **Financial Ledger Controller:** [`FinanceBillsController.cs:815-975`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Controllers/FinanceBillsController.cs#L815-L975)
+* **Finance API Client:** [`finance.js:60-78`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/api/finance.js#L60-L78)
+* **Revenue Screens Terminal & Overview:** [`RevenueScreens.jsx:220-475, 940-960`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/finance/RevenueScreens.jsx#L220-L475)
+
+### Incident & Functional Requirement
+* **Operational Disconnect:** The existing Revenue Overview screen rendered redundant drawer and cash reconciliation figures already available in Cash Drawer Ledgers and Bills & Collections, while offering zero visibility into diagnostic throughput.
+* Center administrators, lab directors, and operators had no immediate way to answer critical operational questions:
+  - *"How many MRIs arrived today?"*
+  - *"What was the scan volume across CT, X-Ray, and Ultrasound?"*
+  - *"What is our department throughput split between Radiology and Pathology?"*
+  - *"Which specific tests had the highest workload?"*
+* Operators were forced to manually count bills in the raw financial ledger.
+
+---
+
+### Enterprise Solutions Implemented
+
+1. **High-Performance Aggregator Backend ([`FinanceBillsController.cs`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Controllers/FinanceBillsController.cs)):**
+   * Implemented `GET /api/v1/finance/analytics/test-volume` endpoint accepting `branchId`, `preset`, `startDate`, and `endDate`.
+   * Queries active visits and billable test orders, suppressing internal panel parameter components (e.g. Bilirubin within LFT) to prevent artificial volume inflation.
+   * Leverages canonical `ClassifyOrder` and `ResolveRadiologyModality` dictionary resolvers to classify every test into accurate clinical modalities (`MRI`, `CT Scan`, `X-Ray`, `Ultrasound`, `Pathology`).
+   * Groups and computes:
+     - Total Tests, Distinct Visits, and Distinct Patients.
+     - Modality volume counts (`Mri`, `Ct`, `Xray`, `Usg`, `Pathology`, `Other`).
+     - Department-wise volume and discipline distribution.
+     - Ranked test-wise workload ledger with unique patient counts and departmental/overall workload shares.
+
+2. **Frontend API Client Integration ([`finance.js`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/api/finance.js)):**
+   * Added `getTestVolumeAnalytics(params)` supporting dynamic query params and seamless token/branch attribution.
+
+3. **Revamped Revenue Overview Dashboard ([`RevenueScreens.jsx`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/finance/RevenueScreens.jsx)):**
+   * Replaced financial drawer widgets with a 3-tiered volume intelligence surface:
+     - **Tier 1 (Hero Modality Cards):** Interactive volume cards for `Total Workload`, `MRI Scans`, `CT Scans`, `X-Rays`, `Ultrasound`, and `Pathology & Lab`. Clicking any card toggles instant modality filtering on the ledger below.
+     - **Tier 2 (Department Workload Panels):** Side-by-side balanced cards for **Radiology & Diagnostic Imaging** and **Pathology & Clinical Laboratory**, featuring percentage share chips and visual throughput progress bars.
+     - **Tier 3 (Granular Test Workload Ledger):** Sortable, searchable table displaying test name, code, department badge, canonical modality badge, volume count (high-contrast pill), unique patient count, and department/overall share progress bars.
+   * Integrated quick modality filter chips (`All Tests`, `MRI`, `CT Scan`, `X-Ray`, `Ultrasound`, `Pathology / Lab`), department dropdown, and sorting options (`Highest Volume`, `Lowest Volume`, `Highest % Share`, `Alphabetical`).
+   * Added instant CSV export (`Export CSV`) for offline reporting.
+   * Full synchronization with `StandardFilterBar` (`Today`, `This Month`, `This Quarter`, `This Year`, `Custom Date`, `Custom Range`) and multi-branch context.
+
+---
+
+### Build & Verification
+* **Backend Build:** `dotnet build SynOS.sln` completed with **0 Errors**.
+* **Frontend Build:** `npm run build` completed with **0 Errors** (embedded production bundle `index-DBCcnJj3.js` into `SynOS.Api/wwwroot`).
+* **Git Status:** Committed and pushed to `cloud-testing-2`.
+
+
 
 
 
