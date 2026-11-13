@@ -22,8 +22,9 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
   useFocusTrap(facilityRef, activeDropdown === 'facility', () => setActiveDropdown(null));
   useFocusTrap(roleRef, activeDropdown === 'role', () => setActiveDropdown(null));
 
-  const isAdmin = user?.role === 'Admin' || user?.role === 'SystemAdmin' || 
-                 (Array.isArray(user?.role) && (user.role.includes('Admin') || user.role.includes('SystemAdmin')));
+  const userRoles = Array.isArray(user?.role) ? user.role : (user?.role ? [user.role] : []);
+  const isAdmin = userRoles.some(r => typeof r === 'string' && (r.toLowerCase() === 'admin' || r.toLowerCase() === 'systemadmin'));
+  const isReceptionRole = userRoles.some(r => typeof r === 'string' && r.toLowerCase() === 'receptionist');
 
   // Determine Role Takeover state for Admins navigating operational screens
   const path = location.pathname;
@@ -187,7 +188,7 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
         )}
 
         {/* Return to Reception for My-HR, Patient Directory, or Reception-launched Finance pages */}
-        {(location.pathname.startsWith('/my-hr') || location.pathname.startsWith('/patients') || (location.pathname.startsWith('/finance') && (user?.role === 'Receptionist' || location.search.includes('source=reception')))) && (
+        {(location.pathname.startsWith('/my-hr') || location.pathname.startsWith('/patients') || (location.pathname.startsWith('/finance') && (isReceptionRole || sessionStorage.getItem('synos_finance_source') === 'reception' || location.search.includes('source=reception')))) && (
           <div className="flex items-center gap-1.5 sm:gap-2.5">
             <div className="h-4 w-px bg-zinc-300 dark:bg-zinc-700 hidden sm:block shrink-0" />
             

@@ -25,29 +25,31 @@ export function FinanceLayout() {
     const { user } = useAuth();
     const location = useLocation();
 
-    const isAdmin = user?.role === 'Admin' || user?.role === 'SystemAdmin' || 
-                   (Array.isArray(user?.role) && (user.role.includes('Admin') || user.role.includes('SystemAdmin')));
+    const userRoles = Array.isArray(user?.role) ? user.role : (user?.role ? [user.role] : []);
+    const isAdmin = userRoles.some(r => typeof r === 'string' && (r.toLowerCase() === 'admin' || r.toLowerCase() === 'systemadmin'));
 
-    // Clean up stale reception source tag whenever navigating without source=reception
+    // Track reception source tag when navigating from reception
     React.useEffect(() => {
         if (location.search.includes('source=reception')) {
             sessionStorage.setItem('synos_finance_source', 'reception');
-        } else {
-            sessionStorage.removeItem('synos_finance_source');
         }
     }, [location.search]);
 
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+        if (!isAdmin) return true;
         const saved = localStorage.getItem('synos_finance_sidebar_collapsed');
         if (saved !== null) return saved === 'true';
-        return user?.role === 'Receptionist';
+        return false;
     });
 
     useEffect(() => {
-        localStorage.setItem('synos_finance_sidebar_collapsed', isSidebarCollapsed);
-    }, [isSidebarCollapsed]);
+        if (isAdmin) {
+            localStorage.setItem('synos_finance_sidebar_collapsed', isSidebarCollapsed);
+        }
+    }, [isSidebarCollapsed, isAdmin]);
 
     useEffect(() => {
+        if (!isAdmin) return;
         const handleKeyDown = (e) => {
             if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
                 e.preventDefault();
@@ -56,7 +58,7 @@ export function FinanceLayout() {
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, []);
+    }, [isAdmin]);
 
     const departments = [
         {
@@ -195,8 +197,8 @@ export function FinanceLayout() {
             <SystemBar syncStatus="Synced" />
 
             <div className="flex flex-1 min-h-0 overflow-hidden relative z-10">
-                {/* Sidebar - Frosted Light Mode Model */}
-                {!isSidebarCollapsed && (
+                {/* Sidebar - Frosted Light Mode Model (Admins Only) */}
+                {isAdmin && !isSidebarCollapsed && (
                     <aside 
                         style={{
                             backgroundImage: `url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyBAMAAADsEZWCAAAAGFBMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAt66YlAAAAB3RSTlMAo7S066u0v76zAAABJklEQVQ4jXWSwW7DIAyGvRNoV9HeIdp7B2nvHaK9d7D27lX836VpY6t0p8oHicDHP4Z99qGf96HvX+h7NfSmX8U8z9M0z6+P/m8X6fB6L78XpX4X5X4O6fc8l7e8n+T9KO87ed+m77pP33Wfvuu6T991nb7rum/ed5+87z55333yvvvkfffJ++6T990n77pP33Wfvus6fdd13rrvu67rvXXfd13ne+u+77rO99Z933Wdt67rtnXdt67rtnWdt67rtjW999Y9ve9997mPu8997uPus9fZZ6+zz15nn73OPnudvU9f0+v0Nb1OX9Pr9DW9Tm9O9vTmaE5vjua09f7o/db7rff7f9H3v6XvP9TzL/X+U8+/1fMv9fw7fQ==")`,
@@ -241,9 +243,9 @@ export function FinanceLayout() {
                     </aside>
                 )}
 
-                <main className="flex-1 min-h-0 overflow-y-auto bg-[#CBD5E1] dark:bg-zinc-950 flex flex-col relative">
-                    {/* Floating Expand Toggle when Navigation is Minimized */}
-                    {isSidebarCollapsed && (
+                <main className="flex-1 min-h-0 overflow-y-auto bg-[#CBD5E1] dark:bg-zinc-950 flex flex-col relative w-full">
+                    {/* Floating Expand Toggle when Navigation is Minimized (Admins Only) */}
+                    {isAdmin && isSidebarCollapsed && (
                         <button
                             type="button"
                             onClick={() => setIsSidebarCollapsed(false)}

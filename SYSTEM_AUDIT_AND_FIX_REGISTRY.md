@@ -3217,11 +3217,90 @@ var cashPaymentsQuery = _context.Payments
 4. **Explicit API Error Surface in Cash Drawer UI:**
    - In `RevenueScreens.jsx`, introduced `ledgerError` state. If the server returns an error or network drop, the UI explicitly displays an error alert with a **"Retry Loading"** action button rather than silently suppressing the error and presenting a false empty ledger.
 
-### Verification & Resolution Details
-* **Backend Build:** `dotnet build SynOS.sln` passed with **0 errors**.
-* **Frontend Build:** `npm run build` completed cleanly in 17.51s; production bundle synced to `SynOS.Api/wwwroot`.
-* **Zero Translation & Cycle Exceptions:** Both the circular navigation cycle (`Invoice->Payments`) and LINQ translation issues are eliminated.
-* **Cash Drawer Parity Restored:** Moin's cash drawer ledger loads all 7 transactions cleanly, matching the ₹3,150 recorded in Collection History without throwing HTTP 500.
+---
+
+## 47. Referral Learning Rate Commit HTTP 403 Forbidden Audit — [AUDITED & REPORTED]
+
+### Incident Summary & Observed Error
+* **Screen:** `Referral Partners` -> `Rate Queue` (`/finance/referrals/rate-queue`)
+* **Trigger:** User attempted to confirm doctor rates (e.g. for partner `SURABHI NEURO HOSPITAL`, mapping `CT BRAIN PLAIN` to 15% and `MRI LUMBAR SPINE` to ₹1,500 Flat) by clicking **"Confirm Doctor's Rates"** or **"Lock"**.
+* **Observed Modal Error:** `Failed to save doctor rates: Failed to commit referral rates`
+* **Network Console Error:**
+  ```text
+  POST https://synos.tbzlabs.in/api/v1/admin/referral-learning/commit?branchId=e9bca442-3d4b-4ddf-90f1-65ef1efbe2a1
+  Failed to load resource: the server responded with a status of 403 ()
+  ```
+
+---
+
+### Root Cause Analysis (Why HTTP 403 Forbidden Occurred)
+
+#### 1. Backend Role Authorization Lockout on `commit` Endpoint
+* **Location:** [`src/SynOS.Api/Controllers/Admin/Referral/ReferralLearningController.cs:40-42`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Controllers/Admin/Referral/ReferralLearningController.cs#L40-L42)
+  ```csharp
+  /// <summary>
+  /// Commits learned doctor-test rates and automatically recalculates pending unsettled visit payables.
+  /// </summary>
+  [HttpPost("commit")]
+  [Authorize(Roles = "Admin,SystemAdmin")]
+  public async Task<IActionResult> CommitLearnedRates([FromBody] CommitLearningBatchRequestDto request)
+  ```
+* **Forensic Breakdown:**
+  1. The GET endpoint `[HttpGet("pending")]` (line 30) has only `[Authorize]`, with **no role constraint**. This allows *any* authenticated user to load and view the doctor rate queue.
+  2. The POST commit endpoint `[HttpPost("commit")]` (line 40) is strictly gated by `[Authorize(Roles = "Admin,SystemAdmin")]`.
+  3. ASP.NET Core evaluates `[Authorize(Roles = "...")]` by performing exact case-sensitive string matching against the user's `ClaimTypes.Role` claim in the decoded JWT token.
+  4. If the active user has role `Receptionist` (e.g. `Moin`), `Finance`, or `FinanceManager`, ASP.NET Core immediately rejects the request with a `ForbidResult()` (**HTTP 403 Forbidden**) before the controller method or execution logic is even invoked.
+  5. Furthermore, if a user has the role stored as `"Administrator"` instead of `"Admin"` (e.g. through the initial setup wizard or database migrations), exact string comparison fails against `"Admin,SystemAdmin"`, also returning 403.
+
+#### 2. Workflow Disconnect Between Reception UI and Backend Authorization
+* **Frontend Routing:**
+  - In [`ReceptionOptionsPanel.jsx:233-236`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/components/ReceptionOptionsPanel.jsx#L233-L236), front-desk receptionists have a direct action tile titled **"Referral Partners"** which routes to:
+    ```javascript
+    path: "/finance/referrals/rate-queue?source=reception"
+    ```
+  - In [`ReferralTerminal.jsx:56-60`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/finance/ReferralTerminal.jsx#L56-L60), when `user?.role === 'Receptionist'`, the UI intentionally redirects the receptionist directly to the `rate-queue` tab:
+    ```javascript
+    if (isReceptionView && (effectiveTab === 'overview' || effectiveTab === 'receivables')) {
+        navigate('/finance/referrals/rate-queue', { replace: true });
+    }
+    ```
+  - In [`ReferralRateQueueTab.jsx`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/finance/components/referral/ReferralRateQueueTab.jsx), the UI displays interactive rate inputs (% / ₹ Flat) and an active **"Confirm Doctor's Rates"** button without checking if the user possesses administrative write privileges.
+  - When the receptionist clicks "Confirm Doctor's Rates", the frontend makes the `POST /api/v1/admin/referral-learning/commit` call, which the backend rejects with 403.
+
+#### 3. Contrast with Sibling Referral Controllers
+* Across other referral endpoints in `SynOS.Api`, Receptionists are explicitly permitted to manage doctor records:
+  - [`DoctorCrmController.cs:36,44`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Controllers/Admin/Referral/DoctorCrmController.cs#L36): `[Authorize(Roles = "Admin,Receptionist")]`
+  - [`ReferralPartnersController.cs:31,48,89`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Controllers/Admin/Referral/ReferralPartnersController.cs#L31): `[Authorize(Roles = "Admin,Receptionist")]`
+* However, `ReferralLearningController.cs` omitted `Receptionist`, `Administrator`, and `FinanceManager` on its `commit` and `delete` endpoints.
+
+#### 4. Frontend Error Suppression / Ambiguous Alert
+* In [`finance.js:997-1000`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/api/finance.js#L997-L1000):
+  ```javascript
+  if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.message || "Failed to commit referral rates");
+  }
+  ```
+* Because an ASP.NET Core `ForbidResult()` returns an empty HTTP 403 response body without a JSON payload, `err.message` evaluates to `undefined`, causing the frontend to display the generic fallback: `"Failed to commit referral rates"`, obscuring the fact that the failure was an authorization/role permission rejection.
+
+---
+
+### Audit Conclusions & Recommendations (Awaiting Approval)
+* **Code Modification Policy:** As per user instructions, **zero code edits have been applied**.
+* **Suggested Resolution Paths:**
+  1. **Option A (Allow Receptionists to commit rates):**
+     If front-desk receptionists are clinically intended to lock agreed rates during patient onboarding, update `[Authorize(Roles = "...")]` in `ReferralLearningController.cs` to:
+     ```csharp
+     [Authorize(Roles = "Admin,Administrator,SystemAdmin,Receptionist,Finance,FinanceManager")]
+     ```
+  2. **Option B (Strict Admin/Finance Only Governance):**
+     If referral rate negotiation and permanent rate locking must be restricted strictly to Management / Admins / Finance Controllers:
+     - Update `ReferralLearningController.cs` to include `"Admin,Administrator,SystemAdmin,Finance,FinanceManager"`.
+     - In `ReferralRateQueueTab.jsx`, make the inputs and commit buttons read-only or disabled for `Receptionist` users with a badge: *"Administrative permission required to commit new doctor tariffs."*
+  3. **Option C (Enhanced Error Handling in `finance.js`):**
+     Explicitly check `if (response.status === 403)` and surface:
+     `"Access Denied (403): Your user role does not have permission to lock referral commission rates."`
+
 
 
 

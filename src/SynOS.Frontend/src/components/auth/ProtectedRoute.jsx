@@ -65,7 +65,7 @@ export function ProtectedRoute({ allowedRoles = [] }) {
                 <div className="h-screen w-screen bg-synos-background flex items-center justify-center text-white">
                     <div className="text-center">
                         <h1 className="text-xl font-bold text-red-500 mb-2">Access Denied</h1>
-                        <p className="text-zinc-550 font-medium">You do not have workspace access permissions for '{currentPath}'.</p>
+                        <p className="text-zinc-550 font-medium">You do not have workspace access permissions for '{cleanPath}'.</p>
                     </div>
                 </div>
             );
