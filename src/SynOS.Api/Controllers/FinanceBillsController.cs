@@ -93,10 +93,23 @@ namespace SynOS.Api.Controllers
                 case "this year":
                 case "year":
                 case "fy":
-                    var fyStartYear = istToday.Month >= 4 ? istToday.Year : istToday.Year - 1;
-                    istStart = new DateTime(fyStartYear, 4, 1);
-                    istEnd = istStart.AddYears(1).AddTicks(-1);
+                    // Enterprise ERP standard: Support both Calendar Year and Financial Year boundaries so no current year transactions are clipped
+                    var calYear = istToday.Year;
+                    var fyYear = istToday.Month >= 4 ? istToday.Year : istToday.Year - 1;
+                    var startYear = Math.Min(calYear, fyYear);
+                    istStart = new DateTime(startYear, 1, 1);
+                    istEnd = new DateTime(Math.Max(calYear, fyYear) + 1, 3, 31, 23, 59, 59);
                     break;
+                case "singledate":
+                case "single-date":
+                    if (explicitStart.HasValue)
+                    {
+                        var target = explicitStart.Value.Date;
+                        istStart = target;
+                        istEnd = target.AddDays(1).AddTicks(-1);
+                        break;
+                    }
+                    return (null, null);
                 case "all":
                 case "all time":
                     return (null, null);
@@ -138,6 +151,69 @@ namespace SynOS.Api.Controllers
             public string Modality { get; set; } = "General"; // Modality or Discipline: Biochemistry, Hematology, etc.
         }
 
+        public static string ResolveRadiologyModality(string testName, string? hint)
+        {
+            var combined = $"{testName} {hint}".ToLowerInvariant();
+            
+            // 1. MRI (Magnetic Resonance)
+            if (combined.Contains("mri") || 
+                combined.Contains("magnetic") || 
+                combined.Contains("mrcp") || 
+                combined.Contains("mr ") || 
+                combined.Contains("mr-") || 
+                combined.Contains("mr_") ||
+                combined.Contains("brain plain") || 
+                combined.Contains("cervical spine") || 
+                combined.Contains("lumbar spine") || 
+                combined.Contains("dorsal spine") || 
+                combined.Contains("whole spine") || 
+                combined.Contains("spine screening") ||
+                combined.Contains("brain stroke") ||
+                combined.Contains("mr angiogram") || 
+                combined.Contains("mr neurography") ||
+                combined.Contains("mr venogram"))
+            {
+                return "MRI";
+            }
+
+            // 2. CT (Computed Tomography)
+            if (combined.Contains("ct scan") || 
+                combined.Contains("computed") || 
+                combined.Contains("hrct") || 
+                combined.Contains("cect") || 
+                combined.Contains("ncct") || 
+                combined.Contains(" ct ") || 
+                combined.StartsWith("ct ") || 
+                combined.Contains("ct-") || 
+                combined.Contains("ct_") ||
+                combined.Contains("ct contrast") || 
+                combined.Contains("ct brain") || 
+                combined.Contains("ct facial") || 
+                combined.Contains("ct abdomen") || 
+                combined.Contains("ct chest") || 
+                combined.Contains("ct angio"))
+            {
+                return "CT Scan";
+            }
+
+            // 3. Ultrasound / Sonography
+            if (combined.Contains("ultrasound") || 
+                combined.Contains("usg") || 
+                combined.Contains("u/s") || 
+                combined.Contains("echo") || 
+                combined.Contains("sonography") || 
+                combined.Contains("doppler") || 
+                combined.Contains("fibroscan") ||
+                combined.Contains("anomaly scan") ||
+                combined.Contains("nt scan"))
+            {
+                return "Ultrasound";
+            }
+
+            // 4. Default Radiology Modality: X-Ray
+            return "X-Ray";
+        }
+
         public static ClassifiedOrderTest ClassifyOrder(Order ord)
         {
             var result = new ClassifiedOrderTest();
@@ -146,73 +222,98 @@ namespace SynOS.Api.Controllers
             result.Name = tName;
             result.Code = tCode;
 
-            // 1. Relational Authority: Check Test's ModalityMaster & DepartmentMaster
             var modMaster = ord.Test?.ModalityMaster;
             var deptMaster = ord.Test?.DepartmentMaster;
 
-            if (modMaster != null && !string.IsNullOrWhiteSpace(modMaster.Name))
+            // Determine if order belongs to Radiology
+            var isRadiology = false;
+            if (deptMaster != null && deptMaster.MacroDepartment?.Equals("Radiology", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                isRadiology = true;
+            }
+            else if (modMaster != null)
+            {
+                isRadiology = true;
+            }
+            else
+            {
+                var ordDept = (ord.Department ?? "").Trim();
+                if (ordDept.Equals("RAD", StringComparison.OrdinalIgnoreCase) ||
+                    ordDept.Equals("Radiology", StringComparison.OrdinalIgnoreCase) ||
+                    ordDept.Equals("XRY", StringComparison.OrdinalIgnoreCase) ||
+                    ordDept.Equals("MRI", StringComparison.OrdinalIgnoreCase) ||
+                    ordDept.Equals("CT", StringComparison.OrdinalIgnoreCase) ||
+                    ordDept.Equals("USG", StringComparison.OrdinalIgnoreCase))
+                {
+                    isRadiology = true;
+                }
+                else
+                {
+                    var lowerCombined = $"{tName} {tCode}".ToLowerInvariant();
+                    if (lowerCombined.Contains("mri") || lowerCombined.Contains("mrcp") || lowerCombined.Contains("ct ") || lowerCombined.Contains("hrct") || lowerCombined.Contains("x-ray") || lowerCombined.Contains("xray") || lowerCombined.Contains("usg") || lowerCombined.Contains("ultrasound"))
+                    {
+                        isRadiology = true;
+                    }
+                }
+            }
+
+            if (isRadiology)
             {
                 result.Department = "Radiology";
-                result.Modality = modMaster.Name.Trim();
+
+                // Resolve modality: Verify whether modMaster matches or if clinical name takes precedence over legacy X-Ray defaults
+                var clinicalMod = ResolveRadiologyModality(tName, $"{tCode} {ord.Department}");
+                if (modMaster != null && !string.IsNullOrWhiteSpace(modMaster.Code))
+                {
+                    var mCode = modMaster.Code.Trim().ToUpperInvariant();
+                    if (mCode == "MRI") result.Modality = "MRI";
+                    else if (mCode == "CT") result.Modality = "CT Scan";
+                    else if (mCode == "US") result.Modality = "Ultrasound";
+                    else if (mCode == "XRAY")
+                    {
+                        // If marked X-Ray but test name is clearly MRI/CT/US, correct the misattribution
+                        result.Modality = (clinicalMod != "X-Ray") ? clinicalMod : "X-Ray";
+                    }
+                    else
+                    {
+                        result.Modality = modMaster.Name.Trim();
+                    }
+                }
+                else
+                {
+                    result.Modality = clinicalMod;
+                }
                 return result;
             }
 
-            if (deptMaster != null)
+            if (deptMaster != null && deptMaster.MacroDepartment?.Equals("Pathology", StringComparison.OrdinalIgnoreCase) == true)
             {
-                var macro = deptMaster.MacroDepartment?.Trim();
-                var dName = deptMaster.Name?.Trim() ?? "General";
-
-                if (macro != null && macro.Equals("Radiology", StringComparison.OrdinalIgnoreCase))
-                {
-                    result.Department = "Radiology";
-                    result.Modality = modMaster?.Name?.Trim() ?? ResolveRadiologyModality(tName, tCode);
-                    return result;
-                }
-
-                if (macro != null && macro.Equals("Pathology", StringComparison.OrdinalIgnoreCase))
-                {
-                    result.Department = "Pathology";
-                    result.Modality = dName;
-                    return result;
-                }
+                result.Department = "Pathology";
+                result.Modality = deptMaster.Name?.Trim() ?? "General";
+                return result;
             }
 
             // 2. Order-level Department fallback
-            var ordDept = (ord.Department ?? "").Trim();
-            if (ordDept.Equals("RAD", StringComparison.OrdinalIgnoreCase) ||
-                ordDept.Equals("Radiology", StringComparison.OrdinalIgnoreCase) ||
-                ordDept.Equals("XRY", StringComparison.OrdinalIgnoreCase) ||
-                ordDept.Equals("MRI", StringComparison.OrdinalIgnoreCase) ||
-                ordDept.Equals("CT", StringComparison.OrdinalIgnoreCase) ||
-                ordDept.Equals("USG", StringComparison.OrdinalIgnoreCase))
-            {
-                result.Department = "Radiology";
-                result.Modality = ResolveRadiologyModality(tName, ordDept);
-                return result;
-            }
-
-            if (ordDept.Equals("BIO", StringComparison.OrdinalIgnoreCase) || ordDept.Equals("Biochemistry", StringComparison.OrdinalIgnoreCase))
+            var ordDeptFallback = (ord.Department ?? "").Trim();
+            if (ordDeptFallback.Equals("BIO", StringComparison.OrdinalIgnoreCase) || ordDeptFallback.Equals("Biochemistry", StringComparison.OrdinalIgnoreCase))
             {
                 result.Department = "Pathology";
                 result.Modality = "Biochemistry";
                 return result;
             }
-
-            if (ordDept.Equals("HEM", StringComparison.OrdinalIgnoreCase) || ordDept.Equals("Hematology", StringComparison.OrdinalIgnoreCase))
+            if (ordDeptFallback.Equals("HEM", StringComparison.OrdinalIgnoreCase) || ordDeptFallback.Equals("Hematology", StringComparison.OrdinalIgnoreCase))
             {
                 result.Department = "Pathology";
                 result.Modality = "Hematology";
                 return result;
             }
-
-            if (ordDept.Equals("MICRO", StringComparison.OrdinalIgnoreCase) || ordDept.Equals("Microbiology", StringComparison.OrdinalIgnoreCase))
+            if (ordDeptFallback.Equals("MICRO", StringComparison.OrdinalIgnoreCase) || ordDeptFallback.Equals("Microbiology", StringComparison.OrdinalIgnoreCase))
             {
                 result.Department = "Pathology";
                 result.Modality = "Microbiology";
                 return result;
             }
-
-            if (ordDept.Equals("HISTO", StringComparison.OrdinalIgnoreCase) || ordDept.Equals("Histopathology", StringComparison.OrdinalIgnoreCase))
+            if (ordDeptFallback.Equals("HISTO", StringComparison.OrdinalIgnoreCase) || ordDeptFallback.Equals("Histopathology", StringComparison.OrdinalIgnoreCase))
             {
                 result.Department = "Pathology";
                 result.Modality = "Histopathology";
@@ -220,31 +321,14 @@ namespace SynOS.Api.Controllers
             }
 
             // 3. Clinical Dictionary Classification based on Test Name/Code
-            var lower = $"{tName} {tCode}".ToLower();
+            var lower = $"{tName} {tCode}".ToLowerInvariant();
 
-            // Radiology Modalities
-            if (lower.Contains("mri") || lower.Contains("magnetic") || lower.Contains("brain plain") || lower.Contains("angiogram") || lower.Contains("cervical spine"))
+            // Radiology Modalities fallback
+            var radMod = ResolveRadiologyModality(tName, tCode);
+            if (radMod != "X-Ray" || lower.Contains("x-ray") || lower.Contains("xray") || lower.Contains("radiograph"))
             {
                 result.Department = "Radiology";
-                result.Modality = "MRI";
-                return result;
-            }
-            if (lower.Contains("ct scan") || lower.Contains("computed") || lower.Contains("hrct") || lower.Contains("ct "))
-            {
-                result.Department = "Radiology";
-                result.Modality = "CT Scan";
-                return result;
-            }
-            if (lower.Contains("ultrasound") || lower.Contains("usg") || lower.Contains("u/s") || lower.Contains("echo") || lower.Contains("sonography") || lower.Contains("doppler"))
-            {
-                result.Department = "Radiology";
-                result.Modality = "Ultrasound";
-                return result;
-            }
-            if (lower.Contains("x-ray") || lower.Contains("xray") || lower.Contains("radiograph") || lower.Contains("chest pa") || lower.Contains("c.spine") || lower.Contains("views") || lower.Contains("routine xray"))
-            {
-                result.Department = "Radiology";
-                result.Modality = "X-Ray";
+                result.Modality = radMod;
                 return result;
             }
 
@@ -301,7 +385,6 @@ namespace SynOS.Api.Controllers
                 return result;
             }
 
-            // Cardiology
             if (lower.Contains("ecg") || lower.Contains("tmt") || lower.Contains("echo"))
             {
                 result.Department = "Diagnostics";
@@ -312,15 +395,6 @@ namespace SynOS.Api.Controllers
             result.Department = "Pathology";
             result.Modality = "General";
             return result;
-        }
-
-        private static string ResolveRadiologyModality(string testName, string? hint)
-        {
-            var combined = $"{testName} {hint}".ToLower();
-            if (combined.Contains("mri") || combined.Contains("magnetic") || combined.Contains("brain plain") || combined.Contains("angiogram") || combined.Contains("cervical spine")) return "MRI";
-            if (combined.Contains("ct") || combined.Contains("computed")) return "CT Scan";
-            if (combined.Contains("usg") || combined.Contains("ultra") || combined.Contains("u/s") || combined.Contains("echo")) return "Ultrasound";
-            return "X-Ray";
         }
 
         [HttpGet]
@@ -581,7 +655,27 @@ namespace SynOS.Api.Controllers
                 var modalities = testDetails.Select(t => t.Modality).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
 
                 var deptClass = departments.Contains("Pathology", StringComparer.OrdinalIgnoreCase) ? "Pathology" : (departments.FirstOrDefault() ?? "Pathology");
-                var modalityClass = modalities.FirstOrDefault() ?? "General";
+                string modalityClass;
+                if (!string.IsNullOrEmpty(modality) && modalities.Any(m => m.Equals(modality, StringComparison.OrdinalIgnoreCase) || m.IndexOf(modality, StringComparison.OrdinalIgnoreCase) >= 0))
+                {
+                    modalityClass = modalities.First(m => m.Equals(modality, StringComparison.OrdinalIgnoreCase) || m.IndexOf(modality, StringComparison.OrdinalIgnoreCase) >= 0);
+                }
+                else if (modalities.Contains("MRI", StringComparer.OrdinalIgnoreCase))
+                {
+                    modalityClass = "MRI";
+                }
+                else if (modalities.Any(m => m.Contains("CT", StringComparison.OrdinalIgnoreCase)))
+                {
+                    modalityClass = "CT Scan";
+                }
+                else if (modalities.Any(m => m.Contains("Ultra", StringComparison.OrdinalIgnoreCase)))
+                {
+                    modalityClass = "Ultrasound";
+                }
+                else
+                {
+                    modalityClass = modalities.FirstOrDefault() ?? "General";
+                }
 
                 // Department filter evaluation: Does ANY order on this bill belong to the requested department?
                 if (!string.IsNullOrEmpty(department) && !department.Equals("All", StringComparison.OrdinalIgnoreCase))
@@ -593,8 +687,15 @@ namespace SynOS.Api.Controllers
                 // Modality filter evaluation: Does ANY order on this bill belong to the requested modality?
                 if (!string.IsNullOrEmpty(modality) && !modality.Equals("All", StringComparison.OrdinalIgnoreCase))
                 {
-                    var matchesMod = testDetails.Any(t => t.Modality.Equals(modality, StringComparison.OrdinalIgnoreCase) ||
-                                                          t.Modality.IndexOf(modality, StringComparison.OrdinalIgnoreCase) >= 0);
+                    var matchesMod = testDetails.Any(t => 
+                        t.Modality.Equals(modality, StringComparison.OrdinalIgnoreCase) ||
+                        t.Modality.IndexOf(modality, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                        (modality.Equals("CT", StringComparison.OrdinalIgnoreCase) && t.Modality.Contains("CT", StringComparison.OrdinalIgnoreCase)) ||
+                        (modality.Equals("CT Scan", StringComparison.OrdinalIgnoreCase) && t.Modality.Contains("CT", StringComparison.OrdinalIgnoreCase)) ||
+                        (modality.Equals("MRI", StringComparison.OrdinalIgnoreCase) && t.Modality.Contains("MRI", StringComparison.OrdinalIgnoreCase)) ||
+                        (modality.Equals("Ultrasound", StringComparison.OrdinalIgnoreCase) && (t.Modality.Contains("Ultra", StringComparison.OrdinalIgnoreCase) || t.Modality.Contains("US", StringComparison.OrdinalIgnoreCase))) ||
+                        (modality.Equals("X-Ray", StringComparison.OrdinalIgnoreCase) && (t.Modality.Contains("X-Ray", StringComparison.OrdinalIgnoreCase) || t.Modality.Contains("XRAY", StringComparison.OrdinalIgnoreCase)))
+                    );
                     if (!matchesMod) continue;
                 }
 

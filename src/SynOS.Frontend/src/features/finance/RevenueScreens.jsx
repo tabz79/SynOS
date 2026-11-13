@@ -60,16 +60,62 @@ const classifyInvestigation = (testName) => {
     const lower = testName.toLowerCase().trim();
 
     // 1. Radiology Modalities
-    if (lower.includes('mri') || lower.includes('magnetic') || lower.includes('brain plain') || lower.includes('angiogram') || lower.includes('cervical spine')) {
+    if (lower.includes('mri') || 
+        lower.includes('magnetic') || 
+        lower.includes('mrcp') || 
+        lower.includes('mr ') || 
+        lower.includes('mr-') || 
+        lower.includes('mr_') ||
+        lower.includes('brain plain') || 
+        lower.includes('cervical spine') || 
+        lower.includes('lumbar spine') || 
+        lower.includes('dorsal spine') || 
+        lower.includes('whole spine') || 
+        lower.includes('spine screening') ||
+        lower.includes('brain stroke') ||
+        lower.includes('mr angiogram') || 
+        lower.includes('mr neurography') || 
+        lower.includes('mr venogram')) {
         return { department: 'Radiology', modality: 'MRI' };
     }
-    if (lower.includes('ct scan') || lower.includes('computed') || lower.includes('hrct') || lower.includes(' ct ') || lower.startsWith('ct ')) {
+    if (lower.includes('ct scan') || 
+        lower.includes('computed') || 
+        lower.includes('hrct') || 
+        lower.includes('cect') || 
+        lower.includes('ncct') || 
+        lower.includes(' ct ') || 
+        lower.startsWith('ct ') || 
+        lower.includes('ct-') || 
+        lower.includes('ct_') ||
+        lower.includes('ct contrast') || 
+        lower.includes('ct brain') || 
+        lower.includes('ct facial') || 
+        lower.includes('ct abdomen') || 
+        lower.includes('ct chest') || 
+        lower.includes('ct angio')) {
         return { department: 'Radiology', modality: 'CT Scan' };
     }
-    if (lower.includes('ultrasound') || lower.includes('usg') || lower.includes('u/s') || lower.includes('echo') || lower.includes('sonography') || lower.includes('doppler')) {
+    if (lower.includes('ultrasound') || 
+        lower.includes('usg') || 
+        lower.includes('u/s') || 
+        lower.includes('echo') || 
+        lower.includes('sonography') || 
+        lower.includes('doppler') || 
+        lower.includes('fibroscan') ||
+        lower.includes('anomaly scan') ||
+        lower.includes('nt scan')) {
         return { department: 'Radiology', modality: 'Ultrasound' };
     }
-    if (lower.includes('x-ray') || lower.includes('xray') || lower.includes('radiograph') || lower.includes('chest pa') || lower.includes('c.spine') || lower.includes('foot ap') || lower.includes('views') || lower.includes('routine xray')) {
+    if (lower.includes('x-ray') || 
+        lower.includes('xray') || 
+        lower.includes('radiograph') || 
+        lower.includes('chest pa') || 
+        lower.includes('c.spine') || 
+        lower.includes('foot ap') || 
+        lower.includes('views') || 
+        lower.includes('routine xray') ||
+        lower.includes('kub') ||
+        lower.includes('barium')) {
         return { department: 'Radiology', modality: 'X-Ray' };
     }
 
@@ -776,11 +822,11 @@ export const BillsCollectionsScreen = () => {
             if (bId) params.branchId = bId;
             if (departmentFilter !== 'All') params.department = departmentFilter;
             if (modalityFilter !== 'All') params.modality = modalityFilter;
-            if (globalPreset && globalPreset !== 'all' && globalPreset !== 'custom') {
+            if (globalPreset && globalPreset !== 'all' && globalPreset !== 'custom' && globalPreset !== 'singleDate') {
                 params.preset = globalPreset;
-            } else if (globalPreset === 'custom' && globalCustomDates?.start && globalCustomDates?.end) {
+            } else if ((globalPreset === 'custom' || globalPreset === 'singleDate') && globalCustomDates?.start) {
                 params.startDate = globalCustomDates.start;
-                params.endDate = globalCustomDates.end;
+                params.endDate = globalCustomDates.end || globalCustomDates.start;
             }
             const [data, cancellationsData] = await Promise.all([
                 FinanceApi.getFinanceBills(params),
@@ -825,9 +871,16 @@ export const BillsCollectionsScreen = () => {
                     if (classified.department.toLowerCase() !== departmentFilter.toLowerCase()) return;
                 }
 
-                // Strict Modality / Discipline match
+                // Modality / Discipline match
                 if (modalityFilter !== 'All') {
-                    if (classified.modality.toLowerCase() !== modalityFilter.toLowerCase()) return;
+                    const targetMod = modalityFilter.toLowerCase();
+                    const isModMatch = classified.modality.toLowerCase() === targetMod ||
+                                       (targetMod === 'ct' && classified.modality.toLowerCase().includes('ct')) ||
+                                       (targetMod === 'ct scan' && classified.modality.toLowerCase().includes('ct')) ||
+                                       (targetMod === 'mri' && classified.modality.toLowerCase() === 'mri') ||
+                                       (targetMod === 'ultrasound' && classified.modality.toLowerCase().includes('ultra')) ||
+                                       (targetMod === 'x-ray' && classified.modality.toLowerCase().includes('x-ray'));
+                    if (!isModMatch) return;
                 }
 
                 testSet.add(cleanTest);
@@ -950,9 +1003,24 @@ export const BillsCollectionsScreen = () => {
         // 4. Modality Filter
         if (modalityFilter !== 'All') {
             const targetMod = modalityFilter.toLowerCase();
-            const hasMatchingMod = (b.testItems || []).some(t => {
+            const hasMatchingMod = (b.modalities || []).some(m => {
+                const ml = m.toLowerCase();
+                return ml === targetMod || 
+                       ml.includes(targetMod) || 
+                       (targetMod === 'ct' && ml.includes('ct')) ||
+                       (targetMod === 'ct scan' && ml.includes('ct'));
+            }) || (b.modality && (() => {
+                const ml = b.modality.toLowerCase();
+                return ml === targetMod || 
+                       ml.includes(targetMod) ||
+                       (targetMod === 'ct' && ml.includes('ct')) ||
+                       (targetMod === 'ct scan' && ml.includes('ct'));
+            })()) || (b.testItems || []).some(t => {
                 const c = classifyInvestigation(t);
-                return c.modality.toLowerCase() === targetMod;
+                const ml = c.modality.toLowerCase();
+                return ml === targetMod || 
+                       (targetMod === 'ct' && ml.includes('ct')) ||
+                       (targetMod === 'ct scan' && ml.includes('ct'));
             });
             if (!hasMatchingMod) return false;
         }
@@ -1334,12 +1402,20 @@ export const BillsCollectionsScreen = () => {
                                                 {/* Dept & Modality Meta Tag */}
                                                 <div className="flex items-center gap-1 text-[10px] text-zinc-400 font-medium">
                                                     <span>{bill.department || 'Pathology'}</span>
-                                                    {bill.modality && bill.modality !== 'General' && bill.modality !== bill.department && (
-                                                        <>
-                                                            <span>•</span>
-                                                            <span className="font-mono text-zinc-500 dark:text-zinc-400">{bill.modality}</span>
-                                                        </>
-                                                    )}
+                                                    {(() => {
+                                                        const displayModality = (bill.modalities && bill.modalities.length > 0)
+                                                            ? (bill.modalities.length > 1 ? bill.modalities.join(', ') : bill.modalities[0])
+                                                            : (bill.modality || (bill.testItems && bill.testItems[0] ? classifyInvestigation(bill.testItems[0]).modality : null));
+                                                        if (displayModality && displayModality !== 'General' && displayModality !== bill.department) {
+                                                            return (
+                                                                <>
+                                                                    <span>•</span>
+                                                                    <span className="font-mono text-zinc-500 dark:text-zinc-400">{displayModality}</span>
+                                                                </>
+                                                            );
+                                                        }
+                                                        return null;
+                                                    })()}
                                                 </div>
                                             </div>
                                         </td>

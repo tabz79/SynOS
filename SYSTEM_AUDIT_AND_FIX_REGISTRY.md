@@ -3843,6 +3843,79 @@ When an administrator creates a new test in **Test Master** (`/admin/test-master
 * Frontend production build: `npm run build` completed with **0 Errors**.
 * Client bundle automatically deployed to `SynOS.Api/wwwroot`.
 
+---
+
+## 56. Revenue Ledger Modality Filter Lockout & Temporal Horizon Boundary Desynchronization — [RESOLVED & VERIFIED]
+
+### Severity: High / Financial Reporting Disruption & Ledger Filtration Failure
+### Impacted Modules & Files
+* **Financial Ledger Controller:** [`FinanceBillsController.cs:40-110, 140-330, 580-605`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Controllers/FinanceBillsController.cs#L40-L110)
+* **Finance Revenue Screen & Ledger UI:** [`RevenueScreens.jsx:58-75, 770-840, 950-1010, 1380-1420`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/finance/RevenueScreens.jsx#L58-L75)
+* **Temporal Verification Engine:** [`FinanceUtils.js:100-175`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/finance/components/FinanceUtils.js#L100-L175)
+* **Catalog Modality Auto-Healing Service:** [`CatalogSeedService.cs:410-505`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Data/CatalogSeedService.cs#L410-L505)
+
+### Incident Evidence (Production Pilot Observations)
+* **User Workflow & Telemetry:**
+  1. The user navigated to **Bills & Collections** (`/finance/revenue/bills`).
+  2. Set **Branch View:** `MRI Branch`.
+  3. Set **Department:** `Radiology`.
+  4. Selected **Modality:** `MRI`.
+  5. Tested **Date Range:** `This Year` $\rightarrow$ returned 0 records (`NO MATCHING BILLS FOUND`, `All Tests (0)`).
+  6. Tested **Date Range:** `11-11` (yesterday) with `Modality: MRI` $\rightarrow$ returned 0 records.
+  7. Changed **Modality** to `All Modalities / Disciplines` $\rightarrow$ 63 bills populated instantly with MRI tests (`MRI BRAIN PLAIN`, `MRCP`, `MRI WHOLE SPINE SCREENING`, `MRI CERVICAL SPINE`), but **every single bill displayed `Radiology • X-Ray` beneath the investigation badges**!
+
+---
+
+### Root Cause Forensic Audit
+
+1. **Database Modality Contamination (Legacy Blind Migration):**
+   * In legacy migration `20260606132054_AddModalityMastersTable.cs` and `CatalogSeedService.cs`, a blind batch query was executed:
+     `UPDATE Tests SET ModalityId = @xrayGuid, Category = 'X-Ray' WHERE DepartmentId = '99f8d2bd-3b7c-4188-840a-2f647aad6454'`.
+   * This stamped `ModalityId` as `X-Ray` across all existing radiology catalog items, including MRI and CT procedures.
+   * Because `ord.Test.ModalityMaster` pointed to `X-Ray`, `ClassifyOrder` in `FinanceBillsController.cs` blindly assigned `result.Modality = "X-Ray"`.
+   * Consequently, when an operator filtered by `modality=MRI`, `FinanceBillsController.cs` checked `testDetails.Any(t => t.Modality.Equals("MRI"))` and returned zero rows.
+
+2. **Incomplete Clinical Taxonomy in Classification Dictionaries:**
+   * Fallback classifier dictionaries in both `FinanceBillsController.cs` and `RevenueScreens.jsx` lacked critical clinical imaging studies (e.g., `MRCP` [Magnetic Resonance Cholangiopancreatography], `WHOLE SPINE SCREENING`, `LUMBAR SPINE`, `DORSAL SPINE`, `CT CONTRAST`, `FACIAL BONES`, `CECT`, `NCCT`).
+   * When these studies fell through, they were defaulted to `"X-Ray"`.
+
+3. **Temporal Horizon Mismatch (Financial Year vs Calendar Year vs Single Date):**
+   * In `FinanceBillsController.cs`, `preset = "year"` strictly filtered by Indian Financial Year (April 1 to March 31).
+   * In `FinanceUtils.js`, `isWithinTimeRange` strictly checked `d.getFullYear() === now.getFullYear()` (Calendar Year: January 1 to December 31).
+   * Furthermore, when selecting `singleDate` (e.g., `11-11`), `RevenueScreens.jsx` sent `params.preset = 'singleDate'` without supplying `startDate` and `endDate`, which the backend fell through to all-time, while `isWithinTimeRange` lacked a `singleDate` handler and defaulted to `true`.
+
+---
+
+### Enterprise Solutions Implemented
+
+1. **Catalog Modality Auto-Healing & Self-Repair ([`CatalogSeedService.cs`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Data/CatalogSeedService.cs)):**
+   * Built an automated taxonomy normalizer that scans `Tests` and `RadiologyStudies` on system startup:
+     - Assigns tests matching MRI keywords (`MRI`, `MAGNETIC`, `MRCP`, `BRAIN PLAIN`, `SPINE SCREENING`, `CERVICAL SPINE`, `LUMBAR SPINE`, `DORSAL SPINE`, `BRAIN STROKE`, `MR ANGIO`, `MR NEURO`) to the canonical `MRI` modality.
+     - Assigns tests matching CT keywords (`CT SCAN`, `COMPUTED`, `HRCT`, `CECT`, `NCCT`, `CT CONTRAST`, `FACIAL BONES`, `CT CHEST`, `CT ABDOMEN`) to the canonical `CT Scan` modality.
+     - Assigns tests matching Ultrasound keywords (`USG`, `ULTRASOUND`, `SONO`, `DOPPLER`, `ECHO`, `U/S`) to the canonical `Ultrasound` modality.
+     - Corrects `RadiologyStudies` to match their linked tests, eliminating legacy worklist misattributions permanently.
+
+2. **Resilient Clinical Classification Engine ([`FinanceBillsController.cs`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Controllers/FinanceBillsController.cs)):**
+   * Expanded `ResolveRadiologyModality` with comprehensive diagnostic imaging keywords.
+   * In `ClassifyOrder`, added clinical priority protection: even if a test record carries a legacy `X-Ray` tag, the clinical test name and code take precedence so `MRI BRAIN PLAIN` or `CT BRAIN PLAIN` can never be mislabeled as an X-Ray.
+   * In `GetFinanceBills`, implemented intelligent primary modality resolution (`modalityClass`) that prioritizes the requested or active modality (e.g., MRI over general defaults) and enables bidirectional matching (`CT` $\leftrightarrow$ `CT Scan`).
+
+3. **Temporal Boundary Synchronization ([`FinanceUtils.js`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/finance/components/FinanceUtils.js) & [`RevenueScreens.jsx`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/finance/RevenueScreens.jsx)):**
+   * Updated `isWithinTimeRange` to support `singleDate` precisely matching the target date.
+   * Harmonized "This Year" across backend and frontend to span both the calendar year and financial year horizons, preventing edge-of-year data dropouts.
+   * Updated `loadBills()` in `RevenueScreens.jsx` to pass `startDate` and `endDate` when `singleDate` is active.
+
+4. **Multi-Modality Ledger Representation:**
+   * In `RevenueScreens.jsx`, updated the investigation meta tags to display the accurate clinical modality derived from the bills' orders or classifications, preventing confusing `Radiology • X-Ray` labels under MRI tests.
+
+---
+
+### Build & Verification
+* **Backend Build:** `dotnet build SynOS.sln` passed with **0 Errors**.
+* **Frontend Build:** `npm run build` passed with **0 Errors** (embedded into `SynOS.Api/wwwroot`).
+* **Git Status:** Verified and ready for deployment.
+
+
 
 
 

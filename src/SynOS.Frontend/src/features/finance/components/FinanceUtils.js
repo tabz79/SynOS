@@ -148,7 +148,25 @@ export const isWithinTimeRange = (dateVal, preset = 'today', customDates = null)
     }
 
     if (p === 'year' || p === 'this year' || p === 'fy') {
-        return d.getFullYear() === now.getFullYear();
+        const currentMonth = now.getMonth();
+        const fyStartYear = currentMonth >= 3 ? now.getFullYear() : now.getFullYear() - 1;
+        const fyStart = new Date(fyStartYear, 3, 1, 0, 0, 0, 0);
+        const fyEnd = new Date(fyStartYear + 1, 2, 31, 23, 59, 59, 999);
+        const isCalendarYear = d.getFullYear() === now.getFullYear();
+        const isFinancialYear = d >= fyStart && d <= fyEnd;
+        return isFinancialYear || isCalendarYear;
+    }
+
+    if (p === 'singledate') {
+        const targetDateStr = customDates?.start || customDates?.single;
+        if (!targetDateStr) return true;
+        const target = new Date(targetDateStr);
+        if (isNaN(target.getTime())) return true;
+        return (
+            d.getFullYear() === target.getFullYear() &&
+            d.getMonth() === target.getMonth() &&
+            d.getDate() === target.getDate()
+        );
     }
 
     if (p === 'custom') {

@@ -418,28 +418,91 @@ namespace SynOS.Data
                 legacyDept.IsActive = false;
             }
 
+            var mriGuid = modalityIds["MRI"];
+            var ctGuid = modalityIds["CT"];
+            var usGuid = modalityIds["US"];
             var xrayGuid = modalityIds["XRAY"];
 
-            // Update all tests pointing to legacy department to point to RAD and set ModalityId to XRAY
-            var legacyTests = await context.Tests
-                .Where(t => t.DepartmentId == legacyDeptId || t.TestCode == "ABD" || t.TestCode == "AORTOGRAM")
+            // AUTOMATIC MODALITY TAXONOMY NORMALIZATION FOR RADIOLOGY TESTS
+            var radTests = await context.Tests
+                .Include(t => t.DepartmentMaster)
+                .Where(t => t.DepartmentId == radDept.DepartmentId || 
+                            t.DepartmentId == legacyDeptId ||
+                            (t.DepartmentMaster != null && t.DepartmentMaster.MacroDepartment == "Radiology") ||
+                            t.TestCode.Contains("MRI") || t.TestCode.Contains("CT") || t.TestCode.Contains("USG") || t.TestCode.Contains("XRAY") ||
+                            t.TestName.Contains("MRI") || t.TestName.Contains("CT") || t.TestName.Contains("ULTRASOUND") || t.TestName.Contains("X-RAY"))
                 .ToListAsync();
 
-            foreach (var test in legacyTests)
+            foreach (var test in radTests)
             {
                 test.DepartmentId = radDept.DepartmentId;
-                test.ModalityId = xrayGuid;
-                test.Category = "X-Ray";
+                var text = $"{test.TestCode} {test.TestName}".ToUpperInvariant();
+
+                if (text.Contains("MRI") || text.Contains("MAGNETIC") || text.Contains("MRCP") || 
+                    text.Contains("BRAIN PLAIN") || text.Contains("SPINE SCREENING") || text.Contains("CERVICAL SPINE") ||
+                    text.Contains("LUMBAR SPINE") || text.Contains("DORSAL SPINE") || text.Contains("BRAIN STROKE") ||
+                    text.Contains("MR ANGIO") || text.Contains("MR NEURO"))
+                {
+                    test.ModalityId = mriGuid;
+                    test.Category = "MRI";
+                }
+                else if (text.Contains("CT SCAN") || text.Contains("COMPUTED") || text.Contains("HRCT") || 
+                         text.Contains("CECT") || text.Contains("NCCT") || text.Contains(" CT ") || 
+                         text.StartsWith("CT ") || text.Contains("CT_") || text.Contains("CT-") ||
+                         text.Contains("CT CONTRAST") || text.Contains("FACIAL BONES"))
+                {
+                    test.ModalityId = ctGuid;
+                    test.Category = "CT Scan";
+                }
+                else if (text.Contains("USG") || text.Contains("ULTRASOUND") || text.Contains("SONO") || 
+                         text.Contains("DOPPLER") || text.Contains("ECHO") || text.Contains("U/S"))
+                {
+                    test.ModalityId = usGuid;
+                    test.Category = "Ultrasound";
+                }
+                else
+                {
+                    test.ModalityId = xrayGuid;
+                    test.Category = "X-Ray";
+                }
             }
 
-            // Update existing radiology studies
-            var studies = await context.RadiologyStudies.ToListAsync();
+            // Update existing radiology studies to synchronize with their tests
+            var studies = await context.RadiologyStudies
+                .Include(s => s.Order)
+                    .ThenInclude(o => o.Test)
+                .ToListAsync();
             foreach (var s in studies)
             {
-                if (s.ModalityId == Guid.Empty)
+                var ordTest = s.Order?.Test;
+                if (ordTest != null && ordTest.ModalityId.HasValue)
                 {
-                    s.ModalityId = xrayGuid;
-                    s.Modality = "X-Ray";
+                    s.ModalityId = ordTest.ModalityId.Value;
+                    s.Modality = ordTest.Category ?? "X-Ray";
+                }
+                else
+                {
+                    var sText = $"{s.Order?.TestCode} {ordTest?.TestName} {s.Modality}".ToUpperInvariant();
+                    if (sText.Contains("MRI") || sText.Contains("MAGNETIC") || sText.Contains("MRCP") || sText.Contains("BRAIN PLAIN"))
+                    {
+                        s.ModalityId = mriGuid;
+                        s.Modality = "MRI";
+                    }
+                    else if (sText.Contains("CT") || sText.Contains("COMPUTED") || sText.Contains("HRCT"))
+                    {
+                        s.ModalityId = ctGuid;
+                        s.Modality = "CT Scan";
+                    }
+                    else if (sText.Contains("USG") || sText.Contains("ULTRASOUND") || sText.Contains("SONO"))
+                    {
+                        s.ModalityId = usGuid;
+                        s.Modality = "Ultrasound";
+                    }
+                    else if (s.ModalityId == Guid.Empty)
+                    {
+                        s.ModalityId = xrayGuid;
+                        s.Modality = "X-Ray";
+                    }
                 }
             }
 
