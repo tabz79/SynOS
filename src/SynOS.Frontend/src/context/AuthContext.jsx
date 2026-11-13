@@ -148,6 +148,50 @@ export function AuthProvider({ children }) {
         }
     };
 
+    const switchBranch = async (branchId) => {
+        const currentToken = localStorage.getItem('synos_jwt');
+        const response = await fetch('/api/v1/auth/switch-branch', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(currentToken ? { 'Authorization': `Bearer ${currentToken}` } : {})
+            },
+            body: JSON.stringify({ branchId })
+        });
+
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || "Failed to switch branch");
+        }
+
+        const data = await response.json();
+        const tokenValue = data.accessToken || data.token;
+        if (tokenValue) {
+            localStorage.setItem('synos_jwt', tokenValue);
+            localStorage.setItem('synos_oversight_branch_id', branchId);
+            localStorage.setItem('activeBranchId', branchId);
+            setToken(tokenValue);
+            setActiveOversightBranchId(branchId);
+            try {
+                const decoded = jwtDecode(tokenValue);
+                setUser({
+                    id: decoded.nameid || decoded.id,
+                    role: decoded.role || decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"],
+                    branchId: decoded.branch_id || decoded.branchId,
+                    branchName: decoded.branch_name || "Unknown Branch",
+                    departmentCode: decoded.department_code || "GENERAL",
+                    resourceId: decoded.resource_id || decoded.resourceId,
+                    roleId: decoded.roleId || decoded.RoleId,
+                    name: decoded.unique_name || decoded.sub,
+                    workspaces: decoded.workspaces ? decoded.workspaces.split(',') : []
+                });
+            } catch (e) {
+                console.error("Failed to decode switched token:", e);
+            }
+        }
+        return data;
+    };
+
     const logout = () => {
         localStorage.removeItem('synos_jwt');
         localStorage.removeItem('synos_oversight_branch_id');
@@ -171,7 +215,8 @@ export function AuthProvider({ children }) {
             setIsConfigured,
             isAuthenticated: !!user,
             activeOversightBranchId,
-            setOversightBranch
+            setOversightBranch,
+            switchBranch
         }}>
             {!isLoading && children}
         </AuthContext.Provider>

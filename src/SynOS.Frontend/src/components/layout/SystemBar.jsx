@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { ReceptionApi } from '@/api/reception';
 
 export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
-  const { user, logout, activeOversightBranchId, setOversightBranch } = useAuth();
+  const { user, logout, activeOversightBranchId, setOversightBranch, switchBranch } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { theme, setTheme } = useTheme();
@@ -259,10 +259,19 @@ export function SystemBar({ serverTime, syncStatus = "Not Synced" }) {
                         ? "bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 font-bold shadow-xs"
                         : "text-zinc-800 dark:text-zinc-200 hover:bg-indigo-500/10 hover:text-indigo-600 dark:hover:text-indigo-400"
                     )}
-                    onClick={() => {
-                      setOversightBranch(bId);
-                      setActiveDropdown(null);
-                      window.location.reload(); // Reload to refresh all data with new branch context
+                    onClick={async () => {
+                      try {
+                        if (switchBranch) {
+                          await switchBranch(bId);
+                        } else {
+                          setOversightBranch(bId);
+                        }
+                        setActiveDropdown(null);
+                        window.location.reload(); // Reload to refresh all data with new branch context
+                      } catch (err) {
+                        console.error("Failed to switch branch:", err);
+                        alert(err.message || "Failed to switch branch");
+                      }
                     }}
                   >
                     {b.name}

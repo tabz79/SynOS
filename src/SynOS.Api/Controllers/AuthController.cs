@@ -139,6 +139,46 @@ namespace SynOS.Api.Controllers
             return Ok(branches);
         }
 
+        public class SwitchBranchRequest
+        {
+            public Guid BranchId { get; set; }
+        }
+
+        [HttpPost("switch-branch")]
+        [Authorize]
+        public async Task<IActionResult> SwitchBranch([FromBody] SwitchBranchRequest request)
+        {
+            var userId = _userContext.CurrentUserId;
+            if (userId == Guid.Empty)
+            {
+                return Unauthorized(new { code = "INVALID_CONTEXT", message = "Missing user identity claim." });
+            }
+
+            if (request == null || request.BranchId == Guid.Empty)
+            {
+                return BadRequest(new { code = "INVALID_BRANCH", message = "Valid BranchId is required." });
+            }
+
+            try
+            {
+                var response = await _authService.SwitchBranchAsync(userId, request.BranchId, IpAddress());
+                SetTokenCookie(response.RefreshToken);
+                return Ok(response);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { code = "BRANCH_NOT_FOUND", message = ex.Message });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { code = "UNAUTHORIZED_BRANCH", message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { code = "INTERNAL_SERVER_ERROR", message = ex.Message });
+            }
+        }
+
         // DEV-ONLY helper to generate bcrypt hashes for seeding users
         #if DEBUG
         [HttpGet("dev-hash")]

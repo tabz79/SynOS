@@ -13,5 +13,6 @@ namespace SynOS.Services
         Task<LoginResponse> RefreshToken(string token, string? ipAddress);
         Task<bool> Logout(string token, string? ipAddress);
         Task<System.Collections.Generic.IEnumerable<BranchSummaryDto>> GetBranchesForUserAsync(System.Guid userId);
+        Task<LoginResponse> SwitchBranchAsync(System.Guid userId, System.Guid targetBranchId, string? ipAddress);
     }
 }

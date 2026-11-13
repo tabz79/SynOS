@@ -3359,6 +3359,52 @@ In `Referral Partners` (`/finance/referrals/*`), the horizontal navigation tab s
    - Compiled .NET backend solution cleanly with **0 errors** (`dotnet build SynOS.sln`).
    - Compiled frontend production assets cleanly (`npm run build`).
 
+---
+
+## 49. Operational Multi-Branch Switching & Cryptographic Context Refresh Fix — [RESOLVED]
+
+### Incident Summary & Observed Error
+* **Screen:** System Bar Facility Switcher across all workspaces (`/reception`, etc.)
+* **Trigger:** A staff member assigned to multiple branches (e.g. Receptionist `Uzma` assigned to both `Main Branch` and `MRI Branch`) clicked "Main Branch" in the facility dropdown while operating in `MRI Branch`.
+* **Observed Behavior:** The screen reloaded, but the active branch remained stuck on `MRI Branch`. The user was unable to switch operational context between assigned branches.
+
+---
+
+### Root Cause Analysis
+
+1. **No Authenticated Branch Switch Mechanism in Backend:**
+   - Previously, the only way a user was assigned a branch was during initial `/api/v1/auth/login`.
+   - When selecting a branch from the `SystemBar.jsx` dropdown, the frontend only stored the new branch ID in `localStorage` (`synos_oversight_branch_id`) and invoked `window.location.reload()`.
+   - No backend endpoint existed to issue a new JWT token or switch the session's active branch context.
+
+2. **Immutable Token Branch Context:**
+   - On page reload, the client was still presenting their original JWT token, which carried `branch_id = MRI Branch`.
+   - All backend services (`UserContext`, `VisitService`, `ProcessingService`, etc.) strictly derive tenant isolation from the `branch_id` claim inside the authenticated JWT token.
+   - Consequently, despite the UI selection in localStorage, the entire application remained locked to the token's original branch.
+
+---
+
+### Resolution Implemented
+
+1. **Enterprise Cryptographic Branch Switch Endpoint (`AuthController.cs` & `AuthService.cs`):**
+   - Implemented `POST /api/v1/auth/switch-branch` accepting `{ branchId }`:
+     - Verifies user authentication and checks branch eligibility:
+       - Admins are permitted to switch to any active branch.
+       - Staff members (e.g. `Uzma`) are verified against their assigned `UserBranchRoles` or `DefaultBranchId`. Unauthorized branch switch attempts are rejected with `401 Unauthorized`.
+     - Updates the user's `OperationalResource` with the new branch context to guarantee proper queue routing.
+     - Generates a fresh, cryptographically signed operational JWT token and refresh token containing the updated `branch_id` and `branch_name`.
+     - Logs an audit event `BranchSwitched`.
+
+2. **Frontend Authentication Context Integration (`AuthContext.jsx` & `SystemBar.jsx`):**
+   - Added `switchBranch(branchId)` to `AuthContext`:
+     - Calls `POST /api/v1/auth/switch-branch`.
+     - Saves the new authenticated token, updates user state and localStorage branch keys.
+   - Updated `SystemBar.jsx` branch dropdown to invoke `await switchBranch(bId)` before reloading, ensuring the browser immediately boots up with the newly authorized token.
+
+3. **Verification & Build:**
+   - Compiled .NET backend solution cleanly with **0 errors** (`dotnet build SynOS.sln`).
+   - Compiled frontend production assets cleanly (`npm run build`).
+
 
 
 

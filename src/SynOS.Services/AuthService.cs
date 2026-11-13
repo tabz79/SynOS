@@ -477,6 +477,128 @@ namespace SynOS.Services
             return assigned;
         }
 
+        public async Task<LoginResponse> SwitchBranchAsync(Guid userId, Guid targetBranchId, string? ipAddress)
+        {
+            var user = await _context.Users
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                .Include(u => u.RefreshTokens)
+                .FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (user == null || !user.IsActive)
+            {
+                throw new UnauthorizedAccessException("User not found or deactivated.");
+            }
+
+            var branch = await _context.Branches.FirstOrDefaultAsync(b => b.BranchId == targetBranchId && b.IsActive);
+            if (branch == null)
+            {
+                throw new KeyNotFoundException("Branch not found or inactive.");
+            }
+
+            var isAdmin = user.UserRoles.Any(ur =>
+                ur.Role.Name.Equals("Administrator", StringComparison.OrdinalIgnoreCase) ||
+                ur.Role.Name.Equals("Admin", StringComparison.OrdinalIgnoreCase) ||
+                ur.Role.Name.Equals("SystemAdmin", StringComparison.OrdinalIgnoreCase));
+
+            string selectedRoleName = "Receptionist";
+            Guid selectedRoleId = Guid.Empty;
+
+            if (isAdmin)
+            {
+                var primaryRole = user.UserRoles.FirstOrDefault()?.Role;
+                selectedRoleName = primaryRole?.Name ?? "Admin";
+                selectedRoleId = primaryRole?.RoleId ?? Guid.Empty;
+            }
+            else
+            {
+                var userBranchRole = await _context.UserBranchRoles
+                    .Include(ubr => ubr.Role)
+                    .FirstOrDefaultAsync(ubr => ubr.UserId == userId && ubr.BranchId == targetBranchId);
+
+                if (userBranchRole != null)
+                {
+                    selectedRoleName = userBranchRole.Role.Name;
+                    selectedRoleId = userBranchRole.RoleId;
+                }
+                else if (user.DefaultBranchId.HasValue && user.DefaultBranchId.Value == targetBranchId)
+                {
+                    var primaryRole = user.UserRoles.FirstOrDefault()?.Role;
+                    selectedRoleName = primaryRole?.Name ?? "Receptionist";
+                    selectedRoleId = primaryRole?.RoleId ?? Guid.Empty;
+                }
+                else
+                {
+                    throw new UnauthorizedAccessException("Unauthorized access to requested branch.");
+                }
+            }
+
+            var newSessionId = Guid.NewGuid();
+            var departmentCode = "GENERAL";
+
+            // Sync Operational Resource
+            var resource = await _context.OperationalResources.FirstOrDefaultAsync(r => r.UserId == user.UserId);
+            if (resource != null)
+            {
+                resource.ActiveSessionId = newSessionId;
+                resource.LastSessionIssuedAt = DateTime.UtcNow;
+                resource.BranchId = branch.BranchId;
+                resource.Role = selectedRoleName;
+
+                if (!string.IsNullOrEmpty(resource.DepartmentCode) && resource.DepartmentCode != "GENERAL")
+                {
+                    departmentCode = resource.DepartmentCode;
+                }
+            }
+            else
+            {
+                resource = new OperationalResource
+                {
+                    UserId = user.UserId,
+                    ActiveSessionId = newSessionId,
+                    LastSessionIssuedAt = DateTime.UtcNow,
+                    BranchId = branch.BranchId,
+                    Role = selectedRoleName,
+                    DepartmentCode = "GENERAL",
+                    IsOnline = false,
+                    IsActive = true
+                };
+                _context.OperationalResources.Add(resource);
+            }
+
+            var workspaceRoutes = await _context.UserWorkspaceAccesses
+                .AsNoTracking()
+                .Where(uwa => uwa.UserId == user.UserId && uwa.Workspace.IsActive)
+                .Select(uwa => uwa.Workspace.RoutePath)
+                .ToListAsync();
+
+            var jwtToken = GenerateJwtToken(user, "operational", branch.BranchId, branch.Name, selectedRoleName, selectedRoleId, newSessionId, departmentCode, workspaceRoutes);
+            var refreshToken = GenerateRefreshToken(ipAddress);
+            refreshToken.SessionMode = "operational";
+
+            foreach (var rt in user.RefreshTokens.Where(t => t.IsActive))
+            {
+                rt.Revoked = DateTime.UtcNow;
+                rt.RevokedByIp = ipAddress ?? string.Empty;
+            }
+
+            user.RefreshTokens.Add(refreshToken);
+            await _context.SaveChangesAsync();
+
+            await _auditService.LogAsync(user.UserId, "BranchSwitched", "User", user.UserId, new { BranchId = targetBranchId, BranchName = branch.Name, Role = selectedRoleName });
+
+            var userDto = _mapper.Map<UserDto>(user);
+            userDto.Role = selectedRoleName;
+
+            return new LoginResponse
+            {
+                AccessToken = jwtToken,
+                RefreshToken = refreshToken.Token,
+                ExpiresIn = _configuration.GetValue<int>("Jwt:ExpiryMinutes", 60) * 60,
+                User = userDto
+            };
+        }
+
         private RefreshToken GenerateRefreshToken(string? ipAddress)
         {
             using (var randomNumberGenerator = RandomNumberGenerator.Create())
