@@ -85,4 +85,14 @@
   * **Admin Users:** Possess global cross-facility oversight. Admins can switch branches on the fly directly inside the Finance Filter Bar (`All Branches` consolidated view or single branch dropdown in `StandardFilterBar.jsx`) without altering their terminal's global operating facility.
   * **Non-Admin Multi-Branch Users (Receptionists, Phlebotomists, Lab Techs):** Strictly restricted from in-page consolidated multi-branch switching in the Finance Hub (`{showBranches && isAdmin && ...}`). They are bound to one active facility at a time. Staff with multi-branch access must switch their working facility globally from the top navigation bar (`SystemBar.jsx`), which updates their active facility context for the entire application session.
 
+---
+
+### Rule 9: Test Master & Catalog Governance Invariant
+* **Goal:** Ensure all test creations and metadata modifications made by administrators persist reliably without form state loss or role authorization rejection.
+* **Implementation Details:**
+  * In `TestMasterScreen.jsx`, `handleSaveAll()` must automatically flush and commit active metadata input states (`metaName`, `metaCode`, `metaDept`, `metaModalityId`) into `selectedTest` before serializing to DTO.
+  * In `TestMasterController.cs`, endpoints must authorize `Admin,Administrator,SystemAdmin` so users provisioned with `Administrator` role claims are not rejected with HTTP 403 Forbidden.
+  * In `TestMasterScreen.jsx`, modality selection must allow any department with `MacroDepartment == "Radiology"` to view all Radiology modalities (`MRI`, `CT`, `X-Ray`, `US`).
+
+
 

@@ -11,7 +11,7 @@ namespace SynOS.Api.Controllers.Admin
 {
     [ApiController]
     [Route("api/v1/admin/audit-logs")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Administrator,SystemAdmin")]
     public class AuditLogController : ControllerBase
     {
         private readonly SynOSDbContext _context;

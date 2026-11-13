@@ -294,6 +294,7 @@ namespace SynOS.Api.Controllers.Admin
                     Name = m.Name,
                     DepartmentId = m.DepartmentId,
                     DepartmentName = m.DepartmentMaster?.Name ?? string.Empty,
+                    MacroDepartment = m.DepartmentMaster?.MacroDepartment ?? string.Empty,
                     IsActive = m.IsActive
                 });
             }
@@ -313,6 +314,7 @@ namespace SynOS.Api.Controllers.Admin
                     Name = modality.Name,
                     DepartmentId = modality.DepartmentId,
                     DepartmentName = modality.DepartmentMaster?.Name ?? string.Empty,
+                    MacroDepartment = modality.DepartmentMaster?.MacroDepartment ?? string.Empty,
                     IsActive = modality.IsActive
                 });
             }

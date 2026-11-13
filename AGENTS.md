@@ -173,6 +173,25 @@ The Finance Hub (`RevenueScreens.jsx`) houses the ultimate diagnostic and legal 
 
 ---
 
+## 🔬 Section IV: Test Master & Catalog Governance Invariants
+
+### 1. Dual-Scope Save Guard (Zero-Loss Form State Contract)
+* **Contract:** In [`TestMasterScreen.jsx`](file:///src/SynOS.Frontend/src/features/admin/TestMasterScreen.jsx), clicking the global top-right button `SAVE SELECTED TEST` (`handleSaveAll`) or `Save Pricing Changes` while metadata input boxes are open (`isEditingMetadata === true`) MUST automatically flush, validate, and commit the typed metadata (`metaName`, `metaCode`, `metaDept`, `metaModalityId`) into the test model *before* serializing to the backend DTO.
+* **Prohibition:** NEVER let `handleSaveAll()` serialize from stale `selectedTest` state while leaving active user input uncommitted.
+
+### 2. Dual Admin Role Authority Contract (`Admin` vs `Administrator`)
+* **Contract:** All administrative endpoints in `TestMasterController.cs` and related catalog APIs MUST permit both canonical administrator designations:
+  ```csharp
+  [Authorize(Roles = "Admin,Administrator,SystemAdmin")]
+  ```
+* **Prohibition:** NEVER lock administrative endpoints exclusively to `"Admin"`, as users provisioned with `"Administrator"` role claims will be rejected with silent or unhandled HTTP 403 Forbidden errors.
+
+### 3. Radiology Sub-Department Modality Inheritance
+* **Contract:** Any department whose `MacroDepartment == "Radiology"` (including sub-departments like `Radiology CT/MRI`, `Radiology Ultrasound`, and `X-Ray`) MUST inherit and display all clinical diagnostic imaging modalities (`MRI`, `CT`, `X-Ray`, `US`) in the Modality dropdown.
+* **Prohibition:** NEVER restrict modality lookup strictly to an exact `DepartmentId` match when the parent discipline is Radiology. Modalities belong to the macro-discipline.
+
+---
+
 ## 🛠️ Build & Verification Protocol
 
 When making modifications to the frontend or document pipelines:

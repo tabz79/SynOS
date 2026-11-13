@@ -459,22 +459,22 @@ builder.Services.AddAuthentication(options =>
 // Add Authorization Policies
 builder.Services.AddAuthorization(options =>
 {
-    options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("AdminPolicy", policy => policy.RequireRole("Admin", "Administrator", "SystemAdmin"));
     options.AddPolicy("ReceptionPolicy", policy =>
         policy.RequireAssertion(context =>
-            context.User.IsInRole("Receptionist") || context.User.IsInRole("Admin")));
+            context.User.IsInRole("Receptionist") || context.User.IsInRole("Admin") || context.User.IsInRole("Administrator") || context.User.IsInRole("SystemAdmin")));
     options.AddPolicy("PhlebotomyPolicy", policy =>
         policy.RequireAssertion(context =>
-            context.User.IsInRole("Phlebotomist") || context.User.IsInRole("Admin")));
+            context.User.IsInRole("Phlebotomist") || context.User.IsInRole("Admin") || context.User.IsInRole("Administrator") || context.User.IsInRole("SystemAdmin")));
     options.AddPolicy("PathologyPolicy", policy =>
         policy.RequireAssertion(context =>
-            context.User.IsInRole("Pathologist") || context.User.IsInRole("Admin")));
+            context.User.IsInRole("Pathologist") || context.User.IsInRole("Admin") || context.User.IsInRole("Administrator") || context.User.IsInRole("SystemAdmin")));
     options.AddPolicy("TypistPolicy", policy =>
         policy.RequireAssertion(context =>
-            context.User.IsInRole("Typist") || context.User.IsInRole("Admin")));
+            context.User.IsInRole("Typist") || context.User.IsInRole("Admin") || context.User.IsInRole("Administrator") || context.User.IsInRole("SystemAdmin")));
     options.AddPolicy("DeliveryPolicy", policy =>
         policy.RequireAssertion(context =>
-            context.User.IsInRole("DeliveryDesk") || context.User.IsInRole("Admin")));
+            context.User.IsInRole("DeliveryDesk") || context.User.IsInRole("Admin") || context.User.IsInRole("Administrator") || context.User.IsInRole("SystemAdmin")));
     options.AddPolicy("ReportingPolicy", policy =>
         policy.RequireAssertion(context =>
             context.User.IsInRole("Pathologist") || 
@@ -482,6 +482,8 @@ builder.Services.AddAuthorization(options =>
             context.User.IsInRole("Typist") || 
             context.User.IsInRole("DeliveryDesk") || 
             context.User.IsInRole("Admin") ||
+            context.User.IsInRole("Administrator") ||
+            context.User.IsInRole("SystemAdmin") ||
             context.User.IsInRole("Technician") ||
             context.User.IsInRole("XRayTech") ||
             context.User.IsInRole("MriTech") ||
@@ -491,7 +493,9 @@ builder.Services.AddAuthorization(options =>
         policy.RequireAssertion(context =>
             context.User.IsInRole("Technician") ||
             context.User.IsInRole("LabTech") ||
-            context.User.IsInRole("Admin")));
+            context.User.IsInRole("Admin") ||
+            context.User.IsInRole("Administrator") ||
+            context.User.IsInRole("SystemAdmin")));
 });
 
 // Add AutoMapper

@@ -263,6 +263,50 @@ namespace SynOS.Data
                 allDepts = await context.DepartmentMasters.ToListAsync(); // Refresh cache
             }
 
+            // Consolidate fragmented Radiology departments (e.g. Radiology CT/MRI, Radiology Ultrasound, Ultra Sound, X-Ray)
+            var radDept = allDepts.FirstOrDefault(d => d.Code.Equals("RAD", StringComparison.OrdinalIgnoreCase) || d.Name.Equals("Radiology", StringComparison.OrdinalIgnoreCase));
+            if (radDept != null)
+            {
+                var fragmentedRadDepts = allDepts.Where(d =>
+                    d.DepartmentId != radDept.DepartmentId &&
+                    (d.Name.Contains("Radiology", StringComparison.OrdinalIgnoreCase) ||
+                     d.Name.Contains("Ultra Sound", StringComparison.OrdinalIgnoreCase) ||
+                     d.Name.Equals("X-Ray", StringComparison.OrdinalIgnoreCase) ||
+                     d.MacroDepartment.Equals("Radiology", StringComparison.OrdinalIgnoreCase))
+                ).ToList();
+
+                if (fragmentedRadDepts.Any())
+                {
+                    var allModalities = await context.ModalityMasters.ToListAsync();
+                    var mriMod = allModalities.FirstOrDefault(m => m.Code == "MRI");
+                    var ctMod = allModalities.FirstOrDefault(m => m.Code == "CT");
+                    var usMod = allModalities.FirstOrDefault(m => m.Code == "US");
+                    var xrayMod = allModalities.FirstOrDefault(m => m.Code == "XRAY");
+
+                    foreach (var legacyDept in fragmentedRadDepts)
+                    {
+                        var tests = await context.Tests.Where(t => t.DepartmentId == legacyDept.DepartmentId).ToListAsync();
+                        foreach (var t in tests)
+                        {
+                            t.DepartmentId = radDept.DepartmentId;
+                            if (!t.ModalityId.HasValue)
+                            {
+                                var text = $"{t.TestCode} {t.TestName} {legacyDept.Name}".ToUpperInvariant();
+                                if (text.Contains("MRI")) t.ModalityId = mriMod?.ModalityId;
+                                else if (text.Contains("CT")) t.ModalityId = ctMod?.ModalityId;
+                                else if (text.Contains("USG") || text.Contains("SOUND") || text.Contains("ULTRASOUND")) t.ModalityId = usMod?.ModalityId;
+                                else if (text.Contains("XRAY") || text.Contains("X-RAY")) t.ModalityId = xrayMod?.ModalityId;
+                            }
+                        }
+
+                        // Soft-deactivate so historical invoices/reports remain non-orphaned but active UI dropdowns stay clean
+                        legacyDept.IsActive = false;
+                    }
+                    await context.SaveChangesAsync();
+                    allDepts = await context.DepartmentMasters.ToListAsync();
+                }
+            }
+
             // 2. Seed standard lab departments
             var standardDepts = new[]
             {

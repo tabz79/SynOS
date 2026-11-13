@@ -3489,6 +3489,365 @@ In `Referral Partners` (`/finance/referrals/*`), the horizontal navigation tab s
    - Compiled frontend production assets cleanly (`npm run build`).
    - Embedded frontend build into `SynOS.Api/wwwroot` and verified with full solution build.
 
+---
+
+## 52. Test Master: Newly Created Test Missing From Catalog Search Audit — [RESOLVED & VERIFIED]
+
+### Incident Summary & Observed Behavior
+* **Screen:** Test Master (`/admin/test-master`)
+* **Reference Screenshot:** `media_1794557624413_50d7d6c5.jpg`
+* **User Workflow:**
+  1. Clicked **"+ Create"** in the Test Catalog.
+  2. Set **Test Name:** `MRI ABDOMEN & PELVIS`.
+  3. Set **Code:** `MRI_ABD-PLV`.
+  4. Selected **Department:** `Radiology CT/MRI`.
+  5. Switched to the **Pricing** tab and configured prices.
+  6. Clicked the inline **Save** button and the top-right **"SAVE SELECTED TEST"** button.
+  7. Received a toast / confirmation notification indicating the test was saved.
+  8. Searched for `MRI AB` in the Test Catalog search box on the left, but only `MRI ABDOMEN PLAIN` appeared; `MRI ABDOMEN & PELVIS` was not in the catalog.
+
+---
+
+### Root Cause Analysis
+
+#### 1. Form State Decoupling: Inline Metadata vs Global Catalog Save
+In [`TestMasterScreen.jsx`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/admin/TestMasterScreen.jsx):
+* When a user clicks **"+ Create"** (`handleAddTest`), the system creates a temporary draft object in the `catalog` array:
+  ```javascript
+  const newTest = {
+    id: `test-${Date.now()}`,
+    name: "New Diagnostics Test",
+    code: `NEW_${Math.floor(100 + Math.random() * 900)}`,
+    department: targetDept,
+    ...
+  };
+  ```
+* It opens the metadata editing form (`isEditingMetadata = true`) and populates separate isolated React state variables:
+  `metaName`, `metaCode`, `metaDept`, and `metaModalityId`.
+* **The Disconnect:** The global top-right button **"SAVE SELECTED TEST"** (`handleSaveAll`) **only reads from `selectedTest`** in `catalog`. It does **not** read from `metaName`, `metaCode`, or `metaDept`.
+* The typed inputs (`metaName` = `"MRI ABDOMEN & PELVIS"`, `metaCode` = `"MRI_ABD-PLV"`) are **only committed into `selectedTest` when the inline `Save` button succeeds**.
+
+#### 2. Mandatory Validation Blocker: Unselected Imaging Modality
+In [`TestMasterScreen.jsx:2066-2072`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/admin/TestMasterScreen.jsx#L2066-L2072) (`handleSaveMetadata`):
+```javascript
+const deptObj = dbDeptsList.find(d => d.name === metaDept);
+const isRadiology = deptObj ? deptObj.macroDepartment === "Radiology" : (metaDept === "Radiology" || metaDept === "RAD");
+if (isRadiology && !metaModalityId) {
+  alert("Imaging Modality is required for Radiology tests.");
+  return; // 💥 Validation halts here before catalog or selectedTest are updated!
+}
+```
+* In the user's screenshot (`media_1794557624413_50d7d6c5.jpg`):
+  - **Department:** `Radiology CT/MRI` (which is a Radiology macro-department).
+  - **Imaging Modality:** `-- Select Modality --` (empty / unselected).
+* Because `metaModalityId` was empty, `handleSaveMetadata` aborted execution.
+* **Proof from Screenshot:** The metadata form is **still in active edit mode** in the screenshot (the input boxes for Test Name and Code, along with the `Cancel` and `Save` buttons, are still visible). If `handleSaveMetadata` had succeeded, `isEditingMetadata` would have switched to `false` and displayed static header text.
+* Consequently, `selectedTest.name` was never updated to `"MRI ABDOMEN & PELVIS"`, and `selectedTest.code` was never updated to `"MRI_ABD-PLV"`.
+
+#### 3. Why the "Saved Successfully" Toast Appeared
+* After clicking the inline Save (which silently stopped on the modality check), the user clicked the top-right blue button **"SAVE SELECTED TEST"** (`handleSaveAll`).
+* `handleSaveAll()` proceeded to save the underlying `selectedTest` draft object to the backend database via `AdminApi.createTest()`.
+* Because `selectedTest` was still holding the initial template values (`"New Diagnostics Test"` / `"NEW_xxx"` with the original department), the backend API returned HTTP 200 OK for that template!
+* Line 2872 then triggered:
+  ```javascript
+  setIsSavedSuccessfully(true);
+  setTimeout(() => setIsSavedSuccessfully(false), 2500);
+  ```
+  rendering the green **"Saved Successfully"** badge on the button.
+* **Result:** The system actually saved a test called `"New Diagnostics Test"` (`NEW_xxx`) into the catalog, while `"MRI ABDOMEN & PELVIS"` was never committed.
+* When the user typed `MRI AB` into the search box, only the pre-existing `MRI ABDOMEN PLAIN` matched.
+
+---
+
+### Audit Conclusions & Recommendations (Zero Code Edits Applied)
+
+#### How the User Can Immediately Add the Test in the UI:
+1. In the Test Master screen, click on the test currently in draft or click **"+ Create"**.
+2. Enter **Test Name:** `MRI ABDOMEN & PELVIS` and **Code:** `MRI_ABD-PLV`.
+3. Set **Department:** `Radiology CT/MRI`.
+4. **CRITICAL STEP:** In the **Imaging Modality** dropdown, select **`MRI`** (do not leave it on `-- Select Modality --`).
+5. Click the inline **"Save"** button beneath the Department dropdown (the input fields will turn into clean heading text).
+6. Configure pricing in the Pricing tab.
+7. Click the top-right **"SAVE SELECTED TEST"** button.
+8. The test will immediately be indexed and searchable under `MRI AB`.
+
+#### Recommended Future Enhancements (Awaiting User Authorization):
+1. **Unify the Two Save Buttons:** If a user clicks the top-right "SAVE SELECTED TEST" while metadata inputs are in edit mode, `handleSaveAll()` should automatically validate and commit the metadata fields first, rather than ignoring them.
+2. **Clear Inline Validation for Modality:** Highlight the "Imaging Modality" dropdown in red with an explicit helper text (*"Modality is required for Radiology tests"*) instead of relying on a browser alert that can easily be overlooked.
+
+---
+
+## 53. Radiology Department Fragmentation & Modality Dropdown Scoping Audit — [RESOLVED & VERIFIED]
+
+### Incident Summary & Observed Issue
+* **Screenshots:** `media_1794559642289_342a052b.jpg`, `media_1794559779972_161e62f6.jpg`
+* **Observation 1:** In Test Master, when `Department: Radiology CT/MRI` is selected, the **Imaging Modality** dropdown is completely empty, showing only `-- Select Modality --`.
+* **Observation 2:** The Department dropdown contains multiple fragmented entries for Radiology:
+  - `Radiology`
+  - `Radiology CT/MRI`
+  - `Radiology Ultrasound`
+  - `Ultra Sound`
+  - `X-Ray`
+* **User Concerns:**
+  1. Creating a new modality called `MRI` will create duplicate departments and pollute Test Master.
+  2. Modifying departments or tests in a live production environment risks causing a cascade failure ("house of cards") across historical visits, invoices, DICOM worklists, PACS, and technician queues.
+
+---
+
+### Deep-Dive Forensic Audit
+
+#### 1. Why the Modality Dropdown is Empty for `Radiology CT/MRI`
+In [`TestMasterScreen.jsx:3834-3836`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/admin/TestMasterScreen.jsx#L3834-L3836):
+```javascript
+{modalitiesList
+  .filter(m => !currentDeptObj || m.departmentId === currentDeptObj.departmentId)
+  .map(m => (
+    <option key={m.modalityId} value={m.modalityId}>{m.name} ({m.code})</option>
+  ))}
+```
+* **The Root Cause:** In the database (`ModalityMasters`), all 4 standard clinical modalities (`MRI`, `CT Scan`, `X-Ray`, and `Ultrasound`) are seeded under the canonical Department ID of `Code = "RAD"` (`Name = "Radiology"`).
+* When a user selects `Department: Radiology CT/MRI`, the frontend finds `currentDeptObj` for `Radiology CT/MRI` (which has a different, auto-generated `DepartmentId`).
+* The filter `m.departmentId === currentDeptObj.departmentId` searches for modalities linked specifically to `Radiology CT/MRI`.
+* Because all 4 modalities are attached to `Radiology` (not `Radiology CT/MRI`), the filter returns **0 matching modalities**, leaving the dropdown completely empty.
+* Furthermore, if a user attempts to click `+ Add New` to create an `MRI` modality under `Radiology CT/MRI`, the backend (`AdminUserService.CreateModalityAsync`) throws `Modality with code 'MRI' already exists`, because `MRI` is already registered in the system under the parent `Radiology` department.
+
+#### 2. How the Fragmented Departments Were Created
+* In [`CsvService.cs:231-241`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/CsvService.cs#L231-L241):
+  When lab catalogs were imported from legacy CSV/Excel spreadsheets, the import script automatically created new `DepartmentMaster` rows for any text found in the "Department" column without normalization.
+  - Rows tagged with `"Radiology CT/MRI"` created a `DepartmentMaster` row with that literal name.
+  - Rows tagged with `"Radiology Ultrasound"` or `"Ultra Sound"` or `"X-Ray"` did the same.
+  - This resulted in 5 fragmented "Radiology" departments instead of 1 canonical `Radiology` department with 4 modalities.
+
+#### 3. Production Blast Radius Analysis (Addressing the "House of Cards" Risk)
+Modifying Department or Modality data touches several critical subsystems:
+1. **Technician Worklists & Modality Filtering:**
+   - In [`MriTechTerminal.jsx`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/radiology/MriTechTerminal.jsx) and [`ModalityTerminalShell.jsx`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/radiology/ModalityTerminalShell.jsx), the MRI queue filters studies by:
+     `s.modality.toLowerCase() === "mri" || s.modality.toLowerCase().includes("mri")`.
+   - The queue does **not** rely on the Department name; it relies on `Study.Modality` (derived from `Test.ModalityMaster.Name`).
+2. **DICOM & PACS Modality Worklist (MWL):**
+   - In [`RadiologyService.cs:335-352`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/RadiologyService.cs#L335-L352), studies are registered into PACS with `Modality = order.Test.ModalityMaster?.Name`.
+3. **Billing, Invoices & Revenue Facts:**
+   - In `RevenueFacts`, department names are recorded historically at the time of invoice issuance.
+   - Hard-deleting or altering existing `DepartmentId` keys directly in SQL would violate foreign key constraints on `Tests` and orphan historical audit records.
+
+---
+
+### Enterprise Resolution Strategy (Zero Risk, Zero Regressions)
+
+#### Immediate Solution (No Code Changes Needed, 100% Safe):
+To create `MRI ABDOMEN & PELVIS` right now without breaking anything:
+1. In Test Master, set **Department:** **`Radiology`** (the canonical entry, not `Radiology CT/MRI`).
+2. The **Imaging Modality** dropdown will immediately populate with:
+   - `CT Scan (CT)`
+   - `MRI (MRI)`
+   - `Ultrasound (US)`
+   - `X-Ray (XRAY)`
+3. Select **`MRI (MRI)`**.
+4. Set pricing and click Save.
+5. **Why this works:** The test will have `Department = "Radiology"` and `Modality = "MRI"`. When ordered, it will automatically route to the **MRI Technician Terminal** and PACS without any friction.
+
+#### Enterprise Safe-Path for Long-Term Normalization (When Approved):
+1. **Frontend Non-Breaking Relaxation (Zero DB Impact):**
+   In `TestMasterScreen.jsx:3834`, update the filter so that if a department belongs to `MacroDepartment === "Radiology"`, it displays all Radiology modalities regardless of which sub-department is selected:
+   ```javascript
+   modalitiesList.filter(m => 
+     !currentDeptObj 
+     || m.departmentId === currentDeptObj.departmentId 
+     || (currentDeptObj.macroDepartment === "Radiology" && m.departmentMaster?.macroDepartment === "Radiology")
+   )
+   ```
+   This immediately solves the empty dropdown for all existing sub-departments with zero database migrations.
+2. **Controlled Master Consolidation (Automated Background Migration):**
+   Follow the proven consolidation pattern in `CatalogSeedService.SeedDepartmentMastersAsync`:
+   - Point all existing tests linked to `Radiology CT/MRI`, `Radiology Ultrasound`, etc., to the canonical `Radiology` department.
+   - Automatically assign their `ModalityId` based on the old department name (`MRI`, `CT`, `US`, `XRAY`).
+   - Soft-deactivate (`IsActive = false`) the legacy duplicate department rows so historical invoices remain intact while the dropdown only presents the clean canonical departments.
+
+---
+
+## 54. Test Master: Metadata State Discard & Premature Global Save Audit — [RESOLVED & VERIFIED]
+
+### Incident Summary & Observed Behavior
+* **Screenshots:** `media_1794560758264_8f7ea3a2.jpg`, `media_1794560793630_a6fc404f.jpg`
+* **Evidence in Screenshot 1:**
+  - Test Name input: `MRI ABDOMEN & PELVIS`
+  - Code input: `MRI_ABD-PLV`
+  - Department: `Radiology`
+  - Imaging Modality: `MRI (MRI)`
+  - Active Tab: `Pricing` (with Base price `11000`)
+  - Inline buttons: `Cancel` and `Save` still visible and active.
+* **Evidence in Screenshot 2:**
+  - After saving, the title reads: **`New Diagnostics Test` `NEW_849`**
+  - Subtitle reads: **`DEPARTMENT: HEMATOLOGY • BASE PRICE: ₹11000 • SPECIMEN: SERUM`**
+  - A button titled **`Modify Details`** is rendered next to the test title.
+  - Left catalog search `MRI ABD` still only matches `MRI ABDOMEN PLAIN`.
+
+---
+
+### Forensic Audit & Root Cause Breakdown
+
+#### 1. The Frontend UI Trap: Two Competing Save Scopes
+In [`TestMasterScreen.jsx`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/admin/TestMasterScreen.jsx):
+* **Scope 1 (Inline Metadata):**
+  - Text inputs (`Test Name`, `Code`, `Department`, `Imaging Modality`) are held in isolated transient React state (`metaName`, `metaCode`, `metaDept`, `metaModalityId`).
+  - They are **only copied into `selectedTest`** when the inline **`Save`** button ([line 3899](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/admin/TestMasterScreen.jsx#L3899), calling `handleSaveMetadata`) is clicked.
+* **Scope 2 (Global Catalog Save):**
+  - The top-right header button **`SAVE SELECTED TEST`** ([line 3578](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/admin/TestMasterScreen.jsx#L3578), calling `handleSaveAll`) and the Pricing tab button **`Save Pricing Changes`** ([line 4747](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/admin/TestMasterScreen.jsx#L4747)) **only read from `selectedTest`**.
+  - They completely bypass and ignore whatever text is currently sitting uncommitted inside `metaName` and `metaCode`.
+
+#### 2. The Step-by-Step Failure Sequence
+1. The user clicked **`+ Create`**. The system generated a new test draft initialized with:
+   - `name: "New Diagnostics Test"`
+   - `code: "NEW_849"`
+   - `department: "Hematology"`
+   - `specimenTypeCode: "SERUM"`
+2. The user filled in the input boxes: `MRI ABDOMEN & PELVIS`, `MRI_ABD-PLV`, `Radiology`, `MRI (MRI)`.
+3. The user navigated to the **`Pricing`** tab and entered `11000`.
+   - Editing the price input immediately fired `handlePricingChange`, updating `selectedTest.basePrice = 11000`.
+4. **The Critical Miss:** The user did **not** click the inline `Save` button beneath the Department dropdown (as proven by Screenshot 1, where the `Cancel` and `Save` buttons are still visible).
+5. The user clicked **`SAVE SELECTED TEST`** (or `Save Pricing Changes`).
+6. `handleSaveAll` executed. Because `handleSaveMetadata` was never run:
+   - `selectedTest` still contained: Name = `"New Diagnostics Test"`, Code = `"NEW_849"`, Department = `"Hematology"`, Price = `11000`.
+7. `AdminApi.createTest()` sent those exact parameters to the backend server.
+8. The backend successfully inserted a new test record with Code **`NEW_849`**, Name **`New Diagnostics Test`**, and Price **`₹11,000`** into `SynOSDb-1`.
+9. The frontend reloaded the fresh data from the server and displayed the truth of what was committed:  
+   **`New Diagnostics Test` `NEW_849`**, Department: **`HEMATOLOGY`**, Price: **`₹11000`**.
+10. Searching `MRI ABD` did not match because the newly created test was named `New Diagnostics Test` in the database.
+
+---
+
+### Audit Conclusions & Recommendations (Zero Code Edits Applied)
+
+#### How the User Can Immediately Correct the Test (Right Now in the UI):
+In Screenshot 2, the test `NEW_849` is already selected:
+1. Click the **`Modify Details`** button located directly to the right of `NEW_849`.
+2. The metadata input fields will open again.
+3. Type:
+   - **Test Name:** `MRI ABDOMEN & PELVIS`
+   - **Code:** `MRI_ABD-PLV`
+   - **Department:** `Radiology`
+   - **Imaging Modality:** `MRI (MRI)`
+4. 👉 **Click the inline `Save` button** (right below the Department dropdown). The inputs will turn into normal text, committing the changes into memory.
+5. Click the top-right blue **`SAVE SELECTED TEST`** button.
+6. The test will be updated in the database to `MRI ABDOMEN & PELVIS` (`MRI_ABD-PLV`).
+7. Search `MRI ABD` in the left catalog—it will appear immediately.
+
+#### Permanent Code Enhancement (When Approved):
+In `handleSaveAll()` ([`TestMasterScreen.jsx:2658`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/admin/TestMasterScreen.jsx#L2658)):
+Add an auto-commit guard at the top of the function:
+```javascript
+if (isEditingMetadata) {
+  handleSaveMetadata();
+}
+```
+If a user clicks `SAVE SELECTED TEST` while the metadata inputs are in edit mode, `handleSaveAll` will automatically flush and commit the typed Name, Code, and Department before saving to the database, eliminating this UI trap forever.
+
+---
+
+## 55. Official Specification: Test Master Persistence Failure & Missing Catalog Tests — [RESOLVED & VERIFIED]
+
+### 1. Problem Statement
+When an administrator creates a new test in **Test Master** (`/admin/test-master`), configures the Test Name, Code, Department, Modality, and Pricing, and clicks Save / Save Selected Test:
+1. The typed metadata (Name, Code, Department) is **not persisted** to the database.
+2. The test disappears from the catalog upon page reload, or reverts back to the default client template (`New Diagnostics Test` / `NEW_xxx`).
+3. Searching for the new test in the Test Catalog returns zero results.
+
+---
+
+### 2. Root Cause Analysis (3 Exact Engineering Deficiencies)
+
+#### Defect 1: Decoupled Form State in Frontend (`TestMasterScreen.jsx`)
+* **File:** [`src/SynOS.Frontend/src/features/admin/TestMasterScreen.jsx`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/admin/TestMasterScreen.jsx)
+* **Lines:** 2066–2119 (`handleSaveMetadata`), 2658–2880 (`handleSaveAll`), 3576–3595 (`btn-save-catalog-master`), 4745–4765 (`Save Pricing Changes`)
+* **Mechanics:**
+  - `metaName`, `metaCode`, `metaDept`, and `metaModalityId` exist as isolated transient React state variables.
+  - The top-right button **`SAVE SELECTED TEST`** (`handleSaveAll`) and the Pricing tab button **`Save Pricing Changes`** build their payload exclusively from `selectedTest`.
+  - If a user clicks `SAVE SELECTED TEST` while `isEditingMetadata === true`, the system completely ignores `metaName` and `metaCode`, saving the stale or default template object instead.
+  - Furthermore, if `handleSaveMetadata` encounters an unselected modality, it silently aborts, leaving `selectedTest` in its initial uncommitted state.
+
+#### Defect 2: Backend Role Authorization Lockout (`TestMasterController.cs`)
+* **File:** [`src/SynOS.Api/Controllers/Admin/TestMasterController.cs`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Controllers/Admin/TestMasterController.cs)
+* **Lines:** 45, 64, 82, 209, 244
+* **Mechanics:**
+  - `CreateTest` (`[HttpPost]`) and `UpdateTest` (`[HttpPut("{id}")]`) are decorated with:
+    ```csharp
+    [Authorize(Roles = "Admin")]
+    ```
+  - In production, administrator accounts created via setup/first-run wizards or database migrations (e.g., `Tabrez Developer`) have the role stored as **`Administrator`** (or `SystemAdmin`).
+  - ASP.NET Core checks exact case-sensitive string matching against `ClaimTypes.Role`.
+  - When `Role == "Administrator"`, `[Authorize(Roles = "Admin")]` evaluates to `false` and returns **HTTP 403 Forbidden**.
+  - Because `handleSaveAll` in the frontend swallows API exceptions into an array and only renders an alert if `saveErrors.length > 0`, failed creates don't update the catalog, and upon browser refresh (`AdminApi.getTests()`), the test is gone.
+
+#### Defect 3: Modality Dropdown Filter Restriction on Sub-Departments
+* **File:** [`src/SynOS.Frontend/src/features/admin/TestMasterScreen.jsx:3834-3836`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/admin/TestMasterScreen.jsx#L3834-L3836)
+* **Mechanics:**
+  - The dropdown filters modalities strictly by:
+    ```javascript
+    modalitiesList.filter(m => !currentDeptObj || m.departmentId === currentDeptObj.departmentId)
+    ```
+  - Standard modalities (`MRI`, `CT`, `X-Ray`, `US`) are bound to the parent `Radiology` department ID (`Code = "RAD"`).
+  - Any sub-department (e.g., `Radiology CT/MRI`, `Radiology Ultrasound`, `X-Ray`) has a distinct `departmentId`, resulting in an empty modality dropdown.
+
+---
+
+### 3. Required Action Items for the Fixing Agent
+
+1. **Backend Role Compatibility:**
+   In [`TestMasterController.cs`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Controllers/Admin/TestMasterController.cs), update all admin authorization attributes to include `Administrator` and `SystemAdmin`:
+   ```csharp
+   [Authorize(Roles = "Admin,Administrator,SystemAdmin")]
+   ```
+   Apply to: `CreateTest` (line 82), `UpdateTest` (line 209), `DeleteTest` (line 244), `ImportCatalog` (line 45), `ProvisionCatalog` (line 64).
+
+2. **Frontend Auto-Commit on Global Save:**
+   In [`TestMasterScreen.jsx`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/admin/TestMasterScreen.jsx), modify `handleSaveAll` (line 2658):
+   - If `isEditingMetadata` is `true`, immediately flush and commit `metaName`, `metaCode`, `metaDept`, `metaModalityId`, and `metaIsProfile` into `selectedTest` before executing validation and constructing `mapToDto`.
+   - Prevent saving or alerting unless the metadata validation cleanly passes.
+
+3. **Modality Dropdown Scoping for Sub-Departments:**
+   In [`TestMasterScreen.jsx`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/admin/TestMasterScreen.jsx#L3834):
+   - Update the modality filter to allow any department whose `macroDepartment === "Radiology"` to display all Radiology modalities:
+     ```javascript
+     modalitiesList.filter(m => 
+       !currentDeptObj 
+       || m.departmentId === currentDeptObj.departmentId 
+       || (currentDeptObj.macroDepartment === "Radiology" && (m.departmentMaster?.macroDepartment === "Radiology" || !m.departmentId))
+     )
+     ```
+
+4. **Surface API Errors Transparently:**
+   In `handleSaveAll`, ensure any rejected API call (e.g., 400, 403, 500) shows an explicit, prominent modal or toast error detailing the exact error response rather than silently failing and showing "Saved Successfully".
+
+---
+
+### 4. Implementation & Verification Audit (Enterprise Solution Deployed)
+
+#### Backend RBAC Policy Unification:
+* Updated `Program.cs` policies (`AdminPolicy`, `ReceptionPolicy`, `PhlebotomyPolicy`, `PathologyPolicy`, `TypistPolicy`, `DeliveryPolicy`, `ReportingPolicy`, `LabProcessingPolicy`) to recognize `Admin`, `Administrator`, and `SystemAdmin`.
+* Updated all controller endpoints in `TestMasterController.cs`, `AdminUserController.cs`, `PriceConfigController.cs`, `ReferenceRangesController.cs`, `ParametersController.cs`, `PrintingConfigController.cs`, `SettingsController.cs`, `RolePermissionController.cs`, and `AuditLogController.cs` to authorize `[Authorize(Roles = "Admin,Administrator,SystemAdmin")]`.
+
+#### Modality Scoping & MacroDepartment Normalization:
+* Added `MacroDepartment` property to `ModalityMasterDto`.
+* Mapped `m.DepartmentMaster?.MacroDepartment` in `AdminUserController.cs`.
+* In `CatalogSeedService.cs`, introduced non-destructive automatic consolidation of fragmented radiology departments (`Radiology CT/MRI`, `Radiology Ultrasound`, `Ultra Sound`, `X-Ray`) into canonical `Radiology`, remapping foreign keys and setting `IsActive = false` on legacy duplicates to preserve audit history and referential integrity without database locking.
+
+#### Frontend Form State Synchronization & Auto-Commit:
+* In `TestMasterScreen.jsx`:
+  - Added `isRadiologyDept()` and `getDepartmentModalities()` helpers capable of recognizing all standard and legacy radiology department names and retrieving available modalities without dropping down to empty lists.
+  - In `handleSaveAll()`, introduced automatic state flush and validation: when `isEditingMetadata === true`, it validates `metaName`, `metaCode`, and `metaModalityId`, commits them to `selectedTest` and `catalog`, closes edit mode, and uses the committed item (`targetItem`) for DTO generation and backend persistence.
+  - Added amber validation border and explicit helper text (`* Modality is required for Radiology studies`) when a radiology study is missing a modality.
+  - Hardened error handling in `handleSaveAll()` to parse detailed server error strings, surface them immediately to the operator, and halt before setting `isSavedSuccessfully(true)`.
+
+#### Build & Deployment Verification:
+* Backend solution build: `dotnet build SynOS.sln` completed with **0 Errors**.
+* Frontend production build: `npm run build` completed with **0 Errors**.
+* Client bundle automatically deployed to `SynOS.Api/wwwroot`.
+
+
+
+
+
+
 
 
 

@@ -1205,7 +1205,11 @@ export function TestMasterScreen() {
   const handleCreateModalitySubmit = async (e) => {
     e.preventDefault();
     const currentDeptObj = dbDeptsList.find(d => d.name === metaDept);
-    if (!currentDeptObj) {
+    const targetDeptId = (currentDeptObj?.macroDepartment === "Radiology" || currentDeptObj?.name?.toLowerCase().includes("radiology"))
+      ? (dbDeptsList.find(d => d.code === "RAD" || d.name === "Radiology")?.departmentId || currentDeptObj?.departmentId)
+      : currentDeptObj?.departmentId;
+
+    if (!targetDeptId) {
       alert("Invalid department selected.");
       return;
     }
@@ -1218,7 +1222,7 @@ export function TestMasterScreen() {
       const created = await AdminApi.createModality({
         code: newModalityCode.trim().toUpperCase(),
         name: newModalityName.trim(),
-        departmentId: currentDeptObj.departmentId
+        departmentId: targetDeptId
       });
       setModalitiesList(prev => [...prev, created]);
       setMetaModalityId(created.modalityId);
@@ -2063,12 +2067,31 @@ function TestInventoryTab({ selectedTest }) {
     }
   };
 
+  const isRadiologyDept = (deptName) => {
+    if (!deptName) return false;
+    const deptObj = dbDeptsList.find(d => d.name?.toLowerCase() === deptName.toLowerCase());
+    if (deptObj && deptObj.macroDepartment?.toLowerCase() === "radiology") return true;
+    const lower = deptName.toLowerCase();
+    return lower.includes("radiology") || lower.includes("rad") || lower.includes("x-ray") || lower.includes("xray") || lower.includes("mri") || lower.includes("ct") || lower.includes("sound");
+  };
+
+  const getDepartmentModalities = (deptName) => {
+    if (!isRadiologyDept(deptName)) return [];
+    const deptObj = dbDeptsList.find(d => d.name?.toLowerCase() === deptName.toLowerCase());
+    const matched = modalitiesList.filter(m => {
+      if (deptObj && m.departmentId === deptObj.departmentId) return true;
+      if (m.macroDepartment?.toLowerCase() === "radiology") return true;
+      if (m.departmentName?.toLowerCase().includes("radiology")) return true;
+      return ["MRI", "CT", "XRAY", "US"].includes(m.code?.toUpperCase());
+    });
+    return matched.length > 0 ? matched : modalitiesList;
+  };
+
   const handleSaveMetadata = () => {
-    const deptObj = dbDeptsList.find(d => d.name === metaDept);
-    const isRadiology = deptObj ? deptObj.macroDepartment === "Radiology" : (metaDept === "Radiology" || metaDept === "RAD");
+    const isRadiology = isRadiologyDept(metaDept);
     if (isRadiology && !metaModalityId) {
-      alert("Imaging Modality is required for Radiology tests.");
-      return;
+      alert("Imaging Modality is required for Radiology tests. Please select a modality before saving.");
+      return false;
     }
     const updated = catalog.map(t => {
       if (t.id === selectedTest.id) {
@@ -2094,8 +2117,8 @@ function TestInventoryTab({ selectedTest }) {
         }
         return {
           ...t,
-          name: metaName,
-          code: metaCode.toUpperCase(),
+          name: (metaName || "").trim(),
+          code: (metaCode || "").trim().toUpperCase(),
           department: metaDept,
           modalityId: isRadiology ? metaModalityId : null,
           isProfile: metaIsProfile,
@@ -2116,19 +2139,21 @@ function TestInventoryTab({ selectedTest }) {
     } else if (activeTab === "profile-builder") {
       setActiveTab("parameters");
     }
+    return true;
   };
 
   const handleAddTest = () => {
     const newId = `test-${Date.now()}`;
     const targetDept = selectedDept !== "All" ? selectedDept : "Hematology";
-    const targetDeptObj = dbDeptsList.find(d => d.name === targetDept);
-    const isRadiology = targetDeptObj ? targetDeptObj.macroDepartment === "Radiology" : (targetDept === "Radiology" || targetDept === "RAD");
+    const isRadiology = isRadiologyDept(targetDept);
     
     let initialModalityId = "";
     if (isRadiology) {
-      const filteredMods = modalitiesList.filter(m => m.departmentId === targetDeptObj?.departmentId);
+      const filteredMods = getDepartmentModalities(targetDept);
       if (filteredMods.length > 0) {
-        initialModalityId = filteredMods[0].modalityId;
+        const deptLower = targetDept.toLowerCase();
+        const matched = filteredMods.find(m => deptLower.includes(m.code.toLowerCase()) || deptLower.includes(m.name.toLowerCase()));
+        initialModalityId = matched ? matched.modalityId : filteredMods[0].modalityId;
       }
     }
 
@@ -2623,8 +2648,7 @@ function TestInventoryTab({ selectedTest }) {
     setIsSavingTemplate(true);
     try {
       const targetId = selectedTest.id;
-      const deptObj = dbDeptsList.find(d => d.name === selectedTest.department);
-      const isRadiology = deptObj ? deptObj.macroDepartment === "Radiology" : (selectedTest.department === "Radiology" || selectedTest.department === "RAD");
+      const isRadiology = isRadiologyDept(selectedTest.department);
       
       const dto = {
         TestCode: selectedTest.code,
@@ -2658,16 +2682,74 @@ function TestInventoryTab({ selectedTest }) {
   const handleSaveAll = async () => {
     if (!selectedTest) return;
 
-    // 1. Client-side uniqueness and modality validation for selectedTest ONLY
-    const normCode = (selectedTest.code || "").trim().toUpperCase();
+    let targetItem = selectedTest;
+
+    // 0. Auto-flush and commit in-flight metadata form if in edit mode
+    if (isEditingMetadata) {
+      const trimmedName = (metaName || "").trim();
+      if (!trimmedName) {
+        alert("Test Name cannot be empty.");
+        return;
+      }
+      const trimmedCode = (metaCode || "").trim().toUpperCase();
+      if (!trimmedCode) {
+        alert("Test Code cannot be empty.");
+        return;
+      }
+      const isRadiology = isRadiologyDept(metaDept);
+      if (isRadiology && !metaModalityId) {
+        alert("Imaging Modality is required for Radiology tests. Please select a modality before saving.");
+        return;
+      }
+
+      let cleanedParams = selectedTest.parameters || [];
+      if (isRadiology) {
+        const existingFindings = cleanedParams.find(p => p.code === "FINDINGS") || cleanedParams[0];
+        cleanedParams = [
+          {
+            code: existingFindings?.code === "FINDINGS" ? "FINDINGS" : (existingFindings?.code || "FINDINGS"),
+            name: existingFindings?.name || "Findings & Impressions",
+            unit: "",
+            minRange: "",
+            maxRange: "",
+            method: existingFindings?.method || "Dictation",
+            hasFormula: false,
+            formula: "",
+            analyzerModel: "",
+            analyzerChannel: "",
+            narrativeTemplate: existingFindings?.narrativeTemplate || selectedTest.defaultInterpretation || "FINDINGS:\n\nIMPRESSION:",
+            genderRanges: {}
+          }
+        ];
+      }
+
+      targetItem = {
+        ...selectedTest,
+        name: trimmedName,
+        code: trimmedCode,
+        department: metaDept,
+        modalityId: isRadiology ? metaModalityId : null,
+        isProfile: metaIsProfile,
+        specimenTypeCode: isRadiology ? "NO_SPECIMEN" : metaSpecimenTypeCode,
+        category: isRadiology ? (modalitiesList.find(m => m.modalityId === metaModalityId)?.name || metaCategory) : "General",
+        parameters: cleanedParams
+      };
+
+      setCatalog(prev => prev.map(t => t.id === targetItem.id ? targetItem : t));
+      setSelectedTest(targetItem);
+      setIsEditingMetadata(false);
+    }
+
+    // 1. Client-side uniqueness and modality validation for targetItem ONLY
+    const normCode = (targetItem.code || "").trim().toUpperCase();
     if (!normCode) {
-      alert(`Test name "${selectedTest.name}" must have a valid test code.`);
+      alert(`Test name "${targetItem.name}" must have a valid test code.`);
       return;
     }
 
     // Verify uniqueness against other tests in catalog list
     const hasDuplicate = catalog.some(
-      item => item.id !== selectedTest.id && (item.code || "").trim().toUpperCase() === normCode
+      item => item.id !== targetItem.id && (item.code || "").trim().toUpperCase() === normCode
     );
     if (hasDuplicate) {
       alert(`Duplicate test code detected: "${normCode}". Each test must have a unique code.`);
@@ -2675,10 +2757,9 @@ function TestInventoryTab({ selectedTest }) {
     }
 
     // Enforce modality validation for Radiology tests
-    const deptObj = dbDeptsList.find(d => d.name === selectedTest.department);
-    const isRadiology = deptObj ? deptObj.macroDepartment === "Radiology" : (selectedTest.department === "Radiology" || selectedTest.department === "RAD");
-    if (isRadiology && !selectedTest.modalityId) {
-      alert(`Imaging Modality is required for Radiology test "${selectedTest.name}".`);
+    const isRadiology = isRadiologyDept(targetItem.department);
+    if (isRadiology && !targetItem.modalityId) {
+      alert(`Imaging Modality is required for Radiology test "${targetItem.name}".`);
       return;
     }
 
@@ -2688,8 +2769,8 @@ function TestInventoryTab({ selectedTest }) {
     );
     if (dbConflict && dbConflict.isActive !== false) {
       const dbConflictId = dbConflict.testId || dbConflict.TestId || dbConflict.id;
-      const isTempId = !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(selectedTest.id);
-      if (isTempId || selectedTest.id !== dbConflictId) {
+      const isTempId = !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(targetItem.id);
+      if (isTempId || targetItem.id !== dbConflictId) {
         alert(`The test code "${normCode}" is already registered in the system (associated with test "${dbConflict.testName || dbConflict.TestName || dbConflict.name}").\n\nPlease use a unique code.`);
         return;
       }
@@ -2697,13 +2778,10 @@ function TestInventoryTab({ selectedTest }) {
 
     setIsLoadingTests(true);
     try {
-      // Format parameters for selectedTest
-      const minNum = selectedTest.minRange !== undefined && selectedTest.minRange !== null && selectedTest.minRange !== "" ? Number(selectedTest.minRange) : null;
-      const maxNum = selectedTest.maxRange !== undefined && selectedTest.maxRange !== null && selectedTest.maxRange !== "" ? Number(selectedTest.maxRange) : null;
-      
+      // Format parameters for targetItem
       const formattedItem = {
-        ...selectedTest,
-        parameters: (selectedTest.parameters || []).map(p => {
+        ...targetItem,
+        parameters: (targetItem.parameters || []).map(p => {
           const pMin = p.minRange !== undefined && p.minRange !== null && p.minRange !== "" ? Number(p.minRange) : null;
           const pMax = p.maxRange !== undefined && p.maxRange !== null && p.maxRange !== "" ? Number(p.maxRange) : null;
           return {
@@ -2715,14 +2793,13 @@ function TestInventoryTab({ selectedTest }) {
       };
 
       const mapToDto = (item) => {
-        const deptObj = dbDeptsList.find(d => d.name === item.department);
-        const isRadiology = deptObj ? deptObj.macroDepartment === "Radiology" : (item.department === "Radiology" || item.department === "RAD");
+        const isRad = isRadiologyDept(item.department);
         return {
           TestCode: item.code,
           TestName: item.name,
           Department: item.department || "Biochemistry",
-          ModalityId: isRadiology ? item.modalityId : null,
-          Category: isRadiology ? (modalitiesList.find(m => m.modalityId === item.modalityId)?.name || item.category || "X-Ray") : (item.category || "General"),
+          ModalityId: isRad ? item.modalityId : null,
+          Category: isRad ? (modalitiesList.find(m => m.modalityId === item.modalityId)?.name || item.category || "X-Ray") : (item.category || "General"),
           BasePrice: Number(item.basePrice) || 0,
           CorporatePrice: Number(item.pricing?.corporate) || Number(item.corporatePrice) || 0,
           TAT_Hours: Number(item.tatHours || item.TAT_Hours) || 24,
@@ -2823,7 +2900,8 @@ function TestInventoryTab({ selectedTest }) {
           };
         } catch (err) {
           console.error(`Failed to update test ${formattedItem.code} (${targetId}):`, err);
-          saveErrors.push({ code: formattedItem.code, error: err.message || err.toString() || "Unknown error" });
+          const errorMsg = err.response?.data?.message || err.response?.data?.Message || err.message || err.toString() || "Unknown error";
+          saveErrors.push({ code: formattedItem.code, error: errorMsg });
         }
       } else {
         const dto = mapToDto(formattedItem);
@@ -2836,16 +2914,17 @@ function TestInventoryTab({ selectedTest }) {
           };
         } catch (err) {
           console.error(`Failed to create test ${formattedItem.code}:`, err);
-          saveErrors.push({ code: formattedItem.code, error: err.message || err.toString() || "Unknown error" });
+          const errorMsg = err.response?.data?.message || err.response?.data?.Message || err.message || err.toString() || "Unknown error";
+          saveErrors.push({ code: formattedItem.code, error: errorMsg });
         }
       }
 
       // Reconstruct updatedCatalog in original UI order
       let updatedCatalog = catalog;
-      let updatedSelectedTest = selectedTest;
+      let updatedSelectedTest = targetItem;
 
       if (savedItem) {
-        updatedCatalog = catalog.map(item => item.id === selectedTest.id ? savedItem : item);
+        updatedCatalog = catalog.map(item => item.id === targetItem.id ? savedItem : item);
         updatedSelectedTest = savedItem;
       }
 
@@ -2868,6 +2947,7 @@ function TestInventoryTab({ selectedTest }) {
       if (saveErrors.length > 0) {
         const errList = saveErrors.map(e => `- ${e.code}: ${e.error}`).join("\n");
         alert(`Failed to save catalog changes:\n\n${errList}`);
+        return;
       } else {
         setIsSavedSuccessfully(true);
         setTimeout(() => setIsSavedSuccessfully(false), 2500);
@@ -3788,11 +3868,18 @@ function TestInventoryTab({ selectedTest }) {
                       onChange={(e) => {
                         const val = e.target.value;
                         setMetaDept(val);
-                        const dObj = dbDeptsList.find(d => d.name === val);
-                        const isRad = dObj ? dObj.macroDepartment === "Radiology" : (val === "Radiology" || val === "RAD");
-                        if (isRad) {
-                          const firstMod = modalitiesList.find(m => m.departmentId === dObj?.departmentId);
-                          setMetaModalityId(firstMod ? firstMod.modalityId : "");
+                        if (isRadiologyDept(val)) {
+                          const availableMods = getDepartmentModalities(val);
+                          if (!metaModalityId || !availableMods.some(m => m.modalityId === metaModalityId)) {
+                            const valLower = val.toLowerCase();
+                            let matched = null;
+                            if (valLower.includes("mri")) matched = availableMods.find(m => m.code?.toUpperCase() === "MRI");
+                            else if (valLower.includes("ct")) matched = availableMods.find(m => m.code?.toUpperCase() === "CT");
+                            else if (valLower.includes("ultra") || valLower.includes("usg") || valLower.includes("sound")) matched = availableMods.find(m => m.code?.toUpperCase() === "US");
+                            else if (valLower.includes("x-ray") || valLower.includes("xray")) matched = availableMods.find(m => m.code?.toUpperCase() === "XRAY");
+                            
+                            setMetaModalityId(matched ? matched.modalityId : (availableMods[0]?.modalityId || ""));
+                          }
                         } else {
                           setMetaModalityId("");
                         }
@@ -3804,39 +3891,41 @@ function TestInventoryTab({ selectedTest }) {
                     </select>
                   </div>
                   {(() => {
-                    const currentDeptObj = dbDeptsList.find(d => d.name === metaDept);
-                    const isRad = currentDeptObj ? currentDeptObj.macroDepartment === "Radiology" : (metaDept === "Radiology" || metaDept === "RAD");
+                    const isRad = isRadiologyDept(metaDept);
                     if (isRad) {
+                      const availableMods = getDepartmentModalities(metaDept);
+                      const isModalityMissing = !metaModalityId;
                       return (
                         <div>
                           <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1 flex items-center justify-between">
-                            <span>Imaging Modality</span>
+                            <span className="flex items-center gap-1">
+                              Imaging Modality <span className="text-rose-500">*</span>
+                            </span>
                             <button
                               type="button"
-                              onClick={() => {
-                                if (!currentDeptObj) {
-                                  alert("Please save or select a database department first to add a modality.");
-                                  return;
-                                }
-                                setShowCreateModalityModal(true);
-                              }}
+                              onClick={() => setShowCreateModalityModal(true)}
                               className="text-xs font-medium text-synos-primary hover:text-synos-primary/80 transition-colors flex items-center gap-0.5"
                             >
                               + Add New
                             </button>
                           </label>
                           <select
-                            className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-2.5 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-synos-primary"
+                            className={`bg-zinc-50 dark:bg-zinc-950 border ${
+                              isModalityMissing ? "border-amber-500 focus:ring-amber-500" : "border-zinc-200 dark:border-zinc-800 focus:ring-synos-primary"
+                            } rounded-xl px-2.5 py-2 text-sm w-full text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1`}
                             value={metaModalityId}
                             onChange={(e) => setMetaModalityId(e.target.value)}
                           >
                             <option value="">-- Select Modality --</option>
-                            {modalitiesList
-                              .filter(m => !currentDeptObj || m.departmentId === currentDeptObj.departmentId)
-                              .map(m => (
-                                <option key={m.modalityId} value={m.modalityId}>{m.name} ({m.code})</option>
-                              ))}
+                            {availableMods.map(m => (
+                              <option key={m.modalityId} value={m.modalityId}>{m.name} ({m.code})</option>
+                            ))}
                           </select>
+                          {isModalityMissing && (
+                            <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-1">
+                              * Modality is required for Radiology studies.
+                            </p>
+                          )}
                         </div>
                       );
                     } else {
@@ -3919,8 +4008,7 @@ function TestInventoryTab({ selectedTest }) {
                   <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium uppercase tracking-wider mt-1.5">
                     Department: {selectedTest.department} &bull; Base Price: ₹{selectedTest.basePrice} 
                     {(() => {
-                      const displayDeptObj = dbDeptsList.find(d => d.name === selectedTest.department);
-                      const displayIsRadiology = displayDeptObj ? displayDeptObj.macroDepartment === "Radiology" : (selectedTest.department === "Radiology" || selectedTest.department === "RAD");
+                      const displayIsRadiology = isRadiologyDept(selectedTest.department);
                       if (displayIsRadiology) {
                         const mObj = modalitiesList.find(m => m.modalityId === selectedTest.modalityId);
                         return <> &bull; Modality: {mObj ? `${mObj.name} (${mObj.code})` : (selectedTest.category || "X-Ray")}</>;

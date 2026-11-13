@@ -10,7 +10,7 @@ namespace SynOS.Api.Controllers.Admin
 {
     [ApiController]
     [Route("api/v1/admin/tests/{testId}/parameters")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Administrator,SystemAdmin")]
     public class ParametersController : ControllerBase
     {
         private readonly ITestMasterService _testMasterService;
