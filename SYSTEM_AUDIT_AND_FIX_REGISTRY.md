@@ -3303,11 +3303,61 @@ In `Referral Partners` (`/finance/referrals/*`), the horizontal navigation tab s
      - Content area: `flex-1 overflow-y-auto custom-scrollbar px-5 sm:px-6 pb-16 space-y-3 sm:space-y-3.5` (isolated vertical scrolling container)
 2. **Container-Isolated Horizontal Tab Centering:**
    - Replaced `activeTabEl.scrollIntoView` with isolated `container.scrollTo({ left, behavior: 'smooth' })`, ensuring parent vertical coordinates remain unchanged.
-3. **Preventative Hardening Across Sibling Terminals:**
-   - Added `shrink-0` to tab bars in `ExpenseScreens.jsx` and `WorkforceScreens.jsx` to prevent similar layout degradation under heavy data loads.
+
+
+---
+
+## 48. Reception Live Stream Activity Feed HTTP 400 Context Mismatch Fix — [RESOLVED]
+
+### Incident Summary & Observed Error
+* **Screen:** Reception Dashboard (`/reception`)
+* **Trigger:** Every 5 seconds, the `Live Stream` activity feed polls `/api/v1/branch/activity` to fetch the real-time operational log.
+* **Observed Error in DevTools Console:**
+  ```text
+  GET https://synos.tbzlabs.in/api/v1/branch/activity?branchId=a0000000-0000-0000-0000-000000000001
+  Failed to load resource: the server responded with a status of 400 ()
+  DEBUG: Activity Stream Failed Response: - 400 - "Requested BranchId does not match authenticated user context."
+  ```
+* **Impact:** The Live Stream widget was frozen and could not display live patient visits or amendments, while spamming 400 errors to the browser console.
+
+---
+
+### Root Cause Analysis
+
+1. **Stale Multi-Branch Storage Leak:**
+   - In previous administrative testing sessions, `localStorage.getItem('synos_oversight_branch_id')` had been populated with `a0000000-0000-0000-0000-000000000001`.
+   - When a branch-locked user (such as Receptionist `Uzma`) logged in, their JWT token assigned them strictly to `Main Lab` (`e9bca442-3d4b-4ddf-90f1-65ef1efbe2a1`).
+   - However, `login()` in `AuthContext.jsx` failed to overwrite or purge the stale `synos_oversight_branch_id` from localStorage.
+
+2. **Naive Client-Side Query Parameter Injection:**
+   - In `reception.js` and `client.js`, the `withBranchId(url)` helper blindly read `localStorage.getItem('synos_oversight_branch_id')` and attached `?branchId=a0000000...` to every outgoing API call, even for operational non-admin users who are strictly bound to their token's branch.
+
+3. **Rigid Backend Rejection on Stale Client Cache:**
+   - In `BranchActivityController.cs:58-61`, the endpoint strictly compared the query parameter `branchId` against `_userContext.CurrentBranchId`. When a stale client parameter didn't match the token branch, it threw `BadRequest("Requested BranchId does not match authenticated user context.")`, breaking UI components that polled on an interval.
+
+---
+
+### Resolution Implemented
+
+1. **Graceful Backend Context Enforcement (`BranchActivityController.cs`):**
+   - Refactored `GetBranchActivity`:
+     - If an administrative user (`Admin`, `SystemAdmin`, `Administrator`) queries a specific branch, it evaluates `contextBranchId = branchId`.
+     - For branch-locked operational roles (e.g. `Receptionist`), if the client request carries a stale or mismatched `branchId` from old localStorage, the server safely enforces the user's authentic token branch context (`contextBranchId`) rather than returning 400, eliminating poll crashes while maintaining strict tenant isolation.
+   - Updated `UserContext.cs` to recognize `Administrator` alongside `Admin` and `SystemAdmin` for multi-branch queries.
+
+2. **Role-Aware API Branch Attachment (`reception.js` & `client.js`):**
+   - Decoded the JWT in `withBranchId`:
+     - Operational roles (`Receptionist`, `LabTech`, `Phlebotomist`, etc.) now strictly use their token's assigned `branch_id`, ensuring no stale oversight branch ID can ever leak into requests.
+     - Oversight multi-branch admins continue to use the selected oversight branch.
+
+3. **Enterprise Storage Synchronization (`AuthContext.jsx`):**
+   - In `login()`, automatically synchronizes `synos_oversight_branch_id` to `userObj.branchId` for non-admin users.
+   - On initial mount, automatically heals and syncs any mismatched `synos_oversight_branch_id` to the token's legitimate branch ID.
+   - In `logout()`, thoroughly clears `synos_jwt`, `synos_oversight_branch_id`, `activeBranchId`, and sessionStorage filter keys.
+
 4. **Verification & Build:**
-   - Successfully compiled frontend (`npm run build`) producing clean production assets (`index-2lXGGwLf.js` and `index-D3zA6EAO.css`).
-   - Verified solution builds cleanly with 0 errors across the entire `.NET` backend solution (`dotnet build SynOS.sln`).
+   - Compiled .NET backend solution cleanly with **0 errors** (`dotnet build SynOS.sln`).
+   - Compiled frontend production assets cleanly (`npm run build`).
 
 
 

@@ -27,11 +27,22 @@ const withBranchId = (url) => {
     const token = localStorage.getItem('synos_jwt');
     if (!token) return url;
     try {
-        const branchId = localStorage.getItem('synos_oversight_branch_id');
+        if (url.toLowerCase().includes('branchid=')) return url;
+
+        let branchId = null;
+        const decoded = jwtDecode(token);
+        const userRole = decoded.role || decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+        const isMultiBranchAdmin = userRole === 'Admin' || userRole === 'SystemAdmin' || userRole === 'Administrator';
+
+        if (!isMultiBranchAdmin && (decoded.branch_id || decoded.branchId)) {
+            // Non-admin roles (e.g. Receptionist) are strictly bound to their assigned token branch
+            branchId = decoded.branch_id || decoded.branchId;
+        } else {
+            // Admin roles can utilize oversight branch selection
+            branchId = localStorage.getItem('synos_oversight_branch_id') || decoded.branch_id || decoded.branchId;
+        }
+
         if (branchId && branchId !== 'undefined' && branchId !== 'null') {
-            // Prevent duplication: Check if branchId or BranchId is already in the URL
-            if (url.toLowerCase().includes('branchid=')) return url;
-            
             const separator = url.includes('?') ? '&' : '?';
             return `${url}${separator}branchId=${branchId}`;
         }

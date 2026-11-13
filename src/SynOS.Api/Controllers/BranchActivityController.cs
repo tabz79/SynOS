@@ -57,7 +57,18 @@ namespace SynOS.Api.Controllers
             // 2. Validate Query Param
             if (!string.IsNullOrWhiteSpace(branchId) && !string.Equals(branchId, contextBranchId, StringComparison.OrdinalIgnoreCase))
             {
-                return BadRequest("Requested BranchId does not match authenticated user context.");
+                var role = _userContext.CurrentRole;
+                var isAdmin = role == "Admin" || role == "SystemAdmin" || role == "Administrator";
+                if (isAdmin)
+                {
+                    contextBranchId = branchId;
+                }
+                else
+                {
+                    // For operational roles (e.g. Receptionist), if client request carries a stale or
+                    // mismatching branchId from cached local storage, gracefully enforce their authentic
+                    // assigned branch context rather than failing with 400.
+                }
             }
 
             var targetBranchId = contextBranchId;

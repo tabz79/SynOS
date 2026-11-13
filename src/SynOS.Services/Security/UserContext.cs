@@ -46,7 +46,7 @@ namespace SynOS.Services.Security
                 var queryBranchId = _httpContextAccessor.HttpContext?.Request.Query["branchId"].ToString();
                 if (!string.IsNullOrEmpty(queryBranchId) && Guid.TryParse(queryBranchId, out var qbId) && qbId != Guid.Empty)
                 {
-                    if (CurrentRole == "Admin" || CurrentRole == "SystemAdmin") return qbId;
+                    if (CurrentRole == "Admin" || CurrentRole == "SystemAdmin" || CurrentRole == "Administrator") return qbId;
                 }
 
                 // Default: Strictly bound to JWT branch_id claim

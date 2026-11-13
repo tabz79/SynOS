@@ -57,6 +57,20 @@ export function AuthProvider({ children }) {
                         workspaces: decoded.workspaces ? decoded.workspaces.split(',') : []
                     });
 
+                    const userRole = decoded.role || decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
+                    const tokenBranchId = decoded.branch_id || decoded.branchId;
+                    const isMultiBranchAdmin = userRole === 'Admin' || userRole === 'SystemAdmin' || userRole === 'Administrator';
+
+                    // Enterprise Self-Healing: For branch-locked operational roles (e.g. Receptionist),
+                    // ensure active oversight branch storage strictly matches their assigned branch.
+                    if (!isMultiBranchAdmin && tokenBranchId) {
+                        const currentOversight = localStorage.getItem('synos_oversight_branch_id');
+                        if (currentOversight !== tokenBranchId) {
+                            localStorage.setItem('synos_oversight_branch_id', tokenBranchId);
+                            setActiveOversightBranchId(tokenBranchId);
+                        }
+                    }
+
                     // Set auto-logout timer
                     const timeUntilExpiry = (decoded.exp - currentTime) * 1000;
                     timer = setTimeout(() => {
@@ -120,6 +134,13 @@ export function AuthProvider({ children }) {
             };
             setUser(userObj);
             setToken(tokenValue);
+
+            const isMultiBranchAdmin = userObj.role === 'Admin' || userObj.role === 'SystemAdmin' || userObj.role === 'Administrator';
+            if (!isMultiBranchAdmin && userObj.branchId) {
+                localStorage.setItem('synos_oversight_branch_id', userObj.branchId);
+                setActiveOversightBranchId(userObj.branchId);
+            }
+
             return data;
         } catch (error) {
             console.error("Token Decode Failed:", error);
@@ -130,6 +151,10 @@ export function AuthProvider({ children }) {
     const logout = () => {
         localStorage.removeItem('synos_jwt');
         localStorage.removeItem('synos_oversight_branch_id');
+        localStorage.removeItem('activeBranchId');
+        sessionStorage.removeItem('synos_filter_preset');
+        sessionStorage.removeItem('synos_filter_custom_dates');
+        sessionStorage.removeItem('synos_filter_is_consolidated');
         setToken(null);
         setUser(null);
         setActiveOversightBranchId(null);
