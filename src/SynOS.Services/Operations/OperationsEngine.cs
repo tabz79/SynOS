@@ -47,6 +47,10 @@ namespace SynOS.Services.Operations
             var rangeStart = startDate.HasValue ? startDate.Value.Date : today;
             var rangeEnd = endDate.HasValue ? endDate.Value.Date : (startDate.HasValue ? startDate.Value.Date : today);
             
+            var cleanStart = DateTime.SpecifyKind(rangeStart.Date, DateTimeKind.Unspecified);
+            var cleanEnd = DateTime.SpecifyKind(rangeEnd.Date, DateTimeKind.Unspecified);
+            var tz = _labTimeProvider.GetLabTimeZone();
+
             int pendingReports = 0;
             double avgTime = 0;
             int pendingCollections = 0;
@@ -81,8 +85,8 @@ namespace SynOS.Services.Operations
             }
 
             // 1. Live Pending Reports Calculation (Scoped to active cohort, excluding drafts and cancelled)
-            var todayStart = new DateTimeOffset(rangeStart, TimeSpan.Zero);
-            var todayEnd = new DateTimeOffset(rangeEnd.AddDays(1), TimeSpan.Zero);
+            var todayStart = new DateTimeOffset(cleanStart, tz.GetUtcOffset(cleanStart));
+            var todayEnd = new DateTimeOffset(cleanEnd.AddDays(1), tz.GetUtcOffset(cleanEnd.AddDays(1)));
 
             pendingReports = await _context.Reports
                 .Where(r => r.Visit.BranchId == branchId 

@@ -90,11 +90,16 @@ export function RealityTile({
                                 {displayLabel}
                             </span>
                         </div>
+                        {scopeBadge ? (
+                            <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border border-zinc-500/20 shrink-0 truncate">
+                                {scopeBadge}
+                            </span>
+                        ) : null}
                     </div>
 
-                    {/* BOTTOM: Horizontal Split (Pool on Left, User Pod on Right) */}
+                    {/* BOTTOM: Horizontal Split (Primary Value on Left, Secondary Pod on Right) */}
                     <div className="flex items-center justify-between w-full mt-auto pt-1 gap-1 sm:gap-2">
-                        {/* Left: Pool Value + Label */}
+                        {/* Left: Primary Value + Label */}
                         <div className="flex flex-col min-w-0">
                             <span className={cn(
                                 "font-extrabold font-sans tracking-tight block tabular-nums leading-tight",
@@ -111,15 +116,22 @@ export function RealityTile({
                         {/* Divider */}
                         <div className="h-8 w-px bg-slate-200 dark:bg-zinc-700/60 shrink-0 self-center mx-1 sm:mx-1.5" />
 
-                        {/* Right: Recessed Pod (User Icon + Amount Only) */}
-                        <div className={cn(
-                            "rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 flex items-center justify-center shrink-0 border transition-all group-hover:scale-[1.02]",
-                            isDark 
-                                ? "bg-zinc-800/90 border-zinc-700/80 shadow-xs" 
-                                : "bg-slate-100/90 border-slate-200/80 shadow-xs"
-                        )}>
+                        {/* Right: Recessed Pod (Context Icon + Secondary Amount) */}
+                        <div 
+                            title={individualLabel === "Pool" ? "Pool Total (Branch-wide)" : "Desk Total (You)"}
+                            className={cn(
+                                "rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 flex items-center justify-center shrink-0 border transition-all group-hover:scale-[1.02]",
+                                isDark 
+                                    ? "bg-zinc-800/90 border-zinc-700/80 shadow-xs" 
+                                    : "bg-slate-100/90 border-slate-200/80 shadow-xs"
+                            )}
+                        >
                             <div className="flex items-center gap-1.5 leading-none">
-                                <User className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                                {individualLabel === "Pool" ? (
+                                    <Users className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                                ) : (
+                                    <User className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                                )}
                                 <span className={cn(
                                     "font-bold font-sans tracking-tight tabular-nums",
                                     ui.text,

@@ -3451,6 +3451,45 @@ In `Referral Partners` (`/finance/referrals/*`), the horizontal navigation tab s
    - Compiled .NET backend solution cleanly with **0 errors** (`dotnet build SynOS.sln`).
    - Compiled frontend production assets cleanly (`npm run build`).
 
+---
+
+## 51. Reception Filter "This Month" Server Refresh Error & Desk Summary Metric User Scoping — [RESOLVED]
+
+### Incident Summary & Root Causes
+* **Reference Video:** `/Users/tabrez/Downloads/export-1794554052259.mp4`
+* **Defect 1: "This Month" Server Updating Crash (`isServerUpdating` loop):**
+  - When selecting `This Month` from the Reception filter bar, the UI immediately trapped into "Server is updating, hang on...".
+  - *Root Cause:* In `DashboardService.cs` and `ActionQueueController.cs`, `var today = DateTime.Today;` (Machine local time, `Kind = DateTimeKind.Local`) was used to compute month bounds (`endDate = today`). In .NET, calling `new DateTimeOffset(rangeEnd.AddDays(1), offset)` on a `DateTime` whose `Kind` is `DateTimeKind.Local` throws `System.ArgumentException: The UTC offset of the local date-time value does not match the offset argument.` whenever `offset` does not match the local system timezone offset. In cloud Linux environments (system local UTC) vs lab timezone (IST `+05:30`), this caused an immediate HTTP 500 server crash, caught by `refreshDashboard()` which triggered `isServerUpdating(true)`.
+* **Defect 2: Reception Reality Summary Leakage (Pool vs Desk Numbers):**
+  - When querying single dates (e.g. `10 Nov`), the Action Queue accurately filtered by the logged-in receptionist, but the Reality Summary cards displayed branch pool numbers (e.g. Walk-Ins showed `21` with `POOL` badge instead of the receptionist's cohort, and Cash Drawer showed `₹8,180` branch total as the primary figure instead of the receptionist's desk cash of `₹2,300`).
+  - *Root Cause:* In `InvoiceService.cs`, `confirmedVisitsToday` lacked user-scoping for `Receptionist` role, counting all visits across all staff in the branch. Furthermore, `ReceptionScreen.jsx` hardcoded `isPool: isReceptionist ? true : undefined` on Walk-Ins and mapped `isDual` primary value to the branch pool rather than individual desk metrics.
+
+---
+
+### Resolution Implemented
+
+1. **Kernel Timezone Normalization & Safe `DateTimeOffset` Construction:**
+   - Injected `ILabTimeProvider` into `DashboardService.cs` and `ActionQueueController.cs`, replacing `DateTime.Today` with `_labTimeProvider.GetLabToday()`.
+   - Explicitly sanitized all `startDate` and `endDate` boundaries with `DateTime.SpecifyKind(d.Date, DateTimeKind.Unspecified)` across `DashboardService.cs`, `ActionQueueController.cs`, `InvoiceService.cs`, and `OperationsEngine.cs`.
+   - Guaranteed that `new DateTimeOffset(cleanDate, tz.GetUtcOffset(cleanDate))` runs without runtime argument exceptions across all platforms (local and cloud Linux).
+
+2. **Strict User/Desk Scoping for Receptionist Financials & Intake (`InvoiceService.cs`):**
+   - Scoped `confirmedVisitsToday` to the logged-in receptionist (`v.AssignedReceptionistId == currentUserId || v.CreatedByUserId == currentUserId`).
+   - Scoped returned `DailyExpensesCashTotal` and `CashDrawerBalance` in `RevenueStatsDto` to desk totals (`userDailyCashExpenses` and `userCashDrawerBalance`) when authenticated under `Receptionist` role or when explicit `userId` is supplied.
+
+3. **Reception Desk Reality Summary Alignment (`ReceptionScreen.jsx` & `RealitySummary.jsx`):**
+   - Replaced `isPool: isReceptionist ? true : undefined` on the Walk-Ins card with `scopeBadge: isReceptionist ? "Desk" : undefined`, ensuring clean 100% `DESK` badge consistency across all cards.
+   - For `Cash in the Drawer` and `Recorded Expenses`:
+     - When `isReceptionist` is active, the primary card value displays the receptionist's own desk drawer/expenses, with label `Desk Drawer` / `Desk Expenses` and `DESK` badge.
+     - The secondary recessed pod displays the branch pool total with the `Users` icon.
+     - Updated `RealityTile` in `RealitySummary.jsx` to render `scopeBadge` in dual-mode cards and intelligently switch between `User` and `Users` icons based on `individualLabel`.
+
+4. **Verification & Build:**
+   - Compiled .NET backend solution cleanly with **0 errors** (`dotnet build SynOS.sln`).
+   - Compiled frontend production assets cleanly (`npm run build`).
+   - Embedded frontend build into `SynOS.Api/wwwroot` and verified with full solution build.
+
+
 
 
 

@@ -59,9 +59,12 @@ namespace SynOS.Services
             var rangeStart = startDate.HasValue ? startDate.Value.Date : today;
             var rangeEnd = endDate.HasValue ? endDate.Value.Date : (startDate.HasValue ? startDate.Value.Date : today);
 
+            var cleanStart = DateTime.SpecifyKind(rangeStart.Date, DateTimeKind.Unspecified);
+            var cleanEnd = DateTime.SpecifyKind(rangeEnd.Date, DateTimeKind.Unspecified);
+
             var tz = _labTimeProvider.GetLabTimeZone();
-            var startOfRange = new DateTimeOffset(rangeStart, tz.GetUtcOffset(rangeStart));
-            var endOfRange = new DateTimeOffset(rangeEnd.AddDays(1), tz.GetUtcOffset(rangeEnd.AddDays(1)));
+            var startOfRange = new DateTimeOffset(cleanStart, tz.GetUtcOffset(cleanStart));
+            var endOfRange = new DateTimeOffset(cleanEnd.AddDays(1), tz.GetUtcOffset(cleanEnd.AddDays(1)));
             var startUtc = startOfRange.UtcDateTime;
             var endUtc = endOfRange.UtcDateTime;
             
@@ -109,6 +112,16 @@ namespace SynOS.Services
                          && v.Status != VisitStatus.Cancelled
                          && v.Status != VisitStatus.Draft
                          && (v.Token == null || !v.Token.StartsWith("D-")));
+
+            if (userId.HasValue)
+            {
+                confirmedVisitsToday = confirmedVisitsToday.Where(v => v.AssignedReceptionistId == userId.Value || v.CreatedByUserId == userId.Value);
+            }
+            else if (_userContext.CurrentRole == "Receptionist")
+            {
+                var currentUserId = _userContext.CurrentUserId;
+                confirmedVisitsToday = confirmedVisitsToday.Where(v => v.AssignedReceptionistId == currentUserId || v.CreatedByUserId == currentUserId);
+            }
 
             var totalIntakeWalkIns = await confirmedVisitsToday.CountAsync();
 
@@ -301,10 +314,10 @@ namespace SynOS.Services
                 PaymentsOnlineCount = finalOnlineCount,
                 PrepaidBillsCount = finalPrepaidCount,
                 PrepaidBillsTotal = finalPrepaidCount > 0 ? prepaidTotal : (stats?.PrepaidTotal ?? 0m),
-                DailyExpensesCashTotal = dailyCashExpenses,
+                DailyExpensesCashTotal = (_userContext.CurrentRole == "Receptionist" || userId.HasValue) ? userDailyCashExpenses : dailyCashExpenses,
                 DailyExpensesCashPool = dailyCashExpenses,
                 DailyExpensesCashIndividual = userDailyCashExpenses,
-                CashDrawerBalance = cashDrawerBalance,
+                CashDrawerBalance = (_userContext.CurrentRole == "Receptionist" || userId.HasValue) ? userCashDrawerBalance : cashDrawerBalance,
                 CashDrawerBalancePool = cashDrawerBalance,
                 CashDrawerBalanceIndividual = userCashDrawerBalance,
                 PaymentsCashPool = branchCashTotal,

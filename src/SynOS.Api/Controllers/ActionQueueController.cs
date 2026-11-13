@@ -16,11 +16,13 @@ namespace SynOS.Api.Controllers
     {
         private readonly IOperationsEngine _operationsEngine;
         private readonly IUserContext _userContext;
+        private readonly SynOS.Services.Time.ILabTimeProvider _labTimeProvider;
 
-        public ActionQueueController(IOperationsEngine operationsEngine, IUserContext userContext)
+        public ActionQueueController(IOperationsEngine operationsEngine, IUserContext userContext, SynOS.Services.Time.ILabTimeProvider labTimeProvider)
         {
             _operationsEngine = operationsEngine ?? throw new ArgumentNullException(nameof(operationsEngine));
             _userContext = userContext ?? throw new ArgumentNullException(nameof(userContext));
+            _labTimeProvider = labTimeProvider ?? throw new ArgumentNullException(nameof(labTimeProvider));
         }
 
         [HttpGet]
@@ -36,7 +38,7 @@ namespace SynOS.Api.Controllers
                 return BadRequest("User context does not have a valid Branch ID.");
             }
 
-            var today = DateTime.Today; 
+            var today = _labTimeProvider.GetLabToday(); 
 
             if (!string.IsNullOrEmpty(preset))
             {
@@ -67,6 +69,15 @@ namespace SynOS.Api.Controllers
                     startDate = (startDate ?? today).Date;
                     endDate = startDate;
                 }
+            }
+
+            if (startDate.HasValue)
+            {
+                startDate = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Unspecified);
+            }
+            if (endDate.HasValue)
+            {
+                endDate = DateTime.SpecifyKind(endDate.Value.Date, DateTimeKind.Unspecified);
             }
 
             var queue = await _operationsEngine.GetActionQueueAsync(branchId, today, includeHistory, startDate, endDate);

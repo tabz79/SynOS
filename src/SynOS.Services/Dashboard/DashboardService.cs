@@ -2,7 +2,8 @@ using System;
 using System.Threading.Tasks;
 using SynOS.Models.DTOs.Dashboard;
 using SynOS.Services.Security;
-using SynOS.Services.Operations; 
+using SynOS.Services.Operations;
+using SynOS.Services.Time;
 
 namespace SynOS.Services.Dashboard
 {
@@ -11,12 +12,14 @@ namespace SynOS.Services.Dashboard
         private readonly IOperationsEngine _operationsEngine; 
         private readonly IInvoiceService _invoiceService; // ADDED: Revenue Read Port
         private readonly IUserContext _userContext;
+        private readonly ILabTimeProvider _labTimeProvider;
 
-        public DashboardService(IOperationsEngine operationsEngine, IInvoiceService invoiceService, IUserContext userContext)
+        public DashboardService(IOperationsEngine operationsEngine, IInvoiceService invoiceService, IUserContext userContext, ILabTimeProvider labTimeProvider)
         {
             _operationsEngine = operationsEngine;
             _invoiceService = invoiceService;
             _userContext = userContext;
+            _labTimeProvider = labTimeProvider;
         }
 
         public async Task<TodaysSummaryDto> GetTodaysSummaryAsync(Guid? branchId = null, Guid? userId = null, DateTime? startDate = null, DateTime? endDate = null, string? preset = null)
@@ -29,7 +32,7 @@ namespace SynOS.Services.Dashboard
 
             var effectiveUserId = userId ?? (_userContext.CurrentRole == "Receptionist" ? _userContext.CurrentUserId : (Guid?)null);
 
-            var today = DateTime.Today;
+            var today = _labTimeProvider.GetLabToday();
             if (!string.IsNullOrEmpty(preset))
             {
                 var normPreset = preset.Trim().ToLowerInvariant();
@@ -59,6 +62,15 @@ namespace SynOS.Services.Dashboard
                     startDate = (startDate ?? today).Date;
                     endDate = startDate;
                 }
+            }
+
+            if (startDate.HasValue)
+            {
+                startDate = DateTime.SpecifyKind(startDate.Value.Date, DateTimeKind.Unspecified);
+            }
+            if (endDate.HasValue)
+            {
+                endDate = DateTime.SpecifyKind(endDate.Value.Date, DateTimeKind.Unspecified);
             }
 
             // Orchestration: Fetch Truth from respective Engines

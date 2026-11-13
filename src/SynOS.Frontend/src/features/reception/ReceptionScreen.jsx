@@ -454,7 +454,7 @@ export function ReceptionScreen() {
             qualifier: "Paid/Credit", 
             icon: Users, 
             color: "zinc",
-            isPool: isReceptionist ? true : undefined 
+            scopeBadge: isReceptionist ? "Desk" : undefined 
         },
         { 
             value: `₹${(summary.paymentsCashTotal || 0).toLocaleString()}`, 
@@ -494,33 +494,45 @@ export function ReceptionScreen() {
         },
         { 
             isDual: true,
-            value: `₹${(summary.dailyExpensesCashPool !== undefined && summary.dailyExpensesCashPool !== null ? summary.dailyExpensesCashPool : (summary.dailyExpensesCashTotal || 0)).toLocaleString()}`, 
-            individualValue: `₹${(summary.dailyExpensesCashIndividual || 0).toLocaleString()}`,
-            poolLabel: "Pool Total",
+            value: isReceptionist
+                ? `₹${(summary.dailyExpensesCashIndividual !== undefined && summary.dailyExpensesCashIndividual !== null ? summary.dailyExpensesCashIndividual : (summary.dailyExpensesCashTotal || 0)).toLocaleString()}`
+                : `₹${(summary.dailyExpensesCashPool !== undefined && summary.dailyExpensesCashPool !== null ? summary.dailyExpensesCashPool : (summary.dailyExpensesCashTotal || 0)).toLocaleString()}`, 
+            individualValue: isReceptionist
+                ? `₹${(summary.dailyExpensesCashPool !== undefined && summary.dailyExpensesCashPool !== null ? summary.dailyExpensesCashPool : (summary.dailyExpensesCashTotal || 0)).toLocaleString()}`
+                : `₹${(summary.dailyExpensesCashIndividual || 0).toLocaleString()}`,
+            poolLabel: isReceptionist ? "Desk Expenses" : "Pool Total",
+            individualLabel: isReceptionist ? "Pool" : "You",
             label: "Recorded Expenses", 
             shortLabel: "Daily Expenses", 
             icon: Receipt, 
-            color: "red"
+            color: "red",
+            scopeBadge: isReceptionist ? "Desk" : undefined
         },
         { 
             isDual: true,
-            value: `₹${(summary.cashDrawerBalancePool !== undefined && summary.cashDrawerBalancePool !== null ? summary.cashDrawerBalancePool : (summary.cashDrawerBalance || 0)).toLocaleString()}`, 
-            individualValue: `₹${(summary.cashDrawerBalanceIndividual || 0).toLocaleString()}`,
-            poolLabel: "Pool Total",
+            value: isReceptionist
+                ? `₹${(summary.cashDrawerBalanceIndividual !== undefined && summary.cashDrawerBalanceIndividual !== null ? summary.cashDrawerBalanceIndividual : (summary.cashDrawerBalance || 0)).toLocaleString()}`
+                : `₹${(summary.cashDrawerBalancePool !== undefined && summary.cashDrawerBalancePool !== null ? summary.cashDrawerBalancePool : (summary.cashDrawerBalance || 0)).toLocaleString()}`, 
+            individualValue: isReceptionist
+                ? `₹${(summary.cashDrawerBalancePool !== undefined && summary.cashDrawerBalancePool !== null ? summary.cashDrawerBalancePool : (summary.cashDrawerBalance || 0)).toLocaleString()}`
+                : `₹${(summary.cashDrawerBalanceIndividual || 0).toLocaleString()}`,
+            poolLabel: isReceptionist ? "Desk Drawer" : "Pool Total",
+            individualLabel: isReceptionist ? "Pool" : "You",
             label: "Cash in the Drawer", 
             shortLabel: "Cash Drawer", 
             icon: Wallet, 
-            color: "emerald"
+            color: "emerald",
+            scopeBadge: isReceptionist ? "Desk" : undefined
         },
     ] : [
-        { value: "—", label: "Walk-Ins", qualifier: "(Paid/Credit)", icon: Users, color: "default", isPool: isReceptionist ? true : undefined },
+        { value: "—", label: "Walk-Ins", qualifier: "(Paid/Credit)", icon: Users, color: "default", scopeBadge: isReceptionist ? "Desk" : undefined },
         { value: "—", label: "Cash Collected", icon: ClipboardList, color: "default", scopeBadge: isReceptionist ? "Desk" : undefined },
         { value: "—", label: "Online Payments", icon: ClipboardList, color: "default", scopeBadge: isReceptionist ? "Desk" : undefined },
         { value: "—", label: "Online Total", icon: ClipboardList, color: "default", scopeBadge: isReceptionist ? "Desk" : undefined },
-        { value: "—", label: "Credit Bills", icon: ClipboardList, color: "default", scopeBadge: isReceptionist ? "Desk" : undefined },
-        { value: "—", label: "Credit Value", icon: ClipboardList, color: "default", scopeBadge: isReceptionist ? "Desk" : undefined },
-        { isDual: true, value: "—", individualValue: "—", poolLabel: "Pool Total", label: "Recorded Expenses", shortLabel: "Daily Expenses", icon: Receipt, color: "default" },
-        { isDual: true, value: "—", individualValue: "—", poolLabel: "Pool Total", label: "Cash in the Drawer", shortLabel: "Cash Drawer", icon: Wallet, color: "default" },
+        { value: "—", label: "Prepaid Bills Issued", icon: ClipboardList, color: "default", scopeBadge: isReceptionist ? "Desk" : undefined },
+        { value: "—", label: "Prepaid Total", icon: ClipboardList, color: "default", scopeBadge: isReceptionist ? "Desk" : undefined },
+        { isDual: true, value: "—", individualValue: "—", poolLabel: isReceptionist ? "Desk Expenses" : "Pool Total", individualLabel: isReceptionist ? "Pool" : "You", label: "Recorded Expenses", shortLabel: "Daily Expenses", icon: Receipt, color: "default", scopeBadge: isReceptionist ? "Desk" : undefined },
+        { isDual: true, value: "—", individualValue: "—", poolLabel: isReceptionist ? "Desk Drawer" : "Pool Total", individualLabel: isReceptionist ? "Pool" : "You", label: "Cash in the Drawer", shortLabel: "Cash Drawer", icon: Wallet, color: "default", scopeBadge: isReceptionist ? "Desk" : undefined },
     ];
 
     // ACTION QUEUE COLUMNS (Strict Backend Truth)
