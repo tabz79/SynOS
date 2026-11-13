@@ -51,14 +51,22 @@ namespace SynOS.Services
             _labTimeProvider = labTimeProvider ?? throw new ArgumentNullException(nameof(labTimeProvider));
         }
 
-        public async Task<RevenueStatsDto> GetDailyRevenueStatsAsync(Guid branchId, Guid? userId = null)
+        public async Task<RevenueStatsDto> GetDailyRevenueStatsAsync(Guid branchId, Guid? userId = null, DateTime? startDate = null, DateTime? endDate = null)
         {
             if (branchId == Guid.Empty) throw new ArgumentException("BranchId required");
 
             var today = _labTimeProvider.GetLabToday();
+            var rangeStart = startDate.HasValue ? startDate.Value.Date : today;
+            var rangeEnd = endDate.HasValue ? endDate.Value.Date : (startDate.HasValue ? startDate.Value.Date : today);
+
+            var tz = _labTimeProvider.GetLabTimeZone();
+            var startOfRange = new DateTimeOffset(rangeStart, tz.GetUtcOffset(rangeStart));
+            var endOfRange = new DateTimeOffset(rangeEnd.AddDays(1), tz.GetUtcOffset(rangeEnd.AddDays(1)));
+            var startUtc = startOfRange.UtcDateTime;
+            var endUtc = endOfRange.UtcDateTime;
             
             var query = _context.UserOperationalStats
-                .Where(s => s.BranchId == branchId && s.Date == today);
+                .Where(s => s.BranchId == branchId && s.Date >= rangeStart && s.Date <= rangeEnd);
 
             if (userId.HasValue)
             {
@@ -85,11 +93,6 @@ namespace SynOS.Services
                 .FirstOrDefaultAsync();
 
             // Calculate actual confirmed walk-ins from Visits table (all registered patient visits with orders/bills, excluding empty unbilled drafts and cancellations)
-            var startOfToday = new DateTimeOffset(today, _labTimeProvider.GetLabTimeZone().GetUtcOffset(today));
-            var endOfToday = startOfToday.AddDays(1);
-            var startUtc = startOfToday.UtcDateTime;
-            var endUtc = endOfToday.UtcDateTime;
-
             // =========================================================================================
             // 🏛️ ENTERPRISE HEALTHCARE ERP INVARIANT: TOTAL PATIENT INTAKE (WALK-INS)
             // =========================================================================================
@@ -102,7 +105,7 @@ namespace SynOS.Services
             // =========================================================================================
             var confirmedVisitsToday = _context.Visits
                 .Where(v => v.BranchId == branchId 
-                         && (v.TokenDate == today || (v.CreatedAt >= startUtc && v.CreatedAt < endUtc))
+                         && ((v.TokenDate >= rangeStart && v.TokenDate <= rangeEnd) || (v.CreatedAt >= startUtc && v.CreatedAt < endUtc))
                          && v.Status != VisitStatus.Cancelled
                          && v.Status != VisitStatus.Draft
                          && (v.Token == null || !v.Token.StartsWith("D-")));

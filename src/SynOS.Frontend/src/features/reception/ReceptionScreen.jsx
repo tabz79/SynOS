@@ -10,6 +10,7 @@ import { ActionQueue, ActionQueueHeader } from '@/components/layout/ActionQueue'
 import { ActivityStream } from '@/components/layout/ActivityStream'
 import { TokenCell, PatientCell, StatusCell } from '@/components/layout/ActionQueueCells'
 import { IntentPanel } from '@/features/reception/components/IntentPanel'
+import { ReceptionFilterBar } from '@/features/reception/components/ReceptionFilterBar'
 import { ReceptionExpenseDrawer } from '@/features/reception/components/ReceptionExpenseDrawer'
 import { ReceptionB2BReceivablesDrawer } from '@/features/reception/components/ReceptionB2BReceivablesDrawer'
 import { ReceptionOptionsPanel } from '@/features/reception/components/ReceptionOptionsPanel'
@@ -91,6 +92,16 @@ export function ReceptionScreen() {
         }
     }, [summary, syncRealitySummary]);
 
+    // Date Filter State: Today (Default) | This Month | This Quarter | This Year | Custom Date | Custom Range
+    const [activeFilter, setActiveFilter] = useState({
+        preset: 'today',
+        startDate: '',
+        endDate: '',
+        singleDate: ''
+    });
+    const activeFilterRef = useRef(activeFilter);
+    useEffect(() => { activeFilterRef.current = activeFilter; }, [activeFilter]);
+
     // History State (Phase 5)
     // We use a Ref for SignalR callback access, and State for Render.
     const [showHistory, setShowHistory] = useState(false);
@@ -130,32 +141,43 @@ export function ReceptionScreen() {
     // Helper: Normalize Backend DTO using shared API method
     const normalizeQueueData = ReceptionApi.normalizeQueueData;
 
-    const refreshDashboard = async (targetVisitId, action) => {
+    const refreshDashboard = async (targetVisitId, action, customFilter) => {
+        const effFilter = customFilter !== undefined ? customFilter : activeFilterRef.current;
         if (action === 'deleted' && targetVisitId) {
             // INSTANT OPTIMISTIC EVICTION (< 1 ms): Remove deleted visit immediately from UI queue
             setActionQueue(prev => prev.filter(r => r.visitId !== targetVisitId));
         }
 
         try {
+            const isHistoryRequested = showHistoryRef.current || (effFilter && effFilter.preset !== 'today');
             const [summaryData, queueData, b2bGroups] = await Promise.all([
-                ReceptionApi.getDashboardSummary(),
-                ReceptionApi.getActionQueue(showHistoryRef.current),
+                ReceptionApi.getDashboardSummary(effFilter),
+                ReceptionApi.getActionQueue({
+                    includeHistory: isHistoryRequested,
+                    preset: effFilter?.preset,
+                    startDate: effFilter?.startDate,
+                    endDate: effFilter?.endDate
+                }),
                 FinanceApi.getTodayB2BReceivables().catch(() => [])
             ]);
             if (summaryData) {
                 setSummary(summaryData);
-                try {
-                    localStorage.setItem('synos_cached_reality_summary', JSON.stringify(summaryData));
-                } catch (_) {}
+                if (effFilter?.preset === 'today') {
+                    try {
+                        localStorage.setItem('synos_cached_reality_summary', JSON.stringify(summaryData));
+                    } catch (_) {}
+                }
             }
             if (Array.isArray(queueData)) {
                 const norm = normalizeQueueData(queueData);
                 setActionQueue(norm);
-                try {
-                    if (norm.length > 0) {
-                        localStorage.setItem('synos_cached_action_queue', JSON.stringify(norm));
-                    }
-                } catch (_) {}
+                if (effFilter?.preset === 'today') {
+                    try {
+                        if (norm.length > 0) {
+                            localStorage.setItem('synos_cached_action_queue', JSON.stringify(norm));
+                        }
+                    } catch (_) {}
+                }
             }
             if (Array.isArray(b2bGroups)) {
                 setTodayB2BPendingCount(b2bGroups.length);
@@ -169,6 +191,12 @@ export function ReceptionScreen() {
         } finally {
             setIsLoadingQueue(false);
         }
+    };
+
+    const handleFilterChange = (newFilter) => {
+        setActiveFilter(newFilter);
+        setIsLoadingQueue(true);
+        refreshDashboard(null, null, newFilter);
     };
 
     // Wiring: Initial Load + SignalR Subscription + Deletion Event Listener
@@ -259,6 +287,14 @@ export function ReceptionScreen() {
                 setActionQueue(prev => {
                     const exists = prev.some(r => r.visitId === normalized.visitId);
                     
+                    // In historical / custom filter views, preserve the historical list unless updating an existing visit
+                    if (activeFilterRef.current.preset !== 'today') {
+                        if (exists) {
+                            return prev.map(r => r.visitId === normalized.visitId ? normalized : r);
+                        }
+                        return prev;
+                    }
+
                     // Filter: If we are in "Live" mode, we only care about:
                     // 1. Unpaid visits (Backlog)
                     // 2. Today's visits (Paid or Unpaid)
@@ -282,12 +318,14 @@ export function ReceptionScreen() {
 
             SignalRService.onActionQueueUpdated(() => {
                 // SignalR triggers refresh - must respect current filter
-                ReceptionApi.getActionQueue(showHistoryRef.current).then(data => {
-                    if (Array.isArray(data)) {
-                        console.log("SignalR: Action Queue Refreshed");
-                        setActionQueue(normalizeQueueData(data));
-                    }
-                });
+                if (activeFilterRef.current.preset === 'today') {
+                    ReceptionApi.getActionQueue(showHistoryRef.current).then(data => {
+                        if (Array.isArray(data)) {
+                            console.log("SignalR: Action Queue Refreshed");
+                            setActionQueue(normalizeQueueData(data));
+                        }
+                    });
+                }
             });
 
             // Anchor Time & Sync Status
@@ -378,7 +416,13 @@ export function ReceptionScreen() {
     // EFFECT: Reload Queue when Toggle Changes
     useEffect(() => {
         setIsLoadingQueue(true);
-        ReceptionApi.getActionQueue(showHistory).then(data => {
+        const isHistoryRequested = showHistory || (activeFilterRef.current.preset !== 'today');
+        ReceptionApi.getActionQueue({
+            includeHistory: isHistoryRequested,
+            preset: activeFilterRef.current.preset,
+            startDate: activeFilterRef.current.startDate,
+            endDate: activeFilterRef.current.endDate
+        }).then(data => {
             if (Array.isArray(data)) setActionQueue(normalizeQueueData(data));
             setIsLoadingQueue(false);
         }).catch(e => {
@@ -484,13 +528,14 @@ export function ReceptionScreen() {
         {
             header: "Token ID",
             accessor: "token",
-            className: "w-32",
+            className: "w-36",
             render: (row) => (
                 <TokenCell
                     row={row}
                     theme={theme}
                     onAction={(r) => {
-                        openResumeIntent(r.visitId);
+                        const isHistorical = (r.dateGroup && r.dateGroup !== "Today") || (activeFilterRef.current.preset !== 'today');
+                        openResumeIntent(r.visitId, { isHistorical });
                     }}
                 />
             )
@@ -652,13 +697,19 @@ export function ReceptionScreen() {
                                             </span>
                                         )}
                                     </div>
-                                    <button
-                                        onClick={() => setIsSummaryCollapsed(!isSummaryCollapsed)}
-                                        className="text-zinc-500 hover:text-zinc-300 transition-colors p-1 rounded-md hover:bg-white/5"
-                                        title={isSummaryCollapsed ? "Expand View" : "Collapse View"}
-                                    >
-                                        <ChevronDown className={cn("w-4 h-4 transition-transform duration-300", isSummaryCollapsed && "-rotate-90")} />
-                                    </button>
+                                    <div className="flex items-center gap-2 sm:gap-2.5">
+                                        <ReceptionFilterBar
+                                            filter={activeFilter}
+                                            onChange={handleFilterChange}
+                                        />
+                                        <button
+                                            onClick={() => setIsSummaryCollapsed(!isSummaryCollapsed)}
+                                            className="text-zinc-500 hover:text-zinc-300 transition-colors p-1 rounded-md hover:bg-white/5 cursor-pointer shrink-0"
+                                            title={isSummaryCollapsed ? "Expand View" : "Collapse View"}
+                                        >
+                                            <ChevronDown className={cn("w-4 h-4 transition-transform duration-300", isSummaryCollapsed && "-rotate-90")} />
+                                        </button>
+                                    </div>
                                 </div>
                                 {isServerUpdating && realityTiles && (
                                     <div className="mb-2 px-3.5 py-2 rounded-xl bg-amber-500/10 dark:bg-amber-950/40 border border-amber-500/30 text-amber-800 dark:text-amber-200 flex items-center justify-between shadow-xs animate-in fade-in duration-200">
@@ -778,7 +829,14 @@ export function ReceptionScreen() {
                                         <span className="text-xs text-amber-600 dark:text-amber-400 mt-1">Reconnecting to live queue stream automatically...</span>
                                     </div>
                                 ) : (
-                                    <ActionQueue columns={queueColumns} data={actionQueue} />
+                                    <ActionQueue
+                                        columns={queueColumns}
+                                        data={actionQueue}
+                                        onAction={(r) => {
+                                            const isHistorical = (r.dateGroup && r.dateGroup !== "Today") || (activeFilterRef.current.preset !== 'today');
+                                            openResumeIntent(r.visitId, { isHistorical });
+                                        }}
+                                    />
                                 )}
                             </div>
                         </div>

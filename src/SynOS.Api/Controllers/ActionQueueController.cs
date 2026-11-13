@@ -24,7 +24,11 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<ActionQueueRowDto>>> GetTodayActionQueue([FromQuery] bool includeHistory = false)
+        public async Task<ActionResult<List<ActionQueueRowDto>>> GetTodayActionQueue(
+            [FromQuery] bool includeHistory = false,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null,
+            [FromQuery] string? preset = null)
         {
             var branchId = _userContext.CurrentBranchId;
             if (branchId == Guid.Empty)
@@ -32,10 +36,40 @@ namespace SynOS.Api.Controllers
                 return BadRequest("User context does not have a valid Branch ID.");
             }
 
-            // Default to "Today" (Server Local Time handled by Engine)
-            var today = DateTime.Now; 
+            var today = DateTime.Today; 
 
-            var queue = await _operationsEngine.GetActionQueueAsync(branchId, today, includeHistory);
+            if (!string.IsNullOrEmpty(preset))
+            {
+                var normPreset = preset.Trim().ToLowerInvariant();
+                if (normPreset == "today")
+                {
+                    startDate = today;
+                    endDate = today;
+                }
+                else if (normPreset == "month")
+                {
+                    startDate = new DateTime(today.Year, today.Month, 1);
+                    endDate = today;
+                }
+                else if (normPreset == "quarter")
+                {
+                    int quarterMonth = ((today.Month - 1) / 3) * 3 + 1;
+                    startDate = new DateTime(today.Year, quarterMonth, 1);
+                    endDate = today;
+                }
+                else if (normPreset == "year")
+                {
+                    startDate = new DateTime(today.Year, 1, 1);
+                    endDate = today;
+                }
+                else if (normPreset == "single" || normPreset == "singledate")
+                {
+                    startDate = (startDate ?? today).Date;
+                    endDate = startDate;
+                }
+            }
+
+            var queue = await _operationsEngine.GetActionQueueAsync(branchId, today, includeHistory, startDate, endDate);
             return Ok(queue);
         }
     }

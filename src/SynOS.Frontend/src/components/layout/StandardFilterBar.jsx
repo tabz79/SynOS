@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 export const StandardFilterBar = ({ 
     className = "",
     showBranches = true,
+    showSingleDate = true,
     showCustomRange = true,
     showPresets = true,
     onChange = null
@@ -24,6 +25,7 @@ export const StandardFilterBar = ({
         customDates,
         setCustomDates,
         setQuickDays,
+        setSingleDate,
         isConsolidated,
         setIsConsolidated,
         activeBranchId,
@@ -33,9 +35,11 @@ export const StandardFilterBar = ({
         isAdmin
     } = useGlobalFilter();
 
+    const [isSingleDateOpen, setIsSingleDateOpen] = useState(false);
     const [isCustomOpen, setIsCustomOpen] = useState(false);
     const [isBranchDropdownOpen, setIsBranchDropdownOpen] = useState(false);
     const branchDropdownRef = useRef(null);
+    const singleDatePopoverRef = useRef(null);
     const customPopoverRef = useRef(null);
 
     // Click outside to close dropdowns
@@ -43,6 +47,9 @@ export const StandardFilterBar = ({
         const handleClickOutside = (e) => {
             if (branchDropdownRef.current && !branchDropdownRef.current.contains(e.target)) {
                 setIsBranchDropdownOpen(false);
+            }
+            if (singleDatePopoverRef.current && !singleDatePopoverRef.current.contains(e.target)) {
+                setIsSingleDateOpen(false);
             }
             if (customPopoverRef.current && !customPopoverRef.current.contains(e.target)) {
                 setIsCustomOpen(false);
@@ -113,6 +120,62 @@ export const StandardFilterBar = ({
                             {t.label}
                         </button>
                     ))}
+
+                    {/* Custom Date (Single Specific Day) */}
+                    {showSingleDate && (
+                        <div className="relative" ref={singleDatePopoverRef}>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setIsCustomOpen(false);
+                                    setIsSingleDateOpen(!isSingleDateOpen);
+                                }}
+                                className={cn(
+                                    "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap",
+                                    presetRange === 'singleDate'
+                                        ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs font-bold"
+                                        : "text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
+                                )}
+                                title="Select one specific date"
+                            >
+                                <Calendar className="w-3.5 h-3.5 text-synos-primary" />
+                                <span>
+                                    {presetRange === 'singleDate' && customDates?.single
+                                        ? customDates.single.slice(5)
+                                        : "Custom Date"}
+                                </span>
+                            </button>
+                            {isSingleDateOpen && (
+                                <div className="absolute right-0 top-full mt-2 w-auto min-w-[280px] bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 p-3 rounded-2xl shadow-xl z-50 animate-in fade-in slide-in-from-top-1 duration-150 space-y-2.5">
+                                    <div className="flex items-center justify-between pb-1 border-b border-slate-100 dark:border-zinc-800">
+                                        <span className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 flex items-center gap-1 uppercase tracking-wider">
+                                            <Clock className="w-3.5 h-3.5 text-synos-primary" />
+                                            Specific Date
+                                        </span>
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsSingleDateOpen(false)}
+                                            className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-0.5 cursor-pointer"
+                                        >
+                                            <X className="w-3.5 h-3.5" />
+                                        </button>
+                                    </div>
+                                    <div className="pt-1 border-t border-slate-100 dark:border-zinc-800">
+                                        <input
+                                            type="date"
+                                            value={customDates?.single || ''}
+                                            onChange={(e) => {
+                                                if (setSingleDate) setSingleDate(e.target.value);
+                                                setIsSingleDateOpen(false);
+                                                if (onChange) onChange({ preset: 'singleDate', isConsolidated, branchId: activeBranchId, customDates: { start: e.target.value, end: e.target.value, single: e.target.value } });
+                                            }}
+                                            className="w-full bg-slate-50 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-700 rounded-lg px-2.5 py-1 text-xs font-bold text-slate-800 dark:text-zinc-200 focus:outline-none focus:ring-1 focus:ring-synos-primary"
+                                        />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     {/* Custom Range Button + Floating Popover */}
                     {showCustomRange && (

@@ -18,9 +18,9 @@ namespace SynOS.Api.Controllers
         }
 
         [HttpGet("reception/summary")] // UPDATED
-        public async Task<IActionResult> GetTodaysSummary()
+        public async Task<IActionResult> GetTodaysSummary([FromQuery] System.DateTime? startDate = null, [FromQuery] System.DateTime? endDate = null, [FromQuery] string? preset = null)
         {
-            var summary = await _dashboardService.GetTodaysSummaryAsync();
+            var summary = await _dashboardService.GetTodaysSummaryAsync(null, null, startDate, endDate, preset);
             return Ok(summary);
         }
     }

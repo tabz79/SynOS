@@ -9,6 +9,7 @@ namespace SynOS.Models.DTOs.Dashboard
         // Identity
         public Guid VisitId { get; set; }
         public string Token { get; set; } = string.Empty;
+        public string? BillNumber { get; set; }
         public DateTime CreatedAt { get; set; }
 
         // Patient Summary

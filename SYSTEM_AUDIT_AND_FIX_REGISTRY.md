@@ -3405,6 +3405,53 @@ In `Referral Partners` (`/finance/referrals/*`), the horizontal navigation tab s
    - Compiled .NET backend solution cleanly with **0 errors** (`dotnet build SynOS.sln`).
    - Compiled frontend production assets cleanly (`npm run build`).
 
+---
+
+## 50. Reception Desk Full-Horizon Date Filtering, Custom Date vs Custom Range, Bill Number Tracking & Read-Only Historical Audits — [RESOLVED]
+
+### Incident Summary & Feature Scope
+* **Screen:** Reception Desk (`/reception`, `ReceptionScreen.jsx`)
+* **Trigger:** Receptionists needed the ability to review past days and periods (e.g. November 2nd, This Month, Custom Date, Custom Range) directly from the Reception Desk without navigating away into the administrative Bills & Collections ledger.
+* **Requirements:**
+  1. Add date filter strip (`Today`, `This Month`, `This Quarter`, `This Year`, `Custom Date`, `Custom Range`) in the Reality Summary header (excluding duplicate branch switchers).
+  2. Implement separate **Custom Date** (single specific day e.g. Nov 2) and **Custom Range** (from date to date) to eliminate ambiguity when querying a single past date.
+  3. Dynamic Reality Summary cards reflecting the cumulative financial and patient intake totals for the active filter period.
+  4. Action queues grouping historical visits by date with the unique **Bill Number** clearly visible alongside the **Token Number** (resolving daily token reset confusion).
+  5. Clicking a bill opens the "Visit Finalized & Print Dispatch" split modal with **Visit Correction** and **Cancel Visit** buttons grayed out / disabled for historical records.
+
+---
+
+### Resolution Implemented
+
+1. **Backend Date Horizon Aggregation (`DashboardController.cs`, `ActionQueueController.cs`, `OperationsEngine.cs`, `InvoiceService.cs`):**
+   - Extended `/api/v1/dashboard/reception/summary` and `/api/v1/branch/action-queue` to accept `startDate`, `endDate`, and `preset` query parameters.
+   - Updated `InvoiceService.GetDailyRevenueStatsAsync` to aggregate walk-ins, cash collections, online payments, prepaid receivables, physical expenses, and drawer balances across the filtered date window.
+   - Updated `OperationsEngine.GetActionQueueAsync` to project historical queues across the selected date window, grouping by date and attaching canonical `BillNumber` (`${Token}-${TokenDate:yyMMdd}`).
+   - Added `BillNumber` property to `ActionQueueRowDto.cs`.
+
+2. **Dedicated Single Custom Date & Date Range Selectors (`ReceptionFilterBar.jsx` & `StandardFilterBar.jsx`):**
+   - Created `ReceptionFilterBar.jsx` placed in the `Reality Summary` header:
+     - `Today`: Operational default view with real-time updates and daily reset.
+     - `This Month`, `This Quarter`, `This Year`: Aggregated period totals.
+     - `Custom Date`: Single calendar picker with quick presets (Yesterday, 2d Ago, 3d Ago, 7d Ago) targeting strictly that single date (00:00:00 to 23:59:59).
+     - `Custom Range`: Two-date range picker (From and To) with horizon shortcuts (2 Days, 3 Days, 7 Days, 30 Days).
+   - Also extended `StandardFilterBar.jsx` and `GlobalFilterContext.jsx` with single-date support for enterprise-wide consistency.
+
+3. **Queue Bill Number Display & Row Grouping (`ActionQueueCells.jsx` & `ReceptionScreen.jsx`):**
+   - Updated `TokenCell` to display the unique `BillNumber` button badge beside the token number whenever viewing historical dates.
+   - Clicking either token or bill opens the visit in the finalized split modal.
+   - Connected `ActionQueue` row click handler to open the visit modal.
+
+4. **Historical Read-Only Security Guard (`IntentPanel.jsx` & `useReceptionPanelUI.jsx`):**
+   - Updated `useReceptionPanelUI.jsx` to pass `isHistorical` context in `drawerState`.
+   - In `IntentPanel.jsx`, computed `isVisitHistorical`.
+   - Grayed out and disabled the **Visit Correction** and **Cancel Visit** buttons (`opacity-40 cursor-not-allowed pointer-events-none`) for historical visits, preserving the thermal receipt reprint and consolidated summary while protecting finalized historical ledgers from unauthorized tampering.
+
+5. **Verification & Build:**
+   - Compiled .NET backend solution cleanly with **0 errors** (`dotnet build SynOS.sln`).
+   - Compiled frontend production assets cleanly (`npm run build`).
+
+
 
 
 

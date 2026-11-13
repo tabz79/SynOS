@@ -72,6 +72,7 @@ export const ReceptionApi = {
             assignedDepartmentCode: row.assignedDepartmentCode || row.AssignedDepartmentCode,
             isTokenPrinted: row.isTokenPrinted ?? row.IsTokenPrinted,
             dateGroup: row.dateGroup || row.DateGroup || "Today",
+            billNumber: row.billNumber || row.BillNumber || (row.token && !String(row.token).startsWith('D-') ? `${String(row.token).replace(/[^a-zA-Z0-9]/g, '')}-${new Date(row.tokenDate || row.createdAt || Date.now()).toISOString().slice(2, 10).replace(/-/g, '')}` : null),
             hasPhlebotomy: row.hasPhlebotomy ?? row.HasPhlebotomy ?? true,
             branchId: row.branchId || row.BranchId
         }));
@@ -154,12 +155,19 @@ export const ReceptionApi = {
     },
 
     /**
-     * Fetches the dashboard summary metrics.
+     * Fetches the dashboard summary metrics (supports date preset & range filters).
+     * @param {Object} filter - Optional { preset, startDate, endDate }
      * @returns {Promise<any>}
      */
-    getDashboardSummary: async () => {
+    getDashboardSummary: async (filter = {}) => {
         const baseUrl = '/api/v1';
-        const response = await fetch(ReceptionApi.withBranchId(`${baseUrl}/dashboard/reception/summary`), {
+        const params = new URLSearchParams();
+        if (filter.preset && filter.preset !== 'today') params.append('preset', filter.preset);
+        if (filter.startDate) params.append('startDate', filter.startDate);
+        if (filter.endDate) params.append('endDate', filter.endDate);
+        const qs = params.toString() ? `?${params.toString()}` : '';
+
+        const response = await fetch(ReceptionApi.withBranchId(`${baseUrl}/dashboard/reception/summary${qs}`), {
             method: 'GET',
             headers: ReceptionApi.getHeaders()
         });
@@ -436,15 +444,25 @@ export const ReceptionApi = {
     },
 
     /**
-     * Fetches the Action Queue (Today's active visits).
+     * Fetches the Action Queue (Today's active visits or filtered historical period).
+     * @param {boolean|Object} options - Either boolean includeHistory or filter object { includeHistory, preset, startDate, endDate }
      * @returns {Promise<Array>}
      */
-    getActionQueue: async (includeHistory = false) => {
-        const url = includeHistory
-            ? '/api/v1/branch/action-queue?includeHistory=true'
-            : '/api/v1/branch/action-queue';
+    getActionQueue: async (options = false) => {
+        const isBool = typeof options === 'boolean';
+        const includeHistory = isBool ? options : Boolean(options?.includeHistory);
+        const preset = !isBool ? options?.preset : null;
+        const startDate = !isBool ? options?.startDate : null;
+        const endDate = !isBool ? options?.endDate : null;
 
-        const response = await fetch(ReceptionApi.withBranchId(url), {
+        const params = new URLSearchParams();
+        if (includeHistory) params.append('includeHistory', 'true');
+        if (preset && preset !== 'today') params.append('preset', preset);
+        if (startDate) params.append('startDate', startDate);
+        if (endDate) params.append('endDate', endDate);
+        const qs = params.toString() ? `?${params.toString()}` : '';
+
+        const response = await fetch(ReceptionApi.withBranchId(`/api/v1/branch/action-queue${qs}`), {
             headers: ReceptionApi.getHeaders()
         });
 

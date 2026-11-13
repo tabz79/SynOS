@@ -2,10 +2,12 @@ import { cn } from "@/lib/utils";
 
 export function TokenCell({ row, theme, onAction }) {
     const isDraft = (row.token || "").toUpperCase().startsWith("D-") || (row.operationalStatus || "").toLowerCase() === "draft";
+    const isHistory = row.dateGroup && row.dateGroup !== "Today";
+    const billNumber = row.billNumber;
 
     return (
         <div className="flex flex-col gap-1 items-start">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 flex-wrap">
                 <button
                     onClick={(e) => {
                         e.stopPropagation();
@@ -26,13 +28,33 @@ export function TokenCell({ row, theme, onAction }) {
                     {row.token}
                 </button>
 
+                {/* Display Bill Number alongside Token Number in Historical views */}
+                {(isHistory || billNumber) && !isDraft && billNumber && (
+                    <button
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onAction && onAction(row);
+                        }}
+                        className={cn(
+                            "text-[10.5px] font-mono font-bold px-1.5 py-0.5 rounded border transition-all cursor-pointer shadow-2xs",
+                            theme === 'dark'
+                                ? "bg-zinc-800/90 text-sky-400 border-zinc-700/80 hover:bg-zinc-700 hover:text-sky-300"
+                                : "bg-sky-50 text-sky-700 border-sky-200/80 hover:bg-sky-100 hover:text-sky-800"
+                        )}
+                        title={`Bill No: ${billNumber} (Click to view finalized receipt & summary)`}
+                    >
+                        {billNumber}
+                    </button>
+                )}
+
                 {/* TOKEN PRINT STATUS (Non-Blocking) */}
-                {!isDraft && row.isTokenPrinted === false && ( // Explicit false check
+                {!isDraft && !isHistory && row.isTokenPrinted === false && ( // Explicit false check
                     <span className="text-amber-500 text-[10px] uppercase font-bold tracking-tighter" title="Printer Communication Failed">
                         ⚠️ Print Fail
                     </span>
                 )}
-                {!isDraft && row.isTokenPrinted === true && (
+                {!isDraft && !isHistory && row.isTokenPrinted === true && (
                     <span className="text-emerald-500/50 text-[10px]" title="Token Printed">
                         ✅
                     </span>

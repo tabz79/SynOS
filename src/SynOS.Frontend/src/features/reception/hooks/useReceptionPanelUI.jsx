@@ -34,9 +34,14 @@ export function ReceptionProvider({ children }) {
             // New Walk-In
             setDrawerState({ mode: 'open', intent: 'create', visitId: null });
         },
-        openResumeIntent: (visitId) => {
-            // Resume Draft / Unpaid Visit
-            setDrawerState({ mode: 'open', intent: 'resume', visitId });
+        openResumeIntent: (visitId, options = {}) => {
+            // Resume Draft / Unpaid Visit / Finalized Visit
+            setDrawerState({
+                mode: 'open',
+                intent: 'resume',
+                visitId,
+                isHistorical: Boolean(options?.isHistorical)
+            });
         },
         openCorrectionIntent: (visitId) => {
             // Correct Paid Visit (Audit Mode)

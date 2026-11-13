@@ -86,6 +86,18 @@ export const GlobalFilterProvider = ({ children }) => {
         setPresetRangeState('custom');
     }, []);
 
+    const setSingleDate = useCallback((dateStr) => {
+        const newDates = {
+            start: dateStr,
+            end: dateStr,
+            single: dateStr
+        };
+        sessionStorage.setItem('synos_filter_custom_dates', JSON.stringify(newDates));
+        setCustomDatesState(newDates);
+        sessionStorage.setItem('synos_filter_preset', 'singleDate');
+        setPresetRangeState('singleDate');
+    }, []);
+
     const setQuickDays = useCallback((days) => {
         const end = new Date();
         const start = new Date();
@@ -148,6 +160,7 @@ export const GlobalFilterProvider = ({ children }) => {
         customDates,
         setCustomDates,
         setQuickDays,
+        setSingleDate,
         isConsolidated,
         setIsConsolidated,
         activeBranchId,
@@ -163,6 +176,7 @@ export const GlobalFilterProvider = ({ children }) => {
         customDates,
         setCustomDates,
         setQuickDays,
+        setSingleDate,
         isConsolidated,
         setIsConsolidated,
         activeBranchId,

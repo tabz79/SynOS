@@ -39,11 +39,13 @@ namespace SynOS.Services.Operations
             _outboxService = outboxService;
         }
 
-        public async Task<OperationsStatsDto> GetDailyOperationsStatsAsync(Guid branchId, Guid? userId = null)
+        public async Task<OperationsStatsDto> GetDailyOperationsStatsAsync(Guid branchId, Guid? userId = null, DateTime? startDate = null, DateTime? endDate = null)
         {
             if (branchId == Guid.Empty) throw new ArgumentException("BranchId required");
 
             var today = _labTimeProvider.GetLabToday();
+            var rangeStart = startDate.HasValue ? startDate.Value.Date : today;
+            var rangeEnd = endDate.HasValue ? endDate.Value.Date : (startDate.HasValue ? startDate.Value.Date : today);
             
             int pendingReports = 0;
             double avgTime = 0;
@@ -53,32 +55,34 @@ namespace SynOS.Services.Operations
 
             if (userId.HasValue)
             {
-                var stats = await _context.UserOperationalStats
-                    .FirstOrDefaultAsync(s => s.UserId == userId.Value && s.BranchId == branchId && s.Date == today);
+                var statsList = await _context.UserOperationalStats
+                    .Where(s => s.UserId == userId.Value && s.BranchId == branchId && s.Date >= rangeStart && s.Date <= rangeEnd)
+                    .ToListAsync();
                 
-                if (stats != null)
+                if (statsList.Any())
                 {
-                    pendingCollections = stats.PendingCollectionsCount;
-                    completedCollections = stats.CompletedCollectionsCount;
-                    testsRunning = stats.TestsRunningCount;
+                    pendingCollections = statsList.Sum(s => s.PendingCollectionsCount);
+                    completedCollections = statsList.Sum(s => s.CompletedCollectionsCount);
+                    testsRunning = statsList.Sum(s => s.TestsRunningCount);
                 }
             }
             else
             {
-                var stats = await _context.BranchOperationalStats
-                    .FirstOrDefaultAsync(s => s.BranchId == branchId && s.Date == today);
+                var statsList = await _context.BranchOperationalStats
+                    .Where(s => s.BranchId == branchId && s.Date >= rangeStart && s.Date <= rangeEnd)
+                    .ToListAsync();
 
-                if (stats != null)
+                if (statsList.Any())
                 {
-                    pendingCollections = stats.PendingCollectionsCount;
-                    completedCollections = stats.CompletedCollectionsCount;
-                    testsRunning = stats.TestsRunningCount;
+                    pendingCollections = statsList.Sum(s => s.PendingCollectionsCount);
+                    completedCollections = statsList.Sum(s => s.CompletedCollectionsCount);
+                    testsRunning = statsList.Sum(s => s.TestsRunningCount);
                 }
             }
 
-            // 1. Live Pending Reports Calculation (Scoped to today's active cohort, excluding drafts and cancelled)
-            var todayStart = new DateTimeOffset(today, TimeSpan.Zero);
-            var todayEnd = todayStart.AddDays(1);
+            // 1. Live Pending Reports Calculation (Scoped to active cohort, excluding drafts and cancelled)
+            var todayStart = new DateTimeOffset(rangeStart, TimeSpan.Zero);
+            var todayEnd = new DateTimeOffset(rangeEnd.AddDays(1), TimeSpan.Zero);
 
             pendingReports = await _context.Reports
                 .Where(r => r.Visit.BranchId == branchId 
@@ -145,43 +149,58 @@ namespace SynOS.Services.Operations
             };
         }
 
-        public async Task<List<ActionQueueRowDto>> GetActionQueueAsync(Guid branchId, DateTime date, bool includeHistory = false)
+        public async Task<List<ActionQueueRowDto>> GetActionQueueAsync(Guid branchId, DateTime date, bool includeHistory = false, DateTime? startDate = null, DateTime? endDate = null)
         {
             if (branchId == Guid.Empty) throw new ArgumentException("BranchId required");
 
             // Define Time Window (Local Date -> UTC Range)
             var today = date.Date;
-            var startDate = includeHistory ? today.AddDays(-7) : today;
-            var nextDay = today.AddDays(1); // Always cap at tomorrow (future visits not in queue)
+            var rangeStart = startDate.HasValue ? startDate.Value.Date : (includeHistory ? today.AddDays(-7) : today);
+            var rangeEnd = endDate.HasValue ? endDate.Value.Date : (startDate.HasValue ? startDate.Value.Date : today);
+            var nextDay = rangeEnd.AddDays(1); // Always cap at tomorrow (future visits not in queue)
+
+            var isExplicitDateFilter = startDate.HasValue;
+            var isTodayOnly = isExplicitDateFilter && rangeStart == rangeEnd && rangeStart == today;
 
             // DEBUG TRACING
-            Console.WriteLine($"[ActionQueue] Query: Branch={branchId}, Date={date}, Today={today}, Window=[{startDate} - {nextDay})");
+            Console.WriteLine($"[ActionQueue] Query: Branch={branchId}, Date={date}, Today={today}, Window=[{rangeStart} - {nextDay}), ExplicitFilter={isExplicitDateFilter}");
 
-            // Use Policy-driven operational window
-            // Rule 1: Show ALL Active (Non-terminal) visits from the retrospective window (7 days)
-            // Rule 2: Show Terminal (Finalized) visits ONLY from the current Operational Today
-            
-            // We fetch statuses in memory or use a list for EF if needed, but since we are refactoring, 
-            // we will use the status definitions from the policy if possible, or keep the list for query performance.
             var terminalStatuses = _lifecyclePolicy.GetTerminalStatuses();
             
-            var visitQuery = _context.Visits
-                .AsNoTracking()
-                .AsSplitQuery()
-                .Where(v => v.BranchId == branchId && 
-                            v.Status != VisitStatus.Cancelled &&
-                            (
-                                // LIVE VIEW: Active (7 days) + Terminal (Today)
-                                (!includeHistory && 
-                                    (
-                                        (!terminalStatuses.Contains(v.Status) && v.TokenDate >= startDate) ||
-                                        (terminalStatuses.Contains(v.Status) && v.TokenDate >= today && v.TokenDate < nextDay)
+            IQueryable<Visit> visitQuery;
+
+            if (isExplicitDateFilter && !isTodayOnly)
+            {
+                // HISTORICAL / FILTERED VIEW (e.g. Single past day like Nov 2, or Month, Quarter, Year, Custom Range)
+                // Load all visits from that window (active or terminal), excluding cancellations
+                visitQuery = _context.Visits
+                    .AsNoTracking()
+                    .AsSplitQuery()
+                    .Where(v => v.BranchId == branchId && 
+                                v.Status != VisitStatus.Cancelled &&
+                                v.TokenDate >= rangeStart && v.TokenDate < nextDay);
+            }
+            else
+            {
+                // LIVE VIEW or 7D HISTORY
+                visitQuery = _context.Visits
+                    .AsNoTracking()
+                    .AsSplitQuery()
+                    .Where(v => v.BranchId == branchId && 
+                                v.Status != VisitStatus.Cancelled &&
+                                (
+                                    // LIVE VIEW: Active (7 days) + Terminal (Today)
+                                    (!includeHistory && 
+                                        (
+                                            (!terminalStatuses.Contains(v.Status) && v.TokenDate >= rangeStart) ||
+                                            (terminalStatuses.Contains(v.Status) && v.TokenDate >= today && v.TokenDate < today.AddDays(1))
+                                        )
                                     )
-                                )
-                                ||
-                                // HISTORY VIEW: Terminal (7 days, excluding today)
-                                (includeHistory && terminalStatuses.Contains(v.Status) && v.TokenDate >= startDate && v.TokenDate < today)
-                            ));
+                                    ||
+                                    // HISTORY VIEW: Terminal (7 days, excluding today)
+                                    (includeHistory && terminalStatuses.Contains(v.Status) && v.TokenDate >= rangeStart && v.TokenDate < today)
+                                ));
+            }
 
             // DRAFT DESK ISOLATION INVARIANT (Zero-Seepage Rule):
             // Unfinalized drafts represent keystrokes in flight at a single desk.
@@ -284,6 +303,9 @@ namespace SynOS.Services.Operations
                 {
                     VisitId = visit.VisitId,
                     Token = visit.Token,
+                    BillNumber = (visit.Token != null && !visit.Token.StartsWith("D-", StringComparison.OrdinalIgnoreCase))
+                        ? $"{visit.Token.Replace("-", "")}-{visit.TokenDate:yyMMdd}"
+                        : null,
                     CreatedAt = visit.CreatedAt,
                     
                     PatientName = visit.Patient != null 
@@ -419,6 +441,9 @@ namespace SynOS.Services.Operations
             {
                 VisitId = visit.VisitId,
                 Token = visit.Token,
+                BillNumber = (visit.Token != null && !visit.Token.StartsWith("D-", StringComparison.OrdinalIgnoreCase))
+                    ? $"{visit.Token.Replace("-", "")}-{visit.TokenDate:yyMMdd}"
+                    : null,
                 CreatedAt = visit.CreatedAt,
                 
                 PatientName = visit.Patient != null 

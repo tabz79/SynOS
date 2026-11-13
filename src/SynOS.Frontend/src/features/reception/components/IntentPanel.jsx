@@ -1906,10 +1906,24 @@ export function IntentPanel({ onVisitUpdated }) {
                          (!snapshot?.billing?.isLocked && !isVisitFinalized && 
                           (snapshot?.visit?.operationalStatus === 'Draft' || snapshot?.visit?.status === 'Draft' || String(snapshot?.visit?.token || snapshot?.visit?.visitToken || '').toUpperCase().startsWith('D-')));
 
+    // Historical Visit Guard: Disable visit correction / cancellation for past dates
+    const isVisitHistorical = Boolean(drawerState?.isHistorical) || Boolean(
+        snapshot?.visit?.tokenDate && (() => {
+            try {
+                const vDate = new Date(snapshot.visit.tokenDate);
+                const now = new Date();
+                return vDate.toDateString() !== now.toDateString();
+            } catch {
+                return false;
+            }
+        })()
+    );
+
     const canShowVisitCorrection = Boolean(
         snapshot?.visit?.visitId && 
         !isCorrectionIntent && 
         !isDraftVisit && 
+        !isVisitHistorical &&
         (isVisitFinalized || snapshot?.billing?.isLocked || snapshot?.visit?.isFinalized)
     );
 
@@ -2994,7 +3008,9 @@ export function IntentPanel({ onVisitUpdated }) {
                                                     id="btn-summary-visit-correction"
                                                     data-summary-nav="true"
                                                     type="button"
+                                                    disabled={isVisitHistorical}
                                                     onClick={() => {
+                                                        if (isVisitHistorical) return;
                                                         setPostProcessingSession(null);
                                                         openCorrectionIntent(currentVisitId || snapshot?.visit?.visitId || snapshot?.visit?.id);
                                                     }}
@@ -3009,8 +3025,13 @@ export function IntentPanel({ onVisitUpdated }) {
                                                             }
                                                         }
                                                     }}
-                                                    className="py-2.5 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-slate-300 dark:border-zinc-700 bg-white/90 dark:bg-zinc-800/90 text-slate-700 dark:text-zinc-200 hover:bg-slate-100 dark:hover:bg-zinc-700 transition-all active:scale-95 shadow-2xs cursor-pointer shrink-0 synos-focus-btn"
-                                                    title="Enter Visit Correction to amend tests or alter billing"
+                                                    className={cn(
+                                                        "py-2.5 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-slate-300 dark:border-zinc-700 bg-white/90 dark:bg-zinc-800/90 text-slate-700 dark:text-zinc-200 transition-all shadow-2xs shrink-0 synos-focus-btn",
+                                                        isVisitHistorical
+                                                            ? "opacity-40 cursor-not-allowed grayscale pointer-events-none bg-slate-100 dark:bg-zinc-800/40 text-slate-400 dark:text-zinc-500 border-dashed"
+                                                            : "hover:bg-slate-100 dark:hover:bg-zinc-700 active:scale-95 cursor-pointer"
+                                                    )}
+                                                    title={isVisitHistorical ? "Visit correction is disabled for past records" : "Enter Visit Correction to amend tests or alter billing"}
                                                 >
                                                     <Pencil className="w-3.5 h-3.5 text-synos-primary" />
                                                     <span>Visit Correction</span>
@@ -3546,18 +3567,36 @@ export function IntentPanel({ onVisitUpdated }) {
                             </button>
                             <button
                                 type="button"
-                                onClick={() => openCorrectionIntent(currentVisitId || drawerState.visitId)}
-                                className="py-2.5 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-all active:scale-95 shadow-2xs cursor-pointer"
-                                title="Enter Full-Fledged Visit Correction Mode to Add/Remove Tests or Alter Billing"
+                                disabled={isVisitHistorical}
+                                onClick={() => {
+                                    if (isVisitHistorical) return;
+                                    openCorrectionIntent(currentVisitId || drawerState.visitId);
+                                }}
+                                className={cn(
+                                    "py-2.5 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-slate-200 dark:border-zinc-700 text-slate-800 dark:text-zinc-200 bg-slate-100 dark:bg-zinc-800 transition-all shadow-2xs",
+                                    isVisitHistorical
+                                        ? "opacity-40 cursor-not-allowed grayscale pointer-events-none bg-slate-100 dark:bg-zinc-800/40 text-slate-400 dark:text-zinc-500 border-dashed"
+                                        : "hover:bg-slate-200 dark:hover:bg-zinc-700 active:scale-95 cursor-pointer"
+                                )}
+                                title={isVisitHistorical ? "Visit correction is disabled for past records" : "Enter Full-Fledged Visit Correction Mode to Add/Remove Tests or Alter Billing"}
                             >
                                 <Pencil className="w-3.5 h-3.5 text-synos-primary" />
                                 <span>Visit Correction</span>
                             </button>
                             <button
                                 type="button"
-                                onClick={() => setIsCancelModalOpen(true)}
-                                className="py-2.5 px-3.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/30 transition-all active:scale-95 shadow-2xs cursor-pointer shrink-0"
-                                title="Cancel this visit and issue automated refund"
+                                disabled={isVisitHistorical}
+                                onClick={() => {
+                                    if (isVisitHistorical) return;
+                                    setIsCancelModalOpen(true);
+                                }}
+                                className={cn(
+                                    "py-2.5 px-3.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 transition-all shadow-2xs shrink-0",
+                                    isVisitHistorical
+                                        ? "opacity-40 cursor-not-allowed grayscale pointer-events-none bg-rose-50/40 text-rose-300 dark:text-rose-900 border-dashed"
+                                        : "hover:bg-rose-100 active:scale-95 cursor-pointer"
+                                )}
+                                title={isVisitHistorical ? "Visit cancellation is disabled for past records" : "Cancel this visit and issue automated refund"}
                             >
                                 <Ban className="w-4 h-4" />
                                 <span>Cancel Visit</span>

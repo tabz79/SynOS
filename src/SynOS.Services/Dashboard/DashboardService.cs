@@ -19,7 +19,7 @@ namespace SynOS.Services.Dashboard
             _userContext = userContext;
         }
 
-        public async Task<TodaysSummaryDto> GetTodaysSummaryAsync(Guid? branchId = null, Guid? userId = null)
+        public async Task<TodaysSummaryDto> GetTodaysSummaryAsync(Guid? branchId = null, Guid? userId = null, DateTime? startDate = null, DateTime? endDate = null, string? preset = null)
         {
             var effectiveBranchId = branchId ?? _userContext.CurrentBranchId;
             if (effectiveBranchId == Guid.Empty)
@@ -29,9 +29,41 @@ namespace SynOS.Services.Dashboard
 
             var effectiveUserId = userId ?? (_userContext.CurrentRole == "Receptionist" ? _userContext.CurrentUserId : (Guid?)null);
 
+            var today = DateTime.Today;
+            if (!string.IsNullOrEmpty(preset))
+            {
+                var normPreset = preset.Trim().ToLowerInvariant();
+                if (normPreset == "today")
+                {
+                    startDate = today;
+                    endDate = today;
+                }
+                else if (normPreset == "month")
+                {
+                    startDate = new DateTime(today.Year, today.Month, 1);
+                    endDate = today;
+                }
+                else if (normPreset == "quarter")
+                {
+                    int quarterMonth = ((today.Month - 1) / 3) * 3 + 1;
+                    startDate = new DateTime(today.Year, quarterMonth, 1);
+                    endDate = today;
+                }
+                else if (normPreset == "year")
+                {
+                    startDate = new DateTime(today.Year, 1, 1);
+                    endDate = today;
+                }
+                else if (normPreset == "single" || normPreset == "singledate")
+                {
+                    startDate = (startDate ?? today).Date;
+                    endDate = startDate;
+                }
+            }
+
             // Orchestration: Fetch Truth from respective Engines
-            var opsStats = await _operationsEngine.GetDailyOperationsStatsAsync(effectiveBranchId, effectiveUserId);
-            var revStats = await _invoiceService.GetDailyRevenueStatsAsync(effectiveBranchId, effectiveUserId);
+            var opsStats = await _operationsEngine.GetDailyOperationsStatsAsync(effectiveBranchId, effectiveUserId, startDate, endDate);
+            var revStats = await _invoiceService.GetDailyRevenueStatsAsync(effectiveBranchId, effectiveUserId, startDate, endDate);
 
             return new TodaysSummaryDto
             {
