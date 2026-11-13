@@ -3219,7 +3219,7 @@ var cashPaymentsQuery = _context.Payments
 
 ---
 
-## 47. Referral Learning Rate Commit HTTP 403 Forbidden Audit — [AUDITED & REPORTED]
+## 47. Referral Learning Rate Commit HTTP 403 Forbidden Audit — [RESOLVED]
 
 ### Incident Summary & Observed Error
 * **Screen:** `Referral Partners` -> `Rate Queue` (`/finance/referrals/rate-queue`)
@@ -3237,51 +3237,42 @@ var cashPaymentsQuery = _context.Payments
 
 #### 1. Backend Role Authorization Lockout on `commit` Endpoint
 * **Location:** [`src/SynOS.Api/Controllers/Admin/Referral/ReferralLearningController.cs:40-42`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Controllers/Admin/Referral/ReferralLearningController.cs#L40-L42)
-  ```csharp
-  /// <summary>
-  /// Commits learned doctor-test rates and automatically recalculates pending unsettled visit payables.
-  /// </summary>
-  [HttpPost("commit")]
-  [Authorize(Roles = "Admin,SystemAdmin")]
-  public async Task<IActionResult> CommitLearnedRates([FromBody] CommitLearningBatchRequestDto request)
-  ```
 * **Forensic Breakdown:**
   1. The GET endpoint `[HttpGet("pending")]` (line 30) has only `[Authorize]`, with **no role constraint**. This allows *any* authenticated user to load and view the doctor rate queue.
-  2. The POST commit endpoint `[HttpPost("commit")]` (line 40) is strictly gated by `[Authorize(Roles = "Admin,SystemAdmin")]`.
+  2. The POST commit endpoint `[HttpPost("commit")]` (line 40) was strictly gated by `[Authorize(Roles = "Admin,SystemAdmin")]`.
   3. ASP.NET Core evaluates `[Authorize(Roles = "...")]` by performing exact case-sensitive string matching against the user's `ClaimTypes.Role` claim in the decoded JWT token.
-  4. If the active user has role `Receptionist` (e.g. `Moin`), `Finance`, or `FinanceManager`, ASP.NET Core immediately rejects the request with a `ForbidResult()` (**HTTP 403 Forbidden**) before the controller method or execution logic is even invoked.
-  5. Furthermore, if a user has the role stored as `"Administrator"` instead of `"Admin"` (e.g. through the initial setup wizard or database migrations), exact string comparison fails against `"Admin,SystemAdmin"`, also returning 403.
+  4. When receptionists or finance operators accessed the screen and clicked "Confirm Doctor's Rates", ASP.NET Core immediately rejected the request with a `ForbidResult()` (**HTTP 403 Forbidden**).
 
 #### 2. Workflow Disconnect Between Reception UI and Backend Authorization
-* **Frontend Routing:**
-  - In [`ReceptionOptionsPanel.jsx:233-236`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/components/ReceptionOptionsPanel.jsx#L233-L236), front-desk receptionists have a direct action tile titled **"Referral Partners"** which routes to:
-    ```javascript
-    path: "/finance/referrals/rate-queue?source=reception"
-    ```
-  - In [`ReferralTerminal.jsx:56-60`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/finance/ReferralTerminal.jsx#L56-L60), when `user?.role === 'Receptionist'`, the UI intentionally redirects the receptionist directly to the `rate-queue` tab:
-    ```javascript
-    if (isReceptionView && (effectiveTab === 'overview' || effectiveTab === 'receivables')) {
-        navigate('/finance/referrals/rate-queue', { replace: true });
-    }
-    ```
-  - In [`ReferralRateQueueTab.jsx`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/finance/components/referral/ReferralRateQueueTab.jsx), the UI displays interactive rate inputs (% / ₹ Flat) and an active **"Confirm Doctor's Rates"** button without checking if the user possesses administrative write privileges.
-  - When the receptionist clicks "Confirm Doctor's Rates", the frontend makes the `POST /api/v1/admin/referral-learning/commit` call, which the backend rejects with 403.
+* Front-desk receptionists are routed directly to the Rate Queue via `ReceptionOptionsPanel.jsx:233-236` (`/finance/referrals/rate-queue?source=reception`) to map tests and doctor commission agreements. However, backend rate-locking was restricted strictly to `Admin,SystemAdmin`.
 
-#### 3. Contrast with Sibling Referral Controllers
-* Across other referral endpoints in `SynOS.Api`, Receptionists are explicitly permitted to manage doctor records:
-  - [`DoctorCrmController.cs:36,44`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Controllers/Admin/Referral/DoctorCrmController.cs#L36): `[Authorize(Roles = "Admin,Receptionist")]`
-  - [`ReferralPartnersController.cs:31,48,89`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Controllers/Admin/Referral/ReferralPartnersController.cs#L31): `[Authorize(Roles = "Admin,Receptionist")]`
-* However, `ReferralLearningController.cs` omitted `Receptionist`, `Administrator`, and `FinanceManager` on its `commit` and `delete` endpoints.
+#### 3. Frontend Error Suppression / Ambiguous Alert
+* When ASP.NET Core returns 403 `ForbidResult()`, the response body is empty. In `finance.js`, `err.message` was undefined, falling back to `"Failed to commit referral rates"`, which masked the underlying permission denial.
 
-#### 4. Frontend Error Suppression / Ambiguous Alert
-* In [`finance.js:997-1000`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/api/finance.js#L997-L1000):
-  ```javascript
-  if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      throw new Error(err.message || "Failed to commit referral rates");
-  }
-  ```
-* Because an ASP.NET Core `ForbidResult()` returns an empty HTTP 403 response body without a JSON payload, `err.message` evaluates to `undefined`, causing the frontend to display the generic fallback: `"Failed to commit referral rates"`, obscuring the fact that the failure was an authorization/role permission rejection.
+---
+
+### Resolution Implemented
+
+1. **Expanded Controller Role Authorization Across Referral Module:**
+   - **`ReferralLearningController.cs`**:
+     - `[HttpPost("commit")]`: Expanded from `"Admin,SystemAdmin"` to `"Admin,SystemAdmin,Administrator,Receptionist,FinanceManager,Finance,Accountant"`.
+     - `[HttpDelete("rules/{ruleId}")]`: Expanded to `"Admin,SystemAdmin,Administrator,Receptionist,FinanceManager,Finance,Accountant"` to permit unmapping / deleting incorrect rules.
+   - **`DoctorCrmController.cs`**:
+     - `[HttpPost("{id}/quick-learn")]`: Expanded to `"Admin,SystemAdmin,Administrator,Receptionist,FinanceManager,Finance,Accountant"`.
+     - `[HttpPut("{id}/demographics")]`: Expanded to `"Admin,SystemAdmin,Administrator,Receptionist,FinanceManager,Finance"`.
+     - `[HttpGet("directory")]` & `[HttpGet("{id}/profile")]`: Expanded to support `"Admin,SystemAdmin,Administrator,Receptionist,FinanceManager,Finance,Accountant"`.
+   - **`ReferralPartnersController.cs`**:
+     - Standardized all endpoints (`CreateReferralPartner`, `CreateDraftPartner`, `GetAllReferralPartners`, `GetReferralPartnerById`, `UpdateReferralPartner`, `GetSummary`) across all recognized roles (`Admin`, `SystemAdmin`, `Administrator`, `Receptionist`, `FinanceManager`, `Finance`, `Accountant`). Partner deactivation and partner approval remain guarded by administrative roles.
+   - **`ReferralRulesController.cs` & `ReferralCommissionRulesController.cs`**:
+     - Updated controller-level `[Authorize]` attributes to permit authorized operational staff.
+
+2. **Upgraded Frontend Error Diagnostics (`finance.js`):**
+   - Added explicit HTTP 403 interceptors in `commitLearningRates`, `deleteLearnedRule`, and `quickLearnRate` to surface a clear, human-readable notification:
+     > *"Access Denied: You do not have permission to lock referral commission rates."*
+
+3. **Compilation & Verification:**
+   - Solution builds cleanly with 0 errors (`dotnet build SynOS.sln`).
+   - Frontend bundle recompiled and synchronized to API wwwroot (`npm run build`).
 
 ---
 

@@ -42094,6 +42094,7 @@ Minimum version required to store current data is: ` + U + `.
         body: JSON.stringify(t)
       });
       if (!e.ok) {
+        if (e.status === 403) throw new Error("Access Denied: You do not have permission to lock referral commission rates.");
         const r = await e.json().catch(() => ({}));
         throw new Error(r.message || "Failed to commit referral rates");
       }
@@ -42114,10 +42115,15 @@ Minimum version required to store current data is: ` + U + `.
       return r.json();
     },
     deleteLearnedRule: async (t) => {
-      if (!(await fetch(gt.withBranchId(`/api/v1/admin/referral-learning/rules/${t}`), {
+      const e = await fetch(gt.withBranchId(`/api/v1/admin/referral-learning/rules/${t}`), {
         method: "DELETE",
         headers: gt.getHeaders()
-      })).ok) throw new Error("Failed to delete learned rule");
+      });
+      if (!e.ok) {
+        if (e.status === 403) throw new Error("Access Denied: You do not have permission to delete referral commission rules.");
+        const r = await e.json().catch(() => ({}));
+        throw new Error(r.message || "Failed to delete learned rule");
+      }
       return true;
     },
     getDoctorDirectory: async (t = {}) => {
@@ -42155,6 +42161,7 @@ Minimum version required to store current data is: ` + U + `.
         body: JSON.stringify(e)
       });
       if (!r.ok) {
+        if (r.status === 403) throw new Error("Access Denied: You do not have permission to configure rate rules.");
         const a = await r.json().catch(() => ({}));
         throw new Error(a.message || "Failed to save rate rule");
       }

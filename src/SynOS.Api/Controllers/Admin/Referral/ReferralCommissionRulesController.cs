@@ -9,7 +9,7 @@ namespace SynOS.Api.Controllers.Admin.Referral
 {
     [ApiController]
     [Route("api/v1/admin/")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,SystemAdmin,Administrator,Receptionist,FinanceManager,Finance,Accountant")]
     public class ReferralCommissionRulesController : ControllerBase
     {
         private readonly IReferralCommissionService _commissionService;

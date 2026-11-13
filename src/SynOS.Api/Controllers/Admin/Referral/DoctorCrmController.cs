@@ -33,7 +33,7 @@ namespace SynOS.Api.Controllers.Admin.Referral
         }
 
         [HttpGet("directory")]
-        [Authorize(Roles = "Admin,Receptionist")]
+        [Authorize(Roles = "Admin,SystemAdmin,Administrator,Receptionist,FinanceManager,Finance,Accountant")]
         public async Task<IActionResult> GetDoctorDirectory([FromQuery] DoctorDirectoryFilterDto filter)
         {
             var result = await _doctorCrmService.GetDoctorDirectoryAsync(filter);
@@ -41,7 +41,7 @@ namespace SynOS.Api.Controllers.Admin.Referral
         }
 
         [HttpGet("{id}/profile")]
-        [Authorize(Roles = "Admin,Receptionist")]
+        [Authorize(Roles = "Admin,SystemAdmin,Administrator,Receptionist,FinanceManager,Finance,Accountant")]
         public async Task<IActionResult> GetDoctorProfile(Guid id)
         {
             try
@@ -56,7 +56,7 @@ namespace SynOS.Api.Controllers.Admin.Referral
         }
 
         [HttpPut("{id}/demographics")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SystemAdmin,Administrator,Receptionist,FinanceManager,Finance")]
         public async Task<IActionResult> UpdateDoctorDemographics(Guid id, [FromBody] UpdateDoctorDemographicsRequestDto request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -83,7 +83,7 @@ namespace SynOS.Api.Controllers.Admin.Referral
         }
 
         [HttpPost("{id}/quick-learn")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SystemAdmin,Administrator,Receptionist,FinanceManager,Finance,Accountant")]
         public async Task<IActionResult> QuickLearnRate(Guid id, [FromBody] QuickLearnRatePayload payload)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -106,7 +106,7 @@ namespace SynOS.Api.Controllers.Admin.Referral
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SystemAdmin,Administrator")]
         public async Task<IActionResult> DeleteDoctor(Guid id)
         {
             try

@@ -38,7 +38,7 @@ namespace SynOS.Api.Controllers.Admin.Referral
         /// Commits learned doctor-test rates and automatically recalculates pending unsettled visit payables.
         /// </summary>
         [HttpPost("commit")]
-        [Authorize(Roles = "Admin,SystemAdmin")]
+        [Authorize(Roles = "Admin,SystemAdmin,Administrator,Receptionist,FinanceManager,Finance,Accountant")]
         public async Task<IActionResult> CommitLearnedRates([FromBody] CommitLearningBatchRequestDto request)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -78,7 +78,7 @@ namespace SynOS.Api.Controllers.Admin.Referral
         /// Deletes/deactivates a specific learned rule.
         /// </summary>
         [HttpDelete("rules/{ruleId}")]
-        [Authorize(Roles = "Admin,SystemAdmin")]
+        [Authorize(Roles = "Admin,SystemAdmin,Administrator,Receptionist,FinanceManager,Finance,Accountant")]
         public async Task<IActionResult> DeleteLearnedRule(Guid ruleId)
         {
             await _learningService.DeleteLearnedRuleAsync(ruleId);

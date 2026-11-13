@@ -28,7 +28,7 @@ namespace SynOS.Api.Controllers.Admin.Referral
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin,Receptionist")]
+        [Authorize(Roles = "Admin,SystemAdmin,Administrator,Receptionist,FinanceManager,Finance")]
         public async Task<IActionResult> CreateReferralPartner([FromBody] ReferralPartnerCreateDto createDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -45,7 +45,7 @@ namespace SynOS.Api.Controllers.Admin.Referral
         }
 
         [HttpPost("draft")]
-        [Authorize(Roles = "Admin,Receptionist")]
+        [Authorize(Roles = "Admin,SystemAdmin,Administrator,Receptionist,FinanceManager,Finance")]
         public async Task<IActionResult> CreateDraftPartner([FromBody] ReferralPartnerCreateDto createDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -62,7 +62,7 @@ namespace SynOS.Api.Controllers.Admin.Referral
         }
 
         [HttpPost("{id}/approve")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SystemAdmin,Administrator,FinanceManager")]
         public async Task<IActionResult> ApprovePartner(Guid id, [FromBody] PartnerApprovalRequest request)
         {
             try 
@@ -86,7 +86,7 @@ namespace SynOS.Api.Controllers.Admin.Referral
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin,Receptionist")]
+        [Authorize(Roles = "Admin,SystemAdmin,Administrator,Receptionist,FinanceManager,Finance,Accountant")]
         public async Task<IActionResult> GetAllReferralPartners()
         {
             var partners = await _referralPartnerService.GetAllReferralPartnersAsync();
@@ -94,7 +94,7 @@ namespace SynOS.Api.Controllers.Admin.Referral
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin,Receptionist")]
+        [Authorize(Roles = "Admin,SystemAdmin,Administrator,Receptionist,FinanceManager,Finance,Accountant")]
         public async Task<IActionResult> GetReferralPartnerById(Guid id)
         {
             try 
@@ -109,7 +109,7 @@ namespace SynOS.Api.Controllers.Admin.Referral
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SystemAdmin,Administrator,Receptionist,FinanceManager,Finance")]
         public async Task<IActionResult> UpdateReferralPartner(Guid id, [FromBody] ReferralPartnerUpdateDto updateDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -129,7 +129,7 @@ namespace SynOS.Api.Controllers.Admin.Referral
             }
         }
         [HttpGet("summary")]
-        [Authorize(Roles = "Admin,Receptionist")]
+        [Authorize(Roles = "Admin,SystemAdmin,Administrator,Receptionist,FinanceManager,Finance,Accountant")]
         public async Task<IActionResult> GetSummary(
             [FromQuery] Guid? branchId, 
             [FromQuery] bool isConsolidated = false,
@@ -150,7 +150,7 @@ namespace SynOS.Api.Controllers.Admin.Referral
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,SystemAdmin,Administrator")]
         public async Task<IActionResult> DeactivatePartner(Guid id)
         {
             try 

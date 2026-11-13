@@ -995,6 +995,9 @@ export const FinanceApi = {
             body: JSON.stringify(payload)
         });
         if (!response.ok) {
+            if (response.status === 403) {
+                throw new Error("Access Denied: You do not have permission to lock referral commission rates.");
+            }
             const err = await response.json().catch(() => ({}));
             throw new Error(err.message || "Failed to commit referral rates");
         }
@@ -1023,7 +1026,13 @@ export const FinanceApi = {
             method: 'DELETE',
             headers: FinanceApi.getHeaders()
         });
-        if (!response.ok) throw new Error("Failed to delete learned rule");
+        if (!response.ok) {
+            if (response.status === 403) {
+                throw new Error("Access Denied: You do not have permission to delete referral commission rules.");
+            }
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || "Failed to delete learned rule");
+        }
         return true;
     },
 
@@ -1076,6 +1085,9 @@ export const FinanceApi = {
             body: JSON.stringify(payload)
         });
         if (!response.ok) {
+            if (response.status === 403) {
+                throw new Error("Access Denied: You do not have permission to configure rate rules.");
+            }
             const err = await response.json().catch(() => ({}));
             throw new Error(err.message || "Failed to save rate rule");
         }
