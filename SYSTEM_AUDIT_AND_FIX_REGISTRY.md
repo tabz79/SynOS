@@ -3285,21 +3285,39 @@ var cashPaymentsQuery = _context.Payments
 
 ---
 
-### Audit Conclusions & Recommendations (Awaiting Approval)
-* **Code Modification Policy:** As per user instructions, **zero code edits have been applied**.
-* **Suggested Resolution Paths:**
-  1. **Option A (Allow Receptionists to commit rates):**
-     If front-desk receptionists are clinically intended to lock agreed rates during patient onboarding, update `[Authorize(Roles = "...")]` in `ReferralLearningController.cs` to:
-     ```csharp
-     [Authorize(Roles = "Admin,Administrator,SystemAdmin,Receptionist,Finance,FinanceManager")]
-     ```
-  2. **Option B (Strict Admin/Finance Only Governance):**
-     If referral rate negotiation and permanent rate locking must be restricted strictly to Management / Admins / Finance Controllers:
-     - Update `ReferralLearningController.cs` to include `"Admin,Administrator,SystemAdmin,Finance,FinanceManager"`.
-     - In `ReferralRateQueueTab.jsx`, make the inputs and commit buttons read-only or disabled for `Receptionist` users with a badge: *"Administrative permission required to commit new doctor tariffs."*
-  3. **Option C (Enhanced Error Handling in `finance.js`):**
-     Explicitly check `if (response.status === 403)` and surface:
-     `"Access Denied (403): Your user role does not have permission to lock referral commission rates."`
+---
+
+## 2026-11-13: Referral Partners Horizontal Sub-Tab Strip Layout & Persistence Fix
+
+### Issue Summary
+In `Referral Partners` (`/finance/referrals/*`), the horizontal navigation tab strip disappeared upon page load or tab navigation:
+1. **Reception Users (`Uzma`):** When navigating to Referral Partners from the Reception Options Panel, the top horizontal sub-tab strip was completely missing, leaving receptionists with no in-module navigation.
+2. **Admin Users (`Tabrez Developer`):** When navigating to `Finance -> Referral Partners -> Rate Queue`, the horizontal tab bar appeared briefly while data was loading, and then disappeared instantly the moment the table finished loading (as captured in `export-1794542389564.mp4` frame 208).
+
+### Root Cause Analysis
+1. **Flexbox Zero-Height Shrinking (`flex-shrink: 1` + `overflow-x-auto`):**
+   - The outer container in `ReferralTerminal.jsx` was defined as `flex-1 flex flex-col overflow-y-auto`.
+   - The tab bar container `<div ref={tabsRef} className="flex items-center gap-1 overflow-x-auto scrollbar-thin">` lacked `shrink-0`. Under CSS Flexible Box Layout specs, an element with `overflow-x: auto` has an automatic minimum height of 0 (`min-height: 0`).
+   - When child tables loaded large datasets (e.g. 387 unmapped doctor-test pairs in `ReferralRateQueueTab` or 60 doctors in `PartnerRegistryTab`), Child 3 (`flex-1 w-full space-y-3`) expanded to 2000+ pixels. The parent flex container absorbed the negative space by crushing the only shrinkable item with `min-height: 0`—the tab bar—down to 0px height, making it completely invisible.
+   - During the initial loading state (`loadingQueue === true`), Child 3 only contained a small 150px loader spinner, so available space was positive and the tab bar was visible; the exact millisecond the data arrived and rendered, the tab bar was squished to 0px.
+2. **DOM-Level `scrollIntoView` Ancestor Shifting:**
+   - `activeTabEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })` was causing WebKit/Chrome ancestor scroll containers (`<main>` and outer divs) to shift vertically.
+
+### Resolution Implemented
+1. **Fixed-Header / Fixed-Tab / Scrolling Content Architecture:**
+   - Restructured `ReferralTerminal.jsx` to adopt the proven enterprise pattern from `RevenueScreens` and `InsuranceTerminal`:
+     - Outer container: `flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-500`
+     - Header: `px-5 sm:px-6 pt-3.5 sm:pt-4 pb-2 shrink-0 flex flex-col xl:flex-row ...`
+     - Tab navigation: `px-5 sm:px-6 pb-2.5 flex items-center gap-1 overflow-x-auto scrollbar-thin shrink-0` (explicitly locked with `shrink-0` so it can never collapse)
+     - Content area: `flex-1 overflow-y-auto custom-scrollbar px-5 sm:px-6 pb-16 space-y-3 sm:space-y-3.5` (isolated vertical scrolling container)
+2. **Container-Isolated Horizontal Tab Centering:**
+   - Replaced `activeTabEl.scrollIntoView` with isolated `container.scrollTo({ left, behavior: 'smooth' })`, ensuring parent vertical coordinates remain unchanged.
+3. **Preventative Hardening Across Sibling Terminals:**
+   - Added `shrink-0` to tab bars in `ExpenseScreens.jsx` and `WorkforceScreens.jsx` to prevent similar layout degradation under heavy data loads.
+4. **Verification & Build:**
+   - Successfully compiled frontend (`npm run build`) producing clean production assets (`index-2lXGGwLf.js` and `index-D3zA6EAO.css`).
+   - Verified solution builds cleanly with 0 errors across the entire `.NET` backend solution (`dotnet build SynOS.sln`).
+
 
 
 

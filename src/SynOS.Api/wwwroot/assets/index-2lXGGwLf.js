@@ -141447,7 +141447,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
         }),
         n.jsx("div", {
           ref: i,
-          className: "px-8 pb-2 flex items-center gap-1 overflow-x-auto scrollbar-thin",
+          className: "px-8 pb-2 flex items-center gap-1 overflow-x-auto scrollbar-thin shrink-0",
           children: n.jsx("div", {
             className: "flex items-center bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl",
             children: h.map((f) => n.jsxs("button", {
@@ -142219,7 +142219,7 @@ Remittance details and UPI QR are attached in the invoice. Please verify and set
         }),
         n.jsx("div", {
           ref: i,
-          className: "px-8 pb-2 flex items-center gap-1 overflow-x-auto scrollbar-thin",
+          className: "px-8 pb-2 flex items-center gap-1 overflow-x-auto scrollbar-thin shrink-0",
           children: n.jsx("div", {
             className: "flex items-center bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl",
             children: N.map((O) => n.jsxs("button", {
@@ -152958,11 +152958,16 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
     ]), F.useEffect(() => {
       if (te.current) {
         const Ne = te.current.querySelector('[data-active-tab="true"]');
-        Ne && Ne.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-          inline: "center"
-        });
+        if (Ne) {
+          const ye = te.current, ce = Ne.getBoundingClientRect(), W = ye.getBoundingClientRect();
+          if (ce.left < W.left || ce.right > W.right) {
+            const le = Ne.offsetLeft - ye.clientWidth / 2 + Ne.clientWidth / 2;
+            ye.scrollTo({
+              left: Math.max(0, le),
+              behavior: "smooth"
+            });
+          }
+        }
       }
       Ie(i);
     }, [
@@ -153594,10 +153599,10 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
       e(`/finance/referrals/${Ne}`);
     }, Ue = Ve();
     return n.jsxs("div", {
-      className: "px-5 sm:px-6 py-3.5 sm:py-4 w-full flex-1 flex flex-col justify-start gap-3 sm:gap-3.5 pb-16 animate-in fade-in duration-500 relative bg-[#CBD5E1] dark:bg-zinc-950 overflow-y-auto custom-scrollbar",
+      className: "flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-500",
       children: [
         n.jsxs("div", {
-          className: "shrink-0 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3 min-h-[44px]",
+          className: "px-5 sm:px-6 pt-3.5 sm:pt-4 pb-2 shrink-0 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3 min-h-[44px]",
           children: [
             n.jsxs("div", {
               className: "flex items-center gap-3.5",
@@ -153722,7 +153727,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
         }),
         n.jsx("div", {
           ref: te,
-          className: "flex items-center gap-1 overflow-x-auto scrollbar-thin",
+          className: "px-5 sm:px-6 pb-2.5 flex items-center gap-1 overflow-x-auto scrollbar-thin shrink-0",
           children: n.jsx("div", {
             className: "flex items-center bg-[#D6E3EF] dark:bg-zinc-800/80 p-1.5 rounded-[14px] shadow-[inset_0_1px_2px_rgba(15,35,60,0.12)] border border-white/60 dark:border-zinc-700",
             children: re.map((Ne) => n.jsxs("button", {
@@ -153746,7 +153751,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
           })
         }),
         n.jsxs("div", {
-          className: "flex-1 w-full space-y-3 sm:space-y-3.5",
+          className: "flex-1 overflow-y-auto custom-scrollbar px-5 sm:px-6 pb-16 space-y-3 sm:space-y-3.5",
           children: [
             i === "overview" && n.jsx(ZMe, {
               dashboardData: g,
@@ -172394,7 +172399,7 @@ Payment advice and bank remittance particulars are attached. Please acknowledge 
         }),
         n.jsx("div", {
           ref: r,
-          className: "px-8 pb-2 flex items-center gap-1 overflow-x-auto scrollbar-thin",
+          className: "px-8 pb-2 flex items-center gap-1 overflow-x-auto scrollbar-thin shrink-0",
           children: n.jsx("div", {
             className: "flex items-center bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl",
             children: v.map((U) => n.jsxs("button", {

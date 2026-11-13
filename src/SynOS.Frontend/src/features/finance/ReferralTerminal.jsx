@@ -165,7 +165,13 @@ export const ReferralTerminal = () => {
         if (tabsRef.current) {
             const activeTabEl = tabsRef.current.querySelector('[data-active-tab="true"]');
             if (activeTabEl) {
-                activeTabEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                const container = tabsRef.current;
+                const activeRect = activeTabEl.getBoundingClientRect();
+                const containerRect = container.getBoundingClientRect();
+                if (activeRect.left < containerRect.left || activeRect.right > containerRect.right) {
+                    const scrollTarget = activeTabEl.offsetLeft - (container.clientWidth / 2) + (activeTabEl.clientWidth / 2);
+                    container.scrollTo({ left: Math.max(0, scrollTarget), behavior: 'smooth' });
+                }
             }
         }
         ensureTabData(effectiveTab);
@@ -505,9 +511,9 @@ export const ReferralTerminal = () => {
     const printConfig = getPrintSummaryConfig();
 
     return (
-        <div className="px-5 sm:px-6 py-3.5 sm:py-4 w-full flex-1 flex flex-col justify-start gap-3 sm:gap-3.5 pb-16 animate-in fade-in duration-500 relative bg-[#CBD5E1] dark:bg-zinc-950 overflow-y-auto custom-scrollbar">
+        <div className="flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-500">
             {/* TERMINAL HEADER MATCHING FINANCE HUB & DISCOUNT MASTER STANDARD */}
-            <div className="shrink-0 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3 min-h-[44px]">
+            <div className="px-5 sm:px-6 pt-3.5 sm:pt-4 pb-2 shrink-0 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3 min-h-[44px]">
                 <div className="flex items-center gap-3.5">
                     <div>
                         <h1 className="text-3xl sm:text-4xl font-extrabold dark:text-white text-slate-900 tracking-normal leading-tight">
@@ -574,7 +580,7 @@ export const ReferralTerminal = () => {
             </div>
 
             {/* TAB NAVIGATION (SEGMENTED PILL MATCHING DISCOUNT MASTER) */}
-            <div ref={tabsRef} className="flex items-center gap-1 overflow-x-auto scrollbar-thin">
+            <div ref={tabsRef} className="px-5 sm:px-6 pb-2.5 flex items-center gap-1 overflow-x-auto scrollbar-thin shrink-0">
                 <div className="flex items-center bg-[#D6E3EF] dark:bg-zinc-800/80 p-1.5 rounded-[14px] shadow-[inset_0_1px_2px_rgba(15,35,60,0.12)] border border-white/60 dark:border-zinc-700">
                     {tabs.map(t => (
                         <button
@@ -601,7 +607,7 @@ export const ReferralTerminal = () => {
             </div>
 
             {/* MAIN CONTENT AREA */}
-            <div className="flex-1 w-full space-y-3 sm:space-y-3.5">
+            <div className="flex-1 overflow-y-auto custom-scrollbar px-5 sm:px-6 pb-16 space-y-3 sm:space-y-3.5">
                 {effectiveTab === 'overview' && (
                     <PartnerPerformanceTab 
                         dashboardData={dashboardData}

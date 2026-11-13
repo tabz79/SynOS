@@ -3996,7 +3996,7 @@ export const WorkforceTerminal = () => {
             </div>
 
             {/* TAB NAVIGATION (SEGMENTED PILL ON NATIVE CANVAS) */}
-            <div ref={tabsRef} className="px-8 pb-2 flex items-center gap-1 overflow-x-auto scrollbar-thin">
+            <div ref={tabsRef} className="px-8 pb-2 flex items-center gap-1 overflow-x-auto scrollbar-thin shrink-0">
                 <div className="flex items-center bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
                     {tabs.map((t) => (
                         <button
