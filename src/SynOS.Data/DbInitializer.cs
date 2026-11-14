@@ -1863,6 +1863,9 @@ END
                     context.SaveChanges();
                 }
             }
+
+            // Ensure the 11 mandatory clinical radiology studies (MRI, CT) are seeded alongside baseline test definitions
+            CatalogSeedService.EnsureRequestedRadiologyStudiesAsync(context).GetAwaiter().GetResult();
         }
 
         private static void SeedPatients(SynOSDbContext context)

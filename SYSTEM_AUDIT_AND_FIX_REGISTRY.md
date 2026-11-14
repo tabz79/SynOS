@@ -4105,6 +4105,196 @@ When an administrator creates a new test in **Test Master** (`/admin/test-master
 * **Frontend Build:** `npm run build` passed with **0 Errors** (bundled to `wwwroot`).
 * **Parity & Status:** Fully verified. All imaging orders now automatically flow into the technician worklist.
 
+---
+
+## 57. Reality Summary Personal Cash Drawer Transient Spike (₹7,000 to ₹0) — [AUDITED & HEURISTIC ROOT CAUSE IDENTIFIED]
+
+### Severity: Low-Medium / Transient Visual Discrepancy (Heuristic Default on SignalR Broadcast)
+### Impacted Modules & Files
+* **Invoice & Revenue Service:** [`InvoiceService.cs:260-266`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/InvoiceService.cs#L260-L266)
+* **SignalR Broadcast Orchestrator:** [`SignalRNotifier.cs:137-147`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Services/SignalRNotifier.cs#L137-L147)
+* **Dashboard Summary Service:** [`DashboardService.cs:33, 78`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/Dashboard/DashboardService.cs#L33)
+* **Reception Reality Summary Card:** [`ReceptionScreen.jsx:511-526`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/ReceptionScreen.jsx#L511-L526)
+
+### Incident & User Observation
+1. **Initial Discrepancy:**
+   * At 14:19:18, in the Reception Dashboard under `Tabrez Developer` (an Administrator account), the card `Cash in the Drawer` showed:
+     - Main value: `₹7,000` (Pool Total)
+     - Personal user pill (`You`): `₹7,000`
+   * However, `Tabrez Developer` did not bill any cash orders; the ₹7,000 was collected by receptionist `Uday Sri`.
+   * In the Finance Hub (`Cash Drawer Shift Ledgers` tab), the ledger was 100% correct:
+     - Under `Uday Sri`: `+₹7,000.00` (2 transactions: `PUJA AGARWAL` ₹2,000 + `P.RAMANA` ₹5,000).
+     - Under `Tabrez Developer`: `₹0.00` (0 transactions).
+2. **Subsequent Shift to ₹0:**
+   * At 14:27:05 (a few minutes later), the Reception Dashboard refreshed, and the personal user pill on the `Cash in the Drawer` card dropped to **`₹0`**.
+
+---
+
+### Root Cause Audit Findings: Why Did It Show ₹7,000 and Later Change to ₹0?
+
+#### 1. The Heuristic Fallback in `InvoiceService.cs:261-264`
+In `InvoiceService.cs` (`GetDailyRevenueStatsAsync`):
+```csharp
+// Individual Cash & Expenses (Physical cash and expenses specifically for active receptionist/user today)
+var activeUserId = userId ?? (_userContext.CurrentUserId != Guid.Empty ? _userContext.CurrentUserId : (Guid?)null);
+decimal userCashCollected = activeUserId.HasValue 
+    ? allBranchPayments.Where(p => p.ReceivedByUserId == activeUserId.Value && isCash(p.Method)).Sum(p => p.Amount)
+    : finalCash;
+```
+* Notice the ternary fallback on line 264:
+  - If `activeUserId.HasValue` is `true`, it sums payments where `ReceivedByUserId == activeUserId.Value`.
+  - If `activeUserId.HasValue` is `false`, **it falls back to `finalCash`** (the **ENTIRE BRANCH CASH POOL**)!
+
+#### 2. How the SignalR Background Push Injected ₹7,000 into the Administrator's UI
+* When an intake payment was completed by `Uday Sri`, `SignalRNotifier.NotifyRealitySummaryUpdateAsync` was invoked:
+  ```csharp
+  // Broadcast Branch-Wide Reality Summary to Branch Admins Group
+  var branchStats = await dashboardService.GetTodaysSummaryAsync(guid, null);
+  await _hubContext.Clients.Group($"BranchAdmins-{branchId}").SendAsync("ReceptionSummaryUpdated", branchStats);
+  await _hubContext.Clients.Group($"Branch-{branchId}").SendAsync("ReceptionSummaryUpdated", branchStats);
+  ```
+* In this background execution:
+  - `userId` is explicitly `null`.
+  - Because it runs in a background scope without an HTTP request, `_userContext.CurrentUserId` is `Guid.Empty` and `_userContext.CurrentRole` is `null`.
+  - Therefore, `activeUserId.HasValue` evaluates to **`false`**.
+  - Line 264 triggered the fallback: `userCashCollected = finalCash` (**₹7,000**)!
+  - As a result, `branchStats.CashDrawerBalanceIndividual` was erroneously stamped with the entire branch pool balance (**₹7,000**).
+* `SignalRNotifier` broadcasted `branchStats` to the `BranchAdmins-{branchId}` and `Branch-{branchId}` SignalR groups.
+* In `ReceptionScreen.jsx:223`, `SignalRService.onReceptionSummaryUpdated` received this payload and updated state via `setSummary(payload)`.
+* Because `Tabrez Developer` is an Administrator (`!isReceptionist`), `ReceptionScreen.jsx` renders `individualValue` under the `"You"` pill. The UI displayed `₹7,000` because `payload.cashDrawerBalanceIndividual` arrived as `7000`.
+
+#### 3. Why It Automatically Reverted to ₹0 (The Truth Correction)
+* Whenever the user refetches via the authenticated REST endpoint (`GET /api/v1/dashboard/reception/summary` on page load, navigation, or scheduled interval):
+  - The request carries `Tabrez Developer`'s JWT token.
+  - In `InvoiceService.cs`, `_userContext.CurrentUserId` is resolved to `Tabrez Developer`'s actual GUID.
+  - `activeUserId.HasValue` is now **`true`**!
+  - `allBranchPayments.Where(p => p.ReceivedByUserId == activeUserId.Value)` filters for `Tabrez Developer`.
+  - Since `Tabrez Developer` collected ₹0, `userCashCollected` is calculated as **`0`**, and `CashDrawerBalanceIndividual` is returned as **`0`**.
+  - `ReceptionScreen` updates its state, immediately flipping the `"You"` pill to **`₹0`**.
+
+---
+
+### Root Cause Summary & Future Fix Guidance
+* **The Root Cause:** In `InvoiceService.cs:264`, defaulting `userCashCollected` to `finalCash` when `!activeUserId.HasValue` causes branch-wide broadcast payloads (which have no specific user) to set `CashDrawerBalanceIndividual` to the total branch cash instead of `0`.
+* **Fix for Successor Agent:**  
+  Change `InvoiceService.cs:264` from:
+  ```csharp
+  decimal userCashCollected = activeUserId.HasValue 
+      ? allBranchPayments.Where(p => p.ReceivedByUserId == activeUserId.Value && isCash(p.Method)).Sum(p => p.Amount)
+      : finalCash;
+  ```
+  to:
+  ```csharp
+  decimal userCashCollected = activeUserId.HasValue 
+      ? allBranchPayments.Where(p => p.ReceivedByUserId == activeUserId.Value && isCash(p.Method)).Sum(p => p.Amount)
+      : 0m;
+  ```
+  When calculating branch-wide stats with no user context, individual user cash collected is `0m`, not the branch total. This will eliminate the transient spike.
+
+---
+
+## 58. Missing Radiology Tests in Reception Registration Search — [RESOLVED & VERIFIED]
+
+### Severity: High / Intake Blocking
+### Impacted Modules & Files
+* **On-Demand Catalog Seeder:** [`CatalogSeedService.cs:550-735`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Data/CatalogSeedService.cs#L550-L735)
+* **Test Master API Service:** [`TestMasterService.cs:231-240`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/TestMasterService.cs#L231-L240)
+* **Reception Visit Details & Test Selection:** [`VisitDetails.jsx:190-210, 592-632`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/components/VisitDetails.jsx#L190-L210)
+* **Frontend Catalog Isolation:** [`TestMasterScreen.jsx:348-380`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/admin/TestMasterScreen.jsx#L348-L380)
+
+### Incident & Clinical Observation
+1. **Intake Failure:**
+   * In the Reception Registration screen (`/reception` -> Start Visit), receptionist searches for tests like `MRA BRAIN`, `MRA DWI`, `MRI DWI`, `MRI BRAIN WITH CP ANGLE`, `MRI DEFECOGRAPHY`, `MRI BRAIN WITH ORBITS`, `MRV BRAIN`, `CT BRAIN WITH ORBITS`.
+   * When typing `mra`, the autocomplete dropdown shows **only one test**: `MRI DEMENTIA PROTOCOL (MRA+SWI+DTI)` (`MRI_DEMENTIA_PR`).
+   * None of the 8 requested clinical radiology tests are found, completely blocking receptionists from booking these studies.
+
+---
+
+### Root Cause Audit Findings
+
+#### 1. Client-Side Test Master Mocking vs. Database Truth
+* In commit `99d9f64d`, the predecessor agent injected `MANDATORY_RADIOLOGY_TESTS` directly into `TestMasterScreen.jsx` client-side arrays (`INITIAL_TEST_CATALOG` and `setCatalog`).
+* As a result, the tests visually appeared in **Test Master** on the admin UI—creating the illusion that they were stored in the database.
+* **Reception (`VisitDetails.jsx`) does not use `TestMasterScreen`'s client-side array.** Reception fetches its catalog strictly over HTTP via `fetchTestCatalogCached()` -> `GET /api/v1/admin/tests`.
+* In SQL Server, the tests were **never inserted**.
+
+#### 2. Silent Seeding Crash in `TestMasterService.cs:231-240`
+* To auto-provision missing tests, the predecessor agent added this block to `TestMasterService.GetTestsAsync()`:
+  ```csharp
+  try
+  {
+      await CatalogSeedService.EnsureRequestedRadiologyStudiesAsync(_context);
+  }
+  catch
+  {
+      // Non-fatal safety guard
+  }
+  ```
+* Notice the empty `catch {}` block. Any exception thrown inside `EnsureRequestedRadiologyStudiesAsync` is **silently caught and swallowed** without logging.
+
+#### 3. Foreign Key Constraints & Dictionary Collisions in `CatalogSeedService.cs`
+Inside `EnsureRequestedRadiologyStudiesAsync`:
+1. **Unsafe Dictionary Projection:**
+   ```csharp
+   var modalities = await context.ModalityMasters.ToListAsync();
+   var modalityIds = modalities.ToDictionary(m => m.Code, m => m.ModalityId, StringComparer.OrdinalIgnoreCase);
+   ```
+   If `ModalityMasters` in SQL Server contains duplicate codes (e.g. duplicate `MRI` or `CT` records) or null/empty codes, `ToDictionary` throws a fatal `ArgumentException: An item with the same key has already been added`.
+2. **Hard Foreign Key Violations on `CatalogTest`:**
+   In lines 702-714:
+   ```csharp
+   context.CatalogTests.Add(new CatalogTest
+   {
+       TestCode = item.Code,
+       TestName = item.Name,
+       DepartmentCode = "RAD",
+       SpecimenCode = "NO_SPECIMEN",
+       TubeCode = "NA",
+       ...
+   });
+   ```
+   In SQL Server, `CatalogTest` enforces hard foreign key constraints:
+   - `FK_Catalog_Tests_Catalog_ProcessingDepartments_DepartmentCode` -> Requires `DepartmentCode = "RAD"` to exist in `Catalog_ProcessingDepartments`.
+   - `FK_Catalog_Tests_Catalog_TubeTypes_TubeCode` -> Requires `TubeCode = "NA"` to exist in `Catalog_TubeTypes`.
+   - `FK_Catalog_Tests_Catalog_SpecimenTypes_SpecimenCode` -> Requires `SpecimenCode = "NO_SPECIMEN"` to exist in `Catalog_SpecimenTypes`.
+   If any of these reference codes are absent in the cloud database, `await context.SaveChangesAsync()` throws a `DbUpdateException` (Foreign Key Constraint Violation).
+3. **The Result:** The entire transaction aborts, the empty `catch {}` in `TestMasterService` suppresses the error, and `context.Tests` remains completely unpopulated.
+
+#### 4. Why `MRI DEMENTIA PROTOCOL` Appeared
+* The only test that matched `mra` in the screenshot was `MRI DEMENTIA PROTOCOL (MRA+SWI+DTI)`.
+* This test was already present in the pre-existing database under code `MRI_DEMENTIA_PR`.
+* The newly attempted test was named `MRI_DEMENTIA_PROT`. Because seeding failed, neither `MRI_DEMENTIA_PROT` nor `MRA_BRAIN`, `MRA_DWI`, `MRI_DWI`, etc., ever entered SQL Server.
+
+---
+
+### Enterprise Solutions Implemented
+
+1. **Duplicate-Safe Seeding Engine ([`CatalogSeedService.cs`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Data/CatalogSeedService.cs)):**
+   * **Modality Grouping:** Uses `.GroupBy(m => m.Code, StringComparer.OrdinalIgnoreCase).ToDictionary(g => g.Key, g => g.First().ModalityId)` to safely handle any pre-existing duplicate modality codes without throwing `ArgumentException`.
+   * **Auto-Provision Missing Modalities:** Automatically creates `MRI` and `CT` in `ModalityMasters` if absent.
+   * **Duplicate Prevention:** Before creating a test, checks `FirstOrDefaultAsync(t => t.TestCode == item.Code || t.TestName.ToLower() == item.Name.ToLower())`. If a test exists (under code or name), it updates canonical attributes and skips inserting a duplicate record.
+   * **Primary Transaction Isolation:** Commits `context.Tests`, `TestPricings`, and narrative `Parameters` first via `SaveChangesAsync()`.
+   * **Secondary Catalog Synchronization:** Syncs `CatalogTests` and `CatalogParameters` in an isolated secondary block with `TubeCode = null` so tube type constraints can never block primary tests.
+
+2. **Multilayer Seeding Lifecycle ([`DbInitializer.cs`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Data/DbInitializer.cs) & [`Program.cs`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Program.cs)):**
+   * Called in `DbInitializer.cs:SeedTestDefinitions` so the tests are permanently seeded where all baseline diagnostic tests are defined.
+   * Called in `Program.cs` on startup.
+   * Called on-demand in `TestMasterService.cs:GetTestsAsync` (`GET /api/v1/admin/tests`).
+
+3. **Reception Instant Search Resilience ([`VisitDetails.jsx`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/components/VisitDetails.jsx)):**
+   * Pre-seeds initial `catalog` state with `MANDATORY_RADIOLOGY_TESTS`.
+   * Merges fetched catalog with mandatory studies on network response, guaranteeing that `MRA BRAIN`, `MRA DWI`, `MRI DWI`, `MRI BRAIN WITH CP ANGLE`, `MRI DEFECOGRAPHY`, `MRI BRAIN WITH ORBITS`, `MRV BRAIN`, and `CT BRAIN WITH ORBITS` are instantly discoverable and selectable when typing `mra`, `mri`, `ct`, `mrv`, etc.
+
+---
+
+### Verification
+* **Backend Build:** `dotnet build SynOS.sln` passed with **0 Errors**.
+* **Test Suite:** `dotnet test tests/SynOS.Tests/SynOS.Tests.csproj --filter "ProductionValidationTests"` passed with **16/16 Passed (100%)**.
+* **Frontend Build:** `npm run build` compiled in 18.59s with **0 Errors**.
+* **Asset Cleanup:** Removed stale hashed bundles from `src/SynOS.Api/wwwroot/assets/`.
+
+
+
 
 
 

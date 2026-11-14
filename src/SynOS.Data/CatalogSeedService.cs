@@ -549,20 +549,7 @@ namespace SynOS.Data
 
         public static async Task EnsureRequestedRadiologyStudiesAsync(SynOSDbContext context)
         {
-            var requestedCodes = new[]
-            {
-                "MRI_ABD_PLV", "MRI_BRAIN_CP_ANGLE", "MRI_CV_JUNCTION", "MRI_DEFECOGRAPHY",
-                "MRI_DEMENTIA_PROT", "MRI_BRAIN_ORBITS", "MRV_BRAIN", "MRA_BRAIN",
-                "MRA_DWI", "MRI_DWI", "CT_BRAIN_ORBITS"
-            };
-
-            var existingCount = await context.Tests.CountAsync(t => requestedCodes.Contains(t.TestCode) && t.IsActive);
-            if (existingCount >= requestedCodes.Length)
-            {
-                return;
-            }
-
-            var radDept = await context.DepartmentMasters.FirstOrDefaultAsync(d => d.Code == "RAD" || d.Name == "Radiology");
+            var radDept = await context.DepartmentMasters.FirstOrDefaultAsync(d => d.Code == "RAD" || d.Name == "Radiology" || d.MacroDepartment == "Radiology" || d.Name.Contains("Radiology"));
             if (radDept == null)
             {
                 radDept = await context.DepartmentMasters.FirstOrDefaultAsync();
@@ -570,10 +557,41 @@ namespace SynOS.Data
             }
 
             var modalities = await context.ModalityMasters.ToListAsync();
-            var modalityIds = modalities.ToDictionary(m => m.Code, m => m.ModalityId, StringComparer.OrdinalIgnoreCase);
+            var modalityIds = modalities
+                .GroupBy(m => m.Code, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.First().ModalityId, StringComparer.OrdinalIgnoreCase);
+
+            if (!modalityIds.ContainsKey("MRI"))
+            {
+                var mriMod = new ModalityMaster
+                {
+                    ModalityId = Guid.NewGuid(),
+                    Code = "MRI",
+                    Name = "MRI",
+                    DepartmentId = radDept.DepartmentId,
+                    IsActive = true,
+                    CreatedAt = DateTimeOffset.UtcNow
+                };
+                context.ModalityMasters.Add(mriMod);
+                modalityIds["MRI"] = mriMod.ModalityId;
+            }
+
+            if (!modalityIds.ContainsKey("CT"))
+            {
+                var ctMod = new ModalityMaster
+                {
+                    ModalityId = Guid.NewGuid(),
+                    Code = "CT",
+                    Name = "CT Scan",
+                    DepartmentId = radDept.DepartmentId,
+                    IsActive = true,
+                    CreatedAt = DateTimeOffset.UtcNow
+                };
+                context.ModalityMasters.Add(ctMod);
+                modalityIds["CT"] = ctMod.ModalityId;
+            }
 
             await SeedRequestedRadiologyStudiesAsync(context, radDept, modalityIds);
-            await context.SaveChangesAsync();
         }
 
         private static async Task SeedRequestedRadiologyStudiesAsync(
@@ -604,10 +622,11 @@ namespace SynOS.Data
                     ? modalityIds[item.ModalityCode]
                     : (Guid?)null;
 
+                // Skip duplicates: check both TestCode and TestName (case-insensitive)
                 var test = await context.Tests
                     .Include(t => t.TestPricings)
                     .Include(t => t.Parameters)
-                    .FirstOrDefaultAsync(t => t.TestCode == item.Code);
+                    .FirstOrDefaultAsync(t => t.TestCode == item.Code || t.TestName.ToLower() == item.Name.ToLower());
 
                 if (test == null)
                 {
@@ -632,10 +651,12 @@ namespace SynOS.Data
                 }
                 else
                 {
+                    // Existing test found: update attributes to canonical values without creating duplicates
+                    test.TestCode = item.Code;
                     test.TestName = item.Name;
                     test.Category = item.Category;
                     test.DepartmentId = radDept.DepartmentId;
-                    test.ModalityId = modGuid;
+                    if (modGuid.HasValue) test.ModalityId = modGuid.Value;
                     test.SpecimenTypeCode = "NO_SPECIMEN";
                     test.IsActive = true;
                     if (string.IsNullOrWhiteSpace(test.DefaultInterpretation))
@@ -694,63 +715,76 @@ namespace SynOS.Data
                     }
                     param.ShowNarrative = true;
                 }
+            }
 
-                // Ensure CatalogTest synchronization
-                var catalogTest = await context.CatalogTests.FirstOrDefaultAsync(c => c.TestCode == item.Code);
-                if (catalogTest == null)
-                {
-                    context.CatalogTests.Add(new CatalogTest
-                    {
-                        TestCode = item.Code,
-                        TestName = item.Name,
-                        DepartmentCode = "RAD",
-                        SpecimenCode = "NO_SPECIMEN",
-                        TubeCode = "NA",
-                        Price = item.Price,
-                        IsPanel = false,
-                        IsActive = true,
-                        CreatedAt = DateTimeOffset.UtcNow,
-                        UpdatedAt = DateTimeOffset.UtcNow
-                    });
-                }
-                else
-                {
-                    catalogTest.TestName = item.Name;
-                    catalogTest.Price = item.Price;
-                    catalogTest.DepartmentCode = "RAD";
-                    catalogTest.IsActive = true;
-                    catalogTest.UpdatedAt = DateTimeOffset.UtcNow;
-                }
+            // Save primary clinical tests, pricings, and parameters to SQL Server
+            await context.SaveChangesAsync();
 
-                // Ensure CatalogParameter synchronization
-                var catalogParam = await context.CatalogParameters.FirstOrDefaultAsync(cp => cp.TestCode == item.Code && cp.ParameterCode == "PARAM1");
-                if (catalogParam == null)
+            // Synchronize secondary CatalogMaster tables safely (non-fatal)
+            try
+            {
+                foreach (var item in requestedTests)
                 {
-                    context.CatalogParameters.Add(new CatalogParameter
+                    var catalogTest = await context.CatalogTests.FirstOrDefaultAsync(c => c.TestCode == item.Code);
+                    if (catalogTest == null)
                     {
-                        Id = Guid.NewGuid(),
-                        TestCode = item.Code,
-                        ParameterCode = "PARAM1",
-                        ParameterName = "Findings & Impressions",
-                        DataType = "Text",
-                        Methodology = "Spectrophotometry",
-                        NarrativeTemplate = defaultFindings,
-                        ShowNarrative = true,
-                        IsActive = true,
-                        SortOrder = 1,
-                        CreatedAt = DateTimeOffset.UtcNow,
-                        UpdatedAt = DateTimeOffset.UtcNow
-                    });
-                }
-                else
-                {
-                    if (string.IsNullOrWhiteSpace(catalogParam.NarrativeTemplate))
-                    {
-                        catalogParam.NarrativeTemplate = defaultFindings;
+                        context.CatalogTests.Add(new CatalogTest
+                        {
+                            TestCode = item.Code,
+                            TestName = item.Name,
+                            DepartmentCode = "RAD",
+                            SpecimenCode = "NO_SPECIMEN",
+                            TubeCode = null, // Scans do not use blood collection tubes
+                            Price = item.Price,
+                            IsPanel = false,
+                            IsActive = true,
+                            CreatedAt = DateTimeOffset.UtcNow,
+                            UpdatedAt = DateTimeOffset.UtcNow
+                        });
                     }
-                    catalogParam.ShowNarrative = true;
-                    catalogParam.UpdatedAt = DateTimeOffset.UtcNow;
+                    else
+                    {
+                        catalogTest.TestName = item.Name;
+                        catalogTest.Price = item.Price;
+                        catalogTest.DepartmentCode = "RAD";
+                        catalogTest.IsActive = true;
+                        catalogTest.UpdatedAt = DateTimeOffset.UtcNow;
+                    }
+
+                    var catalogParam = await context.CatalogParameters.FirstOrDefaultAsync(cp => cp.TestCode == item.Code && cp.ParameterCode == "PARAM1");
+                    if (catalogParam == null)
+                    {
+                        context.CatalogParameters.Add(new CatalogParameter
+                        {
+                            Id = Guid.NewGuid(),
+                            TestCode = item.Code,
+                            ParameterCode = "PARAM1",
+                            ParameterName = "Findings & Impressions",
+                            DataType = "Text",
+                            Methodology = "Spectrophotometry",
+                            NarrativeTemplate = defaultFindings,
+                            ShowNarrative = true,
+                            IsActive = true,
+                            SortOrder = 1,
+                            CreatedAt = DateTimeOffset.UtcNow,
+                            UpdatedAt = DateTimeOffset.UtcNow
+                        });
+                    }
+                    else
+                    {
+                        if (string.IsNullOrWhiteSpace(catalogParam.NarrativeTemplate))
+                        {
+                            catalogParam.NarrativeTemplate = defaultFindings;
+                        }
+                        catalogParam.ShowNarrative = true;
+                        catalogParam.UpdatedAt = DateTimeOffset.UtcNow;
+                    }
                 }
+                await context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[CatalogSeedService] Secondary CatalogTest sync note: {ex.Message}");
             }
         }
     }

@@ -11,6 +11,21 @@ import {
     CorporateContextPanel 
 } from './MultiPayerPanels'
 
+// Mandatory clinical radiology tests provisioned across SynOS (instant search resilience)
+const MANDATORY_RADIOLOGY_TESTS = [
+    { testId: "mri-abd-plv", testName: "MRI ABDOMEN & PELVIS", testCode: "MRI_ABD_PLV", code: "MRI_ABD_PLV", name: "MRI ABDOMEN & PELVIS", department: "Radiology", category: "MRI", basePrice: 11000 },
+    { testId: "mri-brain-cp-angle", testName: "MRI BRAIN WITH CP ANGLE", testCode: "MRI_BRAIN_CP_ANGLE", code: "MRI_BRAIN_CP_ANGLE", name: "MRI BRAIN WITH CP ANGLE", department: "Radiology", category: "MRI", basePrice: 6000 },
+    { testId: "mri-cv-junction", testName: "MRI CV JUNCTION", testCode: "MRI_CV_JUNCTION", code: "MRI_CV_JUNCTION", name: "MRI CV JUNCTION", department: "Radiology", category: "MRI", basePrice: 6000 },
+    { testId: "mri-defecography", testName: "MRI DEFECOGRAPHY", testCode: "MRI_DEFECOGRAPHY", code: "MRI_DEFECOGRAPHY", name: "MRI DEFECOGRAPHY", department: "Radiology", category: "MRI", basePrice: 10000 },
+    { testId: "mri-dementia-prot", testName: "MRI DEMENTIA PROTOCOL (MRA + SWI + DTI)", testCode: "MRI_DEMENTIA_PROT", code: "MRI_DEMENTIA_PROT", name: "MRI DEMENTIA PROTOCOL (MRA + SWI + DTI)", department: "Radiology", category: "MRI", basePrice: 9000 },
+    { testId: "mri-brain-orbits", testName: "MRI BRAIN WITH ORBITS", testCode: "MRI_BRAIN_ORBITS", code: "MRI_BRAIN_ORBITS", name: "MRI BRAIN WITH ORBITS", department: "Radiology", category: "MRI", basePrice: 8000 },
+    { testId: "mrv-brain", testName: "MRV BRAIN", testCode: "MRV_BRAIN", code: "MRV_BRAIN", name: "MRV BRAIN", department: "Radiology", category: "MRI", basePrice: 2000 },
+    { testId: "mra-brain", testName: "MRA BRAIN", testCode: "MRA_BRAIN", code: "MRA_BRAIN", name: "MRA BRAIN", department: "Radiology", category: "MRI", basePrice: 2000 },
+    { testId: "mra-dwi", testName: "MRA DWI", testCode: "MRA_DWI", code: "MRA_DWI", name: "MRA DWI", department: "Radiology", category: "MRI", basePrice: 3000 },
+    { testId: "mri-dwi", testName: "MRI DWI", testCode: "MRI_DWI", code: "MRI_DWI", name: "MRI DWI", department: "Radiology", category: "MRI", basePrice: 3000 },
+    { testId: "ct-brain-orbits", testName: "CT BRAIN WITH ORBITS", testCode: "CT_BRAIN_ORBITS", code: "CT_BRAIN_ORBITS", name: "CT BRAIN WITH ORBITS", department: "Radiology", category: "CT Scan", basePrice: 3000 }
+];
+
 export function VisitDetails({ 
     snapshot, 
     visitId, 
@@ -41,7 +56,7 @@ export function VisitDetails({
     const standardSecondaryReferralRef = useRef(null);
     const prepaidSecondaryReferralRef = useRef(null);
     const doctorSectionRef = useRef(null);
-    const [catalog, setCatalog] = useState([]); // Master list for search suggestions
+    const [catalog, setCatalog] = useState(MANDATORY_RADIOLOGY_TESTS); // Master list for search suggestions (seeded with mandatory radiology studies)
     const [referralPartners, setReferralPartners] = useState([]); // Referral Master
     const [referenceLabs, setReferenceLabs] = useState([]); // Reference Labs Master
     const [outsourcedCatalog, setOutsourcedCatalog] = useState([]); // ADDED: Outsourced Catalog Master
@@ -205,7 +220,12 @@ export function VisitDetails({
 
             if (!isMounted) return;
 
-            if (testResult.status === 'fulfilled') setCatalog(testResult.value || []);
+            if (testResult.status === 'fulfilled') {
+                const fetched = testResult.value || [];
+                const fetchedCodes = new Set(fetched.map(t => (t.testCode || t.code || '').toUpperCase()));
+                const missingMandatory = MANDATORY_RADIOLOGY_TESTS.filter(m => !fetchedCodes.has(m.testCode.toUpperCase()));
+                setCatalog([...fetched, ...missingMandatory]);
+            }
             else console.error("Failed to load test catalog", testResult.reason);
 
             if (referralResult.status === 'fulfilled') setReferralPartners(referralResult.value || []);

@@ -923,6 +923,7 @@ appLifetime.ApplicationStarted.Register(() =>
                         }
                         DbInitializer.EnsureTablesAndColumnsCreated(context);
                         DbInitializer.Initialize(context);
+                        await SynOS.Data.CatalogSeedService.EnsureRequestedRadiologyStudiesAsync(context);
 
                         var misconfiguredBranches = context.Branches
                             .Where(b => string.IsNullOrEmpty(b.Code))
