@@ -4486,3 +4486,43 @@ Inside `EnsureRequestedRadiologyStudiesAsync`:
 - **Frontend Build:** `npm run build` completed cleanly in 18.29s with 0 errors.
 - **Backend Build:** `dotnet build SynOS.sln` passed with 0 errors.
 - **Git:** Changes committed and pushed to `origin/cloud-testing-2`.
+
+---
+
+## Issue 62: Universal Finance Screen Hierarchy & Floating Quick Actions Architecture
+
+### Date: 2026-11-14
+**Status: Resolved & Verified**
+**Branch: cloud-testing-2**
+
+#### Problem Statement
+1. **Vertical Screen Clutter:** Finance screens exhibited stacked header bands with redundant descriptive subtext ("Real-time operational ledger...", "Manage people, track payroll..."), consuming ~80px of vertical screen real estate and pushing KPI cards and tables below the fold.
+2. **Sub-Tab Navigation Placement:** Horizontal navigation sub-tabs were placed beneath page titles and filters rather than directly under the top SystemBar, disrupting visual hierarchy and navigation speed.
+3. **Top-Right Header Congestion:** Top-right headers were overloaded with export and print buttons (`Download Summary`, `Print Summary`, `Doctor Invoice`, `Export CSV`), crowding out standard filter controls.
+4. **Action Dock Collision Constraints:** Top buttons needed relocation, but placing buttons at the bottom-right was prohibited because row action buttons (`Settle`, `A4 Bill`, `Invoice`, `Details`) reside on the right edge of data tables.
+
+#### Resolution Implemented
+1. **Standardized Top Sub-Tab Navigation (Area 4):**
+   - Relocated horizontal sub-tab strips (`tabsRef`) to the very top, flush directly below the `SystemBar` across all Finance screens.
+   - Built with segmented pills on native canvas with smooth horizontal scroll and active tab highlighting.
+2. **Zero-Subtext Active Canvas Header:**
+   - Completely eliminated descriptive grey subtitle paragraphs across all Finance headers, recovering 35–45px of vertical screen space.
+   - Reorganized header with a clean bold Module Title on the left (with pulsing live updating radar badge) and the `StandardFilterBar` (Date presets & Branch view) on the right.
+3. **Enterprise Floating Squircle Quick Actions Dock (`FinanceFloatingActions.jsx`):**
+   - Engineered reusable floating action component floating at bottom-left (`sticky bottom-6 left-8 z-50 select-none w-fit`).
+   - Floats cleanly above scrolling tables and automatically respects sidebar expansion/collapse without blocking table row actions on the right.
+   - Clicking the squircle expands smoothly upwards (`origin-bottom-left`) into a frosted backdrop action dock with `Download Summary`, `Print Summary`, and contextual action buttons (e.g., `Doctor Invoice`, `Change Due & Refunds`).
+   - Dismisses cleanly on click outside, action selection, or `Escape` keypress.
+4. **Universal Deployment Across All Finance Screens:**
+   - **Revenue:** `RevenueTerminal`, `BillsCollectionsScreen`, `DueBillsScreen`, `PendingReceivablesScreen`, `VisitCorrectionsScreen`, `CollectionHistoryScreen`, `CancellationsRefundsScreen`, `RefundClaimsTerminalScreen`, `CashDrawerLedgersScreen`.
+   - **Referral Partners:** `ReferralTerminal`, `SettlementHistoryTab`.
+   - **Expenses & Outsourced Tests:** `ExpenseTerminal`, `OutsourcingTerminal`.
+   - **Insurance:** `InsuranceTerminal`.
+   - **Discount Master:** `DiscountMasterScreen`.
+   - **Workforce & Payroll:** `WorkforceTerminal`.
+
+#### Verification
+- **Frontend Build:** `npm run build` completed in 18.77s with 0 errors.
+- **Backend Build:** `dotnet build SynOS.sln` passed in 20.26s with 0 errors.
+- **Runtime Sync:** Built bundle synced directly to `src/SynOS.Api/wwwroot`.
+- **Git:** Changes committed and pushed to `origin/cloud-testing-2`.

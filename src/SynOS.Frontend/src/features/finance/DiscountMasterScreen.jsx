@@ -58,6 +58,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useGlobalFilter } from '@/context/GlobalFilterContext';
 import { StandardFilterBar } from '@/components/layout/StandardFilterBar';
 import { FinancePrintableSummaryModal } from './components/FinancePrintableSummaryModal';
+import { FinanceFloatingActions } from './components/FinanceFloatingActions';
 
 function CircularProgressGauge({ percentage = 0, color = "#14B8A6" }) {
     const radius = 13.5;
@@ -997,18 +998,34 @@ export function DiscountMasterScreen() {
     };
 
     return (
-        <div className="px-5 sm:px-6 py-3.5 sm:py-4 w-full flex flex-col justify-start gap-3 sm:gap-3.5 pb-16 animate-in fade-in duration-500 relative bg-[#CBD5E1] dark:bg-zinc-950">
-            {/* TERMINAL HEADER MATCHING FINANCE HUB STANDARD */}
+        <div className="px-5 sm:px-6 py-3 w-full flex flex-col justify-start gap-3 sm:gap-3.5 pb-16 animate-in fade-in duration-500 relative bg-[#CBD5E1] dark:bg-zinc-950">
+            {/* 1. TOP NAVIGATION TABS (Directly below SystemBar / Area 4) */}
+            <div className="flex items-center gap-1 overflow-x-auto scrollbar-thin border-b border-zinc-200/60 dark:border-zinc-800/60 pb-2">
+                <div className="flex items-center bg-[#D6E3EF] dark:bg-zinc-800/80 p-1.5 rounded-[14px] shadow-[inset_0_1px_2px_rgba(15,35,60,0.12)] border border-white/60 dark:border-zinc-700">
+                    {tabs.map(t => (
+                        <button
+                            key={t.id}
+                            onClick={() => navigate(`/finance/discounts/${t.id}`)}
+                            className={cn(
+                                "flex items-center gap-2 px-4 py-2 rounded-[10px] text-xs sm:text-sm font-semibold transition-all cursor-pointer whitespace-nowrap",
+                                tab === t.id
+                                    ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-[0_2px_8px_rgba(15,35,60,0.12),inset_0_1px_0_#FFFFFF] font-bold"
+                                    : "text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
+                            )}
+                        >
+                            <t.icon size={16} className={tab === t.id ? "text-synos-primary" : "text-slate-500"} />
+                            <span>{t.label}</span>
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* 2. UNIFIED ACTIVE HEADER: Title & Filter Bar (Zero Subtext) */}
             <div className="shrink-0 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3 min-h-[44px]">
                 <div className="flex items-center gap-3.5">
-                    <div>
-                        <h1 className="text-3xl sm:text-4xl font-extrabold dark:text-white text-slate-900 tracking-normal leading-tight">
-                            Discount Master
-                        </h1>
-                        <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 font-medium mt-0.5 leading-normal">
-                            Manage discount codes, view discounts given, and track staff discounts
-                        </p>
-                    </div>
+                    <h1 className="text-2xl sm:text-3xl font-black dark:text-white text-slate-900 tracking-tight leading-tight">
+                        Discount Master
+                    </h1>
                     {isUpdating && (
                         <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-synos-primary/10 border border-synos-primary/25 text-synos-primary shadow-xs animate-in fade-in duration-150">
                             <div className="relative flex items-center justify-center w-3 h-3">
@@ -1046,47 +1063,6 @@ export function DiscountMasterScreen() {
                             <Plus className="w-4 h-4" /> Add Preset Reason
                         </button>
                     )}
-
-                    {tab !== 'codes' && (
-                        <button
-                            onClick={handleDownloadCSV}
-                            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 rounded-xl text-xs sm:text-sm font-semibold transition-all border border-slate-200/80 dark:border-zinc-700 shadow-xs cursor-pointer"
-                        >
-                            <Download size={15} className="text-slate-500" />
-                            <span>Download CSV</span>
-                        </button>
-                    )}
-
-                    {tab !== 'codes' && tab !== 'reasons' && (
-                        <button
-                            onClick={() => setIsPrintModalOpen(true)}
-                            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-xs cursor-pointer"
-                        >
-                            <Printer size={15} />
-                            <span>Print Report</span>
-                        </button>
-                    )}
-                </div>
-            </div>
-
-            {/* TAB NAVIGATION (SEGMENTED PILL MATCHING REFERENCE A) */}
-            <div className="flex items-center gap-1 overflow-x-auto scrollbar-thin">
-                <div className="flex items-center bg-[#D6E3EF] dark:bg-zinc-800/80 p-1.5 rounded-[14px] shadow-[inset_0_1px_2px_rgba(15,35,60,0.12)] border border-white/60 dark:border-zinc-700">
-                    {tabs.map(t => (
-                        <button
-                            key={t.id}
-                            onClick={() => navigate(`/finance/discounts/${t.id}`)}
-                            className={cn(
-                                "flex items-center gap-2 px-4 py-2 rounded-[10px] text-xs sm:text-sm font-semibold transition-all cursor-pointer whitespace-nowrap",
-                                tab === t.id
-                                    ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-[0_2px_8px_rgba(15,35,60,0.12),inset_0_1px_0_#FFFFFF] font-bold"
-                                    : "text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
-                            )}
-                        >
-                            <t.icon size={16} className={tab === t.id ? "text-synos-primary" : "text-slate-500"} />
-                            <span>{t.label}</span>
-                        </button>
-                    ))}
                 </div>
             </div>
 
@@ -2622,6 +2598,14 @@ export function DiscountMasterScreen() {
                     discountAmount: `₹${totalDiscountAmount.toLocaleString()}`
                 }}
                 onDownloadCsv={handleDownloadCSV}
+            />
+
+            {/* Enterprise Floating Quick Actions */}
+            <FinanceFloatingActions
+                onDownload={handleDownloadCSV}
+                downloadLabel="Download CSV"
+                onPrint={() => setIsPrintModalOpen(true)}
+                printLabel="Print Report"
             />
         </div>
     );

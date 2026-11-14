@@ -35,6 +35,7 @@ import { CorporateTerminal } from './CorporateTerminal';
 import { useGlobalFilter } from '@/context/GlobalFilterContext';
 import { StandardFilterBar } from '@/components/layout/StandardFilterBar';
 import { useAuth } from '@/context/AuthContext';
+import { FinanceFloatingActions } from './components/FinanceFloatingActions';
 
 export function InsuranceTerminal({ forcedTab }) {
     const { tab: paramTab = 'overview' } = useParams();
@@ -264,21 +265,46 @@ export function InsuranceTerminal({ forcedTab }) {
     };
 
     return (
-        <div className="flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-500">
-            {/* TERMINAL HEADER (UNBOXED NATIVE CANVAS STYLE) */}
-            <div className="px-8 pt-8 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-500 relative">
+            {/* 1. TOP NAVIGATION TABS (Directly below SystemBar / Area 4) */}
+            <div className="px-8 pt-3 pb-2 flex items-center gap-1 overflow-x-auto scrollbar-thin shrink-0 border-b border-zinc-200/60 dark:border-zinc-800/60 bg-white/40 dark:bg-zinc-900/40 backdrop-blur-sm">
+                <div className="flex items-center bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
+                    {tabs.map(t => {
+                        const Icon = t.icon;
+                        const isActive = tab === t.id;
+                        return (
+                            <button
+                                key={t.id}
+                                onClick={() => navigate(`/finance/insurance/${t.id}`)}
+                                className={cn(
+                                    "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer",
+                                    isActive
+                                        ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs"
+                                        : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
+                                )}
+                            >
+                                <Icon size={14} />
+                                <span>{t.label}</span>
+                                {t.id === 'claims' && pendingClaimsCount > 0 && (
+                                    <span className="ml-1 px-1.5 py-0.2 bg-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] rounded-full font-mono">
+                                        {pendingClaimsCount}
+                                    </span>
+                                )}
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* 2. UNIFIED ACTIVE HEADER: Title & Filter Bar (Zero Subtext) */}
+            <div className="px-8 pt-3.5 pb-2.5 flex flex-col md:flex-row md:items-center md:justify-between gap-4 shrink-0">
                 <div className="flex items-center gap-3.5">
-                    <div className="p-2.5 bg-blue-500/10 text-blue-500 rounded-xl">
-                        <ShieldCheck size={24} />
+                    <div className="p-2 bg-blue-500/10 text-blue-500 rounded-xl">
+                        <ShieldCheck size={20} />
                     </div>
-                    <div>
-                        <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">
-                            Insurance
-                        </h1>
-                        <p className="text-xs text-zinc-500 font-medium mt-0.5">
-                            Insurance companies, packages, claims, and settlements
-                        </p>
-                    </div>
+                    <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight">
+                        Insurance
+                    </h1>
 
                     {isUpdating && (
                         <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-synos-primary/10 border border-synos-primary/25 text-synos-primary shadow-xs animate-in fade-in duration-150">
@@ -312,63 +338,13 @@ export function InsuranceTerminal({ forcedTab }) {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={handleDownloadTabSummary}
-                            className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl text-xs font-bold transition-all border border-slate-200 dark:border-zinc-700 shadow-sm cursor-pointer"
-                            title="Download CSV for current tab"
-                        >
-                            <Download size={14} className="text-zinc-500" />
-                            <span>Download Summary</span>
-                        </button>
-
-                        <button
-                            onClick={() => setIsPrintSummaryOpen(true)}
-                            className="flex items-center gap-1.5 px-3 py-2 bg-synos-primary text-white rounded-xl text-xs font-bold transition-all shadow-sm hover:brightness-105 cursor-pointer"
-                            title="Print official A4 summary for current tab"
-                        >
-                            <Printer size={14} />
-                            <span>Print Summary</span>
-                        </button>
-
-                        <button 
-                            onClick={loadData} 
-                            className="p-2 border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 rounded-xl transition-all cursor-pointer"
-                            title="Refresh"
-                        >
-                            <History size={16} className="text-zinc-500" />
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            {/* TAB NAVIGATION (SEGMENTED PILL ON NATIVE CANVAS) */}
-            <div className="px-8 pb-2 flex items-center gap-1 overflow-x-auto scrollbar-thin">
-                <div className="flex items-center bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
-                    {tabs.map(t => {
-                        const Icon = t.icon;
-                        const isActive = tab === t.id;
-                        return (
-                            <button
-                                key={t.id}
-                                onClick={() => navigate(`/finance/insurance/${t.id}`)}
-                                className={cn(
-                                    "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer",
-                                    isActive
-                                        ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs"
-                                        : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
-                                )}
-                            >
-                                <Icon size={14} />
-                                <span>{t.label}</span>
-                                {t.id === 'claims' && pendingClaimsCount > 0 && (
-                                    <span className="ml-1 px-1.5 py-0.2 bg-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] rounded-full font-mono">
-                                        {pendingClaimsCount}
-                                    </span>
-                                )}
-                            </button>
-                        );
-                    })}
+                    <button 
+                        onClick={loadData} 
+                        className="p-2 border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 rounded-xl transition-all cursor-pointer shadow-xs" 
+                        title="Refresh"
+                    >
+                        <History size={16} className="text-zinc-500" />
+                    </button>
                 </div>
             </div>
 
@@ -914,6 +890,14 @@ export function InsuranceTerminal({ forcedTab }) {
                     />
                 </CommercialDocumentViewer>
             )}
+
+            {/* Enterprise Floating Quick Actions */}
+            <FinanceFloatingActions
+                onDownload={handleDownloadTabSummary}
+                downloadLabel="Download Summary"
+                onPrint={() => setIsPrintSummaryOpen(true)}
+                printLabel="Print Summary"
+            />
         </div>
     );
 }

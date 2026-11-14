@@ -45,6 +45,7 @@ import { OverheadExpensesScreen } from './OverheadScreens';
 import { useGlobalFilter } from '@/context/GlobalFilterContext';
 import { StandardFilterBar } from '@/components/layout/StandardFilterBar';
 import { useAuth } from '@/context/AuthContext';
+import { FinanceFloatingActions } from './components/FinanceFloatingActions';
 
 // --- SHARED COMPONENTS (Finance Screens Pattern) ---
 
@@ -2474,35 +2475,9 @@ export const ExpenseTerminal = () => {
     }, [tab]);
 
     return (
-        <div className="flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-500">
-            {/* TERMINAL HEADER (UNBOXED NATIVE CANVAS STYLE) */}
-            <div className="px-8 pt-8 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div className="flex items-center gap-3.5">
-                    <div className="flex flex-col gap-1">
-                        <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight flex items-center gap-2">
-                            <TrendingDown className="w-6 h-6 text-synos-primary animate-none" />
-                            Expenses Command Center
-                        </h1>
-                        <p className="text-xs text-zinc-500 font-medium mt-0.5">Audit and register daily spending, vendor payouts, and recurring overheads.</p>
-                    </div>
-
-                    {isUpdating && (
-                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-synos-primary/10 border border-synos-primary/25 text-synos-primary shadow-xs animate-in fade-in duration-150">
-                            <div className="relative flex items-center justify-center w-3 h-3">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-synos-primary opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-synos-primary"></span>
-                            </div>
-                            <span className="text-xs font-bold tracking-wide uppercase">Updating...</span>
-                        </div>
-                    )}
-                </div>
-
-                {/* Unified Standard Filter Bar (Today, Month, Quarter, Year, Custom Range & Branch Selectors) */}
-                <StandardFilterBar />
-            </div>
-
-            {/* TAB NAVIGATION (SEGMENTED PILL ON NATIVE CANVAS) */}
-            <div ref={tabsRef} className="px-8 pb-2 flex items-center gap-1 overflow-x-auto scrollbar-thin shrink-0">
+        <div className="flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-500 relative">
+            {/* 1. TOP NAVIGATION TABS (Directly below SystemBar / Area 4) */}
+            <div ref={tabsRef} className="px-8 pt-3 pb-2 flex items-center gap-1 overflow-x-auto scrollbar-thin shrink-0 border-b border-zinc-200/60 dark:border-zinc-800/60 bg-white/40 dark:bg-zinc-900/40 backdrop-blur-sm">
                 <div className="flex items-center bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
                     {tabs.map((t) => (
                         <button
@@ -2521,6 +2496,29 @@ export const ExpenseTerminal = () => {
                         </button>
                     ))}
                 </div>
+            </div>
+
+            {/* 2. UNIFIED ACTIVE HEADER: Title & Filter Bar (Zero Subtext) */}
+            <div className="px-8 pt-3.5 pb-2.5 flex flex-col md:flex-row md:items-center md:justify-between gap-4 shrink-0">
+                <div className="flex items-center gap-3.5">
+                    <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight flex items-center gap-2">
+                        <TrendingDown className="w-6 h-6 text-synos-primary animate-none" />
+                        Expenses Command Center
+                    </h1>
+
+                    {isUpdating && (
+                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-synos-primary/10 border border-synos-primary/25 text-synos-primary shadow-xs animate-in fade-in duration-150">
+                            <div className="relative flex items-center justify-center w-3 h-3">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-synos-primary opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-synos-primary"></span>
+                            </div>
+                            <span className="text-xs font-bold tracking-wide uppercase">Updating...</span>
+                        </div>
+                    )}
+                </div>
+
+                {/* Unified Standard Filter Bar (Today, Month, Quarter, Year, Custom Range & Branch Selectors) */}
+                <StandardFilterBar />
             </div>
 
             {/* ACTIVE TAB CONTENT */}
@@ -2895,52 +2893,9 @@ export const OutsourcingTerminal = () => {
     const printConfig = getPrintSummaryConfig();
 
     return (
-        <div className="flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-500">
-            {/* TERMINAL HEADER (UNBOXED NATIVE CANVAS STYLE) */}
-            <div className="px-8 pt-8 pb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div className="flex items-center gap-3.5">
-                    <div className="flex flex-col gap-1">
-                        <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight flex items-center gap-2">
-                            <Beaker className="w-6 h-6 text-synos-primary animate-none" />
-                            Outsourced Lab Payables
-                        </h1>
-                        <p className="text-xs text-zinc-500 font-medium mt-0.5">Reference lab reconciliation and external test settlement management.</p>
-                    </div>
-
-                    {isUpdating && (
-                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-synos-primary/10 border border-synos-primary/25 text-synos-primary shadow-xs animate-in fade-in duration-150">
-                            <div className="relative flex items-center justify-center w-3 h-3">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-synos-primary opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-synos-primary"></span>
-                            </div>
-                            <span className="text-xs font-bold tracking-wide uppercase">Updating...</span>
-                        </div>
-                    )}
-                </div>
-
-                <div className="flex items-center gap-3 flex-wrap">
-                    <StandardFilterBar />
-                    <button 
-                        onClick={handleDownloadTabSummary}
-                        className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-200 rounded-xl text-xs font-bold transition-all border border-slate-200 dark:border-zinc-700 shadow-sm cursor-pointer"
-                        title={`Download ${tab.toUpperCase()} Summary (CSV)`}
-                    >
-                        <Download size={14} className="text-zinc-500" />
-                        <span>Download Summary</span>
-                    </button>
-                    <button 
-                        onClick={() => setIsPrintSummaryOpen(true)}
-                        className="flex items-center gap-1.5 px-3 py-2 bg-synos-primary text-white rounded-xl text-xs font-bold transition-all shadow-sm hover:brightness-105 cursor-pointer"
-                        title={`Print Printable ${tab.toUpperCase()} Statement`}
-                    >
-                        <Printer size={14} />
-                        <span>Print Summary</span>
-                    </button>
-                </div>
-            </div>
-
-            {/* TAB NAVIGATION (SEGMENTED PILL ON NATIVE CANVAS) */}
-            <div ref={tabsRef} className="px-8 pb-2 flex items-center gap-1 overflow-x-auto scrollbar-thin shrink-0">
+        <div className="flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-500 relative">
+            {/* 1. TOP NAVIGATION TABS (Directly below SystemBar / Area 4) */}
+            <div ref={tabsRef} className="px-8 pt-3 pb-2 flex items-center gap-1 overflow-x-auto scrollbar-thin shrink-0 border-b border-zinc-200/60 dark:border-zinc-800/60 bg-white/40 dark:bg-zinc-900/40 backdrop-blur-sm">
                 <div className="flex items-center bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
                     {tabs.map((t) => (
                         <button
@@ -2961,8 +2916,32 @@ export const OutsourcingTerminal = () => {
                 </div>
             </div>
 
+            {/* 2. UNIFIED ACTIVE HEADER: Title & Filter Bar (Zero Subtext) */}
+            <div className="px-8 pt-3.5 pb-2.5 flex flex-col md:flex-row md:items-center md:justify-between gap-4 shrink-0">
+                <div className="flex items-center gap-3.5">
+                    <h1 className="text-2xl font-black dark:text-white text-zinc-900 tracking-tight flex items-center gap-2">
+                        <Beaker className="w-6 h-6 text-synos-primary animate-none" />
+                        Outsourced Lab Payables
+                    </h1>
+
+                    {isUpdating && (
+                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-synos-primary/10 border border-synos-primary/25 text-synos-primary shadow-xs animate-in fade-in duration-150">
+                            <div className="relative flex items-center justify-center w-3 h-3">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-synos-primary opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-synos-primary"></span>
+                            </div>
+                            <span className="text-xs font-bold tracking-wide uppercase">Updating...</span>
+                        </div>
+                    )}
+                </div>
+
+                <div className="flex items-center gap-3 flex-wrap">
+                    <StandardFilterBar />
+                </div>
+            </div>
+
             {/* ACTIVE TAB CONTENT */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto relative">
                 {tab === 'overview' && <OutsourcingOverviewTab />}
                 {tab !== 'overview' && <OutsourcedPayablesScreen isTerminal={true} />}
             </div>
@@ -2980,6 +2959,14 @@ export const OutsourcingTerminal = () => {
                 data={printConfig.data}
                 summaryTotals={printConfig.summaryTotals}
                 onDownloadCsv={handleDownloadTabSummary}
+            />
+
+            {/* Enterprise Floating Quick Actions */}
+            <FinanceFloatingActions
+                onDownload={handleDownloadTabSummary}
+                downloadLabel="Download Summary"
+                onPrint={() => setIsPrintSummaryOpen(true)}
+                printLabel="Print Summary"
             />
         </div>
     );

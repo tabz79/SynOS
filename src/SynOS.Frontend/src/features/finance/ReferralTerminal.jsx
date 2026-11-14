@@ -38,6 +38,7 @@ import { DynamicDocumentRenderer } from './components/documents/DynamicDocumentR
 import { useGlobalFilter } from '@/context/GlobalFilterContext';
 import { StandardFilterBar } from '@/components/layout/StandardFilterBar';
 import { useAuth } from '@/context/AuthContext';
+import { FinanceFloatingActions } from './components/FinanceFloatingActions';
 
 /**
  * Referral Terminal
@@ -511,18 +512,40 @@ export const ReferralTerminal = () => {
     const printConfig = getPrintSummaryConfig();
 
     return (
-        <div className="flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-500">
-            {/* TERMINAL HEADER MATCHING FINANCE HUB & DISCOUNT MASTER STANDARD */}
-            <div className="px-5 sm:px-6 pt-3.5 sm:pt-4 pb-2 shrink-0 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3 min-h-[44px]">
+        <div className="flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-500 relative">
+            {/* 1. TOP NAVIGATION TABS (Directly below SystemBar / Area 4) */}
+            <div ref={tabsRef} className="px-5 sm:px-6 pt-3 pb-2 flex items-center gap-1 overflow-x-auto scrollbar-thin shrink-0 border-b border-zinc-200/60 dark:border-zinc-800/60 bg-white/40 dark:bg-zinc-900/40 backdrop-blur-sm">
+                <div className="flex items-center bg-[#D6E3EF] dark:bg-zinc-800/80 p-1.5 rounded-[14px] shadow-[inset_0_1px_2px_rgba(15,35,60,0.12)] border border-white/60 dark:border-zinc-700">
+                    {tabs.map(t => (
+                        <button
+                            key={t.id}
+                            onClick={() => setActiveTab(t.id)}
+                            data-active-tab={effectiveTab === t.id ? "true" : "false"}
+                            className={cn(
+                                "flex items-center gap-2 px-3.5 py-1.5 rounded-[10px] text-xs sm:text-sm font-semibold transition-all cursor-pointer whitespace-nowrap",
+                                effectiveTab === t.id
+                                    ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-[0_2px_8px_rgba(15,35,60,0.12),inset_0_1px_0_#FFFFFF] font-bold"
+                                    : "text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
+                            )}
+                        >
+                            <t.icon size={15} className={effectiveTab === t.id ? "text-synos-primary" : "text-slate-500"} />
+                            <span>{t.label}</span>
+                            {Boolean(t.badge && t.badge > 0) && (
+                                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-500 text-white shadow-2xs">
+                                    {t.badge}
+                                </span>
+                            )}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* 2. UNIFIED ACTIVE HEADER: Title & Filter Bar (Zero Subtext) */}
+            <div className="px-5 sm:px-6 pt-3 pb-2 shrink-0 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3 min-h-[44px]">
                 <div className="flex items-center gap-3.5">
-                    <div>
-                        <h1 className="text-3xl sm:text-4xl font-extrabold dark:text-white text-slate-900 tracking-normal leading-tight">
-                            Referral Partners
-                        </h1>
-                        <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 font-medium mt-0.5 leading-normal">
-                            Doctor & referral partner commissions, B2B institutional receivables, and rate governance
-                        </p>
-                    </div>
+                    <h1 className="text-2xl sm:text-3xl font-black dark:text-white text-slate-900 tracking-tight leading-tight">
+                        Referral Partners
+                    </h1>
 
                     {isUpdating && (
                         <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-synos-primary/10 border border-synos-primary/25 text-synos-primary shadow-xs animate-in fade-in duration-150">
@@ -554,22 +577,6 @@ export const ReferralTerminal = () => {
                     )}
 
                     <button 
-                        onClick={handleDownloadTabSummary}
-                        className="flex items-center gap-1.5 px-3.5 py-1.5 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 rounded-xl text-xs sm:text-sm font-semibold transition-all border border-slate-200/80 dark:border-zinc-700 shadow-xs cursor-pointer"
-                        title="Download CSV"
-                    >
-                        <Download size={15} className="text-slate-500" />
-                        <span>Download CSV</span>
-                    </button>
-                    <button 
-                        onClick={() => setIsPrintSummaryOpen(true)}
-                        className="flex items-center gap-1.5 px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 rounded-xl text-xs sm:text-sm font-semibold transition-all shadow-xs cursor-pointer"
-                        title="Print Report"
-                    >
-                        <Printer size={15} />
-                        <span>Print Report</span>
-                    </button>
-                    <button 
                         onClick={loadDashboardData} 
                         className="p-2 border border-slate-200/80 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-700 rounded-xl transition-all cursor-pointer shadow-xs" 
                         title="Refresh Data"
@@ -579,35 +586,8 @@ export const ReferralTerminal = () => {
                 </div>
             </div>
 
-            {/* TAB NAVIGATION (SEGMENTED PILL MATCHING DISCOUNT MASTER) */}
-            <div ref={tabsRef} className="px-5 sm:px-6 pb-2.5 flex items-center gap-1 overflow-x-auto scrollbar-thin shrink-0">
-                <div className="flex items-center bg-[#D6E3EF] dark:bg-zinc-800/80 p-1.5 rounded-[14px] shadow-[inset_0_1px_2px_rgba(15,35,60,0.12)] border border-white/60 dark:border-zinc-700">
-                    {tabs.map(t => (
-                        <button
-                            key={t.id}
-                            onClick={() => setActiveTab(t.id)}
-                            data-active-tab={effectiveTab === t.id ? "true" : "false"}
-                            className={cn(
-                                "flex items-center gap-2 px-3.5 py-1.5 rounded-[10px] text-xs sm:text-sm font-semibold transition-all cursor-pointer whitespace-nowrap",
-                                effectiveTab === t.id
-                                    ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-[0_2px_8px_rgba(15,35,60,0.12),inset_0_1px_0_#FFFFFF] font-bold"
-                                    : "text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
-                            )}
-                        >
-                            <t.icon size={15} className={effectiveTab === t.id ? "text-synos-primary" : "text-slate-500"} />
-                            <span>{t.label}</span>
-                            {Boolean(t.badge && t.badge > 0) && (
-                                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-500 text-white shadow-2xs">
-                                    {t.badge}
-                                </span>
-                            )}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
             {/* MAIN CONTENT AREA */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar px-5 sm:px-6 pb-16 space-y-3 sm:space-y-3.5">
+            <div className="flex-1 overflow-y-auto custom-scrollbar px-5 sm:px-6 pb-16 space-y-3 sm:space-y-3.5 relative">
                 {effectiveTab === 'overview' && (
                     <PartnerPerformanceTab 
                         dashboardData={dashboardData}
@@ -693,6 +673,14 @@ export const ReferralTerminal = () => {
                     />
                 </CommercialDocumentViewer>
             )}
+
+            {/* Enterprise Floating Quick Actions */}
+            <FinanceFloatingActions
+                onDownload={handleDownloadTabSummary}
+                downloadLabel="Download CSV"
+                onPrint={() => setIsPrintSummaryOpen(true)}
+                printLabel="Print Report"
+            />
         </div>
     );
 };
