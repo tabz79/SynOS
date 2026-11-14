@@ -4446,3 +4446,43 @@ Inside `EnsureRequestedRadiologyStudiesAsync`:
 
 
 
+
+
+---
+
+## Issue 61: Finance Module Settlement History Accounting & Pending Receivables Counter Optimization
+
+### Date: 2026-11-14
+**Status: Resolved & Verified**
+**Branch: cloud-testing-2**
+
+#### Problem Statement
+1. **Typography & Legibility:** Slashed-zero monospace fonts (`font-mono`) were rendered on financial monetary figures, causing zeros to look like `8`s to administrators and accounting auditors.
+2. **Settlement Accounting Clarity (Surabhi Neuro ₹16,200 vs ₹4,000 Mystery):** When viewing Settlement History with the date filter set to `Today`, partners showed total billed amounts conflating current-shift billings with old outstanding historical balances without clear period-based distinction.
+3. **Pollution of Settlement History:** Settlement History displayed all 24 partner accounts (including those with ₹0 recovered in the active period), creating redundant noise that duplicated Pending Receivables.
+4. **Counter Reception Overwhelm in Pending Receivables:** In `Pending Receivables & Aging Ledger`, counter receptionists had no quick way to see which referral partners actually had new billings *today* versus historical debtors, leading to cognitive fatigue when 15+ debtors were displayed simultaneously.
+
+#### Resolution Implemented
+1. **Financial Typography Normalization:**
+   - Stripped `font-mono` across all financial monetary figures, totals, badge counters, and diff views in `SettlementHistoryTab.jsx`, `PartnerReceivablesTab.jsx`, and `RevenueScreens.jsx`.
+   - Applied clean `font-sans tabular-nums font-bold` everywhere for numbers, guaranteeing round, unslashed zeros.
+   - Retained `font-mono` strictly for alphanumeric identifiers (canonical bill numbers, visit tokens, and UTR/cheque references).
+2. **Period-Aware Accounting Architecture:**
+   - Updated `IEconomicsIntelligenceService` and `EconomicsIntelligenceService.GetPartnerSettlementSummaryAsync` to compute:
+     - `BilledInPeriod`: Investigations billed strictly within the selected date window (e.g., today).
+     - `TotalSettled`: Amount recovered in the selected period.
+     - `PeriodBalance`: `Math.Max(0, BilledInPeriod - TotalSettled)` (e.g., ₹0 for today).
+     - `RemainingDue`: All-time outstanding due.
+     - `PriorDue`: Historical unpaid debt from prior periods.
+3. **Strict Settlement History Filtering:**
+   - Settlement History now displays exclusively partners with actual settlement transactions during the active period. Zero-settlement accounts are filtered out.
+   - Added top-level settlement category switcher: `[All Settlements]` | `[Partner Recoveries (Inflow)]` | `[Doctor Payouts (Outflow)]`.
+4. **Counter Receptionist Workflow in Pending Receivables:**
+   - Added a dedicated **`Billed Today`** column to the `Pending Receivables & Aging Ledger` table.
+   - Automatically sorted partners with new billing activity today to the top of the table.
+   - Added a one-click view toggle pill: `[All Debtors (15)]` vs `[Billed Today Only (X)]` with live active pulses, allowing counter staff to isolate today's active accounts with one click without losing access to past debtors.
+
+#### Verification
+- **Frontend Build:** `npm run build` completed cleanly in 18.29s with 0 errors.
+- **Backend Build:** `dotnet build SynOS.sln` passed with 0 errors.
+- **Git:** Changes committed and pushed to `origin/cloud-testing-2`.
