@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using SynOS.Models.Entities.Catalog;
 using SynOS.Models.Entities.Operations;
 using SynOS.Models.Entities;
+using SynOS.Models.Enums;
 
 namespace SynOS.Data
 {
@@ -438,25 +439,29 @@ namespace SynOS.Data
                 test.DepartmentId = radDept.DepartmentId;
                 var text = $"{test.TestCode} {test.TestName}".ToUpperInvariant();
 
-                if (text.Contains("MRI") || text.Contains("MAGNETIC") || text.Contains("MRCP") || 
-                    text.Contains("MRV") || text.Contains("MRA") || text.Contains("DWI") ||
-                    text.Contains("DEFECOGRAPHY") || text.Contains("DEMENTIA") ||
-                    text.Contains("CP ANGLE") || text.Contains("CPANGLE") ||
-                    text.Contains("CV JUNCTION") || text.Contains("CVJUNCTION") ||
-                    text.Contains("BRAIN PLAIN") || text.Contains("SPINE SCREENING") || text.Contains("CERVICAL SPINE") ||
-                    text.Contains("LUMBAR SPINE") || text.Contains("DORSAL SPINE") || text.Contains("BRAIN STROKE") ||
-                    text.Contains("MR ANGIO") || text.Contains("MR NEURO"))
-                {
-                    test.ModalityId = mriGuid;
-                    test.Category = "MRI";
-                }
-                else if (text.Contains("CT SCAN") || text.Contains("COMPUTED") || text.Contains("HRCT") || 
-                         text.Contains("CECT") || text.Contains("NCCT") || text.Contains(" CT ") || 
-                         text.StartsWith("CT ") || text.Contains("CT_") || text.Contains("CT-") ||
-                         text.Contains("CT CONTRAST") || text.Contains("FACIAL BONES") || text.Contains("ORBITS"))
+                bool isCt = text.StartsWith("CT ") || text.StartsWith("CT_") || text.StartsWith("CT-") ||
+                            text.Contains(" CT ") || text.Contains("CT_") || text.Contains("CT-") ||
+                            text.Contains("CT SCAN") || text.Contains("HRCT") || text.Contains("CECT") ||
+                            text.Contains("NCCT") || text.Contains("COMPUTED");
+
+                bool isMri = text.Contains("MRI") || text.Contains("MAGNETIC") || text.Contains("MRCP") || 
+                             text.Contains("MRV") || text.Contains("MRA") || text.Contains("DWI") ||
+                             text.Contains("DEFECOGRAPHY") || text.Contains("DEMENTIA") ||
+                             text.Contains("CP ANGLE") || text.Contains("CPANGLE") ||
+                             text.Contains("CV JUNCTION") || text.Contains("CVJUNCTION") ||
+                             text.Contains("SPINE SCREENING") || text.Contains("CERVICAL SPINE") ||
+                             text.Contains("LUMBAR SPINE") || text.Contains("DORSAL SPINE") || text.Contains("BRAIN STROKE") ||
+                             text.Contains("MR ANGIO") || text.Contains("MR NEURO");
+
+                if (isCt && !text.Contains("MRI") && !text.Contains("MRCP") && !text.Contains("MRV") && !text.Contains("MRA"))
                 {
                     test.ModalityId = ctGuid;
                     test.Category = "CT Scan";
+                }
+                else if (isMri || text.Contains("BRAIN PLAIN"))
+                {
+                    test.ModalityId = mriGuid;
+                    test.Category = "MRI";
                 }
                 else if (text.Contains("USG") || text.Contains("ULTRASOUND") || text.Contains("SONO") || 
                          text.Contains("DOPPLER") || text.Contains("ECHO") || text.Contains("U/S"))
@@ -479,23 +484,33 @@ namespace SynOS.Data
             foreach (var s in studies)
             {
                 var ordTest = s.Order?.Test;
-                if (ordTest != null && ordTest.ModalityId.HasValue)
+                var sText = $"{s.Order?.TestCode} {ordTest?.TestCode} {ordTest?.TestName} {s.Modality}".ToUpperInvariant();
+                bool sIsCt = sText.StartsWith("CT ") || sText.StartsWith("CT_") || sText.StartsWith("CT-") ||
+                             sText.Contains(" CT ") || sText.Contains("CT_") || sText.Contains("CT-") ||
+                             sText.Contains("CT SCAN") || sText.Contains("HRCT") || sText.Contains("CECT") ||
+                             sText.Contains("NCCT") || sText.Contains("COMPUTED");
+
+                if (sIsCt && !sText.Contains("MRI") && !sText.Contains("MRCP") && !sText.Contains("MRV") && !sText.Contains("MRA"))
+                {
+                    s.ModalityId = ctGuid;
+                    s.Modality = "CT Scan";
+                    if (ordTest != null)
+                    {
+                        ordTest.ModalityId = ctGuid;
+                        ordTest.Category = "CT Scan";
+                    }
+                }
+                else if (ordTest != null && ordTest.ModalityId.HasValue)
                 {
                     s.ModalityId = ordTest.ModalityId.Value;
                     s.Modality = ordTest.Category ?? "X-Ray";
                 }
                 else
                 {
-                    var sText = $"{s.Order?.TestCode} {ordTest?.TestName} {s.Modality}".ToUpperInvariant();
                     if (sText.Contains("MRI") || sText.Contains("MAGNETIC") || sText.Contains("MRCP") || sText.Contains("BRAIN PLAIN"))
                     {
                         s.ModalityId = mriGuid;
                         s.Modality = "MRI";
-                    }
-                    else if (sText.Contains("CT") || sText.Contains("COMPUTED") || sText.Contains("HRCT"))
-                    {
-                        s.ModalityId = ctGuid;
-                        s.Modality = "CT Scan";
                     }
                     else if (sText.Contains("USG") || sText.Contains("ULTRASOUND") || sText.Contains("SONO"))
                     {
@@ -542,6 +557,9 @@ namespace SynOS.Data
 
             // Seed and ensure newly requested Radiology studies in Test Master and Catalog
             await SeedRequestedRadiologyStudiesAsync(context, radDept, modalityIds);
+
+            // Backfill and reconcile billed radiology orders to prevent queue disconnects
+            await ReconcileBilledRadiologyStudiesAsync(context, radDept, modalityIds);
 
             await context.SaveChangesAsync();
             Console.WriteLine("[CatalogSeedService] Seeded base modalities and migrated legacy departments/tests/studies/templates successfully.");
@@ -592,6 +610,191 @@ namespace SynOS.Data
             }
 
             await SeedRequestedRadiologyStudiesAsync(context, radDept, modalityIds);
+            await ReconcileBilledRadiologyStudiesAsync(context, radDept, modalityIds);
+            await context.SaveChangesAsync();
+        }
+
+        public static async Task ReconcileBilledRadiologyStudiesAsync(
+            SynOSDbContext context,
+            DepartmentMaster radDept,
+            Dictionary<string, Guid> modalityIds)
+        {
+            var mriGuid = modalityIds.GetValueOrDefault("MRI");
+            var ctGuid = modalityIds.GetValueOrDefault("CT");
+            var xrayGuid = modalityIds.GetValueOrDefault("XRAY");
+            var usGuid = modalityIds.GetValueOrDefault("US");
+
+            // 1. Correct any existing RadiologyStudies that are CT but incorrectly flagged as MRI
+            var existingStudies = await context.RadiologyStudies
+                .Include(s => s.Order)
+                    .ThenInclude(o => o.Test)
+                .ToListAsync();
+
+            foreach (var study in existingStudies)
+            {
+                var test = study.Order?.Test;
+                var text = $"{study.Order?.TestCode} {test?.TestCode} {test?.TestName}".ToUpperInvariant();
+                bool isCt = text.StartsWith("CT ") || text.StartsWith("CT_") || text.StartsWith("CT-") ||
+                            text.Contains(" CT ") || text.Contains("CT_") || text.Contains("CT-") ||
+                            text.Contains("CT SCAN") || text.Contains("HRCT") || text.Contains("CECT") ||
+                            text.Contains("NCCT") || text.Contains("COMPUTED");
+
+                if (isCt && !text.Contains("MRI") && !text.Contains("MRCP") && !text.Contains("MRV") && !text.Contains("MRA"))
+                {
+                    if (study.Modality != "CT Scan" || study.ModalityId != ctGuid)
+                    {
+                        study.Modality = "CT Scan";
+                        if (ctGuid != Guid.Empty) study.ModalityId = ctGuid;
+                    }
+                    if (test != null && (test.Category != "CT Scan" || test.ModalityId != ctGuid))
+                    {
+                        test.Category = "CT Scan";
+                        if (ctGuid != Guid.Empty) test.ModalityId = ctGuid;
+                    }
+                }
+            }
+
+            // 2. Identify unrouted billed radiology orders across all non-cancelled visits
+            var unroutedOrders = await context.Orders
+                .Include(o => o.Visit)
+                .Include(o => o.Test)
+                    .ThenInclude(t => t.DepartmentMaster)
+                .Where(o => o.Status != OrderStatus.Cancelled &&
+                            o.Visit != null &&
+                            o.Visit.Status != VisitStatus.Cancelled &&
+                            !context.RadiologyStudies.Any(rs => rs.VisitTestId == o.OrderId))
+                .ToListAsync();
+
+            if (!unroutedOrders.Any()) return;
+
+            // Filter strictly for radiology orders
+            var radOrders = unroutedOrders.Where(o =>
+            {
+                if (string.Equals(o.Department, "Radiology", StringComparison.OrdinalIgnoreCase)) return true;
+                if (o.Test != null)
+                {
+                    if (o.Test.DepartmentId == radDept.DepartmentId) return true;
+                    if (o.Test.DepartmentMaster != null && string.Equals(o.Test.DepartmentMaster.MacroDepartment, "Radiology", StringComparison.OrdinalIgnoreCase)) return true;
+                    if (o.Test.ModalityId.HasValue && o.Test.ModalityId.Value != Guid.Empty) return true;
+                    if (!string.IsNullOrEmpty(o.Test.Category) && (o.Test.Category == "MRI" || o.Test.Category == "CT Scan" || o.Test.Category == "X-Ray" || o.Test.Category == "Ultrasound")) return true;
+                }
+                var code = (o.TestCode ?? o.Test?.TestCode ?? "").ToUpperInvariant();
+                var name = (o.Test?.TestName ?? "").ToUpperInvariant();
+                return code.StartsWith("MRI") || code.StartsWith("CT") || code.StartsWith("XRAY") || code.StartsWith("USG") ||
+                       name.Contains("MRI") || name.Contains("CT SCAN") || name.Contains("X-RAY") || name.Contains("ULTRASOUND") ||
+                       name.Contains("BRAIN PLAIN") || name.Contains("LUMBAR SPINE") || name.Contains("CERVICAL SPINE") ||
+                       name.Contains("DORSAL SPINE") || name.Contains("CP ANGLE") || name.Contains("CV JUNCTION") ||
+                       name.Contains("MRCP") || name.Contains("MRV") || name.Contains("MRA") || name.Contains("DEFECOGRAPHY") ||
+                       name.Contains("DEMENTIA") || name.Contains("DWI");
+            }).ToList();
+
+            if (!radOrders.Any()) return;
+
+            var defaultUserId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+            var adminUser = await context.Users.FirstOrDefaultAsync();
+            if (adminUser != null) defaultUserId = adminUser.UserId;
+
+            // Load active branches for code formatting
+            var branches = await context.Branches.ToDictionaryAsync(b => b.BranchId, b => b.Code ?? "MAI");
+
+            int backfillSeq = 100;
+            foreach (var ord in radOrders)
+            {
+                var visit = ord.Visit!;
+                var test = ord.Test;
+                var text = $"{ord.TestCode} {test?.TestCode} {test?.TestName}".ToUpperInvariant();
+
+                bool isCt = text.StartsWith("CT ") || text.StartsWith("CT_") || text.StartsWith("CT-") ||
+                            text.Contains(" CT ") || text.Contains("CT_") || text.Contains("CT-") ||
+                            text.Contains("CT SCAN") || text.Contains("HRCT") || text.Contains("CECT") ||
+                            text.Contains("NCCT") || text.Contains("COMPUTED");
+
+                bool isUsg = text.Contains("USG") || text.Contains("ULTRASOUND") || text.Contains("SONO") || text.Contains("DOPPLER");
+                bool isXray = text.Contains("XRAY") || text.Contains("X-RAY") || text.Contains("RADIOGRAPH");
+
+                string targetModality = "MRI";
+                Guid targetModId = mriGuid;
+
+                if (isCt && !text.Contains("MRI") && !text.Contains("MRCP") && !text.Contains("MRV") && !text.Contains("MRA"))
+                {
+                    targetModality = "CT Scan";
+                    targetModId = ctGuid;
+                }
+                else if (isUsg)
+                {
+                    targetModality = "Ultrasound";
+                    targetModId = usGuid;
+                }
+                else if (isXray && !text.Contains("MRI"))
+                {
+                    targetModality = "X-Ray";
+                    targetModId = xrayGuid;
+                }
+
+                if (test != null && (test.ModalityId == null || test.ModalityId == Guid.Empty))
+                {
+                    test.ModalityId = targetModId;
+                    test.Category = targetModality;
+                    test.DepartmentId = radDept.DepartmentId;
+                }
+
+                var branchCode = (visit.BranchId.HasValue && branches.ContainsKey(visit.BranchId.Value))
+                    ? branches[visit.BranchId.Value]
+                    : "MAI";
+
+                var tokenDateStr = visit.TokenDate.ToString("yyMMdd");
+                var tokenDigits = System.Text.RegularExpressions.Regex.Replace(visit.Token ?? "", @"\D", "");
+                var accessionNum = !string.IsNullOrEmpty(tokenDigits)
+                    ? $"{branchCode}{tokenDigits.PadLeft(3, '0')}-{tokenDateStr}"
+                    : $"{branchCode}{(backfillSeq++):D3}-{tokenDateStr}";
+
+                // Ensure accession uniqueness
+                if (await context.RadiologyStudies.AnyAsync(rs => rs.AccessionNumber == accessionNum))
+                {
+                    accessionNum = $"{branchCode}{(backfillSeq++):D3}-{tokenDateStr}";
+                }
+
+                var studyId = Guid.NewGuid();
+                var study = new RadiologyStudy
+                {
+                    RadiologyStudyId = studyId,
+                    VisitId = visit.VisitId,
+                    PatientId = visit.PatientId,
+                    VisitTestId = ord.OrderId,
+                    ModalityId = targetModId,
+                    Modality = targetModality,
+                    AccessionNumber = accessionNum,
+                    Status = "PendingImaging",
+                    CreatedBy = visit.AssignedReceptionistId ?? defaultUserId,
+                    CreatedAt = ord.CreatedAt != default ? ord.CreatedAt : (visit.CreatedAt != default ? visit.CreatedAt : DateTimeOffset.UtcNow),
+                    LastActivityAt = ord.CreatedAt != default ? ord.CreatedAt : (visit.CreatedAt != default ? visit.CreatedAt : DateTimeOffset.UtcNow)
+                };
+                context.RadiologyStudies.Add(study);
+
+                // Add draft report shell
+                var report = new Report
+                {
+                    ReportId = Guid.NewGuid(),
+                    VisitId = visit.VisitId,
+                    PatientId = visit.PatientId,
+                    Department = "Radiology",
+                    SourceType = "RadiologyStudy",
+                    SourceId = studyId,
+                    ReportTemplateId = test?.ReportTemplateId,
+                    Status = "Draft",
+                    CurrentVersion = 1,
+                    CreatedAt = study.CreatedAt
+                };
+                report.RadiologyReport = new RadiologyReport { RadiologyStudy = study };
+                context.Reports.Add(report);
+
+                if (visit.Department != "Radiology" && visit.Department != "Multi-Disciplinary")
+                {
+                    visit.Department = "Radiology";
+                }
+            }
+
+            Console.WriteLine($"[CatalogSeedService] Reconciled {radOrders.Count} unrouted radiology orders into RadiologyStudies and Reports.");
         }
 
         private static async Task SeedRequestedRadiologyStudiesAsync(

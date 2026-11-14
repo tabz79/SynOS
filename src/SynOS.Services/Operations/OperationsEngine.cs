@@ -678,10 +678,14 @@ namespace SynOS.Services.Operations
                 {
                     return "In Progress";
                 }
+                if (radiologyStatuses.Any(s => s == "PendingImaging"))
+                {
+                    return "Awaiting Scan";
+                }
             }
 
             // Reporting (Verification Pending)
-            if ((resultStatuses.Any(s => s == "PendingVerification" || s == "Finalized")) || (reportStatus != null && reportStatus != "Signed"))
+            if ((resultStatuses.Any(s => s == "PendingVerification" || s == "Finalized")) || (reportStatus != null && reportStatus != "Signed" && reportStatus != "Draft"))
             {
                 return "Reporting";
             }
@@ -712,9 +716,15 @@ namespace SynOS.Services.Operations
             }
 
             // Radiology or Non-specimen imaging visits:
-            if (string.Equals(visit.Department, "Radiology", StringComparison.OrdinalIgnoreCase) || 
-                string.Equals(visit.Department, "RAD", StringComparison.OrdinalIgnoreCase) ||
-                (radiologyStatuses != null && radiologyStatuses.Any()))
+            bool isRadiologyVisit = string.Equals(visit.Department, "Radiology", StringComparison.OrdinalIgnoreCase) || 
+                                    string.Equals(visit.Department, "RAD", StringComparison.OrdinalIgnoreCase) ||
+                                    (radiologyStatuses != null && radiologyStatuses.Any()) ||
+                                    (visit.Orders != null && visit.Orders.Any(o => 
+                                        (!string.IsNullOrEmpty(o.TestCode) && (o.TestCode.StartsWith("MRI") || o.TestCode.StartsWith("CT") || o.TestCode.StartsWith("XRAY") || o.TestCode.StartsWith("USG"))) ||
+                                        (o.Test != null && (o.Test.Category == "MRI" || o.Test.Category == "CT Scan" || o.Test.Category == "X-Ray" || o.Test.Category == "Ultrasound"))
+                                    ));
+
+            if (isRadiologyVisit)
             {
                 return "Awaiting Scan";
             }

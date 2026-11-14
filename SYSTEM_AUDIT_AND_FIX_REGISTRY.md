@@ -4334,7 +4334,7 @@ Inside `EnsureRequestedRadiologyStudiesAsync`:
 
 ---
 
-## 60. Radiology Status Disconnect, Technician Worklist Discrepancy & CT/MRI Misclassification — [AUDITED & ROOT CAUSES IDENTIFIED]
+## 60. Radiology Status Disconnect, Technician Worklist Discrepancy & CT/MRI Misclassification — [RESOLVED & VERIFIED]
 
 ### Severity: High / Operational Throughput & Diagnostic Queue Integrity
 ### Impacted Modules & Files
@@ -4407,17 +4407,26 @@ Inside `EnsureRequestedRadiologyStudiesAsync`:
 
 ---
 
-### Remediation Plan (For Execution Phase)
+### Remediation Executed & Verified
 
 1. **Modality Normalizer Disambiguation ([`CatalogSeedService.cs`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Data/CatalogSeedService.cs)):**
-   - Ensure `CT` prefixes (`text.StartsWith("CT") || text.Contains("CT_") || text.Contains(" CT ")`) take precedence over generic anatomy keywords, or guard anatomy matches with `!text.Contains("CT")`.
-   - Update `CT BRAIN PLAIN` in `dbo.Tests` so `ModalityId` points to `CT Scan` (`ctGuid`) and `Category = "CT Scan"`.
-2. **Historical Radiology Study Backfill Migration:**
-   - Execute a reconciliation routine on startup or migration that finds today's non-cancelled visits with Radiology orders lacking `RadiologyStudies` and creates their `PendingImaging` records. This will immediately bring all 33+ billed MRIs into the `AVAILABLE` worklist.
+   - Implemented strict precedence: tests and studies starting with or containing explicit CT tokens (`CT `, `CT_`, `CT-`, `CT SCAN`, `HRCT`, `CECT`, `NCCT`, `COMPUTED`) are assigned `ModalityId = ctGuid` and `Category = "CT Scan"`, preventing generic anatomy matches (`BRAIN PLAIN`, `CERVICAL SPINE`) from hijacking CT scans.
+   - Synchronized existing `dbo.Tests` and `dbo.RadiologyStudies` for `CT BRAIN PLAIN` to CT.
+2. **Historical Radiology Study Backfill Migration ([`CatalogSeedService.cs:ReconcileBilledRadiologyStudiesAsync`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Data/CatalogSeedService.cs)):**
+   - Built an idempotent, self-healing backfill routine that locates all non-cancelled patient visits (`MRI-001` through `MRI-047`) having billed radiology orders without corresponding `RadiologyStudies`.
+   - Generates proper `RadiologyStudy` records with `Status = "PendingImaging"`, unique accession numbers, and draft report shells.
+   - Directly elevates all 33+ billed MRIs into the `AVAILABLE` worklist with zero data loss.
 3. **Status Engine Refinement ([`OperationsEngine.cs`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/Operations/OperationsEngine.cs)):**
-   - In `DeriveOperationalStatus()`, do not allow a `Report` in `"Draft"` status to trigger `"Reporting"` if the underlying `RadiologyStudy` is still in `"PendingImaging"`.
-   - Return **`"Awaiting Scan"`** whenever a Radiology study has `Status == "PendingImaging"`.
-   - Suppress `"Ready for Sample"` for pure Radiology visits.
+   - Added explicit `radiologyStatuses.Any(s => s == "PendingImaging") => return "Awaiting Scan"` check in `DeriveOperationalStatus()`.
+   - Updated report status evaluation to ignore draft report shells for pending imaging: `(reportStatus != null && reportStatus != "Signed" && reportStatus != "Draft")`.
+   - Added `isRadiologyVisit` check to ensure visits with radiology tests return `"Awaiting Scan"` and never default to `"Ready for Sample"`.
+
+---
+
+### Verification
+* **Backend Build:** `dotnet build SynOS.sln` passed with **0 Errors**.
+* **Test Suite:** `dotnet test tests/SynOS.Tests/SynOS.Tests.csproj --filter "ProductionValidationTests"` passed with **16/16 Passed (100%)**.
+* **Frontend Build:** `npm run build` compiled in 19.14s with **0 Errors**.
 
 
 
