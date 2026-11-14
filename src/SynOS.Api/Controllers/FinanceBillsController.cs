@@ -159,6 +159,8 @@ namespace SynOS.Api.Controllers
             if (combined.Contains("mri") || 
                 combined.Contains("magnetic") || 
                 combined.Contains("mrcp") || 
+                combined.Contains("mrv") ||
+                combined.Contains("mra") ||
                 combined.Contains("mr ") || 
                 combined.Contains("mr-") || 
                 combined.Contains("mr_") ||
@@ -171,8 +173,22 @@ namespace SynOS.Api.Controllers
                 combined.Contains("brain stroke") ||
                 combined.Contains("mr angiogram") || 
                 combined.Contains("mr neurography") ||
-                combined.Contains("mr venogram"))
+                combined.Contains("mr venogram") ||
+                combined.Contains("defecography") ||
+                combined.Contains("dementia") ||
+                combined.Contains("cp angle") ||
+                combined.Contains("cpangle") ||
+                combined.Contains("cv junction") ||
+                combined.Contains("cvjunction") ||
+                combined.Contains("dwi") ||
+                combined.Contains("swi") ||
+                combined.Contains("dti"))
             {
+                if ((combined.Contains("ct ") || combined.Contains("ct_") || combined.Contains("ct-") || combined.Contains("ct scan")) &&
+                    !combined.Contains("mri") && !combined.Contains("mr ") && !combined.Contains("mra") && !combined.Contains("mrv") && !combined.Contains("magnetic"))
+                {
+                    return "CT Scan";
+                }
                 return "MRI";
             }
 

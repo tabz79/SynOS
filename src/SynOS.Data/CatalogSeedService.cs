@@ -439,6 +439,10 @@ namespace SynOS.Data
                 var text = $"{test.TestCode} {test.TestName}".ToUpperInvariant();
 
                 if (text.Contains("MRI") || text.Contains("MAGNETIC") || text.Contains("MRCP") || 
+                    text.Contains("MRV") || text.Contains("MRA") || text.Contains("DWI") ||
+                    text.Contains("DEFECOGRAPHY") || text.Contains("DEMENTIA") ||
+                    text.Contains("CP ANGLE") || text.Contains("CPANGLE") ||
+                    text.Contains("CV JUNCTION") || text.Contains("CVJUNCTION") ||
                     text.Contains("BRAIN PLAIN") || text.Contains("SPINE SCREENING") || text.Contains("CERVICAL SPINE") ||
                     text.Contains("LUMBAR SPINE") || text.Contains("DORSAL SPINE") || text.Contains("BRAIN STROKE") ||
                     text.Contains("MR ANGIO") || text.Contains("MR NEURO"))
@@ -449,7 +453,7 @@ namespace SynOS.Data
                 else if (text.Contains("CT SCAN") || text.Contains("COMPUTED") || text.Contains("HRCT") || 
                          text.Contains("CECT") || text.Contains("NCCT") || text.Contains(" CT ") || 
                          text.StartsWith("CT ") || text.Contains("CT_") || text.Contains("CT-") ||
-                         text.Contains("CT CONTRAST") || text.Contains("FACIAL BONES"))
+                         text.Contains("CT CONTRAST") || text.Contains("FACIAL BONES") || text.Contains("ORBITS"))
                 {
                     test.ModalityId = ctGuid;
                     test.Category = "CT Scan";
@@ -536,8 +540,189 @@ namespace SynOS.Data
                 }
             }
 
+            // Seed and ensure newly requested Radiology studies in Test Master and Catalog
+            await SeedRequestedRadiologyStudiesAsync(context, radDept, modalityIds);
+
             await context.SaveChangesAsync();
             Console.WriteLine("[CatalogSeedService] Seeded base modalities and migrated legacy departments/tests/studies/templates successfully.");
+        }
+
+        private static async Task SeedRequestedRadiologyStudiesAsync(
+            SynOSDbContext context,
+            DepartmentMaster radDept,
+            Dictionary<string, Guid> modalityIds)
+        {
+            var requestedTests = new[]
+            {
+                new { Code = "MRI_ABD_PLV", Name = "MRI ABDOMEN & PELVIS", ModalityCode = "MRI", Category = "MRI", Price = 11000m },
+                new { Code = "MRI_BRAIN_CP_ANGLE", Name = "MRI BRAIN WITH CP ANGLE", ModalityCode = "MRI", Category = "MRI", Price = 6000m },
+                new { Code = "MRI_CV_JUNCTION", Name = "MRI CV JUNCTION", ModalityCode = "MRI", Category = "MRI", Price = 6000m },
+                new { Code = "MRI_DEFECOGRAPHY", Name = "MRI DEFECOGRAPHY", ModalityCode = "MRI", Category = "MRI", Price = 10000m },
+                new { Code = "MRI_DEMENTIA_PROT", Name = "MRI DEMENTIA PROTOCOL (MRA + SWI + DTI)", ModalityCode = "MRI", Category = "MRI", Price = 9000m },
+                new { Code = "MRI_BRAIN_ORBITS", Name = "MRI BRAIN WITH ORBITS", ModalityCode = "MRI", Category = "MRI", Price = 8000m },
+                new { Code = "MRV_BRAIN", Name = "MRV BRAIN", ModalityCode = "MRI", Category = "MRI", Price = 2000m },
+                new { Code = "MRA_BRAIN", Name = "MRA BRAIN", ModalityCode = "MRI", Category = "MRI", Price = 2000m },
+                new { Code = "MRA_DWI", Name = "MRA DWI", ModalityCode = "MRI", Category = "MRI", Price = 3000m },
+                new { Code = "MRI_DWI", Name = "MRI DWI", ModalityCode = "MRI", Category = "MRI", Price = 3000m },
+                new { Code = "CT_BRAIN_ORBITS", Name = "CT BRAIN WITH ORBITS", ModalityCode = "CT", Category = "CT Scan", Price = 3000m }
+            };
+
+            const string defaultFindings = "FINDINGS:\n\nIMPRESSION:";
+
+            foreach (var item in requestedTests)
+            {
+                var modGuid = modalityIds.ContainsKey(item.ModalityCode)
+                    ? modalityIds[item.ModalityCode]
+                    : (Guid?)null;
+
+                var test = await context.Tests
+                    .Include(t => t.TestPricings)
+                    .Include(t => t.Parameters)
+                    .FirstOrDefaultAsync(t => t.TestCode == item.Code);
+
+                if (test == null)
+                {
+                    test = new Test
+                    {
+                        TestId = Guid.NewGuid(),
+                        TestCode = item.Code,
+                        TestName = item.Name,
+                        Category = item.Category,
+                        DepartmentId = radDept.DepartmentId,
+                        ModalityId = modGuid,
+                        SpecimenTypeCode = "NO_SPECIMEN",
+                        IsActive = true,
+                        IsProfile = false,
+                        TAT_Hours = 24,
+                        DefaultInterpretation = defaultFindings,
+                        ReportTitle = item.Name,
+                        CreatedAt = DateTimeOffset.UtcNow,
+                        UpdatedAt = DateTimeOffset.UtcNow
+                    };
+                    context.Tests.Add(test);
+                }
+                else
+                {
+                    test.TestName = item.Name;
+                    test.Category = item.Category;
+                    test.DepartmentId = radDept.DepartmentId;
+                    test.ModalityId = modGuid;
+                    test.SpecimenTypeCode = "NO_SPECIMEN";
+                    test.IsActive = true;
+                    if (string.IsNullOrWhiteSpace(test.DefaultInterpretation))
+                    {
+                        test.DefaultInterpretation = defaultFindings;
+                    }
+                    test.UpdatedAt = DateTimeOffset.UtcNow;
+                }
+
+                // Ensure pricing
+                var pricing = test.TestPricings?.FirstOrDefault()
+                    ?? await context.TestPricings.FirstOrDefaultAsync(p => p.TestId == test.TestId);
+
+                if (pricing == null)
+                {
+                    context.TestPricings.Add(new TestPricing
+                    {
+                        PricingId = Guid.NewGuid(),
+                        TestId = test.TestId,
+                        BasePrice = item.Price,
+                        EffectiveFrom = DateTime.Today.AddYears(-1),
+                        CreatedAt = DateTimeOffset.UtcNow
+                    });
+                }
+                else
+                {
+                    pricing.BasePrice = item.Price;
+                }
+
+                // Ensure parameter for radiology narrative template
+                var param = test.Parameters?.FirstOrDefault()
+                    ?? await context.Parameters.FirstOrDefaultAsync(p => p.TestId == test.TestId);
+
+                if (param == null)
+                {
+                    context.Parameters.Add(new Parameter
+                    {
+                        ParameterId = Guid.NewGuid(),
+                        TestId = test.TestId,
+                        ParameterCode = "PARAM1",
+                        ParameterName = "Findings & Impressions",
+                        DataType = "Text",
+                        SortOrder = 1,
+                        IsActive = true,
+                        ShowNarrative = true,
+                        NarrativeTemplate = defaultFindings,
+                        CreatedAt = DateTimeOffset.UtcNow,
+                        UpdatedAt = DateTimeOffset.UtcNow
+                    });
+                }
+                else
+                {
+                    if (string.IsNullOrWhiteSpace(param.NarrativeTemplate))
+                    {
+                        param.NarrativeTemplate = defaultFindings;
+                    }
+                    param.ShowNarrative = true;
+                }
+
+                // Ensure CatalogTest synchronization
+                var catalogTest = await context.CatalogTests.FirstOrDefaultAsync(c => c.TestCode == item.Code);
+                if (catalogTest == null)
+                {
+                    context.CatalogTests.Add(new CatalogTest
+                    {
+                        TestCode = item.Code,
+                        TestName = item.Name,
+                        DepartmentCode = "RAD",
+                        SpecimenCode = "NO_SPECIMEN",
+                        TubeCode = "NA",
+                        Price = item.Price,
+                        IsPanel = false,
+                        IsActive = true,
+                        CreatedAt = DateTimeOffset.UtcNow,
+                        UpdatedAt = DateTimeOffset.UtcNow
+                    });
+                }
+                else
+                {
+                    catalogTest.TestName = item.Name;
+                    catalogTest.Price = item.Price;
+                    catalogTest.DepartmentCode = "RAD";
+                    catalogTest.IsActive = true;
+                    catalogTest.UpdatedAt = DateTimeOffset.UtcNow;
+                }
+
+                // Ensure CatalogParameter synchronization
+                var catalogParam = await context.CatalogParameters.FirstOrDefaultAsync(cp => cp.TestCode == item.Code && cp.ParameterCode == "PARAM1");
+                if (catalogParam == null)
+                {
+                    context.CatalogParameters.Add(new CatalogParameter
+                    {
+                        Id = Guid.NewGuid(),
+                        TestCode = item.Code,
+                        ParameterCode = "PARAM1",
+                        ParameterName = "Findings & Impressions",
+                        DataType = "Text",
+                        Methodology = "Spectrophotometry",
+                        NarrativeTemplate = defaultFindings,
+                        ShowNarrative = true,
+                        IsActive = true,
+                        SortOrder = 1,
+                        CreatedAt = DateTimeOffset.UtcNow,
+                        UpdatedAt = DateTimeOffset.UtcNow
+                    });
+                }
+                else
+                {
+                    if (string.IsNullOrWhiteSpace(catalogParam.NarrativeTemplate))
+                    {
+                        catalogParam.NarrativeTemplate = defaultFindings;
+                    }
+                    catalogParam.ShowNarrative = true;
+                    catalogParam.UpdatedAt = DateTimeOffset.UtcNow;
+                }
+            }
         }
     }
 }

@@ -3917,7 +3917,64 @@ When an administrator creates a new test in **Test Master** (`/admin/test-master
 
 ---
 
-## 57. Revenue Overview Transformation: Clinical & Operational Test Volume Intelligence Engine — [RESOLVED & VERIFIED]
+## 58. Test Master & Catalog Radiology Studies Provisioning (11 Advanced MRI & CT Diagnostic Studies) — [RESOLVED & VERIFIED]
+
+### Severity: High / Master Catalog Completeness & Automated Clinical Provisioning
+### Impacted Modules & Files
+* **Catalog Seeding & Synchronization:** [`CatalogSeedService.cs:436-545`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Data/CatalogSeedService.cs#L436-L545)
+* **Finance Modality Resolver Engine:** [`FinanceBillsController.cs:154-195`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Controllers/FinanceBillsController.cs#L154-L195)
+* **Client Investigation Classifier:** [`RevenueScreens.jsx:66-105`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/finance/RevenueScreens.jsx#L66-L105)
+
+### Incident & Functional Requirement
+* User requested adding 10 newly ordered radiology diagnostic studies from handwritten clinical requisition sheets, patterned directly after the reference configuration of `MRI ABDOMEN & PELVIS` (`MRI_ABD_PLV`):
+  1. `MRI ABDOMEN & PELVIS` (`MRI_ABD_PLV`) – Base Price: ₹11,000 | Modality: MRI
+  2. `MRI BRAIN WITH CP ANGLE` (`MRI_BRAIN_CP_ANGLE`) – Base Price: ₹6,000 | Modality: MRI
+  3. `MRI CV JUNCTION` (`MRI_CV_JUNCTION`) – Base Price: ₹6,000 | Modality: MRI
+  4. `MRI DEFECOGRAPHY` (`MRI_DEFECOGRAPHY`) – Base Price: ₹10,000 | Modality: MRI
+  5. `MRI DEMENTIA PROTOCOL (MRA + SWI + DTI)` (`MRI_DEMENTIA_PROT`) – Base Price: ₹9,000 | Modality: MRI
+  6. `MRI BRAIN WITH ORBITS` (`MRI_BRAIN_ORBITS`) – Base Price: ₹8,000 | Modality: MRI
+  7. `MRV BRAIN` (`MRV_BRAIN`) – Base Price: ₹2,000 | Modality: MRI
+  8. `MRA BRAIN` (`MRA_BRAIN`) – Base Price: ₹2,000 | Modality: MRI
+  9. `MRA DWI` (`MRA_DWI`) – Base Price: ₹3,000 | Modality: MRI
+  10. `MRI DWI` (`MRI_DWI`) – Base Price: ₹3,000 | Modality: MRI
+  11. `CT BRAIN WITH ORBITS` (`CT_BRAIN_ORBITS`) – Base Price: ₹3,000 | Modality: CT Scan
+* Requirements:
+  - Enterprise ERP-grade implementation across all environments (zero duct-taping, self-healing startup migration).
+  - Configured with Radiology Dictation & Narrative Mode (`FINDINGS:\n\nIMPRESSION:` template).
+  - Modalities correctly mapped (`MRI` vs `CT Scan`), with `SpecimenTypeCode = "NO_SPECIMEN"`.
+  - Full synchronization between `Tests`, `TestPricing`, `Parameters`, `CatalogTests`, and `CatalogParameters`.
+  - Modality classification resolver updated so these clinical studies accurately populate in `Revenue Overview` test volume analytics and `Bills & Collections`.
+
+---
+
+### Enterprise Solutions Implemented
+
+1. **Automated Master Catalog Provisioner ([`CatalogSeedService.cs`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Data/CatalogSeedService.cs)):**
+   * Implemented `SeedRequestedRadiologyStudiesAsync` directly inside `SeedModalityMastersAsync` which runs during system bootstrap.
+   * Creates/updates `Test` records with exact codes, names, modalities (`MRI` or `CT Scan`), `DepartmentId = radDept.DepartmentId`, `SpecimenTypeCode = "NO_SPECIMEN"`, and `DefaultInterpretation = "FINDINGS:\n\nIMPRESSION:"`.
+   * Provisions `TestPricing` with handwritten base prices (`₹11,000`, `₹6,000`, `₹10,000`, `₹9,000`, `₹8,000`, `₹2,000`, `₹3,000`).
+   * Provisions `Parameter` with `ParameterCode = "PARAM1"`, `DataType = "Text"`, `NarrativeTemplate = "FINDINGS:\n\nIMPRESSION:"`, and `ShowNarrative = true` for narrative dictation reporting.
+   * Provisions `CatalogTest` and `CatalogParameter` records to ensure dual-catalog consistency for imports, exports, and template DSL rendering.
+
+2. **Full-Spectrum Modality Resolvers ([`FinanceBillsController.cs`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Controllers/FinanceBillsController.cs) & [`RevenueScreens.jsx`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/finance/RevenueScreens.jsx)):**
+   * Augmented `ResolveRadiologyModality` (C#) and `classifyInvestigation` (JavaScript) to recognize clinical abbreviations and study types:
+     - `mrv` (MR Venography)
+     - `mra` (MR Angiography)
+     - `dwi` (Diffusion Weighted Imaging)
+     - `defecography` (MR Defecography)
+     - `dementia` (Dementia Protocol with MRA, SWI, DTI)
+     - `cp angle` / `cpangle` (Cerebellopontine Angle)
+     - `cv junction` / `cvjunction` (Craniovertebral Junction)
+     - `swi` & `dti`
+   * Ensures `CT BRAIN WITH ORBITS` is resolutely classified as `CT Scan` and all others as `MRI`.
+
+---
+
+### Build & Verification
+* **Backend Compilation:** `dotnet build SynOS.sln` passed with **0 Errors**.
+* **Frontend Compilation:** `npm run build` completed with **0 Errors**, embedding the latest bundle into `src/SynOS.Api/wwwroot`.
+* **Git Status:** Verified clean working tree, committed, and pushed to `cloud-testing-2`.
+
 
 ### Severity: Medium-High / Operational Throughput Visibility & Executive Clinical Analytics
 ### Impacted Modules & Files

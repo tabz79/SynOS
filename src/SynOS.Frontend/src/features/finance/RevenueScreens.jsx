@@ -71,6 +71,8 @@ const classifyInvestigation = (testName) => {
     if (lower.includes('mri') || 
         lower.includes('magnetic') || 
         lower.includes('mrcp') || 
+        lower.includes('mrv') || 
+        lower.includes('mra') || 
         lower.includes('mr ') || 
         lower.includes('mr-') || 
         lower.includes('mr_') ||
@@ -83,7 +85,20 @@ const classifyInvestigation = (testName) => {
         lower.includes('brain stroke') ||
         lower.includes('mr angiogram') || 
         lower.includes('mr neurography') || 
-        lower.includes('mr venogram')) {
+        lower.includes('mr venogram') ||
+        lower.includes('defecography') ||
+        lower.includes('dementia') ||
+        lower.includes('cp angle') ||
+        lower.includes('cpangle') ||
+        lower.includes('cv junction') ||
+        lower.includes('cvjunction') ||
+        lower.includes('dwi') ||
+        lower.includes('swi') ||
+        lower.includes('dti')) {
+        if ((lower.includes('ct ') || lower.includes('ct_') || lower.includes('ct-') || lower.includes('ct scan')) &&
+            !lower.includes('mri') && !lower.includes('mr ') && !lower.includes('mra') && !lower.includes('mrv') && !lower.includes('magnetic')) {
+            return { department: 'Radiology', modality: 'CT Scan' };
+        }
         return { department: 'Radiology', modality: 'MRI' };
     }
     if (lower.includes('ct scan') || 
