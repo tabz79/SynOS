@@ -1,16 +1,23 @@
 import { useRef, useState, useEffect } from 'react';
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/context/ThemeContext";
+import { Search } from 'lucide-react';
 
-export function ActionQueueHeader({ title, count }) {
+export function ActionQueueHeader({ title, count, totalCount, searchQuery, onClearSearch }) {
+    const isFiltered = Boolean(searchQuery && searchQuery.trim() && totalCount !== undefined && totalCount !== count);
     return (
-        <div className="flex items-center gap-3 mb-3 px-1">
+        <div className="flex items-center gap-3 px-1">
             <h2 className="text-lg font-bold dark:text-zinc-200 text-zinc-800">{title}</h2>
+            {isFiltered && (
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 font-medium flex items-center gap-1.5">
+                    <span>{count} of {totalCount} matching</span>
+                </span>
+            )}
         </div>
     );
 }
 
-export function ActionQueue({ columns, data, onAction }) {
+export function ActionQueue({ columns, data, onAction, searchQuery = '', onClearSearch, activeFilterLabel = '' }) {
     const { theme } = useTheme();
     // ROVING TAB INDEX STATE
     const [focusedIndex, setFocusedIndex] = useState(null);
@@ -103,13 +110,35 @@ export function ActionQueue({ columns, data, onAction }) {
             {/* Body */}
             <div className="overflow-auto flex-1 p-1.5 sm:p-2 space-y-1.5 scrollbar-thin scrollbar-thumb-zinc-800/50 hover:scrollbar-thumb-zinc-700">
                 {data.length === 0 ? (
-                    <div className="h-full flex flex-col items-center justify-center text-zinc-500/40 space-y-3">
-                        <div className="p-6 rounded-full dark:bg-zinc-800/20 bg-black/[0.02] shadow-inner">
-                            <div className="w-12 h-px bg-current opacity-20" />
-                            <div className="w-8 h-px bg-current opacity-10 mt-1 mx-auto" />
+                    searchQuery ? (
+                        <div className="h-full flex flex-col items-center justify-center text-zinc-500 space-y-2 py-12">
+                            <div className="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800/50 flex items-center justify-center text-zinc-400">
+                                <Search className="w-5 h-5" />
+                            </div>
+                            <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+                                No matching records found
+                            </span>
+                            <span className="text-xs text-zinc-500 max-w-sm text-center">
+                                No queue items matched &ldquo;{searchQuery}&rdquo; in {activeFilterLabel || 'the current filter'}.
+                            </span>
+                            {onClearSearch && (
+                                <button
+                                    onClick={onClearSearch}
+                                    className="mt-2 px-3 py-1 text-xs font-semibold rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
+                                >
+                                    Clear Search
+                                </button>
+                            )}
                         </div>
-                        <span className="text-xs font-medium uppercase tracking-widest italic">Operational Silence</span>
-                    </div>
+                    ) : (
+                        <div className="h-full flex flex-col items-center justify-center text-zinc-500/40 space-y-3">
+                            <div className="p-6 rounded-full dark:bg-zinc-800/20 bg-black/[0.02] shadow-inner">
+                                <div className="w-12 h-px bg-current opacity-20" />
+                                <div className="w-8 h-px bg-current opacity-10 mt-1 mx-auto" />
+                            </div>
+                            <span className="text-xs font-medium uppercase tracking-widest italic">Operational Silence</span>
+                        </div>
+                    )
                 ) : (
                     data.map((row, rowIdx) => {
                         // GROUPING LOGIC

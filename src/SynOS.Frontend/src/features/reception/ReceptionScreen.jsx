@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { cn } from "@/lib/utils"
 import { useFlipGroup } from "@/hooks/useSynOSMotion"
-import { Plus, Users, ClipboardList, Bed, Clock, Loader2, ChevronDown, Package, Receipt, Wallet, TrendingDown, ArrowDownLeft, SlidersHorizontal, RefreshCw, Bell } from 'lucide-react'
+import { Plus, Users, ClipboardList, Bed, Clock, Loader2, ChevronDown, Package, Receipt, Wallet, TrendingDown, ArrowDownLeft, SlidersHorizontal, RefreshCw, Bell, Search, X } from 'lucide-react'
 import { StockRequestPanel } from '../inventory/StockRequestPanel'
 import { SystemBar } from '@/components/layout/SystemBar'
 import { RealitySummary } from '@/components/layout/RealitySummary'
@@ -23,6 +23,7 @@ import { FinanceApi } from '@/api/finance'
 import { SignalRService } from '@/lib/signalr'
 import { useTheme } from '@/context/ThemeContext'
 import { useAuth } from '@/context/AuthContext'
+import { matchesActionQueueSearch } from './utils/receptionSearch'
 
 export function ReceptionScreen() {
     const navigate = useNavigate();
@@ -101,6 +102,39 @@ export function ReceptionScreen() {
     });
     const activeFilterRef = useRef(activeFilter);
     useEffect(() => { activeFilterRef.current = activeFilter; }, [activeFilter]);
+
+    // Multi-Dimensional Search State (Token, Patient, Bill No, Payment, Status, Test)
+    const [searchQuery, setSearchQuery] = useState('');
+    const searchInputRef = useRef(null);
+
+    // Global keyboard shortcut ('/' focuses search)
+    useEffect(() => {
+        const handleGlobalKeyDown = (e) => {
+            if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) {
+                e.preventDefault();
+                searchInputRef.current?.focus();
+            }
+        };
+        window.addEventListener('keydown', handleGlobalKeyDown);
+        return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+    }, []);
+
+    // Filtered action queue based on multi-dimensional search
+    const filteredActionQueue = useMemo(() => {
+        if (!searchQuery || !searchQuery.trim()) return actionQueue;
+        return actionQueue.filter(row => matchesActionQueueSearch(row, searchQuery));
+    }, [actionQueue, searchQuery]);
+
+    // Active filter human label for empty states
+    const activeFilterLabel = useMemo(() => {
+        if (!activeFilter || activeFilter.preset === 'today') return "Today's queue";
+        if (activeFilter.preset === 'month') return "This Month's records";
+        if (activeFilter.preset === 'quarter') return "This Quarter's records";
+        if (activeFilter.preset === 'year') return "This Year's records";
+        if (activeFilter.preset === 'singleDate' || activeFilter.preset === 'single') return `${activeFilter.startDate || 'Selected Date'}`;
+        if (activeFilter.preset === 'custom') return `${activeFilter.startDate || 'Start'} to ${activeFilter.endDate || 'End'}`;
+        return "the selected date filter";
+    }, [activeFilter]);
 
     // History State (Phase 5)
     // We use a Ref for SignalR callback access, and State for Render.
@@ -710,6 +744,34 @@ export function ReceptionScreen() {
                                         )}
                                     </div>
                                     <div className="flex items-center gap-2 sm:gap-2.5">
+                                        {/* Multi-Dimensional Search Input (Matches user marked red box) */}
+                                        <div className="relative w-48 sm:w-56 md:w-64 lg:w-72 transition-all">
+                                            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
+                                            <input
+                                                ref={searchInputRef}
+                                                type="text"
+                                                placeholder="Search token, patient, bill, status... (/)"
+                                                value={searchQuery}
+                                                onChange={(e) => setSearchQuery(e.target.value)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Escape') setSearchQuery('');
+                                                }}
+                                                className="w-full pl-8 pr-7 py-1.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 outline-none focus:border-synos-primary focus:ring-1 focus:ring-synos-primary transition-all shadow-xs"
+                                            />
+                                            {searchQuery && (
+                                                <button
+                                                    onClick={() => {
+                                                        setSearchQuery('');
+                                                        searchInputRef.current?.focus();
+                                                    }}
+                                                    className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 rounded-full cursor-pointer"
+                                                    title="Clear search (Esc)"
+                                                >
+                                                    <X className="w-3.5 h-3.5" />
+                                                </button>
+                                            )}
+                                        </div>
+
                                         <ReceptionFilterBar
                                             filter={activeFilter}
                                             onChange={handleFilterChange}
@@ -750,7 +812,13 @@ export function ReceptionScreen() {
                             >
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-4">
-                                        <ActionQueueHeader title="Action Queues" count={actionQueue.length} />
+                                        <ActionQueueHeader 
+                                            title="Action Queues" 
+                                            count={filteredActionQueue.length} 
+                                            totalCount={actionQueue.length}
+                                            searchQuery={searchQuery}
+                                            onClearSearch={() => setSearchQuery('')}
+                                        />
                                         <div className="flex items-center gap-2 dark:bg-zinc-900/50 bg-white rounded-lg p-1 border dark:border-white/5 border-zinc-200 shadow-sm">
                                             <button
                                                 onClick={() => setShowHistory(false)}
@@ -843,7 +911,10 @@ export function ReceptionScreen() {
                                 ) : (
                                     <ActionQueue
                                         columns={queueColumns}
-                                        data={actionQueue}
+                                        data={filteredActionQueue}
+                                        searchQuery={searchQuery}
+                                        onClearSearch={() => setSearchQuery('')}
+                                        activeFilterLabel={activeFilterLabel}
                                         onAction={(r) => {
                                             const isHistorical = (r.dateGroup && r.dateGroup !== "Today") || (activeFilterRef.current.preset !== 'today');
                                             openResumeIntent(r.visitId, { isHistorical });
