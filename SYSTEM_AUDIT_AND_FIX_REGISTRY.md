@@ -4332,6 +4332,93 @@ Inside `EnsureRequestedRadiologyStudiesAsync`:
 * **Frontend Build:** `npm run build` compiled in 19.69s with **0 Errors**.
 * **Asset Cleanup:** Removed stale hashed bundles from `src/SynOS.Api/wwwroot/assets/`.
 
+---
+
+## 60. Radiology Status Disconnect, Technician Worklist Discrepancy & CT/MRI Misclassification — [AUDITED & ROOT CAUSES IDENTIFIED]
+
+### Severity: High / Operational Throughput & Diagnostic Queue Integrity
+### Impacted Modules & Files
+* **Operational Status Engine:** [`OperationsEngine.cs:684-724`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/Operations/OperationsEngine.cs#L684-L724)
+* **Radiology Queue Query Engine:** [`RadiologyService.cs:640-698`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/RadiologyService.cs#L640-L698)
+* **Order Fulfillment Routing:** [`ReceptionFlowService.cs:1750-1825`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/ReceptionFlowService.cs#L1750-L1825)
+* **Catalog Taxonomy & Modality Normalizer:** [`CatalogSeedService.cs:441-456, 490`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Data/CatalogSeedService.cs#L441-L456)
+* **Finance Modality Classifier:** [`FinanceBillsController.cs:154-194`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Api/Controllers/FinanceBillsController.cs#L154-L194)
+
+---
+
+### Incident & Clinical Manifestation
+
+1. **Status Label Disconnect in Action Queue:**
+   * In the Reception Action Queue, confirmed radiology visits `MRI-043` through `MRI-047` erroneously display **`Ready for Sample`** (the status dedicated exclusively to Pathology blood collection).
+   * Confirmed visits `MRI-048`, `MRI-049`, and `MRI-050` prematurely display **`Reporting`**, completely bypassing **`Awaiting Scan`** even though the patients have not yet entered the scanner room.
+2. **Technician Worklist Volume Discrepancy:**
+   * In the MRI Technician Workstation (`Takeover: MRI Tech`), the `AVAILABLE` tab displays only **4 studies** (`AVAILABLE (4)`).
+   * In the Revenue Overview and Financial Ledgers, **33+ MRI scans** were billed today across 47+ patient visits (`MRI-001` through `MRI-047`).
+3. **Cross-Modality Pollution (`CT BRAIN PLAIN` Hijacked by MRI):**
+   * In the MRI Technician Workstation, two of the 4 available studies are **`CT BRAIN PLAIN`** (patients `MRI-048` and `MRI-049`).
+   * In the Revenue Overview granular workload ledger, under the **`MRI (45)`** filter pill, `CT BRAIN PLAIN` appears as the second-highest volume test (12 scans) with modality explicitly tagged as **`MRI`**.
+
+---
+
+### Root Cause Audit Findings
+
+#### 1. Why `CT BRAIN PLAIN` Was Mislabeled as an MRI
+* In [`CatalogSeedService.cs:441-456`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Data/CatalogSeedService.cs#L441-L456), the modality taxonomy normalizer checks `MRI` patterns first, before `CT`:
+  ```csharp
+  if (text.Contains("MRI") || ... || text.Contains("BRAIN PLAIN") || text.Contains("CERVICAL SPINE") || text.Contains("LUMBAR SPINE") ...)
+  {
+      test.ModalityId = mriGuid;
+      test.Category = "MRI";
+  }
+  else if (text.Contains("CT SCAN") || text.StartsWith("CT ") || text.Contains("CT_") ...)
+  {
+      test.ModalityId = ctGuid;
+      test.Category = "CT Scan";
+  }
+  ```
+* Because the generic anatomical phrase `BRAIN PLAIN` was placed inside the `MRI` condition, the test code/name `CT_BRAIN_PLAIN` matched `BRAIN PLAIN` before reaching the `CT` check.
+* SQL Server `dbo.Tests` saved `CT BRAIN PLAIN` with `ModalityId = [MRI GUID]` and `Category = "MRI"`.
+* Consequently:
+  - `FinanceBillsController` grouped all 12 CT Brain Plain scans under `MRI (45)` in Revenue Overview.
+  - `ReceptionFlowService` created `RadiologyStudy` records with `Modality = "MRI"`.
+  - The MRI Technician Workstation loaded `CT BRAIN PLAIN` into the MRI queue.
+
+#### 2. Why Only 4 Studies Appear in the MRI Worklist
+* The MRI Technician screen queries `GET /api/v1/radiology/technician/queue`, which executes an inner join on `dbo.RadiologyStudies`.
+* The automatic fulfillment routing pipeline (`RouteOrdersToFulfillmentQueuesAsync`) was committed and deployed in commit `d013db23` (mid-day).
+* Patient visits `MRI-001` through `MRI-047` were settled **before** that pipeline was active. Their orders exist in `dbo.Orders`, but **zero rows were generated in `dbo.RadiologyStudies`**.
+* Only visits `MRI-048`, `MRI-049`, and `MRI-050` were settled **after** the pipeline was active. They generated exactly 4 studies:
+  - `MRI-048`: 1 study (`CT BRAIN PLAIN`)
+  - `MRI-049`: 2 studies (`CT BRAIN PLAIN` + `MRI LUMBAR SPINE`)
+  - `MRI-050`: 1 study (`MRI BRAIN PLAIN`)
+  - **Total: 1 + 2 + 1 = 4 studies.**
+
+#### 3. Why the Status Skips to `Reporting` or Defaults to `Ready for Sample`
+* In [`OperationsEngine.cs:684`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/Operations/OperationsEngine.cs#L684):
+  ```csharp
+  if ((resultStatuses.Any(s => s == "PendingVerification" || s == "Finalized")) || (reportStatus != null && reportStatus != "Signed"))
+  {
+      return "Reporting";
+  }
+  ```
+  When `RouteOrdersToFulfillmentQueuesAsync` creates a `RadiologyStudy` (`PendingImaging`), it also creates a shell `Report` with `Status = "Draft"`.
+  Line 684 checks `reportStatus != "Signed"`. Because `"Draft"` is not null and not `"Signed"`, it immediately evaluates to `true` and tags the visit as **`Reporting`**, skipping **`Awaiting Scan`**.
+* For visits `MRI-001` through `MRI-047`: because no `RadiologyStudy` or `Report` rows exist, line 684 is skipped, and line 723 falls back to the system default: **`Ready for Sample`**.
+
+---
+
+### Remediation Plan (For Execution Phase)
+
+1. **Modality Normalizer Disambiguation ([`CatalogSeedService.cs`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Data/CatalogSeedService.cs)):**
+   - Ensure `CT` prefixes (`text.StartsWith("CT") || text.Contains("CT_") || text.Contains(" CT ")`) take precedence over generic anatomy keywords, or guard anatomy matches with `!text.Contains("CT")`.
+   - Update `CT BRAIN PLAIN` in `dbo.Tests` so `ModalityId` points to `CT Scan` (`ctGuid`) and `Category = "CT Scan"`.
+2. **Historical Radiology Study Backfill Migration:**
+   - Execute a reconciliation routine on startup or migration that finds today's non-cancelled visits with Radiology orders lacking `RadiologyStudies` and creates their `PendingImaging` records. This will immediately bring all 33+ billed MRIs into the `AVAILABLE` worklist.
+3. **Status Engine Refinement ([`OperationsEngine.cs`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/Operations/OperationsEngine.cs)):**
+   - In `DeriveOperationalStatus()`, do not allow a `Report` in `"Draft"` status to trigger `"Reporting"` if the underlying `RadiologyStudy` is still in `"PendingImaging"`.
+   - Return **`"Awaiting Scan"`** whenever a Radiology study has `Status == "PendingImaging"`.
+   - Suppress `"Ready for Sample"` for pure Radiology visits.
+
 
 
 
