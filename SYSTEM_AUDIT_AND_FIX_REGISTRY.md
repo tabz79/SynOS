@@ -4293,6 +4293,45 @@ Inside `EnsureRequestedRadiologyStudiesAsync`:
 * **Frontend Build:** `npm run build` compiled in 18.59s with **0 Errors**.
 * **Asset Cleanup:** Removed stale hashed bundles from `src/SynOS.Api/wwwroot/assets/`.
 
+---
+
+## 59. Expansion of Specialized Radiology Catalog: MRI Brain with Cranial Nerves & CT Angio Abdomen — [RESOLVED & VERIFIED]
+
+### Severity: High / Clinical Imaging Intake Provisioning
+### Impacted Modules & Files
+* **On-Demand Catalog Seeder:** [`CatalogSeedService.cs:600-630`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Data/CatalogSeedService.cs#L600-L630)
+* **Reception Visit Details & Search:** [`VisitDetails.jsx:15-35`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/reception/components/VisitDetails.jsx#L15-L35)
+* **Test Master Catalog:** [`TestMasterScreen.jsx:520-565`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Frontend/src/features/admin/TestMasterScreen.jsx#L520-L565)
+
+### Clinical Requisition & Added Studies
+1. **`MRI BRAIN WITH CRANIAL NERVES`** (`MRI_BRAIN_CRANIAL_NERVES`):
+   - Modality: **`MRI`**
+   - Department: **`Radiology`**
+   - Base Price: **`₹6,000`**
+   - Reporting Setup: Radiology Narrative Dictation (`FINDINGS:\n\nIMPRESSION:`)
+   - Specimen: `NO_SPECIMEN`
+2. **`CT ANGIO ABDOMEN`** (`CT_ANGIO_ABDOMEN`):
+   - Modality: **`CT Scan`** (`CT`)
+   - Department: **`Radiology`**
+   - Base Price: **`₹10,000`**
+   - Reporting Setup: Radiology Narrative Dictation (`FINDINGS:\n\nIMPRESSION:`)
+   - Specimen: `NO_SPECIMEN`
+
+---
+
+### Implementation Details
+* **SQL Server Seeding:** Added to `CatalogSeedService.cs:requestedTests` with duplicate check by code or case-insensitive test name, auto-provisioning `Test`, `TestPricing`, and narrative `Parameter` records.
+* **Instant Reception Discovery:** Added to `MANDATORY_RADIOLOGY_TESTS` in `VisitDetails.jsx` so searches for `cranial`, `nerves`, `angio`, `abdomen`, or `mri`/`ct` populate the studies immediately.
+* **Master Catalog Governance:** Added to `INITIAL_TEST_CATALOG` in `TestMasterScreen.jsx` with full pricing tiers and template configuration.
+
+---
+
+### Verification
+* **Backend Build:** `dotnet build SynOS.sln` passed with **0 Errors**.
+* **Test Suite:** `dotnet test tests/SynOS.Tests/SynOS.Tests.csproj --filter "ProductionValidationTests"` passed with **16/16 Passed (100%)**.
+* **Frontend Build:** `npm run build` compiled in 19.69s with **0 Errors**.
+* **Asset Cleanup:** Removed stale hashed bundles from `src/SynOS.Api/wwwroot/assets/`.
+
 
 
 

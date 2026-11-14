@@ -533,6 +533,40 @@ const MANDATORY_RADIOLOGY_TESTS = [
     reportTitle: "CT BRAIN WITH ORBITS",
     pricing: { branchA: 3000, branchB: 3000, corporate: 3000 },
     parameters: [{ code: "PARAM1", name: "Findings & Impressions", unit: "", method: "Spectrophotometry", narrativeTemplate: "FINDINGS:\n\nIMPRESSION:", showNarrative: true }]
+  },
+  {
+    id: "mri-brain-cranial-nerves",
+    name: "MRI BRAIN WITH CRANIAL NERVES",
+    code: "MRI_BRAIN_CRANIAL_NERVES",
+    department: "Radiology",
+    modalityId: null,
+    category: "MRI",
+    basePrice: 6000,
+    tatHours: 24,
+    isProfile: false,
+    includedTestIds: [],
+    specimenTypeCode: "NO_SPECIMEN",
+    defaultInterpretation: "FINDINGS:\n\nIMPRESSION:",
+    reportTitle: "MRI BRAIN WITH CRANIAL NERVES",
+    pricing: { branchA: 6000, branchB: 6000, corporate: 6000 },
+    parameters: [{ code: "PARAM1", name: "Findings & Impressions", unit: "", method: "Spectrophotometry", narrativeTemplate: "FINDINGS:\n\nIMPRESSION:", showNarrative: true }]
+  },
+  {
+    id: "ct-angio-abdomen",
+    name: "CT ANGIO ABDOMEN",
+    code: "CT_ANGIO_ABDOMEN",
+    department: "Radiology",
+    modalityId: null,
+    category: "CT Scan",
+    basePrice: 10000,
+    tatHours: 24,
+    isProfile: false,
+    includedTestIds: [],
+    specimenTypeCode: "NO_SPECIMEN",
+    defaultInterpretation: "FINDINGS:\n\nIMPRESSION:",
+    reportTitle: "CT ANGIO ABDOMEN",
+    pricing: { branchA: 10000, branchB: 10000, corporate: 10000 },
+    parameters: [{ code: "PARAM1", name: "Findings & Impressions", unit: "", method: "Spectrophotometry", narrativeTemplate: "FINDINGS:\n\nIMPRESSION:", showNarrative: true }]
   }
 ];
 

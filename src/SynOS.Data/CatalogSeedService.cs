@@ -611,7 +611,9 @@ namespace SynOS.Data
                 new { Code = "MRA_BRAIN", Name = "MRA BRAIN", ModalityCode = "MRI", Category = "MRI", Price = 2000m },
                 new { Code = "MRA_DWI", Name = "MRA DWI", ModalityCode = "MRI", Category = "MRI", Price = 3000m },
                 new { Code = "MRI_DWI", Name = "MRI DWI", ModalityCode = "MRI", Category = "MRI", Price = 3000m },
-                new { Code = "CT_BRAIN_ORBITS", Name = "CT BRAIN WITH ORBITS", ModalityCode = "CT", Category = "CT Scan", Price = 3000m }
+                new { Code = "CT_BRAIN_ORBITS", Name = "CT BRAIN WITH ORBITS", ModalityCode = "CT", Category = "CT Scan", Price = 3000m },
+                new { Code = "MRI_BRAIN_CRANIAL_NERVES", Name = "MRI BRAIN WITH CRANIAL NERVES", ModalityCode = "MRI", Category = "MRI", Price = 6000m },
+                new { Code = "CT_ANGIO_ABDOMEN", Name = "CT ANGIO ABDOMEN", ModalityCode = "CT", Category = "CT Scan", Price = 10000m }
             };
 
             const string defaultFindings = "FINDINGS:\n\nIMPRESSION:";

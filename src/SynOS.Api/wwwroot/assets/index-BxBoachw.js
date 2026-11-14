@@ -36055,6 +36055,26 @@ Minimum version required to store current data is: ` + G + `.
       department: "Radiology",
       category: "CT Scan",
       basePrice: 3e3
+    },
+    {
+      testId: "mri-brain-cranial-nerves",
+      testName: "MRI BRAIN WITH CRANIAL NERVES",
+      testCode: "MRI_BRAIN_CRANIAL_NERVES",
+      code: "MRI_BRAIN_CRANIAL_NERVES",
+      name: "MRI BRAIN WITH CRANIAL NERVES",
+      department: "Radiology",
+      category: "MRI",
+      basePrice: 6e3
+    },
+    {
+      testId: "ct-angio-abdomen",
+      testName: "CT ANGIO ABDOMEN",
+      testCode: "CT_ANGIO_ABDOMEN",
+      code: "CT_ANGIO_ABDOMEN",
+      name: "CT ANGIO ABDOMEN",
+      department: "Radiology",
+      category: "CT Scan",
+      basePrice: 1e4
     }
   ];
   function DBe({ snapshot: t, visitId: e, onVisitUpdated: r, onOptimisticAddTest: a, onOptimisticRemoveTest: s, setIsPrepaidIntent: i, isCorrectionIntent: o, billingMode: A = "Standard", onOpenModal: l, stagedAddedTests: c = [], onAddStagedTest: g, stagedRemovedOrderIds: d = [], onToggleRemoveOrderId: u, onRemoveStagedAddedTest: h, stagedReferralPartnerId: f, stagedSecondaryPartnerId: m, onStageReferral: x, onStageSecondaryReferral: B }) {
@@ -101379,6 +101399,74 @@ IMPRESSION:`,
         branchA: 3e3,
         branchB: 3e3,
         corporate: 3e3
+      },
+      parameters: [
+        {
+          code: "PARAM1",
+          name: "Findings & Impressions",
+          unit: "",
+          method: "Spectrophotometry",
+          narrativeTemplate: `FINDINGS:
+
+IMPRESSION:`,
+          showNarrative: true
+        }
+      ]
+    },
+    {
+      id: "mri-brain-cranial-nerves",
+      name: "MRI BRAIN WITH CRANIAL NERVES",
+      code: "MRI_BRAIN_CRANIAL_NERVES",
+      department: "Radiology",
+      modalityId: null,
+      category: "MRI",
+      basePrice: 6e3,
+      tatHours: 24,
+      isProfile: false,
+      includedTestIds: [],
+      specimenTypeCode: "NO_SPECIMEN",
+      defaultInterpretation: `FINDINGS:
+
+IMPRESSION:`,
+      reportTitle: "MRI BRAIN WITH CRANIAL NERVES",
+      pricing: {
+        branchA: 6e3,
+        branchB: 6e3,
+        corporate: 6e3
+      },
+      parameters: [
+        {
+          code: "PARAM1",
+          name: "Findings & Impressions",
+          unit: "",
+          method: "Spectrophotometry",
+          narrativeTemplate: `FINDINGS:
+
+IMPRESSION:`,
+          showNarrative: true
+        }
+      ]
+    },
+    {
+      id: "ct-angio-abdomen",
+      name: "CT ANGIO ABDOMEN",
+      code: "CT_ANGIO_ABDOMEN",
+      department: "Radiology",
+      modalityId: null,
+      category: "CT Scan",
+      basePrice: 1e4,
+      tatHours: 24,
+      isProfile: false,
+      includedTestIds: [],
+      specimenTypeCode: "NO_SPECIMEN",
+      defaultInterpretation: `FINDINGS:
+
+IMPRESSION:`,
+      reportTitle: "CT ANGIO ABDOMEN",
+      pricing: {
+        branchA: 1e4,
+        branchB: 1e4,
+        corporate: 1e4
       },
       parameters: [
         {

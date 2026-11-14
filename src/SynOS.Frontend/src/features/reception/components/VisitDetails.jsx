@@ -23,7 +23,9 @@ const MANDATORY_RADIOLOGY_TESTS = [
     { testId: "mra-brain", testName: "MRA BRAIN", testCode: "MRA_BRAIN", code: "MRA_BRAIN", name: "MRA BRAIN", department: "Radiology", category: "MRI", basePrice: 2000 },
     { testId: "mra-dwi", testName: "MRA DWI", testCode: "MRA_DWI", code: "MRA_DWI", name: "MRA DWI", department: "Radiology", category: "MRI", basePrice: 3000 },
     { testId: "mri-dwi", testName: "MRI DWI", testCode: "MRI_DWI", code: "MRI_DWI", name: "MRI DWI", department: "Radiology", category: "MRI", basePrice: 3000 },
-    { testId: "ct-brain-orbits", testName: "CT BRAIN WITH ORBITS", testCode: "CT_BRAIN_ORBITS", code: "CT_BRAIN_ORBITS", name: "CT BRAIN WITH ORBITS", department: "Radiology", category: "CT Scan", basePrice: 3000 }
+    { testId: "ct-brain-orbits", testName: "CT BRAIN WITH ORBITS", testCode: "CT_BRAIN_ORBITS", code: "CT_BRAIN_ORBITS", name: "CT BRAIN WITH ORBITS", department: "Radiology", category: "CT Scan", basePrice: 3000 },
+    { testId: "mri-brain-cranial-nerves", testName: "MRI BRAIN WITH CRANIAL NERVES", testCode: "MRI_BRAIN_CRANIAL_NERVES", code: "MRI_BRAIN_CRANIAL_NERVES", name: "MRI BRAIN WITH CRANIAL NERVES", department: "Radiology", category: "MRI", basePrice: 6000 },
+    { testId: "ct-angio-abdomen", testName: "CT ANGIO ABDOMEN", testCode: "CT_ANGIO_ABDOMEN", code: "CT_ANGIO_ABDOMEN", name: "CT ANGIO ABDOMEN", department: "Radiology", category: "CT Scan", basePrice: 10000 }
 ];
 
 export function VisitDetails({ 
