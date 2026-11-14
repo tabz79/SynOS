@@ -2549,6 +2549,7 @@ export const PendingReceivablesScreen = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
     const [doctorFilter, setDoctorFilter] = useState('All');
+    const [billedTodayOnly, setBilledTodayOnly] = useState(false);
     const [isPrintSummaryOpen, setIsPrintSummaryOpen] = useState(false);
 
     useEffect(() => {
@@ -2602,6 +2603,21 @@ export const PendingReceivablesScreen = () => {
 
     const computedPartnerSummaries = useMemo(() => {
         const groups = new Map();
+
+        // Pre-aggregate today's billed volume across all bills
+        const todayBilledByPartner = new Map();
+        allBills.forEach(b => {
+            if (isWithinTimeRange(b.occurredAt || b.date, 'today', null)) {
+                const partnerName = b.partnerName || b.debtorName || 'Unknown Partner';
+                const partnerId = b.referralPartnerId || b.debtorId || b.partnerId || partnerName;
+                const amt = b.totalAmount || b.amount || 0;
+                todayBilledByPartner.set(partnerId, (todayBilledByPartner.get(partnerId) || 0) + amt);
+                if (b.partnerName) {
+                    todayBilledByPartner.set(b.partnerName, (todayBilledByPartner.get(b.partnerName) || 0) + amt);
+                }
+            }
+        });
+
         openBills.forEach(b => {
             const partnerName = b.partnerName || b.debtorName || 'Unknown Partner';
             const partnerId = b.referralPartnerId || b.debtorId || b.partnerId || partnerName;
@@ -2610,13 +2626,17 @@ export const PendingReceivablesScreen = () => {
 
             const billDate = b.occurredAt || b.date;
             const days = billDate ? Math.floor((new Date() - new Date(billDate)) / (1000 * 60 * 60 * 24)) : 0;
+            const isToday = isWithinTimeRange(billDate, 'today', null);
 
             if (!groups.has(partnerId)) {
+                const todayBilledAmt = todayBilledByPartner.get(partnerId) || todayBilledByPartner.get(partnerName) || 0;
                 groups.set(partnerId, {
                     partnerId,
                     partnerName,
                     totalOutstanding: 0,
                     billCount: 0,
+                    billedToday: todayBilledAmt,
+                    latestBillDate: billDate || new Date().toISOString(),
                     oldestDueDate: billDate || new Date().toISOString(),
                     aging_0_7: 0,
                     aging_7_30: 0,
@@ -2626,6 +2646,12 @@ export const PendingReceivablesScreen = () => {
             const p = groups.get(partnerId);
             p.totalOutstanding += safeDue;
             p.billCount += 1;
+            if (isToday && p.billedToday === 0) {
+                p.billedToday += safeDue;
+            }
+            if (billDate && new Date(billDate) > new Date(p.latestBillDate)) {
+                p.latestBillDate = billDate;
+            }
             if (billDate && new Date(billDate) < new Date(p.oldestDueDate)) {
                 p.oldestDueDate = billDate;
             }
@@ -2633,8 +2659,24 @@ export const PendingReceivablesScreen = () => {
             else if (days <= 30) p.aging_7_30 += safeDue;
             else p.aging_30_Plus += safeDue;
         });
-        return Array.from(groups.values()).filter(p => p.totalOutstanding > 0);
-    }, [openBills]);
+
+        const list = Array.from(groups.values()).filter(p => p.totalOutstanding > 0);
+
+        // Priority sort: Partners with billing activity today at the top, then by billedToday desc, then totalOutstanding desc
+        list.sort((a, b) => {
+            const aHasToday = (a.billedToday || 0) > 0 ? 1 : 0;
+            const bHasToday = (b.billedToday || 0) > 0 ? 1 : 0;
+            if (bHasToday !== aHasToday) {
+                return bHasToday - aHasToday;
+            }
+            if ((b.billedToday || 0) !== (a.billedToday || 0)) {
+                return (b.billedToday || 0) - (a.billedToday || 0);
+            }
+            return (b.totalOutstanding || 0) - (a.totalOutstanding || 0);
+        });
+
+        return list;
+    }, [openBills, allBills]);
 
     const handleOpenPartnerClaim = async (partner, specificFactIds = null) => {
         try {
@@ -2708,6 +2750,9 @@ export const PendingReceivablesScreen = () => {
 
     // Filter partners based on search, doctor, status, and aging
     const filteredPartnerSummaries = computedPartnerSummaries.filter(p => {
+        if (billedTodayOnly && (p.billedToday || 0) <= 0) {
+            return false;
+        }
         if (doctorFilter !== 'All' && p.partnerName !== doctorFilter) {
             return false;
         }
@@ -2722,6 +2767,10 @@ export const PendingReceivablesScreen = () => {
         if (statusFilter === 'Recent (0-7d)' && !(p.aging_0_7 > 0)) return false;
         return true;
     });
+
+    const activeTodayCount = useMemo(() => {
+        return computedPartnerSummaries.filter(p => (p.billedToday || 0) > 0).length;
+    }, [computedPartnerSummaries]);
 
     const totals = {
         outstanding: filteredPartnerSummaries.reduce((acc, p) => acc + (p.totalOutstanding || 0), 0),
@@ -2856,6 +2905,40 @@ export const PendingReceivablesScreen = () => {
                 </div>
             </div>
 
+            {/* View Mode Switcher: All Debtors vs Billed Today Only */}
+            <div className="flex items-center justify-between flex-wrap gap-3">
+                <div className="flex items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={() => setBilledTodayOnly(false)}
+                        className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                            !billedTodayOnly
+                                ? 'bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 shadow-xs'
+                                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                        }`}
+                    >
+                        All Debtors ({computedPartnerSummaries.length})
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setBilledTodayOnly(true)}
+                        className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                            billedTodayOnly
+                                ? 'bg-synos-primary text-white shadow-xs'
+                                : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                        }`}
+                    >
+                        <span className={`w-2 h-2 rounded-full ${activeTodayCount > 0 ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-400'}`} />
+                        Billed Today Only ({activeTodayCount})
+                    </button>
+                </div>
+                {billedTodayOnly && (
+                    <div className="text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-xl">
+                        Showing only partners with new billing activity today
+                    </div>
+                )}
+            </div>
+
             {/* Multi-Dimensional Filters Bar */}
             <FinanceFilterBar
                 searchQuery={searchQuery}
@@ -2876,50 +2959,67 @@ export const PendingReceivablesScreen = () => {
                     <table className="w-full text-left border-collapse synos-table">
                         <thead>
                             <tr className="bg-slate-50/80 dark:bg-zinc-900/80 border-b border-slate-200 dark:border-zinc-800">
-                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Partner / Account</th>
-                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-center">Open Bills</th>
-                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Total Outstanding</th>
-                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Oldest Dues</th>
-                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Aging Profile</th>
-                                <th className="p-6 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Actions</th>
+                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Partner / Account</th>
+                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-center">Open Bills</th>
+                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Billed Today</th>
+                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Total Outstanding</th>
+                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Oldest Dues</th>
+                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Aging Profile</th>
+                                <th className="p-4 text-[10px] font-bold uppercase tracking-widest text-zinc-500 text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200/80 dark:divide-zinc-800/80">
                             {filteredPartnerSummaries.map((partner) => (
                                 <React.Fragment key={partner.partnerId}>
                                     <tr className={`group transition-all ${expandedPartnerId === partner.partnerId ? 'bg-synos-primary/5' : 'hover:bg-zinc-50 dark:hover:bg-zinc-900/30'}`}>
-                                        <td className="p-6">
+                                        <td className="p-4">
                                             <div className="flex items-center gap-3">
                                                 <button 
                                                     onClick={() => toggleExpand(partner.partnerId)}
-                                                    className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${expandedPartnerId === partner.partnerId ? 'bg-synos-primary text-white rotate-90' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:bg-zinc-200'}`}
+                                                    className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all cursor-pointer ${expandedPartnerId === partner.partnerId ? 'bg-synos-primary text-white rotate-90' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:bg-zinc-200'}`}
                                                 >
                                                     <ArrowRight size={12} />
                                                 </button>
                                                 <div className="flex flex-col">
-                                                    <span className="text-sm font-bold dark:text-zinc-200">{partner.partnerName}</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-sm font-bold dark:text-zinc-200">{partner.partnerName}</span>
+                                                        {(partner.billedToday || 0) > 0 && (
+                                                            <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                                                                Active Today
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                     <span className="text-[10px] text-zinc-400 uppercase tracking-tighter">ID: {partner.partnerId.toString().substring(0, 8)}</span>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="p-6 text-center text-sm font-semibold dark:text-zinc-400">{partner.billCount}</td>
-                                        <td className="p-6 text-right">
-                                            <div className="text-sm font-bold text-rose-500">{FinanceUtils.formatCurrency(partner.totalOutstanding)}</div>
+                                        <td className="p-4 text-center text-sm font-semibold dark:text-zinc-400">{partner.billCount}</td>
+                                        <td className="p-4 text-right">
+                                            {(partner.billedToday || 0) > 0 ? (
+                                                <div className="font-sans tabular-nums font-bold text-emerald-600 dark:text-emerald-400">
+                                                    ₹{partner.billedToday.toLocaleString()}
+                                                </div>
+                                            ) : (
+                                                <span className="text-zinc-400 text-xs">—</span>
+                                            )}
                                         </td>
-                                        <td className="p-6">
+                                        <td className="p-4 text-right">
+                                            <div className="text-sm font-sans tabular-nums font-bold text-rose-500">{FinanceUtils.formatCurrency(partner.totalOutstanding)}</div>
+                                        </td>
+                                        <td className="p-4">
                                             <div className={`text-xs font-medium ${FinanceUtils.getAgingColor(partner.oldestDueDate)}`}>
                                                 {new Date(partner.oldestDueDate).toLocaleDateString()}
                                                 <span className="ml-2 opacity-50 italic">({FinanceUtils.getAgingCategory(partner.oldestDueDate)})</span>
                                             </div>
                                         </td>
-                                        <td className="p-6">
+                                        <td className="p-4">
                                             <div className="flex gap-1 h-1.5 w-32 rounded-full overflow-hidden bg-zinc-200 dark:bg-zinc-800">
                                                 <div style={{ width: `${(partner.aging_0_7 / partner.totalOutstanding) * 100}%` }} className="bg-emerald-500 h-full" />
                                                 <div style={{ width: `${(partner.aging_7_30 / partner.totalOutstanding) * 100}%` }} className="bg-amber-500 h-full" />
                                                 <div style={{ width: `${(partner.aging_30_Plus / partner.totalOutstanding) * 100}%` }} className="bg-rose-500 h-full" />
                                             </div>
                                         </td>
-                                        <td className="p-6 text-right">
+                                        <td className="p-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
                                                 <button
                                                     onClick={() => handleOpenPartnerClaim(partner)}
@@ -2949,7 +3049,7 @@ export const PendingReceivablesScreen = () => {
 
                                         return (
                                             <tr>
-                                                <td colSpan="6" className="p-0 bg-zinc-50/50 dark:bg-zinc-950/50">
+                                                <td colSpan="7" className="p-0 bg-zinc-50/50 dark:bg-zinc-950/50">
                                                     <div className="p-6 border-x border-b dark:border-zinc-900 border-zinc-100">
                                                         
                                                         {/* BATCH ACTION BAR */}
@@ -3056,9 +3156,9 @@ export const PendingReceivablesScreen = () => {
                                                                                 {bill.testsSummary || (bill.testNames?.join(', ')) || (bill.tests?.join(', ')) || '-'}
                                                                             </td>
                                                                             <td className="py-3 text-[10px] text-zinc-400">{new Date(bill.occurredAt || bill.date).toLocaleDateString()}</td>
-                                                                            <td className="py-3 text-[10px] font-bold text-right dark:text-zinc-300">₹{(bill.totalAmount || bill.amount || 0).toLocaleString()}</td>
-                                                                            <td className="py-3 text-[10px] font-bold text-right text-emerald-500">₹{(bill.paidAmount || bill.amountReceived || 0).toLocaleString()}</td>
-                                                                            <td className="py-3 text-[10px] font-bold text-right text-rose-500">₹{(bill.balanceDue !== undefined && !isNaN(bill.balanceDue) ? bill.balanceDue : (bill.amount || 0) - (bill.amountReceived || 0)).toLocaleString()}</td>
+                                                                            <td className="py-3 text-[10px] font-sans tabular-nums font-bold text-right dark:text-zinc-300">₹{(bill.totalAmount || bill.amount || 0).toLocaleString()}</td>
+                                                                            <td className="py-3 text-[10px] font-sans tabular-nums font-bold text-right text-emerald-500">₹{(bill.paidAmount || bill.amountReceived || 0).toLocaleString()}</td>
+                                                                            <td className="py-3 text-[10px] font-sans tabular-nums font-bold text-right text-rose-500">₹{(bill.balanceDue !== undefined && !isNaN(bill.balanceDue) ? bill.balanceDue : (bill.amount || 0) - (bill.amountReceived || 0)).toLocaleString()}</td>
                                                                         </tr>
                                                                     );
                                                                 })}
@@ -3620,7 +3720,7 @@ export const VisitCorrectionsScreen = () => {
                                             {detailedDiff.receivableChange && (
                                                 <div className="p-2.5 rounded-lg bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 flex items-center justify-between">
                                                     <span className="font-bold text-amber-700 dark:text-amber-300">Partner Receivable Shift</span>
-                                                    <span className="font-mono font-bold">
+                                                    <span className="font-sans tabular-nums font-bold">
                                                         <span className="text-zinc-400 line-through mr-1">₹{Number(detailedDiff.receivableChange.previous || 0).toLocaleString()}</span>
                                                         <span className="text-zinc-900 dark:text-white">→ ₹{Number(detailedDiff.receivableChange.current || 0).toLocaleString()}</span>
                                                         <span className={cn("ml-2 text-[10px] px-1.5 py-0.5 rounded", Number(detailedDiff.receivableChange.shift || 0) >= 0 ? "bg-emerald-500/20 text-emerald-600" : "bg-rose-500/20 text-rose-600")}>
@@ -4056,10 +4156,10 @@ export const CollectionHistoryScreen = () => {
                                 </div>
                             </div>
                             <div className="text-right shrink-0">
-                                <p className="text-xs font-black text-zinc-900 dark:text-white font-mono">
+                                <p className="text-xs font-black text-zinc-900 dark:text-white font-sans tabular-nums">
                                     ₹{cashierSummaries.reduce((acc, s) => acc + s.total, 0).toLocaleString()}
                                 </p>
-                                <p className="text-[10px] text-zinc-500 font-mono">
+                                <p className="text-[10px] text-zinc-500 font-sans tabular-nums">
                                     {cashierSummaries.reduce((acc, s) => acc + s.count, 0)} txns
                                 </p>
                             </div>
@@ -4101,12 +4201,12 @@ export const CollectionHistoryScreen = () => {
                                     </div>
                                     <div className="text-right shrink-0">
                                         <p className={cn(
-                                            "text-xs font-black font-mono",
+                                            "text-xs font-black font-sans tabular-nums",
                                             isSelected ? "text-synos-primary" : "text-emerald-600 dark:text-emerald-400"
                                         )}>
                                             ₹{staff.total.toLocaleString()}
                                         </p>
-                                        <div className="flex items-center gap-1 justify-end text-[9px] text-zinc-400 font-mono">
+                                        <div className="flex items-center gap-1 justify-end text-[9px] text-zinc-400 font-sans tabular-nums">
                                             <span>{staff.count} rpts</span>
                                             {staff.cash > 0 && <span className="text-emerald-500 font-semibold">• ₹{staff.cash} C</span>}
                                         </div>

@@ -1577,7 +1577,7 @@ namespace SynOS.Services.EconomicsIntelligence
         {
             var (startUtc, endUtc) = ResolvePresetDateRange(preset, startDate, endDate);
 
-            // 1. Fetch all RevenueFacts of SourceType == Partner in the date range
+            // 1. Fetch all RevenueFacts of SourceType == Partner in the active date range
             var revQuery = _context.RevenueFacts.AsNoTracking()
                 .Where(f => f.SourceType == RevenueSourceType.Partner && f.Direction == RevenueDirection.Inflow);
             if (startUtc.HasValue) revQuery = revQuery.Where(f => f.OccurredAt >= startUtc.Value);
@@ -1585,7 +1585,7 @@ namespace SynOS.Services.EconomicsIntelligence
 
             var rawRevenues = await revQuery.OrderByDescending(f => f.OccurredAt).ToListAsync();
 
-            // 2. Fetch outstanding ReceivableFacts for all partners (optionally filtered by branch)
+            // 2. Fetch all-time outstanding ReceivableFacts for all partners (filtered by branch if specified)
             var receivableQuery = from rf in _context.ReceivableFacts.AsNoTracking().Where(f => f.SettledAt == null)
                                   join v in _context.Visits.AsNoTracking() on rf.SourceVisitId equals v.VisitId into vj
                                   from v in vj.DefaultIfEmpty()
@@ -1601,13 +1601,30 @@ namespace SynOS.Services.EconomicsIntelligence
                 .GroupBy(r => r.PartnerName, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(g => g.Key, g => g.Sum(x => x.Outstanding), StringComparer.OrdinalIgnoreCase);
 
+            // 3. Fetch amount billed strictly within the active date range for each partner
+            var periodBilledQuery = from rf in _context.ReceivableFacts.AsNoTracking()
+                                    join v in _context.Visits.AsNoTracking() on rf.SourceVisitId equals v.VisitId into vj
+                                    from v in vj.DefaultIfEmpty()
+                                    where (!branchId.HasValue || branchId == Guid.Empty || (v != null && v.BranchId == branchId.Value))
+                                       && (!startUtc.HasValue || rf.OccurredAt >= startUtc.Value)
+                                       && (!endUtc.HasValue || rf.OccurredAt <= endUtc.Value)
+                                    select new {
+                                        PartnerName = rf.ReferralPartner != null ? rf.ReferralPartner.Name : (rf.DebtorName ?? "Institutional Account"),
+                                        Amount = rf.Amount
+                                    };
+
+            var periodBilledList = await periodBilledQuery.ToListAsync();
+            var periodBilledByPartner = periodBilledList
+                .GroupBy(r => r.PartnerName, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.Sum(x => x.Amount), StringComparer.OrdinalIgnoreCase);
+
             // Load users for HandledBy
             var userIds = rawRevenues.Select(r => r.DeclaredByUserId).Where(id => id != Guid.Empty).Distinct().ToList();
             var userMap = await _context.Users.AsNoTracking()
                 .Where(u => userIds.Contains(u.UserId))
                 .ToDictionaryAsync(u => u.UserId, u => !string.IsNullOrWhiteSpace(u.Name) ? u.Name : u.Username);
 
-            // Group settlements by Partner Name
+            // Group settlements strictly for partners that actually have settlements in this period
             var settlementsByPartner = new Dictionary<string, List<SynOS.Models.Entities.Revenue.RevenueFact>>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var f in rawRevenues)
@@ -1651,44 +1668,62 @@ namespace SynOS.Services.EconomicsIntelligence
                 settlementsByPartner[pName].Add(f);
             }
 
-            var allPartnerNames = settlementsByPartner.Keys.Union(outstandingByPartner.Keys, StringComparer.OrdinalIgnoreCase).ToList();
+            // STRICT SETTLEMENT FILTERING: Only partners who actually have settlements in this period appear
+            var settledPartnerNames = settlementsByPartner.Keys.ToList();
             var result = new List<object>();
 
-            foreach (var partnerName in allPartnerNames)
+            foreach (var partnerName in settledPartnerNames)
             {
-                var facts = settlementsByPartner.TryGetValue(partnerName, out var pFacts) ? pFacts : new List<SynOS.Models.Entities.Revenue.RevenueFact>();
+                var facts = settlementsByPartner[partnerName];
                 decimal totalSettled = facts.Sum(x => x.Amount);
                 decimal cashAmount = facts.Where(x => x.PaymentMode == PaymentMode.Cash).Sum(x => x.Amount);
                 decimal digitalAmount = facts.Where(x => x.PaymentMode != PaymentMode.Cash).Sum(x => x.Amount);
-                decimal remainingDue = outstandingByPartner.TryGetValue(partnerName, out var due) ? due : 0m;
-                decimal totalBilled = totalSettled + remainingDue;
+
+                decimal billedInPeriod = periodBilledByPartner.TryGetValue(partnerName, out var bAmt) ? bAmt : 0m;
+                decimal periodBalance = Math.Max(0m, billedInPeriod - totalSettled);
+                decimal allTimeRemainingDue = outstandingByPartner.TryGetValue(partnerName, out var due) ? due : 0m;
+                decimal priorDue = Math.Max(0m, allTimeRemainingDue - periodBalance);
 
                 var latestFact = facts.OrderByDescending(x => x.OccurredAt).FirstOrDefault();
                 DateTimeOffset? lastSettledAt = latestFact?.OccurredAt;
                 string lastHandledBy = latestFact != null && userMap.TryGetValue(latestFact.DeclaredByUserId, out var u) ? u : "System Admin";
 
                 string status;
-                if (remainingDue <= 0 && totalSettled > 0) status = "Settled (100%)";
-                else if (totalSettled > 0 && remainingDue > 0) status = "Partial Recovery";
-                else status = "Pending Due";
+                if (allTimeRemainingDue <= 0 && totalSettled > 0)
+                {
+                    status = "Settled (100%)";
+                }
+                else if (periodBalance <= 0 && totalSettled > 0)
+                {
+                    status = "Today Cleared";
+                }
+                else if (totalSettled > 0)
+                {
+                    status = "Partial Recovery";
+                }
+                else
+                {
+                    status = "Pending Due";
+                }
 
                 result.Add(new
                 {
                     PartnerName = partnerName,
+                    BilledInPeriod = billedInPeriod,
                     TotalSettled = totalSettled,
+                    PeriodBalance = periodBalance,
+                    RemainingDue = allTimeRemainingDue,
+                    PriorDue = priorDue,
                     SettlementCount = facts.Count,
                     CashAmount = cashAmount,
                     DigitalAmount = digitalAmount,
-                    RemainingDue = remainingDue,
-                    TotalBilled = totalBilled,
                     LastSettledAt = lastSettledAt,
                     LastHandledBy = lastHandledBy,
                     Status = status
                 });
             }
 
-            return result.OrderByDescending(x => (decimal)((dynamic)x).TotalSettled)
-                         .ThenByDescending(x => (decimal)((dynamic)x).RemainingDue);
+            return result.OrderByDescending(x => (decimal)((dynamic)x).TotalSettled);
         }
 
         public async Task<IEnumerable<VendorPayableSummaryDto>> GetVendorPayablesSummaryAsync()

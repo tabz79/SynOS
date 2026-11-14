@@ -271,7 +271,7 @@ export const PartnerReceivablesTab = () => {
                 >
                     <Building2 size={15} />
                     <span>Referral Partners</span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-white/20">₹{partnerTotal.toLocaleString()}</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-sans tabular-nums font-bold bg-white/20">₹{partnerTotal.toLocaleString()}</span>
                 </button>
 
                 <button
@@ -285,7 +285,7 @@ export const PartnerReceivablesTab = () => {
                 >
                     <ShieldCheck size={15} />
                     <span>Insurance Claims & TPAs</span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-white/20">₹{insuranceTotal.toLocaleString()}</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-sans tabular-nums font-bold bg-white/20">₹{insuranceTotal.toLocaleString()}</span>
                 </button>
 
                 <button
@@ -299,7 +299,7 @@ export const PartnerReceivablesTab = () => {
                 >
                     <Briefcase size={15} />
                     <span>Corporate B2B Receivables</span>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-white/20">₹{corporateTotal.toLocaleString()}</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-sans tabular-nums font-bold bg-white/20">₹{corporateTotal.toLocaleString()}</span>
                 </button>
             </div>
 
@@ -498,7 +498,7 @@ export const PartnerReceivablesTab = () => {
                                                                                     {selectedCount} of {(partner.openItems || []).length} Invoices Selected
                                                                                 </p>
                                                                                 <p className="text-[10px] text-zinc-500 font-medium">
-                                                                                    Total Selected Due: <strong className="text-indigo-600 dark:text-indigo-400 font-mono">₹{selectedSum.toLocaleString()}</strong>
+                                                                                    Total Selected Due: <strong className="text-indigo-600 dark:text-indigo-400 font-sans tabular-nums font-bold">₹{selectedSum.toLocaleString()}</strong>
                                                                                 </p>
                                                                             </div>
                                                                         </div>
