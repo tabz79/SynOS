@@ -547,6 +547,35 @@ namespace SynOS.Data
             Console.WriteLine("[CatalogSeedService] Seeded base modalities and migrated legacy departments/tests/studies/templates successfully.");
         }
 
+        public static async Task EnsureRequestedRadiologyStudiesAsync(SynOSDbContext context)
+        {
+            var requestedCodes = new[]
+            {
+                "MRI_ABD_PLV", "MRI_BRAIN_CP_ANGLE", "MRI_CV_JUNCTION", "MRI_DEFECOGRAPHY",
+                "MRI_DEMENTIA_PROT", "MRI_BRAIN_ORBITS", "MRV_BRAIN", "MRA_BRAIN",
+                "MRA_DWI", "MRI_DWI", "CT_BRAIN_ORBITS"
+            };
+
+            var existingCount = await context.Tests.CountAsync(t => requestedCodes.Contains(t.TestCode) && t.IsActive);
+            if (existingCount >= requestedCodes.Length)
+            {
+                return;
+            }
+
+            var radDept = await context.DepartmentMasters.FirstOrDefaultAsync(d => d.Code == "RAD" || d.Name == "Radiology");
+            if (radDept == null)
+            {
+                radDept = await context.DepartmentMasters.FirstOrDefaultAsync();
+                if (radDept == null) return;
+            }
+
+            var modalities = await context.ModalityMasters.ToListAsync();
+            var modalityIds = modalities.ToDictionary(m => m.Code, m => m.ModalityId, StringComparer.OrdinalIgnoreCase);
+
+            await SeedRequestedRadiologyStudiesAsync(context, radDept, modalityIds);
+            await context.SaveChangesAsync();
+        }
+
         private static async Task SeedRequestedRadiologyStudiesAsync(
             SynOSDbContext context,
             DepartmentMaster radDept,

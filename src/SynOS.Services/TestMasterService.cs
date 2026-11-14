@@ -230,6 +230,15 @@ namespace SynOS.Services
 
         public async Task<IReadOnlyList<Test>> GetTestsAsync()
         {
+            try
+            {
+                await CatalogSeedService.EnsureRequestedRadiologyStudiesAsync(_context);
+            }
+            catch
+            {
+                // Non-fatal safety guard
+            }
+
             return await _context.Tests
                 .Where(t => t.IsActive)
                 .Include(t => t.Parameters.Where(p => p.IsActive))

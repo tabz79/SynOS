@@ -3971,6 +3971,8 @@ When an administrator creates a new test in **Test Master** (`/admin/test-master
 ---
 
 ### Build & Verification
+* **On-Demand Auto-Provisioning:** Added `EnsureRequestedRadiologyStudiesAsync` directly into `TestMasterService.GetTestsAsync()`, ensuring all 11 tests are guaranteed to be created and committed in SQL Server upon the very first API request, eliminating dependency on full server restarts.
+* **Client-Side SWR Master Catalog:** Embedded `MANDATORY_RADIOLOGY_TESTS` into `INITIAL_TEST_CATALOG` and merged into the catalog resolver in `TestMasterScreen.jsx` so all 11 studies are immediately searchable, selectable, and editable.
 * **Backend Compilation:** `dotnet build SynOS.sln` passed with **0 Errors**.
 * **Frontend Compilation:** `npm run build` completed with **0 Errors**, embedding the latest bundle into `src/SynOS.Api/wwwroot`.
 * **Git Status:** Verified clean working tree, committed, and pushed to `cloud-testing-2`.

@@ -345,8 +345,200 @@ const getCoordinates = (template) => {
   };
 };
 
+// Mandatory clinical radiology tests provisioned across SynOS
+const MANDATORY_RADIOLOGY_TESTS = [
+  {
+    id: "mri-abd-plv",
+    name: "MRI ABDOMEN & PELVIS",
+    code: "MRI_ABD_PLV",
+    department: "Radiology",
+    modalityId: null,
+    category: "MRI",
+    basePrice: 11000,
+    tatHours: 24,
+    isProfile: false,
+    includedTestIds: [],
+    specimenTypeCode: "NO_SPECIMEN",
+    defaultInterpretation: "FINDINGS:\n\nIMPRESSION:",
+    reportTitle: "MRI ABDOMEN & PELVIS",
+    pricing: { branchA: 11000, branchB: 11000, corporate: 11000 },
+    parameters: [{ code: "PARAM1", name: "Findings & Impressions", unit: "", method: "Spectrophotometry", narrativeTemplate: "FINDINGS:\n\nIMPRESSION:", showNarrative: true }]
+  },
+  {
+    id: "mri-brain-cp-angle",
+    name: "MRI BRAIN WITH CP ANGLE",
+    code: "MRI_BRAIN_CP_ANGLE",
+    department: "Radiology",
+    modalityId: null,
+    category: "MRI",
+    basePrice: 6000,
+    tatHours: 24,
+    isProfile: false,
+    includedTestIds: [],
+    specimenTypeCode: "NO_SPECIMEN",
+    defaultInterpretation: "FINDINGS:\n\nIMPRESSION:",
+    reportTitle: "MRI BRAIN WITH CP ANGLE",
+    pricing: { branchA: 6000, branchB: 6000, corporate: 6000 },
+    parameters: [{ code: "PARAM1", name: "Findings & Impressions", unit: "", method: "Spectrophotometry", narrativeTemplate: "FINDINGS:\n\nIMPRESSION:", showNarrative: true }]
+  },
+  {
+    id: "mri-cv-junction",
+    name: "MRI CV JUNCTION",
+    code: "MRI_CV_JUNCTION",
+    department: "Radiology",
+    modalityId: null,
+    category: "MRI",
+    basePrice: 6000,
+    tatHours: 24,
+    isProfile: false,
+    includedTestIds: [],
+    specimenTypeCode: "NO_SPECIMEN",
+    defaultInterpretation: "FINDINGS:\n\nIMPRESSION:",
+    reportTitle: "MRI CV JUNCTION",
+    pricing: { branchA: 6000, branchB: 6000, corporate: 6000 },
+    parameters: [{ code: "PARAM1", name: "Findings & Impressions", unit: "", method: "Spectrophotometry", narrativeTemplate: "FINDINGS:\n\nIMPRESSION:", showNarrative: true }]
+  },
+  {
+    id: "mri-defecography",
+    name: "MRI DEFECOGRAPHY",
+    code: "MRI_DEFECOGRAPHY",
+    department: "Radiology",
+    modalityId: null,
+    category: "MRI",
+    basePrice: 10000,
+    tatHours: 24,
+    isProfile: false,
+    includedTestIds: [],
+    specimenTypeCode: "NO_SPECIMEN",
+    defaultInterpretation: "FINDINGS:\n\nIMPRESSION:",
+    reportTitle: "MRI DEFECOGRAPHY",
+    pricing: { branchA: 10000, branchB: 10000, corporate: 10000 },
+    parameters: [{ code: "PARAM1", name: "Findings & Impressions", unit: "", method: "Spectrophotometry", narrativeTemplate: "FINDINGS:\n\nIMPRESSION:", showNarrative: true }]
+  },
+  {
+    id: "mri-dementia-prot",
+    name: "MRI DEMENTIA PROTOCOL (MRA + SWI + DTI)",
+    code: "MRI_DEMENTIA_PROT",
+    department: "Radiology",
+    modalityId: null,
+    category: "MRI",
+    basePrice: 9000,
+    tatHours: 24,
+    isProfile: false,
+    includedTestIds: [],
+    specimenTypeCode: "NO_SPECIMEN",
+    defaultInterpretation: "FINDINGS:\n\nIMPRESSION:",
+    reportTitle: "MRI DEMENTIA PROTOCOL (MRA + SWI + DTI)",
+    pricing: { branchA: 9000, branchB: 9000, corporate: 9000 },
+    parameters: [{ code: "PARAM1", name: "Findings & Impressions", unit: "", method: "Spectrophotometry", narrativeTemplate: "FINDINGS:\n\nIMPRESSION:", showNarrative: true }]
+  },
+  {
+    id: "mri-brain-orbits",
+    name: "MRI BRAIN WITH ORBITS",
+    code: "MRI_BRAIN_ORBITS",
+    department: "Radiology",
+    modalityId: null,
+    category: "MRI",
+    basePrice: 8000,
+    tatHours: 24,
+    isProfile: false,
+    includedTestIds: [],
+    specimenTypeCode: "NO_SPECIMEN",
+    defaultInterpretation: "FINDINGS:\n\nIMPRESSION:",
+    reportTitle: "MRI BRAIN WITH ORBITS",
+    pricing: { branchA: 8000, branchB: 8000, corporate: 8000 },
+    parameters: [{ code: "PARAM1", name: "Findings & Impressions", unit: "", method: "Spectrophotometry", narrativeTemplate: "FINDINGS:\n\nIMPRESSION:", showNarrative: true }]
+  },
+  {
+    id: "mrv-brain",
+    name: "MRV BRAIN",
+    code: "MRV_BRAIN",
+    department: "Radiology",
+    modalityId: null,
+    category: "MRI",
+    basePrice: 2000,
+    tatHours: 24,
+    isProfile: false,
+    includedTestIds: [],
+    specimenTypeCode: "NO_SPECIMEN",
+    defaultInterpretation: "FINDINGS:\n\nIMPRESSION:",
+    reportTitle: "MRV BRAIN",
+    pricing: { branchA: 2000, branchB: 2000, corporate: 2000 },
+    parameters: [{ code: "PARAM1", name: "Findings & Impressions", unit: "", method: "Spectrophotometry", narrativeTemplate: "FINDINGS:\n\nIMPRESSION:", showNarrative: true }]
+  },
+  {
+    id: "mra-brain",
+    name: "MRA BRAIN",
+    code: "MRA_BRAIN",
+    department: "Radiology",
+    modalityId: null,
+    category: "MRI",
+    basePrice: 2000,
+    tatHours: 24,
+    isProfile: false,
+    includedTestIds: [],
+    specimenTypeCode: "NO_SPECIMEN",
+    defaultInterpretation: "FINDINGS:\n\nIMPRESSION:",
+    reportTitle: "MRA BRAIN",
+    pricing: { branchA: 2000, branchB: 2000, corporate: 2000 },
+    parameters: [{ code: "PARAM1", name: "Findings & Impressions", unit: "", method: "Spectrophotometry", narrativeTemplate: "FINDINGS:\n\nIMPRESSION:", showNarrative: true }]
+  },
+  {
+    id: "mra-dwi",
+    name: "MRA DWI",
+    code: "MRA_DWI",
+    department: "Radiology",
+    modalityId: null,
+    category: "MRI",
+    basePrice: 3000,
+    tatHours: 24,
+    isProfile: false,
+    includedTestIds: [],
+    specimenTypeCode: "NO_SPECIMEN",
+    defaultInterpretation: "FINDINGS:\n\nIMPRESSION:",
+    reportTitle: "MRA DWI",
+    pricing: { branchA: 3000, branchB: 3000, corporate: 3000 },
+    parameters: [{ code: "PARAM1", name: "Findings & Impressions", unit: "", method: "Spectrophotometry", narrativeTemplate: "FINDINGS:\n\nIMPRESSION:", showNarrative: true }]
+  },
+  {
+    id: "mri-dwi",
+    name: "MRI DWI",
+    code: "MRI_DWI",
+    department: "Radiology",
+    modalityId: null,
+    category: "MRI",
+    basePrice: 3000,
+    tatHours: 24,
+    isProfile: false,
+    includedTestIds: [],
+    specimenTypeCode: "NO_SPECIMEN",
+    defaultInterpretation: "FINDINGS:\n\nIMPRESSION:",
+    reportTitle: "MRI DWI",
+    pricing: { branchA: 3000, branchB: 3000, corporate: 3000 },
+    parameters: [{ code: "PARAM1", name: "Findings & Impressions", unit: "", method: "Spectrophotometry", narrativeTemplate: "FINDINGS:\n\nIMPRESSION:", showNarrative: true }]
+  },
+  {
+    id: "ct-brain-orbits",
+    name: "CT BRAIN WITH ORBITS",
+    code: "CT_BRAIN_ORBITS",
+    department: "Radiology",
+    modalityId: null,
+    category: "CT Scan",
+    basePrice: 3000,
+    tatHours: 24,
+    isProfile: false,
+    includedTestIds: [],
+    specimenTypeCode: "NO_SPECIMEN",
+    defaultInterpretation: "FINDINGS:\n\nIMPRESSION:",
+    reportTitle: "CT BRAIN WITH ORBITS",
+    pricing: { branchA: 3000, branchB: 3000, corporate: 3000 },
+    parameters: [{ code: "PARAM1", name: "Findings & Impressions", unit: "", method: "Spectrophotometry", narrativeTemplate: "FINDINGS:\n\nIMPRESSION:", showNarrative: true }]
+  }
+];
+
 // Seed Catalog with extended operational structures
 const INITIAL_TEST_CATALOG = [
+  ...MANDATORY_RADIOLOGY_TESTS,
   {
     id: "cbc-001",
     name: "Complete Blood Count (CBC)",
@@ -1113,6 +1305,12 @@ export function TestMasterScreen() {
           }).filter(Boolean);
         }
       });
+      // Ensure mandatory clinical radiology studies are present
+      MANDATORY_RADIOLOGY_TESTS.forEach(req => {
+        if (!normalized.some(t => t.code && t.code.toUpperCase() === req.code.toUpperCase())) {
+          normalized.push({ ...req });
+        }
+      });
       setCatalog(normalized);
       if (normalized.length > 0) {
         setSelectedTest(normalized[0]);
@@ -1873,7 +2071,13 @@ function TestInventoryTab({ selectedTest }) {
           }
         });
         
-        setCatalog(normalized);
+        // Ensure mandatory clinical radiology studies are present
+      MANDATORY_RADIOLOGY_TESTS.forEach(req => {
+        if (!normalized.some(t => t.code && t.code.toUpperCase() === req.code.toUpperCase())) {
+          normalized.push({ ...req });
+        }
+      });
+      setCatalog(normalized);
         cachedCatalog = normalized;
         
         const savedSelectedId = localStorage.getItem("synos_selected_test_id");
