@@ -769,7 +769,7 @@ namespace SynOS.Services.Settlements
                         SourceReferenceId = receiptNo,
                         PaymentMode = Enum.TryParse<PaymentMode>(request.PaymentMode, out var pm) ? pm : PaymentMode.Cash,
                         DeclaredByUserId = userId,
-                        Notes = $"Reception Same-Day B2B Settlement. Partner: {partnerName} | Payer: {request.ReceivedFrom ?? "Representative"}{(concession > 0 ? $" | Concession: ₹{concession} ({request.ConcessionReason ?? "Waiver"})" : "")} | Notes: {request.Notes ?? "N/A"}"
+                        Notes = $"Reception Same-Day B2B Settlement. Partner: {partnerName} | Payer: {request.ReceivedFrom ?? "Representative"}{(concession > 0 ? $" | Concession: ₹{concession} ({request.ConcessionReason ?? "Waiver"})" : "")} | BranchId: {branchId} | Notes: {request.Notes ?? "N/A"}"
                     };
 
                     await _revenueFactWriter.DeclareRevenueFactAsync(command);

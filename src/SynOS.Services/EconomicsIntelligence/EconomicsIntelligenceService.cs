@@ -916,9 +916,52 @@ namespace SynOS.Services.EconomicsIntelligence
                 .Where(p => receiptCandidates.Contains(p.ReceiptNo))
                 .ToListAsync();
 
+            // 2b. Batch load B2B / Bulk payments that have indexed receipt numbers (e.g. RCP-B2B-*-01, BULK-*)
+            var bulkPrefixes = receiptCandidates
+                .Where(r => r.StartsWith("RCP-B2B-", StringComparison.OrdinalIgnoreCase) || r.StartsWith("BULK-", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (bulkPrefixes.Count > 0)
+            {
+                var prefixPayments = await _context.Payments
+                    .AsNoTracking()
+                    .Include(p => p.Invoice)
+                        .ThenInclude(i => i.Visit)
+                            .ThenInclude(v => v.Patient)
+                    .Include(p => p.Invoice)
+                        .ThenInclude(i => i.Visit)
+                            .ThenInclude(v => v.Branch)
+                    .Where(p => p.ReceiptNo != null && (p.ReceiptNo.StartsWith("RCP-B2B-") || p.ReceiptNo.StartsWith("BULK-")))
+                    .ToListAsync();
+
+                var matchedPrefixPayments = prefixPayments
+                    .Where(p => bulkPrefixes.Any(bp => p.ReceiptNo.StartsWith(bp, StringComparison.OrdinalIgnoreCase)))
+                    .ToList();
+
+                foreach (var mp in matchedPrefixPayments)
+                {
+                    if (!paymentsByReceipt.Any(existing => existing.PaymentId == mp.PaymentId))
+                    {
+                        paymentsByReceipt.Add(mp);
+                    }
+                }
+            }
+
             var paymentsByReceiptMap = paymentsByReceipt
                 .GroupBy(p => p.ReceiptNo, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+
+            foreach (var bp in bulkPrefixes)
+            {
+                if (!paymentsByReceiptMap.ContainsKey(bp))
+                {
+                    var firstMatch = paymentsByReceipt.FirstOrDefault(p => p.ReceiptNo != null && p.ReceiptNo.StartsWith(bp, StringComparison.OrdinalIgnoreCase));
+                    if (firstMatch != null)
+                    {
+                        paymentsByReceiptMap[bp] = firstMatch;
+                    }
+                }
+            }
 
             // 3. Batch load Invoices
             var invoices = await _context.Invoices
@@ -1023,9 +1066,23 @@ namespace SynOS.Services.EconomicsIntelligence
                 if (payment != null)
                 {
                     visit = payment.Invoice?.Visit;
-                    cleanNotes = payment.Amount < 0 
-                        ? "Visit Refund Disbursed" 
-                        : (payment.Invoice != null && payment.Amount < payment.Invoice.Total ? "Partial Bill Payment" : "Patient Counter Payment");
+                    if (f.SourceType == RevenueSourceType.Partner)
+                    {
+                        if (!string.IsNullOrEmpty(f.Notes))
+                        {
+                            var pMatch = System.Text.RegularExpressions.Regex.Match(f.Notes, @"Partner:\s*([^\|]+)");
+                            if (pMatch.Success) debtorOrPartner = pMatch.Groups[1].Value.Trim();
+                        }
+                        cleanNotes = !string.IsNullOrEmpty(f.Notes) && f.Notes.StartsWith("Reception Same-Day") 
+                            ? $"Same-Day B2B Settlement - {debtorOrPartner ?? "Partner"}"
+                            : $"B2B Partner Settlement - {debtorOrPartner ?? "Partner"}";
+                    }
+                    else
+                    {
+                        cleanNotes = payment.Amount < 0 
+                            ? "Visit Refund Disbursed" 
+                            : (payment.Invoice != null && payment.Amount < payment.Invoice.Total ? "Partial Bill Payment" : "Patient Counter Payment");
+                    }
                 }
                 // Try ReceivableFact
                 else if (refGuid != Guid.Empty && receivables.TryGetValue(refGuid, out var receivable))
@@ -1040,6 +1097,13 @@ namespace SynOS.Services.EconomicsIntelligence
                 {
                     visit = vDirect;
                     cleanNotes = "Visit Account Adjustment";
+                }
+
+                // If B2B partner settlement without direct receivable link, extract partner name from Notes
+                if (string.IsNullOrEmpty(debtorOrPartner) && f.SourceType == RevenueSourceType.Partner && !string.IsNullOrEmpty(f.Notes))
+                {
+                    var pMatch = System.Text.RegularExpressions.Regex.Match(f.Notes, @"Partner:\s*([^\|]+)");
+                    if (pMatch.Success) debtorOrPartner = pMatch.Groups[1].Value.Trim();
                 }
 
                 // Fallback: check Notes for Invoice GUID
@@ -1081,15 +1145,38 @@ namespace SynOS.Services.EconomicsIntelligence
                 // Branch filter enforcement
                 if (branchId.HasValue && branchId.Value != Guid.Empty)
                 {
-                    if (visit != null)
+                    Guid? effectiveFactBranchId = visit?.BranchId;
+                    if (!effectiveFactBranchId.HasValue && !string.IsNullOrEmpty(f.Notes))
                     {
-                        if (visit.BranchId != branchId.Value)
+                        var bMatch = System.Text.RegularExpressions.Regex.Match(f.Notes, @"BranchId:\s*([0-9a-fA-F-]{36})");
+                        if (bMatch.Success && Guid.TryParse(bMatch.Groups[1].Value, out var parsedBId))
+                        {
+                            effectiveFactBranchId = parsedBId;
+                        }
+                    }
+
+                    if (effectiveFactBranchId.HasValue)
+                    {
+                        if (effectiveFactBranchId.Value != branchId.Value)
                             continue;
                     }
                     else if (cashierUser != null && cashierUser.DefaultBranchId.HasValue)
                     {
                         if (cashierUser.DefaultBranchId.Value != branchId.Value)
                             continue;
+                    }
+                    else if (f.SourceType == RevenueSourceType.Partner && !string.IsNullOrEmpty(debtorOrPartner))
+                    {
+                        // Check if this partner has receivables in this branch
+                        var hasBranchReceivables = (from rf in _context.ReceivableFacts.AsNoTracking()
+                                                    join v in _context.Visits.AsNoTracking() on rf.SourceVisitId equals v.VisitId
+                                                    where v.BranchId == branchId.Value &&
+                                                          ((rf.ReferralPartner != null && rf.ReferralPartner.Name == debtorOrPartner) || rf.DebtorName == debtorOrPartner)
+                                                    select rf.ReceivableFactId).Any();
+                        if (!hasBranchReceivables)
+                        {
+                            continue;
+                        }
                     }
                     else
                     {
@@ -1114,13 +1201,13 @@ namespace SynOS.Services.EconomicsIntelligence
                     : (!string.IsNullOrWhiteSpace(cashierUser?.Username) ? cashierUser.Username : "Staff Desk");
                 string cashierRole = !string.IsNullOrWhiteSpace(cashierUser?.Designation)
                     ? cashierUser.Designation
-                    : (cashierUser?.UserRoles?.FirstOrDefault()?.Role?.Name ?? "Reception Staff");
+                    : (cashierUser?.UserRoles?.FirstOrDefault()?.Role?.Name ?? (cashierName.Contains("Admin", StringComparison.OrdinalIgnoreCase) ? "System Administrator" : "Reception Staff"));
 
                 // Canonical OG Bill Number: ${CleanToken}-${yyMMdd}
                 string rawToken = visit?.Token ?? "";
                 string cleanToken = rawToken.Replace("-", "").Trim().ToUpper();
                 string canonicalBillNo;
-                if (f.SourceReferenceId != null && (f.SourceReferenceId.StartsWith("RCP-", StringComparison.OrdinalIgnoreCase) || f.SourceReferenceId.StartsWith("SYS-", StringComparison.OrdinalIgnoreCase)))
+                if (f.SourceReferenceId != null && (f.SourceReferenceId.StartsWith("RCP-", StringComparison.OrdinalIgnoreCase) || f.SourceReferenceId.StartsWith("SYS-", StringComparison.OrdinalIgnoreCase) || f.SourceReferenceId.StartsWith("BULK-", StringComparison.OrdinalIgnoreCase)))
                 {
                     canonicalBillNo = f.SourceReferenceId;
                 }
@@ -1137,9 +1224,11 @@ namespace SynOS.Services.EconomicsIntelligence
                     canonicalBillNo = !string.IsNullOrEmpty(rawToken) ? $"{cleanToken}-{f.OccurredAt:yyMMdd}" : "COUNTER-RCPT";
                 }
 
-                string patientName = visit?.Patient != null
-                    ? $"{visit.Patient.FirstName} {visit.Patient.LastName}".Trim()
-                    : (debtorOrPartner ?? (f.SourceType == RevenueSourceType.Partner ? "B2B Referral Partner" : "Walk-in Patient"));
+                string patientName = !string.IsNullOrEmpty(debtorOrPartner)
+                    ? debtorOrPartner
+                    : (visit?.Patient != null
+                        ? $"{visit.Patient.FirstName} {visit.Patient.LastName}".Trim()
+                        : (f.SourceType == RevenueSourceType.Partner ? "B2B Referral Partner" : "Walk-in Patient"));
 
                 if (string.IsNullOrEmpty(cleanNotes))
                 {
@@ -1347,52 +1436,259 @@ namespace SynOS.Services.EconomicsIntelligence
                 .ToListAsync();
         }
 
-        public async Task<IEnumerable<object>> GetSettlementHistoryAsync(string category = null)
+        public async Task<IEnumerable<object>> GetSettlementHistoryAsync(
+            string? category = null, 
+            Guid? branchId = null, 
+            string? preset = null, 
+            DateTime? startDate = null, 
+            DateTime? endDate = null)
         {
-            // Combined history from SpendFacts and RevenueFacts
-            var spendHistory = await _context.SpendFacts
-                .AsNoTracking()
-                .Where(f => f.Category == category || category == null)
+            var (startUtc, endUtc) = ResolvePresetDateRange(preset, startDate, endDate);
+
+            // 1. Spend Facts (Outflows - commissions / payouts)
+            var spendQuery = _context.SpendFacts.AsNoTracking();
+            if (!string.IsNullOrEmpty(category))
+                spendQuery = spendQuery.Where(f => f.Category == category);
+            if (startUtc.HasValue)
+                spendQuery = spendQuery.Where(f => f.OccurredAt >= startUtc.Value);
+            if (endUtc.HasValue)
+                spendQuery = spendQuery.Where(f => f.OccurredAt <= endUtc.Value);
+
+            var rawSpend = await spendQuery
                 .OrderByDescending(f => f.OccurredAt)
-                .Select(f => new {
-                    FactId = f.SpendFactId,
-                    Direction = "Outflow",
-                    Amount = f.Amount,
-                    Currency = f.Currency,
-                    Category = f.Category,
-                    PayeeName = f.PayeeName,
-                    Notes = f.Notes,
-                    Reference = f.TransactionReference,
-                    RecordedAt = f.RecordedAt,
-                    PaymentMethod = f.PaymentMethod.ToString()
-                })
-                .Take(100)
+                .Take(200)
                 .ToListAsync();
 
-            var revenueHistory = await _context.RevenueFacts
-                .AsNoTracking()
-                .Where(f => f.SourceType == RevenueSourceType.Partner) // Filtering for referral-like revenue
+            // 2. Revenue Facts (Inflows - referral recoveries / settlements)
+            var revenueQuery = _context.RevenueFacts.AsNoTracking()
+                .Where(f => f.SourceType == RevenueSourceType.Partner);
+            if (startUtc.HasValue)
+                revenueQuery = revenueQuery.Where(f => f.OccurredAt >= startUtc.Value);
+            if (endUtc.HasValue)
+                revenueQuery = revenueQuery.Where(f => f.OccurredAt <= endUtc.Value);
+
+            var rawRevenue = await revenueQuery
                 .OrderByDescending(f => f.OccurredAt)
-                .Select(f => new {
+                .Take(200)
+                .ToListAsync();
+
+            // Load users for RecordedBy resolution
+            var userIds = rawRevenue.Select(r => r.DeclaredByUserId)
+                .Where(id => id != Guid.Empty)
+                .Distinct()
+                .ToList();
+
+            var userMap = await _context.Users.AsNoTracking()
+                .Where(u => userIds.Contains(u.UserId))
+                .ToDictionaryAsync(u => u.UserId, u => !string.IsNullOrWhiteSpace(u.Name) ? u.Name : u.Username);
+
+            var bulkReceiptCandidates = rawRevenue.Select(r => r.SourceReferenceId).Where(s => !string.IsNullOrEmpty(s)).Distinct().ToList();
+            var relatedPayments = await _context.Payments.AsNoTracking()
+                .Include(p => p.Invoice).ThenInclude(i => i.Visit)
+                .Where(p => p.ReceiptNo != null && (bulkReceiptCandidates.Contains(p.ReceiptNo) || bulkReceiptCandidates.Any(br => p.ReceiptNo.StartsWith(br))))
+                .ToListAsync();
+
+            var spendHistory = rawSpend.Select(f => new {
+                FactId = f.SpendFactId,
+                Direction = "Outflow",
+                Amount = f.Amount,
+                Currency = f.Currency,
+                Category = f.Category ?? "Referral Commission",
+                PayeeName = f.PayeeName ?? "Referral Partner",
+                Notes = f.Notes,
+                Reference = f.TransactionReference,
+                RecordedAt = f.RecordedAt,
+                RecordedBy = "System Admin",
+                PaymentMethod = f.PaymentMethod.ToString()
+            }).ToList();
+
+            var revenueHistory = new List<object>();
+            foreach (var f in rawRevenue)
+            {
+                string partnerName = "Referral Partner";
+                if (!string.IsNullOrEmpty(f.Notes))
+                {
+                    var pMatch = System.Text.RegularExpressions.Regex.Match(f.Notes, @"Partner:\s*([^\|]+)");
+                    if (pMatch.Success) partnerName = pMatch.Groups[1].Value.Trim();
+                }
+
+                // Branch filter check
+                if (branchId.HasValue && branchId.Value != Guid.Empty)
+                {
+                    Guid? factBranchId = null;
+                    if (!string.IsNullOrEmpty(f.Notes))
+                    {
+                        var bMatch = System.Text.RegularExpressions.Regex.Match(f.Notes, @"BranchId:\s*([0-9a-fA-F-]{36})");
+                        if (bMatch.Success && Guid.TryParse(bMatch.Groups[1].Value, out var pBid))
+                            factBranchId = pBid;
+                    }
+
+                    if (!factBranchId.HasValue)
+                    {
+                        var matchingPayment = relatedPayments.FirstOrDefault(p => p.ReceiptNo == f.SourceReferenceId || (p.ReceiptNo != null && p.ReceiptNo.StartsWith(f.SourceReferenceId)));
+                        if (matchingPayment?.Invoice?.Visit != null)
+                            factBranchId = matchingPayment.Invoice.Visit.BranchId;
+                    }
+
+                    if (factBranchId.HasValue)
+                    {
+                        if (factBranchId.Value != branchId.Value) continue;
+                    }
+                    else
+                    {
+                        var partnerInBranch = (from rf in _context.ReceivableFacts.AsNoTracking()
+                                               join v in _context.Visits.AsNoTracking() on rf.SourceVisitId equals v.VisitId
+                                               where v.BranchId == branchId.Value &&
+                                                     ((rf.ReferralPartner != null && rf.ReferralPartner.Name == partnerName) || rf.DebtorName == partnerName)
+                                               select rf.ReceivableFactId).Any();
+                        if (!partnerInBranch) continue;
+                    }
+                }
+
+                string handlerName = userMap.TryGetValue(f.DeclaredByUserId, out var dName) ? dName : "System Admin";
+
+                revenueHistory.Add(new {
                     FactId = f.RevenueFactId,
                     Direction = "Inflow",
                     Amount = f.Amount,
                     Currency = f.Currency,
                     Category = "Referral Recovery",
-                    PayeeName = "Referral Partner",
+                    PayeeName = partnerName,
                     Notes = f.Notes,
                     Reference = f.SourceReferenceId,
                     RecordedAt = f.DeclaredAt,
+                    RecordedBy = handlerName,
                     PaymentMethod = f.PaymentMode.ToString()
-                })
-                .Take(100)
-                .ToListAsync();
+                });
+            }
 
-            var combined = spendHistory.Cast<object>().Concat(revenueHistory.Cast<object>())
+            var combined = spendHistory.Cast<object>().Concat(revenueHistory)
                 .OrderByDescending(x => (DateTimeOffset)((dynamic)x).RecordedAt)
                 .ToList();
 
             return combined;
+        }
+
+        public async Task<IEnumerable<object>> GetPartnerSettlementSummaryAsync(
+            Guid? branchId = null, 
+            string? preset = null, 
+            DateTime? startDate = null, 
+            DateTime? endDate = null)
+        {
+            var (startUtc, endUtc) = ResolvePresetDateRange(preset, startDate, endDate);
+
+            // 1. Fetch all RevenueFacts of SourceType == Partner in the date range
+            var revQuery = _context.RevenueFacts.AsNoTracking()
+                .Where(f => f.SourceType == RevenueSourceType.Partner && f.Direction == RevenueDirection.Inflow);
+            if (startUtc.HasValue) revQuery = revQuery.Where(f => f.OccurredAt >= startUtc.Value);
+            if (endUtc.HasValue) revQuery = revQuery.Where(f => f.OccurredAt <= endUtc.Value);
+
+            var rawRevenues = await revQuery.OrderByDescending(f => f.OccurredAt).ToListAsync();
+
+            // 2. Fetch outstanding ReceivableFacts for all partners (optionally filtered by branch)
+            var receivableQuery = from rf in _context.ReceivableFacts.AsNoTracking().Where(f => f.SettledAt == null)
+                                  join v in _context.Visits.AsNoTracking() on rf.SourceVisitId equals v.VisitId into vj
+                                  from v in vj.DefaultIfEmpty()
+                                  where (!branchId.HasValue || branchId == Guid.Empty || (v != null && v.BranchId == branchId.Value))
+                                  select new {
+                                      PartnerName = rf.ReferralPartner != null ? rf.ReferralPartner.Name : (rf.DebtorName ?? "Institutional Account"),
+                                      Outstanding = rf.Amount - rf.AmountReceived
+                                  };
+
+            var openReceivables = await receivableQuery.ToListAsync();
+
+            var outstandingByPartner = openReceivables
+                .GroupBy(r => r.PartnerName, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.Sum(x => x.Outstanding), StringComparer.OrdinalIgnoreCase);
+
+            // Load users for HandledBy
+            var userIds = rawRevenues.Select(r => r.DeclaredByUserId).Where(id => id != Guid.Empty).Distinct().ToList();
+            var userMap = await _context.Users.AsNoTracking()
+                .Where(u => userIds.Contains(u.UserId))
+                .ToDictionaryAsync(u => u.UserId, u => !string.IsNullOrWhiteSpace(u.Name) ? u.Name : u.Username);
+
+            // Group settlements by Partner Name
+            var settlementsByPartner = new Dictionary<string, List<SynOS.Models.Entities.Revenue.RevenueFact>>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var f in rawRevenues)
+            {
+                string pName = "Referral Partner";
+                if (!string.IsNullOrEmpty(f.Notes))
+                {
+                    var pMatch = System.Text.RegularExpressions.Regex.Match(f.Notes, @"Partner:\s*([^\|]+)");
+                    if (pMatch.Success) pName = pMatch.Groups[1].Value.Trim();
+                }
+
+                // Branch filter check
+                if (branchId.HasValue && branchId.Value != Guid.Empty)
+                {
+                    Guid? factBranchId = null;
+                    if (!string.IsNullOrEmpty(f.Notes))
+                    {
+                        var bMatch = System.Text.RegularExpressions.Regex.Match(f.Notes, @"BranchId:\s*([0-9a-fA-F-]{36})");
+                        if (bMatch.Success && Guid.TryParse(bMatch.Groups[1].Value, out var pBid))
+                            factBranchId = pBid;
+                    }
+
+                    if (!factBranchId.HasValue)
+                    {
+                        var partnerInBranch = (from rf in _context.ReceivableFacts.AsNoTracking()
+                                               join v in _context.Visits.AsNoTracking() on rf.SourceVisitId equals v.VisitId
+                                               where v.BranchId == branchId.Value &&
+                                                     ((rf.ReferralPartner != null && rf.ReferralPartner.Name == pName) || rf.DebtorName == pName)
+                                               select rf.ReceivableFactId).Any();
+                        if (!partnerInBranch) continue;
+                    }
+                    else if (factBranchId.Value != branchId.Value)
+                    {
+                        continue;
+                    }
+                }
+
+                if (!settlementsByPartner.ContainsKey(pName))
+                    settlementsByPartner[pName] = new List<SynOS.Models.Entities.Revenue.RevenueFact>();
+
+                settlementsByPartner[pName].Add(f);
+            }
+
+            var allPartnerNames = settlementsByPartner.Keys.Union(outstandingByPartner.Keys, StringComparer.OrdinalIgnoreCase).ToList();
+            var result = new List<object>();
+
+            foreach (var partnerName in allPartnerNames)
+            {
+                var facts = settlementsByPartner.TryGetValue(partnerName, out var pFacts) ? pFacts : new List<SynOS.Models.Entities.Revenue.RevenueFact>();
+                decimal totalSettled = facts.Sum(x => x.Amount);
+                decimal cashAmount = facts.Where(x => x.PaymentMode == PaymentMode.Cash).Sum(x => x.Amount);
+                decimal digitalAmount = facts.Where(x => x.PaymentMode != PaymentMode.Cash).Sum(x => x.Amount);
+                decimal remainingDue = outstandingByPartner.TryGetValue(partnerName, out var due) ? due : 0m;
+                decimal totalBilled = totalSettled + remainingDue;
+
+                var latestFact = facts.OrderByDescending(x => x.OccurredAt).FirstOrDefault();
+                DateTimeOffset? lastSettledAt = latestFact?.OccurredAt;
+                string lastHandledBy = latestFact != null && userMap.TryGetValue(latestFact.DeclaredByUserId, out var u) ? u : "System Admin";
+
+                string status;
+                if (remainingDue <= 0 && totalSettled > 0) status = "Settled (100%)";
+                else if (totalSettled > 0 && remainingDue > 0) status = "Partial Recovery";
+                else status = "Pending Due";
+
+                result.Add(new
+                {
+                    PartnerName = partnerName,
+                    TotalSettled = totalSettled,
+                    SettlementCount = facts.Count,
+                    CashAmount = cashAmount,
+                    DigitalAmount = digitalAmount,
+                    RemainingDue = remainingDue,
+                    TotalBilled = totalBilled,
+                    LastSettledAt = lastSettledAt,
+                    LastHandledBy = lastHandledBy,
+                    Status = status
+                });
+            }
+
+            return result.OrderByDescending(x => (decimal)((dynamic)x).TotalSettled)
+                         .ThenByDescending(x => (decimal)((dynamic)x).RemainingDue);
         }
 
         public async Task<IEnumerable<VendorPayableSummaryDto>> GetVendorPayablesSummaryAsync()

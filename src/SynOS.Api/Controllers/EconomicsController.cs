@@ -97,9 +97,25 @@ namespace SynOS.Api.Controllers
         }
         
         [HttpGet("settlement-history")]
-        public async Task<IActionResult> GetSettlementHistory([FromQuery] string category)
+        public async Task<IActionResult> GetSettlementHistory(
+            [FromQuery] string? category = null,
+            [FromQuery] Guid? branchId = null,
+            [FromQuery] string? preset = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null)
         {
-            var result = await _economicsService.GetSettlementHistoryAsync(category);
+            var result = await _economicsService.GetSettlementHistoryAsync(category, branchId, preset, startDate, endDate);
+            return Ok(result);
+        }
+
+        [HttpGet("partner-settlement-summary")]
+        public async Task<IActionResult> GetPartnerSettlementSummary(
+            [FromQuery] Guid? branchId = null,
+            [FromQuery] string? preset = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null)
+        {
+            var result = await _economicsService.GetPartnerSettlementSummaryAsync(branchId, preset, startDate, endDate);
             return Ok(result);
         }
 

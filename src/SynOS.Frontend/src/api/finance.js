@@ -1126,12 +1126,33 @@ export const FinanceApi = {
         return FinanceApi.deactivateReferralPartner(id);
     },
 
-    getSettlementHistory: async () => {
-        // We'll use a combined feed of SpendFacts and RevenueFacts with 'Referral' or 'Partner' source
-        const response = await fetch(FinanceApi.withBranchId('/api/v1/economics/settlement-history?category=Referral'), {
+    getSettlementHistory: async (branchId, preset, start, end) => {
+        const params = new URLSearchParams({ category: 'Referral' });
+        if (branchId) params.append('branchId', branchId);
+        if (preset) params.append('preset', preset);
+        if (start) params.append('startDate', start);
+        if (end) params.append('endDate', end);
+
+        const response = await fetch(FinanceApi.withBranchId(`/api/v1/economics/settlement-history?${params.toString()}`), {
             headers: FinanceApi.getHeaders()
         });
         if (!response.ok) throw new Error("Failed to load settlement history");
+        return response.json();
+    },
+
+    getPartnerSettlementSummary: async (branchId, preset, start, end) => {
+        const params = new URLSearchParams();
+        if (branchId) params.append('branchId', branchId);
+        if (preset) params.append('preset', preset);
+        if (start) params.append('startDate', start);
+        if (end) params.append('endDate', end);
+
+        const qs = params.toString();
+        const url = `/api/v1/economics/partner-settlement-summary${qs ? `?${qs}` : ''}`;
+        const response = await fetch(FinanceApi.withBranchId(url), {
+            headers: FinanceApi.getHeaders()
+        });
+        if (!response.ok) throw new Error("Failed to load partner settlement summary");
         return response.json();
     },
 

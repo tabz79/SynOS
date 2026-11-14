@@ -75,7 +75,12 @@ namespace SynOS.Services.EconomicsIntelligence
         /// <summary>
         /// Retrieves a combined history of outflows (SpendFacts) and inflows (RevenueFacts).
         /// </summary>
-        Task<IEnumerable<object>> GetSettlementHistoryAsync(string category = null);
+        Task<IEnumerable<object>> GetSettlementHistoryAsync(string? category = null, Guid? branchId = null, string? preset = null, DateTime? startDate = null, DateTime? endDate = null);
+
+        /// <summary>
+        /// Retrieves aggregated settlement metrics grouped by referral partner.
+        /// </summary>
+        Task<IEnumerable<object>> GetPartnerSettlementSummaryAsync(Guid? branchId = null, string? preset = null, DateTime? startDate = null, DateTime? endDate = null);
 
         /// <summary>
         /// Retrieves a summary of vendor liabilities grouped by vendor.
