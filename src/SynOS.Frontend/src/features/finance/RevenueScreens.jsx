@@ -559,7 +559,7 @@ export const RevenueOverviewTab = ({ stats, onRefresh }) => {
                       <span className={cn("w-2 h-2 rounded-full", item.color)} />
                       {item.label}
                     </span>
-                    <div className="flex items-center gap-2 font-mono">
+                    <div className="flex items-center gap-2 tabular-nums">
                       <span className="font-extrabold text-zinc-900 dark:text-white">{item.count}</span>
                       <span className="text-[10px] text-zinc-400">({shareOfRadiology}%)</span>
                     </div>
@@ -616,7 +616,7 @@ export const RevenueOverviewTab = ({ stats, onRefresh }) => {
                       <span className="w-2 h-2 rounded-full bg-emerald-500" />
                       {item.modality}
                     </span>
-                    <div className="flex items-center gap-2 font-mono">
+                    <div className="flex items-center gap-2 tabular-nums">
                       <span className="font-extrabold text-zinc-900 dark:text-white">{item.count}</span>
                       <span className="text-[10px] text-zinc-400">({shareOfPathology}%)</span>
                     </div>
@@ -837,7 +837,7 @@ export const RevenueOverviewTab = ({ stats, onRefresh }) => {
                     </td>
 
                     {/* Unique Patients */}
-                    <td className="py-3.5 px-3 text-center font-bold text-zinc-600 dark:text-zinc-400 font-mono">
+                    <td className="py-3.5 px-3 text-center font-bold text-zinc-600 dark:text-zinc-400 tabular-nums">
                       {test.uniquePatients}
                     </td>
 
@@ -2308,14 +2308,14 @@ export const DueBillsScreen = () => {
                                         <td className="py-3.5 px-4 max-w-[200px] truncate text-zinc-500 text-[11px]">
                                             {b.tests?.join(', ') || 'Diagnostic Tests'}
                                         </td>
-                                        <td className="py-3.5 px-4 text-right font-mono font-bold text-zinc-900 dark:text-white">
+                                        <td className="py-3.5 px-4 text-right tabular-nums font-bold text-zinc-900 dark:text-white">
                                             ₹{Number(b.totalAmount || 0).toLocaleString()}
                                         </td>
-                                        <td className="py-3.5 px-4 text-right font-mono font-medium text-emerald-600 dark:text-emerald-400">
+                                        <td className="py-3.5 px-4 text-right tabular-nums font-medium text-emerald-600 dark:text-emerald-400">
                                             ₹{Number(b.totalPaid || 0).toLocaleString()}
                                         </td>
                                         <td className="py-3.5 px-4 text-right">
-                                            <span className="font-mono font-black text-xs px-2.5 py-1 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                                            <span className="tabular-nums font-black text-xs px-2.5 py-1 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
                                                 ₹{Number(b.balanceDue || 0).toLocaleString()}
                                             </span>
                                         </td>
@@ -2377,15 +2377,15 @@ export const DueBillsScreen = () => {
                         <div className="grid grid-cols-3 gap-2 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 text-center">
                             <div>
                                 <span className="text-[10px] text-zinc-400 uppercase font-bold block">Total Invoiced</span>
-                                <span className="font-mono text-xs font-bold text-zinc-900 dark:text-white">₹{selectedDueBill.totalAmount?.toLocaleString()}</span>
+                                <span className="tabular-nums text-xs font-bold text-zinc-900 dark:text-white">₹{selectedDueBill.totalAmount?.toLocaleString()}</span>
                             </div>
                             <div>
                                 <span className="text-[10px] text-emerald-500 uppercase font-bold block">Paid So Far</span>
-                                <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">₹{selectedDueBill.totalPaid?.toLocaleString()}</span>
+                                <span className="tabular-nums text-xs font-bold text-emerald-600 dark:text-emerald-400">₹{selectedDueBill.totalPaid?.toLocaleString()}</span>
                             </div>
                             <div>
                                 <span className="text-[10px] text-rose-500 uppercase font-bold block">Current Due</span>
-                                <span className="font-mono text-xs font-black text-rose-600 dark:text-rose-400">₹{selectedDueBill.balanceDue?.toLocaleString()}</span>
+                                <span className="tabular-nums text-xs font-black text-rose-600 dark:text-rose-400">₹{selectedDueBill.balanceDue?.toLocaleString()}</span>
                             </div>
                         </div>
 
@@ -2400,7 +2400,7 @@ export const DueBillsScreen = () => {
                                     max={selectedDueBill.balanceDue}
                                     value={collectAmount}
                                     onChange={(e) => setCollectAmount(e.target.value)}
-                                    className="w-full pl-8 pr-4 py-2.5 text-sm font-mono font-bold rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white outline-none focus:border-amber-500"
+                                    className="w-full pl-8 pr-4 py-2.5 text-sm tabular-nums font-bold rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white outline-none focus:border-amber-500"
                                 />
                             </div>
                             {Number(collectAmount) < selectedDueBill.balanceDue && Number(collectAmount) > 0 && (
@@ -2964,7 +2964,7 @@ export const PendingReceivablesScreen = () => {
                                                                             {selectedCount} of {partnerBills.length} Bills Selected
                                                                         </p>
                                                                         <p className="text-[10px] text-zinc-500 font-medium">
-                                                                            Total Selected Due: <strong className="text-indigo-600 dark:text-indigo-400 font-mono">₹{selectedSum.toLocaleString()}</strong>
+                                                                            Total Selected Due: <strong className="text-indigo-600 dark:text-indigo-400 tabular-nums">₹{selectedSum.toLocaleString()}</strong>
                                                                         </p>
                                                                     </div>
                                                                 </div>
@@ -3459,13 +3459,13 @@ export const VisitCorrectionsScreen = () => {
                                                     ) : null}
                                                 </div>
                                             </td>
-                                            <td className="py-3.5 px-4 text-right whitespace-nowrap font-mono font-bold">
+                                            <td className="py-3.5 px-4 text-right whitespace-nowrap tabular-nums font-bold">
                                                 <span className="text-zinc-400 line-through mr-1.5">₹{Number(c.previousAmount || 0).toLocaleString()}</span>
                                                 <span className="text-zinc-900 dark:text-white">→ ₹{Number(c.newAmount || 0).toLocaleString()}</span>
                                             </td>
                                             <td className="py-3.5 px-4 text-center">
                                                 <span className={cn(
-                                                    "font-mono font-black text-xs px-2.5 py-0.5 rounded-full border",
+                                                    "tabular-nums font-black text-xs px-2.5 py-0.5 rounded-full border",
                                                     diff > 0 
                                                         ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
                                                         : diff < 0 
@@ -3546,13 +3546,13 @@ export const VisitCorrectionsScreen = () => {
                             </div>
                             <div>
                                 <span className="text-[10px] text-zinc-400 uppercase font-bold block">Previous Bill</span>
-                                <span className="font-mono font-bold text-zinc-600 dark:text-zinc-400 mt-0.5 block">
+                                <span className="tabular-nums font-bold text-zinc-600 dark:text-zinc-400 mt-0.5 block">
                                     ₹{Number(selectedCorrection.previousAmount || 0).toLocaleString()}
                                 </span>
                             </div>
                             <div>
                                 <span className="text-[10px] text-zinc-400 uppercase font-bold block">New Bill (After Correction)</span>
-                                <span className="font-mono font-bold text-zinc-900 dark:text-white mt-0.5 block">
+                                <span className="tabular-nums font-bold text-zinc-900 dark:text-white mt-0.5 block">
                                     ₹{Number(selectedCorrection.newAmount || 0).toLocaleString()}
                                 </span>
                             </div>
@@ -3647,7 +3647,7 @@ export const VisitCorrectionsScreen = () => {
                                                         {detailedDiff.addedTests.map((t, idx) => (
                                                             <div key={idx} className="flex justify-between text-[11px] text-zinc-800 dark:text-zinc-200">
                                                                 <span>+{t.name}</span>
-                                                                <span className="font-mono font-bold text-emerald-600">+₹{Number(t.price || 0).toLocaleString()}</span>
+                                                                <span className="tabular-nums font-bold text-emerald-600">+₹{Number(t.price || 0).toLocaleString()}</span>
                                                             </div>
                                                         ))}
                                                     </div>
@@ -3661,7 +3661,7 @@ export const VisitCorrectionsScreen = () => {
                                                         {detailedDiff.cancelledTests.map((t, idx) => (
                                                             <div key={idx} className="flex justify-between text-[11px] text-zinc-800 dark:text-zinc-200">
                                                                 <span className="line-through text-zinc-400">-{t.name}</span>
-                                                                <span className="font-mono font-bold text-rose-600">-₹{Number(t.price || 0).toLocaleString()}</span>
+                                                                <span className="tabular-nums font-bold text-rose-600">-₹{Number(t.price || 0).toLocaleString()}</span>
                                                             </div>
                                                         ))}
                                                     </div>
@@ -4179,7 +4179,7 @@ export const CollectionHistoryScreen = () => {
                                         {(() => {
                                             const displayAmt = getRowAmount(row);
                                             return (
-                                                <span className={displayAmt < 0 ? "text-rose-500 font-mono" : "text-emerald-600 dark:text-emerald-400 font-mono"}>
+                                                <span className={displayAmt < 0 ? "text-rose-500 tabular-nums" : "text-emerald-600 dark:text-emerald-400 tabular-nums"}>
                                                     {displayAmt < 0 ? `-₹${Math.abs(displayAmt).toLocaleString()}` : `₹${displayAmt.toLocaleString()}`}
                                                 </span>
                                             );
@@ -4537,10 +4537,10 @@ export const CancellationsRefundsScreen = () => {
                                                     </p>
                                                 )}
                                             </td>
-                                            <td className="py-3.5 px-4 text-right whitespace-nowrap font-mono font-bold text-zinc-500 line-through">
+                                            <td className="py-3.5 px-4 text-right whitespace-nowrap tabular-nums font-bold text-zinc-500 line-through">
                                                 ₹{Number(c.totalBilled || 0).toLocaleString()}
                                             </td>
-                                            <td className="py-3.5 px-4 text-right whitespace-nowrap font-mono font-black">
+                                            <td className="py-3.5 px-4 text-right whitespace-nowrap tabular-nums font-black">
                                                 {hasRefund ? (
                                                     <span className="text-rose-600 dark:text-rose-400">
                                                         -₹{Number(c.refundedAmount || 0).toLocaleString()}
@@ -4636,13 +4636,13 @@ export const CancellationsRefundsScreen = () => {
                             </div>
                             <div>
                                 <span className="text-[10px] text-zinc-400 uppercase font-bold block">Original Billed</span>
-                                <span className="font-mono font-bold text-zinc-500 line-through mt-0.5 block">
+                                <span className="tabular-nums font-bold text-zinc-500 line-through mt-0.5 block">
                                     ₹{Number(selectedCancellation.totalBilled || 0).toLocaleString()}
                                 </span>
                             </div>
                             <div>
                                 <span className="text-[10px] text-rose-500 uppercase font-bold block">Refund Settled</span>
-                                <span className="font-mono font-black text-rose-600 dark:text-rose-400 mt-0.5 block">
+                                <span className="tabular-nums font-black text-rose-600 dark:text-rose-400 mt-0.5 block">
                                     ₹{Number(selectedCancellation.refundedAmount || 0).toLocaleString()} ({selectedCancellation.refundMethod || 'Cash'})
                                 </span>
                             </div>
@@ -5003,13 +5003,13 @@ export const RefundClaimsTerminalScreen = () => {
                                             <td className="py-3.5 px-4 text-zinc-600 dark:text-zinc-400 font-medium">
                                                 {c.branchName || 'Main Lab'}
                                             </td>
-                                            <td className="py-3.5 px-4 text-right whitespace-nowrap font-mono font-medium text-zinc-500 line-through">
+                                            <td className="py-3.5 px-4 text-right whitespace-nowrap tabular-nums font-medium text-zinc-500 line-through">
                                                 ₹{Number(c.totalBilled || 0).toLocaleString()}
                                             </td>
-                                            <td className="py-3.5 px-4 text-right whitespace-nowrap font-mono font-bold text-rose-600 dark:text-rose-400">
+                                            <td className="py-3.5 px-4 text-right whitespace-nowrap tabular-nums font-bold text-rose-600 dark:text-rose-400">
                                                 ₹{Number(c.refundedAmount || 0).toLocaleString()}
                                             </td>
-                                            <td className="py-3.5 px-4 text-right whitespace-nowrap font-mono font-black">
+                                            <td className="py-3.5 px-4 text-right whitespace-nowrap tabular-nums font-black">
                                                 {pendingDue > 0 ? (
                                                     <span className="text-amber-600 dark:text-amber-400 text-sm">
                                                         ₹{pendingDue.toLocaleString()}
@@ -5339,7 +5339,7 @@ export const CashDrawerLedgersScreen = () => {
 
                 <div className="p-4 rounded-xl synos-kpi-card border-2 border-teal-500/40 bg-teal-500/10">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-teal-800 dark:text-teal-300">Net Cash In Hand / Drawer</p>
-                    <p className="text-2xl font-black text-teal-900 dark:text-teal-100 mt-1 font-mono">
+                    <p className="text-2xl font-black text-teal-900 dark:text-teal-100 mt-1 tabular-nums">
                         ₹{(ledgerData?.netCashInDrawer || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </p>
                     <span className="text-[10px] text-teal-700 dark:text-teal-300 font-bold">Physical Cash Handover Target</span>
@@ -5466,7 +5466,7 @@ export const CashDrawerLedgersScreen = () => {
                                             <td className="py-3.5 px-4 text-slate-500 dark:text-zinc-400 text-[11px] truncate max-w-[200px]">
                                                 {t.notes || '—'}
                                             </td>
-                                            <td className="py-3.5 px-4 text-right whitespace-nowrap font-mono font-black text-sm">
+                                            <td className="py-3.5 px-4 text-right whitespace-nowrap tabular-nums font-black text-sm">
                                                 <span className={isInflow ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}>
                                                     {isInflow ? '+' : '-'}₹{Number(t.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                                                 </span>
@@ -5551,7 +5551,7 @@ export const CashDrawerLedgersScreen = () => {
 
                             <div className="pt-2 border-t-2 border-slate-400 dark:border-zinc-600 flex justify-between text-sm font-black">
                                 <span>NET PHYSICAL CASH:</span>
-                                <span className="text-teal-700 dark:text-teal-300 font-mono">₹{(ledgerData?.netCashInDrawer || 0).toFixed(2)}</span>
+                                <span className="text-teal-700 dark:text-teal-300 tabular-nums">₹{(ledgerData?.netCashInDrawer || 0).toFixed(2)}</span>
                             </div>
 
                             {/* Signatures */}
@@ -5697,15 +5697,15 @@ export const FinanceDisburseRefundModal = ({ cancellation, onClose, onSuccess })
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-slate-500">Original Amount Paid:</span>
-                                <span className="font-mono">₹{Number(cancellation?.totalAmountPaid || 0).toLocaleString()}</span>
+                                <span className="tabular-nums font-semibold">₹{Number(cancellation?.totalAmountPaid || 0).toLocaleString()}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-slate-500">Already Refunded:</span>
-                                <span className="font-mono text-rose-600">₹{Number(cancellation?.refundedAmount || 0).toLocaleString()}</span>
+                                <span className="tabular-nums font-semibold text-rose-600">₹{Number(cancellation?.refundedAmount || 0).toLocaleString()}</span>
                             </div>
                             <div className="flex justify-between text-sm font-bold pt-1 border-t border-slate-200 dark:border-zinc-700">
                                 <span className="text-amber-700 dark:text-amber-400">Balance Pending Due:</span>
-                                <span className="font-mono text-amber-700 dark:text-amber-400">₹{pendingBalance.toLocaleString()}</span>
+                                <span className="tabular-nums font-bold text-amber-700 dark:text-amber-400">₹{pendingBalance.toLocaleString()}</span>
                             </div>
                         </div>
 

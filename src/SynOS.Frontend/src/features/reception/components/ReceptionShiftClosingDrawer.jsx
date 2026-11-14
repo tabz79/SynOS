@@ -456,7 +456,7 @@ export function ReceptionShiftClosingDrawer({
                                 <div>
                                     <h3 className="font-extrabold text-base">Shift Successfully Closed & Handed Over</h3>
                                     <p className="text-xs sm:text-sm text-emerald-800 dark:text-emerald-300 mt-0.5">
-                                        Physically Counted: <span className="font-mono font-black">₹{physicalCounted.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span> • Variance: <span className="font-mono font-black">{isMatch ? '₹0.00 (Balanced)' : `₹${variance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}</span>
+                                        Physically Counted: <span className="tabular-nums font-black">₹{physicalCounted.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span> • Variance: <span className="tabular-nums font-black">{isMatch ? '₹0.00 (Balanced)' : `₹${variance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}</span>
                                     </p>
                                 </div>
                             </div>
@@ -632,15 +632,15 @@ export function ReceptionShiftClosingDrawer({
                                         <div className="mt-4 pt-3 border-t border-slate-300/60 dark:border-zinc-700/60 text-xs sm:text-sm space-y-2">
                                             <div className="flex justify-between">
                                                 <span className="text-slate-500 font-medium">Desk Cash:</span>
-                                                <span className="font-mono font-bold text-slate-400">₹0.00 (Partner)</span>
+                                                <span className="tabular-nums font-bold text-slate-400">₹0.00 (Partner)</span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-slate-500 font-medium">B2B Billing:</span>
-                                                <span className="font-mono font-bold text-amber-600 dark:text-amber-400">Monthly Ledger</span>
+                                                <span className="font-bold text-amber-600 dark:text-amber-400">Monthly Ledger</span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-slate-500 font-medium">Concession:</span>
-                                                <span className="font-mono font-bold text-slate-600 dark:text-zinc-300">Contract Rate</span>
+                                                <span className="font-bold text-slate-600 dark:text-zinc-300">Contract Rate</span>
                                             </div>
                                         </div>
                                     </div>
@@ -650,11 +650,11 @@ export function ReceptionShiftClosingDrawer({
                                         <div>
                                             <div className="flex items-center justify-between">
                                                 <span className="text-xs font-extrabold text-slate-800 dark:text-zinc-200 uppercase tracking-wide">Insurance / TPA</span>
-                                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/15 text-purple-700 dark:text-purple-300 font-mono">
+                                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/15 text-purple-700 dark:text-purple-300">
                                                     Cashless
                                                 </span>
                                             </div>
-                                            <div className="mt-2 text-2xl font-black font-mono text-slate-900 dark:text-white">
+                                            <div className="mt-2 text-2xl font-black tabular-nums text-slate-900 dark:text-white">
                                                 ₹{(summary?.insuranceActivity?.preAuthGross || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                                             </div>
                                             <div className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">
@@ -665,7 +665,7 @@ export function ReceptionShiftClosingDrawer({
                                         <div className="mt-4 pt-3 border-t border-slate-300/60 dark:border-zinc-700/60 text-xs sm:text-sm space-y-2">
                                             <div className="flex justify-between">
                                                 <span className="text-slate-500 font-medium">Co-Pay Cash:</span>
-                                                <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">₹{(summary?.insuranceActivity?.coPayCashCollected || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                                                <span className="tabular-nums font-bold text-emerald-600 dark:text-emerald-400">₹{(summary?.insuranceActivity?.coPayCashCollected || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-slate-500 font-medium">Settlement:</span>

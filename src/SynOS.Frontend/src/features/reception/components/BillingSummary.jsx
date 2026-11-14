@@ -2202,17 +2202,17 @@ export function BillingSummary({
                             <div className="grid grid-cols-2 gap-2 text-xs pt-1.5 border-t border-black/5 dark:border-white/5">
                                 <div>
                                     <span className="opacity-70 text-[11px] block">Previously Paid:</span>
-                                    <span className="font-mono font-bold text-sm">₹{originalPaid.toLocaleString()}</span>
+                                    <span className="tabular-nums font-bold text-sm">₹{originalPaid.toLocaleString()}</span>
                                 </div>
                                 <div>
                                     <span className="opacity-70 text-[11px] block">Revised Net Total:</span>
-                                    <span className="font-mono font-bold text-sm">₹{(stagedNet !== undefined ? stagedNet : netAmount).toLocaleString()}</span>
+                                    <span className="tabular-nums font-bold text-sm">₹{(stagedNet !== undefined ? stagedNet : netAmount).toLocaleString()}</span>
                                 </div>
                             </div>
 
                             <div className="flex items-center justify-between pt-1.5 border-t border-black/5 dark:border-white/5 font-bold text-xs">
                                 <span>{settlementDiff < 0 ? "Cash Refund to Disburse:" : settlementDiff > 0 ? "Additional Balance to Collect:" : "Net Difference:"}</span>
-                                <span className={cn("font-mono text-base font-extrabold", settlementDiff < 0 ? "text-emerald-600 dark:text-emerald-400" : settlementDiff > 0 ? "text-blue-600 dark:text-blue-400" : "")}>
+                                <span className={cn("tabular-nums text-base font-extrabold", settlementDiff < 0 ? "text-emerald-600 dark:text-emerald-400" : settlementDiff > 0 ? "text-blue-600 dark:text-blue-400" : "")}>
                                     ₹{Math.abs(settlementDiff).toLocaleString()}
                                 </span>
                             </div>

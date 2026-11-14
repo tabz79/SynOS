@@ -2920,10 +2920,10 @@ export function IntentPanel({ onVisitUpdated }) {
                                                         {billingMode === 'PrepaidPartner' ? (
                                                             <div className="flex items-center justify-between text-xs sm:text-sm">
                                                                 <span className="font-bold text-slate-700 dark:text-zinc-300">
-                                                                    Patient Desk Payment: <strong className="font-mono text-[#245E49] dark:text-emerald-400">₹0 (Prepaid Partner)</strong>
+                                                                    Patient Desk Payment: <strong className="tabular-nums text-[#245E49] dark:text-emerald-400">₹0 (Prepaid Partner)</strong>
                                                                 </span>
                                                                 <span className="font-bold text-blue-700 dark:text-blue-300">
-                                                                    B2B Receivable: <strong className="font-mono">₹{(stagedNet !== undefined ? stagedNet : (snapshot?.billing?.netAmount || 0)).toLocaleString()}</strong>
+                                                                    B2B Receivable: <strong className="tabular-nums">₹{(stagedNet !== undefined ? stagedNet : (snapshot?.billing?.netAmount || 0)).toLocaleString()}</strong>
                                                                 </span>
                                                             </div>
                                                         ) : (
@@ -2931,7 +2931,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                                 <div className="flex items-center gap-1.5 font-bold text-[#245E49] dark:text-emerald-300">
                                                                     <CheckCircle2 className="w-4 h-4 text-[#2E7D63]" />
                                                                     <span>Desk Collection:</span>
-                                                                    <span className="font-mono">
+                                                                    <span className="tabular-nums font-bold">
                                                                         ₹{postPaid.toLocaleString()}
                                                                     </span>
                                                                     {(() => {
@@ -2948,7 +2948,7 @@ export function IntentPanel({ onVisitUpdated }) {
                                                                                     <span className="text-xs font-semibold text-purple-700 dark:text-purple-300">via Split</span>
                                                                                     <span className="inline-flex items-center gap-1">
                                                                                         {validDeskPayments.map((p, idx) => (
-                                                                                            <span key={idx} className="px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-950/50 text-purple-800 dark:text-purple-200 text-[11px] font-mono font-bold border border-purple-300 dark:border-purple-800">
+                                                                                            <span key={idx} className="px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-950/50 text-purple-800 dark:text-purple-200 text-[11px] tabular-nums font-bold border border-purple-300 dark:border-purple-800">
                                                                                                 {p.method || p.Method}: ₹{Number(p.amount || p.Amount || 0).toLocaleString()}
                                                                                             </span>
                                                                                         ))}
@@ -2969,15 +2969,15 @@ export function IntentPanel({ onVisitUpdated }) {
                                                                 <div className="text-xs font-semibold text-slate-600 dark:text-zinc-400">
                                                                     Balance Due:{" "}
                                                                     {effectiveChangeDue > 0 ? (
-                                                                        <span className="font-mono text-rose-600 dark:text-rose-400 font-black">
+                                                                        <span className="tabular-nums text-rose-600 dark:text-rose-400 font-black">
                                                                             ₹0 <span className="text-xs font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400">(Refund Due ₹{effectiveChangeDue.toLocaleString()})</span>
                                                                         </span>
                                                                     ) : actualBalanceDue <= 0 ? (
-                                                                        <strong className="font-mono text-slate-900 dark:text-white">₹0 <span className="text-[#245E49] dark:text-emerald-400 font-bold">(Fully Settled)</span></strong>
+                                                                        <strong className="tabular-nums text-slate-900 dark:text-white">₹0 <span className="text-[#245E49] dark:text-emerald-400 font-bold">(Fully Settled)</span></strong>
                                                                     ) : isFullDueVisit ? (
-                                                                        <strong className="font-mono text-rose-600 dark:text-rose-400 text-sm font-black">₹{actualBalanceDue.toLocaleString()} <span className="text-amber-600 dark:text-amber-400 font-bold">(100% Full Due)</span></strong>
+                                                                        <strong className="tabular-nums text-rose-600 dark:text-rose-400 text-sm font-black">₹{actualBalanceDue.toLocaleString()} <span className="text-amber-600 dark:text-amber-400 font-bold">(100% Full Due)</span></strong>
                                                                     ) : (
-                                                                        <strong className="font-mono text-rose-600 dark:text-rose-400 text-sm font-black">₹{actualBalanceDue.toLocaleString()} <span className="text-amber-600 dark:text-amber-400 font-bold">(Partial Due)</span></strong>
+                                                                        <strong className="tabular-nums text-rose-600 dark:text-rose-400 text-sm font-black">₹{actualBalanceDue.toLocaleString()} <span className="text-amber-600 dark:text-amber-400 font-bold">(Partial Due)</span></strong>
                                                                     )}
                                                                 </div>
                                                             </div>
@@ -4219,17 +4219,17 @@ export function IntentPanel({ onVisitUpdated }) {
                                             <div className="grid grid-cols-2 gap-2 text-xs pt-1">
                                                 <div className="p-2.5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-2xs">
                                                     <div className="text-xs text-zinc-500 dark:text-zinc-400 font-semibold uppercase">Previous Doctor Bill</div>
-                                                    <div className="font-mono text-sm font-bold text-zinc-800 dark:text-zinc-200 mt-0.5">₹{originalB2BClaim.toLocaleString()}</div>
+                                                    <div className="tabular-nums text-sm font-bold text-zinc-800 dark:text-zinc-200 mt-0.5">₹{originalB2BClaim.toLocaleString()}</div>
                                                 </div>
                                                 <div className="p-2.5 rounded-lg bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-2xs">
                                                     <div className="text-xs text-zinc-500 dark:text-zinc-400 font-semibold uppercase">New Doctor Bill</div>
-                                                    <div className="font-mono text-sm font-bold text-indigo-600 dark:text-indigo-400 mt-0.5">₹{currentB2BClaim.toLocaleString()}</div>
+                                                    <div className="tabular-nums text-sm font-bold text-indigo-600 dark:text-indigo-400 mt-0.5">₹{currentB2BClaim.toLocaleString()}</div>
                                                 </div>
                                             </div>
 
                                             <div className="flex justify-between items-center text-sm font-extrabold pt-2 border-t border-current/10">
                                                 <span>Difference to Doctor:</span>
-                                                <span className={cn("font-mono text-base font-bold", 
+                                                <span className={cn("tabular-nums text-base font-bold", 
                                                     b2bClaimDiff > 0 ? "text-amber-600 dark:text-amber-400" : 
                                                     b2bClaimDiff < 0 ? "text-emerald-600 dark:text-emerald-400" : "")}>
                                                     {b2bClaimDiff > 0 ? `+₹${b2bClaimDiff.toLocaleString()}` : b2bClaimDiff < 0 ? `-₹${Math.abs(b2bClaimDiff).toLocaleString()}` : "₹0"}
@@ -4273,15 +4273,15 @@ export function IntentPanel({ onVisitUpdated }) {
                                     )}>
                                         <div className="flex justify-between items-center text-xs">
                                             <span className="opacity-70 font-medium">Previously Paid by Patient:</span>
-                                            <span className="font-mono font-bold">₹{originalPaid.toLocaleString()}</span>
+                                            <span className="tabular-nums font-bold">₹{originalPaid.toLocaleString()}</span>
                                         </div>
                                         <div className="flex justify-between items-center text-xs">
                                             <span className="opacity-70 font-medium">New Total Bill:</span>
-                                            <span className="font-mono font-bold">₹{stagedNet.toLocaleString()}</span>
+                                            <span className="tabular-nums font-bold">₹{stagedNet.toLocaleString()}</span>
                                         </div>
                                         <div className="flex justify-between items-center text-sm font-extrabold pt-1.5 border-t border-current/10">
                                             <span>{settlementDiff < 0 ? `Refund to Patient (${paymentMethod}):` : settlementDiff > 0 ? `Collect from Patient (${paymentMethod}):` : "Difference:"}</span>
-                                            <span className="font-mono text-base font-bold">
+                                            <span className="tabular-nums text-base font-bold">
                                                 {settlementDiff > 0 ? `+₹${settlementDiff.toLocaleString()}` : settlementDiff < 0 ? `-₹${Math.abs(settlementDiff).toLocaleString()}` : "₹0"}
                                             </span>
                                         </div>

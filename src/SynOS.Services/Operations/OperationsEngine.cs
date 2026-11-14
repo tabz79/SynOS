@@ -260,6 +260,12 @@ namespace SynOS.Services.Operations
                 .Select(r => new { r.VisitId, r.Status, r.SignedAt }) // Changed VerifiedAt to SignedAt
                 .ToListAsync();
 
+            var radiologyStudies = await _context.RadiologyStudies
+                .AsNoTracking()
+                .Where(rs => visitIds.Contains(rs.VisitId))
+                .Select(rs => new { rs.VisitId, rs.Status, rs.CreatedAt, rs.LastActivityAt })
+                .ToListAsync();
+
             var last24HoursUtc = DateTime.UtcNow.AddHours(-24);
             var last24HoursOffset = DateTimeOffset.UtcNow.AddHours(-24);
 
@@ -339,7 +345,14 @@ namespace SynOS.Services.Operations
                     ReferrerName = visit.ReferralPartner?.Name ?? "Self",
 
                     // FIXED: Pass empty list instead of null to prevent NRE in DeriveOperationalStatus
-                    OperationalStatus = DeriveOperationalStatus(visit, new List<object>(), assignments.Where(a => a.VisitId == visit.VisitId).Select(a => a.Status).ToList(), visitResults.Select(r => r.Status?.ToString()).ToList().Cast<string?>().ToList(), visitReport?.Status),
+                    OperationalStatus = DeriveOperationalStatus(
+                        visit, 
+                        new List<object>(), 
+                        assignments.Where(a => a.VisitId == visit.VisitId).Select(a => a.Status).ToList(), 
+                        visitResults.Select(r => r.Status?.ToString()).ToList().Cast<string?>().ToList(), 
+                        visitReport?.Status,
+                        radiologyStudies.Where(rs => rs.VisitId == visit.VisitId).Select(rs => rs.Status).ToList()
+                    ),
                     LastUpdatedAt = CalculateLastUpdatedAt(visit, new List<DateTime?>(), visitResults.Select(r => r.EnteredAt).ToList(), visitReport?.SignedAt),
                     DateGroup = CalculateDateGroup(visit.TokenDate, today),
                     IsFinalized = _lifecyclePolicy.IsTerminal(visit.Status),
@@ -633,7 +646,7 @@ namespace SynOS.Services.Operations
             return "Due";
         }
 
-        private string DeriveOperationalStatus(Visit visit, List<object>? sampleStatuses, List<ProcessingAssignmentStatus> processingStatuses, List<string?> resultStatuses, string? reportStatus)
+        private string DeriveOperationalStatus(Visit visit, List<object>? sampleStatuses, List<ProcessingAssignmentStatus> processingStatuses, List<string?> resultStatuses, string? reportStatus, List<string>? radiologyStatuses = null)
         {
             // 5. Operational Status (SINGLE SOURCE OF TRUTH)
             if (visit.Status == VisitStatus.Draft || (visit.Token != null && visit.Token.StartsWith("D-", StringComparison.OrdinalIgnoreCase)))
@@ -645,6 +658,26 @@ namespace SynOS.Services.Operations
             if (reportStatus == "Signed" || reportStatus == "Finalized")
             {
                 return "Completed";
+            }
+
+            if (radiologyStatuses != null && radiologyStatuses.Any())
+            {
+                if (radiologyStatuses.All(s => s == "Signed" || s == "Finalized" || s == "ManualVerified"))
+                {
+                    return "Completed";
+                }
+                if (radiologyStatuses.Any(s => s == "DraftReady" || s == "AwaitingSignature"))
+                {
+                    return "Reporting";
+                }
+                if (radiologyStatuses.Any(s => s == "DictationSessionStarted" || s == "ImagingCompleted" || s == "AwaitingDictation"))
+                {
+                    return "In Lab";
+                }
+                if (radiologyStatuses.Any(s => s == "Assigned"))
+                {
+                    return "In Progress";
+                }
             }
 
             // Reporting (Verification Pending)
@@ -676,6 +709,14 @@ namespace SynOS.Services.Operations
 
                 // 3. If all complete or none exist, we are at least "Collected"
                 return "Collected";
+            }
+
+            // Radiology or Non-specimen imaging visits:
+            if (string.Equals(visit.Department, "Radiology", StringComparison.OrdinalIgnoreCase) || 
+                string.Equals(visit.Department, "RAD", StringComparison.OrdinalIgnoreCase) ||
+                (radiologyStatuses != null && radiologyStatuses.Any()))
+            {
+                return "Awaiting Scan";
             }
 
             // Default: Ready for Sample

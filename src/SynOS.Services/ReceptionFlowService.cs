@@ -496,9 +496,9 @@ namespace SynOS.Services
             await ProcessOutsourcedPayablesAsync(visit.VisitId, actorUserId);
             // -------------------------------------
 
-            // --- PHLEBOTOMY SPECIMEN PLANNING & WORK ASSIGNMENT ---
-            await TransitionToSpecimenPlannedAsync(visit.VisitId);
-            // -----------------------------------------------------
+            // --- ORDER FULFILLMENT ROUTING (RADIOLOGY STUDIES & PHLEBOTOMY SPECIMENS) ---
+            await RouteOrdersToFulfillmentQueuesAsync(visit.VisitId, actorUserId);
+            // -----------------------------------------------------------------------------
         }
 
         public async Task SetBillingContextAsync(
@@ -646,7 +646,7 @@ namespace SynOS.Services
             );
 
             await ProcessOutsourcedPayablesAsync(visit.VisitId, actorUserId);
-            await TransitionToSpecimenPlannedAsync(visit.VisitId);
+            await RouteOrdersToFulfillmentQueuesAsync(visit.VisitId, actorUserId);
         }
 
         public async Task MarkVisitAsCorporateAsync(Guid visitId, Guid actorUserId)
@@ -708,7 +708,7 @@ namespace SynOS.Services
             );
 
             await ProcessOutsourcedPayablesAsync(visit.VisitId, actorUserId);
-            await TransitionToSpecimenPlannedAsync(visit.VisitId);
+            await RouteOrdersToFulfillmentQueuesAsync(visit.VisitId, actorUserId);
         }
 
         private async Task ProcessOutsourcedPayablesAsync(Guid visitId, Guid actorUserId)
@@ -1195,159 +1195,9 @@ namespace SynOS.Services
                     }
                 }
 
-                var orders = await _context.Orders
-                    .Where(o => o.VisitId == visit.VisitId)
-                    .ToListAsync();
-
-                var testIds = orders.Select(o => o.TestId).ToList();
-                var testsInVisit = await _context.Tests
-                    .Include(t => t.DepartmentMaster)
-                    .Where(t => testIds.Contains(t.TestId))
-                    .ToListAsync();
-
-                var hasPathology = false;
-                var hasRadiology = false;
-                foreach (var t in testsInVisit)
-                {
-                    if (t.DepartmentMaster != null && string.Equals(t.DepartmentMaster.MacroDepartment, "Radiology", StringComparison.OrdinalIgnoreCase))
-                    {
-                        hasRadiology = true;
-                    }
-                    else
-                    {
-                        hasPathology = true;
-                    }
-                }
-
-                if (hasRadiology && !hasPathology)
-                {
-                    var dbVisit = await _context.Visits.FindAsync(visit.VisitId);
-                    if (dbVisit != null)
-                    {
-                        dbVisit.Department = "Radiology";
-                        visit.Department = "Radiology";
-                    }
-                }
-                else
-                {
-                    var dbVisit = await _context.Visits.FindAsync(visit.VisitId);
-                    if (dbVisit != null)
-                    {
-                        dbVisit.Department = "Pathology";
-                        visit.Department = "Pathology";
-                    }
-                }
-
-                foreach (var order in orders)
-                {
-                    // 1) Try cache first (if available)
-                    Test test = null;
-                    try
-                    {
-                        if (_testsCacheService != null)
-                        {
-                            var allTests = await _testsCacheService.GetCachedTestsAsync().ConfigureAwait(false); // Corrected
-                            if (allTests != null)
-                            {
-                                test = allTests.FirstOrDefault(t => t.TestId == order.TestId);
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogWarning(ex, "Cache error while fetching tests - falling back to DB");
-                    }
-
-                    // 2) Fallback to DB if cache missed or if we need to load navigation properties
-                    if (test == null || test.DepartmentMaster == null || test.ModalityMaster == null)
-                    {
-                        test = await _context.Tests
-                            .Include(t => t.DepartmentMaster) // Include DM
-                            .Include(t => t.ModalityMaster)
-                            .AsNoTracking()
-                            .FirstOrDefaultAsync(t => t.TestId == order.TestId);
-                    }
-
-                    if (test == null)
-                    {
-                        _logger.LogError("Test with ID {TestId} not found for order {OrderId}", order.TestId, order.OrderId);
-                        continue; // Skip if test not found
-                    }
-
-                    var isRadiology = test.DepartmentMaster != null && string.Equals(test.DepartmentMaster.MacroDepartment, "Radiology", StringComparison.OrdinalIgnoreCase);
-
-                    if (isRadiology)
-                    {
-                        var modalityId = test.ModalityId;
-                        if (!modalityId.HasValue || modalityId.Value == Guid.Empty)
-                        {
-                            modalityId = await _context.ModalityMasters
-                                .Where(m => m.Name == test.Category || m.Code == test.Category)
-                                .Select(m => (Guid?)m.ModalityId)
-                                .FirstOrDefaultAsync()
-                                ?? await _context.ModalityMasters.Select(m => (Guid?)m.ModalityId).FirstOrDefaultAsync();
-                        }
-
-                        if (!modalityId.HasValue)
-                        {
-                            throw new InvalidOperationException($"Test '{test.TestCode}' belongs to Radiology department but has no Imaging Modality assigned.");
-                        }
-
-                        var studyExists = await _context.RadiologyStudies.AnyAsync(rs => rs.VisitTestId == order.OrderId);
-                        if (!studyExists)
-                        {
-                            var newStudy = new RadiologyStudy
-                            {
-                                RadiologyStudyId = Guid.NewGuid(),
-                                VisitId = visit.VisitId,
-                                PatientId = visit.PatientId,
-                                VisitTestId = order.OrderId,
-                                ModalityId = modalityId.Value,
-                                Modality = test.ModalityMaster?.Name ?? test.Category ?? "Unknown", // Backward compatibility string
-                                AccessionNumber = await _accessionService.GenerateRadiologyAccessionNumberAsync(visit.BranchId ?? throw new InvalidOperationException("Visit BranchId is required for Accession")),
-                                Status = "PendingImaging",
-                                CreatedBy = userId,
-                                CreatedAt = DateTimeOffset.UtcNow
-                            };
-                            _context.RadiologyStudies.Add(newStudy);
-
-                            var newReport = new Report
-                            {
-                                ReportId = Guid.NewGuid(),
-                                VisitId = visit.VisitId,
-                                PatientId = visit.PatientId,
-                                Department = "Radiology",
-                                SourceType = "RadiologyStudy",
-                                SourceId = newStudy.RadiologyStudyId,
-                                ReportTemplateId = test.ReportTemplateId,
-                                Status = "Draft",
-                                CurrentVersion = 1,
-                                CreatedAt = DateTimeOffset.UtcNow
-                            };
-
-                            newReport.RadiologyReport = new RadiologyReport
-                            {
-                                RadiologyStudy = newStudy
-                            };
-
-                            _context.Reports.Add(newReport);
-                        }
-                    }
-                    else if (string.Equals(order.Department, "Pathology", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // NO-OP: Pathology specimens are now created via TransitionToSpecimenPlannedAsync
-                        // This method is called Transactionally below.
-                    }
-                }
-                await _context.SaveChangesAsync();
-
-                // --- SPECIMEN ARCHITECTURE TRANSITION ---
-                // If Pathology involved, trigger Specimen Planning
-                if (hasPathology)
-                {
-                    await TransitionToSpecimenPlannedAsync(visit.VisitId);
-                }
-                // ----------------------------------------
+                // --- ORDER FULFILLMENT ROUTING (RADIOLOGY STUDIES & PHLEBOTOMY SPECIMENS) ---
+                var (hasRadiology, hasPathology) = await RouteOrdersToFulfillmentQueuesAsync(visit.VisitId, userId);
+                // -----------------------------------------------------------------------------
 
                 // --- REFERRAL FINANCIAL COMMISSION RECOGNITION ---
                 if (visit.IsReferred || visit.ReferralPartnerId != null)
@@ -1781,6 +1631,213 @@ namespace SynOS.Services
             await _visitService.RemoveDiscountFromVisitAsync(visitId, actorUserId);
         }
 
+        private static bool IsRadiologyTestOrOrder(Test? test, string? orderDepartment = null)
+        {
+            if (string.Equals(orderDepartment, "Radiology", StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            if (test == null) return false;
+
+            if (test.DepartmentMaster != null)
+            {
+                if (string.Equals(test.DepartmentMaster.MacroDepartment, "Radiology", StringComparison.OrdinalIgnoreCase))
+                    return true;
+                if (!string.IsNullOrEmpty(test.DepartmentMaster.Name) &&
+                    test.DepartmentMaster.Name.IndexOf("Radiology", StringComparison.OrdinalIgnoreCase) >= 0)
+                    return true;
+                if (string.Equals(test.DepartmentMaster.Code, "RAD", StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+
+            if (!string.IsNullOrEmpty(test.Category))
+            {
+                var cat = test.Category.Trim();
+                if (cat.Equals("MRI", StringComparison.OrdinalIgnoreCase) ||
+                    cat.Equals("CT", StringComparison.OrdinalIgnoreCase) ||
+                    cat.Equals("CT Scan", StringComparison.OrdinalIgnoreCase) ||
+                    cat.Equals("X-Ray", StringComparison.OrdinalIgnoreCase) ||
+                    cat.Equals("Ultrasound", StringComparison.OrdinalIgnoreCase) ||
+                    cat.Equals("USG", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            if (test.ModalityId.HasValue && test.ModalityId.Value != Guid.Empty)
+                return true;
+
+            var code = test.TestCode ?? "";
+            var name = test.TestName ?? "";
+            if (code.StartsWith("MRI", StringComparison.OrdinalIgnoreCase) ||
+                code.StartsWith("CT", StringComparison.OrdinalIgnoreCase) ||
+                code.StartsWith("XRAY", StringComparison.OrdinalIgnoreCase) ||
+                code.StartsWith("USG", StringComparison.OrdinalIgnoreCase) ||
+                name.IndexOf("MRI", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                name.IndexOf("CT SCAN", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                name.IndexOf("X-RAY", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                name.IndexOf("ULTRASOUND", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                name.IndexOf("MRCP", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                name.IndexOf("MRA ", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                name.IndexOf("MRV ", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        private async Task<(bool HasRadiology, bool HasPathology)> RouteOrdersToFulfillmentQueuesAsync(Guid visitId, Guid actorUserId)
+        {
+            var visit = await _context.Visits.FindAsync(visitId);
+            if (visit == null) return (false, false);
+
+            var orders = await _context.Orders
+                .Where(o => o.VisitId == visitId && o.Status != OrderStatus.Cancelled)
+                .ToListAsync();
+
+            if (!orders.Any()) return (false, false);
+
+            var testIds = orders.Select(o => o.TestId).Distinct().ToList();
+            var testsInVisit = await _context.Tests
+                .Include(t => t.DepartmentMaster)
+                .Include(t => t.ModalityMaster)
+                .Where(t => testIds.Contains(t.TestId))
+                .ToListAsync();
+
+            var testMap = testsInVisit.ToDictionary(t => t.TestId);
+
+            var hasPathology = false;
+            var hasRadiology = false;
+
+            foreach (var order in orders)
+            {
+                testMap.TryGetValue(order.TestId, out var test);
+                var isRadiology = IsRadiologyTestOrOrder(test, order.Department);
+
+                if (isRadiology)
+                {
+                    hasRadiology = true;
+
+                    var modalityId = test?.ModalityId;
+                    string modalityName = test?.ModalityMaster?.Name ?? test?.Category ?? "";
+
+                    if (!modalityId.HasValue || modalityId.Value == Guid.Empty)
+                    {
+                        var detectedCat = !string.IsNullOrEmpty(test?.Category) ? test.Category : null;
+                        if (string.IsNullOrEmpty(detectedCat))
+                        {
+                            var testNameUpper = (test?.TestName ?? "").ToUpperInvariant();
+                            if (testNameUpper.Contains("MRI") || testNameUpper.Contains("MRCP") || testNameUpper.Contains("MRA") || testNameUpper.Contains("MRV"))
+                                detectedCat = "MRI";
+                            else if (testNameUpper.Contains("CT"))
+                                detectedCat = "CT Scan";
+                            else if (testNameUpper.Contains("ULTRASOUND") || testNameUpper.Contains("USG"))
+                                detectedCat = "Ultrasound";
+                            else if (testNameUpper.Contains("X-RAY") || testNameUpper.Contains("XRAY"))
+                                detectedCat = "X-Ray";
+                        }
+
+                        if (!string.IsNullOrEmpty(detectedCat))
+                        {
+                            var matchedModality = await _context.ModalityMasters
+                                .FirstOrDefaultAsync(m => m.Name == detectedCat || m.Code == detectedCat ||
+                                                          (detectedCat == "CT Scan" && (m.Name == "CT Scan" || m.Code == "CT")) ||
+                                                          (detectedCat == "MRI" && (m.Name == "MRI" || m.Code == "MRI")));
+                            if (matchedModality != null)
+                            {
+                                modalityId = matchedModality.ModalityId;
+                                modalityName = matchedModality.Name;
+                            }
+                        }
+
+                        if (!modalityId.HasValue || modalityId.Value == Guid.Empty)
+                        {
+                            var fallbackModality = await _context.ModalityMasters.FirstOrDefaultAsync();
+                            if (fallbackModality != null)
+                            {
+                                modalityId = fallbackModality.ModalityId;
+                                modalityName = fallbackModality.Name;
+                            }
+                        }
+                    }
+
+                    if (!modalityId.HasValue || modalityId.Value == Guid.Empty)
+                    {
+                        throw new InvalidOperationException($"Test '{test?.TestCode ?? order.TestCode}' belongs to Radiology department but has no Imaging Modality assigned.");
+                    }
+
+                    var studyExists = await _context.RadiologyStudies.AnyAsync(rs => rs.VisitTestId == order.OrderId);
+                    if (!studyExists)
+                    {
+                        var effectiveBranchId = visit.BranchId ?? _userContext.CurrentBranchId;
+                        var newStudy = new RadiologyStudy
+                        {
+                            RadiologyStudyId = Guid.NewGuid(),
+                            VisitId = visit.VisitId,
+                            PatientId = visit.PatientId,
+                            VisitTestId = order.OrderId,
+                            ModalityId = modalityId.Value,
+                            Modality = !string.IsNullOrEmpty(modalityName) ? modalityName : (test?.ModalityMaster?.Name ?? test?.Category ?? "MRI"),
+                            AccessionNumber = await _accessionService.GenerateRadiologyAccessionNumberAsync(effectiveBranchId),
+                            Status = "PendingImaging",
+                            CreatedBy = actorUserId,
+                            CreatedAt = DateTimeOffset.UtcNow
+                        };
+                        _context.RadiologyStudies.Add(newStudy);
+
+                        var newReport = new Report
+                        {
+                            ReportId = Guid.NewGuid(),
+                            VisitId = visit.VisitId,
+                            PatientId = visit.PatientId,
+                            Department = "Radiology",
+                            SourceType = "RadiologyStudy",
+                            SourceId = newStudy.RadiologyStudyId,
+                            ReportTemplateId = test?.ReportTemplateId,
+                            Status = "Draft",
+                            CurrentVersion = 1,
+                            CreatedAt = DateTimeOffset.UtcNow
+                        };
+
+                        newReport.RadiologyReport = new RadiologyReport
+                        {
+                            RadiologyStudy = newStudy
+                        };
+
+                        _context.Reports.Add(newReport);
+                    }
+                }
+                else
+                {
+                    hasPathology = true;
+                }
+            }
+
+            if (hasRadiology && !hasPathology)
+            {
+                visit.Department = "Radiology";
+            }
+            else if (hasPathology && !hasRadiology)
+            {
+                visit.Department = "Pathology";
+            }
+            else if (hasRadiology && hasPathology)
+            {
+                visit.Department = "Multi-Disciplinary";
+            }
+
+            await _context.SaveChangesAsync();
+
+            // --- SPECIMEN ARCHITECTURE TRANSITION ---
+            // Strictly ONLY trigger phlebotomy specimen planning if genuine Pathology orders exist
+            if (hasPathology)
+            {
+                await TransitionToSpecimenPlannedAsync(visit.VisitId);
+            }
+
+            return (hasRadiology, hasPathology);
+        }
+
         public async Task TransitionToSpecimenPlannedAsync(Guid visitId)
         {
             var strategy = _context.Database.CreateExecutionStrategy();
@@ -1821,11 +1878,14 @@ namespace SynOS.Services
                         return;
                     }
 
-                    // 5. VALIDATION GUARD: Ensure visit contains at least one non-cancelled order
-                    var activeOrders = visit.Orders.Where(o => o.Status != OrderStatus.Cancelled).ToList();
+                    // 5. VALIDATION GUARD: Ensure visit contains at least one non-cancelled pathology order
+                    var activeOrders = visit.Orders
+                        .Where(o => o.Status != OrderStatus.Cancelled && !IsRadiologyTestOrOrder(o.Test, o.Department))
+                        .ToList();
                     if (!activeOrders.Any())
                     {
-                        _logger.LogWarning("TransitionToSpecimenPlanned: Visit {VisitId} has no non-cancelled orders. Specimen planning aborted.", visitId);
+                        _logger.LogInformation("TransitionToSpecimenPlanned: Visit {VisitId} has no pathology sample orders. Specimen planning aborted.", visitId);
+                        await transaction.CommitAsync();
                         return;
                     }
 

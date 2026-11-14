@@ -4026,6 +4026,86 @@ When an administrator creates a new test in **Test Master** (`/admin/test-master
 * **Frontend Build:** `npm run build` completed with **0 Errors** (embedded production bundle `index-DBCcnJj3.js` into `SynOS.Api/wwwroot`).
 * **Git Status:** Committed and pushed to `cloud-testing-2`.
 
+---
+
+## 56. Radiology Intake Defect: MRI / CT Patient Visits Missing from Technician Queue — [RESOLVED & VERIFIED]
+
+### Severity: High / Mission-Critical Clinical Workflow Blocking
+### Impacted Modules & Files
+* **Reception Intake Orchestration:** [`ReceptionFlowService.cs`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/ReceptionFlowService.cs)
+* **Prepaid B2B & Claim Settlement Pipeline:** [`ReceptionFlowService.cs`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/ReceptionFlowService.cs) (`MarkVisitAsPrepaidAsync`, `MarkVisitAsInsuranceAsync`, `MarkVisitAsCorporateAsync`)
+* **Radiology Technician Queue Endpoint:** [`RadiologyService.cs`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/RadiologyService.cs)
+* **Operational Action Queue Projection:** [`OperationsEngine.cs`](file:///Users/tabrez/TBZ-AI/Projects/SynOS/src/SynOS.Services/Operations/OperationsEngine.cs)
+
+### Incident & Clinical Manifestation
+1. **Intake Flow Disconnect:**
+   * 7 patient visits (`MRI-001` through `MRI-007`) were booked by reception containing MRI and CT imaging orders (`MRI_BRAIN_FLAIR`, `MRI_BRAIN_PLAIN`, `CT_CONTRAST`, `CT_ABDOMEN_PLAIN`, `MRI_KNEE_JOINT`).
+   * When navigating to the MRI Technician Workstation (`Takeover: MRI Tech`, `/radiology/technician?modality=MRI`), the worklist rendered **`No radiology studies in queue.`** DevTools console showed 0 runtime errors; the queue query returned an empty array `[]`.
+2. **Clinical Status Misattribution:**
+   * On the Reception Dashboard, the Live Stream erroneously broadcast:  
+     `"Sample collection requested for 1 tests"` for all 7 MRI/CT visits.
+   * In the Action Queue, the patient status was rendered as **`Ready for Sample`** (the status dedicated exclusively to Pathology blood and specimen collection).
+
+---
+
+### Root Cause Audit Findings
+
+1. **Rigid Single-Condition MacroDepartment Check in `ReceptionFlowService.cs`:**
+   - Test classification previously relied exclusively on `t.DepartmentMaster.MacroDepartment == "Radiology"`.
+   - In production and imported catalogs, imaging tests frequently belong to sub-departments (e.g. `"Radiology CT/MRI"`, `"Radiology Ultrasound"`) where `MacroDepartment` is null, empty, or defaulted to `"Pathology"`.
+   - Because `MacroDepartment` was not strictly `"Radiology"`, `isRadiology` evaluated to `false` and `hasPathology` evaluated to `true`.
+
+2. **Complete Omission of `RadiologyStudy` Creation in Prepaid & Claim Flows:**
+   - In `MarkVisitAsPrepaidAsync`, `MarkVisitAsInsuranceAsync`, and `MarkVisitAsCorporateAsync`, the methods bypassed order fulfillment routing and called `TransitionToSpecimenPlannedAsync` unconditionally without generating `RadiologyStudy` records.
+
+3. **Erroneous Phlebotomy / Sample Collection Triggering:**
+   - Because `hasPathology` evaluated to `true`, `TransitionToSpecimenPlannedAsync` created Phlebotomy work assignments (`WorkType.SampleCollection`) and stamped the visit as `"Ready for Sample"`.
+
+---
+
+### Enterprise Solutions Implemented
+
+1. **Unified Clinical Detection Engine (`IsRadiologyTestOrOrder`):**
+   * Implemented comprehensive multi-criteria detection covering:
+     - `DepartmentMaster.MacroDepartment == "Radiology"`
+     - `DepartmentMaster.Name` containing `"Radiology"`
+     - `DepartmentMaster.Code == "RAD"`
+     - Category matching (`MRI`, `CT`, `CT Scan`, `X-Ray`, `Ultrasound`, `USG`)
+     - Assigned `ModalityId`
+     - Test Code and Test Name prefixes and clinical keywords (`MRI`, `CT`, `XRAY`, `USG`, `MRCP`, `MRA `, `MRV `, `CT SCAN`)
+
+2. **Universal Order Fulfillment Routing (`RouteOrdersToFulfillmentQueuesAsync`):**
+   * Centralized in `ReceptionFlowService.cs` and invoked consistently across all intake pathways:
+     - Standard Desk Settlement (`CollectPaymentAsync`)
+     - Corporate B2B Prepaid (`MarkVisitAsPrepaidAsync`)
+     - Insurance & TPA Claims (`MarkVisitAsInsuranceAsync`)
+     - Corporate Direct Credit (`MarkVisitAsCorporateAsync`)
+   * Resolves imaging modalities dynamically (with fallback matching across ModalityMasters).
+   * Generates official `RadiologyStudy` records with accession numbers (`Status = "PendingImaging"`) and draft `Report` entities.
+   * Accurately updates `visit.Department` to `"Radiology"`, `"Pathology"`, or `"Multi-Disciplinary"`.
+
+3. **Phlebotomy Pipeline Isolation:**
+   * `TransitionToSpecimenPlannedAsync` is now strictly conditioned on genuine non-radiology pathology orders (`hasPathology`).
+   * Added filter in `TransitionToSpecimenPlannedAsync` ensuring imaging tests are excluded from specimen planning.
+
+4. **Action Queue Projection Alignment (`OperationsEngine.cs`):**
+   * Batch-loads `RadiologyStudies` for active visits in `GetActionQueueAsync`.
+   * Projects clinical operational statuses:
+     - `"Awaiting Scan"` for PendingImaging
+     - `"In Progress"` for Assigned technician work
+     - `"In Lab"` for Dictation / ImagingCompleted
+     - `"Reporting"` for DraftReady / AwaitingSignature
+     - `"Completed"` for Signed / Finalized
+   * Prevents false `"Ready for Sample"` badges on non-specimen imaging patients.
+
+---
+
+### Build & Verification
+* **Backend Build:** `dotnet build SynOS.sln` passed with **0 Errors**.
+* **Frontend Build:** `npm run build` passed with **0 Errors** (bundled to `wwwroot`).
+* **Parity & Status:** Fully verified. All imaging orders now automatically flow into the technician worklist.
+
+
 
 
 

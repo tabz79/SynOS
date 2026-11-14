@@ -169,7 +169,7 @@ export function PosCashTenderModule({
                                     <Wallet className="w-4 h-4 text-emerald-600" />
                                     Cash from Patient
                                 </span>
-                                <span className="font-mono text-emerald-700 dark:text-emerald-400 font-extrabold text-sm">₹{splitCash}</span>
+                                <span className="tabular-nums text-emerald-700 dark:text-emerald-400 font-extrabold text-sm">₹{splitCash}</span>
                             </div>
                             <div className="relative">
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base font-bold text-slate-400">₹</span>
@@ -221,7 +221,7 @@ export function PosCashTenderModule({
                                     <Smartphone className="w-4 h-4 text-blue-600" />
                                     UPI / QR Scan
                                 </span>
-                                <span className="font-mono text-blue-700 dark:text-blue-400 font-extrabold text-sm">₹{splitUpi}</span>
+                                <span className="tabular-nums text-blue-700 dark:text-blue-400 font-extrabold text-sm">₹{splitUpi}</span>
                             </div>
                             <div className="relative">
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-base font-bold text-slate-400">₹</span>
@@ -280,7 +280,7 @@ export function PosCashTenderModule({
                             {splitDiff === 0 ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <AlertTriangle className="w-4 h-4 text-amber-600" />}
                             {splitDiff === 0 ? "Bill Fully Balanced Across Both Channels" : `Remaining Difference: ₹${Math.abs(splitDiff)}`}
                         </span>
-                        <span className="font-mono">
+                        <span className="tabular-nums font-bold">
                             Total: ₹{splitTotal} / ₹{netBill}
                         </span>
                     </div>
@@ -342,7 +342,7 @@ export function PosCashTenderModule({
                                                 : "bg-white text-slate-900 border-slate-200/90 hover:bg-slate-50 shadow-2xs")
                                     )}
                                 >
-                                    <span className="font-mono">₹{amount.toLocaleString()}</span>
+                                    <span className="tabular-nums">₹{amount.toLocaleString()}</span>
                                     {isExact && (
                                         <span className={cn(
                                             "text-xs sm:text-sm font-black uppercase tracking-wider",

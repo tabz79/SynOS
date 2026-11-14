@@ -463,15 +463,15 @@ export function ReceptionRefundTerminal({
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-slate-500">Total Original Paid:</span>
-                                <span className="font-mono font-bold">₹{Number(selectedClaim.totalAmountPaid || selectedClaim.totalBilled || 0).toLocaleString()}</span>
+                                <span className="tabular-nums font-bold">₹{Number(selectedClaim.totalAmountPaid || selectedClaim.totalBilled || 0).toLocaleString()}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-slate-500">Already Refunded:</span>
-                                <span className="font-mono text-emerald-600 font-bold">₹{Number(selectedClaim.refundedAmount || selectedClaim.immediateRefundPaid || 0).toLocaleString()}</span>
+                                <span className="tabular-nums text-emerald-600 font-bold">₹{Number(selectedClaim.refundedAmount || selectedClaim.immediateRefundPaid || 0).toLocaleString()}</span>
                             </div>
                             <div className="flex justify-between pt-1 border-t border-slate-200 dark:border-zinc-700">
                                 <span className="font-bold text-rose-600">Pending Balance Due:</span>
-                                <span className="font-mono font-black text-sm text-rose-600">
+                                <span className="tabular-nums font-black text-sm text-rose-600">
                                     ₹{Number(selectedClaim.balancePendingRefund || 0).toLocaleString()}
                                 </span>
                             </div>
@@ -619,7 +619,7 @@ export function ReceptionRefundTerminal({
                             </div>
                             <div className="flex justify-between text-[11px]">
                                 <span className="text-slate-500">Remaining Balance:</span>
-                                <span className="font-bold font-mono">₹{Number(settlementReceipt.remainingBalance || 0).toLocaleString()}</span>
+                                <span className="font-bold tabular-nums">₹{Number(settlementReceipt.remainingBalance || 0).toLocaleString()}</span>
                             </div>
                             {settlementReceipt.notes && (
                                 <p className="text-[10px] text-slate-500 pt-1 italic">
