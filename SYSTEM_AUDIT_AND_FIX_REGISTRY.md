@@ -4526,3 +4526,34 @@ Inside `EnsureRequestedRadiologyStudiesAsync`:
 - **Backend Build:** `dotnet build SynOS.sln` passed in 20.26s with 0 errors.
 - **Runtime Sync:** Built bundle synced directly to `src/SynOS.Api/wwwroot`.
 - **Git:** Changes committed and pushed to `origin/cloud-testing-2`.
+
+---
+
+## Issue 63: Unified Finance Sub-Tab Strip (Pill Track with Hairline Dividers & Breathing Room) & Horizontal Floating Quick Actions
+
+### Date: 2026-11-14
+**Status: Resolved & Verified**
+**Branch: cloud-testing-2**
+
+#### Problem Statement
+1. **Sub-Tab Navigation Inconsistencies & Weak affordance:** Sub-tab strips across Finance terminals used conflicting designs (e.g., plain text in Revenue with `bg-slate-200/60` vs. pill track in Referral with `bg-[#D6E3EF]`). The tabs looked like flat plain text names rather than interactive tabs, lacked subtle separation between inactive items, and clustered cramped on the left, leaving wasted empty space on the right.
+2. **Floating Actions Blending & Directionality:** The initial floating action popover opened downwards, blended into white table backgrounds due to modal card container styling, and was enclosed in a popup box rather than expanding as standalone floating action buttons horizontally across the bottom.
+
+#### Resolution Implemented
+1. **Universal Sub-Tab Component (`FinanceSubTabBar.jsx`):**
+   - **Unified Track Design:** Adopted the approved frosted pill track (`bg-[#D6E3EF]/90 dark:bg-zinc-900/90` with inner shadow and crisp border) identically across ALL Finance modules.
+   - **Subtle Vertical Hairline Separators:** Placed sleek vertical hairline dividers (`w-[1px] h-3.5 bg-slate-400/40 dark:bg-zinc-700/60`) between adjacent inactive tabs (omitted next to the active tab to preserve elevation).
+   - **Breathing Room & Typography:** Expanded padding to generous `px-4 sm:px-5 py-2` to naturally span horizontal width without awkward right-side vacancy. Applied legible dark neutral medium weight (`text-slate-700 font-medium`) for inactive tabs, and elevated white pill (`bg-white shadow-[0_2px_8px_rgba(15,35,60,0.12)] font-bold text-slate-900`) for the active tab.
+   - **Screen-Aware Horizontal Centering:** Responsive container with `overflow-x-auto no-scrollbar` and automatic `scrollIntoView({ inline: 'center' })` on active tab changes.
+   - **Universal Replacement:** Standardized in `RevenueScreens`, `ReferralTerminal`, `ExpenseScreens` (`ExpenseTerminal` & `OutsourcingTerminal`), `InsuranceTerminal`, `DiscountMasterScreen`, `WorkforceScreens`, `CorporateTerminal`, and `InstitutionalTerminal`.
+2. **Horizontal Expanding Floating Quick Actions (`FinanceFloatingActions.jsx`):**
+   - **Horizontal Expansion:** Completely eliminated the enclosed modal card container. When clicked, the bottom-left squircle smoothly expands horizontally to the right into a clean flex row of standalone floating action buttons.
+   - **Zero Background Blending:** High-contrast solid buttons (`bg-zinc-900`, `bg-synos-primary`, `bg-indigo-600`) with crisp borders (`border border-white/20`), deep drop shadows (`shadow-2xl shadow-zinc-950/40`), and clear white typography.
+   - **Screen-Aware Layout:** Responsive horizontal flex row with `max-w-[calc(100vw-6rem)] sm:max-w-[calc(100vw-20rem)] overflow-x-auto no-scrollbar` preventing viewport clipping on any screen resolution.
+   - **Auto-Dismiss:** Closes instantly on outside click, Escape key, or when an action is triggered.
+
+#### Verification
+- **Frontend Build:** `npm run build` completed in 18.64s with 0 errors.
+- **Backend Build:** `dotnet build SynOS.sln` passed with 0 errors.
+- **Git:** Changes committed and pushed to `cloud-testing-2`.
+

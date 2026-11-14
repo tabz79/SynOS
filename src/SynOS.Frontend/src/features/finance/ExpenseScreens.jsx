@@ -46,6 +46,7 @@ import { useGlobalFilter } from '@/context/GlobalFilterContext';
 import { StandardFilterBar } from '@/components/layout/StandardFilterBar';
 import { useAuth } from '@/context/AuthContext';
 import { FinanceFloatingActions } from './components/FinanceFloatingActions';
+import { FinanceSubTabBar } from './components/FinanceSubTabBar';
 
 // --- SHARED COMPONENTS (Finance Screens Pattern) ---
 
@@ -2476,27 +2477,12 @@ export const ExpenseTerminal = () => {
 
     return (
         <div className="flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-500 relative">
-            {/* 1. TOP NAVIGATION TABS (Directly below SystemBar / Area 4) */}
-            <div ref={tabsRef} className="px-8 pt-3 pb-2 flex items-center gap-1 overflow-x-auto scrollbar-thin shrink-0 border-b border-zinc-200/60 dark:border-zinc-800/60 bg-white/40 dark:bg-zinc-900/40 backdrop-blur-sm">
-                <div className="flex items-center bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
-                    {tabs.map((t) => (
-                        <button
-                            key={t.id}
-                            onClick={() => navigate(`/finance/expenses/${t.id}`)}
-                            data-active-tab={tab === t.id ? "true" : "false"}
-                            className={cn(
-                                "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer",
-                                tab === t.id
-                                    ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs"
-                                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
-                            )}
-                        >
-                            <t.icon className="w-3.5 h-3.5" />
-                            <span>{t.label}</span>
-                        </button>
-                    ))}
-                </div>
-            </div>
+            {/* 1. TOP NAVIGATION TABS (Universal FinanceSubTabBar) */}
+            <FinanceSubTabBar
+                tabs={tabs}
+                activeTab={tab}
+                onTabChange={(targetId) => navigate(`/finance/expenses/${targetId}`)}
+            />
 
             {/* 2. UNIFIED ACTIVE HEADER: Title & Filter Bar (Zero Subtext) */}
             <div className="px-8 pt-3.5 pb-2.5 flex flex-col md:flex-row md:items-center md:justify-between gap-4 shrink-0">
@@ -2894,27 +2880,12 @@ export const OutsourcingTerminal = () => {
 
     return (
         <div className="flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-500 relative">
-            {/* 1. TOP NAVIGATION TABS (Directly below SystemBar / Area 4) */}
-            <div ref={tabsRef} className="px-8 pt-3 pb-2 flex items-center gap-1 overflow-x-auto scrollbar-thin shrink-0 border-b border-zinc-200/60 dark:border-zinc-800/60 bg-white/40 dark:bg-zinc-900/40 backdrop-blur-sm">
-                <div className="flex items-center bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
-                    {tabs.map((t) => (
-                        <button
-                            key={t.id}
-                            onClick={() => navigate(`/finance/outsourcing/${t.id}`)}
-                            data-active-tab={tab === t.id ? "true" : "false"}
-                            className={cn(
-                                "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer",
-                                tab === t.id
-                                    ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs"
-                                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
-                            )}
-                        >
-                            <t.icon className="w-3.5 h-3.5" />
-                            <span>{t.label}</span>
-                        </button>
-                    ))}
-                </div>
-            </div>
+            {/* 1. TOP NAVIGATION TABS (Universal FinanceSubTabBar) */}
+            <FinanceSubTabBar
+                tabs={tabs}
+                activeTab={tab}
+                onTabChange={(targetId) => navigate(`/finance/outsourcing/${targetId}`)}
+            />
 
             {/* 2. UNIFIED ACTIVE HEADER: Title & Filter Bar (Zero Subtext) */}
             <div className="px-8 pt-3.5 pb-2.5 flex flex-col md:flex-row md:items-center md:justify-between gap-4 shrink-0">

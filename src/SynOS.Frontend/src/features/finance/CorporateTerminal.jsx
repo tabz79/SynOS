@@ -39,6 +39,7 @@ import { CommercialDocumentViewer } from './components/documents/CommercialDocum
 import { DynamicDocumentRenderer } from './components/documents/DynamicDocumentRenderer';
 import { useGlobalFilter } from '@/context/GlobalFilterContext';
 import { StandardFilterBar } from '@/components/layout/StandardFilterBar';
+import { FinanceSubTabBar } from './components/FinanceSubTabBar';
 
 export function CorporateTerminal({ forcedTab, hideHeader = false }) {
     const { tab: paramTab = 'overview' } = useParams();
@@ -521,35 +522,12 @@ export function CorporateTerminal({ forcedTab, hideHeader = false }) {
                         </div>
                     </div>
 
-                    {/* TAB NAVIGATION (SEGMENTED PILL ON NATIVE CANVAS) */}
-                    <div className="px-8 pb-2 flex items-center gap-1 overflow-x-auto scrollbar-thin">
-                        <div className="flex items-center bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
-                            {tabs.map(t => {
-                                const Icon = t.icon;
-                                const isActive = tab === t.id;
-                                return (
-                                    <button
-                                        key={t.id}
-                                        onClick={() => navigate(`/finance/corporate/${t.id}`)}
-                                        className={cn(
-                                            "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer",
-                                            isActive
-                                                ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs"
-                                                : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
-                                        )}
-                                    >
-                                        <Icon size={14} />
-                                        <span>{t.label}</span>
-                                        {t.id === 'packages' && corporatePackages.length > 0 && (
-                                            <span className="ml-1 px-1.5 py-0.2 bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-[10px] rounded-full font-mono">
-                                                {corporatePackages.length}
-                                            </span>
-                                        )}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </div>
+                    {/* TAB NAVIGATION (Universal FinanceSubTabBar) */}
+                    <FinanceSubTabBar
+                        tabs={tabs.map(t => t.id === 'packages' && corporatePackages.length > 0 ? { ...t, badge: corporatePackages.length } : t)}
+                        activeTab={tab}
+                        onTabChange={(targetId) => navigate(`/finance/corporate/${targetId}`)}
+                    />
                 </>
             )}
 

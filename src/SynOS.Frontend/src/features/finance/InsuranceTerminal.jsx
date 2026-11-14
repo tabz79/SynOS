@@ -36,6 +36,7 @@ import { useGlobalFilter } from '@/context/GlobalFilterContext';
 import { StandardFilterBar } from '@/components/layout/StandardFilterBar';
 import { useAuth } from '@/context/AuthContext';
 import { FinanceFloatingActions } from './components/FinanceFloatingActions';
+import { FinanceSubTabBar } from './components/FinanceSubTabBar';
 
 export function InsuranceTerminal({ forcedTab }) {
     const { tab: paramTab = 'overview' } = useParams();
@@ -264,37 +265,18 @@ export function InsuranceTerminal({ forcedTab }) {
         }
     };
 
+    const displayTabs = tabs.map(t => (
+        t.id === 'claims' && pendingClaimsCount > 0 ? { ...t, badge: pendingClaimsCount } : t
+    ));
+
     return (
         <div className="flex flex-col h-full bg-transparent overflow-hidden animate-in fade-in duration-500 relative">
-            {/* 1. TOP NAVIGATION TABS (Directly below SystemBar / Area 4) */}
-            <div className="px-8 pt-3 pb-2 flex items-center gap-1 overflow-x-auto scrollbar-thin shrink-0 border-b border-zinc-200/60 dark:border-zinc-800/60 bg-white/40 dark:bg-zinc-900/40 backdrop-blur-sm">
-                <div className="flex items-center bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl">
-                    {tabs.map(t => {
-                        const Icon = t.icon;
-                        const isActive = tab === t.id;
-                        return (
-                            <button
-                                key={t.id}
-                                onClick={() => navigate(`/finance/insurance/${t.id}`)}
-                                className={cn(
-                                    "flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer",
-                                    isActive
-                                        ? "bg-white dark:bg-zinc-900 text-synos-primary shadow-xs"
-                                        : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
-                                )}
-                            >
-                                <Icon size={14} />
-                                <span>{t.label}</span>
-                                {t.id === 'claims' && pendingClaimsCount > 0 && (
-                                    <span className="ml-1 px-1.5 py-0.2 bg-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] rounded-full font-mono">
-                                        {pendingClaimsCount}
-                                    </span>
-                                )}
-                            </button>
-                        );
-                    })}
-                </div>
-            </div>
+            {/* 1. TOP NAVIGATION TABS (Universal FinanceSubTabBar) */}
+            <FinanceSubTabBar
+                tabs={displayTabs}
+                activeTab={tab}
+                onTabChange={(targetId) => navigate(`/finance/insurance/${targetId}`)}
+            />
 
             {/* 2. UNIFIED ACTIVE HEADER: Title & Filter Bar (Zero Subtext) */}
             <div className="px-8 pt-3.5 pb-2.5 flex flex-col md:flex-row md:items-center md:justify-between gap-4 shrink-0">

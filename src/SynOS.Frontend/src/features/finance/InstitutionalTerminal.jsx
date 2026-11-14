@@ -20,6 +20,7 @@ import { useTheme } from '@/context/ThemeContext';
 import { InsuranceTerminal } from './InsuranceTerminal';
 import { CorporateTerminal } from './CorporateTerminal';
 import { ReceptionApi } from '@/api/reception';
+import { FinanceSubTabBar } from './components/FinanceSubTabBar';
 
 export function InstitutionalTerminal() {
     const { tab = 'overview' } = useParams();
@@ -109,24 +110,13 @@ export function InstitutionalTerminal() {
                     </div>
                 </div>
 
-                {/* Sub-navigation tabs */}
-                <div className="flex items-center bg-slate-200/60 dark:bg-zinc-800/80 p-1 rounded-xl overflow-x-auto scrollbar-thin">
-                    {tabs.map(t => (
-                        <button
-                            key={t.id}
-                            onClick={() => navigate(`/finance/institutional/${t.id}`)}
-                            className={cn(
-                                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer",
-                                tab === t.id
-                                    ? "bg-white dark:bg-zinc-700 text-synos-primary shadow-xs"
-                                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
-                            )}
-                        >
-                            <t.icon className="w-3.5 h-3.5" />
-                            <span>{t.label}</span>
-                        </button>
-                    ))}
-                </div>
+                {/* Sub-navigation tabs (Universal FinanceSubTabBar) */}
+                <FinanceSubTabBar
+                    tabs={tabs}
+                    activeTab={tab}
+                    onTabChange={(targetId) => navigate(`/finance/institutional/${targetId}`)}
+                    className="px-0 pt-0 pb-0 border-b-0"
+                />
             </div>
 
             {/* Overview Content */}

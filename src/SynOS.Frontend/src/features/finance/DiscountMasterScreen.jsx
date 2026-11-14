@@ -59,6 +59,7 @@ import { useGlobalFilter } from '@/context/GlobalFilterContext';
 import { StandardFilterBar } from '@/components/layout/StandardFilterBar';
 import { FinancePrintableSummaryModal } from './components/FinancePrintableSummaryModal';
 import { FinanceFloatingActions } from './components/FinanceFloatingActions';
+import { FinanceSubTabBar } from './components/FinanceSubTabBar';
 
 function CircularProgressGauge({ percentage = 0, color = "#14B8A6" }) {
     const radius = 13.5;
@@ -999,26 +1000,13 @@ export function DiscountMasterScreen() {
 
     return (
         <div className="px-5 sm:px-6 py-3 w-full flex flex-col justify-start gap-3 sm:gap-3.5 pb-16 animate-in fade-in duration-500 relative bg-[#CBD5E1] dark:bg-zinc-950">
-            {/* 1. TOP NAVIGATION TABS (Directly below SystemBar / Area 4) */}
-            <div className="flex items-center gap-1 overflow-x-auto scrollbar-thin border-b border-zinc-200/60 dark:border-zinc-800/60 pb-2">
-                <div className="flex items-center bg-[#D6E3EF] dark:bg-zinc-800/80 p-1.5 rounded-[14px] shadow-[inset_0_1px_2px_rgba(15,35,60,0.12)] border border-white/60 dark:border-zinc-700">
-                    {tabs.map(t => (
-                        <button
-                            key={t.id}
-                            onClick={() => navigate(`/finance/discounts/${t.id}`)}
-                            className={cn(
-                                "flex items-center gap-2 px-4 py-2 rounded-[10px] text-xs sm:text-sm font-semibold transition-all cursor-pointer whitespace-nowrap",
-                                tab === t.id
-                                    ? "bg-white dark:bg-zinc-900 text-slate-900 dark:text-white shadow-[0_2px_8px_rgba(15,35,60,0.12),inset_0_1px_0_#FFFFFF] font-bold"
-                                    : "text-slate-600 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white"
-                            )}
-                        >
-                            <t.icon size={16} className={tab === t.id ? "text-synos-primary" : "text-slate-500"} />
-                            <span>{t.label}</span>
-                        </button>
-                    ))}
-                </div>
-            </div>
+            {/* 1. TOP NAVIGATION TABS (Universal FinanceSubTabBar) */}
+            <FinanceSubTabBar
+                tabs={tabs}
+                activeTab={tab}
+                onTabChange={(targetId) => navigate(`/finance/discounts/${targetId}`)}
+                className="px-0 pt-0 pb-1 border-b-0"
+            />
 
             {/* 2. UNIFIED ACTIVE HEADER: Title & Filter Bar (Zero Subtext) */}
             <div className="shrink-0 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3 min-h-[44px]">
